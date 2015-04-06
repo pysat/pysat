@@ -31,9 +31,8 @@ manner.
   * pandas has been forked to accomodate the assignment of pandas Series/
   Dateframes as single elements of a Series/Dataframe.
   * supports 1D, 2D, 3D, and nD data in a single structure
-* The pysat standards and features enable the developemnt of instrument 
-independent analysis routines. Up to a point, 2D analysis code is likely
-not suitable for 1D data.
+* The pysat standards and features enable the development of instrument 
+independent analysis routines. 
 
 #Installation
 * Clone repositories for both pysat and the forked pandas.
