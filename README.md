@@ -1,6 +1,3 @@
-# pysat
-Science data analysis library designed to minimize the overhead when analyzing science data across measurement platforms. 
-
 #What is it
 pysat is a Python package providing a simple, flexible, and powerful interface
 for loading, cleaning, managing, processing, and analyzing scientific 
@@ -35,15 +32,17 @@ manner.
   Dateframes as single elements of a Series/Dataframe.
   * supports 1D, 2D, 3D, and nD data in a single structure
 * The pysat standards and features enable the developemnt of instrument 
-independent analysis routines. Up to a point, 2D analysis code is likely
-not suitable for 1D data.
+independent analysis routines. Up to a point, 2D analysis code may
+not be suitable for 1D data.
+* The pysat standards and features enable the development of instrument 
+independent analysis routines. 
 
 #Installation
-Clone repositories for both pysat and the forked pandas.
-Follow normal instructions for installing pandas.
-For pysat, ensure pythonpath includes pysat.
-Run pysat.utils.set_data_dir('path to top level data dir')
-Nominal organization of data is top_dir/name/tag/*/files
+* Clone repositories for both pysat and the forked pandas.
+* Follow normal instructions for installing pandas on forked pandas.
+* For pysat, ensure pythonpath includes pysat.
+* Run pysat.utils.set_data_dir('path to top level data dir')
+* Nominal organization of data is top_dir/name/tag/*/files
 
 #Quick Demo
 The core functionality is exposed through the Instrument object, providing a single
@@ -60,9 +59,9 @@ case the Ion Velocity Meter onboard C/NOFS, part of the Coupled Ion
 Neutral Dynamics Investigation (CINDI), to enable loading and cleaning.
 
 ###Data Access
-ivm['name'] or ivm.data['name'] or ivm.data.ix['name']
-ivm[row,'name'], ivm[row1:row2,'name'], ivm[[1,2,3], 'name']
-ivm[datetime,'name'], ivm[datetime1:datetime2,'name']
+* ivm['name'] or ivm.data['name'] or ivm.data.ix['name']
+* ivm[row,'name'], ivm[row1:row2,'name'], ivm[[1,2,3], 'name']
+* ivm[datetime,'name'], ivm[datetime1:datetime2,'name']
 complete pandas data object exposed in ivm.data
 
 ###Data Assignment
@@ -103,6 +102,14 @@ ivm.custom.add(custom_func_modify, 'modify', optional_param2=True)
 ivm.load(2009,1)
 print ivm['double_mlt']
 ```
+```
+ivm.custom.add(custom_func_add, 'add', optional_param2=True)
+ivm.bounds = (start,stop)
+custom_complicated_analysis_over_season(ivm)
+```
+The output of custom_func_modify will always be available from instrument object, regardless
+of what level the science analysis is performed.
+
 ###Iterate over dataset by day
 Each loop loads a new day of instrument data, with custom processing
 ```
@@ -138,8 +145,8 @@ within each cell of a column, with 1D or other dimensional data in other columns
 This set up allows for all data types to be stored in a single data object.
 
 A powerfule feature of pandas is auto-alignment of data based upon the index.
-Thus, the profiles or images stored as above do not need to binned on a consistent
-basis before math operation
+Thus, the profiles or images stored as above do not need to have the same sizes.
+Math operations across series and dataframes are aligned and missing data is treated as dictated.
 
 #Adding a new instrument to pysat
 pysat works by calling modules written for specific instruments
@@ -181,12 +188,12 @@ Convenience function from_csv provided.
 def init(inst):
     return None
 ```
-* default routine, runs once per instrument load. inst is pysat instrument object.
+* default routine, runs once per instrument load. inst is pysat instrument object. (optional)
 ```
 def default(inst):
     return None
 ```
-* clean routine, cleans instrument for levels supplied in inst.clean_level:
+* clean routine, cleans instrument for levels supplied in inst.clean_level. (optional)
   * 'clean' : expectation of good data
   * 'dusty' : probably good data, use with caution
   * 'dirty' : minimal cleaning, only blatant instrument errors removed
