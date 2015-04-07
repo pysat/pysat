@@ -23,17 +23,14 @@ else:
 
 
 import instruments
-import coords
-import ssnl
-import wvlt
+#import coords
+#import ssnl
+#import wvlt
 import utils
-#from utils import season_date_range, create_datetime_index
 from instrument import Instrument
 
 from meta import Meta
 from files import Files
-#import _meta
-import paths
 
 
 __all__ = ['coords','ssnl', 'instruments', 'wvlt', 'utils','meta','files','paths']
