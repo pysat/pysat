@@ -25,19 +25,23 @@ class orbits(object):
             self.sat = sat
             
         if kind is None:
-            kind = 'equatorial'
+            kind = 'local time'
+        else:
+            kind = kind.lower()
         #self.orbit_type = 'equatorial'
         
         if period is None:
             period = np.timedelta64(97, 'm')
         self.orbit_period = period
 
-        if kind.lower() == 'equatorial':
+        if (kind == 'local time') or (kind == 'lt'):
             self._detBreaks = self._equaBreaks
-        elif kind.lower() == 'polar':
+        elif (kind == 'longitude') or (kind == 'long'):
+            self._detBreaks = self._longBreaks
+        elif kind == 'polar':
             self._detBreaks = self._polarBreaks
         else:
-            raise ValueError('Unknown kind of orbit supplied.')
+            raise ValueError('Unknown kind of orbit requested.')
        
         self._orbit_breaks = []
         self.num = []
@@ -205,6 +209,105 @@ class orbits(object):
         self._orbit_breaks = ind
         #set number of orbits for the day
         self.num = num_orbits
+
+
+    def _longBreaks(self):
+        """
+        Determine where breaks in a satellite orbit occur, based upon
+        changes in longitude.
+        
+        Looks for negative gradients in longitude as well as 
+        breaks in UT.
+
+	"""
+     
+        if self.orbit_index is None:
+            try:
+                self.sat['glong']
+		self.orbit_index = 'glong'
+            except ValueError:
+                raise ValueError(''.join(('Unable to find a valid index',
+                    'for determining orbits. Provide one in orbit_index')))
+        else:
+            try:
+                self.sat[self.orbit_index]
+            except ValueError:
+                raise ValueError('Provided orbit index does not exist in loaded data')
+
+        lt_diff = self.sat[self.orbit_index].diff()
+        ut_vals = pds.Series(self.sat.data.index)
+        ut_diff = ut_vals.diff()
+        # locations where derivative is less than 0
+        # or, look for breaks because the length of time between samples is too large
+        # deriv of datetime index is in naneseconds
+        ind, = np.where((lt_diff < -0.1) )
+        if len(ind) > 0:
+            ind = np.hstack((ind, np.array([ len(self.sat[self.orbit_index]) ]) ))
+            # look at distance between breaks
+            dist = ind[1:] - ind[0:-1]
+            # only keep orbit breaks with a distance greater than 1
+            # done for robustness, though this could rarely introduce a problem
+            if len(ind) > 1:
+                if min(dist)==1:
+                    print 'There are orbit breaks right next to each other'
+                ind = ind[dist>1]
+                
+            # check for large positive gradients around the break that would
+            # suggest not a true orbit break, but rather bad orbit_index values
+            new_ind = []
+            for idx in ind:
+                tidx, = np.where(lt_diff[idx-5:idx+6] > 0.1)
+
+		if len(tidx) != 0:
+  		    for tidx in tidx:
+      		        # look at time change vs longitude change
+      		        if ut_diff[idx-5:idx+6].iloc[tidx] < lt_diff[idx-5:idx+6].iloc[tidx]/360.*self.orbit_period :
+      		            # change in ut inconsistent with change in local time
+      		            # increases in longitude require a change in ut	
+      		            pass
+      		        #print 'Fake Orbit Break.'
+      		        else:
+      		            new_ind.append(idx)	
+      		            break    
+		else:
+		    new_ind.append(idx)
+
+	    ind = np.array(new_ind)
+	    
+        
+        # now, look for breaks because the length of time between samples is too large, thus there is no break in slt/mlt/etc
+        ut_ind, = np.where(
+                        (ut_diff > self.orbit_period) | 
+                        ( (ut_diff/self.orbit_period > (np.abs(lt_diff/360.))) & 
+                        (ut_diff/self.orbit_period > 0.95) )
+                        )
+                    #  & lt_diff.notnull() ))# & (lt_diff != 0)  ) )   #added the or and check after or on 10/20/2014
+        
+        if len(ut_ind) > 0:
+            ind = np.hstack((ind,ut_ind))
+            ind = np.sort(ind)
+            ind = np.unique(ind)
+            print 'Time Gap'
+
+	# now that most problems in orbits should have been caught, look at 
+	# the time difference between orbits
+	orbit_ut_diff = ut_vals[ind].diff()
+	orbit_lt_diff = self.sat[self.orbit_index][ind].diff()
+
+	idx, = np.where((orbit_ut_diff/self.orbit_period - orbit_lt_diff.values/360.) > 0.97)
+	idx = np.hstack((0,idx))
+	if len(ind) > 0:
+	    ind = ind[idx]
+
+        # number of orbits
+        num_orbits = len(ind)+1
+        # create orbitbreak index
+        ind=np.hstack((np.array([0]),ind))
+        # set index of orbit breaks
+        self._orbit_breaks = ind
+        # set number of orbits for the day
+        self.num = num_orbits
+
 
     def _polarBreaks(self):
         """Determine where breaks in a polar orbiting satellite orbit occur.
@@ -405,7 +508,7 @@ class orbits(object):
                 self._getBasicOrbit(orbit=-1)
                 #should come up with some kind of check if the next day is needed
                 load_next = True
-                if self.sat._iterType == 'date':
+                if self.sat._iter_type == 'date':
                     delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1]) + np.timedelta64(1, 'D') 
                     #print 'Checking if new load needed ', delta < self.orbit_period
                     if delta > self.orbit_period:
@@ -441,7 +544,7 @@ class orbits(object):
                 if len(self.sat.data) > 0:
                     #check if data padding is really needed, only works when loading by date
                     pad_next = True
-                    if self.sat._iterType == 'date':
+                    if self.sat._iter_type == 'date':
                         delta = pds.to_timedelta(self.sat.date-temp_orbit_data.index[-1])
                         #print 'Checking if new load was needed ', (delta < self.orbit_period)
                         if delta > self.orbit_period:
@@ -453,7 +556,7 @@ class orbits(object):
                         self._getBasicOrbit(orbit=2)
 		    else:
 		        self._getBasicOrbit(orbit=1)
-                        if self.sat._iterType == 'date':
+                        if self.sat._iter_type == 'date':
                             delta = pds.to_timedelta(self.sat.date + pds.DateOffset(days=1)-self.sat.data.index[0])
                             #print 'Checking if another new load is needed ', delta < self.orbit_period
  			    if delta < self.orbit_period:
