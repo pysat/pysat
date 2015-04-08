@@ -15,10 +15,10 @@ class orbits(object):
 ### freeing the user from this data management task.
 #####################
 
-    def __init__(self, sat = None, index=None, kind=None, period=None):
+    def __init__(self, sat=None, index=None, kind=None, period=None):
         #create null arrays for storing orbit info
         if sat is None:
-            raise ValueError('Must provide a PySat Object when initializing '+ 
+            raise ValueError('Must provide a pysat instrument object when initializing '+ 
                                 'orbits class.')
         else:
             #self.sat = weakref.proxy(sat)
@@ -28,7 +28,6 @@ class orbits(object):
             kind = 'local time'
         else:
             kind = kind.lower()
-        #self.orbit_type = 'equatorial'
         
         if period is None:
             period = np.timedelta64(97, 'm')
@@ -201,13 +200,13 @@ class orbits(object):
 	#print ut_vals[ind].diff()
 
 
-        #number of orbits
+        # number of orbits
         num_orbits = len(ind)+1
-        #create orbitbreak index
+        # create orbitbreak index
         ind=np.hstack((np.array([0]),ind))
-        #set index of orbit breaks
+        # set index of orbit breaks
         self._orbit_breaks = ind
-        #set number of orbits for the day
+        # set number of orbits for the day
         self.num = num_orbits
 
 
@@ -334,26 +333,26 @@ class orbits(object):
             except ValueError:
                 raise ValueError('Provided orbit index does not exist in loaded data')
 
-        #define derivative function here
+        # define derivative function here
         deriv = lambda x: (x[1] - x[0])/2
         val = self.sat[self.orbit_index] >= 0
         val_change = val[:-1] - val[1:]
         ut_val = pds.rolling_apply(self.sat.data.index.values,2,deriv)
-        #locations where derivative is less than 0
-        #or, look for breaks because the length of time between samples is too large
-        #deriv of datetime index is in naneseconds
+        # locations where derivative is less than 0
+        # or, look for breaks because the length of time between samples is too large
+        # deriv of datetime index is in naneseconds
         ind, = np.where(val_change == True )
         if len(ind) > 0:
             ind = np.hstack((ind, np.array([ len(self.sat[self.orbit_index]) ]) ))
-            #look at distance between breaks
+            # look at distance between breaks
             dist = ind[1:] - ind[0:-1]
-            #only keep orbit breaks with a distance greater than 1
-            #done for robustness
+            # only keep orbit breaks with a distance greater than 1
+            # done for robustness
             if len(ind) > 1:
                 if min(dist)==1:
                     print 'There are orbit breaks right next to each other'
                 ind = ind[dist>1]
-        ##now, look for breaks because the length of time between samples is too large, thus there is no break in slt/mlt/etc
+        # now, look for breaks because the length of time between samples is too large, thus there is no break in slt/mlt/etc
         ut_val = pds.rolling_apply(self.sat.data.index.values,2,deriv)
         ut_ind, = np.where(ut_val > self.orbit_period.total_seconds()*10**9 )     #used to be 2900, dunno why. 5900 corresponds to seconds over 97 minutes (1 orbit)
         if len(ut_ind) > 0:
@@ -361,13 +360,13 @@ class orbits(object):
             ind = np.sort(ind)
             ind = np.unique(ind)
             print 'Time Gap'
-        #number of orbits
+        # number of orbits
         num_orbits = len(ind)+1
-        #create orbitbreak index
+        # create orbitbreak index
         ind=np.hstack((np.array([0]),ind))
-        #set index of orbit breaks
+        # set index of orbit breaks
         self._orbit_breaks = ind
-        #set number of orbits for the day
+        # set number of orbits for the day
         self.num = num_orbits
 
 
@@ -490,7 +489,9 @@ class orbits(object):
                     raise Exception('Requested an orbit past total orbits for day')
             else:
                 raise Exception('Must set an orbit')
-
+        else:
+            print 'No data loaded in instrument object to determine orbits.'
+            
     def next(self, *arg, **kwarg):
         """Load the next orbit into .data.
 
