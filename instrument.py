@@ -211,7 +211,7 @@ class Instrument(object):
             raise AttributeError(string.join(('A load routine for the instrument',
                                    'is required.')))
         try:
-            self._list_rtn = inst.listFiles
+            self._list_rtn = inst.list_files
         except AttributeError:
             raise AttributeError(string.join(('A file list routine is',
             			'required from the instrument.')))    
@@ -227,6 +227,7 @@ class Instrument(object):
             self._clean_rtn = inst.clean
         except (ImportError, AttributeError):
             pass
+        self.inst = inst
         return
 
     def _load_data(self, date=None, fid=None):

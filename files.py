@@ -34,7 +34,7 @@ class Files(object):
    	        self.store()
 
     def _setList(self, files_info):
-        """Attaches info returned by instrument listfiles routine to Satellite object."""
+        """Attaches info returned by instrument list_files routine to Satellite object."""
 
 	if (len(files_info.unique()) != len(files_info)): # | (len(wList) != len(files_info)):
 	    raise ValueError('List of files must have unique datetimes.')
