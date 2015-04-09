@@ -20,22 +20,19 @@ appropriately to routines that get meta direct for file (eg. netCDF)
 """
 
 
-#start with importing packages
+# start with importing packages
 import string
 import pandas as pds
 import numpy as np
-#from . import __path__ as __path__
 import os
-#from subprocess import call
 from types import ModuleType
 import copy
 import sys
 
-#from . import ssnl as ssnl
+
 import custom
 import files
 import orbits
-#import paths
 import meta
 import utils
 from . import data_dir as data_dir

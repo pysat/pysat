@@ -1,7 +1,7 @@
 import pandas as pds
 import numpy as np
 import copy
-import meta
+#import meta
 
 
 def set_data_dir(path=None):
@@ -19,6 +19,8 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                     
     import netCDF4
     import string
+    import meta
+
     
     if fnames is None:
         raise ValueError("Must supply a list of filenames")
@@ -125,58 +127,6 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
     return out, mdata        
 
 
-
-def load_netcdf3_simple(fnames=None, strict_meta=False, **kwargs):
-    
-    import netCDF4
-
-    if fnames is None:
-        raise ValueError("Must supply a list of filenames")
-    if not hasattr(fnames, '__iter__'):
-        fnames = [fnames]    
-            
-    saved_mdata = None
-    idx = 0
-    temp_store=[]
-    for file in fnames:
-        with netCDF4.Dataset(file, mode='r', format='NETCDF3_64BIT') as data:
-            # build up dictionary will all ncattrs
-            # and add those attributes to a pysat meta object
-            ncattrsList = data.ncattrs()
-            mdata = meta.Meta()
-            for d in ncattrsList:
-                if hasattr(mdata, d):
-                    mdata.__setattr__(d+'_', data.getncattr(d))
-                else:
-                    mdata.__setattr__(d, data.getncattr(d))
-               
-            #loadup all of the variables in the netCDF
-            loadedVars={}
-            keys = data.variables.keys()
-            for key in keys:
-                # load up metadata
-                mdata[key] = {'long_name':data.variables[key].long_name,
-                                'units':data.variables[key].units,
-                                'dimensions':data.variables[key].dimensions}
-                # from here group unique dimensions and act accordingly, 1D, 2D, 3D 
-                # cheating at the moment  
-                loadedVars[key] = data.variables[key][:] 
-            num = len(loadedVars[keys()[0]])                               
-            temp_store.append(pds.DataFrame.from_dict(loadedVars,
-                                index=np.arange(num) + idx ))     
-            idx += num   
-
-            if strict_meta:
-                if saved_mdata is None:
-                    saved_mdata = copy.deepcopy(mdata)
-                elif (mdata != saved_mdata):
-                    raise ValueError('Metadata across filenames is not the same.')
-                    
-    return pds.DataFrame(temp_store), mdata        
-        #out_data.close()
-
-
-
 def getyrdoy(date):
     """Return a tuple of year, day of year for a supplied datetime object."""
     #if date is not None:
@@ -186,7 +136,6 @@ def getyrdoy(date):
         raise AttributeError("Must supply a pandas datetime object or equivalent")
     else:
         return (date.year, doy)
-
 
 
 def season_date_range(start, stop, freq='D'):
@@ -274,67 +223,115 @@ def create_datetime_index(year=None, month=None, doy=None, uts=None):
     return pds.to_datetime(uts_del)
     
                                                 
-def create_datetime_index_slow(year=None, doy=None, uts=None):
-    """
-    Create a Date Index for storing satellite date in pandas array.
+#def create_datetime_index_slow(year=None, doy=None, uts=None):
+#    """
+#    Create a Date Index for storing satellite date in pandas array.
+#
+#    scientific data will be loaded into a subclass of numpy called pandas
+#    ,designed for time series.
+#
+#    Keywords:
+#        yrdoy - array of yr*1000 + (Day of Year)
+#        uts - array of ut seconds.
+#    Output:
+#        Pandas timearray containing satellite data.
+#    """
+#    #Need to create a time label for each of the measurements in time
+#    #time labels use the python pandas.datetime functionality
+#    #designed to work on a single day
+#
+#    #create datetime object with start date
+#    #start_date = pds.datetime(yrs[0],1,1)+timedelta(days=(doys[0]-1),seconds=uts[0])
+#    #create array of seconds since start time
+#    
+#    yr_offset = year - year[0]
+#    if (year[0] % 4 == 0) & (year[0] % 100 != 0):
+#        #leap year
+#        uts_del = uts + (yr_offset*366. + doy)*86400.
+#    else:
+#        #non-leap year
+#        uts_del = uts + (yr_offset*365. + doy)*86400.
+#
+#    uts_del -= uts_del[0]
+#    #uts_del = array([(pds.datetime(year,1,1)+timedelta(days=(days-1),seconds=secs) - start_date).total_seconds() for (year,days,secs) in zip(yrs,doys,uts)])
+#    #create an array of datetime seconds, then multiply by change in uts
+#
+#    #turns out this is super slow
+##        timeIndex = pds.datetime(yrs[0],1,1) + pds.DateOffset(days=doys[0]-1, microseconds=uts[0]*1000000)
+##        temp = pds.DateOffset(seconds=1)
+##        timeIndex += uts_del*temp
+##        return timeIndex
+#
+#    #create pandas.datetime object for first sample
+#    #doesn't like inputs less than 1 second
+#    start = pds.datetime(year[0],1,1)+pds.DateOffset(days=doy[0]-1,microseconds=uts[0]*1000000)
+#    end = pds.datetime(year[-1],1,1)+pds.DateOffset(days=doy[-1]-1,microseconds=uts[-1]*1000000)
+#
+#    #create all times in between at a constant cadence
+#    #creating pandas.datetime object for each time individually too slow
+#    #thus I create a constant samplrate array
+#    #and I find the satellite times closest to constant samplerate times
+#    freq=1
+#    timeIndex = pds.date_range(start, end, freq='%iL'%freq)
+#
+#    #create an index array that connects each satellite measurement time
+#    #to a pandas.datetime object
+#
+#    #number of samples at freq samplerate to get to uts_del seconds
+#    uts_del /= (freq/1000.)
+#    #pick the closest integer
+#    uts_del = np.floor(uts_del).astype('int64')
+#    #this is now the index into the pandas.datetime array
+#    #return the pandas.datetime array nearest each measurement to the
+#    #closest 1 milisecond. Fails if instrument samplerate is close
+#    #to this
+#    return timeIndex[uts_del]
 
-    scientific data will be loaded into a subclass of numpy called pandas
-    ,designed for time series.
-
-    Keywords:
-        yrdoy - array of yr*1000 + (Day of Year)
-        uts - array of ut seconds.
-    Output:
-        Pandas timearray containing satellite data.
-    """
-    #Need to create a time label for each of the measurements in time
-    #time labels use the python pandas.datetime functionality
-    #designed to work on a single day
-
-    #create datetime object with start date
-    #start_date = pds.datetime(yrs[0],1,1)+timedelta(days=(doys[0]-1),seconds=uts[0])
-    #create array of seconds since start time
-    
-    yr_offset = year - year[0]
-    if (year[0] % 4 == 0) & (year[0] % 100 != 0):
-        #leap year
-        uts_del = uts + (yr_offset*366. + doy)*86400.
-    else:
-        #non-leap year
-        uts_del = uts + (yr_offset*365. + doy)*86400.
-
-    uts_del -= uts_del[0]
-    #uts_del = array([(pds.datetime(year,1,1)+timedelta(days=(days-1),seconds=secs) - start_date).total_seconds() for (year,days,secs) in zip(yrs,doys,uts)])
-    #create an array of datetime seconds, then multiply by change in uts
-
-    #turns out this is super slow
-#        timeIndex = pds.datetime(yrs[0],1,1) + pds.DateOffset(days=doys[0]-1, microseconds=uts[0]*1000000)
-#        temp = pds.DateOffset(seconds=1)
-#        timeIndex += uts_del*temp
-#        return timeIndex
-
-    #create pandas.datetime object for first sample
-    #doesn't like inputs less than 1 second
-    start = pds.datetime(year[0],1,1)+pds.DateOffset(days=doy[0]-1,microseconds=uts[0]*1000000)
-    end = pds.datetime(year[-1],1,1)+pds.DateOffset(days=doy[-1]-1,microseconds=uts[-1]*1000000)
-
-    #create all times in between at a constant cadence
-    #creating pandas.datetime object for each time individually too slow
-    #thus I create a constant samplrate array
-    #and I find the satellite times closest to constant samplerate times
-    freq=1
-    timeIndex = pds.date_range(start, end, freq='%iL'%freq)
-
-    #create an index array that connects each satellite measurement time
-    #to a pandas.datetime object
-
-    #number of samples at freq samplerate to get to uts_del seconds
-    uts_del /= (freq/1000.)
-    #pick the closest integer
-    uts_del = np.floor(uts_del).astype('int64')
-    #this is now the index into the pandas.datetime array
-    #return the pandas.datetime array nearest each measurement to the
-    #closest 1 milisecond. Fails if instrument samplerate is close
-    #to this
-    return timeIndex[uts_del]
-
+#def load_netcdf3_simple(fnames=None, strict_meta=False, **kwargs):
+#    
+#    import netCDF4
+#
+#    if fnames is None:
+#        raise ValueError("Must supply a list of filenames")
+#    if not hasattr(fnames, '__iter__'):
+#        fnames = [fnames]    
+#            
+#    saved_mdata = None
+#    idx = 0
+#    temp_store=[]
+#    for file in fnames:
+#        with netCDF4.Dataset(file, mode='r', format='NETCDF3_64BIT') as data:
+#            # build up dictionary will all ncattrs
+#            # and add those attributes to a pysat meta object
+#            ncattrsList = data.ncattrs()
+#            mdata = meta.Meta()
+#            for d in ncattrsList:
+#                if hasattr(mdata, d):
+#                    mdata.__setattr__(d+'_', data.getncattr(d))
+#                else:
+#                    mdata.__setattr__(d, data.getncattr(d))
+#               
+#            #loadup all of the variables in the netCDF
+#            loadedVars={}
+#            keys = data.variables.keys()
+#            for key in keys:
+#                # load up metadata
+#                mdata[key] = {'long_name':data.variables[key].long_name,
+#                                'units':data.variables[key].units,
+#                                'dimensions':data.variables[key].dimensions}
+#                # from here group unique dimensions and act accordingly, 1D, 2D, 3D 
+#                # cheating at the moment  
+#                loadedVars[key] = data.variables[key][:] 
+#            num = len(loadedVars[keys()[0]])                               
+#            temp_store.append(pds.DataFrame.from_dict(loadedVars,
+#                                index=np.arange(num) + idx ))     
+#            idx += num   
+#
+#            if strict_meta:
+#                if saved_mdata is None:
+#                    saved_mdata = copy.deepcopy(mdata)
+#                elif (mdata != saved_mdata):
+#                    raise ValueError('Metadata across filenames is not the same.')
+#                    
+#    return pds.DataFrame(temp_store), mdata        
+        #out_data.close()

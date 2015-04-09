@@ -1,10 +1,5 @@
 import numpy as np
 import pandas as pds
-#from datetime import timedelta64
-
-#from core import getDateArray
-#import pysat
-#import weakref
 
 class orbits(object):
     

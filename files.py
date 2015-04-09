@@ -6,15 +6,11 @@ import glob
 import numpy as np
 import pandas as pds
 
-import utils
-from . import data_dir
+#import utils
+#from . import data_dir
 from pysat import data_dir as data_dir
 
-#data_dir = paths.data_dir
 
-#from . import __path__ as pysat_path
-#print pysat_path
-#print pysat_path
 class Files(object):
     
     def __init__(self, sat):
@@ -247,7 +243,7 @@ class Files(object):
             # setting up negative indexing to pick out filenames
             key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
                             np.array(end_key, dtype=int) - max_len]
-    
+            print key_str_idx
             # need to parse out dates for datetime index
             for i,temp in enumerate(files):
                 for j,key in enumerate(keys):
