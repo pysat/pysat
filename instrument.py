@@ -153,15 +153,12 @@ class Instrument(object):
             self.meta[key] = new
         else:
             if isinstance(key, tuple):
-                #print new
-                #print key[0],key[1]
-                #print self.data.ix[key[0],key[1]]
                 self.data.ix[key[0],key[1]] = new
-                if key[1] not in self.meta.data.columns:
+                if key[1] not in self.meta.data.index:
                     self.meta[key[1]] = {'long_name':key, 'units':''}
             elif isinstance(key, str):
                 self.data[key] = new  
-                if key not in self.meta.data.columns:   
+                if key not in self.meta.data.index:   
                     # add in default metadata because none was supplied
                     self.meta[key] = {'long_name':key, 'units':''} 
             else:
@@ -416,11 +413,11 @@ class Instrument(object):
                 self.data = pds.concat([self.data, padRight[1:]])
         # if self.pad is False, load single day
         else:
-            self.data, self.meta  = self._load_data()        
+            self.data, self.meta  = self._load_data()       
         # check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.data.columns] = {'name':self.data.columns, 'long_name':self.data.columns,
-                          'units':['']*len(self.data.columns)}
+            self.meta[self.data.columns] = {'long_name':self.data.columns,
+                                            'units':['']*len(self.data.columns)}
         if not self.data.empty:
             self._default_rtn(self)
 	# clean
