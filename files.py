@@ -44,7 +44,8 @@ class Files(object):
 	self.start_date = pds.datetime(temp.year, temp.month, temp.day)
 	temp = files_info.index[-1] 
 	self.stop_date = pds.datetime(temp.year, temp.month, temp.day)
-        
+
+                
     def store(self, dir=None):
         """Store currently loaded filelist for instrument onto filesystem"""
         name = self._sat.name+'_'+self._sat.tag+'_stored_file_info.txt'

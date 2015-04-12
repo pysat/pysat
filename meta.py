@@ -25,9 +25,9 @@ class Meta(object):
         return False    
 
     def copy(self):
-        import copy
+        from copy import deepcopy as deepcopy
         """Deep copy of the meta object."""
-        return copy.deepcopy(self) 
+        return deepcopy(self) 
                
     def __setitem__(self, name, value):
         """add metadata information"""

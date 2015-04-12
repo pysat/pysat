@@ -227,7 +227,7 @@ class Instrument(object):
             self._clean_rtn = inst.clean
         except (ImportError, AttributeError):
             pass
-        self.inst = inst
+        #self.inst = inst
         return
 
     def _load_data(self, date=None, fid=None):
