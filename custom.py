@@ -82,10 +82,10 @@ class custom(object):
                                 sat[newData['data'].columns] = newData
                             elif isinstance(newData['data'], pds.Series):
                                 sat[newData['data'].name] = newData
-                        elif isinstance(newData['data'], pds.DataFrame):
-                            sat[newData['data'].columns] = newData
-                        elif isinstance(newData['data'], pds.Series):
-                            sat[newData['data'].name] = newData
+                        elif isinstance(newData, pds.DataFrame):
+                            sat[newData.columns] = newData
+                        elif isinstance(newData, pds.Series):
+                            sat[newData.name] = newData
                         elif hasattr(newData, '__iter__'):
 #
 #                        
