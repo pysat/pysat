@@ -25,10 +25,9 @@ class Files(object):
        	    if info is not False:
        	        self._setList(info)
        	    else:
-       	        print 'couldnt find stored info'
+       	        print 'Generating list of files for requested instrument'
    	        # couldn't find stored info, load file list and then store
    	        info = self._sat._list_rtn(tag=self._sat.tag, data_dir = data_dir)
-   	        print info
                 info = self._remove_data_dir_path(info)	
    	        self._setList(info)
    	        self.store()
@@ -194,7 +193,6 @@ class Files(object):
         keys = []
         snips = []
         length = []
-        #periods = {'year':9999, 'month':99, 'day':99, 'hour':99, 'min':99, 'sec':99999}
         stored = {'year':[], 'month':[], 'day':[], 'hour':[], 'min':[], 'sec':[]}
         for snip in form.parse(format_str):
             search_str += snip[0]
@@ -214,10 +212,7 @@ class Files(object):
                     raise ValueError("Couldn't determine formatting width")
 
         abs_search_str = os.path.join(data_dir, dir_path, search_str)
-        files = glob.glob(abs_search_str)
-        print abs_search_str
-        print files
-        
+        files = glob.glob(abs_search_str)        
         
         # we have a list of files, now we need to extract the date information        
         # code below works, but only if the size of file string 

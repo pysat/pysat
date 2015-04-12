@@ -649,7 +649,7 @@ class Instrument(object):
             cdfkey[:] = self.data.index.astype(int)*1.E-9
             # store all of the data names in meta            
             for key in self.meta.data.index:
-                print key
+                #print key
                 if self[key].dtype != np.dtype('O'):
                     # not an object, simple column of data, write it out
                     cdfkey = out_data.createVariable(key, self[key].dtype, dimensions=('time'), )
