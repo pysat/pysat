@@ -23,7 +23,12 @@ class Meta(object):
         if type(other) is type(self):
             return self.__dict__ == other.__dict__
         return False    
-        
+
+    def copy(self):
+        import copy
+        """Deep copy of the meta object."""
+        return copy.deepcopy(self) 
+               
     def __setitem__(self, name, value):
         """add metadata information"""
         #assume value is a dict
