@@ -6,4 +6,4 @@ Created on Fri Aug 10 00:57:36 2012
 """
 
 
-#__all__ = ['cindi_ivm', 'read_cosmic_ionparams']
+__all__ = ['cosmic', 'vefi_dc_b']
