@@ -35,6 +35,19 @@ class TestBasics:
         ans = (self.testInst.data['doubleMLT'].values == 2.*self.testInst.data.mlt.values).all()
         assert ans
 
+    def test_single_adding_custom_function_wrong_times(self):
+	'''Only the data at the correct time should be accepted, otherwise nan'''
+        def custom1(inst):
+            d = 2.*inst.data.mlt
+            d.name='doubleMLT'
+            d.index += pds.DateOffset(microseconds=10)
+            return d
+
+        self.testInst.custom.add(custom1, 'add')  
+        self.testInst.load(2009,1)
+        ans = (self.testInst.data['doubleMLT'].isnull()).all()
+        assert ans
+
     def test_single_adding_custom_function_that_modifies_passed_data(self):
 	'''Test if custom function works correctly. Add function that returns pandas object but modifies passed satellite object. 
 		Changes to passed object should not propagate back.'''

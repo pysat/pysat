@@ -147,6 +147,7 @@ class Instrument(object):
     def __setitem__(self,key,new):
         """Add data to inst.data dataFrame. inst['name'] = newData."""
         if isinstance(new, dict):
+            # metadata should be included in dict
             self.data[key] = new.pop('data')
             # pass the rest to meta
             self.meta[key] = new
