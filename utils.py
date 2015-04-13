@@ -9,9 +9,13 @@ def set_data_dir(path=None):
     set the top level directory pysat uses to look for data.
     """
     import os
+    import pysat
     if os.path.isdir(path):
         with open(os.path.join(os.getenv('HOME'), '.pysat','data_path.txt'),'w') as f:
             f.write(path)
+            pysat.data_dir = path
+    else:
+        raise ValueError('Path does not lead to a valid directory.')
         
 
 def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
