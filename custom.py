@@ -81,7 +81,21 @@ class custom(object):
                             if isinstance(newData['data'], pds.DataFrame):
                                 sat[newData['data'].columns] = newData
                             elif isinstance(newData['data'], pds.Series):
-                                sat[newData['data'].name] = newData
+                                if newData['data'].name is not None:
+                                    sat[newData['data'].name] = newData
+                                elif 'name' in newData.keys():
+                                    print 'adding name'
+                                    name = newData.pop('name')
+                                    sat[name] = newData
+                                else:
+                                    raise ValueError('Must assign a name to Series'+
+                                            ' or return a "name" in dictionary.')
+                            elif hasattr(newData['data'], '__iter__'):
+                                if 'name' in newData.keys():
+                                    name = newData.pop('name')
+                                    sat[name] = newData
+                                else:
+                                    raise ValueError('Must include "name" in returned dictionary.')
                         elif isinstance(newData, pds.DataFrame):
                             sat[newData.columns] = newData
                         elif isinstance(newData, pds.Series):

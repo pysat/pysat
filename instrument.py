@@ -137,16 +137,15 @@ class Instrument(object):
         
         Slicing is also allowed inst['name', a:b].
         """
-        #print key
+
         if isinstance(key, tuple):
-	    #support slicing	
+	    # support slicing	
             return self.data.ix[key[0], key[1]]
 	else:
 	    return self.data[key]
 
     def __setitem__(self,key,new):
         """Add data to inst.data dataFrame. inst['name'] = newData."""
-        #print key
         if isinstance(new, dict):
             self.data[key] = new.pop('data')
             # pass the rest to meta
@@ -161,6 +160,12 @@ class Instrument(object):
                 if key not in self.meta.data.index:   
                     # add in default metadata because none was supplied
                     self.meta[key] = {'long_name':key, 'units':''} 
+            elif isinstance(new, pds.DataFrame):
+                self.data[key] = new[key]
+                for ke in key:
+                    if ke not in self.meta.data.index:   
+                        # add in default metadata because none was supplied
+                        self.meta[ke] = {'long_name':ke, 'units':''}                 
             else:
                 raise ValueError("No support for supplied input key")           
     
@@ -222,7 +227,7 @@ class Instrument(object):
             pass   
         try:
             self._clean_rtn = inst.clean
-        except (ImportError, AttributeError):
+        except AttributeError:
             pass
         #self.inst = inst
         return
@@ -593,7 +598,6 @@ class Instrument(object):
        	            raise StopIteration('Outside the set date boundaries.')
        	        else:
        	            idx -= 1
-       	            #print idx
        	            self.load(date = self._iter_list[idx[0]])
             else:
                 self.load(date = self._iter_list[-1])
@@ -646,7 +650,6 @@ class Instrument(object):
             cdfkey[:] = self.data.index.astype(int)*1.E-9
             # store all of the data names in meta            
             for key in self.meta.data.index:
-                #print key
                 if self[key].dtype != np.dtype('O'):
                     # not an object, simple column of data, write it out
                     cdfkey = out_data.createVariable(key, self[key].dtype, dimensions=('time'), )

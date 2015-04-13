@@ -31,19 +31,19 @@ class Meta(object):
                
     def __setitem__(self, name, value):
         """add metadata information"""
-        #assume value is a dict
-        #this is good for a dict with scalars or lists/arrays
         if isinstance(value,dict):
-
+            if 'units' not in value.keys():
+                raise ValueError('Must provide "units" in input dictionary.')
+            if 'long_name' not in value.keys():
+                value['long_name'] = name  
+                
             if hasattr(value[value.keys()[0]], '__iter__' ):
-                #a list of things            
-                if len(name) == len(value[value.keys()[0]]):
-                    new = pds.DataFrame(value, index=name)
-                    self.data.append(new, verify_integrity=True)
-                else:
-                    raise ValueError('Must provide a list of names in [] as long as input.')
-                    #new = pds.DataFrame(value, index=value['name'])
-                    #self.data.append(new)
+                # an iterable of things         
+                for key in value.keys():
+                    if len(name) != len(value[key]):
+                        raise ValueError('Length of names and inputs must be equal.')
+                new = pds.DataFrame(value, index=name)
+                self.data = self.data.append(new) 
             else:
                 new = pds.Series(value)
                 self.data.ix[name] = new
