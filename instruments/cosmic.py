@@ -14,20 +14,23 @@ import pysat
 
 def list_files(tag=None, data_dir = None):
     """Return a Pandas Series of every file for chosen satellite data"""
+    import sys
     #if tag == 'ionprf':
     #    # from_os constructor currently doesn't work because of the variable 
     #    # filename components at the end of each string.....
     #    #return pysat.Files.from_os(dir_path=os.path.join('cosmic', 'ionprf'),
     #        #format_str='*/ionPrf_*.{year:04d}.{day:03d}.{hour:02d}.{min:02d}*_nc')          
+    print 'Building a list of COSMIC files, which can possibly take time. ~1s per 100K files'
+    sys.stdout.flush()
 
     # number of files may be large, written with this in mind
     cosmicDir = os.path.join(data_dir,'cosmic', tag)
     # only select file that are the cosmic data files and end with _nc
     cosmicFiles = glob.glob(os.path.join(cosmicDir, '*/*_nc'))
     # need to get date and time from filename to generate index
-    print 'Building a list of COSMIC files, which can possibly take time. ~1s per 100K files'
     num = len(cosmicFiles) 
     print 'Estimated time:', num*1.E-5,'seconds'
+    sys.stdout.flush()
     # preallocate lists
     year=[None]*num; days=[None]*num; hours=[None]*num; 
     minutes=[None]*num; microseconds=[None]*num;
