@@ -33,9 +33,9 @@ class custom(object):
                     'long_name':string/list of strings,
                     'name':string/list of strings (iff data isarray or list)}
                         
-                    pandas DataFrame, names of columns are used
-                    pandas Series, series name required or return 'name' in dict
-                    (string/list of strings, numpy array/list of arrays)
+                    or, pandas DataFrame, names of columns are used
+                    or, pandas Series, .name required 
+                    or, (string/list of strings, numpy array/list of arrays)
                 modify : pysat instrument object supplied to routine. Any and all
                          changes to object are retained.
                 pass : A copy of pysat object is passed to function. No 
@@ -85,7 +85,6 @@ class custom(object):
                                 if newData['data'].name is not None:
                                     sat[newData['data'].name] = newData
                                 elif 'name' in newData.keys():
-                                    print 'adding name'
                                     name = newData.pop('name')
                                     sat[name] = newData
                                 else:
@@ -97,10 +96,11 @@ class custom(object):
                                     sat[name] = newData
                                 else:
                                     raise ValueError('Must include "name" in returned dictionary.')
+                                    
                         elif isinstance(newData, pds.DataFrame):
                             sat[newData.columns] = newData
                         elif isinstance(newData, pds.Series):
-                            sat[newData.name] = newData
+                            sat[newData.name] = newData                            
                         elif hasattr(newData, '__iter__'):
 			    # falling back to older behavior 
 			    # unpack tuple/list that was returned 
@@ -118,6 +118,8 @@ class custom(object):
                                         if len(data)>0:        
                                             # fixes up the incomplete check from before
                                             sat[name] = data
+                        else:
+                            raise ValueError("kernel doesn't know what to do with returned data.")
                     # modifying loaded data
                     if kind == 'modify':
                         t = func(sat,*arg,**kwarg)
@@ -130,7 +132,6 @@ class custom(object):
                         del tempd
 			if t is not None:
 			    raise ValueError('Pass functions should not return any information via return.')	
-                        print 'Passed Data'
 
     def clear(self):
         """Clear custom function list."""
