@@ -1,7 +1,8 @@
 import os
 import pandas as pds
 
-
+from . import __path__ as path
+print path
 class Meta(object):
     """
     Stores metadata for an associated pysat Satellite instance. 
