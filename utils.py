@@ -19,7 +19,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                     
     import netCDF4
     import string
-    import meta
+    from pysat import meta
 
     
     if fnames is None:

@@ -30,11 +30,11 @@ import copy
 import sys
 
 
-import custom
-import files
-import orbits
-import meta
-import utils
+from . import custom
+from . import files
+from . import orbits
+from . import meta
+from . import utils
 from . import data_dir as data_dir
 
 # main class for users
