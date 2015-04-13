@@ -1,10 +1,7 @@
 import os
-import weakref
-
 import numpy as np
 import pandas as pds
 
-from . import __path__ as path
 
 class Meta(object):
     """
