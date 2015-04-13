@@ -24,10 +24,10 @@ del f
 
 from . import instruments
 from . import utils
-from .instrument import Instrument
+from ._instrument import Instrument
 
-from .meta import Meta
-from .files import Files
+from ._meta import Meta
+from ._files import Files
 
 
 __all__ = ['coords','ssnl', 'instruments', 'wvlt', 'utils','meta','files','paths']

@@ -30,10 +30,10 @@ import copy
 import sys
 
 
-from . import custom
-from . import files
-from . import orbits
-from . import meta
+from . import _custom
+from . import _files
+from . import _orbits
+from . import _meta
 from . import utils
 from . import data_dir as data_dir
 
@@ -71,9 +71,9 @@ class Instrument(object):
 			     'which instrument to load. Optional params must',
 			     ' be a string or None'))
         self.data = pds.DataFrame(None)
-        self.meta = meta.Meta()
+        self.meta = _meta.Meta()
         # function processing class, processes data on load
-        self.custom = custom.custom()
+        self.custom = _custom.custom()
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
         self._next_data = pds.DataFrame(None)
@@ -89,7 +89,7 @@ class Instrument(object):
         self._assign_funcs()
         # load file list function, which returns dict of files
         # as well as data start and end dates
-        self.files = files.Files(self)
+        self.files = _files.Files(self)
         if query_files:
             self.files.refresh()
         # set bounds for iteration based upon data properties
@@ -102,7 +102,7 @@ class Instrument(object):
         # attach seasonal methods for convenience        
         #self.ssnl = ssnl
         # initiliaze orbit support
-        self.orbits = orbits.orbits(self, index=orbit_index, kind=orbit_type,
+        self.orbits = _orbits.orbits(self, index=orbit_index, kind=orbit_type,
                                     period=orbit_period)
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
@@ -261,13 +261,13 @@ class Instrument(object):
             data, mdata = self._load_rtn(fname, tag = self.tag) 
         else:
             data = pds.DataFrame(None)
-            mdata = meta.Meta()
+            mdata = _meta.Meta()
 
         if not data.empty: 
             if not isinstance(data, pds.DataFrame):
                 raise TypeError(string.join(('Data returned by instrument load',
                                 'routine must be a pandas.DataFrame')))
-            if not isinstance(mdata, meta.Meta):
+            if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
                 print string.join(('Returning', self.name, 'data for', 
@@ -408,7 +408,7 @@ class Instrument(object):
 	        self.meta = self._curr_meta.copy()
 	    else:
 	        self.data = pds.DataFrame(None)	
-	        self.meta = meta.Meta()
+	        self.meta = _meta.Meta()
             # pad data based upon passed parameter
             offs = pds.DateOffset( **(self.padkws) )
             if (not self._prev_data.empty) & (not self.data.empty) :
@@ -714,7 +714,7 @@ class Instrument(object):
                     if key[0] != '_':
                         adict[key] = self.__getattribute__(key)
             # store any non-standard attributes attached to meta
-            base_attrb = dir(meta.Meta())
+            base_attrb = dir(_meta.Meta())
             this_attrb = dir(self.meta)
             for key in this_attrb:
                 if key not in base_attrb:
