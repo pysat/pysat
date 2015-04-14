@@ -5,9 +5,8 @@ measurements. Though pysat was initially designed for in-situ
 satellite based measurements it aims to support all instruments in space science.
 
 #Main Features
-* Instrument object provides a single interface to a wide variety of
-science data sets, simply invoke the load method.
-* Instrument object provides a single interface to download data for all supported instruments
+* Single interface for a wide variety of science data sets.
+* Single interface to download data for all supported instruments.
 * Science data pipeline tasks of identifying files, loading, and cleaning
 data sets are built into the instrument object. 
 * Supports the automatic application of arbitray custom functions 
@@ -34,6 +33,7 @@ manner.
   * supports 1D, 2D, 3D, and nD data in a single structure
 * The pysat standards and features enable the development of instrument 
 independent analysis routines. 
+* Helper functions to reduce the barrier in adding new science instruments to pysat
 
 #Installation
 * Clone repositories for both pysat and the forked pandas.
