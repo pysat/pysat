@@ -1,15 +1,38 @@
+'''
+Demonstrates iterating over an instrument data set by orbit and plotting the
+results.
+'''
+
 import os
 import pysat
 import matplotlib.pyplot as plt
+import pandas as pds
 
 # set the directory to save plots to
 results_dir = ''
 
-vefi = pysat.Instrument('cnofs_vefi', 'dc_b', None, orbit_index='longitude',
-                orbit_type='longitude')
+# select vefi dc magnetometer data, use longitude to determine where
+# there are changes in the orbit (local time info not in file)
+vefi = pysat.Instrument(name='cnofs_vefi', tag='dc_b', clean_level=None, 
+                        orbit_index='longitude', orbit_type='longitude')
+
+# set limits on dates analysis will cover, inclusive
+# leave bounds unassigned to cover the whole dataset (comment out lines below)
+start = pds.datetime(2008,5,9)
+stop = pds.datetime(2014, 9, 30)
+vefi.bounds = (start,stop)
 
 for orbit_count, vefi in enumerate(vefi.orbits):
+    # for each loop pysat puts a copy of a particular orbit's data into vefi.data
+    # changing .data at this level does not alter other orbits
+    # reloading the same orbit will erase any changes made
+    
+    # satellite data can have time gaps, which leads to plots
+    # with erroneous lines connecting measurements on both sides of the gap
+    # command below fills in any data gaps using a 1-second cadence with NaNs
+    # see pandas documentation for more info
     vefi.data = vefi.data.resample('1S',  fill_method='ffill', limit=1, label='left' )
+
     f, ax = plt.subplots(7, sharex=True, figsize=(8.5,11))
     
     ax[0].plot(vefi['longitude'], vefi['B_flag'])
