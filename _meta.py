@@ -1,8 +1,8 @@
 import os
 import pandas as pds
 
-from . import __path__ as path
-print path
+from . import __path__ as mod_path
+
 class Meta(object):
     """
     Stores metadata for an associated pysat Satellite instance. 
@@ -98,7 +98,7 @@ class Meta(object):
             if not os.path.isfile(name):
                 # Not a real file, assume input is a pysat instrument name
                 # and look in the standard pysat location.
-                test =  os.path.join(path[0],'instruments',name+'_meta.txt')
+                test =  os.path.join(mod_path[0],'instruments',name+'_meta.txt')
                 #print test
                 if os.path.isfile(test):
                     name = test

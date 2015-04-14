@@ -120,11 +120,20 @@ class Files(object):
                 out = self.files.ix[key]
 	    except IndexError:
 	        raise IndexError('Date requested outside file bounds.')                
-            if out.iloc[-1].index == key.stop:
-                return out[:-1]
+            if len(out) > 1:
+                if out.index[-1] >= key.stop:
+                    return out[:-1]
+                else:
+                    return out
+            elif len(out) == 1:
+                if out.index[0] >= key.stop:
+                    return pds.Series([])
+                else:
+                    return out
             else:
                 return out
-                 
+        else:
+            raise ValueError('Not implemented yet.')         
         #if isinstance(key, tuple):
         #    if len(key) == 2:
         #        start = key[0]
@@ -239,7 +248,7 @@ class Files(object):
             # setting up negative indexing to pick out filenames
             key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
                             np.array(end_key, dtype=int) - max_len]
-            print key_str_idx
+            #print key_str_idx
             # need to parse out dates for datetime index
             for i,temp in enumerate(files):
                 for j,key in enumerate(keys):
