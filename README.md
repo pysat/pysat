@@ -7,6 +7,7 @@ satellite based measurements it aims to support all instruments in space science
 #Main Features
 * Single interface for a wide variety of science data sets.
 * Single interface to download data for all supported instruments.
+* Instrument independent analysis routines.
 * Science data pipeline tasks of identifying files, loading, and cleaning
 data sets are built into the instrument object. 
 * Supports the automatic application of arbitray custom functions 
@@ -32,8 +33,6 @@ manner.
   Dateframes as single elements of a Series/Dataframe.
   * supports 1D, 2D, 3D, and nD data in a single structure
 * Includes helper functions to reduce the barrier to adding new science instruments to pysat
-* The pysat standards and features enable the development of instrument 
-independent analysis routines. 
 
 
 #Installation
