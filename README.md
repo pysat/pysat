@@ -7,6 +7,7 @@ satellite based measurements it aims to support all instruments in space science
 #Main Features
 * Instrument object provides a single interface to a wide variety of
 science data sets, simply invoke the load method.
+* Instrument object provides a single interface to download data for all supported instruments
 * Science data pipeline tasks of identifying files, loading, and cleaning
 data sets are built into the instrument object. 
 * Supports the automatic application of arbitray custom functions 
