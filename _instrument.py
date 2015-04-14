@@ -219,6 +219,11 @@ class Instrument(object):
             raise AttributeError(string.join(('A file list routine is',
             			'required from the instrument.')))    
         try:
+            self._download_rtn = inst.download
+        except AttributeError:
+            raise AttributeError(string.join(('A download routine is',
+            			'required from the instrument.')))    
+        try:
             self._default_rtn = inst.default
         except AttributeError:
             pass
@@ -270,18 +275,20 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-                print string.join(('Returning', self.name, 'data for', 
+                print string.join(('Returning', self.name, self.tag, 'data for', 
                               date.strftime('%D')))
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    print string.join(('Returning',self.name,'data from',fname[0]))
+                    print string.join(('Returning',self.name,self.tag,
+                                        'data from',fname[0]))
                 else:
-                    print string.join(('Returning',self.name,'data from',fname[0], 
-                          ' :: ',fname[-1]))
+                    print string.join(('Returning',self.name,self.tag,
+                            'data from',fname[0], ' :: ',fname[-1]))
         else:
             # no data signal
-            print string.join(('No', self.name, 'data for', date.strftime('%D')))
+            print string.join(('No', self.name, self.tag,'data for', 
+                                date.strftime('%D')))
             # code below probably redundant
             #data = pds.DataFrame(None)
             #mdata = meta.Meta()
@@ -445,6 +452,14 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
+    def download(self, start, stop, user=None, password=None):
+        if user is None:
+            self._download_rtn(start, stop)
+        else:
+            self._download_rtn(start, stop, user=user, password=password)	
+        print 'Updating pysat file list'
+        self.files.refresh(store=True)
+        
     @property
     def bounds(self):
 	"""

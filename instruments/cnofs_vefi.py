@@ -56,16 +56,16 @@ def load(fnames, tag=None):
 	 data = pds.DataFrame(data, index=pds.to_datetime(data['Epoch'], unit='s'))
 	 return data, meta.copy()
 
-def download(self, start, stop, user=None, password=None):
-    import os
-    import errno
-    import ftplib
+def download(start, stop, user=None, password=None):
     """
-    download IVM data consistent with pysat
+    download vefi 1_second magnetic field data, layout consistent with pysat
 
     start and stop should be datetimes
     """
-
+    import os
+    import errno
+    import ftplib
+    
     date_array = pysat.utils.season_date_range(start,stop)
 
     ftp = ftplib.FTP('cdaweb.gsfc.nasa.gov')   # connect to host, default port
@@ -95,6 +95,7 @@ def download(self, start, stop, user=None, password=None):
                 year=date.year, month=date.month, day=date.day)
         saved_fname = os.path.join(local_data_dir,local_fname) 
         try:
+            print 'Downloading file for '+date.strftime('%D')
             ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
         except ftplib.error_perm as exception:
             print exception[0][0:3]
