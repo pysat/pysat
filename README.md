@@ -1,6 +1,6 @@
 #What is it
 pysat is a Python package providing a simple, flexible, and powerful interface
-for loading, cleaning, managing, processing, and analyzing scientific 
+for downloading, loading, cleaning, managing, processing, and analyzing scientific 
 measurements. Though pysat was initially designed for in-situ
 satellite based measurements it aims to support all instruments in space science.
 
@@ -15,8 +15,8 @@ data sets are built into the instrument object.
 * Supports metadata consistent with the netCDF CF-1.6 standard. Each variable 
 has a name, long name, and units. Note units are informational only.
 * Simplifies data management
-  * Iterates by day/file using next/prev methods, the for loop, or any iterative
-  methods.
+  * Iterates by day/file using the for loop, manual next/prev methods, or any iterative
+  method.
   * Iterate through a data set orbit-by-orbit; orbits are calculated on the fly
 from loaded data and span day/month/year breaks.
   * Iterate over custom seasons
@@ -46,7 +46,7 @@ The core functionality is exposed through the Instrument object, providing a sin
 location to obtain instrument data and properties. 
 ```
 import pysat
-ivm = pysat.Instrument(name='cindi_ivm', tag='rs', clean_level='clean')
+ivm = pysat.Instrument(name='cnofs_ivm', tag='', clean_level='clean')
 ivm.load(2009,1)
 ivm.load(pds.datetime(2009,1,1))
 ivm.load('filename')
@@ -59,7 +59,7 @@ Neutral Dynamics Investigation (CINDI), to enable loading and cleaning.
 * ivm['name'] or ivm.data['name'] or ivm.data.ix['name']
 * ivm[row,'name'], ivm[row1:row2,'name'], ivm[[1,2,3], 'name']
 * ivm[datetime,'name'], ivm[datetime1:datetime2,'name']
-complete pandas data object exposed in ivm.data
+* complete pandas data object exposed in ivm.data
 
 ###Data Assignment
 ```
