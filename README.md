@@ -163,7 +163,7 @@ of the module corresponds to the name field when initializing a pysat
 instrument object. The module should be placed in the pysat instruments
 directory or in the user specified location (via mechanism to be added) 
 for automatic discovery. A compatible module may also be supplied directly
-to pysat.Instrument(name=<input module object>).
+to pysat.Instrument(inst_module=input module).
 
 Three functions are required:
 * list_files routine that returns a pandas Series
@@ -171,7 +171,7 @@ with filenames ordered in time.
 ```
 def list_files(tag=None, data_path=None):
 ```
-* A convenience function is provided for filenames that include time information in filename
+  * A convenience function is provided for filenames that include time information in filename
 and utilize a constant field width, . The 
 location and format of the time information is specified using standard
 python format standard and keywords year, month, day, hour, minute, second. The
