@@ -117,7 +117,8 @@ custom_complicated_analysis_over_season(ivm)
 The output of custom_func_modify will always be available from instrument object, regardless
 of what level the science analysis is performed.
 
-##Iterate over dataset by day
+##Iterate over Dataset
+#####Iterate by day
 Each loop loads a new day of instrument data, with custom processing
 ```
 for ivm in ivm:
