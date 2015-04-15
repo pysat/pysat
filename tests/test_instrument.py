@@ -31,6 +31,11 @@ class TestBasics:
         '''Test if last day is loaded by default when first invoking .prev.'''
         self.testInst.prev()
         assert self.testInst.date == pds.datetime(2010,12,31)
+    
+    def test_filename_load(self):
+        '''Test if file is loadable by filename, relative to top_data_dir/platform/name/tag'''
+        self.testInst.load(fname='12/31/10.nofile')
+        assert self.testInst.data.index[0] == pds.datetime(2010,12,31)
         
     def test_instrument_init(self):
         """Test if init function supplied by instrument can modify object"""

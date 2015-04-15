@@ -179,7 +179,7 @@ class Instrument(object):
             self._list_rtn = inst.list_files
             self._download_rtn = inst.download
         except AttributeError:
-            raise AttributeError(string.join(('A load, file_list, and download routine ',
+            raise AttributeError(string.join(('A load, file_list, and download routine',
                     'are required for every instrument.'))) 
         try:
             self._default_rtn = inst.default
@@ -204,24 +204,15 @@ class Instrument(object):
 	if fid is not None:
 	    # get filename based off of index value
 	    # remove direct access of data
-	    fname = [self.files.file_list.iloc[fid]]
-	elif date is None:
-	    date = copy.deepcopy(self.date)
-	    try:
-	        # slicing by datetime is exclusive for end slice
-	        # with file object
-	        fname = self.files[date : date+pds.DateOffset(days=1)]
-	    except KeyError:
-	        raise KeyError(string.join('The list of files supplied by',
-	                         'instrument should be unique and monotonic.'))
+	    fname = self.files.files.iloc[fid]
 	elif date is not None:
 	    fname = self.files[date : date+pds.DateOffset(days=1)]
 	else:
 	    raise ValueError('Must supply either a date or file id number.')
    
         if len(fname) > 0:    
-            fname = [os.path.join(self.files.data_path, f) for f in fname]
-            data, mdata = self._load_rtn(fname, tag = self.tag) 
+            load_fname = [os.path.join(self.files.data_path, f) for f in fname]
+            data, mdata = self._load_rtn(load_fname, tag = self.tag) 
         else:
             data = pds.DataFrame(None)
             mdata = _meta.Meta()
@@ -247,9 +238,6 @@ class Instrument(object):
             # no data signal
             print string.join(('No',self.platform,self.name,self.tag,'data for', 
                                 date.strftime('%D')))
-            # code below probably redundant
-            #data = pds.DataFrame(None)
-            #mdata = meta.Meta()
     
         return data, mdata
         
@@ -318,7 +306,7 @@ class Instrument(object):
             curr = self.date
         elif fname != None:
 	    # date will have to be set later by looking at the data
-            self.date=None
+            self.date = None
             self.yr = None
             self.doy = None
             self._load_by_date = False
@@ -330,6 +318,9 @@ class Instrument(object):
 	elif fid != None:
             self._load_by_date = False	    
 	    self._fid = fid
+	    self.date = None
+            self.yr = None
+            self.doy = None
 	    inc = 1
 	    curr = fid
         else:
@@ -345,7 +336,7 @@ class Instrument(object):
                 print 'Initializing three day/file window'
                 # using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
-                self._curr_data, self._curr_meta = self._load_data()
+                self._curr_data, self._curr_meta = self._load_data(date=self.date, fid=self._fid)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 # moving forward in time
@@ -361,7 +352,7 @@ class Instrument(object):
                 # jumped in time/or switched from filebased to date based access
                 else:
                     self._prev_data, self._prev_meta = self._load_prev()
-                    self._curr_data, self._curr_meta = self._load_data()    #using current date or fid
+                    self._curr_data, self._curr_meta = self._load_data(date=self.date, fid=self._fid)   
                     self._next_data, self._next_meta = self._load_next()
 
             # make tracking indexes consistent with new loads
@@ -384,7 +375,7 @@ class Instrument(object):
                 self.data = pds.concat([self.data, padRight[1:]])
         # if self.pad is False, load single day
         else:
-            self.data, self.meta  = self._load_data()       
+            self.data, self.meta  = self._load_data(date=self.date, fid=self._fid)       
         # check if load routine actually returns meta
         if self.meta.data.empty:
             self.meta[self.data.columns] = {'long_name':self.data.columns,
@@ -480,7 +471,7 @@ class Instrument(object):
 	    self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
             if self._iter_start[0] is not None:
-                # check here in case Satellite is initialized with no input
+                # check here in case Instrument is initialized with no input
                 self._iter_list = utils.season_date_range(self._iter_start, self._iter_stop)
 
 	elif hasattr(start, '__iter__') and hasattr(end, '__iter__'):
@@ -506,9 +497,9 @@ class Instrument(object):
             if isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
                 raise ValueError('Not allowed to mix file and date bounds')
 	    if start is None:
-	        start = self.files.file_list[0]
+	        start = self.files.files[0]
 	    if end is None:
-	        end = self.file.file_list[-1]	
+	        end = self.file.files[-1]	
             self._iter_start = [start]
             self._iter_stop = [end]
             self._iter_list = self.files.get_file_array(self._iter_start,self._iter_stop)

@@ -14,11 +14,11 @@ import spacepy
 from spacepy import pycdf
 
 
-def list_files(tag=None, data_dir=None):
+def list_files(tag=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
-    if data_dir is not None:
+    if data_path is not None:
         if tag == 'dc_b':
-            return pysat.Files.from_os(dir_path=data_dir, 
+            return pysat.Files.from_os(data_path=data_path, 
             format_str='cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf')
         else:
             raise ValueError('Unknown tag')

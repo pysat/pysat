@@ -27,7 +27,7 @@ class Files(object):
        	    else:
        	        print "pysat is searching for the requested instrument's files."
    	        # couldn't find stored info, load file list and then store
-   	        info = self._sat._list_rtn(tag=self._sat.tag, data_dir=self.data_path)
+   	        info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
                 if info is not None:
                     if len(info) > 0:
                         info = self._remove_data_dir_path(info)	
@@ -77,7 +77,7 @@ class Files(object):
 
     def refresh(self, store=False):
         """Refresh loaded instrument filelist by searching filesystem."""
-        info = self._sat._list_rtn(tag=self._sat.tag, data_dir=self.data_path)
+        info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
         if store:
@@ -90,7 +90,7 @@ class Files(object):
         """
         storedInfo = self._load()
         if storedInfo is not False:
-            newInfo = self._sat._list_rtn(tag = self._sat.tag, data_dir=self.data_path)
+            newInfo = self._sat._list_rtn(tag = self._sat.tag, data_path=self.data_path)
             newInfo = self._remove_data_dir_path(newInfo)
             boolArr = newInfo.isin(storedInfo) 
             newFiles = newInfo[~boolArr]
@@ -176,7 +176,7 @@ class Files(object):
             return inp.apply(lambda x: x[num:])	
         
     @classmethod    
-    def from_os(cls, dir_path=None, format_str=None, 
+    def from_os(cls, data_path=None, format_str=None, 
                 two_digit_year_break=None):
         """
         Produces a list of files and and formats it for Files class.
@@ -184,12 +184,8 @@ class Files(object):
         from utils import create_datetime_index
         if (format_str is None):
             raise ValueError("Must supply a filename template (format_str).")
-        if (dir_path is None):
+        if (data_path is None):
             raise ValueError("Must supply instrument directory path (dir_path)")
-        if dir_path is not None:
-            # check if supplied directory contains pysat data_dir pth
-            # if so, remove it
-            pass
         
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
@@ -216,7 +212,7 @@ class Files(object):
                 else:
                     raise ValueError("Couldn't determine formatting width")
 
-        abs_search_str = os.path.join(dir_path, search_str)
+        abs_search_str = os.path.join(data_path, search_str)
         files = glob.glob(abs_search_str)   
         
         # we have a list of files, now we need to extract the date information        
