@@ -166,6 +166,7 @@ for automatic discovery. A compatible module may also be supplied directly
 to pysat.Instrument(inst_module=input module).
 
 Three functions are required:
+####### List Files
 * list_files routine that returns a pandas Series
 with filenames ordered in time. 
   * The
@@ -181,7 +182,7 @@ def list_files(tag=None, data_path=None):
     return pysat.Files.from_os(data_path=data_path, 
                     format_str='rs{year:4d}{day:03d}-ivm.hdf')
 ```                                
-
+###### Load Data
 * load routine that returns a tuple with (data, pysat metadata object)
   * pysat meta object obtained from pysat.Meta(). Use pandas DataFrame indexed
 by name with columns for units and long_name. Additional arbitrary columns allowed.
@@ -190,12 +191,13 @@ Convenience function from_csv provided.
 def load(fnames, tag=None):
     return data, meta
 ```
+###### Download Data
 * download routine to fetch data from the internet
 ```
 def download(date_array, data_path=None, user=None, password=None):
     return
 ```
-
+###### Optional Routines
 * init routine, initialize any specific instrument info. Runs once. (optional)
 ```
 def init(inst):
