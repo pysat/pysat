@@ -172,11 +172,11 @@ with filenames ordered in time.
 def list_files(tag=None, data_path=None):
 ```
   * A convenience function is provided for filenames that include time information in filename
-and utilize a constant field width, . The 
-location and format of the time information is specified using standard
-python format standard and keywords year, month, day, hour, minute, second. The
-nominal location of data is pysat_data_dir/platform/name/tag, provided in data_path, where pysat_data_dir
-is specified by user in pysat settings.
+  and utilize a constant field width, . The 
+  location and format of the time information is specified using standard
+  python format standard and keywords year, month, day, hour, minute, second. The
+  nominal location of data is pysat_data_dir/platform/name/tag, provided in data_path, where pysat_data_dir
+  is specified by user in pysat settings.
 ```
 def list_files(tag=None, data_path=None):
     return pysat.Files.from_os(data_path=data_path, 
