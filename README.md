@@ -166,7 +166,7 @@ for automatic discovery. A compatible module may also be supplied directly
 to pysat.Instrument(inst_module=input module).
 
 Three functions are required:
-####### List Files
+###### List Files
 * list_files routine that returns a pandas Series
 with filenames ordered in time. 
   * The
@@ -197,17 +197,20 @@ def load(fnames, tag=None):
 def download(date_array, data_path=None, user=None, password=None):
     return
 ```
-###### Optional Routines
+#### Optional Routines
+###### Initiliaze
 * init routine, initialize any specific instrument info. Runs once. (optional)
 ```
 def init(inst):
     return None
 ```
+###### Default
 * default routine, runs once per instrument load. inst is pysat instrument object. (optional)
 ```
 def default(inst):
     return None
 ```
+###### Clean Data
 * clean routine, cleans instrument for levels supplied in inst.clean_level. (optional)
   * 'clean' : expectation of good data
   * 'dusty' : probably good data, use with caution
