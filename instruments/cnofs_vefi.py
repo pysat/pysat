@@ -55,17 +55,14 @@ def load(fnames, tag=None):
 	 data = pds.DataFrame(data, index=pds.to_datetime(data['Epoch'], unit='s'))
 	 return data, meta.copy()
 
-def download(start, stop, data_path=None,user=None, password=None):
+def download(date_array, data_path=None, user=None, password=None):
     """
     download vefi 1_second magnetic field data, layout consistent with pysat
 
     start and stop should be datetimes
     """
     import os
-    import errno
     import ftplib
-    
-    date_array = pysat.utils.season_date_range(start,stop)
 
     ftp = ftplib.FTP('cdaweb.gsfc.nasa.gov')   # connect to host, default port
     ftp.login()               # user anonymous, passwd anonymous@
@@ -81,7 +78,6 @@ def download(start, stop, data_path=None,user=None, password=None):
             print 'Downloading file for '+date.strftime('%D')
             ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
         except ftplib.error_perm as exception:
-            print exception[0][0:3]
             if exception[0][0:3] != '550':
                 raise
             else:

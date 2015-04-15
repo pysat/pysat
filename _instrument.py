@@ -415,17 +415,16 @@ class Instrument(object):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise    
-        #local_data_dir = os.path.join(data_dir, self.platform, self.name, self.tag)
         try:
             os.mkdir(self.files.data_path)
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-
+        date_array = utils.season_date_range(start,stop)
         if user is None:
-            self._download_rtn(start, stop, data_path=self.files.data_path)
+            self._download_rtn(date_array, data_path=self.files.data_path)
         else:
-            self._download_rtn(start, stop, user=user, password=password)	
+            self._download_rtn(date_array, user=user, password=password)	
         print 'Updating pysat file list'
         self.files.refresh(store=True)
         
