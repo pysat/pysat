@@ -8,7 +8,7 @@ class TestOrbits:
     
     def setup(self):
 	'''Runs before every method to create a clean testing setup.'''
-        self.testInst = pysat.Instrument('testing', '86400', 'clean', orbit_index='mlt')
+        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean', orbit_index='mlt')
 
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''

@@ -5,13 +5,13 @@ import pysat
 import pandas as pds
 from nose.tools import assert_raises, raises
 import nose.tools
-import pysat.instruments.testing
+import pysat.instruments.pysat_testing
 
 class TestBasics:
     def setup(self):
-        reload(pysat.instruments.testing)
+        reload(pysat.instruments.pysat_testing)
 	'''Runs before every method to create a clean testing setup.'''
-        self.testInst = pysat.Instrument('testing', '10', 'clean')
+        self.testInst = pysat.Instrument('pysat', 'testing', '10', 'clean')
 
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''
@@ -78,8 +78,8 @@ class TestBasics:
         Test if the correct day is being loaded (End-to-End), 
         with no instrument file but routines are passed.
         '''
-        import pysat.instruments.testing as test
-        testInst = pysat.Instrument(test, '1000', 'clean')
+        import pysat.instruments.pysat_testing as test
+        testInst = pysat.Instrument(inst_module=test, tag='1000', clean_level='clean')
         testInst.load(2009,32)
         assert testInst.date == pds.datetime(2009,2,1)	
         
@@ -89,9 +89,9 @@ class TestBasics:
         Test if an exception is thrown correctly if there is no 
         instrument file and supplied routines are incomplete.
         '''
-        import pysat.instruments.testing as test
-        del test.listFiles
-        testIn = pysat.Instrument(test, '1000', 'clean')
+        import pysat.instruments.pysat_testing as test
+        del test.list_files
+        testIn = pysat.Instrument(inst_module=test, tag='1000', clean_level='clean')
         testIn.load(2009,1)
 
     @raises(AttributeError)
@@ -100,13 +100,13 @@ class TestBasics:
         Test if an exception is thrown correctly if there is no 
         instrument file and supplied routines are incomplete.
         '''
-        import pysat.instruments.testing as test
+        import pysat.instruments.pysat_testing as test
         del test.load
-        testIn = pysat.Instrument(test, '1000', 'clean')
+        testIn = pysat.Instrument(inst_module=test, tag='1000', clean_level='clean')
         testIn.load(2009,1)
 
     def test_data_padding(self):
-        te = pysat.Instrument('testing', '10000', pad=True, minutes=5)
+        te = pysat.Instrument('pysat','testing', '10000', pad=True, minutes=5)
         te.load(2009,1, verifyPad=True)
         print te.data.index[0]
         print te.data.index[-1]
@@ -114,6 +114,6 @@ class TestBasics:
                 (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + pds.DateOffset(minutes=5)) )
             
     def test_data_padding_removal(self):
-        te = pysat.Instrument('testing', '10000', pad=True, minutes=5)
+        te = pysat.Instrument('pysat','testing', '10000', pad=True, minutes=5)
         te.load(2009,1)
         assert (te.data.index[0] == te.date ) & (te.data.index[-1] == te.date + pds.DateOffset(hour=23, minutes=59,seconds=59) )

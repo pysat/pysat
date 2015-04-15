@@ -16,10 +16,9 @@ from spacepy import pycdf
 
 def list_files(tag=None, data_dir=None):
     """Return a Pandas Series of every file for chosen satellite data"""
-
     if data_dir is not None:
         if tag == 'dc_b':
-            return pysat.Files.from_os(dir_path=os.path.join('cnofs','vefi','dc_b'), 
+            return pysat.Files.from_os(dir_path=data_dir, 
             format_str='cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf')
         else:
             raise ValueError('Unknown tag')
@@ -56,7 +55,7 @@ def load(fnames, tag=None):
 	 data = pds.DataFrame(data, index=pds.to_datetime(data['Epoch'], unit='s'))
 	 return data, meta.copy()
 
-def download(start, stop, user=None, password=None):
+def download(start, stop, data_path=None,user=None, password=None):
     """
     download vefi 1_second magnetic field data, layout consistent with pysat
 
@@ -72,28 +71,12 @@ def download(start, stop, user=None, password=None):
     ftp.login()               # user anonymous, passwd anonymous@
     ftp.cwd('/pub/data/cnofs/vefi/bfield_1sec')
     
-    try:
-        os.mkdir(os.path.join(pysat.data_dir, 'cnofs'))
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise    
-    try:
-        os.mkdir(os.path.join(pysat.data_dir, 'cnofs', 'vefi'))
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise    
-    local_data_dir = os.path.join(pysat.data_dir, 'cnofs','vefi','dc_b')
-    try:
-        os.mkdir(local_data_dir)
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise
     for date in date_array:
         fname = '{year1:4d}/cnofs_vefi_bfield_1sec_{year2:4d}{month:02d}{day:02d}_v05.cdf'
         fname = fname.format(year1=date.year, year2=date.year, month=date.month, day=date.day)
         local_fname = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'.format(
                 year=date.year, month=date.month, day=date.day)
-        saved_fname = os.path.join(local_data_dir,local_fname) 
+        saved_fname = os.path.join(data_path,local_fname) 
         try:
             print 'Downloading file for '+date.strftime('%D')
             ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)

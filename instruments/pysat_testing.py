@@ -8,6 +8,7 @@ import pandas as pds
 import numpy as np
 import pysat
 
+platform = 'pysat'
 name = 'testing'
 
 def init(self):
@@ -40,13 +41,15 @@ def load(fnames, tag=None):
     data.index=index
     return data, pysat.Meta()
 
-def list_files(tag = None, data_dir = None):
+def list_files(tag=None, data_dir=None):
     """Produce a fake list of files spanning a year"""
     
     index = pds.date_range(pds.datetime(2008,1,1), pds.datetime(2010,12,31)) 
     names = [ data_dir+'/'+date.strftime('%D')+'.nofile' for date in index]
     return pds.Series(names, index=index)
     
+def download(start, stop, data_path=None,user=None, password=None):
+    pass
 #def meta():
 #    
 #    code = ['uts', 'yrdoy', 'mlt', 'slt']

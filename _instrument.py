@@ -1,31 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-v2.0
-This is the first attempt at recreating the Center for Space Sciences API in python
-Code below was started at SciPy 2012 conference, there was a few days development at the conference
-There are areas that will need to be written more in python style
-"""
-
-"""
-v3.0
-Removed metadata structure inherited from IDL version of library, which did a number
-of things that have been replaced by pandas functionality. Structure no longer makes sense.
-A replacement is planned. 
-
-A limited version still exists if instrument load routine returns a numpy array.
-System will look for a text file in instruments directory that contains strings
-identifying data name, units, description, array location etc. This will be extended
-appropriately to routines that get meta direct for file (eg. netCDF)
-
-"""
-
-
-# start with importing packages
 import string
 import pandas as pds
 import numpy as np
 import os
-from types import ModuleType
+#from types import ModuleType
 import copy
 import sys
 
@@ -41,15 +19,18 @@ from . import data_dir as data_dir
 class Instrument(object):
 
 
-    def __init__(self, name=None, tag=None, clean_level='clean', 
+    def __init__(self, platform=None, name=None, tag=None, clean_level='clean', 
                 query_files=False, pad=False,
                 orbit_index=None, orbit_type=None, orbit_period=None,  
-                *arg, **kwargs):
+                inst_module=None, *arg, **kwargs):
         '''
         Class for analyzing, modifying, and managing satellite data.
         
-	name : String indicating name of instrument. Attempts to load instrument class with name.
-	tag : String identifying particular instrument in group.
+        platform: String for instrument platform/satellite.
+	name : String indicating name of instrument. 
+	tag : String identifying particular aspect of the instrument.
+	   pysat attempts to load corresponding instrument module platform_name.
+	inst_module : Provide instrument module directly (takes precedence over name)
 	clean_level : String passed to clean function indicating level of quality.
 	pad : Boolean indicating whether padding should be added (using instrument data) to begining and end of data
 	       for time-series processing. Extra data is removed after applying all custom functions. Pad=True requires
@@ -59,17 +40,34 @@ class Instrument(object):
 	orbit_period : datetime.timedelta object containing length of orbital period.
 	query_files: Boolean indicating whether the filesystem should be queried
 	               or if the stored list of files is sufficient. (set True if new files)
+	
 	'''
 
-        try:
-            self.name = name.lower() if name is isinstance(name, str) else name
-            self.tag = tag.lower() if tag is not None else ''
-            self.clean_level = clean_level.lower() if clean_level is not None else 'none'
-    	# no longer really checked
-        except AttributeError:
-            raise TypeError(string.join('A string is required for tag to indicate ',
-			     'which instrument to load. Optional params must',
-			     ' be a string or None'))
+        if inst_module is None:
+            if isinstance(platform, str) and isinstance(name, str):              
+                self.platform = platform.lower() 
+                self.name = name.lower() 
+                self._assign_funcs(by_name=True)
+            elif (platform is None) and (name is None):
+                # creating "empty" Instrument object with this path
+                self.name = ''
+                self.platform = ''
+                self._assign_funcs()                
+            else:
+                raise ValueError('Inputs platform and name must both be strings, or both None.')                        
+        else:
+            # user expected to have provided module
+            try:
+                self.name = inst_module.name.lower()
+                self.platform = inst_module.platform.lower()
+            except AttributeError:
+ 	        raise AttributeError(string.join(('A name and platform attribute for the ',
+                    'instrument is required if supplying routine module directly.')))
+            self._assign_funcs(inst_module=inst_module)
+            
+        self.tag = tag.lower() if tag is not None else ''    
+        self.clean_level = clean_level.lower() if clean_level is not None else 'none'
+
         self.data = pds.DataFrame(None)
         self.meta = _meta.Meta()
         # function processing class, processes data on load
@@ -83,10 +81,8 @@ class Instrument(object):
         self._curr_data = pds.DataFrame(None)
         # arguments for padding
         self.pad = pad
-        self.padkws = kwargs
-   	# attach the load/clean/etc functions to object 
-        # for user chosen instrument	
-        self._assign_funcs()
+        self.padkws = kwargs	
+
         # load file list function, which returns dict of files
         # as well as data start and end dates
         self.files = _files.Files(self)
@@ -108,27 +104,6 @@ class Instrument(object):
         # if user doesn't supply the init function
         self._init_rtn(self)
         
-        # check multiprocessing options
-        #pre-alpha level
-        #if startMulti:
-        #    import time
-        #    from IPython.parallel import Client
-        #    call(["ipcluster", 'start','-n 2', '--daemonize=True'])
-        #    time.sleep(7)
-        #    #try: 
-        #    rc = Client(timeout=10)
-        #    dview = rc[:]
-        #    dview.block = False
-        #    self.rc = rc
-        #    self.dview = dview
-        #    self.lview = rc.load_balanced_view()
-        #    #except:
-        #    #    raise (ValueError, "Multiprocessing couldn't be started")
-        #        
-        #elif multiRC is not None:
-        #    self.rc = multiRC
-        #    self.dview = self.rc[:]
-        #    self.lview = self.rc.load_balanced_view()
                 
     def __getitem__(self, key): 
         """
@@ -177,8 +152,8 @@ class Instrument(object):
     def _pass_func(*args, **kwargs):
         pass     
 
-    def _assign_funcs(self):        
-        """Assign all external science instrument methods to Satellite object."""
+    def _assign_funcs(self, by_name=False, inst_module=None):        
+        """Assign all external science instrument methods to Instrument object."""
         import importlib
         # set defaults
         self._list_rtn = self._pass_func
@@ -186,43 +161,26 @@ class Instrument(object):
         self._default_rtn = self._pass_func
         self._clean_rtn = self._pass_func
         self._init_rtn = self._pass_func
+        self._download_rtn = self._pass_func
             
-        if self.name is None:
-            # no name, do nothing
-            return
-        if isinstance(self.name, str):
-            # look for code with filename name
-            try:
-                inst = importlib.import_module('.'+self.name, package='pysat.instruments')
-                #exec 'from .instruments import '+self.name+' as inst'
-            except ImportError:
-                raise ImportError(string.join(('Unable to import or find code for', 
-                                  self.name,'. Please ensure code exists.')))
- 	elif isinstance(self.name, ModuleType):
+        if by_name: 
+            # look for code with filename name, any errors passed up
+            inst = importlib.import_module(''.join(('.',self.platform,'_',
+                        self.name)),  package='pysat.instruments')
+ 	elif inst_module is not None:
  	    # user supplied an object with relevant instrument routines
- 	    inst = self.name
- 	    self._inst_module = self.name
- 	    try:
- 	        self.name = self._inst_module.name
- 	    except AttributeError:
- 	        raise AttributeError(string.join(('A name attribute for the',
- 	                              'instrument is required if supplying',
- 	                              'routine module directly.')))             
+ 	    inst = inst_module
+ 	else:
+ 	    # no module or name info, default pass functions assigned
+ 	    return
+ 	               
         try:
             self._load_rtn = inst.load
-        except AttributeError:
-            raise AttributeError(string.join(('A load routine for the instrument',
-                                   'is required.')))
-        try:
             self._list_rtn = inst.list_files
-        except AttributeError:
-            raise AttributeError(string.join(('A file list routine is',
-            			'required from the instrument.')))    
-        try:
             self._download_rtn = inst.download
         except AttributeError:
-            raise AttributeError(string.join(('A download routine is',
-            			'required from the instrument.')))    
+            raise AttributeError(string.join(('A load, file_list, and download routine ',
+                    'are required for every instrument.'))) 
         try:
             self._default_rtn = inst.default
         except AttributeError:
@@ -235,7 +193,7 @@ class Instrument(object):
             self._clean_rtn = inst.clean
         except AttributeError:
             pass
-        #self.inst = inst
+
         return
 
     def _load_data(self, date=None, fid=None):
@@ -262,7 +220,7 @@ class Instrument(object):
 	    raise ValueError('Must supply either a date or file id number.')
    
         if len(fname) > 0:    
-            fname = [os.path.join(data_dir, f) for f in fname]
+            fname = [os.path.join(self.files.data_path, f) for f in fname]
             data, mdata = self._load_rtn(fname, tag = self.tag) 
         else:
             data = pds.DataFrame(None)
@@ -275,19 +233,19 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-                print string.join(('Returning', self.name, self.tag, 'data for', 
+                print string.join(('Returning',self.platform,self.name,self.tag,'data for', 
                               date.strftime('%D')))
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    print string.join(('Returning',self.name,self.tag,
+                    print string.join(('Returning',self.platform,self.name,self.tag,
                                         'data from',fname[0]))
                 else:
-                    print string.join(('Returning',self.name,self.tag,
+                    print string.join(('Returning',self.platform,self.name,self.tag,
                             'data from',fname[0], ' :: ',fname[-1]))
         else:
             # no data signal
-            print string.join(('No', self.name, self.tag,'data for', 
+            print string.join(('No',self.platform,self.name,self.tag,'data for', 
                                 date.strftime('%D')))
             # code below probably redundant
             #data = pds.DataFrame(None)
@@ -453,8 +411,28 @@ class Instrument(object):
         return
 
     def download(self, start, stop, user=None, password=None):
+        '''Download data for given Instrument object.'''
+        import errno
+        # make sure directories are there, otherwise create them
+        try:
+            os.mkdir(os.path.join(data_dir, self.platform))
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise    
+        try:
+            os.mkdir(os.path.join(data_dir, self.platform, self.name))
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise    
+        #local_data_dir = os.path.join(data_dir, self.platform, self.name, self.tag)
+        try:
+            os.mkdir(self.files.data_path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
+
         if user is None:
-            self._download_rtn(start, stop)
+            self._download_rtn(start, stop, data_path=self.files.data_path)
         else:
             self._download_rtn(start, stop, user=user, password=password)	
         print 'Updating pysat file list'

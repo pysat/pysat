@@ -6,8 +6,7 @@ import glob
 import numpy as np
 import pandas as pds
 
-#import utils
-#from . import data_dir
+
 from pysat import data_dir as data_dir
 
 
@@ -15,41 +14,43 @@ class Files(object):
     
     def __init__(self, sat):
         self._sat = weakref.proxy(sat)
-        self.base_path = os.path.join(os.getenv('HOME'), '.pysat') #pysat_path[0]
+        self.base_path = os.path.join(os.getenv('HOME'), '.pysat')
         self.start_date = None
         self.stop_date = None
+        self.files = pds.Series(None)
+        self.data_path = os.path.join(data_dir,self._sat.platform, self._sat.name, self._sat.tag)
         
-        if self._sat.name is not None:
-            info = self.load(self._sat.name, self._sat.tag)
-
+        if self._sat.platform != '':
+            info = self._load()#self._sat.platform, self._sat.name, self._sat.tag)
        	    if info is not False:
-       	        self._setList(info)
+       	        self._attach_files(info)
        	    else:
        	        print "pysat is searching for the requested instrument's files."
    	        # couldn't find stored info, load file list and then store
-   	        info = self._sat._list_rtn(tag=self._sat.tag, data_dir = data_dir)
+   	        info = self._sat._list_rtn(tag=self._sat.tag, data_dir=self.data_path)
                 if info is not None:
                     if len(info) > 0:
                         info = self._remove_data_dir_path(info)	
-       	                self._setList(info)
-       	                self.store()
+       	                self._attach_files(info)
+       	                self._store()
 
-    def _setList(self, files_info):
-        """Attaches info returned by instrument list_files routine to Satellite object."""
+    def _attach_files(self, files_info):
+        """Attaches info returned by instrument list_files routine to Instrument object."""
 
-	if (len(files_info.unique()) != len(files_info)): # | (len(wList) != len(files_info)):
+	if (len(files_info.unique()) != len(files_info)): 
 	    raise ValueError('List of files must have unique datetimes.')
    
 	self.files = files_info.sort_index()
-	temp = files_info.index[0] 
-	self.start_date = pds.datetime(temp.year, temp.month, temp.day)
-	temp = files_info.index[-1] 
-	self.stop_date = pds.datetime(temp.year, temp.month, temp.day)
+	date = files_info.index[0] 
+	self.start_date = pds.datetime(date.year, date.month, date.day)
+	date = files_info.index[-1] 
+	self.stop_date = pds.datetime(date.year, date.month, date.day)
 
                 
-    def store(self, dir=None):
+    def _store(self, dir=None):
         """Store currently loaded filelist for instrument onto filesystem"""
-        name = self._sat.name+'_'+self._sat.tag+'_stored_file_info.txt'
+        name = ''.join((self._sat.platform,'_',self._sat.name,'_',self._sat.tag,
+                        '_stored_file_info.txt'))
         if dir is None:
             name = os.path.join(self.base_path, name)
         else:
@@ -61,37 +62,35 @@ class Files(object):
             return False	
 
 
-    def load(self, name=None, tag=None):
+    def _load(self):
         """Load stored filelist and return as Pandas Series"""
-        
-        if name is not None:
-            name = self._sat.name+'_'+self._sat.tag+'_stored_file_info.txt'
-            name = os.path.join(self.base_path, name)
-            try:
-                temp = pds.Series.from_csv(name, index_col=0)
-            except IOError:
-                return False
-            else:
-                return temp
-        else:
+        fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
+                        self._sat.tag, '_stored_file_info.txt'))
+        fname = os.path.join(self.base_path, fname)
+        try:
+            data = pds.Series.from_csv(fname, index_col=0)
+        except IOError:
             return False
+        else:
+            return data
+
 
     def refresh(self, store=False):
         """Refresh loaded instrument filelist by searching filesystem."""
-        temp = self._sat._list_rtn(tag=self._sat.tag, data_dir = data_dir)
-        temp = self._remove_data_dir_path(temp)
-        self._setList(temp)
+        info = self._sat._list_rtn(tag=self._sat.tag, data_dir=self.data_path)
+        info = self._remove_data_dir_path(info)
+        self._attach_files(info)
         if store:
-            self.store()
+            self._store()
         
     
     def get_new(self):
         """List all files on filesystem that weren't there the last time
            the file list was stored.
         """
-        storedInfo = self.load()
+        storedInfo = self._load()
         if storedInfo is not False:
-            newInfo = self._sat._list_rtn(tag = self._sat.tag, data_dir = data_dir)
+            newInfo = self._sat._list_rtn(tag = self._sat.tag, data_dir=self.data_path)
             newInfo = self._remove_data_dir_path(newInfo)
             boolArr = newInfo.isin(storedInfo) 
             newFiles = newInfo[~boolArr]
@@ -101,7 +100,7 @@ class Files(object):
             return False
 
     def get_index(self, fname):
-        """Return index in objects flie_list for a particular filename. """
+        """Return index in objects file_list for a particular filename. """
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
             #filename not in index, try reloading files from disk
@@ -172,30 +171,25 @@ class Files(object):
         # need to add a check in here to make sure data_dir path is actually in
         # the filename
         if inp is not None:
-            match = os.path.join(data_dir,'')
+            match = os.path.join(self.data_path,'')
             num = len(match)	 
             return inp.apply(lambda x: x[num:])	
         
     @classmethod    
-    def from_os(cls, name=None, dir_path=None, format_str=None, 
+    def from_os(cls, dir_path=None, format_str=None, 
                 two_digit_year_break=None):
         """
         Produces a list of files and and formats it for Files class.
-        
-        data_dir is extra directories relative to pysat_data_dir
-        pysat_data_dir + data_dir should contain the relevant files
         """
         from utils import create_datetime_index
         if (format_str is None):
             raise ValueError("Must supply a filename template (format_str).")
-        if (data_dir is None) and (name is None):
-            raise ValueError("Must supply instrument name or data_dir location")
+        if (dir_path is None):
+            raise ValueError("Must supply instrument directory path (dir_path)")
         if dir_path is not None:
             # check if supplied directory contains pysat data_dir pth
             # if so, remove it
             pass
-        if (dir_path is None) and (name is not None):
-            dir_path = name
         
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
@@ -222,8 +216,8 @@ class Files(object):
                 else:
                     raise ValueError("Couldn't determine formatting width")
 
-        abs_search_str = os.path.join(data_dir, dir_path, search_str)
-        files = glob.glob(abs_search_str)        
+        abs_search_str = os.path.join(dir_path, search_str)
+        files = glob.glob(abs_search_str)   
         
         # we have a list of files, now we need to extract the date information        
         # code below works, but only if the size of file string 
