@@ -183,6 +183,9 @@ def list_files(tag=None, data_path=None):
 ```                                
 
 * load routine that returns a tuple with (data, pysat metadata object)
+  * pysat meta object obtained from pysat.Meta(). Use pandas DataFrame indexed
+by name with columns for units and long_name. Additional arbitrary columns allowed.
+Convenience function from_csv provided.
 ```
 def load(fnames, tag=None):
     return data, meta
@@ -192,9 +195,7 @@ def load(fnames, tag=None):
 def download(date_array, data_path=None, user=None, password=None):
     return
 ```
-* pysat meta object obtained from pysat.Meta(). Use pandas DataFrame indexed
-by name with columns for units and long_name. Additional arbitrary columns allowed.
-Convenience function from_csv provided.
+
 * init routine, initialize any specific instrument info. Runs once. (optional)
 ```
 def init(inst):
