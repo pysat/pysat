@@ -7,6 +7,7 @@ satellite based measurements it aims to support all instruments in space science
 #Main Features
 * Single interface for a wide variety of science data sets.
 * Single interface to download data for all supported instruments.
+* Data model (modified pandas) that supports a combination of 1D, 2D, and 3D in a single structure
 * Instrument independent analysis routines.
 * Science data pipeline tasks of identifying files, loading, and cleaning
 data sets are built into the instrument object. 
@@ -40,14 +41,14 @@ manner.
 * Follow normal instructions for installing pandas on forked pandas.
 * For pysat, ensure pythonpath includes pysat.
 * Run pysat.utils.set_data_dir('path to top level data dir')
-* Nominal organization of data is top_dir/name/tag/*/files
+* Nominal organization of data is top_dir/platform/name/tag/*/files
 
 #Quick Demo
 The core functionality is exposed through the Instrument object, providing a single
 location to obtain instrument data and properties. 
 ```
 import pysat
-ivm = pysat.Instrument(name='cnofs_ivm', tag='', clean_level='clean')
+ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', clean_level='clean')
 ivm.load(2009,1)
 ivm.load(pds.datetime(2009,1,1))
 ivm.load('filename')
@@ -155,21 +156,21 @@ directory or in the user specified location (via mechanism to be added)
 for automatic discovery. A compatible module may also be supplied directly
 to pysat.Instrument(name=<input module object>).
 
-Two functions are required:
+Three functions are required:
 * list_files routine that returns a pandas Series
 with filenames ordered in time. 
 ```
-def list_files(tag=None, data_dir=None):
+def list_files(tag=None, data_path=None):
 ```
 * A convenience function is provided for filenames that include time information in filename
 and utilize a constant field width, . The 
 location and format of the time information is specified using standard
 python format standard and keywords year, month, day, hour, minute, second. The
-nominal location of data is pysat_data_dir/name/tag, where pysat_data_dir
+nominal location of data is pysat_data_dir/platform/name/tag, provided in data_path, where pysat_data_dir
 is specified by user in pysat settings.
 ```
-def list_files(tag=None, data_dir=None):
-    return pysat.Files.from_os(dir_path=os.path.join('cindi_ivm',tag), 
+def list_files(tag=None, data_path=None):
+    return pysat.Files.from_os(data_path=data_path, 
                     format_str='rs{year:4d}{day:03d}-ivm.hdf')
 ```                                
 
@@ -177,6 +178,11 @@ def list_files(tag=None, data_dir=None):
 ```
 def load(fnames, tag=None):
     return data, meta
+```
+* download routine to fetch data from the internet
+```
+def download(date_array, data_path=None, user=None, password=None):
+    return
 ```
 * pysat meta object obtained from pysat.Meta(). Use pandas DataFrame indexed
 by name with columns for units and long_name. Additional arbitrary columns allowed.
