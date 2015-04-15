@@ -165,6 +165,7 @@ directory or in the user specified location (via mechanism to be added)
 for automatic discovery. A compatible module may also be supplied directly
 to pysat.Instrument(inst_module=input module).
 
+#### Required Routines
 Three functions are required:
 ###### List Files
 * list_files routine that returns a pandas Series
