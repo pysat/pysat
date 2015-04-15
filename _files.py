@@ -25,12 +25,14 @@ class Files(object):
        	    if info is not False:
        	        self._setList(info)
        	    else:
-       	        print 'Generating list of files for requested instrument'
+       	        print "pysat is searching for the requested instrument's files."
    	        # couldn't find stored info, load file list and then store
    	        info = self._sat._list_rtn(tag=self._sat.tag, data_dir = data_dir)
-                info = self._remove_data_dir_path(info)	
-   	        self._setList(info)
-   	        self.store()
+                if info is not None:
+                    if len(info) > 0:
+                        info = self._remove_data_dir_path(info)	
+       	                self._setList(info)
+       	                self.store()
 
     def _setList(self, files_info):
         """Attaches info returned by instrument list_files routine to Satellite object."""
@@ -275,6 +277,7 @@ class Files(object):
 
             return pds.Series(files, index=index)
         else:
-            raise ValueError("Unable to find any files. Please check pysat settings and file locations.")
+            print ("Unable to find any files. If you have the necessary files "+
+                    "please check pysat settings and file locations.") 
 
         
