@@ -45,13 +45,22 @@ manner.
 
 #Quick Demo
 The core functionality is exposed through the Instrument object, providing a single
-location to obtain instrument data and properties. 
+location to obtain instrument data and properties. See pysat/demo for more.
 ```
 import pysat
 ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', clean_level='clean')
+# 1-second thermal plasma parameters
 ivm.load(2009,1)
-ivm.load(pds.datetime(2009,1,1))
-ivm.load('filename')
+
+vefi = pysat.Instrument('cnofs','vefi','dc_b', 'clean')
+# 1-second mag field data
+vefi.load(date=pds.datetime(2009,1,1))
+
+cosmic = pysat.Istrument('cosmic', 'gps', 'ionprf')
+# gps occultation, vertical electron density profiles
+cosmic.load(fname='filename')
+or
+cosmic.load(2009,1)
 ```
 pysat calls functions written specifically for the given instrument, in this
 case the Ion Velocity Meter onboard C/NOFS, part of the Coupled Ion
