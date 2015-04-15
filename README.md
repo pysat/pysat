@@ -173,12 +173,9 @@ with filenames ordered in time.
   is specified by user in pysat settings.
 ```
 def list_files(tag=None, data_path=None):
-    return pds.Series(indexed list of files)
+    return pysat.Files object
 ```
-  * pysat.files.from_os is a convenience function provided for filenames that include time information in the     filename
-    and utilize a constant field width. The 
-    location and format of the time information is specified using standard
-    python formatting and keywords year, month, day, hour, minute, second. 
+  * pysat.Files.from_os is a convenience constructor provided for filenames that include time information in the filename and utilize a constant field width. The location and format of the time information is specified using standard python formatting and keywords year, month, day, hour, minute, second. 
 ```
 def list_files(tag=None, data_path=None):
     return pysat.Files.from_os(data_path=data_path, 
