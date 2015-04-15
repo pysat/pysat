@@ -66,13 +66,13 @@ pysat calls functions written specifically for the given instrument, in this
 case the Ion Velocity Meter onboard C/NOFS, part of the Coupled Ion
 Neutral Dynamics Investigation (CINDI), to enable loading and cleaning.
 
-###Data Access
+##Data Access
 * ivm['name'] or ivm.data['name'] or ivm.data.ix['name']
 * ivm[row,'name'], ivm[row1:row2,'name'], ivm[[1,2,3], 'name']
 * ivm[datetime,'name'], ivm[datetime1:datetime2,'name']
 * complete pandas data object exposed in ivm.data
 
-###Data Assignment
+##Data Assignment
 ```
 ivm['new_data'] = new_data
 ```
@@ -81,30 +81,30 @@ ivm['new_data'] = new_data
 ivm['double_mlt'] = {'data':2.*inst['mlt'], 'name':'double_mlt', 
             'long_name':'Double MLT', 'units':'hours'}
 ```
-###Custom Functions
+##Custom Functions
 Science analysis is built upon custom data processing, thus custom functions 
 may be attached to the Instrument object. Each function is 
 run automatically when new data is loaded.
 
-####Modify Functions
+#####Modify Functions
 The instrument object is passed to function without copying, modify in place
 ```
 def custom_func_modify(inst, optional_param=False):
     inst['double_mlt'] = 2.*inst['mlt']
 ```    
-####Add Functions
+#####Add Functions
 A copy of the instrument is passed to function, data to be added is returned
 ```
 def custom_func_add(inst, optional_param=False):
     return 2*.inst['mlt']
 ```
-####Add Function Including Metadata
+#####Add Function Including Metadata
 ```
 def custom_func_add(inst, optional_param1=False, optional_param2=False):
     return {'data':2.*inst['mlt'], 'name':'double_mlt', 
             'long_name':'doubledouble', 'units':'hours'}
 ```
-####Attaching Custom Function
+#####Attaching Custom Function
 ```
 ivm.custom.add(custom_func_modify, 'modify', optional_param2=True)
 ivm.load(2009,1)
@@ -118,13 +118,13 @@ custom_complicated_analysis_over_season(ivm)
 The output of custom_func_modify will always be available from instrument object, regardless
 of what level the science analysis is performed.
 
-###Iterate over dataset by day
+##Iterate over dataset by day
 Each loop loads a new day of instrument data, with custom processing
 ```
 for ivm in ivm:
     print 'new day of double mlt ivm data ', ivm['double_mlt']
 ```   
-###Iterate over custom season
+#####Iterate over custom season
 ```
 import pandas as pd
 start = [pd.datetime(2009,1,1), pd.datetime(2010,1,1)]
@@ -134,7 +134,7 @@ for ivm in ivm:
     print 'A new day of data in custom season, ', ivm.date.strftime('%y/%m/%d')
     print 'Year, doy ', ivm.yr, ivm.doy
 ```
-###Iterate by orbit over custom season:
+#####Iterate by orbit over custom season:
 ```
 ivm = pysat.Instrument(name='cindi_ivm', tag='rs', clean_level='clean',
                         orbit_index='mlt', orbit_type='local time')
