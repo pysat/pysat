@@ -7,7 +7,7 @@ satellite based measurements it aims to support all instruments in space science
 #Main Features
 * Single interface for a wide variety of science data sets.
 * Single interface to download data for all supported instruments.
-* Data model (modified pandas) that supports a combination of 1D, 2D, and 3D in a single structure
+* Data model (modified pandas) that supports a combination of 1D, 2D, 3D, and nD data in a single structure
 * Instrument independent analysis routines.
 * Science data pipeline tasks of identifying files, loading, and cleaning
 data sets are built into the instrument object. 
@@ -32,7 +32,6 @@ capable of handling the many forms scientific measurements take in a consistent
 manner.
   * pandas has been forked to accomodate the assignment of pandas Series/
   Dateframes as single elements of a Series/Dataframe.
-  * supports 1D, 2D, 3D, and nD data in a single structure
 * Includes helper functions to reduce the barrier to adding new science instruments to pysat
 
 
