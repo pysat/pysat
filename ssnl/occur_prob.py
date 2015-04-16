@@ -97,10 +97,10 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                                 zdata = yData.ix[yindex,data_label[zk]]
                                 idx, = np.where(np.isfinite(zdata))
                                 if len(idx) > 0:
-                                    total[zk,yj,xi] = total[zk,yj,xi] + 1.
+                                    total[zk,yj,xi] += 1.
                                     idx, = np.where( zdata > gate[zk]  )
                                     if len(idx) > 0:
-                                        hits[zk,yj,xi] = hits[zk,yj,xi] + 1.
+                                        hits[zk,yj,xi] += 1.
                                
     # all of the loading and storing data is done
     # get probability
