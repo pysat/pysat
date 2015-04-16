@@ -1,5 +1,5 @@
 #What is it
-pysat is a Python package providing a simple, flexible, and powerful interface
+The Python Science Analysis Toolkit (pysat) is a package providing a simple, flexible, and powerful interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific 
 measurements. Though pysat was initially designed for in-situ
 satellite based measurements it aims to support all instruments in space science.
