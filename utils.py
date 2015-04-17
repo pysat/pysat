@@ -197,6 +197,10 @@ def create_datetime_index(year=None, month=None, doy=None, uts=None):
     # which itself was an order of magnitude faster than datetime.
  
     #get list of unique year, and month
+    if not hasattr(year, '__iter__'):
+        raise ValueError('Must provide an iterable for all inputs.')
+    if len(year) == 0:
+        raise ValueError('Length of array must be larger than 0.')
     year = year.astype(int)
     if month is None:
         month = np.ones(len(year), dtype=int)
