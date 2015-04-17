@@ -12,7 +12,7 @@ import numpy as np
 import pysat
 
 
-def list_files(tag=None, data_dir = None):
+def list_files(tag=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
     import sys
     #if tag == 'ionprf':
@@ -24,32 +24,35 @@ def list_files(tag=None, data_dir = None):
     sys.stdout.flush()
 
     # number of files may be large, written with this in mind
-    cosmicDir = os.path.join(data_dir,'cosmic', tag)
     # only select file that are the cosmic data files and end with _nc
-    cosmicFiles = glob.glob(os.path.join(cosmicDir, '*/*_nc'))
+    cosmicFiles = glob.glob(os.path.join(data_path, '*/*_nc'))
     # need to get date and time from filename to generate index
     num = len(cosmicFiles) 
-    print 'Estimated time:', num*1.E-5,'seconds'
-    sys.stdout.flush()
-    # preallocate lists
-    year=[None]*num; days=[None]*num; hours=[None]*num; 
-    minutes=[None]*num; microseconds=[None]*num;
-    for i,f in enumerate(cosmicFiles):
-        f2 = f.split('.')
-        year[i]=f2[1]
-        days[i]=f2[2]
-        hours[i]=f2[3]
-        minutes[i]=f2[4]
-        microseconds[i]=i
-
-    year=np.array(year).astype(int)
-    days=np.array(days).astype(int)
-    uts=np.array(hours).astype(int)*3600+np.array(minutes).astype(int)*60
-    # adding microseconds to ensure each time is unique, not allowed to pass 1.E-3 s
-    uts+=np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
-    index = pysat.utils.create_datetime_index(year=year, doy=days, uts=uts)
-    file_list = pds.Series(cosmicFiles, index=index)
-    return file_list
+    if num != 0:
+        print 'Estimated time:', num*1.E-5,'seconds'
+        sys.stdout.flush()
+        # preallocate lists
+        year=[None]*num; days=[None]*num; hours=[None]*num; 
+        minutes=[None]*num; microseconds=[None]*num;
+        for i,f in enumerate(cosmicFiles):
+            f2 = f.split('.')
+            year[i]=f2[1]
+            days[i]=f2[2]
+            hours[i]=f2[3]
+            minutes[i]=f2[4]
+            microseconds[i]=i
+    
+        year=np.array(year).astype(int)
+        days=np.array(days).astype(int)
+        uts=np.array(hours).astype(int)*3600+np.array(minutes).astype(int)*60
+        # adding microseconds to ensure each time is unique, not allowed to pass 1.E-3 s
+        uts+=np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
+        index = pysat.utils.create_datetime_index(year=year, doy=days, uts=uts)
+        file_list = pds.Series(cosmicFiles, index=index)
+        return file_list
+    else:
+        print 'Found no files, check your path or download them.'
+        return pds.Series(None)
         
 
 def load(cosmicFiles, tag=None):
@@ -182,7 +185,14 @@ def clean(self):
 
     return
 
+def download(date_array, data_path=None, user=None, password=None):
+    raise ValueError('Downloading not supported at the moment')
+    return
 
+    
+    
+    
+    
     ## mean altitude profiles over bin size, make a pandas Series for each
     #altBin = 3
     #roundMSL_alt = np.round(loadedVars['MSL_alt']/altBin)*altBin
