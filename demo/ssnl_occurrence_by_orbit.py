@@ -22,6 +22,7 @@ def filter_vefi(inst):
     idx, = np.where(vefi['B_flag']==0)
     vefi.data = vefi.data.iloc[idx]
     return
+    
 vefi.custom.add(filter_vefi,'modify')
 # set limits on dates analysis will cover, inclusive
 start = pds.datetime(2010,5,9)
@@ -40,20 +41,23 @@ vefi.bounds = (start,stop)
 ans = pysat.ssnl.occur_prob.by_orbit2D(vefi, [0,360,144], 'longitude', 
                 [-13,13,104], 'latitude', ['dB_mer'], [0.], returnBins=True)
 
+# a dict indexed by data_label is returned
+# in this case, only one, we'll pull it out
+ans = ans['dB_mer']
 # plot occurrence probability
 f, axarr = plt.subplots(2,1, sharex=True, sharey=True)
-masked = np.ma.array(ans['dB_mer']['prob'], mask=np.isnan(ans['dB_mer']['prob']))                                   
-im=axarr[0].pcolor(ans['dB_mer']['binx'], ans['dB_mer']['biny'], masked)
+masked = np.ma.array(ans['prob'], mask=np.isnan(ans['prob']))                                   
+im=axarr[0].pcolor(ans['binx'], ans['biny'], masked)
 axarr[0].set_title('Occurrence Probability Delta-B Meridional > 0')
 axarr[0].set_ylabel('Latitude')
 axarr[0].set_yticks((-13,-10,-5,0,5,10,13))
-axarr[0].set_ylim((ans['dB_mer']['biny'][0],ans['dB_mer']['biny'][-1]))
+axarr[0].set_ylim((ans['biny'][0],ans['biny'][-1]))
 plt.colorbar(im,ax=axarr[0], label='Occurrence Probability')
 
-im=axarr[1].pcolor(ans['dB_mer']['binx'], ans['dB_mer']['biny'],ans['dB_mer']['count'])
+im=axarr[1].pcolor(ans['binx'], ans['biny'],ans['count'])
 axarr[1].set_xlabel('Longitude')  
 axarr[1].set_xticks((0,60,120,180,240,300,360))
-axarr[1].set_xlim((ans['dB_mer']['binx'][0],ans['dB_mer']['binx'][-1]))
+axarr[1].set_xlim((ans['binx'][0],ans['binx'][-1]))
 axarr[1].set_ylabel('Latitude')
 axarr[1].set_title('Number of Orbits in Bin')
 
