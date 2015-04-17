@@ -17,15 +17,16 @@ vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', clean_level=N
                         orbit_index='longitude', orbit_type='longitude')
 
 # set limits on dates analysis will cover, inclusive
-# leave bounds unassigned to cover the whole dataset (comment out lines below)
 start = pds.datetime(2010,5,9)
 stop = pds.datetime(2010,5,12)
-vefi.bounds = (start,stop)
 
 # if there is no vefi dc magnetometer data on your system, then run command below
 # where start and stop are pandas datetimes (from above)
 # pysat will automatically register the addition of this data at the end of download
 vefi.download(start, stop)
+
+# leave bounds unassigned to cover the whole dataset (comment out lines below)
+vefi.bounds = (start,stop)
 
 for orbit_count, vefi in enumerate(vefi.orbits):
     # for each loop pysat puts a copy of the next available orbit into vefi.data
