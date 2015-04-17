@@ -17,9 +17,15 @@ results_dir = ''
 vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', clean_level=None, 
                         orbit_index='longitude', orbit_type='longitude')
 
+# define functino to remove flagged values
+def filter_vefi(inst):
+    idx, = np.where(vefi['B_flag']==0)
+    vefi.data = vefi.data.iloc[idx]
+    return
+vefi.custom.add(filter_vefi,'modify')
 # set limits on dates analysis will cover, inclusive
 start = pds.datetime(2010,5,9)
-stop = pds.datetime(2010,5,12)
+stop = pds.datetime(2010,5,15)
 
 # if there is no vefi dc magnetometer data on your system, then run command below
 # where start and stop are pandas datetimes (from above)
