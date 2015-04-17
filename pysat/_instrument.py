@@ -8,12 +8,12 @@ import copy
 import sys
 
 
-from . import _custom
-from . import _files
-from . import _orbits
-from . import _meta
-from . import utils
-from . import data_dir as data_dir
+import _custom
+import _files
+import _orbits
+import _meta
+import utils
+from pysat import data_dir #import pysat.data_dir as data_dir
 
 # main class for users
 class Instrument(object):
@@ -422,9 +422,11 @@ class Instrument(object):
                 raise
         date_array = utils.season_date_range(start,stop)
         if user is None:
-            self._download_rtn(date_array, data_path=self.files.data_path)
+            self._download_rtn(date_array, tag=self.tag, 
+                    data_path=self.files.data_path)
         else:
-            self._download_rtn(date_array, user=user, password=password)	
+            self._download_rtn(date_array, tag=self.tag, 
+                    data_path=self.files.data_path,user=user, password=password)	
         print 'Updating pysat file list'
         self.files.refresh(store=True)
         

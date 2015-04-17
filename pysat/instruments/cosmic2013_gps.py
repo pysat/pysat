@@ -36,10 +36,10 @@ def list_files(tag=None, data_path=None):
         minutes=[None]*num; microseconds=[None]*num;
         for i,f in enumerate(cosmicFiles):
             f2 = f.split('.')
-            year[i]=f2[1]
-            days[i]=f2[2]
-            hours[i]=f2[3]
-            minutes[i]=f2[4]
+            year[i]=f2[2]
+            days[i]=f2[3]
+            hours[i]=f2[4]
+            minutes[i]=f2[5]
             microseconds[i]=i
     
         year=np.array(year).astype(int)
@@ -185,8 +185,46 @@ def clean(self):
 
     return
 
-def download(date_array, data_path=None, user=None, password=None):
-    raise ValueError('Downloading not supported at the moment')
+def download(date_array, tag, data_path=None, user=None, password=None):
+    import ftplib
+    import urllib2
+    import base64
+    import os
+    import tarfile
+    import shutil
+
+    if tag == 'ionprf':
+        sub_dir = 'ionPrf'
+    elif tag == 'sonprf':
+        sub_dir = 'sonPrf'
+    elif tag == 'wetprf':
+        sub_dir = 'wetPrf'
+    elif tag == 'atmPrf':
+        sub_dir = 'atmPrf'
+    else:
+        raise ValueError('Unknown cosmic_gps tag')
+        
+    for date in date_array:
+        yr,doy = pysat.utils.getyrdoy(date)
+        yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
+        dwnld="http://cdaac-www.cosmic.ucar.edu/cdaac/rest/tarservice/data/cosmic2013/"
+        dwnld = dwnld+sub_dir+'/{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
+        req=urllib2.Request(dwnld)
+        base64str=base64.encodestring('%s:%s' % (user, password)).replace('\n', '')
+        req.add_header("Authorization", "Basic %s" % base64str)   
+        result=urllib2.urlopen(req)
+        fname=os.path.join(data_path,'cosmic_'+sub_dir+'_'+ yrdoystr+'.tar' )
+        with open(fname, "wb") as local_file:
+            local_file.write(result.read())
+            local_file.close()
+            # uncompress files
+            tar = tarfile.open(fname)
+            tar.extractall(path=data_path)
+            tar.close()
+            # move files
+            ext_dir = os.path.join(data_path,'cosmic2013',sub_dir,yrdoystr) 
+            shutil.move(ext_dir, os.path.join(data_path,yrdoystr))
+
     return
 
     

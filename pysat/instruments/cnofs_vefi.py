@@ -55,7 +55,7 @@ def load(fnames, tag=None):
 	 data = pds.DataFrame(data, index=pds.to_datetime(data['Epoch'], unit='s'))
 	 return data, meta.copy()
 
-def download(date_array, data_path=None, user=None, password=None):
+def download(date_array, tag, data_path=None, user=None, password=None):
     """
     download vefi 1_second magnetic field data, layout consistent with pysat
 
@@ -66,19 +66,21 @@ def download(date_array, data_path=None, user=None, password=None):
 
     ftp = ftplib.FTP('cdaweb.gsfc.nasa.gov')   # connect to host, default port
     ftp.login()               # user anonymous, passwd anonymous@
-    ftp.cwd('/pub/data/cnofs/vefi/bfield_1sec')
     
-    for date in date_array:
-        fname = '{year1:4d}/cnofs_vefi_bfield_1sec_{year2:4d}{month:02d}{day:02d}_v05.cdf'
-        fname = fname.format(year1=date.year, year2=date.year, month=date.month, day=date.day)
-        local_fname = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'.format(
-                year=date.year, month=date.month, day=date.day)
-        saved_fname = os.path.join(data_path,local_fname) 
-        try:
-            print 'Downloading file for '+date.strftime('%D')
-            ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
-        except ftplib.error_perm as exception:
-            if exception[0][0:3] != '550':
-                raise
-            else:
-                print 'File not available for '+ date.strfrtime('%D')
+    if tag == 'dc_b':
+        ftp.cwd('/pub/data/cnofs/vefi/bfield_1sec')
+    
+        for date in date_array:
+            fname = '{year1:4d}/cnofs_vefi_bfield_1sec_{year2:4d}{month:02d}{day:02d}_v05.cdf'
+            fname = fname.format(year1=date.year, year2=date.year, month=date.month, day=date.day)
+            local_fname = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'.format(
+                    year=date.year, month=date.month, day=date.day)
+            saved_fname = os.path.join(data_path,local_fname) 
+            try:
+                print 'Downloading file for '+date.strftime('%D')
+                ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
+            except ftplib.error_perm as exception:
+                if exception[0][0:3] != '550':
+                    raise
+                else:
+                    print 'File not available for '+ date.strfrtime('%D')
