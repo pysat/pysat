@@ -1,5 +1,5 @@
 #What is it
-pysat is a Python package providing a simple, flexible, and powerful interface
+The Python Science Analysis Toolkit (pysat) is a package providing a simple, flexible, and powerful interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific 
 measurements. Though pysat was initially designed for in-situ
 satellite based measurements it aims to support all instruments in space science.
@@ -36,8 +36,12 @@ manner.
 
 
 #Installation
-* Clone repositories for both pysat and the forked pandas.
-* Follow normal instructions for installing pandas on forked pandas.
+##Starting from scratch
+* One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
+* Obtain a git account and clone the pysat and forked pandas repositories using the web links on each page. From the command line:
+```git clone <link>```
+* In the pandas directory created by git type
+```python setup.py install```
 * For pysat, ensure pythonpath includes pysat.
 * Run pysat.utils.set_data_dir('path to top level data dir')
 * Nominal organization of data is top_dir/platform/name/tag/*/files
