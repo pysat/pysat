@@ -4,10 +4,11 @@ import os
 if not os.path.isdir(os.path.join(os.getenv('HOME'), '.pysat')):
     # create directory
     print ''.join(('Creating .pysat directory. Run pysat.utils.set_data_dir to set the path',
-                   'to top-level directory containing science data.'))
+                   ' to top-level directory containing science data.'))
     os.mkdir(os.path.join(os.getenv('HOME'), '.pysat'))
     with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'),'w') as f:
         f.write('')
+    data_dir=''
 else:
     # load up stored data path
     with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'),'r') as f:
