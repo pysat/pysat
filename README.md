@@ -106,8 +106,8 @@ ivm['new_data'] = new_data
 ```
 #####Assignment with metadata
 ```
-ivm['double_mlt'] = {'data':2.*inst['mlt'], 'name':'double_mlt', 
-            'long_name':'Double MLT', 'units':'hours'}
+ivm['double_mlt'] = {'data':2.*inst['mlt'], 'long_name':'Double MLT', 
+                     'units':'hours'}
 ```
 ##Custom Functions
 Science analysis is built upon custom data processing, thus custom functions 
