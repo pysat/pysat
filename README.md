@@ -188,7 +188,7 @@ Math operations across series and dataframes are aligned and missing data is tre
 #Adding a new instrument to pysat
 pysat works by calling modules written for specific instruments
 that load and process the data consistent with the pysat standard. The name
-of the module corresponds to the name field when initializing a pysat
+of the module corresponds to the combination 'platform_name' provided when initializing a pysat
 instrument object. The module should be placed in the pysat instruments
 directory or in the user specified location (via mechanism to be added) 
 for automatic discovery. A compatible module may also be supplied directly
