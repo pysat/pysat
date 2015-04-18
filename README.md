@@ -72,12 +72,22 @@ Neutral Dynamics Investigation (CINDI), to enable loading and cleaning.
 ##Download Data
 Download data easily onto your filesystem.
 ```
+import pysat
 import pandas as pds
 # 1-second mag field data
 vefi = pysat.Instrument('cnofs','vefi','dc_b', 'clean')
 start = pds.datetime(2010, 3, 4)
 stop = pds.datetime(2010, 3, 8)
 vefi.download(start, stop)
+```
+```
+import pysat
+import pandas as pds
+cosmic = pysat.Instrument('cosmic2013','gps', tag='ionprf', clean_level='clean')
+start = pds.datetime(2009,1,2)
+stop = pds.datetime(2009,1,3)
+cosmic.download(start, stop, user='', password='')
+cosmic.load(date=start)
 ```
 
 ##Data Access
