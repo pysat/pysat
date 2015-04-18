@@ -89,7 +89,10 @@ stop = pds.datetime(2009,1,3)
 # requires CDAAC account 
 cosmic.download(start, stop, user='', password='')
 cosmic.load(date=start)
+# print part of profile indexed by altitude
+print cosmic[0,'profiles'].iloc[55:60]
 ```
+
 
 ##Data Access
 * ivm['name'] or ivm.data['name'] or ivm.data.ix['name']
