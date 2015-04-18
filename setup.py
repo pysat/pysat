@@ -74,9 +74,9 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['SpacePy','netCDF4'],
-    #dependency_links = ['http://github.com/rstoneback/pandas/tarball/master#egg=rstoneback-pandas-0.16.0-54-ga32da86'],
-    dependency_links = ['http://github.com/rstoneback/pandas.git'],
+    install_requires=['SpacePy','netCDF4'], #,'git+git://github.com/rstoneback/pandas/tarball/master#egg=rstoneback-pandas-0.16.0-54-ga32da86'],
+    #dependency_links = ['https://github.com/rstoneback/pandas/tarball/master#egg=rstoneback-pandas-0.16.0-54-ga32da86'],
+    #dependency_links = ['https://github.com/rstoneback/pandas.git'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
