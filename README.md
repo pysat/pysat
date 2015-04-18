@@ -43,7 +43,7 @@ manner.
 ```
 pip install pysat
 ```
-* Run pysat.utils.set_data_dir('path to top level data dir')
+* in python, run pysat.utils.set_data_dir('path to top level data dir')
 * Nominal organization of data is top_dir/platform/name/tag/*/files
 
 #Quick Demo
