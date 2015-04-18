@@ -38,11 +38,11 @@ manner.
 #Installation
 ##Starting from scratch
 * One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
-* Obtain a git account and clone the pysat and forked pandas repositories using the web links on each page. From the command line:
-```git clone <link>```
-* In the pandas directory created by git type
-```python setup.py install```
-* For pysat, ensure pythonpath includes pysat.
+* Download NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html) 
+* at command line type
+```
+pip install pysat
+```
 * Run pysat.utils.set_data_dir('path to top level data dir')
 * Nominal organization of data is top_dir/platform/name/tag/*/files
 
@@ -179,7 +179,7 @@ with filenames ordered in time.
   is specified by user in pysat settings.
 ```
 def list_files(tag=None, data_path=None):
-    return pysat.Files object
+    return pds.Series(files, index=datetime_index)
 ```
   * pysat.Files.from_os is a convenience constructor provided for filenames that include time information in the filename and utilize a constant field width. The location and format of the time information is specified using standard python formatting and keywords year, month, day, hour, minute, second. 
 ```
