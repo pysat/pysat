@@ -17,11 +17,11 @@ else:
         print 'Run pysat.utils.set_data_dir to set the path to top-level directory containing science data.'
 del f
 
+from pandas import Panel, DataFrame, Series, datetime
 import instruments
 import utils
 from _instrument import Instrument
 import ssnl
-
 from _meta import Meta
 from _files import Files
 

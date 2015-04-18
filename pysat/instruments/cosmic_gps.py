@@ -52,11 +52,11 @@ def list_files(tag=None, data_path=None):
         # adding microseconds to ensure each time is unique, not allowed to pass 1.E-3 s
         uts+=np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
         index = pysat.utils.create_datetime_index(year=year, doy=days, uts=uts)
-        file_list = pds.Series(cosmicFiles, index=index)
+        file_list = pysat.Series(cosmicFiles, index=index)
         return file_list
     else:
         print 'Found no files, check your path or download them.'
-        return pds.Series(None)
+        return pysat.Series(None)
         
 
 def load(cosmicFiles, tag=None):
@@ -68,7 +68,7 @@ def load(cosmicFiles, tag=None):
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pds.DataFrame(load_files(cosmicFiles, tag=tag))
+        output = pysat.DataFrame(load_files(cosmicFiles, tag=tag))
         output.index = pysat.utils.create_datetime_index(year=output.year, 
                 month=output.month, doy=output.day, 
                 uts=output.hour*3600.+output.minute*60.+output.second)
@@ -96,7 +96,7 @@ def load(cosmicFiles, tag=None):
         return output, meta
     else:
         # no data
-        return pds.DataFrame(None), pysat.Meta()
+        return pysat.DataFrame(None), pysat.Meta()
 
 
 
@@ -125,7 +125,7 @@ def load_files(files, tag=None):
             keys = data.variables.keys()
             for key in keys:
                 loadedVars[key] = data.variables[key][:]               
-            new['profiles'] = pds.DataFrame(loadedVars)
+            new['profiles'] = pysat.DataFrame(loadedVars)
             if tag == 'ionprf':
                 new['profiles'].index = new['profiles']['MSL_alt']
             output[i] = new   

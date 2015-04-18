@@ -97,7 +97,7 @@ class TestBasics:
                                                         
     def test_add_dataframe(self):
         def custom1(inst):
-            out = pds.DataFrame({'doubleMLT':inst.data.mlt*2, 
+            out = pysat.DataFrame({'doubleMLT':inst.data.mlt*2, 
                                 'tripleMLT':inst.data.mlt*3}, 
                                 index=inst.data.index)
             return out
@@ -108,7 +108,7 @@ class TestBasics:
 
     def test_add_dataframe_w_meta(self):
         def custom1(inst):
-            out = pds.DataFrame({'doubleMLT':inst.data.mlt*2, 
+            out = pysat.DataFrame({'doubleMLT':inst.data.mlt*2, 
                                 'tripleMLT':inst.data.mlt*3}, 
                                 index=inst.data.index)
             return {'data':out, 'long_name':['doubleMLTlong', 'tripleMLTlong'],
@@ -125,7 +125,7 @@ class TestBasics:
         
     def test_add_series_w_meta(self):
         def custom1(inst):
-            out = pds.Series(inst.data.mlt*2, 
+            out = pysat.Series(inst.data.mlt*2, 
                                 index=inst.data.index)
             out.name = 'doubleMLT'
             return {'data':out, 'long_name':'doubleMLTlong',
@@ -139,7 +139,7 @@ class TestBasics:
 
     def test_add_series_w_meta_missing_long_name(self):
         def custom1(inst):
-            out = pds.Series(2.*inst.data.mlt.values, 
+            out = pysat.Series(2.*inst.data.mlt.values, 
                                 index=inst.data.index)
             out.name = 'doubleMLT'
             return {'data':out, 
@@ -153,7 +153,7 @@ class TestBasics:
         
     def test_add_series_w_meta_name_in_dict(self):
         def custom1(inst):
-            out = pds.Series(2.*inst.data.mlt.values, 
+            out = pysat.Series(2.*inst.data.mlt.values, 
                                 index=inst.data.index)
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1', 'name':'doubleMLT'}
@@ -167,7 +167,7 @@ class TestBasics:
     @raises(ValueError)    
     def test_add_series_w_meta_no_name(self):
         def custom1(inst):
-            out = pds.Series({'doubleMLT':inst.data.mlt*2}, 
+            out = pysat.Series({'doubleMLT':inst.data.mlt*2}, 
                                 index=inst.data.index)
             #out.name = 'doubleMLT'
             return {'data':out, 'long_name':'doubleMLTlong',

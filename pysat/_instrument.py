@@ -14,7 +14,7 @@ import _orbits
 import _meta
 import utils
 from pysat import data_dir #import pysat.data_dir as data_dir
-
+from pysat import DataFrame, Series
 # main class for users
 class Instrument(object):
 
@@ -68,17 +68,17 @@ class Instrument(object):
         self.tag = tag.lower() if tag is not None else ''    
         self.clean_level = clean_level.lower() if clean_level is not None else 'none'
 
-        self.data = pds.DataFrame(None)
+        self.data = DataFrame(None)
         self.meta = _meta.Meta()
         # function processing class, processes data on load
         self.custom = _custom.custom()
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
-        self._next_data = pds.DataFrame(None)
+        self._next_data = DataFrame(None)
 	self._next_data_track = []
-        self._prev_data = pds.DataFrame(None)
+        self._prev_data = DataFrame(None)
         self._prev_data_track = []
-        self._curr_data = pds.DataFrame(None)
+        self._curr_data = DataFrame(None)
         # arguments for padding
         self.pad = pad
         self.padkws = kwargs	
@@ -136,7 +136,7 @@ class Instrument(object):
                 if key not in self.meta.data.index:   
                     # add in default metadata because none was supplied
                     self.meta[key] = {'long_name':key, 'units':''} 
-            elif isinstance(new, pds.DataFrame):
+            elif isinstance(new, DataFrame):
                 self.data[key] = new[key]
                 for ke in key:
                     if ke not in self.meta.data.index:   
@@ -214,11 +214,11 @@ class Instrument(object):
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             data, mdata = self._load_rtn(load_fname, tag = self.tag) 
         else:
-            data = pds.DataFrame(None)
+            data = DataFrame(None)
             mdata = _meta.Meta()
 
         if not data.empty: 
-            if not isinstance(data, pds.DataFrame):
+            if not isinstance(data, DataFrame):
                 raise TypeError(string.join(('Data returned by instrument load',
                                 'routine must be a pandas.DataFrame')))
             if not isinstance(mdata, _meta.Meta):
@@ -363,7 +363,7 @@ class Instrument(object):
 	        self.data = self._curr_data.copy()
 	        self.meta = self._curr_meta.copy()
 	    else:
-	        self.data = pds.DataFrame(None)	
+	        self.data = DataFrame(None)	
 	        self.meta = _meta.Meta()
             # pad data based upon passed parameter
             offs = pds.DateOffset( **(self.padkws) )

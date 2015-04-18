@@ -15,6 +15,7 @@ import os
 
 import spacepy
 from spacepy import pycdf
+import pysat
 
 
 def list_files(tag=None, data_path=None):
@@ -49,14 +50,14 @@ meta['dB_par'] = {'long_name':'Delta Magnetic Field - Parallel ', 'units':'nT'}
                                 
 def load(fnames, tag=None):
     if len(fnames) <= 0 :
-        return pds.DataFrame(None), None
+        return pysat.DataFrame(None), None
     else:
          cdf = pycdf.CDF(fnames[0])
          data = {}
          for key in cdf.iterkeys():
              data[key] = cdf[key][...]
          epoch = data.pop['Epoch']
-	 data = pds.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
+	 data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
 	 return data, meta.copy()
 
 def download(date_array, tag, data_path=None, user=None, password=None):

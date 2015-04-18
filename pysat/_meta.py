@@ -1,7 +1,8 @@
 import os
 import pandas as pds
 
-from . import __path__ as mod_path
+#from pysat import __path__ as mod_path
+from pysat import DataFrame, Series
 
 class Meta(object):
     """
@@ -39,13 +40,13 @@ class Meta(object):
                 for key in value.keys():
                     if len(name) != len(value[key]):
                         raise ValueError('Length of names and inputs must be equal.')
-                new = pds.DataFrame(value, index=name)
+                new = DataFrame(value, index=name)
                 self.data = self.data.append(new) 
             else:
-                new = pds.Series(value)
+                new = Series(value)
                 self.data.ix[name] = new
                 
-        if isinstance(value, pds.Series):
+        if isinstance(value, Series):
             self.data.ix[name] = value
         
         
@@ -66,14 +67,14 @@ class Meta(object):
             the associated pysat Satellite object.
         """
         if metadata is not None:
-            if isinstance(metadata, pds.DataFrame):
+            if isinstance(metadata, DataFrame):
                 self.data = metadata
             else:
                 raise ValueError("Input must be a pandas DataFrame type."+
                             "See other constructors for alternate inputs.")
             
         else:
-            self.data = pds.DataFrame(None, columns=['long_name', 'units'])
+            self.data = DataFrame(None, columns=['long_name', 'units'])
         #self._orig_data = self.data.copy()
         
     @classmethod
@@ -81,6 +82,7 @@ class Meta(object):
         """
         Create satellite metadata object from csv
         """
+        import pysat
         req_names = ['name','long_name','units']
         if col_names is None:
             col_names = req_names
@@ -98,7 +100,7 @@ class Meta(object):
             if not os.path.isfile(name):
                 # Not a real file, assume input is a pysat instrument name
                 # and look in the standard pysat location.
-                test =  os.path.join(mod_path[0],'instruments',name+'_meta.txt')
+                test =  os.path.join(pysat.__path__,'instruments',name+'_meta.txt')
                 #print test
                 if os.path.isfile(test):
                     name = test

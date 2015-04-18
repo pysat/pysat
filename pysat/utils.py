@@ -3,6 +3,7 @@ import numpy as np
 import copy
 #import meta
 
+from pysat import DataFrame, Series, datetime, Panel
 
 def set_data_dir(path=None):
     """
@@ -14,6 +15,7 @@ def set_data_dir(path=None):
         with open(os.path.join(os.getenv('HOME'), '.pysat','data_path.txt'),'w') as f:
             f.write(path)
             pysat.data_dir = path
+            reload(pysat._files)
     else:
         raise ValueError('Path does not lead to a valid directory.')
         
@@ -78,7 +80,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                         
                 # loop over first object dimension
                 # preallocate dataframes to hold objects because it is faster
-                init_frame = pds.DataFrame(None)
+                init_frame = DataFrame(None)
                 loop_list = [init_frame]*data.variables[obj_var_keys[0]].shape[0]
                 for i, loop_frame in enumerate(loop_list):
                     #loop_frame = saved_frame.copy()
@@ -126,7 +128,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
     # combine all of the data loaded across files together
     # currently doesn't work if list of dicts of lists is provided
     # in other words, only one file at a time
-    out = pds.DataFrame.from_records(running_store[0], index='_index')
+    out = DataFrame.from_records(running_store[0], index='_index')
          
     return out, mdata        
 
@@ -135,7 +137,7 @@ def getyrdoy(date):
     """Return a tuple of year, day of year for a supplied datetime object."""
     #if date is not None:
     try:
-        doy = date.toordinal()-pds.datetime(date.year,1,1).toordinal()+1
+        doy = date.toordinal()-datetime(date.year,1,1).toordinal()+1
     except AttributeError:
         raise AttributeError("Must supply a pandas datetime object or equivalent")
     else:
@@ -219,13 +221,13 @@ def create_datetime_index(year=None, month=None, doy=None, uts=None):
     idx2 = np.hstack((idx,len(year)+1))   
     # computes UTC seconds offset for each unique set of year and month
     for _idx,_idx2 in zip(idx[1:],idx2[2:]):
-        temp = (pds.datetime(year[_idx],month[_idx],1) - pds.datetime(year[0],month[0],1))
+        temp = (datetime(year[_idx],month[_idx],1) - datetime(year[0],month[0],1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
     uts_del += (doy-1)*86400
     # add in seconds since unix epoch to first day
-    uts_del += (pds.datetime(year[0],month[0],1)-pds.datetime(1970,1,1) ).total_seconds()
+    uts_del += (datetime(year[0],month[0],1)-datetime(1970,1,1) ).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)

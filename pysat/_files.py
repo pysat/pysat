@@ -5,14 +5,12 @@ import re
 import glob
 import numpy as np
 import pandas as pds
-
-
 from pysat import data_dir as data_dir
 
-
 class Files(object):
-    
+        
     def __init__(self, sat):
+
         self._sat = weakref.proxy(sat)
         self.base_path = os.path.join(os.getenv('HOME'), '.pysat')
         self.start_date = None

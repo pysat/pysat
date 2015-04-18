@@ -29,7 +29,7 @@ def list_files(tag=None, data_path=None):
            
 def load(fnames, tag=None):
     if len(fnames) <= 0 :
-        return pds.DataFrame(None), pysat.Meta(None)
+        return pysat.DataFrame(None), pysat.Meta(None)
     else:
          cdf = pycdf.CDF(fnames[0])
          data = {}
@@ -40,12 +40,12 @@ def load(fnames, tag=None):
          # matrices have storage issues (double split intwo two floats),
          # defer issue and drop for now
          epoch = data.pop('Epoch')
-	 data = pds.DataFrame(data, index=epoch)
+	 data = pysat.DataFrame(data, index=epoch)
 	 return data, pysat.Meta(None)
 
 def default(ivm):
 
-    ivm.sample_rate = 1.0 if ivm.date >= pds.datetime(2010, 7, 29) else 2.0
+    ivm.sample_rate = 1.0 if ivm.date >= pysat.datetime(2010, 7, 29) else 2.0
    
             
 def clean(self):

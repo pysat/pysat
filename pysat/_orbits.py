@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pds
+from pysat import Series, DataFrame
 
 class orbits(object):
     
@@ -100,7 +101,7 @@ class orbits(object):
         #define derivative function here
         #deriv = lambda x: (x[1] - x[0])/2
         lt_diff = self.sat[self.orbit_index].diff()
-        ut_vals = pds.Series(self.sat.data.index)
+        ut_vals = Series(self.sat.data.index)
         ut_diff = ut_vals.diff()
         #locations where derivative is less than 0
         #or, look for breaks because the length of time between samples is too large
@@ -229,7 +230,7 @@ class orbits(object):
                 raise ValueError('Provided orbit index does not exist in loaded data')
 
         lt_diff = self.sat[self.orbit_index].diff()
-        ut_vals = pds.Series(self.sat.data.index)
+        ut_vals = Series(self.sat.data.index)
         ut_diff = ut_vals.diff()
         # locations where derivative is less than 0
         # or, look for breaks because the length of time between samples is too large

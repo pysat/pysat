@@ -22,7 +22,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.2.1',
+    version='0.1.2.2',
 
     description='Supports science data analysis across measurement platforms',    
     #long_description=(''),
@@ -75,7 +75,8 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['SpacePy','netCDF4'],
-    dependency_links = ['https://github.com/rstoneback/pandas'],
+    #dependency_links = ['http://github.com/rstoneback/pandas/tarball/master#egg=rstoneback-pandas-0.16.0-54-ga32da86'],
+    dependency_links = ['http://github.com/rstoneback/pandas.git'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

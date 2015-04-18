@@ -20,15 +20,15 @@ def load(fnames, tag=None):
     yr = int('20'+parts[-1][0:2])
     month = int(parts[-3])
     day = int(parts[-2])
-    date = pds.datetime(yr,month,day)
+    date = pysat.datetime(yr,month,day)
     num = 86400 #int(tag)
     uts = np.arange(num)
-    data = pds.DataFrame(uts, columns=['uts'])
+    data = pysat.DataFrame(uts, columns=['uts'])
 
 
     # need to create simple orbits here. Have start of first orbit 
     # at 2009,1, 0 UT. 14.84 orbits per day	
-    time_delta = date  - pds.datetime(2009,1,1) 
+    time_delta = date  - pysat.datetime(2009,1,1) 
     uts_root = np.mod(time_delta.total_seconds(), 5820)
     mlt = np.mod(uts_root+np.arange(num), 5820)*(24./5820.)
     data['mlt'] = mlt
@@ -41,12 +41,12 @@ def load(fnames, tag=None):
     data.index=index
     return data, pysat.Meta()
 
-def list_files(tag=None, data_dir=None):
+def list_files(tag=None, data_path=None):
     """Produce a fake list of files spanning a year"""
     
-    index = pds.date_range(pds.datetime(2008,1,1), pds.datetime(2010,12,31)) 
-    names = [ data_dir+'/'+date.strftime('%D')+'.nofile' for date in index]
-    return pds.Series(names, index=index)
+    index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31)) 
+    names = [ data_path+'/'+date.strftime('%D')+'.nofile' for date in index]
+    return pysat.Series(names, index=index)
     
 def download(start, stop, data_path=None,user=None, password=None):
     pass
@@ -60,4 +60,4 @@ def download(start, stop, data_path=None,user=None, password=None):
 #    
 #    d = {'code':code, 'index':index, 'label':label, 'units':units, 'description':description}
 #    
-#    return pds.DataFrame(d, index=d['code'])
+#    return pysat.DataFrame(d, index=d['code'])
