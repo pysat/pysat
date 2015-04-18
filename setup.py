@@ -22,9 +22,9 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.0',
+    version='0.1.1a1',
 
-    description='Supports science data analysis across measurement platforms',    
+    #description='Supports science data analysis across measurement platforms',    
 
     # The project's main homepage.
     url='http://github.com/rstoneback/pysat',
@@ -68,13 +68,13 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['pysat','pysat.instruments', 'pysat.ssnl'],
+    packages=['pysat','pysat.instruments', 'pysat.ssnl', 'pysat.tests'],
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['SpacePy','netCDF4', 'pyhdf', 'nose'],
+    install_requires=['SpacePy','netCDF4', 'pyhdf>=0.0.dev0'],
     dependency_links = ['http://github.com/rstoneback/pandas'],
 
     # List additional groups of dependencies here (e.g. development
