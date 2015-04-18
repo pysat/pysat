@@ -93,6 +93,9 @@ cosmic.load(date=start)
 # all relevant profile information indexed by altitude
 # print part of the first profile 
 print cosmic[0,'profiles'].iloc[55:60]
+# print part of profile, selection by alitude value
+print cosmic[0,'profiles'].ix[208:220]
+
 ```
 
 
