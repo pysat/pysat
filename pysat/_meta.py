@@ -1,7 +1,6 @@
 import os
 import pandas as pds
 
-#from pysat import __path__ as mod_path
 from pysat import DataFrame, Series
 
 class Meta(object):
