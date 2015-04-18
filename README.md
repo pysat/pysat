@@ -43,7 +43,7 @@ manner.
 ```
 pip install pysat
 ```
-* Run pysat.utils.set_data_dir('path to top level data dir')
+* in python, run pysat.utils.set_data_dir('path to top level data dir')
 * Nominal organization of data is top_dir/platform/name/tag/*/files
 
 #Quick Demo
@@ -59,7 +59,7 @@ vefi = pysat.Instrument('cnofs','vefi','dc_b', 'clean')
 # 1-second mag field data
 vefi.load(date=pds.datetime(2009,1,1))
 
-cosmic = pysat.Istrument('cosmic', 'gps', 'ionprf')
+cosmic = pysat.Instrument('cosmic2013', 'gps', 'ionprf')
 # gps occultation, vertical electron density profiles
 cosmic.load(fname='filename')
 or
@@ -68,6 +68,17 @@ cosmic.load(2009,1)
 pysat calls functions written specifically for the given instrument, in this
 case the Ion Velocity Meter onboard C/NOFS, part of the Coupled Ion
 Neutral Dynamics Investigation (CINDI), to enable loading and cleaning.
+
+##Download Data
+Download data easily onto your filesystem.
+```
+import pandas as pds
+# 1-second mag field data
+vefi = pysat.Instrument('cnofs','vefi','dc_b', 'clean')
+start = pds.datetime(2010, 3, 4)
+stop = pds.datetime(2010, 3, 8)
+vefi.download(start, stop)
+```
 
 ##Data Access
 * ivm['name'] or ivm.data['name'] or ivm.data.ix['name']
