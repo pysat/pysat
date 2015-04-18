@@ -38,7 +38,8 @@ manner.
 #Installation
 ##Starting from scratch
 * One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
-* Download NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html) 
+* Download and install NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html) 
+* Download and install netcdf-4 [library](http://unidata.github.io/netcdf4-python/) 
 * at command line type
 ```
 pip install pysat
@@ -89,13 +90,18 @@ stop = pds.datetime(2009,1,3)
 # requires CDAAC account 
 cosmic.download(start, stop, user='', password='')
 cosmic.load(date=start)
-# print part of profile indexed by altitude
+# the profiles column has a DataFrame in each element which stores
+# all relevant profile information indexed by altitude
+# print part of the first profile, selection by integer location
 print cosmic[0,'profiles'].iloc[55:60]
+# print part of profile, selection by alitude value
+print cosmic[0,'profiles'].ix[208:220]
+
 ```
 
 
 ##Data Access
-* ivm['name'] or ivm.data['name'] or ivm.data.ix['name']
+* ivm['name'] or ivm.data['name']
 * ivm[row,'name'], ivm[row1:row2,'name'], ivm[[1,2,3], 'name']
 * ivm[datetime,'name'], ivm[datetime1:datetime2,'name']
 * complete pandas data object exposed in ivm.data
@@ -106,8 +112,8 @@ ivm['new_data'] = new_data
 ```
 #####Assignment with metadata
 ```
-ivm['double_mlt'] = {'data':2.*inst['mlt'], 'name':'double_mlt', 
-            'long_name':'Double MLT', 'units':'hours'}
+ivm['double_mlt'] = {'data':2.*inst['mlt'], 'long_name':'Double MLT', 
+                     'units':'hours'}
 ```
 ##Custom Functions
 Science analysis is built upon custom data processing, thus custom functions 
@@ -165,7 +171,7 @@ for ivm in ivm:
 ```
 #####Iterate by orbit over custom season:
 ```
-ivm = pysat.Instrument(name='cindi_ivm', tag='rs', clean_level='clean',
+ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', clean_level='clean',
                         orbit_index='mlt', orbit_type='local time')
 start = [pd.datetime(2009,1,1), pd.datetime(2010,1,1)]
 stop = [pd.datetime(2009,4,1), pd.datetime(2010,4,1)]
@@ -188,11 +194,11 @@ Math operations across series and dataframes are aligned and missing data is tre
 #Adding a new instrument to pysat
 pysat works by calling modules written for specific instruments
 that load and process the data consistent with the pysat standard. The name
-of the module corresponds to the name field when initializing a pysat
+of the module corresponds to the combination 'platform_name' provided when initializing a pysat
 instrument object. The module should be placed in the pysat instruments
 directory or in the user specified location (via mechanism to be added) 
 for automatic discovery. A compatible module may also be supplied directly
-to pysat.Instrument(inst_module=input module).
+to pysat.Instrument(inst_module=input module) if it also contains attributes platform and name. 
 
 #### Required Routines
 Three functions are required:
@@ -214,8 +220,9 @@ def list_files(tag=None, data_path=None):
 ```                                
 ###### Load Data
 * load routine that returns a tuple with (data, pysat metadata object)
+  * data is a pandas DataFrame, column names are the data labels, rows are indexed by datetime objects
   * pysat meta object obtained from pysat.Meta(). Use pandas DataFrame indexed
-by name with columns for units and long_name. Additional arbitrary columns allowed.
+by name with columns for 'units' and 'long_name'. Additional arbitrary columns allowed.
 Convenience function from_csv provided.
 ```
 def load(fnames, tag=None):
