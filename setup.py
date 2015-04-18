@@ -22,7 +22,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.2',
+    version='0.1.2.1',
 
     description='Supports science data analysis across measurement platforms',    
     #long_description=(''),
@@ -75,7 +75,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['SpacePy','netCDF4'],
-    dependency_links = ['http://github.com/rstoneback/pandas'],
+    dependency_links = ['https://github.com/rstoneback/pandas'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -90,7 +90,7 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     #package_data={
-    #    'sample': ['package_data.dat'],
+    #    'pysat.instruments': ['cnofs_ivm_meta.txt'],
     #},
 
     # Although 'package_data' is the preferred approach, in some case you may

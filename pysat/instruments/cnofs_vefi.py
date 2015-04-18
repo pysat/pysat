@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jul 19 17:03:47 2012
+Supports downloading, loading, and cleaning measurements from the
+Vefctor Electric Field Instrument (VEFI) onboard the Communication and Navigation Outage Forecasting
+System (C/NOFS) satellite.
 
-@author: musicalphysics
+current tags:
+    'dc_b' : 1 second DC magnetometer data
 """
 
 import pandas as pds
@@ -52,7 +55,8 @@ def load(fnames, tag=None):
          data = {}
          for key in cdf.iterkeys():
              data[key] = cdf[key][...]
-	 data = pds.DataFrame(data, index=pds.to_datetime(data['Epoch'], unit='s'))
+         epoch = data.pop['Epoch']
+	 data = pds.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
 	 return data, meta.copy()
 
 def download(date_array, tag, data_path=None, user=None, password=None):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Loads data from the COSMIC satellite, 2013 reprocessing.
+Loads data from the COSMIC satellite.
 
 tags:
     'ionprf: 'ionPrf' ionosphere profiles
