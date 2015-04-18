@@ -170,7 +170,7 @@ for ivm in ivm:
 ```
 #####Iterate by orbit over custom season:
 ```
-ivm = pysat.Instrument(name='cindi_ivm', tag='rs', clean_level='clean',
+ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', clean_level='clean',
                         orbit_index='mlt', orbit_type='local time')
 start = [pd.datetime(2009,1,1), pd.datetime(2010,1,1)]
 stop = [pd.datetime(2009,4,1), pd.datetime(2010,4,1)]
