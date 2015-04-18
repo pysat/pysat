@@ -59,7 +59,7 @@ vefi = pysat.Instrument('cnofs','vefi','dc_b', 'clean')
 # 1-second mag field data
 vefi.load(date=pds.datetime(2009,1,1))
 
-cosmic = pysat.Istrument('cosmic2013', 'gps', 'ionprf')
+cosmic = pysat.Instrument('cosmic2013', 'gps', 'ionprf')
 # gps occultation, vertical electron density profiles
 cosmic.load(fname='filename')
 or
