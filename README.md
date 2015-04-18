@@ -50,6 +50,7 @@ pip install pysat
 ```
 pip install git+https://github.com/rstoneback/pandas.git
 ```
+It is hoped that the needed changes will be pulled into main pandas.
 
 #Quick Demo
 The core functionality is exposed through the Instrument object, providing a single
