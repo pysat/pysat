@@ -192,7 +192,7 @@ of the module corresponds to the combination 'platform_name' provided when initi
 instrument object. The module should be placed in the pysat instruments
 directory or in the user specified location (via mechanism to be added) 
 for automatic discovery. A compatible module may also be supplied directly
-to pysat.Instrument(inst_module=input module).
+to pysat.Instrument(inst_module=input module) if it also contains attributes platform and name. 
 
 #### Required Routines
 Three functions are required:
