@@ -38,11 +38,11 @@ manner.
 #Installation
 ##Starting from scratch
 * One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
-* Obtain a git account and clone the pysat and forked pandas repositories using the web links on each page. From the command line:
-```git clone <link>```
-* In the pandas directory created by git type
-```python setup.py install```
-* For pysat, ensure pythonpath includes pysat.
+* Download NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html) 
+* at command line type
+```
+pip install pysat
+```
 * Run pysat.utils.set_data_dir('path to top level data dir')
 * Nominal organization of data is top_dir/platform/name/tag/*/files
 
