@@ -22,10 +22,10 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.1a1',
+    version='0.1.2',
 
-    #description='Supports science data analysis across measurement platforms',    
-
+    description='Supports science data analysis across measurement platforms',    
+    #long_description=(''),
     # The project's main homepage.
     url='http://github.com/rstoneback/pysat',
 
@@ -48,7 +48,7 @@ setup(
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Astronomy',
         'Topic :: Scientific/Engineering :: Physics',
-
+        'Topic :: Scientific/Engineering :: Atmospheric Science',
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: BSD License',
 
@@ -74,7 +74,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['SpacePy','netCDF4', 'pyhdf>=0.0.dev0'],
+    install_requires=['SpacePy','netCDF4'],
     dependency_links = ['http://github.com/rstoneback/pandas'],
 
     # List additional groups of dependencies here (e.g. development
