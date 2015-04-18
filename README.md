@@ -86,6 +86,7 @@ import pandas as pds
 cosmic = pysat.Instrument('cosmic2013','gps', tag='ionprf', clean_level='clean')
 start = pds.datetime(2009,1,2)
 stop = pds.datetime(2009,1,3)
+# requires CDAAC account 
 cosmic.download(start, stop, user='', password='')
 cosmic.load(date=start)
 ```
