@@ -70,7 +70,7 @@ case the Ion Velocity Meter onboard C/NOFS, part of the Coupled Ion
 Neutral Dynamics Investigation (CINDI), to enable loading and cleaning.
 
 ##Download Data
-Download data easily
+Download data easily onto your filesystem.
 ```
 import pandas as pds
 # 1-second mag field data
