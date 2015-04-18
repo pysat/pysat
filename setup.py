@@ -24,9 +24,7 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version='0.1.0',
 
-    description='Python Satellite Analysis Toolkit, simplifies space science data analysis across platforms',
-    #downloading, loading, processsing, and analyzing '+
-      #'science data across measurement platforms.',
+    description='Supports science data analysis across measurement platforms',    
 
     # The project's main homepage.
     url='http://github.com/rstoneback/pysat',
