@@ -100,7 +100,7 @@ print cosmic[0,'profiles'].ix[208:220]
 
 
 ##Data Access
-* ivm['name'] or ivm.data['name'] or ivm.data.ix['name']
+* ivm['name'] or ivm.data['name']
 * ivm[row,'name'], ivm[row1:row2,'name'], ivm[[1,2,3], 'name']
 * ivm[datetime,'name'], ivm[datetime1:datetime2,'name']
 * complete pandas data object exposed in ivm.data
