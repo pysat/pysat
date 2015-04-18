@@ -91,7 +91,7 @@ cosmic.download(start, stop, user='', password='')
 cosmic.load(date=start)
 # the profiles column has a DataFrame in each element which stores
 # all relevant profile information indexed by altitude
-# print part of the first profile 
+# print part of the first profile, selection by integer location
 print cosmic[0,'profiles'].iloc[55:60]
 # print part of profile, selection by alitude value
 print cosmic[0,'profiles'].ix[208:220]
