@@ -89,7 +89,9 @@ stop = pds.datetime(2009,1,3)
 # requires CDAAC account 
 cosmic.download(start, stop, user='', password='')
 cosmic.load(date=start)
-# print part of profile indexed by altitude
+# the profiles column has a DataFrame in each element which stores
+# all relevant profile information indexed by altitude
+# print part of the first profile 
 print cosmic[0,'profiles'].iloc[55:60]
 ```
 
