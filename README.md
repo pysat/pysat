@@ -187,7 +187,7 @@ For higher order data sets, a pandas series or pandas DataFrame may also be stor
 within each cell of a column, with 1D or other dimensional data in other columns.
 This set up allows for all data types to be stored in a single data object.
 
-A powerfule feature of pandas is auto-alignment of data based upon the index.
+A powerful feature of pandas is auto-alignment of data based upon the index.
 Thus, the profiles or images stored as above do not need to have the same sizes.
 Math operations across series and dataframes are aligned and missing data is treated as dictated.
 
