@@ -214,8 +214,9 @@ def list_files(tag=None, data_path=None):
 ```                                
 ###### Load Data
 * load routine that returns a tuple with (data, pysat metadata object)
+  * data is a pandas DataFrame, column names are the data labels, rows are indexed by datetime objects
   * pysat meta object obtained from pysat.Meta(). Use pandas DataFrame indexed
-by name with columns for units and long_name. Additional arbitrary columns allowed.
+by name with columns for 'units' and 'long_name'. Additional arbitrary columns allowed.
 Convenience function from_csv provided.
 ```
 def load(fnames, tag=None):
