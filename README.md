@@ -38,7 +38,7 @@ manner.
 #Installation
 ##Starting from scratch
 * One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
-* Download NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html) 
+* Download and install NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html) 
 * at command line type
 ```
 pip install pysat
