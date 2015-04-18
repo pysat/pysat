@@ -46,6 +46,10 @@ pip install pysat
 ```
 * in python, run pysat.utils.set_data_dir('path to top level data dir')
 * Nominal organization of data is top_dir/platform/name/tag/*/files
+* To get the forked pandas, needed for full supoort of mixed data types.
+```
+pip install git+https://github.com/rstoneback/pandas.git
+```
 
 #Quick Demo
 The core functionality is exposed through the Instrument object, providing a single
