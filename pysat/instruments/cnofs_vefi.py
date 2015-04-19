@@ -56,7 +56,7 @@ def load(fnames, tag=None):
          data = {}
          for key in cdf.iterkeys():
              data[key] = cdf[key][...]
-         epoch = data.pop['Epoch']
+         epoch = data.pop('Epoch')
 	 data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
 	 return data, meta.copy()
 
