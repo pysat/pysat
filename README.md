@@ -39,7 +39,7 @@ manner.
 ##Starting from scratch
 * One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
 * Download and install NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html) 
-* Download and install netcdf-4 [library](http://unidata.github.io/netcdf4-python/) 
+* Download and install netcdf-4 [library](http://www.unidata.ucar.edu/downloads/netcdf/index.jsp) 
 * at command line type
 ```
 pip install pysat
