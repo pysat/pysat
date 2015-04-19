@@ -86,10 +86,6 @@ def clean(self):
         idx, = np.where((self.data.driftMeterflag>= 90) & (self.data.driftMeterflag % 10 < 1))
         self.data = self.data.ix[idx,:]
 
-    # sometimes yrdoyentry is 0, remove them
-    #self.data = self.data[self.data.yrdoy != 0]
-    idx, = np.where(self.data.yrdoy != 0)
-    self.data = self.data.ix[idx,:]
 
     # basic quality check on drifts and don't let UTS go above 86400.
     #self.data = self.data[ (self.data.uts <= 86400.)]
