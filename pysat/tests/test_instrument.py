@@ -6,6 +6,7 @@ import pandas as pds
 from nose.tools import assert_raises, raises
 import nose.tools
 import pysat.instruments.pysat_testing
+import numpy as np
 
 class TestBasics:
     def setup(self):
@@ -122,3 +123,29 @@ class TestBasics:
         te = pysat.Instrument('pysat','testing', '10000', pad=True, minutes=5)
         te.load(2009,1)
         assert (te.data.index[0] == te.date ) & (te.data.index[-1] == te.date + pds.DateOffset(hour=23, minutes=59,seconds=59) )
+        
+    def test_basic_data_access_by_name(self):
+        self.testInst.load(2009,1)
+        assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
+        
+    def test_data_access_by_row_slicing_and_name(self):
+        self.testInst.load(2009,1)
+        assert np.all(self.testInst[0:10,'uts'] == self.testInst.data.ix[0:10,'uts'])
+
+    def test_data_access_by_row_and_name(self):
+        self.testInst.load(2009,1)
+        assert np.all(self.testInst[0,'uts'] == self.testInst.data.ix[0,'uts'])
+
+    def test_data_access_by_datetime_and_name(self):
+        self.testInst.load(2009,1)
+        assert np.all(self.testInst[pysat.datetime(2009,1,1,0,0,0),'uts'] == self.testInst.data.ix[0,'uts'])
+       
+    def test_data_access_by_datetime_slicing_and_name(self):
+        self.testInst.load(2009,1)
+        assert np.all(self.testInst[pysat.datetime(2009,1,1,0,0,0):pysat.datetime(2009,1,1,0,0,10),'uts'] == 
+                        self.testInst.data.ix[0:11,'uts'])
+                        
+    def test_setting_data_by_name(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
