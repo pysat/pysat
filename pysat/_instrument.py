@@ -20,7 +20,7 @@ class Instrument(object):
 
 
     def __init__(self, platform=None, name=None, tag=None, clean_level='clean', 
-                query_files=False, pad=False,
+                query_files=False, pad=None,
                 orbit_index=None, orbit_type=None, orbit_period=None,  
                 inst_module=None, *arg, **kwargs):
         '''
@@ -81,7 +81,11 @@ class Instrument(object):
         self._curr_data = DataFrame(None)
         # arguments for padding
         self.pad = pad
-        self.padkws = kwargs	
+        if pad is not None:
+            if not isinstance(pad,dict):
+                raise ValueError('pad must be None or a dict with padding time')
+        #self.padkws = kwargs	
+        self.kwargs = kwargs
 
         # load file list function, which returns dict of files
         # as well as data start and end dates
@@ -212,7 +216,7 @@ class Instrument(object):
    
         if len(fname) > 0:    
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
-            data, mdata = self._load_rtn(load_fname, tag = self.tag) 
+            data, mdata = self._load_rtn(load_fname, tag = self.tag, **self.kwargs) 
         else:
             data = DataFrame(None)
             mdata = _meta.Meta()
@@ -268,7 +272,7 @@ class Instrument(object):
 	    return self._load_data(fid = self._fid-1)
 
     def load(self, yr=None, doy=None, date=None, fname=None, fid=None, 
-                verifyPad=False, *arg, **kwargs):
+                verifyPad=False):
         """
         Load instrument data into satellite object as .data
 
@@ -329,7 +333,7 @@ class Instrument(object):
 				
         self.orbits._reset()        
         # if pad is true, need to have a three day/file load
-        if self.pad:
+        if self.pad is not None:
             if self._next_data.empty & self._prev_data.empty:
                 # data has not already been loaded for previous and next days
                 # load data for all three
@@ -366,7 +370,7 @@ class Instrument(object):
 	        self.data = DataFrame(None)	
 	        self.meta = _meta.Meta()
             # pad data based upon passed parameter
-            offs = pds.DateOffset( **(self.padkws) )
+            offs = pds.DateOffset( **(self.pad) )
             if (not self._prev_data.empty) & (not self.data.empty) :
                 padLeft = self._prev_data[(self._curr_data.index[0]-offs):self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
@@ -389,7 +393,7 @@ class Instrument(object):
         if not self.data.empty:
             self.custom._apply_all(self)
         # remove the excess padding, if any applied
-        if self.pad & (not self.data.empty) & (not verifyPad) :
+        if (self.pad is not None)& (not self.data.empty) & (not verifyPad) :
             self.data = self.data[self._curr_data.index[0]:self._curr_data.index[-1]]
         # if loading by file set the yr, doy, and date
 	if not self._load_by_date:

@@ -112,17 +112,17 @@ class TestBasics:
         testIn.load(2009,1)
 
     def test_data_padding(self):
-        te = pysat.Instrument('pysat','testing', '10000', pad=True, minutes=5)
+        te = pysat.Instrument('pysat','testing', '10000', pad={'minutes':5})
         te.load(2009,1, verifyPad=True)
-        print te.data.index[0]
-        print te.data.index[-1]
         assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
-                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + pds.DateOffset(minutes=5)) )
+                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
             
     def test_data_padding_removal(self):
-        te = pysat.Instrument('pysat','testing', '10000', pad=True, minutes=5)
+        te = pysat.Instrument('pysat','testing', '10000', pad={'minutes':5})
         te.load(2009,1)
-        assert (te.data.index[0] == te.date ) & (te.data.index[-1] == te.date + pds.DateOffset(hour=23, minutes=59,seconds=59) )
+        assert (te.data.index[0] == te.date ) & \
+                (te.data.index[-1] == te.date + pds.DateOffset(hour=23, minutes=59,seconds=59) )
         
     def test_basic_data_access_by_name(self):
         self.testInst.load(2009,1)
