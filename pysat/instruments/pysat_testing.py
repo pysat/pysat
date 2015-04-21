@@ -11,9 +11,15 @@ import pysat
 platform = 'pysat'
 name = 'testing'
 
+meta = pysat.Meta()
+meta['uts'] = {'units':'s', 'long_name':'Universal Time'}
+meta['mlt'] = {'units':'hours', 'long_name':'Magnetic Local Time'}
+meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
+
+        
 def init(self):
-    self.new_thing=True
-    
+    self.new_thing=True        
+                
 def load(fnames, tag=None):
     # create an artifical satellite data set
     parts = fnames[0].split('/')
@@ -39,7 +45,7 @@ def load(fnames, tag=None):
 
     index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq='S')
     data.index=index
-    return data, pysat.Meta()
+    return data, meta.copy()
 
 def list_files(tag=None, data_path=None):
     """Produce a fake list of files spanning a year"""
@@ -50,14 +56,3 @@ def list_files(tag=None, data_path=None):
     
 def download(start, stop, data_path=None,user=None, password=None):
     pass
-#def meta():
-#    
-#    code = ['uts', 'yrdoy', 'mlt', 'slt']
-#    index = np.arange(len(code))
-#    label = ['uts', 'Year Day of Year', 'Magnetic Local Time', 'Solar Local Time']
-#    units = ['s', ' ', 'hours', 'hours']
-#    description = ['', '', '', '']
-#    
-#    d = {'code':code, 'index':index, 'label':label, 'units':units, 'description':description}
-#    
-#    return pysat.DataFrame(d, index=d['code'])
