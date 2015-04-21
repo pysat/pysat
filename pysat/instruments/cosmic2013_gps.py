@@ -10,6 +10,7 @@ tags:
 """
 import glob
 import os
+import sys
 import netCDF4
 import pandas as pds
 import numpy as np
@@ -27,7 +28,7 @@ def list_files(tag=None, data_path=None):
     print 'Building a list of COSMIC files, which can possibly take time. ~1s per 100K files'
     sys.stdout.flush()
 
-    # number of files may be large, written with this in mind
+    # number of files may be large
     # only select file that are the cosmic data files and end with _nc
     cosmicFiles = glob.glob(os.path.join(data_path, '*/*_nc'))
     # need to get date and time from filename to generate index
@@ -210,6 +211,7 @@ def download(date_array, tag, data_path=None, user=None, password=None):
         
     for date in date_array:
         print 'Downloading COSMIC data for '+date.strftime('%D')
+        sys.stdout.flush()
         yr,doy = pysat.utils.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
         dwnld="http://cdaac-www.cosmic.ucar.edu/cdaac/rest/tarservice/data/cosmic2013/"

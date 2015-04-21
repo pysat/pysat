@@ -11,7 +11,7 @@ current tags:
 import pandas as pds
 import numpy as np
 import pysat
-import os
+import sys
 
 import spacepy
 from spacepy import pycdf
@@ -83,6 +83,7 @@ def download(date_array, tag, data_path=None, user=None, password=None):
             saved_fname = os.path.join(data_path,local_fname) 
             try:
                 print 'Downloading file for '+date.strftime('%D')
+                sys.stdout.flush()
                 ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
             except ftplib.error_perm as exception:
                 if exception[0][0:3] != '550':
