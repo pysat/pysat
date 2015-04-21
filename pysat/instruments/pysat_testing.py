@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jul 19 17:03:47 2012
-
-@author: musicalphysics
+Produces fake instrument data for testing.
 """
+
 import pandas as pds
 import numpy as np
 import pysat
