@@ -17,31 +17,63 @@ from pysat import data_dir #import pysat.data_dir as data_dir
 from pysat import DataFrame, Series
 # main class for users
 class Instrument(object):
+    """Download, load, manage, modify and analyze science data.
+    
+    Parameters
+    ----------    
+    platform : string
+        name of platform/satellite.
+    name : string
+        name of instrument. 
+	pysat attempts to load corresponding instrument module platform_name.
+    tag : string, optional
+        identifies particular subset of instrument data.
+    inst_module : module, optional
+        Provide instrument module directly (takes precedence over platform/name)
+    clean_level : {'clean','dusty','dirty','none'}, optional
+        level of data quality
+    pad : pandas.DateOffset, or dictionary, optional
+        length of time to pad the begining and end of loaded data for time-series processing. 
+        Extra data is removed after applying all custom functions. Dictionary, if supplied,
+        is simply passed to pandas DateOffset.
+    orbit_index : string, optional
+        data to be used to determine breaks in orbit, if requested.
+    orbit_type : {'local time', 'lt', 'longitude', 'polar'}, optional
+        type of orbit
+    orbit_period : datetime.timedelta, optional
+        orbital period
+    query_files : boolean, optional
+        if True, query filesystem and build a list of available files
+        
+    Attributes
+    ----------
+    data : pandas.DataFrame
+        loaded science data 
+    date : pandas.datetime
+        date for loaded data
+    yr : int
+        year for loaded data
+    doy : int
+        day of year for loaded data
+    files : pysat.Files
+        files for associated instrument object
+    meta : pysat.Meta
+        metadata for instrument object, similar to netCDF 1.6
+    orbits : pysat.Orbits
+        interface to extracting data orbit-by-orbit
+    custom : pysat.Custom
+        interface to instrument nano-kernel
+    kwargs : dictionary
+        keyword arguments passed to instrument loading routine, platform_name.load
+	
+    """
 
-
+    
     def __init__(self, platform=None, name=None, tag=None, clean_level='clean', 
                 query_files=False, pad=None,
                 orbit_index=None, orbit_type=None, orbit_period=None,  
                 inst_module=None, *arg, **kwargs):
-        '''
-        Class for analyzing, modifying, and managing satellite data.
-        
-        platform: String for instrument platform/satellite.
-	name : String indicating name of instrument. 
-	tag : String identifying particular aspect of the instrument.
-	   pysat attempts to load corresponding instrument module platform_name.
-	inst_module : Provide instrument module directly (takes precedence over name)
-	clean_level : String passed to clean function indicating level of quality.
-	pad : Boolean indicating whether padding should be added (using instrument data) to begining and end of data
-	       for time-series processing. Extra data is removed after applying all custom functions. Pad=True requires
-                length of time for padding (seconds or minutes or hours). Maximum of 1-day.
-	orbit_index : String indicating which data will be used to determine breaks in orbit, if requested.
-	orbit_type : String indicating type of orbit, equatorial (default) or polar.
-	orbit_period : datetime.timedelta object containing length of orbital period.
-	query_files: Boolean indicating whether the filesystem should be queried
-	               or if the stored list of files is sufficient. (set True if new files)
-	
-	'''
+
 
         if inst_module is None:
             if isinstance(platform, str) and isinstance(name, str):              
@@ -111,10 +143,21 @@ class Instrument(object):
                 
     def __getitem__(self, key): 
         """
-        Convenience notation for accessing data in inst.data.name using
-        inst['name'].
+        Convenience notation for accessing data; obtain inst.data.name using inst['name'].
         
-        Slicing is also allowed inst['name', a:b].
+        Examples
+        --------
+        By position : 
+            inst[row index, 'name']
+        Slicing by row :
+            inst[row1:row2, 'name']
+        By Date : 
+            inst[datetime, 'name']
+        Slicing by date : (inclusive)
+            inst[datetime1:datetime2, 'name']
+        Slicing by name and row/date : 
+            inst[datetime1:datetime1, 'name1':'name2']
+            
         """
 
         if isinstance(key, tuple):
@@ -124,7 +167,15 @@ class Instrument(object):
 	    return self.data[key]
 
     def __setitem__(self,key,new):
-        """Add data to inst.data dataFrame. inst['name'] = newData."""
+        """Convenience method for adding data to instrument, inst['name'] = newData.
+        
+        Examples
+        --------
+        Also supports adding metadata : 
+            inst['name'] = {'data':new_data, 'long_name':long_name, 'units':units}
+        If no metadata provided and there is not already some metadata then default meta information
+        is also added, long_name = 'name', and units = ''
+        """
         if isinstance(new, dict):
             # metadata should be included in dict
             self.data[key] = new.pop('data')
@@ -150,7 +201,7 @@ class Instrument(object):
                 raise ValueError("No support for supplied input key")           
     
     def copy(self):
-        """Deep copy of the entire satellite object."""
+        """Deep copy of the entire Instrument object."""
         return copy.deepcopy(self)
     
     def _pass_func(*args, **kwargs):
@@ -274,15 +325,23 @@ class Instrument(object):
     def load(self, yr=None, doy=None, date=None, fname=None, fid=None, 
                 verifyPad=False):
         """
-        Load instrument data into satellite object as .data
+        Load instrument data into Instrument object .data.
 
-        Keywords:
-            yr: year
-            doy: day of year
-            date: datetime object for date
-            fname: filename to be loaded
-            verifyPad: boolean to verify data padding is being applied (debug purposes)
-        Summary:
+        Keyword Args
+        ------------
+            yr : integer
+                year for desired data
+            doy : integer
+                day of year
+            date : datetime object
+                date to load
+            fname : 'string'
+                filename to be loaded
+            verifyPad : boolean 
+                if True, padding data not removed (debug purposes)
+                
+        Summary
+        -------
             Loads data for a chosen instrument into .data. Any functions chosen
             by the user and added to the custom processing queue (.custom.add)
             are automatically applied to the data before it is available to 
@@ -406,7 +465,19 @@ class Instrument(object):
         return
 
     def download(self, start, stop, user=None, password=None):
-        '''Download data for given Instrument object.'''
+        '''Download data for given Instrument object.
+        
+        Parameters
+        ----------
+        start : pandas.datetime
+            start date to download data
+        stop : pandas.datetime
+            stop date to download data
+        user : string
+            username, if required by instrument data archive
+        password : string
+            password, if required by instrument data archive
+        '''
         import errno
         # make sure directories are there, otherwise create them
         try:
@@ -439,28 +510,22 @@ class Instrument(object):
 	"""
 	Boundaries for iterating over instrument object by date or file.
 	
-	input: 
-	   start: datetime object, filename, or None (default)
-		  Defines start of iteration, if None uses first data date.
-	   end:  datetime object, filename, or None (default)
-		 Defines end of iteration, inclusive. If None uses last
-		 data date. 	
+	Parameters
+	---------- 
+	start : datetime object, filename, or None (default)
+	    start of iteration, if None uses first data date.
+	    list-like collection also accepted
+	end :  datetime object, filename, or None (default)
+            end of iteration, inclusive. If None uses last data date. 	
+            list-like collection also accepted
+        Note
+        ----
+        both start and stop must be the same type (date, or filename) or None
         """
         return (self._iter_start, self._iter_stop)
     
     @bounds.setter        
     def bounds(self, value=None):
-        #start=None, end=None):
-	"""
-	Set boundaries for iterating over instrument object by date or file.
-	
-	input: 
-	   start: datetime object, filename, or None (default)
-		  Defines start of iteration, if None uses first data date.
-	   end:  datetime object, filename, or None (default)
-		 Defines end of iteration, inclusive. If None uses last
-		 data date. 	
-        """
         if value is None:
             value = (None,None)
         if len(value) < 2:
@@ -527,9 +592,9 @@ class Instrument(object):
 
     def __iter__(self):
         """
-        Iterates by loading subsequent days or files as appropriate.
+        Iterates the instrument object by loading subsequent days or files as appropriate.
         	
-	Limits of iteration set by calling setBounds method.	
+	Limits of iteration, and iteration type (date/file) set by `bounds` attribute.	
         """
         if self._iter_type == 'file':
             for fid in self._iter_list:
@@ -545,9 +610,11 @@ class Instrument(object):
         """
         Manually iterate through the data loaded in satellite object.
         
-        Bounds of iteration and iteration type (day/file) are set by setBounds
-        If there were no previous calls to load then the first
-        day (default)/file will be loaded.
+        Bounds of iteration and iteration type (day/file) are set by `bounds` attribute
+        
+        Note
+        ----
+            If there were no previous calls to load then the first day (default)/file will be loaded.
         """
         
 	if self._iter_type == 'date':
@@ -576,9 +643,11 @@ class Instrument(object):
         """
         Manually iterate backwards through the data loaded in satellite object.
         
-        Bounds of iteration and iteration type (day/file) are set by setBounds
-        If there were no previous calls to load then the last
-        day (default)/file will be loaded.
+        Bounds of iteration and iteration type (day/file) are set by `bounds` attribute
+        
+        Note
+        ----
+            If there were no previous calls to load then the first day (default)/file will be loaded.
         """
         
 	if self._iter_type == 'date':
