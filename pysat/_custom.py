@@ -1,6 +1,6 @@
 import pandas as pds
 
-class custom(object):
+class Custom(object):
     """
     Class holds a list of functions and arguments to be applied when load called.
     """
@@ -16,32 +16,45 @@ class custom(object):
         self._kwargs = []
 
     def add(self, function, kind='add', at_pos='end',*args, **kwargs):
-        """ Add a function to custom processing queue. 
+        """Add a function to custom processing queue. 
         
         Custom functions are applied automatically to associated
         pysat instrument whenever instrument.load command called.
 
-        Inputs:
-            function - name of function or function object
+        Parameters
+        ----------
+            function : string or function object
+                name of function or function object to be added to queue
             
-            kind - type of custom function
-                add : Adds data returned from function to instrument object. 
-                      A copy of pysat instrument object supplied to routine. 
-                 Allowed returns:
-                    {'data':pandas Series/DataFrame/numpy array/list,
-                    'units':string/list of strings, 
-                    'long_name':string/list of strings,
-                    'name':string/list of strings (iff data isarray or list)}
-                        
-                    or, pandas DataFrame, names of columns are used
-                    or, pandas Series, .name required 
-                    or, (string/list of strings, numpy array/list of arrays)
-                modify : pysat instrument object supplied to routine. Any and all
-                         changes to object are retained.
-                pass : A copy of pysat object is passed to function. No 
-                       data is accepted from return.
+            kind : {'add', 'modify', 'pass}
+                add : 
+                    Adds data returned from function to instrument object. 
+                    A copy of pysat instrument object supplied to routine. 
+                modify : 
+                    pysat instrument object supplied to routine. Any and all
+                    changes to object are retained.
+                pass : 
+                    A copy of pysat object is passed to function. No 
+                    data is accepted from return.
                        
-            at_pos - insert at position. (default, insert at end).                      
+            at_pos : string or int 
+                insert at position. (default, insert at end).
+        Notes
+        -----
+        Allowed `add` function returns :
+            
+        - {'data' : pandas Series/DataFrame/numpy array/list,
+          'units' : string/list of strings, 
+          'long_name' : string/list of strings,
+          'name' : string/list of strings (iff data isarray or list)} 
+           
+        - pandas DataFrame, names of columns are used
+        
+        - pandas Series, .name required 
+        
+        - (string/list of strings, numpy array/list of arrays) 
+                               
+                                                                   
         """
 
         if isinstance(function, str):
