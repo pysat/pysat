@@ -24,6 +24,8 @@ from _instrument import Instrument
 import ssnl
 from _meta import Meta
 from _files import Files
+from _custom import Custom
+from _orbits import Orbits
 
 
 __all__ = ['ssnl','instruments', 'utils','meta','files']
