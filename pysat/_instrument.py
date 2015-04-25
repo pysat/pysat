@@ -25,7 +25,6 @@ class Instrument(object):
         name of platform/satellite.
     name : string
         name of instrument. 
-	pysat attempts to load corresponding instrument module platform_name.
     tag : string, optional
         identifies particular subset of instrument data.
     inst_module : module, optional
@@ -65,6 +64,13 @@ class Instrument(object):
         interface to instrument nano-kernel
     kwargs : dictionary
         keyword arguments passed to instrument loading routine, platform_name.load
+    
+    Note
+    ----
+    pysat attempts to load the module platform_name.py located in
+    the pysat/instruments directory. This module provides the underlying functionality to 
+    download, load, and clean instrument data. Alternatively, the module may be supplied directly
+    using keyword inst_module.
 	
     """
 
@@ -103,7 +109,7 @@ class Instrument(object):
         self.data = DataFrame(None)
         self.meta = _meta.Meta()
         # function processing class, processes data on load
-        self.custom = _custom.custom()
+        self.custom = _custom.Custom()
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
         self._next_data = DataFrame(None)
@@ -134,7 +140,7 @@ class Instrument(object):
         # attach seasonal methods for convenience        
         #self.ssnl = ssnl
         # initiliaze orbit support
-        self.orbits = _orbits.orbits(self, index=orbit_index, kind=orbit_type,
+        self.orbits = _orbits.Orbits(self, index=orbit_index, kind=orbit_type,
                                     period=orbit_period)
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
@@ -148,9 +154,9 @@ class Instrument(object):
         Examples
         --------
         By position : 
-            inst[row index, 'name']
+            inst[row index, 'name']  
         Slicing by row :
-            inst[row1:row2, 'name']
+            inst[row1:row2, 'name']            
         By Date : 
             inst[datetime, 'name']
         Slicing by date : (inclusive)
@@ -167,14 +173,19 @@ class Instrument(object):
 	    return self.data[key]
 
     def __setitem__(self,key,new):
-        """Convenience method for adding data to instrument, inst['name'] = newData.
+        """Convenience method for adding data to instrument.
         
         Examples
         --------
-        Also supports adding metadata : 
+        Simple Assignment :
+            inst['name'] = newData
+        Assignment with Metadata :
             inst['name'] = {'data':new_data, 'long_name':long_name, 'units':units}
-        If no metadata provided and there is not already some metadata then default meta information
-        is also added, long_name = 'name', and units = ''
+        
+        Note
+        ----
+        If no metadata provided and if metadata for 'name' not already stored then default meta 
+        information is also added, long_name = 'name', and units = ''.
         """
         if isinstance(new, dict):
             # metadata should be included in dict
@@ -607,14 +618,14 @@ class Instrument(object):
                 yield self            
                 
     def next(self):
-        """
-        Manually iterate through the data loaded in satellite object.
+        """Manually iterate through the data loaded in satellite object.
         
         Bounds of iteration and iteration type (day/file) are set by `bounds` attribute
         
         Note
         ----
             If there were no previous calls to load then the first day (default)/file will be loaded.
+            
         """
         
 	if self._iter_type == 'date':
@@ -640,14 +651,14 @@ class Instrument(object):
                 self.load(fid = self._iter_list[0])
 
     def prev(self):
-        """
-        Manually iterate backwards through the data loaded in satellite object.
+        """Manually iterate backwards through the data loaded in satellite object.
         
         Bounds of iteration and iteration type (day/file) are set by `bounds` attribute
         
         Note
         ----
             If there were no previous calls to load then the first day (default)/file will be loaded.
+            
         """
         
 	if self._iter_type == 'date':
