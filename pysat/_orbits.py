@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pds
 from pysat import Series, DataFrame
 
-class orbits(object):
+class Orbits(object):
     
     
 #####################
