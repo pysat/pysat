@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import string
-import pandas as pds
-import numpy as np
 import os
-#from types import ModuleType
 import copy
 import sys
-
+import pandas as pds
+import numpy as np
 
 import _custom
 import _files
@@ -15,6 +13,7 @@ import _meta
 import utils
 from pysat import data_dir #import pysat.data_dir as data_dir
 from pysat import DataFrame, Series
+
 # main class for users
 class Instrument(object):
     """Download, load, manage, modify and analyze science data.
@@ -52,12 +51,14 @@ class Instrument(object):
         date for loaded data
     yr : int
         year for loaded data
+    bounds : (datetime/filename/None, datetime/filename/None)
+        bounds for loading data, supply array_like for a season with gaps
     doy : int
         day of year for loaded data
     files : pysat.Files
-        files for associated instrument object
+        interface to instrument files
     meta : pysat.Meta
-        metadata for instrument object, similar to netCDF 1.6
+        interface to instrument metadata, similar to netCDF 1.6
     orbits : pysat.Orbits
         interface to extracting data orbit-by-orbit
     custom : pysat.Custom
@@ -65,13 +66,39 @@ class Instrument(object):
     kwargs : dictionary
         keyword arguments passed to instrument loading routine, platform_name.load
     
-    Note
-    ----
+    Notes
+    -----
     pysat attempts to load the module platform_name.py located in
     the pysat/instruments directory. This module provides the underlying functionality to 
     download, load, and clean instrument data. Alternatively, the module may be supplied directly
     using keyword inst_module.
-	
+    
+    Examples
+    --------     
+    :: 
+           
+        # 1-second mag field data
+        vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', 
+                                clean_level='clean')
+        start = pysat.datetime(2009,1,1)
+        stop = pysat.datetime(2009,1,2)
+        vefi.download(start, stop)
+        vefi.load(date=start)
+        print vefi['dB_mer']
+        print vefi.meta['db_mer']
+    
+        # 1-second thermal plasma parameters
+        ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', clean_level='clean')
+        ivm.download(start,stop)
+        ivm.load(2009,1)
+        print ivm['ionVelmeridional'] 
+        
+        # Ionosphere profiles from GPS occultation
+        cosmic = pysat.Instrument('cosmic2013', 'gps', 'ionprf', altitude_bin=3)
+        # bins profile using 3 km step
+        cosmic.download(start, stop, user=user, password=password)
+        cosmic.load(date=start)
+    	
     """
 
     
