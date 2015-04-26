@@ -3,13 +3,63 @@ import pandas as pds
 from pysat import Series, DataFrame
 
 class Orbits(object):
+    """Determines orbits on the fly and provides orbital data in .data.
     
+    Determines the locations of orbit breaks in the loaded data in inst.data
+    and provides iteration tools and convenient orbit selection via
+    inst.orbit[orbit num].
     
-#####################
-### The following routines allow the user to select a particular orbit
-### from a satellite. It also inlcudes an orbit iterator that can span day breaks,
-### freeing the user from this data management task.
-#####################
+    Parameters
+    ----------
+        sat : pysat.Instrument instance
+            instrument object to determine orbits for
+        index : string
+            name of the data series to use for determing orbit breaks
+        kind : {'local time', 'longitude', 'polar'}
+            kind of orbit, determines how orbital breaks are determined
+            
+            - local time: negative gradients in lt or breaks in inst.data.index
+            - longitude: negative gradients or breaks in inst.data.index
+            - polar: zero crossings in latitude or breaks in inst.data.index
+        period : np.timedelta64
+            length of time for orbital period, used to gauge when a break
+            in the datetime index (inst.data.index) is large enough to
+            consider it a new orbit
+            
+    Notes
+    -----
+        class should not be called directly by the user, use the interface provided
+        by inst.orbits where inst = pysat.Instrument()
+    
+    Examples
+    --------
+    ::
+    
+        vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', 
+                                clean_level=None, orbit_index='longitude', 
+                                orbit_type='longitude')
+        start = pysat.datetime(2009,1,1)
+        stop = pysat.datetime(2009,1,10)
+        vefi.load(date=start)
+        vefi.bounds(start, stop)
+        
+        # iterate over orbits
+        for vefi in vefi.orbits:
+            print 'Next available orbit ', vefi['dB_mer']
+                            
+        # load fifth orbit of first day
+        vefi.load(date=start)
+        vefi.orbits[5]
+        
+        # less convenient load
+        vefi.orbits.load(5)
+        
+        # manually iterate orbit
+        vefi.orbits.next()
+        # backwards
+        vefi.orbits.prev()
+           
+    """
 
     def __init__(self, sat=None, index=None, kind=None, period=None):
         #create null arrays for storing orbit info
@@ -45,8 +95,20 @@ class Orbits(object):
 
             
     def __getitem__(self, key): 
-        """ Enable convenience notation for loading orbit into parent object.
+        """Enable convenience notation for loading orbit into parent object.
         
+        Example
+        -------
+        ::
+        
+            inst.load(date=date)
+            inst.orbits[4]
+            print 'Orbit data ', inst.data
+        
+        Note
+        ----
+            A day of data must already be loaded.
+            
         """
         
         self.load(key)
@@ -412,10 +474,12 @@ class Orbits(object):
     def load(self, orbit=None):
         """Load a particular orbit into .data for loaded day.
 
-        Keywords:
+        Parameters
+        ----------
             orbit = orbit number, 1 indexed
 
-        Note:
+        Note
+        ----    
             A day of data must be loaded before this routine functions properly.
             If the last orbit of the day is requested, it will automatically be
             padded with data from the next day. The orbit counter will be reset to 1."""
@@ -491,8 +555,12 @@ class Orbits(object):
     def next(self, *arg, **kwarg):
         """Load the next orbit into .data.
 
-        Notes:
-            Forms complete orbits across day boundaries."""
+        Note
+        ----
+        Forms complete orbits across day boundaries. If no data loaded
+        then the first orbit from the first date of data is returned.
+            
+        """
 
         #first, check if data exists
         if len(self.sat.data) > 0:
@@ -517,9 +585,9 @@ class Orbits(object):
                 if load_next:
                     temp_orbit_data = self.sat.data.copy() 
                     try:
-                        #loading next day/file clears orbit breaks info
+                        # loading next day/file clears orbit breaks info
                         self.sat.next()
-   	            #combine this next day orbit with previous last orbit
+   	                # combine this next day orbit with previous last orbit
                         if len(self.sat.data) > 0:
                             self.sat.data = pds.concat([temp_orbit_data[:self.sat.data.index[0] - pds.DateOffset(microseconds=1)], self.sat.data])
                             self._getBasicOrbit(orbit=1)
@@ -593,8 +661,12 @@ class Orbits(object):
     def prev(self, *arg, **kwarg):
         """Load the next orbit into .data.
 
-        Notes:
-            Forms complete orbits across day boundaries."""
+        Note
+        ----
+        Forms complete orbits across day boundaries. If no data loaded
+        then the last orbit of data from the last day is loaded into .data.
+            
+        """
 
         #first, check if data exists
         if len(self.sat.data) > 0:
@@ -668,9 +740,22 @@ class Orbits(object):
             self.prev()    
             
     def __iter__(self):
-        '''Support iteration by orbit. Uses bounds of Satellite object.
-        	
-	Limits of iteration set by calling setBounds method.	
+        '''Support iteration by orbit.
+        
+        For each iteration the next available orbit is loaded into
+        inst.data.
+        
+        Example
+        -------
+        ::
+        
+            for inst in inst.orbits:
+                print 'next available orbit ', inst.data
+        
+	Note:
+	-----
+	Limits of iteration set by setting inst.bounds.	
+	
         '''
         while True:
             self.next()

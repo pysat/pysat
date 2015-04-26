@@ -73,10 +73,10 @@ class Custom(object):
         -----
         Allowed `add` function returns :
             
-        - {'data' : pandas Series/DataFrame/numpy array/list,
-          'units' : string/list of strings, 
-          'long_name' : string/list of strings,
-          'name' : string/list of strings (iff data isarray or list)} 
+        - {'data' : pandas Series/DataFrame/array_like,
+          'units' : string/array_like of strings, 
+          'long_name' : string/array_like of strings,
+          'name' : string/array_like of strings (iff data array_like)} 
            
         - pandas DataFrame, names of columns are used
         

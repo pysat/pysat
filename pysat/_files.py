@@ -8,6 +8,15 @@ import pandas as pds
 from pysat import data_dir as data_dir
 
 class Files(object):
+    """Maintains collection of files for instrument object.
+    
+    Uses the list_files functions for each specific instrument
+    to create an ordered collection of files in time. Used by
+    instrument object to load the correct files. Files also
+    contains helper methods for determining the presence of
+    new files and creating a an ordered list of files.
+      
+    """
         
     def __init__(self, sat):
 
@@ -16,10 +25,11 @@ class Files(object):
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None)
-        self.data_path = os.path.join(data_dir,self._sat.platform, self._sat.name, self._sat.tag)
+        self.data_path = os.path.join(data_dir, self._sat.platform, 
+                                      self._sat.name, self._sat.tag)
         
         if self._sat.platform != '':
-            info = self._load()#self._sat.platform, self._sat.name, self._sat.tag)
+            info = self._load()
        	    if info is not False:
        	        self._attach_files(info)
        	    else:
