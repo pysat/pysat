@@ -2,7 +2,37 @@ import pandas as pds
 
 class Custom(object):
     """
-    Class holds a list of functions and arguments to be applied when load called.
+    Applies a queue of functions when instrument.load called.
+    
+    Nano-kernel functionality enables instrument objects that are
+    'fire and forget'. The functions are always run whenever
+    the instrument load routine is called so instrument objects may 
+    be passed safely to other routines and the data will always
+    be processed appropriately.
+    
+    Examples
+    --------
+    ::
+    
+        def custom_func(inst, opt_param1=False, opt_param2=False):
+            return None
+        instrument.custom.add(custom_func, 'modify', opt_param1=True)
+        
+        def custom_func2(inst, opt_param1=False, opt_param2=False):
+            return data_to_be_added
+        instrument.custom.add(custom_func2, 'add', opt_param2=True)
+        instrument.load(date=date)
+        print instrument['data_to_be_added']
+    
+    See Also
+    --------
+    Custom.add
+    
+    Notes
+    -----
+    User should interact with Custom through pysat.Instrument instance's 
+    attribute, instrument.custom
+    
     """
 
     def __init__(self):
