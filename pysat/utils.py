@@ -22,6 +22,20 @@ def set_data_dir(path=None):
 
 def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                     unix_time=False, **kwargs):
+    """Load netCDF-3 file produced by pysat.
+    
+    Parameters
+    ----------
+    fnames : string or array_like of strings
+        filenames to load
+    strict_meta : boolean
+        check if metadata across filenames is the same
+    index_label : string
+        name of data to be used as DataFrame index
+    unix_time : boolean
+        True if index_label refers to UNIX time
+        
+    """
                     
     import netCDF4
     import string
@@ -151,7 +165,7 @@ def season_date_range(start, stop, freq='D'):
     Supports single datetime object or list, tuple, ndarray of start and 
     stop dates.
     
-    freq codes correspond to pandas codes, D daily, M monthly, S secondly
+    freq codes correspond to pandas date_range codes, D daily, M monthly, S secondly
     """
     
     if hasattr(start, '__iter__'):  
