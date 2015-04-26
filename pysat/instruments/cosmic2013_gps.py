@@ -52,7 +52,7 @@ def list_files(tag=None, data_path=None):
         uts=np.array(hours).astype(int)*3600+np.array(minutes).astype(int)*60
         # adding microseconds to ensure each time is unique, not allowed to pass 1.E-3 s
         uts+=np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
-        index = pysat.utils.create_datetime_index(year=year, doy=days, uts=uts)
+        index = pysat.utils.create_datetime_index(year=year, day=days, uts=uts)
         file_list = pysat.Series(cosmicFiles, index=index)
         return file_list
     else:
@@ -60,7 +60,7 @@ def list_files(tag=None, data_path=None):
         return pysat.Series(None)
         
 
-def load(cosmicFiles, tag=None):
+def load(cosmicFiles, tag=None, altitude_bin=None):
     """
     cosmic data load routine, called by pysat
     """   
@@ -69,9 +69,9 @@ def load(cosmicFiles, tag=None):
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pysat.DataFrame(load_files(cosmicFiles, tag=tag))
+        output = pysat.DataFrame(load_files(cosmicFiles, tag=tag, altitude_bin=altitude_bin))
         output.index = pysat.utils.create_datetime_index(year=output.year, 
-                month=output.month, doy=output.day, 
+                month=output.month, day=output.day, 
                 uts=output.hour*3600.+output.minute*60.+output.second)
         # make sure UTS strictly increasing
 	output.sort(inplace=True)	
@@ -104,7 +104,7 @@ def load(cosmicFiles, tag=None):
 # seperate routine for doing actual loading. This was broken off from main load
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
-def load_files(files, tag=None):
+def load_files(files, tag=None, altitude_bin=None):
     '''Loads a list of COSMIC data files, supplied by user.
     
     Returns a list of dicts, a dict for each file.
@@ -129,6 +129,11 @@ def load_files(files, tag=None):
             new['profiles'] = pysat.DataFrame(loadedVars)
             if tag == 'ionprf':
                 new['profiles'].index = new['profiles']['MSL_alt']
+                if altitude_bin != None:
+                    roundMSL_alt = np.round(new['profiles']['MSL_alt']/altitude_bin)*altitude_bin
+                    new['profiles'] = pysat.DataFrame(loadedVars, index=roundMSL_alt)
+                    new['profiles'] = new['profiles'].groupby(new['profiles'].index.values).mean()
+                
             output[i] = new   
             data.close()
         except RuntimeError:

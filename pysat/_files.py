@@ -271,7 +271,7 @@ class Files(object):
                 stored['year'][idx] = stored['year'][idx] + 2000            
     
             index = create_datetime_index(year=stored['year'], month=stored['month'], 
-                                    doy=stored['day'], uts=stored['sec'])
+                                    day=stored['day'], uts=stored['sec'])
 
             return pds.Series(files, index=index)
         else:

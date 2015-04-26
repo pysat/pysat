@@ -192,18 +192,25 @@ def median1D(self, bin_params, bin_label,data_label):
     return ans
 
 
-def create_datetime_index(year=None, month=None, doy=None, uts=None):
-    """
-    Create a timeseries index using supplied year,month,day, and ut in seconds.
-    Leap seconds have no meaning here.
+def create_datetime_index(year=None, month=None, day=None, uts=None):
+    """Create a timeseries index using supplied year, month, day, and ut in seconds.
 
-    Keywords:
-        year - array/Series for year 
-        month - array/Series for month
-        doy - array/Series for day or day of year (use month=None)
-        uts - array/Series of UTC seconds.
-    Output:
+    Parameters
+    ----------
+        year : array_like of ints 
+        month : array_like of ints or None
+        day : array_like of ints
+            for day (default) or day of year (use month=None)
+        uts : array_like of floats
+
+    Returns
+    -------
         Pandas timeseries index.
+        
+    Note
+    ----
+        Leap seconds have no meaning here.
+        
     """
     # need a timeseries index for storing satellite data in pandas but
     # creating a datetime object for everything is too slow
@@ -225,7 +232,7 @@ def create_datetime_index(year=None, month=None, doy=None, uts=None):
         
     if uts is None:
         uts = np.zeros(len(year))
-    doy = doy.astype(int)
+    day = day.astype(int)
     # track changes in seconds
     uts_del = uts.copy()
     # determine where there are changes in year and month that need to be 
@@ -239,7 +246,7 @@ def create_datetime_index(year=None, month=None, doy=None, uts=None):
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (doy-1)*86400
+    uts_del += (day-1)*86400
     # add in seconds since unix epoch to first day
     uts_del += (datetime(year[0],month[0],1)-datetime(1970,1,1) ).total_seconds()
     # going to use routine that defaults to nanseconds for epoch

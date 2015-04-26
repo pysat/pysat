@@ -51,7 +51,7 @@ def list_files(tag=None, data_path=None):
         uts=np.array(hours).astype(int)*3600+np.array(minutes).astype(int)*60
         # adding microseconds to ensure each time is unique, not allowed to pass 1.E-3 s
         uts+=np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
-        index = pysat.utils.create_datetime_index(year=year, doy=days, uts=uts)
+        index = pysat.utils.create_datetime_index(year=year, day=days, uts=uts)
         file_list = pysat.Series(cosmicFiles, index=index)
         return file_list
     else:
@@ -70,7 +70,7 @@ def load(cosmicFiles, tag=None):
         # multiprocessor load, not included and only benefits about 20%
         output = pysat.DataFrame(load_files(cosmicFiles, tag=tag))
         output.index = pysat.utils.create_datetime_index(year=output.year, 
-                month=output.month, doy=output.day, 
+                month=output.month, day=output.day, 
                 uts=output.hour*3600.+output.minute*60.+output.second)
         # make sure UTS strictly increasing
 	output.sort(inplace=True)	
