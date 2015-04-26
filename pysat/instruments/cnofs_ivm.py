@@ -13,7 +13,6 @@ import numpy as np
 import pysat
 from spacepy import pycdf
 
-
 def list_files(tag=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
@@ -41,6 +40,7 @@ def load(fnames, tag=None):
          # defer issue and drop for now
          epoch = data.pop('Epoch')
 	 data = pysat.DataFrame(data, index=epoch)
+	 cdf.close()
 	 return data, pysat.Meta(None)
 
 def default(ivm):
@@ -55,47 +55,47 @@ def clean(self):
         #choose areas below 550km
         #self.data = self.data[self.data.alt <= 550]
         idx, = np.where(self.data.altitude <= 550)
-        self.data = self.data.ix[idx,:]
+        self.data = self.data.iloc[idx,:]
     
     # make sure all -999999 values are NaN
-    #self.data.replace(-999999., np.nan)
-    idx, idy, = np.where(self.data == -999999.)
-    self.data.ix[idx,idy] = np.nan
+    self.data.replace(-999999., np.nan, inplace=True)
+    #idx, idy, = np.where(self.data == -999999.)
+    #self.data.iloc[idx,idy] = np.nan
 
    
     if ((self.clean_level == 'clean') | (self.clean_level == 'dusty')):
 	try:
 	    #self.data = self.data[(abs(self.data.iv_mer) < 10000.)]
 	    idx, = np.where(np.abs(self.data.ionVelmeridional) < 10000.)
-	    self.data = self.data.ix[idx,:]
+	    self.data = self.data.iloc[idx,:]
         except AttributeError:
             pass
         #take out all values where RPA data quality is > 3
         #self.data = self.data[self.data.rpa_flag <= 3]
         idx, = np.where(self.data.RPAflag <= 3)
-        self.data = self.data.ix[idx,:]
+        self.data = self.data.iloc[idx,:]
 
         #enforce minimum RPA density if RPA flag eqal to 3
         o_dens = self.data.ionDensity*self.data.ion1fraction
         #self.data = self.data[-((o_dens < 3.E4) & (self.data.rpa_flag==3))]
         idx, = np.where(-((o_dens < 3.E4) & (self.data.RPAflag==3)))
-        self.data = self.data.ix[idx,:]
+        self.data = self.data.iloc[idx,:]
         
         #IDM quality flags
         self.data = self.data[ (self.data.driftMeterflag>= 90) & (self.data.driftMeterflag % 10 < 1) ]
         idx, = np.where((self.data.driftMeterflag>= 90) & (self.data.driftMeterflag % 10 < 1))
-        self.data = self.data.ix[idx,:]
+        self.data = self.data.iloc[idx,:]
 
 
     # basic quality check on drifts and don't let UTS go above 86400.
     #self.data = self.data[ (self.data.uts <= 86400.)]
     idx, = np.where(self.data.time <= 86400.)
-    self.data = self.data.ix[idx,:]
+    self.data = self.data.iloc[idx,:]
     
     #make sure MLT is between 0 and 24
     #self.data = self.data[(self['mlt'] >= 0.) & (self['mlt'] <= 24.)]
     idx, = np.where((self.data.mlt >= 0) & (self.data.mlt <= 24.))
-    self.data = self.data.ix[idx,:]
+    self.data = self.data.iloc[idx,:]
 
 
     return  
