@@ -5,7 +5,7 @@ from pysat import DataFrame, Series
 
 class Meta(object):
     """
-    Stores metadata for associated pysat Instrument instance, similar to CF-1.6 data standard.
+    Stores metadata for Instrument instance, similar to CF-1.6 netCDFdata standard.
     
     Parameters
     ----------
@@ -29,7 +29,25 @@ class Meta(object):
         return deepcopy(self) 
                
     def __setitem__(self, name, value):
-        """add metadata information"""
+        """Convenience method for adding metadata.
+        
+        Examples
+        --------
+        ::
+        
+            meta = pysat.Meta()
+            meta['name'] = {'long_name':string, 'units':string}
+            # update 'units' to new value
+            meta['name'] = {'units':string}
+            # update 'long_name' to new value
+            meta['name'] = {'long_name':string}
+            # attach new info with partial information, 'long_name' set to 'name2'
+            meta['name2'] = {'units':string}
+            # units are set to '' by default
+            meta['name3'] = {'long_name':string}
+        
+        """
+        
         if isinstance(value,dict):
             if 'units' not in value.keys():
                 if name not in self.data.index:
@@ -58,14 +76,19 @@ class Meta(object):
         if isinstance(value, Series):
             self.data.ix[name] = value
         
-        
     def __getitem__(self,key):
+        """Convenience method for obtaining metadata.
+        
+        Maps to pandas DataFrame.ix method.
+        
+        Examples
+        --------
+        ::
+        
+            print meta['name']
+        
+        """
         return self.data.ix[key]
-        """return metadata"""
-    
-    #def restore(self):
-    #    """Restore metadata from saved metadata"""
-    #    self.data = self._orig_data
         
     def replace(self, metadata=None):
         """Replace stored metadata with input data.
@@ -76,6 +99,7 @@ class Meta(object):
             DataFrame should be indexed by variable name that contains at minimum the 
             standard_name (name), units, and long_name for the data stored in the associated 
             pysat Instrument object.
+            
         """
         if metadata is not None:
             if isinstance(metadata, DataFrame):
@@ -90,14 +114,13 @@ class Meta(object):
         
     @classmethod
     def from_csv(cls, name=None, col_names=None, sep=None, **kwargs):
-        """
-        Create satellite metadata object from csv.
+        """Create instrument metadata object from csv.
         
         Parameters
         ----------
         name : string
-            absolute filename for csv file or name of instrument if csv information
-            stored in pandas instrument location
+            absolute filename for csv file or name of file
+            stored in pandas instruments location
         col_names : list-like collection of strings
             column names in csv and resultant meta object
         sep : string
@@ -105,7 +128,9 @@ class Meta(object):
 
         Note
         ----
-        column names must include at least ['name', 'long_name', 'units'].
+        column names must include at least ['name', 'long_name', 'units'], assumed if col_names
+        is None.
+        
         """
         import pysat
         req_names = ['name','long_name','units']
@@ -124,14 +149,12 @@ class Meta(object):
         elif not os.path.isfile(name):
                 # Not a real file, assume input is a pysat instrument name
                 # and look in the standard pysat location.
-                test =  os.path.join(pysat.__path__,'instruments',name+'_meta.txt')
-                #print test
+                test =  os.path.join(pysat.__path__,'instruments',name)
                 if os.path.isfile(test):
                     name = test
                 else:
                     #trying to form an absolute path for success
                     test = os.path.abspath(name)
-                    #print test
                     if not os.path.isfile(test):
                         raise ValueError("Unable to create valid file path.")
                     else:
@@ -142,6 +165,7 @@ class Meta(object):
         if not mdata.empty:
             # make sure the data name is the index
             mdata.index = mdata['name']
+            del mdata['name']
             return cls(metadata=mdata)
         else:
             raise ValueError('Unable to retrieve information from ' + name)
