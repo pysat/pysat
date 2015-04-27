@@ -34,14 +34,9 @@ class Instrument(object):
         length of time to pad the begining and end of loaded data for time-series processing. 
         Extra data is removed after applying all custom functions. Dictionary, if supplied,
         is simply passed to pandas DateOffset.
-    orbit_info : dict
+    orbit_info : dict    
         Orbit information, {'index':index, 'kind':kind, 'period':period}.
-            index : string, optional
-                data to be used to determine breaks in orbit, if requested.
-            kind : {'local time', 'lt', 'longitude', 'polar'}, optional
-                type of orbit
-            period : datetime.timedelta, optional
-                orbital period
+        See pysat.Orbits for more information.            
     update_files : boolean, optional
         if True, query filesystem for instrument files and store. files.get_new() will
         return no files after this call until additional files are added.
