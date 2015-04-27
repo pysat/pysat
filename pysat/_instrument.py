@@ -163,7 +163,7 @@ class Instrument(object):
         # as well as data start and end dates
         self.files = _files.Files(self)
         if update_files:
-            self.files.refresh(store=False)
+            self.files.refresh(store=True)
         # set bounds for iteration based upon data properties
         self.bounds = (None, None)
         self.date = None
