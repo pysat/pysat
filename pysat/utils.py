@@ -15,7 +15,11 @@ def set_data_dir(path=None):
         with open(os.path.join(os.getenv('HOME'), '.pysat','data_path.txt'),'w') as f:
             f.write(path)
             pysat.data_dir = path
+            f.close()
             reload(pysat._files)
+            reload(pysat._instrument)
+
+            
     else:
         raise ValueError('Path does not lead to a valid directory.')
         
