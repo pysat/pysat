@@ -13,8 +13,9 @@ results_dir = ''
 
 # select vefi dc magnetometer data, use longitude to determine where
 # there are changes in the orbit (local time info not in file)
-vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', clean_level=None, 
-                        orbit_index='longitude', orbit_type='longitude')
+orbit_info = {'index':'longitude', 'kind':'longitude'}
+vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', 
+                        clean_level=None, orbit_info=orbit_info)
 
 # set limits on dates analysis will cover, inclusive
 start = pds.datetime(2010,5,9)

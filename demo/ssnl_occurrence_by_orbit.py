@@ -14,8 +14,9 @@ results_dir = ''
 
 # select vefi dc magnetometer data, use longitude to determine where
 # there are changes in the orbit (local time info not in file)
-vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', clean_level=None, 
-                        orbit_index='longitude', orbit_type='longitude')
+orbit_info = {'index':'longitude', 'kind':'longitude'}
+vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', 
+                        clean_level=None, orbit_info=orbit_info)
 
 # define functino to remove flagged values
 def filter_vefi(inst):

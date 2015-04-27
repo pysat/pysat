@@ -34,12 +34,14 @@ class Instrument(object):
         length of time to pad the begining and end of loaded data for time-series processing. 
         Extra data is removed after applying all custom functions. Dictionary, if supplied,
         is simply passed to pandas DateOffset.
-    orbit_index : string, optional
-        data to be used to determine breaks in orbit, if requested.
-    orbit_type : {'local time', 'lt', 'longitude', 'polar'}, optional
-        type of orbit
-    orbit_period : datetime.timedelta, optional
-        orbital period
+    orbit_info : dict
+        Orbit information, {'index':index, 'kind':kind, 'period':period}.
+            index : string, optional
+                data to be used to determine breaks in orbit, if requested.
+            kind : {'local time', 'lt', 'longitude', 'polar'}, optional
+                type of orbit
+            period : datetime.timedelta, optional
+                orbital period
     update_files : boolean, optional
         if True, query filesystem for instrument files and store. files.get_new() will
         return no files after this call until additional files are added.
@@ -104,8 +106,7 @@ class Instrument(object):
 
     
     def __init__(self, platform=None, name=None, tag=None, clean_level='clean', 
-                update_files=False, pad=None,
-                orbit_index=None, orbit_type=None, orbit_period=None,  
+                update_files=False, pad=None, orbit_info=None,
                 inst_module=None, *arg, **kwargs):
 
 
@@ -174,8 +175,9 @@ class Instrument(object):
         # attach seasonal methods for convenience        
         #self.ssnl = ssnl
         # initiliaze orbit support
-        self.orbits = _orbits.Orbits(self, index=orbit_index, kind=orbit_type,
-                                    period=orbit_period)
+        if orbit_info is None:
+            orbit_info = {'index':None, 'kind':None, 'period':None}
+        self.orbits = _orbits.Orbits(self, **(orbit_info))
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
         self._init_rtn(self)
