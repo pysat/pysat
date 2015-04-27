@@ -144,11 +144,17 @@ class Instrument(object):
         self._prev_data = DataFrame(None)
         self._prev_data_track = []
         self._curr_data = DataFrame(None)
+        
         # arguments for padding
-        self.pad = pad
-        if pad is not None:
-            if not isinstance(pad,dict):
-                raise ValueError('pad must be None or a dict with padding time')
+        if isinstance(pad, pds.DateOffset):
+            self.pad = pad
+        elif isinstance(pad, dict):
+            self.pad = pds.DateOffset(**(pad))
+        elif pad is None:
+            self.pad = None
+        else:
+            raise ValueError('pad must be a dictionary or a pandas.DateOffset instance.')
+
         #self.padkws = kwargs	
         self.kwargs = kwargs
 
@@ -466,17 +472,19 @@ class Instrument(object):
 	    else:
 	        self.data = DataFrame(None)	
 	        self.meta = _meta.Meta()
+	        
             # pad data based upon passed parameter
-            offs = pds.DateOffset( **(self.pad) )
             if (not self._prev_data.empty) & (not self.data.empty) :
-                padLeft = self._prev_data[(self._curr_data.index[0]-offs):self._curr_data.index[0]]
+                padLeft = self._prev_data[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
             if  (not self._next_data.empty) & (not self.data.empty) :
-                padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+offs)]
+                padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
                 self.data = pds.concat([self.data, padRight[1:]])
+                
         # if self.pad is False, load single day
         else:
-            self.data, self.meta  = self._load_data(date=self.date, fid=self._fid)       
+            self.data, self.meta  = self._load_data(date=self.date, fid=self._fid)    
+               
         # check if load routine actually returns meta
         if self.meta.data.empty:
             self.meta[self.data.columns] = {'long_name':self.data.columns,
