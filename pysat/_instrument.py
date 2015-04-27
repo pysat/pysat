@@ -301,7 +301,7 @@ class Instrument(object):
 	if fid is not None:
 	    # get filename based off of index value
 	    # remove direct access of data
-	    fname = self.files.files.iloc[fid]
+	    fname = self.files[fid]
 	elif date is not None:
 	    fname = self.files[date : date+pds.DateOffset(days=1)]
 	else:
@@ -611,7 +611,7 @@ class Instrument(object):
             if isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
                 raise ValueError('Not allowed to mix file and date bounds')
 	    if start is None:
-	        start = self.files.files[0]
+	        start = self.files[0]
 	    if end is None:
 	        end = self.file.files[-1]	
             self._iter_start = [start]
