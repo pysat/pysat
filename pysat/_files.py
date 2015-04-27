@@ -394,6 +394,7 @@ class Files(object):
             return pds.Series(files, index=index)
         else:
             print ("Unable to find any files. If you have the necessary files "+
-                    "please check pysat settings and file locations.") 
+                    "please check pysat settings and file locations.")
+            return pds.Series(None) 
 
         
