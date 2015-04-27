@@ -10,7 +10,7 @@ Welcome to pysat's documentation!
 .. automodule:: pysat
 
 Introduction
-^^^^^
+^^^^^^^^^^^^
 
 API
 ^^^

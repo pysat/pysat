@@ -161,6 +161,7 @@ class Instrument(object):
         if update_files:
             self.files.refresh(store=True)
         # set bounds for iteration based upon data properties
+        # setting (None,None) loads default bounds
         self.bounds = (None, None)
         self.date = None
         self._fid = None

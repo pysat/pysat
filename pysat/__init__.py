@@ -8,6 +8,7 @@ if not os.path.isdir(os.path.join(os.getenv('HOME'), '.pysat')):
     os.mkdir(os.path.join(os.getenv('HOME'), '.pysat'))
     with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'),'w') as f:
         f.write('')
+        f.close()
     data_dir=''
 else:
     # load up stored data path
@@ -18,16 +19,18 @@ else:
 del f
 
 from pandas import Panel, DataFrame, Series, datetime
-import instruments
 import utils
 from _instrument import Instrument
-import ssnl
 from _meta import Meta
 from _files import Files
 from _custom import Custom
 from _orbits import Orbits
+import instruments
+
+import ssnl
 
 
-__all__ = ['ssnl','instruments', 'utils','meta','files']
+
+__all__ = ['ssnl','instruments', 'utils']
 
 
