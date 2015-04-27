@@ -14,8 +14,49 @@ class Files(object):
     to create an ordered collection of files in time. Used by
     instrument object to load the correct files. Files also
     contains helper methods for determining the presence of
-    new files and creating a an ordered list of files.
+    new files and creating an ordered list of files.
       
+    Attributes
+    ----------
+    base_path : string
+        path to .pysat directory in user home
+    start_date : datetime
+        date of first file, used as default start bound for instrument
+        object
+    stop_date : datetime
+        date of last file, used as default stop bound for instrument
+        object
+    data_path : string
+        path to the directory containing instrument files,
+        top_dir/platform/name/tag/
+        
+    Notes
+    -----
+    User should generally use the interface provided by a pysat.Instrument
+    instance. Exceptions are the classmethod from_os, provided to assist
+    in generating the appropriate output for an instrument routine.
+    
+    Examples
+    --------
+    ::
+    
+        # convenient file access
+        inst = pysat.Instrument(platform=platform, name=name, tag=tag)
+        # first file
+        inst.files[0]
+        
+        # files from start up to stop (exclusive on stop)
+        start = pysat.datetime(2009,1,1)
+        stop = pysat.datetime(2009,1,3)
+        print vefi.files[start:stop]
+        
+        # files for date
+        print vefi.files[start]
+        
+        # files by slicing
+        print vefi.files[0:4]
+        
+        
     """
         
     def __init__(self, sat):
@@ -129,20 +170,24 @@ class Files(object):
                 out = self.files.ix[key]
 	    except IndexError:
 	        raise IndexError('Date requested outside file bounds.')                
-            if len(out) > 1:
-                if out.index[-1] >= key.stop:
-                    return out[:-1]
-                else:
-                    return out
-            elif len(out) == 1:
-                if out.index[0] >= key.stop:
-                    return pds.Series([])
+            if isinstance(key.start, pds.datetime):
+                if len(out) > 1:
+                    if out.index[-1] >= key.stop:
+                        return out[:-1]
+                    else:
+                        return out
+                elif len(out) == 1:
+                    if out.index[0] >= key.stop:
+                        return pds.Series([])
+                    else:
+                        return out
                 else:
                     return out
             else:
                 return out
         else:
-            raise ValueError('Not implemented yet.')         
+            return self.files.ix[key]
+            #raise ValueError('Not implemented yet.')         
         #if isinstance(key, tuple):
         #    if len(key) == 2:
         #        start = key[0]
@@ -153,12 +198,17 @@ class Files(object):
     def get_file_array(self, start, end):
         """Return a list of filenames between and including start and end.
         
-        paramters:
-            start: list or single string of filenames for start of list
-            stop: list or single string of filenames inclusive end of list
-        returns:
+        Parameters
+        ----------
+            start: array_like or single string 
+                filenames for start of returned filelist
+            stop: array_like or single string
+                filenames inclusive end of list
+        Returns
+        -------
             list of filenames between and including start and end over all
             intervals. 
+            
             """
         if hasattr(start, '__iter__') & hasattr(end, '__iter__'):
             files = []
