@@ -40,8 +40,9 @@ class Instrument(object):
         type of orbit
     orbit_period : datetime.timedelta, optional
         orbital period
-    query_files : boolean, optional
-        if True, query filesystem and build a list of available files
+    update_files : boolean, optional
+        if True, query filesystem for instrument files and store. files.get_new() will
+        return no files after this call until additional files are added.
         
     Attributes
     ----------
@@ -103,7 +104,7 @@ class Instrument(object):
 
     
     def __init__(self, platform=None, name=None, tag=None, clean_level='clean', 
-                query_files=False, pad=None,
+                update_files=False, pad=None,
                 orbit_index=None, orbit_type=None, orbit_period=None,  
                 inst_module=None, *arg, **kwargs):
 
@@ -161,8 +162,8 @@ class Instrument(object):
         # load file list function, which returns dict of files
         # as well as data start and end dates
         self.files = _files.Files(self)
-        if query_files:
-            self.files.refresh()
+        if update_files:
+            self.files.refresh(store=False)
         # set bounds for iteration based upon data properties
         self.bounds = (None, None)
         self.date = None
