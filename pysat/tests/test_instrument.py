@@ -166,7 +166,17 @@ class TestBasics:
             dates.append(inst.date)            
         out = pds.date_range(start, stop).tolist()
         assert np.all(dates == out)
-
+        
+    def test_iterate_over_default_bounds(self):
+        start = pysat.datetime(2008,1,1)
+        stop = pysat.datetime(2010,12,31)
+        self.testInst.bounds = (start, stop)
+        dates = []
+        for inst in self.testInst:
+            dates.append(inst.date)            
+        out = pds.date_range(start, stop).tolist()
+        assert np.all(dates == out)
+        
     def test_set_bounds_by_date_season(self):
         start = [pysat.datetime(2009,1,1), pysat.datetime(2009,2,1)]
         stop = [pysat.datetime(2009,1,15), pysat.datetime(2009,2,15)]
