@@ -34,10 +34,10 @@ class Orbits(object):
     Examples
     --------
     ::
-    
+        
+        info = {'index':'longitude', 'kind':'longitude'}
         vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', 
-                                clean_level=None, orbit_index='longitude', 
-                                orbit_type='longitude')
+                                clean_level=None, orbit_info=info)
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,10)
         vefi.load(date=start)
