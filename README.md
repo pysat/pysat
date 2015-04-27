@@ -1,5 +1,5 @@
 #What is it
-The Python Science Analysis Toolkit (pysat) is a package providing a simple, flexible, and powerful interface
+The Python Science Analysis Toolkit (pysat) is a package providing a simple and flexible interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific 
 measurements. Though pysat was initially designed for in-situ
 satellite based measurements it aims to support all instruments in space science.
@@ -176,8 +176,9 @@ for ivm in ivm:
 ```
 #####Iterate by orbit over custom season:
 ```
-ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', clean_level='clean',
-                        orbit_index='mlt', orbit_type='local time')
+info = {'index':'mlt', 'kind':'local time'}
+ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', 
+                       clean_level='clean', orbit_info=info)
 start = [pd.datetime(2009,1,1), pd.datetime(2010,1,1)]
 stop = [pd.datetime(2009,4,1), pd.datetime(2010,4,1)]
 ivm.bounds = (start, stop)
