@@ -91,11 +91,10 @@ class Files(object):
        	        print "pysat is searching for the requested instrument's files."
    	        # couldn't find stored info, load file list and then store
    	        info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
-                if info is not None:
-                    if len(info) > 0:
-                        info = self._remove_data_dir_path(info)	
-       	                self._attach_files(info)
-       	                self._store()
+                if not info.empty:
+                    info = self._remove_data_dir_path(info)	
+   	            self._attach_files(info)
+   	            self._store()
 
     def _attach_files(self, files_info):
         """Attaches info returned by instrument list_files routine to Instrument object."""
