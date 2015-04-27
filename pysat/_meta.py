@@ -14,6 +14,12 @@ class Meta(object):
         standard_name (name), units, and long_name for the data stored in the associated 
         pysat Instrument object.
         
+    Attributes
+    ----------
+    data : pandas.DataFrame
+        index is variable standard name, 'units' and 'long_name' are also stored along
+        with additional user provided labels.
+        
     """
     def __init__(self, metadata=None):
         self.replace(metadata=metadata)  
