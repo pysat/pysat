@@ -1,8 +1,22 @@
 # -*- coding: utf-8 -*-
-"""
-Supports downloading, loading, and cleaning measurements from the
-Ion Velocity Meter onboard the Communication and Navigation Outage Forecasting
-System (C/NOFS) satellite.
+"""Supports the Ion Velocity Meter (IVM) 
+onboard the Communication and Navigation Outage Forecasting
+System (C/NOFS) satellite, part of the Coupled Ion Netural Dynamics 
+Investigation (CINDI). Downloads data from the
+NASA Coordinated Data Analysis Web (CDAWeb) in CDF format.
+
+Parameters
+----------
+tag : string
+    No tags supported
+
+Warnings
+--------
+- The sampling rate of the instrument changes on July 29th, 2010.
+  The rate is attached to the instrument object as .sample_rate.
+
+- The cleaning parameters for the instrument are still under development.
+       
 """
 import sys
 import os

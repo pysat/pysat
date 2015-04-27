@@ -1,12 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-Loads data from the COSMIC satellite.
+Loads and downloads data from the COSMIC satellite.
 
-tags:
-    'ionprf: 'ionPrf' ionosphere profiles
-    'sonprf': 'sonPrf' files
-    'wetprf': 'wetPrf' files
-    'atmPrf': 'atmPrf'    
+The Constellation Observing System for Meteorology, Ionosphere, and Climate
+(COSMIC) is comprised of six satellites in LEO with GPS receivers. The occultation
+of GPS signals by the atmosphere provides a measurement of atmospheric
+parameters. Data downloaded from the COSMIC Data Analaysis and
+Archival Center.
+
+Notes
+-----
+- 'ionprf: 'ionPrf' ionosphere profiles
+- 'sonprf': 'sonPrf' files
+- 'wetprf': 'wetPrf' files
+- 'atmPrf': 'atmPrf' files 
+  
+Warnings
+--------
+- Routine was not produced by COSMIC team
+  
 """
 import glob
 import os

@@ -1,11 +1,22 @@
 # -*- coding: utf-8 -*-
-"""
-Supports downloading, loading, and cleaning measurements from the
-Vefctor Electric Field Instrument (VEFI) onboard the Communication and Navigation Outage Forecasting
-System (C/NOFS) satellite.
+"""Supports the Vector Electric Field Instrument (VEFI) 
+onboard the Communication and Navigation Outage Forecasting
+System (C/NOFS) satellite. Downloads data from the
+NASA Coordinated Data Analysis Web (CDAWeb).
 
-current tags:
-    'dc_b' : 1 second DC magnetometer data
+Parameters
+----------
+tag : {'dc_b'}
+
+Notes
+-----
+- tag = 'dc_b': 1 second DC magnetometer data
+
+Warnings
+--------
+- Currently no cleaning routine.
+- Module not written by VEFI team.
+        
 """
 
 import pandas as pds
