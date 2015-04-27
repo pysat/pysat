@@ -261,13 +261,13 @@ class Files(object):
             for (sta,stp) in zip(start, end):
                 id1 = self.get_index(sta)
 		id2 = self.get_index(stp)
-		files.extend(self.files[id1 : id2+1])
+		files.extend(self.files.iloc[id1[0] : id2[0]+1])
 	elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
 	    raise ValueError('Either both or none of the inputs need to be iterable')
         else:
             id1 = self.get_index(start)
 	    id2 = self.get_index(end)
-	    files = self.files[id1:id2+1].to_list()   
+	    files = self.files[id1[0]:id2[0]+1].to_list()   
 	return files
 	                      
     def _remove_data_dir_path(self, inp=None):

@@ -641,8 +641,8 @@ class Instrument(object):
 	Limits of iteration, and iteration type (date/file) set by `bounds` attribute.	
         """
         if self._iter_type == 'file':
-            for fid in self._iter_list:
-                self.load(fid=fid)
+            for fname in self._iter_list:
+                self.load(fname=fname)
                 yield self       
  
 	elif self._iter_type == 'date': 
