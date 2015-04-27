@@ -56,6 +56,20 @@ class Files(object):
         # files by slicing
         print vefi.files[0:4]
         
+        # get a list of new files
+        # new files are those that weren't present the last time
+        # a given instrument's file list was stored
+        new_files = vefi.files.get_new()
+        
+        # search pysat appropriate directory for instrument files and
+        # update Files instance, knowledge not written to disk.
+        vefi.files.refresh()
+        
+        # search pysat appropriate directory for files and store new list
+        vefi.files.refresh(store=True)
+        # running get_new will now return an empty list until
+        # additional files are introduced
+        
         
     """
         
@@ -125,7 +139,17 @@ class Files(object):
 
 
     def refresh(self, store=False):
-        """Refresh loaded instrument filelist by searching filesystem."""
+        """Refresh loaded instrument filelist by searching filesystem.
+        
+        Searches pysat provided path, pysat_data_dir/platform/name/tag/, 
+        where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
+        
+        Parameters
+        ----------
+        store : boolean
+            set True to store loaded file names into .pysat directory
+            
+        """
         info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
@@ -134,8 +158,17 @@ class Files(object):
         
     
     def get_new(self):
-        """List all files on filesystem that weren't there the last time
-           the file list was stored.
+        """List all new files since last time list was stored.
+        
+        pysat stores filenames in the user_home/.pysat directory. Returns
+        a list of all new fileanmes since the last store. Filenames
+        are stored if update_files is True at instrument object level and
+        if files.refresh(store=True) is called.
+        
+        Returns
+        -------
+            pandas Series of filenames
+            False if no filenames
         """
         storedInfo = self._load()
         if storedInfo is not False:
@@ -149,10 +182,23 @@ class Files(object):
             return False
 
     def get_index(self, fname):
-        """Return index in objects file_list for a particular filename. """
+        """Return index for a given filename. 
+        
+        Parameters
+        ----------
+        fname : string
+            filename
+        
+        Notes
+        -----
+        If fname not found in the file information already attached 
+        to the instrument.files instance, then a files.refresh() call 
+        is made.
+        
+        """
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
-            #filename not in index, try reloading files from disk
+            # filename not in index, try reloading files from disk
             self.refresh()
             idx, = np.where(fname == self.files)
             if len(idx) == 0:
@@ -160,10 +206,9 @@ class Files(object):
 	return idx 
 	
     #convert this to a normal get so files[in:in2] gives the same as requested here
-    #support slicing via date, filename, and index
+    #support slicing via date and index
     #filename is inclusive slicing, date and index are normal non-inclusive end point
-    #is this hidden behavior good though?????	
-    # I havent actually implemented difference in slicing yet   	  	
+  	  	
     def __getitem__(self, key):
         if isinstance(key, slice):
             try:
@@ -171,6 +216,7 @@ class Files(object):
 	    except IndexError:
 	        raise IndexError('Date requested outside file bounds.')                
             if isinstance(key.start, pds.datetime):
+                # enforce exclusive slicing on datetime
                 if len(out) > 1:
                     if out.index[-1] >= key.stop:
                         return out[:-1]
@@ -184,6 +230,7 @@ class Files(object):
                 else:
                     return out
             else:
+                # not a datetime
                 return out
         else:
             return self.files.ix[key]
@@ -238,6 +285,27 @@ class Files(object):
                 two_digit_year_break=None):
         """
         Produces a list of files and and formats it for Files class.
+        
+        Parameters
+        ----------
+            data_path : string
+                Top level directory to search files for. This directory
+                is provided by pysat to the instrument_module.list_files
+                functions as data_path.
+            format_string : string with python format codes
+                Provides the naming pattern of the instrument files and the 
+                locations of date information so an ordered list may be 
+                produced.
+            two_digit_year_break : int
+                If filenames only store two digits for the year, then
+                '1900' will be added for years >= two_digit_year_break,
+                and '2000' will be added for years < two_digit_year_break.
+                
+        Notes
+        -----
+        Does not produce a Files instance, but the proper output
+        from instrument_module.list_files method.
+        
         """
         from utils import create_datetime_index
         if (format_str is None):
