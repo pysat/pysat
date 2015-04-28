@@ -4,6 +4,8 @@ for downloading, loading, cleaning, managing, processing, and analyzing scientif
 measurements. Though pysat was initially designed for in-situ
 satellite based measurements it aims to support all instruments in space science.
 
+Full [Documenation](http://rstoneback.github.io/pysat/)
+
 #Main Features
 * Single interface for a wide variety of science data sets.
 * Single interface to download data for all supported instruments.
