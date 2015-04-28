@@ -100,4 +100,4 @@ def download(date_array, tag, data_path=None, user=None, password=None):
                 if exception[0][0:3] != '550':
                     raise
                 else:
-                    print 'File not available for '+ date.strfrtime('%D')
+                    print 'File not available for '+ date.strftime('%D')
