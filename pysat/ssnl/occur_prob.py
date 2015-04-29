@@ -3,7 +3,6 @@ Occurrence probability routines, daily or by orbit.
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False):
     """
