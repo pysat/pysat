@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
+
+
 #What is it
 The Python Science Analysis Toolkit (pysat) is a package providing a simple and flexible interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific 
