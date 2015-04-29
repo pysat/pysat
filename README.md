@@ -1,3 +1,6 @@
+#pysat: Python Science Analysis Toolkit
+[![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
+
 #What is it
 The Python Science Analysis Toolkit (pysat) is a package providing a simple and flexible interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific 
@@ -40,14 +43,24 @@ manner.
 #Installation
 ##Starting from scratch
 * One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
-* Download and install NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html) 
-* Download and install netcdf-4 [library](http://www.unidata.ucar.edu/downloads/netcdf/index.jsp) 
 * at command line type
 ```
 pip install pysat
 ```
 * in python, run pysat.utils.set_data_dir('path to top level data dir')
   * Nominal organization of data is top_dir/platform/name/tag/*/files
+* NetCDF support
+  * Download and install netCDF-4 C [library](http://www.unidata.ucar.edu/downloads/netcdf/index.jsp)
+  * Download and install python interface to netCDF using
+  ```
+  pip install netCDF4
+  ```
+* CDF Support
+  * Download and install NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html)  
+  * Download and install spacepy which supports python CDF interface using
+  ```
+  pip install spacepy
+  ```
 * To get the forked pandas, needed for full support of mixed data types.
 ```
 pip install git+https://github.com/rstoneback/pandas.git
