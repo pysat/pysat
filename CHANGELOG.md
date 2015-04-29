@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased][unreleased]
 ### Changed
 
+## [0.2.1] - 2015-04-29
+- Removed spacepy and netCDF from setup.py requirements. Both of
+  these packages require non-python code to function properly.
+  pysat now builds correctly as determined by travis-cl. 
+  Installation instructions have been updated.
+
 ## [0.2.0] - 2015-04-27
 ### Changed
 - Added information to docstrings.
