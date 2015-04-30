@@ -28,8 +28,8 @@ class Custom(object):
     --------
     Custom.add
     
-    Notes
-    -----
+    Note
+    ----
     User should interact with Custom through pysat.Instrument instance's 
     attribute, instrument.custom
     
@@ -57,20 +57,25 @@ class Custom(object):
                 name of function or function object to be added to queue
             
             kind : {'add', 'modify', 'pass}
-                add : 
+                add 
                     Adds data returned from function to instrument object. 
                     A copy of pysat instrument object supplied to routine. 
-                modify : 
+                modify  
                     pysat instrument object supplied to routine. Any and all
                     changes to object are retained.
-                pass : 
+                pass  
                     A copy of pysat object is passed to function. No 
                     data is accepted from return.
                        
             at_pos : string or int 
                 insert at position. (default, insert at end).
-        Notes
-        -----
+            args : extra arguments
+                extra arguments are passed to the custom function (once)
+            kwargs : extra keyword arguments
+                extra keyword args are passed to the custom function (once)
+                
+        Note
+        ----
         Allowed `add` function returns :
             
         - {'data' : pandas Series/DataFrame/array_like,

@@ -11,25 +11,25 @@ class Orbits(object):
     
     Parameters
     ----------
-        sat : pysat.Instrument instance
-            instrument object to determine orbits for
-        index : string
-            name of the data series to use for determing orbit breaks
-        kind : {'local time', 'longitude', 'polar'}
-            kind of orbit, determines how orbital breaks are determined
+    sat : pysat.Instrument instance
+        instrument object to determine orbits for
+    index : string
+        name of the data series to use for determing orbit breaks
+    kind : {'local time', 'longitude', 'polar'}
+        kind of orbit, determines how orbital breaks are determined
+        
+        - local time: negative gradients in lt or breaks in inst.data.index
+        - longitude: negative gradients or breaks in inst.data.index
+        - polar: zero crossings in latitude or breaks in inst.data.index
+    period : np.timedelta64
+        length of time for orbital period, used to gauge when a break
+        in the datetime index (inst.data.index) is large enough to
+        consider it a new orbit
             
-            - local time: negative gradients in lt or breaks in inst.data.index
-            - longitude: negative gradients or breaks in inst.data.index
-            - polar: zero crossings in latitude or breaks in inst.data.index
-        period : np.timedelta64
-            length of time for orbital period, used to gauge when a break
-            in the datetime index (inst.data.index) is large enough to
-            consider it a new orbit
-            
-    Notes
-    -----
-        class should not be called directly by the user, use the interface provided
-        by inst.orbits where inst = pysat.Instrument()
+    Note
+    ----
+    class should not be called directly by the user, use the interface provided
+    by inst.orbits where inst = pysat.Instrument()
     
     Examples
     --------
@@ -97,8 +97,8 @@ class Orbits(object):
     def __getitem__(self, key): 
         """Enable convenience notation for loading orbit into parent object.
         
-        Example
-        -------
+        Examples
+        --------
         ::
         
             inst.load(date=date)
@@ -107,7 +107,7 @@ class Orbits(object):
         
         Note
         ----
-            A day of data must already be loaded.
+        A day of data must already be loaded.
             
         """
         
@@ -432,13 +432,18 @@ class Orbits(object):
     def _getBasicOrbit(self, orbit=None):
         """Load a particular orbit into .data for loaded day.
 
-        Keywords:
-            orbit = orbit number, 1 indexed, negative indexes allowed, -1 last orbit
+        Parameters
+        ----------
+        orbit : int
+            orbit number, 1 indexed, negative indexes allowed, -1 last orbit
 
-        Note:
-            A day of data must be loaded before this routine functions properly.
-            If the last orbit of the day is requested, it will NOT automatically be
-            padded with data from the next day."""
+        Note
+        ----
+        A day of data must be loaded before this routine functions properly.
+        If the last orbit of the day is requested, it will NOT automatically be
+        padded with data from the next day.
+        
+        """
         #ensure data exists
         if len(self.sat.data) > 0:
             #ensure proper orbit metadata present
@@ -476,13 +481,17 @@ class Orbits(object):
 
         Parameters
         ----------
-            orbit = orbit number, 1 indexed
+        orbit : int
+            orbit number, 1 indexed
 
         Note
         ----    
-            A day of data must be loaded before this routine functions properly.
-            If the last orbit of the day is requested, it will automatically be
-            padded with data from the next day. The orbit counter will be reset to 1."""
+        A day of data must be loaded before this routine functions properly.
+        If the last orbit of the day is requested, it will automatically be
+        padded with data from the next day. The orbit counter will be 
+        reset to 1.
+        
+        """
         if len(self.sat.data) > 0: #ensure data exists
             #set up orbit metadata
             self._calcOrbits()
@@ -740,23 +749,23 @@ class Orbits(object):
             self.prev()    
             
     def __iter__(self):
-        '''Support iteration by orbit.
+        """Support iteration by orbit.
         
         For each iteration the next available orbit is loaded into
         inst.data.
         
-        Example
-        -------
+        Examples
+        --------
         ::
         
             for inst in inst.orbits:
                 print 'next available orbit ', inst.data
         
-	Note:
-	-----
+	Note
+	----
 	Limits of iteration set by setting inst.bounds.	
 	
-        '''
+        """
         while True:
             self.next()
             yield self.sat

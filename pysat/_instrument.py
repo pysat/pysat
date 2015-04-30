@@ -27,19 +27,22 @@ class Instrument(object):
     tag : string, optional
         identifies particular subset of instrument data.
     inst_module : module, optional
-        Provide instrument module directly (takes precedence over platform/name)
+        Provide instrument module directly. 
+        Takes precedence over platform/name.
     clean_level : {'clean','dusty','dirty','none'}, optional
         level of data quality
     pad : pandas.DateOffset, or dictionary, optional
-        length of time to pad the begining and end of loaded data for time-series processing. 
-        Extra data is removed after applying all custom functions. Dictionary, if supplied,
-        is simply passed to pandas DateOffset.
+        Length of time to pad the begining and end of loaded data for 
+        time-series processing. Extra data is removed after applying all 
+        custom functions. Dictionary, if supplied, is simply passed to 
+        pandas DateOffset.
     orbit_info : dict    
         Orbit information, {'index':index, 'kind':kind, 'period':period}.
         See pysat.Orbits for more information.            
     update_files : boolean, optional
-        if True, query filesystem for instrument files and store. files.get_new() will
-        return no files after this call until additional files are added.
+        If True, query filesystem for instrument files and store. 
+        files.get_new() will return no files after this call until 
+        additional files are added.
         
     Attributes
     ----------
@@ -62,13 +65,14 @@ class Instrument(object):
     custom : pysat.Custom
         interface to instrument nano-kernel
     kwargs : dictionary
-        keyword arguments passed to instrument loading routine, platform_name.load
+        keyword arguments passed to instrument loading routine
     
-    Notes
-    -----
-    pysat attempts to load the module platform_name.py located in
-    the pysat/instruments directory. This module provides the underlying functionality to 
-    download, load, and clean instrument data. Alternatively, the module may be supplied directly
+    Note
+    ----
+    Pysat attempts to load the module platform_name.py located in
+    the pysat/instruments directory. This module provides the underlying 
+    functionality to download, load, and clean instrument data. 
+    Alternatively, the module may be supplied directly
     using keyword inst_module.
     
     Examples
@@ -76,7 +80,9 @@ class Instrument(object):
     :: 
            
         # 1-second mag field data
-        vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', 
+        vefi = pysat.Instrument(platform='cnofs', 
+                                name='vefi', 
+                                tag='dc_b', 
                                 clean_level='clean')
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,2)
@@ -86,13 +92,19 @@ class Instrument(object):
         print vefi.meta['db_mer']
     
         # 1-second thermal plasma parameters
-        ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', clean_level='clean')
+        ivm = pysat.Instrument(platform='cnofs', 
+                                name='ivm', 
+                                tag='', 
+                                clean_level='clean')
         ivm.download(start,stop)
         ivm.load(2009,1)
         print ivm['ionVelmeridional'] 
         
         # Ionosphere profiles from GPS occultation
-        cosmic = pysat.Instrument('cosmic2013', 'gps', 'ionprf', altitude_bin=3)
+        cosmic = pysat.Instrument('cosmic2013', 
+                                    'gps', 
+                                    'ionprf', 
+                                    altitude_bin=3)
         # bins profile using 3 km step
         cosmic.download(start, stop, user=user, password=password)
         cosmic.load(date=start)
@@ -181,19 +193,23 @@ class Instrument(object):
                 
     def __getitem__(self, key): 
         """
-        Convenience notation for accessing data; obtain inst.data.name using inst['name'].
+        Convenience notation for accessing data; inst['name'] is inst.data.name
         
         Examples
         --------
-        By position : 
-            inst[row index, 'name']  
-        Slicing by row :
+        ::
+        
+            # By name
+            inst['name']
+            # By position  
+            inst[row_index, 'name']  
+            # Slicing by row 
             inst[row1:row2, 'name']            
-        By Date : 
+            # By Date  
             inst[datetime, 'name']
-        Slicing by date : (inclusive)
+            # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
-        Slicing by name and row/date : 
+            # Slicing by name and row/date  
             inst[datetime1:datetime1, 'name1':'name2']
             
         """
@@ -209,15 +225,23 @@ class Instrument(object):
         
         Examples
         --------
-        Simple Assignment :
+        ::
+        
+            # Simple Assignment, default metadata assigned
+            # 'long_name' = 'name'
+            # 'units' = ''
             inst['name'] = newData
-        Assignment with Metadata :
-            inst['name'] = {'data':new_data, 'long_name':long_name, 'units':units}
+            # Assignment with Metadata 
+            inst['name'] = {'data':new_data, 
+                            'long_name':long_name, 
+                            'units':units}
         
         Note
         ----
-        If no metadata provided and if metadata for 'name' not already stored then default meta 
-        information is also added, long_name = 'name', and units = ''.
+        If no metadata provided and if metadata for 'name' not already stored 
+        then default meta information is also added, 
+        long_name = 'name', and units = ''.
+        
         """
         if isinstance(new, dict):
             # metadata should be included in dict
@@ -367,11 +391,10 @@ class Instrument(object):
 
     def load(self, yr=None, doy=None, date=None, fname=None, fid=None, 
                 verifyPad=False):
-        """
-        Load instrument data into Instrument object .data.
+        """Load instrument data into Instrument object .data.
 
-        Keyword Args
-        ------------
+        Parameters
+        ----------
             yr : integer
                 year for desired data
             doy : integer
@@ -382,13 +405,14 @@ class Instrument(object):
                 filename to be loaded
             verifyPad : boolean 
                 if True, padding data not removed (debug purposes)
-                
-        Summary
-        -------
-            Loads data for a chosen instrument into .data. Any functions chosen
-            by the user and added to the custom processing queue (.custom.add)
-            are automatically applied to the data before it is available to 
-            user in .data.
+
+        Note
+        ----
+        Loads data for a chosen instrument into .data. Any functions chosen
+        by the user and added to the custom processing queue (.custom.add)
+        are automatically applied to the data before it is available to 
+        user in .data.
+        
         """
 
         if date is not None:
@@ -522,6 +546,11 @@ class Instrument(object):
             username, if required by instrument data archive
         password : string
             password, if required by instrument data archive
+            
+        Note
+        ----
+        Data will be downloaded to pysat_data_dir/patform/name/tag
+        
         '''
         import errno
         # make sure directories are there, otherwise create them
@@ -563,9 +592,11 @@ class Instrument(object):
 	end :  datetime object, filename, or None (default)
             end of iteration, inclusive. If None uses last data date. 	
             list-like collection also accepted
+            
         Note
         ----
         both start and stop must be the same type (date, or filename) or None
+        
         """
         return (self._iter_start, self._iter_stop)
     
@@ -636,10 +667,13 @@ class Instrument(object):
 
 
     def __iter__(self):
-        """
-        Iterates the instrument object by loading subsequent days or files as appropriate.
+        """Iterates instrument object by loading subsequent days or files.
         	
-	Limits of iteration, and iteration type (date/file) set by `bounds` attribute.	
+        Note
+        ----
+	Limits of iteration, and iteration type (date/file) 
+	set by `bounds` attribute.	
+	
         """
         if self._iter_type == 'file':
             for fname in self._iter_list:
@@ -652,14 +686,16 @@ class Instrument(object):
                 yield self            
                 
     def next(self):
-        """Manually iterate through the data loaded in satellite object.
+        """Manually iterate through the data loaded in Instrument object.
         
-        Bounds of iteration and iteration type (day/file) are set by `bounds` attribute
+        Bounds of iteration and iteration type (day/file) are set by 
+        `bounds` attribute.
         
         Note
         ----
-            If there were no previous calls to load then the first day (default)/file will be loaded.
-            
+        If there were no previous calls to load then the 
+        first day(default)/file will be loaded.
+         
         """
         
 	if self._iter_type == 'date':
@@ -685,13 +721,15 @@ class Instrument(object):
                 self.load(fid = self._iter_list[0])
 
     def prev(self):
-        """Manually iterate backwards through the data loaded in satellite object.
+        """Manually iterate backwards through the data in Instrument object.
         
-        Bounds of iteration and iteration type (day/file) are set by `bounds` attribute
+        Bounds of iteration and iteration type (day/file) 
+        are set by `bounds` attribute.
         
         Note
         ----
-            If there were no previous calls to load then the first day (default)/file will be loaded.
+        If there were no previous calls to load then the 
+        first day(default)/file will be loaded.
             
         """
         
@@ -720,19 +758,21 @@ class Instrument(object):
 
 
     def to_netcdf3(self, fname=None):
-        """
-        Stores loaded data into a netCDF3 64-bit file.
+        """Stores loaded data into a netCDF3 64-bit file.
         
         Stores 1-D data along dimension 'time' - the date time index.
         Stores object data (dataframes within dataframe) separately:
+            
             The name of the object data is used to prepend extra variable
-              dimensions within netCDF, key_2, key_3, first dimension time
+            dimensions within netCDF, key_2, key_3, first dimension time
+            
             The index organizing the data stored as key_sample_index
             from_netcdf3 uses this naming scheme to reconstruct data structure
+            
         The datetime index is stored as 'UNIX time'. netCDF-3 doesn't support
-          64-bit integers so it is stored as a 64-bit float. This results in a
-          loss of datetime precision when converted back to datetime index
-          up to hundreds of nanoseconds. Use netCDF4 if this is a problem.
+        64-bit integers so it is stored as a 64-bit float. This results in a
+        loss of datetime precision when converted back to datetime index
+        up to hundreds of nanoseconds. Use netCDF4 if this is a problem.
           
         All attributes attached to instrument meta are written to netCDF attrs.
         

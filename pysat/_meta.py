@@ -134,8 +134,8 @@ class Meta(object):
 
         Note
         ----
-        column names must include at least ['name', 'long_name', 'units'], assumed if col_names
-        is None.
+        column names must include at least ['name', 'long_name', 'units'], 
+        assumed if col_names is None.
         
         """
         import pysat

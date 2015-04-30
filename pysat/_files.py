@@ -30,8 +30,8 @@ class Files(object):
         path to the directory containing instrument files,
         top_dir/platform/name/tag/
         
-    Notes
-    -----
+    Note
+    ----
     User should generally use the interface provided by a pysat.Instrument
     instance. Exceptions are the classmethod from_os, provided to assist
     in generating the appropriate output for an instrument routine.
@@ -188,8 +188,8 @@ class Files(object):
         fname : string
             filename
         
-        Notes
-        -----
+        Note
+        ----
         If fname not found in the file information already attached 
         to the instrument.files instance, then a files.refresh() call 
         is made.
@@ -255,7 +255,7 @@ class Files(object):
             list of filenames between and including start and end over all
             intervals. 
             
-            """
+        """
         if hasattr(start, '__iter__') & hasattr(end, '__iter__'):
             files = []
             for (sta,stp) in zip(start, end):
@@ -300,8 +300,8 @@ class Files(object):
                 '1900' will be added for years >= two_digit_year_break,
                 and '2000' will be added for years < two_digit_year_break.
                 
-        Notes
-        -----
+        Note
+        ----
         Does not produce a Files instance, but the proper output
         from instrument_module.list_files method.
         
