@@ -5,24 +5,31 @@ Occurrence probability routines, daily or by orbit.
 import numpy as np
 
 def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False):
-    """
-    Daily Occurrence Probability of data_label over a season binned by two
-    parameters. If data_label is greater than gate atleast once per day, 
-    then a 100% occurrence probability results. Season delineated by the bounds
-    attached to Instrument object.
+    """2D Daily Occurrence Probability of data_label > gate over a season.
+    
+    If data_label is greater than gate atleast once per day, 
+    then a 100% occurrence probability results. Season delineated by 
+    the bounds attached to Instrument object.
 
-    Arguments:
-        binx: [min, max, number of bins]
-        labelx: string identifying data product for binx
-        data_label: list of strings identifying data product to calculate 
-                    occurrence probability
-        gate: list of values that data_label must achieve to be counted as an occurrence
+    Parameters
+    ----------
+    binx: list
+        [min, max, number of bins]
+    labelx: string 
+        name for data product for binx
+    data_label: list of strings 
+        identifies data product(s) to calculate occurrence probability
+        e.g. inst[data_label]
+    gate: list of values 
+        values that data_label must achieve to be counted as an occurrence
 
-    Summary:
-         Returns a dict with numpy arrays, 'prob' for the probability and
-         'count' for the number of days with any data.'binx' and 'biny' are also
-         returned if requested. Note that arrays are organized for direct 
-         plotting, y values along rows, x along columns
+    Returns
+    -------
+    Returns a dict with numpy arrays, 'prob' for the probability and
+    'count' for the number of days with any data.'binx' and 'biny' are also
+    returned if requested. Note that arrays are organized for direct 
+    plotting, y values along rows, x along columns.
+    
     """
     
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
@@ -30,24 +37,30 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False
 
 
 def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False):
-    """
-    Occurrence Probability of data_label orbit-by-orbit over a season binned by two
-    parameters. If data_label is greater than gate atleast once per day, 
-    then a 100% occurrence probability results. Season delineated by the bounds
+    """2D Occurrence Probability of data_label orbit-by-orbit over a season.
+    
+    If data_label is greater than gate atleast once per orbit, then a 
+    100% occurrence probability results. Season delineated by the bounds
     attached to Instrument object.
 
-    Arguments:
-        binx: [min, max, number of bins]
-        labelx: string identifying data product for binx
-        data_label: list of strings identifying data product to calculate 
-                    occurrence probability
-        gate: list of values that data_label must achieve to be counted as an occurrence
+    Parameters
+    ----------
+    binx: list
+        [min value, max value, number of bins]
+    labelx: string 
+        identifies data product for binx
+    data_label: list of strings 
+        identifyies data product(s) to calculate occurrence probability
+    gate: list of values 
+        values that data_label must achieve to be counted as an occurrence
 
-    Summary:
-         Returns a dict with numpy arrays, 'prob' for the probability and
-         'count' for the number of days with any data.'binx' and 'biny' are also
-         returned if requested. Note that arrays are organized for direct 
-         plotting, y values along rows, x along columns
+    Returns
+    -------
+    Returns a dict with numpy arrays, 'prob' for the probability and
+    'count' for the number of days with any data.'binx' and 'biny' are also
+    returned if requested. Note that arrays are organized for direct 
+    plotting, y values along rows, x along columns
+    
     """
     
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
@@ -118,24 +131,30 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
         
 def daily3D(inst, bin1, label1, bin2, label2, bin3, label3, 
             data_label, gate, returnBins=False):
-    """
-    Daily Occurrence Probability of data_label over a season binned by two
-    parameters. If data_label is greater than gate atleast once per day, 
-    then a 100% occurrence probability results. Season delineated by the bounds
-    attached to Instrument object.
+    """3D Daily Occurrence Probability of data_label > gate over a season.
+    
+    If data_label is greater than gate atleast once per day, 
+    then a 100% occurrence probability results. Season delineated by 
+    the bounds attached to Instrument object.
 
-    Arguments:
-        binx: [min, max, number of bins]
-        labelx: string identifying data product for binx
-        data_label: list of strings identifying data product to calculate 
-                    occurrence probability
-        gate: list of values that data_label must achieve to be counted as an occurrence
+    Parameters
+    ----------
+    binx: list
+        [min, max, number of bins]
+    labelx: string 
+        name for data product for binx
+    data_label: list of strings 
+        identifies data product(s) to calculate occurrence probability
+    gate: list of values 
+        values that data_label must achieve to be counted as an occurrence
 
-    Summary:
-         Returns a dict with numpy arrays, 'prob' for the probability and
-         'count' for the number of days with any data.'binx','biny', and 'binz'
-         are also returned if requested. Note that arrays are organized for direct 
-         plotting, z,y,x. 
+    Returns
+    -------
+    Returns a dict with numpy arrays, 'prob' for the probability and
+    'count' for the number of days with any data.'binx', 'biny', and 'binz'
+    are also returned if requested. Note that arrays are organized for direct 
+    plotting, z,y,x.
+    
     """
         
     return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3, 
@@ -144,24 +163,30 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
 def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3, 
                 data_label, gate, returnBins=False):
-    """
-    Occurrence Probability of data_label over a season orbit-by-orbit binned by two
-    parameters. If data_label is greater than gate atleast once per day, 
-    then a 100% occurrence probability results. Season delineated by the bounds
+    """3D Occurrence Probability of data_label orbit-by-orbit over a season.
+    
+    If data_label is greater than gate atleast once per orbit, then a 
+    100% occurrence probability results. Season delineated by the bounds
     attached to Instrument object.
 
-    Arguments:
-        binx: [min, max, number of bins]
-        labelx: string identifying data product for binx
-        data_label: list of strings identifying data product to calculate 
-                    occurrence probability
-        gate: list of values that data_label must achieve to be counted as an occurrence
+    Parameters
+    ----------
+    binx: list
+        [min value, max value, number of bins]
+    labelx: string 
+        identifies data product for binx
+    data_label: list of strings 
+        identifyies data product(s) to calculate occurrence probability
+    gate: list of values 
+        values that data_label must achieve to be counted as an occurrence
 
-    Summary:
-         Returns a dict with numpy arrays, 'prob' for the probability and
-         'count' for the number of days with any data.'binx','biny', and 'binz'
-         are also returned if requested. Note that arrays are organized for direct 
-         plotting, z,y,x. 
+    Returns
+    -------
+    Returns a dict with numpy arrays, 'prob' for the probability and
+    'count' for the number of days with any data.'binx' and 'biny' are also
+    returned if requested. Note that arrays are organized for direct 
+    plotting, z,y,x
+    
     """
         
     return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3, 
