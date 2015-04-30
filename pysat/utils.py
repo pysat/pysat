@@ -213,7 +213,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         
     Note
     ----
-        Leap seconds have no meaning here.
+    Leap seconds have no meaning here.
         
     """
     # need a timeseries index for storing satellite data in pandas but
