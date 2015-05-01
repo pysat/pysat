@@ -5,7 +5,7 @@ class Custom(object):
     Applies a queue of functions when instrument.load called.
     
     Nano-kernel functionality enables instrument objects that are
-    'fire and forget'. The functions are always run whenever
+    'set and forget'. The functions are always run whenever
     the instrument load routine is called so instrument objects may 
     be passed safely to other routines and the data will always
     be processed appropriately.
@@ -76,7 +76,7 @@ class Custom(object):
                 
         Note
         ----
-        Allowed `add` function returns :
+        Allowed `add` function returns:
             
         - {'data' : pandas Series/DataFrame/array_like,
           'units' : string/array_like of strings, 
@@ -88,8 +88,7 @@ class Custom(object):
         - pandas Series, .name required 
         
         - (string/list of strings, numpy array/list of arrays) 
-                               
-                                                                   
+                                                          
         """
 
         if isinstance(function, str):

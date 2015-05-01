@@ -1,5 +1,16 @@
-"""
-Occurrence probability routines, daily or by orbit.
+"""Occurrence probability routines, daily or by orbit.
+
+Routines calculate the occurrence of an event greater than a supplied gate
+occuring at least once per day, or once per orbit. The data used to 
+determine the occurrence must be 1D. If a property of a 2D or higher dataset
+is needed attach a custom function that performs the check and returns a
+1D Series.
+
+Note
+----
+The included routines use the season attached to the supplied instrument 
+object as the season of interest.
+
 """
 
 import numpy as np
@@ -8,11 +19,12 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False
     """2D Daily Occurrence Probability of data_label > gate over a season.
     
     If data_label is greater than gate atleast once per day, 
-    then a 100% occurrence probability results. Season delineated by 
-    the bounds attached to Instrument object.
+    then a 100% occurrence probability results. 
 
     Parameters
     ----------
+    inst: pysat.Instrument()
+        Instrument to use for calculating occurrence probability
     binx: list
         [min, max, number of bins]
     labelx: string 
@@ -30,6 +42,10 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False
     returned if requested. Note that arrays are organized for direct 
     plotting, y values along rows, x along columns.
     
+    Note
+    ----
+    Season delineated by the bounds attached to Instrument object.
+    
     """
     
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
@@ -45,12 +61,14 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=Fa
 
     Parameters
     ----------
+    inst: pysat.Instrument()
+        Instrument to use for calculating occurrence probability
     binx: list
         [min value, max value, number of bins]
     labelx: string 
         identifies data product for binx
     data_label: list of strings 
-        identifyies data product(s) to calculate occurrence probability
+        identifies data product(s) to calculate occurrence probability
     gate: list of values 
         values that data_label must achieve to be counted as an occurrence
 
@@ -60,6 +78,10 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=Fa
     'count' for the number of days with any data.'binx' and 'biny' are also
     returned if requested. Note that arrays are organized for direct 
     plotting, y values along rows, x along columns
+
+    Note
+    ----
+    Season delineated by the bounds attached to Instrument object.
     
     """
     
@@ -109,9 +131,13 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                                 zdata = yData.ix[yindex,data_label[zk]]
                                 idx, = np.where(np.isfinite(zdata))
                                 if len(idx) > 0:
+                                # could be
+                                # if np.isfinite(zdata).any()    
                                     total[zk,yj,xi] += 1.
                                     idx, = np.where( zdata > gate[zk]  )
                                     if len(idx) > 0:
+                                    # could be
+                                    #if np.any(zdata > gate[zk])
                                         hits[zk,yj,xi] += 1.
                                
     # all of the loading and storing data is done
@@ -139,6 +165,8 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     Parameters
     ----------
+    inst: pysat.Instrument()
+        Instrument to use for calculating occurrence probability
     binx: list
         [min, max, number of bins]
     labelx: string 
@@ -154,7 +182,11 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
     'count' for the number of days with any data.'binx', 'biny', and 'binz'
     are also returned if requested. Note that arrays are organized for direct 
     plotting, z,y,x.
-    
+
+    Note
+    ----
+    Season delineated by the bounds attached to Instrument object.    
+            
     """
         
     return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3, 
@@ -171,12 +203,14 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     Parameters
     ----------
+    inst: pysat.Instrument()
+        Instrument to use for calculating occurrence probability
     binx: list
         [min value, max value, number of bins]
     labelx: string 
         identifies data product for binx
     data_label: list of strings 
-        identifyies data product(s) to calculate occurrence probability
+        identifies data product(s) to calculate occurrence probability
     gate: list of values 
         values that data_label must achieve to be counted as an occurrence
 
@@ -186,7 +220,11 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
     'count' for the number of days with any data.'binx' and 'biny' are also
     returned if requested. Note that arrays are organized for direct 
     plotting, z,y,x
-    
+
+    Note
+    ----
+    Season delineated by the bounds attached to Instrument object.    
+            
     """
         
     return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3, 
