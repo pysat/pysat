@@ -1,14 +1,15 @@
 """Occurrence probability routines, daily or by orbit.
 
 Routines calculate the occurrence of an event greater than a supplied gate
-occuring at least once per day, or once per orbit. The data used to 
-determine the occurrence must be 1D. If a property of a 2D or higher dataset
-is needed attach a custom function that performs the check and returns a
-1D Series.
+occuring at least once per day, or once per orbit. The probability is
+calculated as the (number of times with at least one hit in bin)/(number
+of times in the bin).The data used to determine the occurrence must be 1D. 
+If a property of a 2D or higher dataset is needed attach a custom function 
+that performs the check and returns a 1D Series.
 
 Note
 ----
-The included routines use the season attached to the supplied instrument 
+The included routines use the bounds attached to the supplied instrument 
 object as the season of interest.
 
 """
@@ -19,7 +20,9 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False
     """2D Daily Occurrence Probability of data_label > gate over a season.
     
     If data_label is greater than gate at least once per day, 
-    then a 100% occurrence probability results. 
+    then a 100% occurrence probability results.Season delineated by the bounds
+    attached to Instrument object. 
+    Prob = (# of times with at least one hit)/(# of times in bin)
 
     Parameters
     ----------
@@ -60,7 +63,8 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=Fa
     If data_label is greater than gate atleast once per orbit, then a 
     100% occurrence probability results. Season delineated by the bounds
     attached to Instrument object.
-
+    Prob = (# of times with at least one hit)/(# of times in bin)
+    
     Parameters
     ----------
     inst: pysat.Instrument()
@@ -163,6 +167,7 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
     If data_label is greater than gate atleast once per day, 
     then a 100% occurrence probability results. Season delineated by 
     the bounds attached to Instrument object.
+    Prob = (# of times with at least one hit)/(# of times in bin)
 
     Parameters
     ----------
@@ -203,6 +208,7 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
     If data_label is greater than gate atleast once per orbit, then a 
     100% occurrence probability results. Season delineated by the bounds
     attached to Instrument object.
+    Prob = (# of times with at least one hit)/(# of times in bin)
 
     Parameters
     ----------
