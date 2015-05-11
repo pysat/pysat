@@ -18,7 +18,7 @@ import numpy as np
 def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False):
     """2D Daily Occurrence Probability of data_label > gate over a season.
     
-    If data_label is greater than gate atleast once per day, 
+    If data_label is greater than gate at least once per day, 
     then a 100% occurrence probability results. 
 
     Parameters
@@ -34,6 +34,8 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False
         e.g. inst[data_label]
     gate: list of values 
         values that data_label must achieve to be counted as an occurrence
+    returnBins: Boolean
+        if True, return arrays with values of bin edges, useful for pcolor
 
     Returns
     -------
@@ -71,6 +73,8 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=Fa
         identifies data product(s) to calculate occurrence probability
     gate: list of values 
         values that data_label must achieve to be counted as an occurrence
+    returnBins: Boolean
+        if True, return arrays with values of bin edges, useful for pcolor
 
     Returns
     -------
@@ -105,6 +109,9 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
     numx = len(binx)-1
     numy = len(biny)-1
     numz = len(data_label)
+    arrx = np.arange(numx)
+    arry = np.arange(numy)
+    arrz = np.arange(numz)
 
     # create arrays to store all values
     total = np.zeros((numz, numy, numx))
@@ -114,30 +121,24 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
         iterator = inst.orbits
     else:
         iterator = inst
-    # do loop to iterate over given iterator
+
     for i,inst in enumerate(iterator):
         if len(inst.data) != 0:
             xind = np.digitize(inst.data[label1], binx)-1
-            for xi in xrange(numx):
+            for xi in arrx:
                 xindex, = np.where(xind==xi)
                 if len(xindex)>0:
-                    yData = inst.data.ix[xindex]
+                    yData = inst.data.iloc[xindex]
                     yind = np.digitize(yData[label2], biny)-1
-                    for yj in xrange(numy):
+                    for yj in arry:
                         yindex, = np.where(yind==yj)
                         if len(yindex) > 0:
                             # iterate over the different data_labels
-                            for zk in xrange(numz):
+                            for zk in arrz:
                                 zdata = yData.ix[yindex,data_label[zk]]
-                                idx, = np.where(np.isfinite(zdata))
-                                if len(idx) > 0:
-                                # could be
-                                # if np.isfinite(zdata).any()    
+                                if np.any(np.isfinite(zdata)):    
                                     total[zk,yj,xi] += 1.
-                                    idx, = np.where( zdata > gate[zk]  )
-                                    if len(idx) > 0:
-                                    # could be
-                                    #if np.any(zdata > gate[zk])
+                                    if np.any(zdata > gate[zk]):
                                         hits[zk,yj,xi] += 1.
                                
     # all of the loading and storing data is done
@@ -175,6 +176,8 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
         identifies data product(s) to calculate occurrence probability
     gate: list of values 
         values that data_label must achieve to be counted as an occurrence
+    returnBins: Boolean
+        if True, return arrays with values of bin edges, useful for pcolor
 
     Returns
     -------
@@ -213,6 +216,8 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
         identifies data product(s) to calculate occurrence probability
     gate: list of values 
         values that data_label must achieve to be counted as an occurrence
+    returnBins: Boolean
+        if True, return arrays with values of bin edges, useful for pcolor
 
     Returns
     -------
