@@ -39,8 +39,10 @@ def load(fnames, tag=None):
         for info in data_list:
             arr = np.arange(len(info.stid))
             drift_frame = pds.DataFrame(info.vector.__dict__, 
-                                    index=[info.vector.mlon, info.vector.mlat])
-            drift_frame.index.names=['mlon', 'mlat']
+                                    #index=[info.vector.mlon, info.vector.mlat])
+                                    index=info.vector.index)
+            drift_frame.index.name = 'index'
+            #drift_frame.index.names=['mlon', 'mlat']
             for i in arr:
                 nvec = info.nvec[i]
                 in_frame = drift_frame.iloc[0:nvec]
