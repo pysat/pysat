@@ -4,8 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 ### Changed
+ - Performance improvements to seasonal occurrence probability
+ - Improved docstrings
 
 ## [0.2.1] - 2015-04-29
+### Changed
 - Removed spacepy and netCDF from setup.py requirements. Both of
   these packages require non-python code to function properly.
   pysat now builds correctly as determined by travis-cl. 
