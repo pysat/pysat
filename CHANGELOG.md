@@ -4,6 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 ### Changed
+ - Updated C/NOFS IVM instrument module to use metadata from CDF file
  - Performance improvements to seasonal occurrence probability
  - Improved docstrings
 
