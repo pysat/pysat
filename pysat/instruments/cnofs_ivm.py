@@ -46,16 +46,23 @@ def load(fnames, tag=None):
     else:
          cdf = pycdf.CDF(fnames[0])
          data = {}
+         meta = pysat.Meta()
          for key in cdf.iterkeys():
              if key not in ['ECISC_matrix','ECISC_index', 'ECISC_index1',
                             'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']:
                 data[key] = cdf[key][...]
+                try:
+                    meta[key] = {'units':cdf[key].attrs['UNITS'], 
+                                 'long_name':cdf[key].attrs['CATDESC']} 
+                    #meta[key] = {'description':cdf[key].attrs['VAR_NOTES']}          
+                except KeyError:
+                    pass
          # matrices have storage issues (double split intwo two floats),
          # defer issue and drop for now
          epoch = data.pop('Epoch')
 	 data = pysat.DataFrame(data, index=epoch)
 	 cdf.close()
-	 return data, pysat.Meta(None)
+	 return data, meta
 
 def default(ivm):
 
