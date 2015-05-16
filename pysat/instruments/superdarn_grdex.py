@@ -42,6 +42,7 @@ def load(fnames, tag=None):
                                     #index=[info.vector.mlon, info.vector.mlat])
                                     index=info.vector.index)
             drift_frame.index.name = 'index'
+            drift_frame.sort(inplace=True)
             #drift_frame.index.names=['mlon', 'mlat']
             for i in arr:
                 nvec = info.nvec[i]
@@ -77,6 +78,9 @@ def load(fnames, tag=None):
 #    return
             
 def clean(self):
+    # remove data when there are no vectors
+    idx, = np.where(self['nvec'] > 0)
+    self.data = self.data.iloc[idx]
 
     return  
     
