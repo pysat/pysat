@@ -576,8 +576,18 @@ class Instrument(object):
         else:
             self._download_rtn(date_array, tag=self.tag, 
                     data_path=self.files.data_path,user=user, password=password)	
-        print 'Updating pysat file list'
+        # get current file date range
+        first_date = self.files.start_date
+        last_date = self.files.stop_date
+            
+        print('Updating pysat file list')
         self.files.refresh(store=True)
+
+        # if instrument object has default bounds, update them
+        if len(self.bounds[0]) == 1:
+            if (self.bounds[0][0] == first_date) and (self.bounds[1][0] == last_date):
+                print('Updating instrument object bounds.')
+                self.bounds = None
         
     @property
     def bounds(self):
