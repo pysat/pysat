@@ -146,10 +146,10 @@ def download(date_array, tag, data_path, user=None, password=None):
             sys.stdout.flush()
             ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
         except ftplib.error_perm as exception:
-            print exception[0][0:3]
             if exception[0][0:3] != '550':
                 raise
             else:
+                os.remove(saved_fname)
                 print 'File not available for '+date.strftime('%D')
 
 
