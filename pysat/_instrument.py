@@ -496,8 +496,8 @@ class Instrument(object):
 	        self.data = self._curr_data.copy()
 	        self.meta = self._curr_meta.copy()
 	    else:
-	        self.data = DataFrame(None)	
-	        self.meta = _meta.Meta()
+	        self.data = DataFrame(None)
+	        #self.meta = _meta.Meta()
 	        
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty) :
@@ -509,7 +509,9 @@ class Instrument(object):
                 
         # if self.pad is False, load single day
         else:
-            self.data, self.meta  = self._load_data(date=self.date, fid=self._fid)    
+            self.data, meta = self._load_data(date=self.date, fid=self._fid) 
+            if not self.data.empty:
+                self.meta = meta   
                
         # check if load routine actually returns meta
         if self.meta.data.empty:
