@@ -100,13 +100,13 @@ def load(cosmicFiles, tag=None, altitude_bin=None):
 	while repeat:
             try:
                 data = netCDF4.Dataset(cosmicFiles[ind]) 
-                ncattrsList = data.ncattrs()
-                for d in ncattrsList:
-                    meta[d] = {'units':'', 'long_name':d}
                 keys = data.variables.keys()
                 for key in keys:
                     meta[key] = {'units':data.variables[key].units, 
-                                'long_name':data.variables[key].long_name}  
+                                'long_name':data.variables[key].long_name} 
+                ncattrsList = data.ncattrs()
+                for d in ncattrsList:
+                    meta[d] = {'units':'', 'long_name':d}
                 repeat = False                  
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind
