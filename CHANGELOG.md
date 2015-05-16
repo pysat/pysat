@@ -4,6 +4,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 ### Changed
+ - Updated superdarn cleaning method to remove empty velocity frames
+ - Updated Instrument download method to update bounds if bounds are default
+ - Updated C/NOFS IVM download method to remove empty files
  - Updated C/NOFS IVM instrument module to use metadata from CDF file
  - Performance improvements to seasonal occurrence probability
  - Improved docstrings
