@@ -321,6 +321,7 @@ class Instrument(object):
     def _load_data(self, date=None, fid=None):
         """
         Load data for an instrument on given date or fid, dependng upon input.
+        
         """
 
 	if fid is not None:
@@ -368,7 +369,8 @@ class Instrument(object):
         Repeated calls will not advance date/file and will produce the same data
         
         Uses info stored in object to either increment the date, 
-        or the file. Looks for self._load_by_date flag.  
+        or the file. Looks for self._load_by_date flag. 
+         
 	'''
 	if self._load_by_date:
 	    next_date = self.date + pds.DateOffset(days=1)
@@ -382,6 +384,7 @@ class Instrument(object):
         
         Uses info stored in object to either decrement the date, 
         or the file. Looks for self._load_by_date flag.  
+        
 	"""
 	if self._load_by_date:
 	    prev_date = self.date - pds.DateOffset(days=1)
@@ -395,16 +398,16 @@ class Instrument(object):
 
         Parameters
         ----------
-            yr : integer
-                year for desired data
-            doy : integer
-                day of year
-            date : datetime object
-                date to load
-            fname : 'string'
-                filename to be loaded
-            verifyPad : boolean 
-                if True, padding data not removed (debug purposes)
+        yr : integer
+            year for desired data
+        doy : integer
+            day of year
+        date : datetime object
+            date to load
+        fname : 'string'
+            filename to be loaded
+        verifyPad : boolean 
+            if True, padding data not removed (debug purposes)
 
         Note
         ----
@@ -534,7 +537,7 @@ class Instrument(object):
         return
 
     def download(self, start, stop, user=None, password=None):
-        '''Download data for given Instrument object.
+        '''Download data for given Instrument object from start to stop.
         
         Parameters
         ----------
@@ -550,6 +553,9 @@ class Instrument(object):
         Note
         ----
         Data will be downloaded to pysat_data_dir/patform/name/tag
+        
+        If Instrument bounds are set to defaults they are updated
+        after files are downloaded.
         
         '''
         import errno
@@ -591,8 +597,7 @@ class Instrument(object):
         
     @property
     def bounds(self):
-	"""
-	Boundaries for iterating over instrument object by date or file.
+	"""Boundaries for iterating over instrument object by date or file.
 	
 	Parameters
 	---------- 
@@ -605,9 +610,25 @@ class Instrument(object):
             
         Note
         ----
-        both start and stop must be the same type (date, or filename) or None
+        Both start and stop must be the same type (date, or filename) or None
         
+        Examples
+        --------
+        ::
+        
+	    inst = pysat.Instrument(platform=platform,
+	                            name=name,
+	                            tag=tag)
+	    start = pysat.datetime(2009,1,1)
+	    stop = pysat.datetime(2009,1,31) 
+	    inst.bounds = (start,stop) 
+	    
+	    start2 = pysat.datetetime(2010,1,1)
+	    stop2 = pysat.datetime(2010,2,14)
+	    inst.bounds = ([start, start2], [stop, stop2])
+	    
         """
+        
         return (self._iter_start, self._iter_stop)
     
     @bounds.setter        
@@ -682,8 +703,23 @@ class Instrument(object):
         Note
         ----
 	Limits of iteration, and iteration type (date/file) 
-	set by `bounds` attribute.	
+	set by `bounds` attribute.
 	
+	Default bounds are the first and last dates from files on local system.
+	
+	Examples
+	--------
+	::
+	   
+	    inst = pysat.Instrument(platform=platform,
+	                            name=name,
+	                            tag=tag)
+	    start = pysat.datetime(2009,1,1)
+	    stop = pysat.datetime(2009,1,31) 
+	    inst.bounds = (start,stop) 
+	    for inst in inst:
+	        print('Another day loaded', inst.date)
+		
         """
         if self._iter_type == 'file':
             for fname in self._iter_list:
@@ -770,14 +806,21 @@ class Instrument(object):
     def to_netcdf3(self, fname=None):
         """Stores loaded data into a netCDF3 64-bit file.
         
+        Parameters
+        ----------
+        fname : string
+            full path to save instrument object to
+        
+        Note
+        ----
         Stores 1-D data along dimension 'time' - the date time index.
-        Stores object data (dataframes within dataframe) separately:
-            
-            The name of the object data is used to prepend extra variable
-            dimensions within netCDF, key_2, key_3, first dimension time
-            
-            The index organizing the data stored as key_sample_index
-            from_netcdf3 uses this naming scheme to reconstruct data structure
+        
+        Stores object data (e.g. dataframes within series) separately
+                    
+         - The name of the series is used to prepend extra variable
+           dimensions within netCDF, key_2, key_3; first dimension time
+         - The index organizing the data stored as key_sample_index
+         - from_netcdf3 uses this naming scheme to reconstruct data structure
             
         The datetime index is stored as 'UNIX time'. netCDF-3 doesn't support
         64-bit integers so it is stored as a 64-bit float. This results in a
@@ -790,8 +833,7 @@ class Instrument(object):
         
         import netCDF4
         
-        with netCDF4.Dataset('/Users/rstoneba/Desktop/test.nc', 
-                            mode='w', format='NETCDF3_64BIT') as out_data:
+        with netCDF4.Dataset(fname, mode='w', format='NETCDF3_64BIT') as out_data:
         
             num = len(self.data.index)
             out_data.createDimension('time', num)
@@ -806,7 +848,9 @@ class Instrument(object):
             for key in self.meta.data.index:
                 if self[key].dtype != np.dtype('O'):
                     # not an object, simple column of data, write it out
-                    cdfkey = out_data.createVariable(key, self[key].dtype, dimensions=('time'), )
+                    cdfkey = out_data.createVariable(key, 
+                                                    self[key].dtype, 
+                                                    dimensions=('time'), )
                     cdfkey.units = self.meta[key].units
                     cdfkey.long_name = self.meta[key].long_name
                     cdfkey[:] = self[key].values
@@ -827,7 +871,9 @@ class Instrument(object):
                         coltype = self[key].iloc[0][col].dtype
                         if coltype == np.int64 :
                             coltype = np.int32
-                        cdfkey = out_data.createVariable(col, coltype, dimensions=var_dim)
+                        cdfkey = out_data.createVariable(col, 
+                                                        coltype, 
+                                                        dimensions=var_dim)
                         cdfkey.long_name = col
                         cdfkey.units = ''
                         for i in xrange(num):
