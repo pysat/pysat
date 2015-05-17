@@ -60,7 +60,7 @@ class Meta(object):
                     value['units'] = ''
                 else:
                     value['units'] = self.data.ix[name,'units']
-            #    raise ValueError('Must provide "units" in input dictionary.')
+
             if 'long_name' not in value.keys():
                 if name not in self.data.index:
                     # only set default if name not already in meta
@@ -76,8 +76,17 @@ class Meta(object):
                 new = DataFrame(value, index=name)
                 self.data = self.data.append(new) 
             else:
-                new = Series(value)
-                self.data.ix[name] = new
+                for key in value.keys():
+                    value[key] = [value[key]]
+                new = DataFrame(value, index=[name])
+
+                if name in self.data.index:
+                    #self.data.ix[name] = new.ix[name]
+                    self.data = self.data.drop(name)
+                    self.data = self.data.append(new)
+                else:
+                    self.data = self.data.append(new)
+                #self.data.ix[name] = new[name]
                 
         if isinstance(value, Series):
             self.data.ix[name] = value
