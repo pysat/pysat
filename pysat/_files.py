@@ -250,6 +250,7 @@ class Files(object):
                 filenames for start of returned filelist
             stop: array_like or single string
                 filenames inclusive end of list
+                
         Returns
         -------
             list of filenames between and including start and end over all
