@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Pending][]
+ - Improved performance of comsic 2013 data loading
 
 ## [0.2.2] - 2015-05-17
 ### Changed
