@@ -145,17 +145,11 @@ def load_files(files, tag=None, altitude_bin=None):
             for key in keys:
                 loadedVars[key] = data.variables[key][:]               
             new['profiles'] = pysat.DataFrame(loadedVars)
-            if tag == 'ionprf':
-                new['profiles'].index = new['profiles']['MSL_alt']
-                if altitude_bin != None:
-                    roundMSL_alt = np.round(new['profiles']['MSL_alt']/altitude_bin)*altitude_bin
-                    new['profiles'] = pysat.DataFrame(loadedVars, index=roundMSL_alt)
-                    new['profiles'] = new['profiles'].groupby(new['profiles'].index.values).mean()
-                
+                    
             output[i] = new   
             data.close()
         except RuntimeError:
-            # some of the S4 files have zero bytes, which causes a read error
+            # some of the files have zero bytes, which causes a read error
             # this stores the index of these zero byte files so I can drop 
             # the Nones the gappy file leaves behind
             drop_idx.append(i)
@@ -164,6 +158,17 @@ def load_files(files, tag=None, altitude_bin=None):
     drop_idx.reverse()
     for i in drop_idx:
         del output[i]
+        
+    if tag == 'ionprf':           
+        if altitude_bin is not None:
+            for out in output:    
+                roundMSL_alt = np.round(out['profiles']['MSL_alt']/altitude_bin)*altitude_bin
+                out['profiles'].index = roundMSL_alt
+                out['profiles'] = out['profiles'].groupby(out['profiles'].index.values).mean()
+        else:
+            for out in output:
+                out['profiles'].index = out['profiles']['MSL_alt']
+
     return output
 
 
