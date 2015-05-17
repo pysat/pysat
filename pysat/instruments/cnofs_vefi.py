@@ -41,39 +41,47 @@ def list_files(tag=None, data_path=None):
         raise ValueError ('A directory must be passed to the loading routine for VEFI')
             
 # define metadata for VEFI instrument                              
-meta = pysat.Meta()
-meta['Epoch'] = {'long_name':'Epoch', 'units':'s'}
-meta['year'] = {'long_name':'Year', 'units':'years'}
-meta['dayofyear'] = {'long_name':'Day of Year', 'units':'days'}
-meta['B_north'] = {'long_name':'Magnetic Field (North)', 'units':'nT'}
-meta['B_up'] = {'long_name':'Magnetic Field (Up)', 'units':'nT'}
-meta['B_west'] = {'long_name':'Magnetic Field (West)', 'units':'nT'}
-meta['B_flag'] = {'long_name':'Flag', 'units':''}
-meta['B_IGRF_north'] = {'long_name':'IGRF Magnetic Field (North)', 'units':'nT'}
-meta['B_IGRF_up'] = {'long_name':'IGRF Magnetic Field (Up)', 'units':'nT'}
-meta['B_IGRF_west'] = {'long_name':'IGRF Magnetic Field (West)', 'units':'nT'}
-meta['latitude'] = {'long_name':'Geographic Latituge', 'units':'degrees'}
-meta['longitude'] = {'long_name':'Geographic Longitude', 'units':'degrees'}
-meta['altitude'] = {'long_name':'Altitude', 'units':'km'}
-meta['dB_zon'] = {'long_name':'Delta Magnetic Field - Zonal', 'units':'nT'}
-meta['dB_mer'] = {'long_name':'Delta Magnetic Field - Meridional ', 'units':'nT'}
-meta['dB_par'] = {'long_name':'Delta Magnetic Field - Parallel ', 'units':'nT'}
+#meta = pysat.Meta()
+#meta['Epoch'] = {'long_name':'Epoch', 'units':'s'}
+#meta['year'] = {'long_name':'Year', 'units':'years'}
+#meta['dayofyear'] = {'long_name':'Day of Year', 'units':'days'}
+#meta['B_north'] = {'long_name':'Magnetic Field (North)', 'units':'nT'}
+#meta['B_up'] = {'long_name':'Magnetic Field (Up)', 'units':'nT'}
+#meta['B_west'] = {'long_name':'Magnetic Field (West)', 'units':'nT'}
+#meta['B_flag'] = {'long_name':'Flag', 'units':''}
+#meta['B_IGRF_north'] = {'long_name':'IGRF Magnetic Field (North)', 'units':'nT'}
+#meta['B_IGRF_up'] = {'long_name':'IGRF Magnetic Field (Up)', 'units':'nT'}
+#meta['B_IGRF_west'] = {'long_name':'IGRF Magnetic Field (West)', 'units':'nT'}
+#meta['latitude'] = {'long_name':'Geographic Latituge', 'units':'degrees'}
+#meta['longitude'] = {'long_name':'Geographic Longitude', 'units':'degrees'}
+#meta['altitude'] = {'long_name':'Altitude', 'units':'km'}
+#meta['dB_zon'] = {'long_name':'Delta Magnetic Field - Zonal', 'units':'nT'}
+#meta['dB_mer'] = {'long_name':'Delta Magnetic Field - Meridional ', 'units':'nT'}
+#meta['dB_par'] = {'long_name':'Delta Magnetic Field - Parallel ', 'units':'nT'}
                                 
 def load(fnames, tag=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), None
     else:
-         try:
-             cdf = pycdf.CDF(fnames[0])
-         except pycdf.CDFError:
-             return pysat.DataFrame(), pysat.Meta()
+        try:
+            cdf = pycdf.CDF(fnames[0])
+        except pycdf.CDFError:
+            return pysat.DataFrame(), pysat.Meta()
             
-         data = {}
-         for key in cdf.iterkeys():
-             data[key] = cdf[key][...]
-         epoch = data.pop('Epoch')
-	 data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
-	 return data, meta.copy()
+        data = {}
+        meta = pysat.Meta()
+        for key in cdf.iterkeys():
+            data[key] = cdf[key][...]
+            try:             
+                meta[key] = {'units':cdf[key].attrs['UNITS'],
+                            'long_name':cdf[key].attrs['LABLAXIS'], 
+                            'description':cdf[key].attrs['CATDESC']} 
+                #meta[key] = {'description':cdf[key].attrs['VAR_NOTES']}          
+            except KeyError:
+                pass
+        epoch = data.pop('Epoch')
+	data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
+	return data, meta.copy()
 
 def download(date_array, tag, data_path=None, user=None, password=None):
     """
