@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 ### Changed
+ - Updated C/NOFS VEFI method to exempt empty file errors
+ - Updated C/NOFS VEFI download method to remove empty files
  - Updated superdarn cleaning method to remove empty velocity frames
  - Updated Instrument download method to update bounds if bounds are default
  - Updated C/NOFS IVM download method to remove empty files
