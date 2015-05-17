@@ -4,8 +4,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][unreleased]
 ### Changed
+ - Expanded coverage in tutorial documentation
+ - Expanded test coverage for pysat.Meta()
+ - Improved robustness of Meta __setitem__
  - Updated C/NOFS VEFI method to exempt empty file errors
  - Updated C/NOFS VEFI download method to remove empty files
+ - Updated C/NOFS VEFI instrument module to use metadata from CDF file
  - Updated superdarn cleaning method to remove empty velocity frames
  - Updated Instrument download method to update bounds if bounds are default
  - Updated C/NOFS IVM download method to remove empty files
