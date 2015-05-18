@@ -108,14 +108,12 @@ class Instrument(object):
         # bins profile using 3 km step
         cosmic.download(start, stop, user=user, password=password)
         cosmic.load(date=start)
-    	
+
     """
 
-    
-    def __init__(self, platform=None, name=None, tag=None, clean_level='clean', 
-                update_files=False, pad=None, orbit_info=None,
-                inst_module=None, *arg, **kwargs):
-
+    def __init__(self, platform=None, name=None, tag=None, clean_level='clean',
+                 update_files=False, pad=None, orbit_info=None,
+                 inst_module=None, *arg, **kwargs):
 
         if inst_module is None:
             if isinstance(platform, str) and isinstance(name, str):              
@@ -135,7 +133,7 @@ class Instrument(object):
                 self.name = inst_module.name.lower()
                 self.platform = inst_module.platform.lower()
             except AttributeError:
- 	        raise AttributeError(string.join(('A name and platform attribute for the ',
+                raise AttributeError(string.join(('A name and platform attribute for the ',
                     'instrument is required if supplying routine module directly.')))
             self._assign_funcs(inst_module=inst_module)
             
@@ -149,7 +147,7 @@ class Instrument(object):
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
         self._next_data = DataFrame(None)
-	self._next_data_track = []
+        self._next_data_track = []
         self._prev_data = DataFrame(None)
         self._prev_data_track = []
         self._curr_data = DataFrame(None)
@@ -164,7 +162,6 @@ class Instrument(object):
         else:
             raise ValueError('pad must be a dictionary or a pandas.DateOffset instance.')
 
-        #self.padkws = kwargs	
         self.kwargs = kwargs
 
         # load file list function, which returns dict of files
@@ -180,17 +177,15 @@ class Instrument(object):
         self.yr = None
         self.doy = None
         self._load_by_date = False
-        # attach seasonal methods for convenience        
-        #self.ssnl = ssnl
-        # initiliaze orbit support
+
+        # initialize orbit support
         if orbit_info is None:
             orbit_info = {'index':None, 'kind':None, 'period':None}
         self.orbits = _orbits.Orbits(self, **(orbit_info))
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
         self._init_rtn(self)
-        
-                
+
     def __getitem__(self, key): 
         """
         Convenience notation for accessing data; inst['name'] is inst.data.name
@@ -215,12 +210,12 @@ class Instrument(object):
         """
 
         if isinstance(key, tuple):
-	    # support slicing	
+            # support slicing
             return self.data.ix[key[0], key[1]]
-	else:
-	    return self.data[key]
+        else:
+            return self.data[key]
 
-    def __setitem__(self,key,new):
+    def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
         
         Examples
@@ -257,13 +252,13 @@ class Instrument(object):
                 self.data[key] = new  
                 if key not in self.meta.data.index:   
                     # add in default metadata because none was supplied
-                    self.meta[key] = {'long_name':key, 'units':''} 
+                    self.meta[key] = {'long_name':key, 'units':''}
             elif isinstance(new, DataFrame):
                 self.data[key] = new[key]
                 for ke in key:
                     if ke not in self.meta.data.index:   
                         # add in default metadata because none was supplied
-                        self.meta[ke] = {'long_name':ke, 'units':''}                 
+                        self.meta[ke] = {'long_name':ke, 'units':''}
             else:
                 raise ValueError("No support for supplied input key")           
     
@@ -289,13 +284,13 @@ class Instrument(object):
             # look for code with filename name, any errors passed up
             inst = importlib.import_module(''.join(('.',self.platform,'_',
                         self.name)),  package='pysat.instruments')
- 	elif inst_module is not None:
- 	    # user supplied an object with relevant instrument routines
- 	    inst = inst_module
- 	else:
- 	    # no module or name info, default pass functions assigned
- 	    return
- 	               
+        elif inst_module is not None:
+            # user supplied an object with relevant instrument routines
+            inst = inst_module
+        else:
+            # no module or name info, default pass functions assigned
+            return
+
         try:
             self._load_rtn = inst.load
             self._list_rtn = inst.list_files
@@ -324,14 +319,14 @@ class Instrument(object):
         
         """
 
-	if fid is not None:
-	    # get filename based off of index value
-	    # remove direct access of data
-	    fname = self.files[fid]
-	elif date is not None:
-	    fname = self.files[date : date+pds.DateOffset(days=1)]
-	else:
-	    raise ValueError('Must supply either a date or file id number.')
+        if fid is not None:
+            # get filename based off of index value
+            # remove direct access of data
+            fname = self.files[fid]
+        elif date is not None:
+            fname = self.files[date : date+pds.DateOffset(days=1)]
+        else:
+            raise ValueError('Must supply either a date or file id number.')
    
         if len(fname) > 0:    
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
@@ -371,12 +366,12 @@ class Instrument(object):
         Uses info stored in object to either increment the date, 
         or the file. Looks for self._load_by_date flag. 
          
-	'''
-	if self._load_by_date:
-	    next_date = self.date + pds.DateOffset(days=1)
-       	    return self._load_data(date=next_date)
-       	else:
-       	    return self._load_data(fid = self._fid+1)
+        '''
+        if self._load_by_date:
+            next_date = self.date + pds.DateOffset(days=1)
+            return self._load_data(date=next_date)
+        else:
+            return self._load_data(fid = self._fid+1)
 
     def _load_prev(self):
         """Load the next days data (or file) without decrementing the date.
@@ -385,12 +380,13 @@ class Instrument(object):
         Uses info stored in object to either decrement the date, 
         or the file. Looks for self._load_by_date flag.  
         
-	"""
-	if self._load_by_date:
-	    prev_date = self.date - pds.DateOffset(days=1)
-	    return self._load_data(date=prev_date)
-	else:
-	    return self._load_data(fid = self._fid-1)
+        """
+
+        if self._load_by_date:
+            prev_date = self.date - pds.DateOffset(days=1)
+            return self._load_data(date=prev_date)
+        else:
+            return self._load_data(fid = self._fid-1)
 
     def load(self, yr=None, doy=None, date=None, fname=None, fid=None, 
                 verifyPad=False):
@@ -437,8 +433,8 @@ class Instrument(object):
             self._load_by_date = True
             inc = pds.DateOffset(days=1)
             curr = self.date
-        elif fname != None:
-	    # date will have to be set later by looking at the data
+        elif fname is not None:
+            # date will have to be set later by looking at the data
             self.date = None
             self.yr = None
             self.doy = None
@@ -448,19 +444,19 @@ class Instrument(object):
             self._fid = self.files.get_index(fname)
             inc = 1
             curr = self._fid.copy()
-	elif fid != None:
+        elif fid is not None:
             self._load_by_date = False	    
-	    self._fid = fid
-	    self.date = None
+            self._fid = fid
+            self.date = None
             self.yr = None
             self.doy = None
-	    inc = 1
-	    curr = fid
+            inc = 1
+            curr = fid
         else:
             raise TypeError('Must supply a yr,doy pair, or datetime object, '+ 
-				'or filename to load data from.')
-				
-        self.orbits._reset()        
+                    'or filename to load data from.')
+
+        self.orbits._reset()
         # if pad is true, need to have a three day/file load
         if self.pad is not None:
             if self._next_data.empty & self._prev_data.empty:
@@ -491,19 +487,19 @@ class Instrument(object):
             # make tracking indexes consistent with new loads
             self._next_data_track = curr + inc
             self._prev_data_track = curr - inc
-	    # attach data to object
-	    if not self._curr_data.empty :
-	        self.data = self._curr_data.copy()
-	        self.meta = self._curr_meta.copy()
-	    else:
-	        self.data = DataFrame(None)
-	        #self.meta = _meta.Meta()
-	        
+            # attach data to object
+            if not self._curr_data.empty :
+                self.data = self._curr_data.copy()
+                self.meta = self._curr_meta.copy()
+            else:
+                self.data = DataFrame(None)
+                #self.meta = _meta.Meta()
+
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty) :
                 padLeft = self._prev_data[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
-            if  (not self._next_data.empty) & (not self.data.empty) :
+            if (not self._next_data.empty) & (not self.data.empty) :
                 padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
                 self.data = pds.concat([self.data, padRight[1:]])
                 
@@ -519,8 +515,8 @@ class Instrument(object):
                                             'units':['']*len(self.data.columns)}
         if not self.data.empty:
             self._default_rtn(self)
-	# clean
-        if  (not self.data.empty) & (self.clean_level != 'none') :
+        # clean
+        if (not self.data.empty) & (self.clean_level != 'none') :
             self._clean_rtn(self)   
         # apply custom functions
         if not self.data.empty:
@@ -529,12 +525,12 @@ class Instrument(object):
         if (self.pad is not None)& (not self.data.empty) & (not verifyPad) :
             self.data = self.data[self._curr_data.index[0]:self._curr_data.index[-1]]
         # if loading by file set the yr, doy, and date
-	if not self._load_by_date:
-	    temp = self.data.index[0]
-	    temp = pds.datetime(temp.year, temp.month, temp.day)
-	    self.date = temp
-	    self.yr, self.doy = utils.getyrdoy(self.date)
-	                    
+        if not self._load_by_date:
+            temp = self.data.index[0]
+            temp = pds.datetime(temp.year, temp.month, temp.day)
+            self.date = temp
+            self.yr, self.doy = utils.getyrdoy(self.date)
+
         sys.stdout.flush()
         return
 
@@ -599,38 +595,37 @@ class Instrument(object):
         
     @property
     def bounds(self):
-	"""Boundaries for iterating over instrument object by date or file.
-	
-	Parameters
-	---------- 
-	start : datetime object, filename, or None (default)
-	    start of iteration, if None uses first data date.
-	    list-like collection also accepted
-	end :  datetime object, filename, or None (default)
-            end of iteration, inclusive. If None uses last data date. 	
+        """Boundaries for iterating over instrument object by date or file.
+
+        Parameters
+        ----------
+        start : datetime object, filename, or None (default)
+            start of iteration, if None uses first data date.
             list-like collection also accepted
-            
-        Note
-        ----
-        Both start and stop must be the same type (date, or filename) or None
-        
-        Examples
-        --------
-        ::
-        
-	    inst = pysat.Instrument(platform=platform,
-	                            name=name,
-	                            tag=tag)
-	    start = pysat.datetime(2009,1,1)
-	    stop = pysat.datetime(2009,1,31) 
-	    inst.bounds = (start,stop) 
-	    
-	    start2 = pysat.datetetime(2010,1,1)
-	    stop2 = pysat.datetime(2010,2,14)
-	    inst.bounds = ([start, start2], [stop, stop2])
-	    
-        """
-        
+        end :  datetime object, filename, or None (default)
+                end of iteration, inclusive. If None uses last data date.
+                list-like collection also accepted
+
+            Note
+            ----
+            Both start and stop must be the same type (date, or filename) or None
+
+            Examples
+            --------
+            ::
+
+            inst = pysat.Instrument(platform=platform,
+                                    name=name,
+                                    tag=tag)
+            start = pysat.datetime(2009,1,1)
+            stop = pysat.datetime(2009,1,31)
+            inst.bounds = (start,stop)
+
+            start2 = pysat.datetetime(2010,1,1)
+            stop2 = pysat.datetime(2010,2,14)
+            inst.bounds = ([start, start2], [stop, stop2])
+
+            """
         return (self._iter_start, self._iter_stop)
     
     @bounds.setter        
@@ -645,22 +640,22 @@ class Instrument(object):
         end = value[1]
 
         if (start is None) and (end is None):
-	    #set default
-	    self._iter_start = [self.files.start_date]
-	    self._iter_stop = [self.files.stop_date]
+            #set default
+            self._iter_start = [self.files.start_date]
+            self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
                 self._iter_list = utils.season_date_range(self._iter_start, self._iter_stop)
 
-	elif hasattr(start, '__iter__') and hasattr(end, '__iter__'):
+        elif hasattr(start, '__iter__') and hasattr(end, '__iter__'):
             base = type(start[0])
-	    for s,t in zip(start, end):
-	        if (type(s) != type(t)) or (type(s) != base):
-	            raise ValueError('Start and end items must all be of the same type')
-	    if isinstance(start[0], str):
+            for s,t in zip(start, end):
+                if (type(s) != type(t)) or (type(s) != base):
+                    raise ValueError('Start and end items must all be of the same type')
+            if isinstance(start[0], str):
                 self._iter_type = 'file'
-		self._iter_list = self.files.get_file_array(start, end)	        
+                self._iter_list = self.files.get_file_array(start, end)
             elif isinstance(start[0], pds.datetime):
                 self._iter_type = 'date'
                 self._iter_list = utils.season_date_range(start, end)
@@ -675,60 +670,61 @@ class Instrument(object):
         elif isinstance(start, str) or isinstance(end, str):
             if isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
                 raise ValueError('Not allowed to mix file and date bounds')
-	    if start is None:
-	        start = self.files[0]
-	    if end is None:
-	        end = self.file.files[-1]	
+            if start is None:
+                start = self.files[0]
+            if end is None:
+                end = self.files.files[-1]
             self._iter_start = [start]
             self._iter_stop = [end]
             self._iter_list = self.files.get_file_array(self._iter_start,self._iter_stop)
             self._iter_type = 'file'
 
         elif isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
-	    if start is None:
-	        start = self.files.start_date
-	    if end is None:
-	        end = self.files.stop_date
-	    self._iter_start = [start]
-	    self._iter_stop = [end]	
+            if start is None:
+                start = self.files.start_date
+            if end is None:
+                end = self.files.stop_date
+            self._iter_start = [start]
+            self._iter_stop = [end]
             self._iter_list = utils.season_date_range(start, end)
             self._iter_type = 'date'
-	else:
-	    raise ValueError('Provided an invalid combination of bounds. '+
-	    'if specifying by file, both bounds must be by file. Other '+
-	    'combinations of datetime objects and None are allowed.')
+        else:
+            raise ValueError('Provided an invalid combination of bounds. '+
+	            'if specifying by file, both bounds must be by file. Other '+
+	            'combinations of datetime objects and None are allowed.')
 
 
     def __iter__(self):
         """Iterates instrument object by loading subsequent days or files.
-        	
+
         Note
         ----
-	Limits of iteration, and iteration type (date/file) 
-	set by `bounds` attribute.
-	
-	Default bounds are the first and last dates from files on local system.
-	
-	Examples
-	--------
-	::
-	   
-	    inst = pysat.Instrument(platform=platform,
-	                            name=name,
-	                            tag=tag)
-	    start = pysat.datetime(2009,1,1)
-	    stop = pysat.datetime(2009,1,31) 
-	    inst.bounds = (start,stop) 
-	    for inst in inst:
-	        print('Another day loaded', inst.date)
-		
+        Limits of iteration, and iteration type (date/file)
+        set by `bounds` attribute.
+
+        Default bounds are the first and last dates from files on local system.
+
+        Examples
+        --------
+        ::
+
+            inst = pysat.Instrument(platform=platform,
+                                    name=name,
+                                    tag=tag)
+            start = pysat.datetime(2009,1,1)
+            stop = pysat.datetime(2009,1,31)
+            inst.bounds = (start,stop)
+            for inst in inst:
+            print('Another day loaded', inst.date)
+
         """
+
         if self._iter_type == 'file':
             for fname in self._iter_list:
                 self.load(fname=fname)
                 yield self       
  
-	elif self._iter_type == 'date': 
+        elif self._iter_type == 'date':
             for date in self._iter_list:
                 self.load(date=date)
                 yield self            
@@ -746,25 +742,25 @@ class Instrument(object):
          
         """
         
-	if self._iter_type == 'date':
-       	    if self.date is not None:
-       	        idx, = np.where(self._iter_list == self.date )
-       	        if (len(idx)==0) | (idx+1 >= len(self._iter_list) ):
-       	            raise StopIteration('Outside the set date boundaries.')
-       	        else:
-       	            idx += 1
-       	            self.load(date = self._iter_list[idx[0]])
+        if self._iter_type == 'date':
+            if self.date is not None:
+                idx, = np.where(self._iter_list == self.date )
+                if (len(idx)==0) | (idx+1 >= len(self._iter_list) ):
+                    raise StopIteration('Outside the set date boundaries.')
+                else:
+                    idx += 1
+                    self.load(date = self._iter_list[idx[0]])
             else:
                 self.load(date = self._iter_list[0])
-                
+
         elif self._iter_type == 'file':
             if self._fid is not None:
-       	        idx, = np.where(self._iter_list == self._fid )
-       	        if (len(idx)==0) | (idx+1 >= len(self._iter_list) ):
-       	            raise StopIteration('Outside the set file boundaries.')
-       	        else:
-       	            idx += 1
-       	            self.load(fid = self._iter_list[idx[0]])
+                idx, = np.where(self._iter_list == self._fid )
+                if (len(idx)==0) | (idx+1 >= len(self._iter_list) ):
+                    raise StopIteration('Outside the set file boundaries.')
+                else:
+                    idx += 1
+                    self.load(fid = self._iter_list[idx[0]])
             else:
                 self.load(fid = self._iter_list[0])
 
@@ -781,25 +777,25 @@ class Instrument(object):
             
         """
         
-	if self._iter_type == 'date':
-       	    if self.date is not None:
-       	        idx, = np.where(self._iter_list == self.date )
-       	        if (len(idx)==0) | (idx-1 < 0 ):
-       	            raise StopIteration('Outside the set date boundaries.')
-       	        else:
-       	            idx -= 1
-       	            self.load(date = self._iter_list[idx[0]])
+        if self._iter_type == 'date':
+            if self.date is not None:
+                idx, = np.where(self._iter_list == self.date )
+                if (len(idx)==0) | (idx-1 < 0 ):
+                    raise StopIteration('Outside the set date boundaries.')
+                else:
+                    idx -= 1
+                    self.load(date = self._iter_list[idx[0]])
             else:
                 self.load(date = self._iter_list[-1])
-                
+
         elif self._iter_type == 'file':
             if self._fid is not None:
-       	        idx, = np.where(self._iter_list == self._fid )
-       	        if (len(idx)==0) | (idx-1 < 0 ):
-       	            raise StopIteration('Outside the set file boundaries.')
-       	        else:
-       	            idx -= 1
-       	            self.load(fid = self._iter_list[idx[0]])
+                idx, = np.where(self._iter_list == self._fid )
+                if (len(idx)==0) | (idx-1 < 0 ):
+                    raise StopIteration('Outside the set file boundaries.')
+                else:
+                    idx -= 1
+                    self.load(fid = self._iter_list[idx[0]])
             else:
                 #last file by default
                 self.load(fid = self._iter_list[-1])
