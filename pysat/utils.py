@@ -43,7 +43,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                     
     import netCDF4
     import string
-    from pysat import meta
+    import pysat
 
     
     if fnames is None:
@@ -60,7 +60,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
             # build up dictionary with all ncattrs
             # and add those attributes to a pysat meta object
             ncattrsList = data.ncattrs()
-            mdata = meta.Meta()
+            mdata = pysat.Meta()
             for d in ncattrsList:
                 if hasattr(mdata, d):
                     mdata.__setattr__(d+'_', data.getncattr(d))
