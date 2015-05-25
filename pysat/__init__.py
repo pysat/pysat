@@ -19,15 +19,15 @@ else:
 del f
 
 from pandas import Panel, DataFrame, Series, datetime
-import utils
+from . import utils
 from _instrument import Instrument
 from _meta import Meta
 from _files import Files
 from _custom import Custom
 from _orbits import Orbits
-import instruments
+from . import instruments
 
-import ssnl
+from . import ssnl
 
 
 
