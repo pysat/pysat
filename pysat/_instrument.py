@@ -11,8 +11,9 @@ import _files
 import _orbits
 import _meta
 import utils
-from pysat import data_dir #import pysat.data_dir as data_dir
+from pysat import data_dir
 from pysat import DataFrame, Series
+
 
 # main class for users
 class Instrument(object):
@@ -134,7 +135,7 @@ class Instrument(object):
                 self.platform = inst_module.platform.lower()
             except AttributeError:
                 raise AttributeError(string.join(('A name and platform attribute for the ',
-                    'instrument is required if supplying routine module directly.')))
+                                     'instrument is required if supplying routine module directly.')))
             self._assign_funcs(inst_module=inst_module)
             
         self.tag = tag.lower() if tag is not None else ''    
@@ -156,7 +157,7 @@ class Instrument(object):
         if isinstance(pad, pds.DateOffset):
             self.pad = pad
         elif isinstance(pad, dict):
-            self.pad = pds.DateOffset(**(pad))
+            self.pad = pds.DateOffset(**pad)
         elif pad is None:
             self.pad = None
         else:
@@ -180,8 +181,8 @@ class Instrument(object):
 
         # initialize orbit support
         if orbit_info is None:
-            orbit_info = {'index':None, 'kind':None, 'period':None}
-        self.orbits = _orbits.Orbits(self, **(orbit_info))
+            orbit_info = {'index': None, 'kind': None, 'period': None}
+        self.orbits = _orbits.Orbits(self, **orbit_info)
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
         self._init_rtn(self)
@@ -245,20 +246,20 @@ class Instrument(object):
             self.meta[key] = new
         else:
             if isinstance(key, tuple):
-                self.data.ix[key[0],key[1]] = new
+                self.data.ix[key[0], key[1]] = new
                 if key[1] not in self.meta.data.index:
-                    self.meta[key[1]] = {'long_name':key, 'units':''}
+                    self.meta[key[1]] = {'long_name': key, 'units': ''}
             elif isinstance(key, str):
                 self.data[key] = new  
                 if key not in self.meta.data.index:   
                     # add in default metadata because none was supplied
-                    self.meta[key] = {'long_name':key, 'units':''}
+                    self.meta[key] = {'long_name': key, 'units': ''}
             elif isinstance(new, DataFrame):
                 self.data[key] = new[key]
                 for ke in key:
                     if ke not in self.meta.data.index:   
                         # add in default metadata because none was supplied
-                        self.meta[ke] = {'long_name':ke, 'units':''}
+                        self.meta[ke] = {'long_name': ke, 'units': ''}
             else:
                 raise ValueError("No support for supplied input key")           
     
@@ -282,8 +283,8 @@ class Instrument(object):
             
         if by_name: 
             # look for code with filename name, any errors passed up
-            inst = importlib.import_module(''.join(('.',self.platform,'_',
-                        self.name)),  package='pysat.instruments')
+            inst = importlib.import_module(''.join(('.', self.platform, '_',
+                                           self.name)), package='pysat.instruments')
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
             inst = inst_module
@@ -297,7 +298,7 @@ class Instrument(object):
             self._download_rtn = inst.download
         except AttributeError:
             raise AttributeError(string.join(('A load, file_list, and download routine',
-                    'are required for every instrument.'))) 
+                                 'are required for every instrument.')))
         try:
             self._default_rtn = inst.default
         except AttributeError:
@@ -324,13 +325,13 @@ class Instrument(object):
             # remove direct access of data
             fname = self.files[fid]
         elif date is not None:
-            fname = self.files[date : date+pds.DateOffset(days=1)]
+            fname = self.files[date: date+pds.DateOffset(days=1)]
         else:
             raise ValueError('Must supply either a date or file id number.')
    
         if len(fname) > 0:    
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
-            data, mdata = self._load_rtn(load_fname, tag = self.tag, **self.kwargs) 
+            data, mdata = self._load_rtn(load_fname, tag=self.tag, **self.kwargs)
         else:
             data = DataFrame(None)
             mdata = _meta.Meta()
@@ -342,36 +343,36 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-                print string.join(('Returning',self.platform,self.name,self.tag,'data for', 
-                              date.strftime('%D')))
+                print string.join(('Returning', self.platform, self.name, self.tag, 'data for',
+                                   date.strftime('%D')))
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    print string.join(('Returning',self.platform,self.name,self.tag,
-                                        'data from',fname[0]))
+                    print string.join(('Returning', self.platform, self.name, self.tag,
+                                       'data from', fname[0]))
                 else:
-                    print string.join(('Returning',self.platform,self.name,self.tag,
-                            'data from',fname[0], ' :: ',fname[-1]))
+                    print string.join(('Returning', self.platform, self.name, self.tag,
+                                       'data from', fname[0], ' :: ', fname[-1]))
         else:
             # no data signal
-            print string.join(('No',self.platform,self.name,self.tag,'data for', 
-                                date.strftime('%D')))
+            print string.join(('No', self.platform, self.name, self.tag, 'data for',
+                               date.strftime('%D')))
     
         return data, mdata
         
     def _load_next(self):
-        '''Load the next days data (or file) without incrementing the date.
+        """Load the next days data (or file) without incrementing the date.
         Repeated calls will not advance date/file and will produce the same data
         
         Uses info stored in object to either increment the date, 
         or the file. Looks for self._load_by_date flag. 
          
-        '''
+        """
         if self._load_by_date:
             next_date = self.date + pds.DateOffset(days=1)
             return self._load_data(date=next_date)
         else:
-            return self._load_data(fid = self._fid+1)
+            return self._load_data(fid=self._fid+1)
 
     def _load_prev(self):
         """Load the next days data (or file) without decrementing the date.
@@ -386,10 +387,10 @@ class Instrument(object):
             prev_date = self.date - pds.DateOffset(days=1)
             return self._load_data(date=prev_date)
         else:
-            return self._load_data(fid = self._fid-1)
+            return self._load_data(fid=self._fid-1)
 
     def load(self, yr=None, doy=None, date=None, fname=None, fid=None, 
-                verifyPad=False):
+             verifyPad=False):
         """Load instrument data into Instrument object .data.
 
         Parameters
@@ -453,8 +454,8 @@ class Instrument(object):
             inc = 1
             curr = fid
         else:
-            raise TypeError('Must supply a yr,doy pair, or datetime object, '+ 
-                    'or filename to load data from.')
+            raise TypeError('Must supply a yr,doy pair, or datetime object, ' +
+                            'or filename to load data from.')
 
         self.orbits._reset()
         # if pad is true, need to have a three day/file load
@@ -493,7 +494,9 @@ class Instrument(object):
                 self.meta = self._curr_meta.copy()
             else:
                 self.data = DataFrame(None)
-                #self.meta = _meta.Meta()
+                # line below removed as it would delete previous meta, if any
+                # if you end a seasonal analysis with a day with no data, then no meta
+                # self.meta = _meta.Meta()
 
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty) :
@@ -511,12 +514,12 @@ class Instrument(object):
                
         # check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.data.columns] = {'long_name':self.data.columns,
-                                            'units':['']*len(self.data.columns)}
+            self.meta[self.data.columns] = {'long_name': self.data.columns,
+                                            'units': ['']*len(self.data.columns)}
         if not self.data.empty:
             self._default_rtn(self)
         # clean
-        if (not self.data.empty) & (self.clean_level != 'none') :
+        if (not self.data.empty) & (self.clean_level != 'none'):
             self._clean_rtn(self)   
         # apply custom functions
         if not self.data.empty:
@@ -535,7 +538,7 @@ class Instrument(object):
         return
 
     def download(self, start, stop, user=None, password=None):
-        '''Download data for given Instrument object from start to stop.
+        """Download data for given Instrument object from start to stop.
         
         Parameters
         ----------
@@ -555,7 +558,7 @@ class Instrument(object):
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
         
-        '''
+        """
         import errno
         # make sure directories are there, otherwise create them
         try:
@@ -573,13 +576,17 @@ class Instrument(object):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-        date_array = utils.season_date_range(start,stop)
+        date_array = utils.season_date_range(start, stop)
         if user is None:
-            self._download_rtn(date_array, tag=self.tag, 
-                    data_path=self.files.data_path)
+            self._download_rtn(date_array,
+                               tag=self.tag,
+                               data_path=self.files.data_path)
         else:
-            self._download_rtn(date_array, tag=self.tag, 
-                    data_path=self.files.data_path,user=user, password=password)	
+            self._download_rtn(date_array,
+                               tag=self.tag,
+                               data_path=self.files.data_path,
+                               user=user,
+                               password=password)
         # get current file date range
         first_date = self.files.start_date
         last_date = self.files.stop_date
@@ -606,13 +613,13 @@ class Instrument(object):
                 end of iteration, inclusive. If None uses last data date.
                 list-like collection also accepted
 
-            Note
-            ----
-            Both start and stop must be the same type (date, or filename) or None
+        Note
+        ----
+        Both start and stop must be the same type (date, or filename) or None
 
-            Examples
-            --------
-            ::
+        Examples
+        --------
+        ::
 
             inst = pysat.Instrument(platform=platform,
                                     name=name,
@@ -625,22 +632,22 @@ class Instrument(object):
             stop2 = pysat.datetime(2010,2,14)
             inst.bounds = ([start, start2], [stop, stop2])
 
-            """
-        return (self._iter_start, self._iter_stop)
+        """
+        return self._iter_start, self._iter_stop
     
     @bounds.setter        
     def bounds(self, value=None):
         if value is None:
-            value = (None,None)
+            value = (None, None)
         if len(value) < 2:
-            raise ValueError('Must supply both a start and end date/file'+
-                  'Supply None if you want the first/last possible')
+            raise ValueError('Must supply both a start and end date/file' +
+                             'Supply None if you want the first/last possible')
 
         start = value[0]
         end = value[1]
 
         if (start is None) and (end is None):
-            #set default
+            # set default
             self._iter_start = [self.files.start_date]
             self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
@@ -650,7 +657,7 @@ class Instrument(object):
 
         elif hasattr(start, '__iter__') and hasattr(end, '__iter__'):
             base = type(start[0])
-            for s,t in zip(start, end):
+            for s, t in zip(start, end):
                 if (type(s) != type(t)) or (type(s) != base):
                     raise ValueError('Start and end items must all be of the same type')
             if isinstance(start[0], str):
@@ -660,7 +667,7 @@ class Instrument(object):
                 self._iter_type = 'date'
                 self._iter_list = utils.season_date_range(start, end)
             else:
-                raise ValueError ('Input is not a known type, string or datetime')
+                raise ValueError('Input is not a known type, string or datetime')
             self._iter_start = start
             self._iter_stop = end
 
@@ -676,7 +683,7 @@ class Instrument(object):
                 end = self.files.files[-1]
             self._iter_start = [start]
             self._iter_stop = [end]
-            self._iter_list = self.files.get_file_array(self._iter_start,self._iter_stop)
+            self._iter_list = self.files.get_file_array(self._iter_start, self._iter_stop)
             self._iter_type = 'file'
 
         elif isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
@@ -689,10 +696,9 @@ class Instrument(object):
             self._iter_list = utils.season_date_range(start, end)
             self._iter_type = 'date'
         else:
-            raise ValueError('Provided an invalid combination of bounds. '+
-	            'if specifying by file, both bounds must be by file. Other '+
-	            'combinations of datetime objects and None are allowed.')
-
+            raise ValueError('Provided an invalid combination of bounds. ' +
+                             'if specifying by file, both bounds must be by file. Other ' +
+                             'combinations of datetime objects and None are allowed.')
 
     def __iter__(self):
         """Iterates instrument object by loading subsequent days or files.
@@ -744,25 +750,25 @@ class Instrument(object):
         
         if self._iter_type == 'date':
             if self.date is not None:
-                idx, = np.where(self._iter_list == self.date )
-                if (len(idx)==0) | (idx+1 >= len(self._iter_list) ):
+                idx, = np.where(self._iter_list == self.date)
+                if (len(idx) == 0) | (idx+1 >= len(self._iter_list)):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx += 1
-                    self.load(date = self._iter_list[idx[0]])
+                    self.load(date=self._iter_list[idx[0]])
             else:
-                self.load(date = self._iter_list[0])
+                self.load(date=self._iter_list[0])
 
         elif self._iter_type == 'file':
             if self._fid is not None:
-                idx, = np.where(self._iter_list == self._fid )
-                if (len(idx)==0) | (idx+1 >= len(self._iter_list) ):
+                idx, = np.where(self._iter_list == self._fid)
+                if (len(idx) == 0) | (idx+1 >= len(self._iter_list)):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
                     idx += 1
-                    self.load(fid = self._iter_list[idx[0]])
+                    self.load(fid=self._iter_list[idx[0]])
             else:
-                self.load(fid = self._iter_list[0])
+                self.load(fid=self._iter_list[0])
 
     def prev(self):
         """Manually iterate backwards through the data in Instrument object.
@@ -779,27 +785,26 @@ class Instrument(object):
         
         if self._iter_type == 'date':
             if self.date is not None:
-                idx, = np.where(self._iter_list == self.date )
-                if (len(idx)==0) | (idx-1 < 0 ):
+                idx, = np.where(self._iter_list == self.date)
+                if (len(idx) == 0) | (idx-1 < 0):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx -= 1
-                    self.load(date = self._iter_list[idx[0]])
+                    self.load(date=self._iter_list[idx[0]])
             else:
-                self.load(date = self._iter_list[-1])
+                self.load(date=self._iter_list[-1])
 
         elif self._iter_type == 'file':
             if self._fid is not None:
-                idx, = np.where(self._iter_list == self._fid )
-                if (len(idx)==0) | (idx-1 < 0 ):
+                idx, = np.where(self._iter_list == self._fid)
+                if (len(idx) == 0) | (idx-1 < 0):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
                     idx -= 1
-                    self.load(fid = self._iter_list[idx[0]])
+                    self.load(fid=self._iter_list[idx[0]])
             else:
-                #last file by default
-                self.load(fid = self._iter_list[-1])
-
+                # last file by default
+                self.load(fid=self._iter_list[-1])
 
     def to_netcdf3(self, fname=None):
         """Stores loaded data into a netCDF3 64-bit file.
@@ -847,8 +852,8 @@ class Instrument(object):
                 if self[key].dtype != np.dtype('O'):
                     # not an object, simple column of data, write it out
                     cdfkey = out_data.createVariable(key, 
-                                                    self[key].dtype, 
-                                                    dimensions=('time'), )
+                                                     self[key].dtype,
+                                                     dimensions=('time'), )
                     cdfkey.units = self.meta[key].units
                     cdfkey.long_name = self.meta[key].long_name
                     cdfkey[:] = self[key].values
@@ -856,10 +861,10 @@ class Instrument(object):
                     # we are dealing with a more complicated object
                     # presuming a series with a dataframe in each location
                     dims = np.shape(self[key].iloc[0])
-                    obj_dim_names=[]
+                    obj_dim_names = []
                     # don't need to recreate last dimension, 
                     # it covers number of columns
-                    for i,dim in enumerate(dims[:-1]):
+                    for i, dim in enumerate(dims[:-1]):
                         obj_dim_names.append(key+'_dim_%i' % (i+1))
                         out_data.createDimension(obj_dim_names[-1], dim)
                     var_dim = tuple(['time']+obj_dim_names)
@@ -867,36 +872,36 @@ class Instrument(object):
                     # iterate over columns and store
                     for col in self[key].iloc[0].columns:
                         coltype = self[key].iloc[0][col].dtype
-                        if coltype == np.int64 :
+                        if coltype == np.int64:
                             coltype = np.int32
                         cdfkey = out_data.createVariable(col, 
-                                                        coltype, 
-                                                        dimensions=var_dim)
+                                                         coltype,
+                                                         dimensions=var_dim)
                         cdfkey.long_name = col
                         cdfkey.units = ''
                         for i in xrange(num):
-                            cdfkey[i,:] = self[key].iloc[i][col].values.astype(coltype)
+                            cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
                             
                     # store the dataframe index for each time of main dataframe
                     datetime_flag = False
                     coltype = self[key].iloc[0].index.dtype
                     # check for datetime index
                     if coltype == np.dtype('<M8[ns]'):
-                        coltype = 'f8' #self[key].iloc[0].index.to_native_types()[0].dtype
+                        coltype = 'f8'
                         datetime_flag = True
                     
                     cdfkey = out_data.createVariable(key+'_sample_index', 
-                                        coltype, dimensions=var_dim)
+                                                     coltype, dimensions=var_dim)
                     if datetime_flag:
-                        cdfkey.units='s'
+                        cdfkey.units = 's'
                         cdfkey.long_name = 'UNIX time'
                         for i in xrange(num):
-                            cdfkey[i,:] = self[key].iloc[i].index.astype(int)*1.E-9
+                            cdfkey[i, :] = self[key].iloc[i].index.astype(int)*1.E-9
                     else:
-                        cdfkey.units=''
+                        cdfkey.units = ''
                         cdfkey.long_name = key
                         for i in xrange(num):
-                            cdfkey[i,:] = self[key].iloc[i].index.to_native_types()
+                            cdfkey[i, :] = self[key].iloc[i].index.to_native_types()
 
                     if self[key].iloc[0].index.name is not None:
                         cdfkey.long_name = self[key].iloc[0].index.name
