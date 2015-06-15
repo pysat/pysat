@@ -9,19 +9,23 @@ import numpy as np
 import pandas as pds
 import collections
 
-def median2D(inst, bin1, label1, bin2, label2, data_label, start=None, 
-             stop=None, returnData=False):
-    """Return a 2D average of data_label over a season.
+def median2D(inst, bin1, label1, bin2, label2, data_label, 
+             returnData=False):
+    """Return a 2D average of data_label over a season and label1, label2.
 
-    Arguments:
-        bin#: [min, max, number of bins]
-        label#: string identifying data product for bin#
-        data_label: list containing strings identifying data product(s) to be 
-                    averaged
+    Parameters
+    ----------
+    bin#: [min, max, number of bins]
+    label#: string 
+        identifies data product for bin#
+    data_label: list-like 
+        contains strings identifying data product(s) to be averaged
 
-    Summary:
-        Returns a 2D average of data_label as a function of label1 and label2 
-        over the season delineated by bounds of passed instrument objects.
+    Returns
+    -------
+    Returns a dictionary accessed by data_label with a 2D average of 
+    data_label as a function of label1 and label2 over the season 
+    delineated by bounds of passed instrument objects.
     
     """
     
