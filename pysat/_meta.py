@@ -164,7 +164,8 @@ class Meta(object):
         elif not os.path.isfile(name):
                 # Not a real file, assume input is a pysat instrument name
                 # and look in the standard pysat location.
-                test =  os.path.join(pysat.__path__,'instruments',name)
+
+                test =  os.path.join(pysat.__path__[0],'instruments',name)
                 if os.path.isfile(test):
                     name = test
                 else:
@@ -175,8 +176,9 @@ class Meta(object):
                     else:
                         #success
                         name = test
-        else:                             
-            mdata = pds.read_csv(name, names=col_names, sep=sep, **kwargs) 
+                                     
+        mdata = pds.read_csv(name, names=col_names, sep=sep, **kwargs) 
+        
         if not mdata.empty:
             # make sure the data name is the index
             mdata.index = mdata['name']
