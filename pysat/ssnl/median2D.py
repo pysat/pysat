@@ -157,8 +157,8 @@ def median2D(inst, bin1, label1, bin2, label2, data_label, start=None, stop=None
             output[label]['data'] = ans[i]
             returnBins = True
         if returnBins:
-            output[label]['binx'] = binx
-            output[label]['biny'] = biny
+            output[label]['bin_x'] = binx
+            output[label]['bin_y'] = biny
     return output   
 
 
