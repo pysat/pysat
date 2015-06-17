@@ -238,7 +238,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         uts = np.zeros(len(year))
     day = day.astype(int)
     # track changes in seconds
-    uts_del = uts.copy()
+    uts_del = uts.copy().astype(float)
     # determine where there are changes in year and month that need to be 
     # accounted for    
     _,idx = np.unique(year*100.+month, return_index=True)
