@@ -393,6 +393,7 @@ class Orbits(object):
         change = (pos.values[:-1] & npos.values[1:]) | (npos.values[:-1] & pos.values[1:])
 
         ind, = np.where(change)
+        ind += 1
         if len(ind) > 0:
             ind = np.hstack((ind, np.array([ len(self.sat[self.orbit_index]) ]) ))
             # look at distance between breaks
