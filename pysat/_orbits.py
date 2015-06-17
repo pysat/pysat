@@ -379,31 +379,20 @@ class Orbits(object):
 	"""
      
         if self.orbit_index is None:
-            try:
-    	        self.sat['glat']
-		self.orbit_index = 'glat'
-            except ValueError:
-                try:
-                    self.sat['mlat']
-                    self.orbit_index = 'mlat'
-                except ValueError:
-                    raise ValueError('Unable to find a valid index (glat/mlat)'+
-                                    ' for determining orbits.')
+            raise ValueError('Orbit properties must be defined at ' +
+              'pysat.Instrument object instantiation. See Instrument docs.')
         else:
             try:
                 self.sat[self.orbit_index]
             except ValueError:
-                raise ValueError('Provided orbit index does not exist in loaded data')
+                raise ValueError('Provided orbit index does not appear to exist in loaded data')
 
-        # define derivative function here
-        deriv = lambda x: (x[1] - x[0])/2
-        val = self.sat[self.orbit_index] >= 0
-        val_change = val[:-1] - val[1:]
-        ut_val = pds.rolling_apply(self.sat.data.index.values,2,deriv)
-        # locations where derivative is less than 0
-        # or, look for breaks because the length of time between samples is too large
-        # deriv of datetime index is in naneseconds
-        ind, = np.where(val_change == True )
+        # determine where orbit index goes from positive to negative
+        pos = self.sat[self.orbit_index] >= 0
+        npos = -pos 
+        change = (pos.values[:-1] & npos.values[1:]) | (npos.values[:-1] & pos.values[1:])
+
+        ind, = np.where(change)
         if len(ind) > 0:
             ind = np.hstack((ind, np.array([ len(self.sat[self.orbit_index]) ]) ))
             # look at distance between breaks
@@ -414,14 +403,16 @@ class Orbits(object):
                 if min(dist)==1:
                     print 'There are orbit breaks right next to each other'
                 ind = ind[dist>1]
-        # now, look for breaks because the length of time between samples is too large, thus there is no break in slt/mlt/etc
-        ut_val = pds.rolling_apply(self.sat.data.index.values,2,deriv)
-        ut_ind, = np.where(ut_val > self.orbit_period.total_seconds()*10**9 )     #used to be 2900, dunno why. 5900 corresponds to seconds over 97 minutes (1 orbit)
+
+        ut_diff = Series(self.sat.data.index).diff()
+        ut_ind, = np.where( ut_diff/self.orbit_period > 0.95 )
+        
+        
         if len(ut_ind) > 0:
             ind = np.hstack((ind,ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            print 'Time Gap'
+            #print 'Time Gap'
         # number of orbits
         num_orbits = len(ind)+1
         # create orbitbreak index
@@ -500,7 +491,7 @@ class Orbits(object):
             #set up orbit metadata
             self._calcOrbits()
             #ensure user supplied an orbit
-            if orbit != None:
+            if orbit is not None:
                 #pull out requested orbit
                 if orbit < 0:
                     #negative indexing consistent with numpy, -1 last, -2 second
