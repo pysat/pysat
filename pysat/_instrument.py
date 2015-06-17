@@ -44,6 +44,10 @@ class Instrument(object):
         If True, query filesystem for instrument files and store. 
         files.get_new() will return no files after this call until 
         additional files are added.
+    multi_file_day : boolean, optional (False by default)
+        Set to True if Instrument data files for a day are spread across
+        multiple files and data for day n could be found in a file
+        with a timestamp of day n-1 or n+1.
         
     Attributes
     ----------
@@ -114,7 +118,7 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag=None, clean_level='clean',
                  update_files=False, pad=None, orbit_info=None,
-                 inst_module=None, *arg, **kwargs):
+                 inst_module=None, multi_file_day=False, *arg, **kwargs):
 
         if inst_module is None:
             if isinstance(platform, str) and isinstance(name, str):              
@@ -162,6 +166,9 @@ class Instrument(object):
             self.pad = None
         else:
             raise ValueError('pad must be a dictionary or a pandas.DateOffset instance.')
+
+	# multi file day
+	self.multi_file_day = multi_file_day
 
         self.kwargs = kwargs
 
@@ -427,7 +434,7 @@ class Instrument(object):
             curr = date
         elif (yr is not None) & (doy is not None):
             # if date not defined but both yr and doy are
-            self.date = (pds.datetime(yr,1,1) ) + pds.DateOffset(days=(doy-1))
+            self.date = pds.datetime(yr,1,1) + pds.DateOffset(days=(doy-1))
             self.yr = yr
             self.doy = doy
             self._fid = None
@@ -459,7 +466,7 @@ class Instrument(object):
 
         self.orbits._reset()
         # if pad is true, need to have a three day/file load
-        if self.pad is not None:
+        if (self.pad is not None) | self.multi_file_day:
             if self._next_data.empty & self._prev_data.empty:
                 # data has not already been loaded for previous and next days
                 # load data for all three
@@ -498,12 +505,20 @@ class Instrument(object):
                 # if you end a seasonal analysis with a day with no data, then no meta
                 # self.meta = _meta.Meta()
 
+            if self.multi_file_day:
+                self.data = self.data[self.date : self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999)]
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty) :
-                padLeft = self._prev_data[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
+                if self.multi_file_day and self._load_by_date:
+                    padLeft = self._prev_data[(self.date):self._curr_data.index[0]]
+                else:
+                    padLeft = self._prev_data[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
             if (not self._next_data.empty) & (not self.data.empty) :
-                padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
+                if self.multi_file_day and self._load_by_date:
+                    padRight = self._next_data[self.date : (self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999))]
+		else:
+		    padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
                 self.data = pds.concat([self.data, padRight[1:]])
                 
         # if self.pad is False, load single day
