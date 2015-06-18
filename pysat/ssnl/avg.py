@@ -28,8 +28,7 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
     delineated by bounds of passed instrument objects.
     
     """
-    
-    
+
     # create bins
     binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
     biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)
@@ -65,7 +64,6 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
                             for zk in zarr:
                                 ans[zk][yj][xi].extend( yData.ix[yindex,data_label[zk]].tolist() )
 
-
     # all of the loading and storing data is done
     # determine what kind of data is stored
     # if just numbers, then use numpy arrays to store data
@@ -82,9 +80,8 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
                     break 
             if breakNow:
                 break
- 
-      
-    # determine if normal number objects are being used or if there 
+
+    # determine if normal number objects are being used or if there
     # are more complicated objects
     objArray = np.zeros(len(zarr))
     objArray = [False]*len(zarr)
@@ -152,6 +149,90 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
         if returnData:
             output[label]['data'] = ans[i]
 
-    return output   
+    return output
 
+# simple averaging through multiple iterations
 
+def mean_by_day(inst, data_label):
+    """Mean of data_label by day over Instrument.bounds
+
+    Parameters
+    ----------
+    data_label : string
+        string identifying data product to be averaged
+
+    Returns
+    -------
+    pandas Series with simple mean of data_label indexed
+    by day
+
+    """
+    return _core_mean(inst, data_label, by_day=True)
+
+def mean_by_orbit(inst, data_label):
+    """Mean of data_label by orbit over Instrument.bounds
+
+    Parameters
+    ----------
+    data_label : string
+        string identifying data product to be averaged
+
+   Returns
+    -------
+    pandas Series with simple mean of data_label indexed
+    by start of each orbit
+
+    """
+    return _core_mean(inst, data_label, by_orbit=True)
+
+def mean_by_file(inst, data_label):
+    """Mean of data_label by orbit over Instrument.bounds
+
+    Parameters
+    ----------
+    data_label : string
+        string identifying data product to be averaged
+
+   Returns
+    -------
+    pandas Series with simple mean of data_label indexed
+    by start of each file
+
+    """
+    return _core_mean(inst, data_label, by_file=True)
+
+def _core_mean(inst, data_label, by_orbit=False, by_day=False, by_file=False):
+
+    if by_orbit:
+        iterator = inst.orbits
+    elif by_day or by_file:
+        iterator = inst
+    else:
+        raise ValueError('A choice must be made, by day, file, or orbit')
+
+    # create empty series to hold result
+    mean_val = pds.Series()
+    # iterate over season, calculate the mean
+    for inst in iterator:
+        if not inst.data.empty:
+                # compute mean absolute using pandas functions and store
+                # data could be an image, or lower dimension, account for 2D and lower
+                data = inst[data_label]
+                data.dropna(inplace=True)
+
+                if by_orbit or by_file:
+                   date = inst.data.index[0]
+                else:
+                   date = inst.date
+
+                if isinstance(data.iloc[0], pds.DataFrame):
+                    data_panel = pds.Panel.from_dict(dict([(i,data.iloc[i]) for i in xrange(len(data))]))
+                    mean_val[date] = data_panel.mean(axis=0,skipna=True)
+                elif isinstance(data.iloc[0], pds.Series):
+                    data_frame = pds.DataFrame(data.tolist())
+                    data_frame.index = data.index
+                    mean_val[date] = data_frame.mean(axis=0, skipna=True)
+                else:
+                    mean_val[date] = inst[data_label].mean(axis=0,skipna=True)
+    del iterator
+    return mean_val
