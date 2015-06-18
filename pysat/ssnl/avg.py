@@ -15,11 +15,11 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
 
     Parameters
     ----------
-    bin#: [min, max, number of bins]
-    label#: string 
-        identifies data product for bin#
-    data_label: list-like 
-        contains strings identifying data product(s) to be averaged
+        bin#: [min, max, number of bins]
+        label#: string 
+            identifies data product for bin#
+        data_label: list-like 
+            contains strings identifying data product(s) to be averaged
 
     Returns
     -------
