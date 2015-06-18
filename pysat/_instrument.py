@@ -514,6 +514,7 @@ class Instrument(object):
                 else:
                     padLeft = self._prev_data[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
+                
             if (not self._next_data.empty) & (not self.data.empty) :
                 if self.multi_file_day and self._load_by_date:
                     padRight = self._next_data[self.date : (self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999))]
