@@ -74,7 +74,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires = ['pandas'],
+    install_requires = ['pandas', 'pysftp'],
     #install_requires=['pandas'], #,'git+git://github.com/rstoneback/pandas/tarball/master#egg=rstoneback-pandas-0.16.0-54-ga32da86'],
     #dependency_links = ['https://github.com/rstoneback/pandas/tarball/master#egg=rstoneback-pandas-0.16.0-54-ga32da86'],
     dependency_links = ['https://github.com/rstoneback/pandas.git'],
