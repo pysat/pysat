@@ -167,8 +167,8 @@ class Instrument(object):
         else:
             raise ValueError('pad must be a dictionary or a pandas.DateOffset instance.')
 
-	# multi file day
-	self.multi_file_day = multi_file_day
+        # multi file day
+        self.multi_file_day = multi_file_day
 
         self.kwargs = kwargs
 
@@ -359,7 +359,7 @@ class Instrument(object):
                                        'data from', fname[0]))
                 else:
                     print string.join(('Returning', self.platform, self.name, self.tag,
-                                       'data from', fname[0], ' :: ', fname[-1]))
+                                       'data from', fname[0], '::', fname[-1]))
         else:
             # no data signal
             print string.join(('No', self.platform, self.name, self.tag, 'data for',
@@ -508,18 +508,20 @@ class Instrument(object):
             if self.multi_file_day:
                 self.data = self.data[self.date : self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999)]
             # pad data based upon passed parameter
-            if (not self._prev_data.empty) & (not self.data.empty) :
+
+            if (not self._prev_data.empty) & (not self.data.empty):
                 if self.multi_file_day and self._load_by_date:
                     padLeft = self._prev_data[(self.date):self._curr_data.index[0]]
                 else:
                     padLeft = self._prev_data[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
-                
-            if (not self._next_data.empty) & (not self.data.empty) :
+
+            if (not self._next_data.empty) & (not self.data.empty):
+
                 if self.multi_file_day and self._load_by_date:
                     padRight = self._next_data[self.date : (self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999))]
-		else:
-		    padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
+                else:
+                    padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
                 self.data = pds.concat([self.data, padRight[1:]])
                 
         # if self.pad is False, load single day
@@ -941,5 +943,3 @@ class Instrument(object):
             adict['pysat_version'] = 1.0
             adict['Conventions'] = 'CF-1.6'
             out_data.setncatts(adict)
-
-
