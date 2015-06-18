@@ -352,7 +352,7 @@ class Instrument(object):
                                        'data from', fname[0]))
                 else:
                     print string.join(('Returning', self.platform, self.name, self.tag,
-                                       'data from', fname[0], ' :: ', fname[-1]))
+                                       'data from', fname[0], '::', fname[-1]))
         else:
             # no data signal
             print string.join(('No', self.platform, self.name, self.tag, 'data for',
@@ -499,10 +499,10 @@ class Instrument(object):
                 # self.meta = _meta.Meta()
 
             # pad data based upon passed parameter
-            if (not self._prev_data.empty) & (not self.data.empty) :
+            if (not self._prev_data.empty) & (not self.data.empty):
                 padLeft = self._prev_data[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
-            if (not self._next_data.empty) & (not self.data.empty) :
+            if (not self._next_data.empty) & (not self.data.empty):
                 padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
                 self.data = pds.concat([self.data, padRight[1:]])
                 
@@ -925,5 +925,3 @@ class Instrument(object):
             adict['pysat_version'] = 1.0
             adict['Conventions'] = 'CF-1.6'
             out_data.setncatts(adict)
-
-
