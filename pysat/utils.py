@@ -1,7 +1,7 @@
 import pandas as pds
 import numpy as np
 import copy
-#import meta
+
 
 from pysat import DataFrame, Series, datetime, Panel
 
@@ -12,14 +12,12 @@ def set_data_dir(path=None):
     import os
     import pysat
     if os.path.isdir(path):
-        with open(os.path.join(os.getenv('HOME'), '.pysat','data_path.txt'),'w') as f:
+        with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'), 'w') as f:
             f.write(path)
             pysat.data_dir = path
             f.close()
             reload(pysat._files)
             reload(pysat._instrument)
-
-            
     else:
         raise ValueError('Path does not lead to a valid directory.')
         
@@ -45,7 +43,6 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
     import string
     import pysat
 
-    
     if fnames is None:
         raise ValueError("Must supply a list of filenames")
     if not hasattr(fnames, '__iter__'):
@@ -72,8 +69,8 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
             for key in data.variables.keys():
                 # load up metadata
                 mdata[key] = {'long_name':data.variables[key].long_name,
-                                'units':data.variables[key].units} #,
-                                #'nc_dimensions':data.variables[key].dimensions}
+                              'units':data.variables[key].units}
+                              # 'nc_dimensions':data.variables[key].dimensions}
                 # from here group unique dimensions and act accordingly, 1D, 2D, 3D  
                 if len(data.variables[key].dimensions) == 1:
                     # assuming basic time dimension
@@ -107,7 +104,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                         
                     # if the object index uses unix time, process into datetime index    
                     if data.variables[obj_key_name+'_sample_index'].long_name == 'UNIX time':
-                        # nansecond reolution from datetime64 can't be stored in netcdf3
+                        # nanosecond resolution from datetime64 can't be stored in netcdf3
                         # no 64-bit integers
                         # it is stored as a float, need to undo processing 
                         # due to precision loss, resolution limited to the microsecond
@@ -115,7 +112,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                     else:
                         loop_frame.index = loop_frame[obj_key_name+'_sample_index']
                     del loop_frame[obj_key_name+'_sample_index']  
-                    #loop_list.append(loop_frame)                      
+                    #loop_list.append(loop_frame)
                 # add object data to loaded data dictionary
                 loadedVars[obj_key_name] = loop_list
                 del loop_list
