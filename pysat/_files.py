@@ -307,7 +307,10 @@ class Files(object):
         from instrument_module.list_files method.
         
         """
-        from utils import create_datetime_index
+        import collections
+        
+        from .utils import create_datetime_index
+        
         if (format_str is None):
             raise ValueError("Must supply a filename template (format_str).")
         if (data_path is None):
@@ -320,7 +323,9 @@ class Files(object):
         keys = []
         snips = []
         length = []
-        stored = {'year':[], 'month':[], 'day':[], 'hour':[], 'min':[], 'sec':[]}
+        stored = collections.OrderedDict()
+        stored['year'] = []; stored['month'] = []; stored['day'] = [];
+        stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
         for snip in form.parse(format_str):
             search_str += snip[0]
             snips.append(snip[0])
@@ -353,10 +358,6 @@ class Files(object):
             begin_key = []
             end_key = []
             for i,snip in enumerate(snips):
-                #if snip is not None:
-                #begin_lit.append(test_str.find(snip,idx) )
-                #end_lit.append(begin_lit[-1] + len(snip))
-                #idx = end_lit[-1]
                 idx += len(snip)
                 if i < (len(length)):
                     begin_key.append(idx)
@@ -366,19 +367,16 @@ class Files(object):
             # setting up negative indexing to pick out filenames
             key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
                             np.array(end_key, dtype=int) - max_len]
-            #print key_str_idx
             # need to parse out dates for datetime index
             for i,temp in enumerate(files):
                 for j,key in enumerate(keys):
                     val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
                     stored[key].append(val)
-    
             # convert to numpy arrays
             for key in stored.keys():
                 stored[key] = np.array(stored[key]).astype(int)
                 if len(stored[key]) == 0:
                     stored[key]=None
-            
             # deal with the possibility of two digit years
             # years above or equal to break are considered to be 1900+
             # years below break are considered to be 2000+
@@ -386,8 +384,29 @@ class Files(object):
                 idx, = np.where(stored['year'] >= two_digit_year_break)
                 stored['year'][idx] = stored['year'][idx] + 1900
                 idx, = np.where(stored['year'] < two_digit_year_break)
-                stored['year'][idx] = stored['year'][idx] + 2000            
-    
+                stored['year'][idx] = stored['year'][idx] + 2000 
+            # need to sort the information for things to work
+            rec_arr = []
+            val_keys = []
+            for key in keys:
+                rec_arr.append(stored[key])
+            rec_arr.append(files)
+	    # sort all arrays	
+            val_keys = keys+['files']
+            rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
+            rec_arr.sort(order=val_keys, axis=0)
+            # pull out sorted info
+            for key in keys:
+                stored[key] = rec_arr[key]
+	    files = rec_arr['files'] 		
+            # add hour and minute information to 'sec'
+            if stored['sec'] is None:
+                stored['sec'] = np.zeros(len(files))                
+            if stored['hour'] is not None:
+                stored['sec'] += 3600*stored['hour']
+            if stored['min'] is not None:
+                stored['sec'] += 60*stored['min']
+            
             index = create_datetime_index(year=stored['year'], month=stored['month'], 
                                     day=stored['day'], uts=stored['sec'])
 

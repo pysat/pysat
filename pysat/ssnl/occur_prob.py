@@ -153,8 +153,8 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
     for i,label in enumerate(data_label):
         output[label] = {'prob': prob[i,:,:], 'count':total[i,:,:]}
         if returnBins:
-            output[label]['binx'] = binx
-            output[label]['biny'] = biny
+            output[label]['bin_x'] = binx
+            output[label]['bin_y'] = biny
     # clean up
     del iterator
     return output
