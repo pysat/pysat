@@ -42,10 +42,11 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False
 
     Returns
     -------
-    Returns a dict with numpy arrays, 'prob' for the probability and
-    'count' for the number of days with any data.'binx' and 'biny' are also
-    returned if requested. Note that arrays are organized for direct 
-    plotting, y values along rows, x along columns.
+    occur_prob : dictionary
+        A dict of dicts indexed by data_label. Each entry is dict with entries
+        'prob' for the probability and 'count' for the number of days with any
+        data; 'bin_x' and 'bin_y' are also returned if requested. Note that arrays
+        are organized for direct plotting, y values along rows, x along columns.
     
     Note
     ----
@@ -82,10 +83,11 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=Fa
 
     Returns
     -------
-    Returns a dict with numpy arrays, 'prob' for the probability and
-    'count' for the number of days with any data.'binx' and 'biny' are also
-    returned if requested. Note that arrays are organized for direct 
-    plotting, y values along rows, x along columns
+    occur_prob : dictionary
+        A dict of dicts indexed by data_label. Each entry is dict with entries
+        'prob' for the probability and 'count' for the number of orbits with any
+        data; 'bin_x' and 'bin_y' are also returned if requested. Note that arrays
+        are organized for direct plotting, y values along rows, x along columns.
 
     Note
     ----
@@ -186,10 +188,11 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     Returns
     -------
-    Returns a dict with numpy arrays, 'prob' for the probability and
-    'count' for the number of days with any data.'binx', 'biny', and 'binz'
-    are also returned if requested. Note that arrays are organized for direct 
-    plotting, z,y,x.
+    occur_prob : dictionary
+        A dict of dicts indexed by data_label. Each entry is dict with entries
+        'prob' for the probability and 'count' for the number of days with any
+        data; 'bin_x', 'bin_y', and 'bin_z' are also returned if requested. Note
+        that arrays are organized for direct plotting, z,y,x.
 
     Note
     ----
@@ -227,10 +230,11 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     Returns
     -------
-    Returns a dict with numpy arrays, 'prob' for the probability and
-    'count' for the number of days with any data.'binx' and 'biny' are also
-    returned if requested. Note that arrays are organized for direct 
-    plotting, z,y,x
+    occur_prob : dictionary
+        A dict of dicts indexed by data_label. Each entry is dict with entries
+        'prob' for the probability and 'count' for the number of orbits with any
+        data; 'bin_x', 'bin_y', and 'bin_z' are also returned if requested. Note
+        that arrays are organized for direct plotting, z,y,x.
 
     Note
     ----
@@ -313,9 +317,9 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
     for i,label in enumerate(data_label):
         output[label] = {'prob': prob[i,:,:,:], 'count':total[i,:,:,:]}
         if returnBins:
-            output[label]['binx'] = binx
-            output[label]['biny'] = biny
-            output[label]['binz'] = biny
+            output[label]['bin_x'] = binx
+            output[label]['bin_y'] = biny
+            output[label]['bin_z'] = biny
     # clean up
     del iterator
     return output    

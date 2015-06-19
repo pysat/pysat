@@ -23,9 +23,11 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
 
     Returns
     -------
-    Returns a dictionary accessed by data_label with a 2D average of 
-    data_label as a function of label1 and label2 over the season 
-    delineated by bounds of passed instrument objects.
+    median : dictionary
+        2D median accessed by data_label as a function of label1 and label2
+        over the season delineated by bounds of passed instrument objects.
+        Also includes 'count' and 'avg_abs_dev' as well as the values of
+        the bin edges in 'bin_x' and 'bin_y'.
     
     """
 
@@ -163,8 +165,8 @@ def mean_by_day(inst, data_label):
 
     Returns
     -------
-    pandas Series with simple mean of data_label indexed
-    by day
+    mean : pandas Series
+        simple mean of data_label indexed by day
 
     """
     return _core_mean(inst, data_label, by_day=True)
@@ -177,10 +179,10 @@ def mean_by_orbit(inst, data_label):
     data_label : string
         string identifying data product to be averaged
 
-   Returns
+    Returns
     -------
-    pandas Series with simple mean of data_label indexed
-    by start of each orbit
+    mean : pandas Series
+        simple mean of data_label indexed by start of each orbit
 
     """
     return _core_mean(inst, data_label, by_orbit=True)
@@ -193,10 +195,10 @@ def mean_by_file(inst, data_label):
     data_label : string
         string identifying data product to be averaged
 
-   Returns
+    Returns
     -------
-    pandas Series with simple mean of data_label indexed
-    by start of each file
+    mean : pandas Series
+        simple mean of data_label indexed by start of each file
 
     """
     return _core_mean(inst, data_label, by_file=True)
