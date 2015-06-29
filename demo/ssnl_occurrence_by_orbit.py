@@ -35,7 +35,7 @@ stop = pds.datetime(2010,5,15)
 vefi.download(start, stop)
 
 # leave bounds unassigned to cover the whole dataset (comment out lines below)
-vefi.bounds = (start,stop)
+vefi.bounds = (start, stop)
 
 # perform occurrence probability calculation
 # any data added by custom functions is available within routine below
@@ -48,17 +48,17 @@ ans = ans['dB_mer']
 # plot occurrence probability
 f, axarr = plt.subplots(2,1, sharex=True, sharey=True)
 masked = np.ma.array(ans['prob'], mask=np.isnan(ans['prob']))                                   
-im=axarr[0].pcolor(ans['binx'], ans['biny'], masked)
+im=axarr[0].pcolor(ans['bin_x'], ans['bin_y'], masked)
 axarr[0].set_title('Occurrence Probability Delta-B Meridional > 0')
 axarr[0].set_ylabel('Latitude')
 axarr[0].set_yticks((-13,-10,-5,0,5,10,13))
-axarr[0].set_ylim((ans['biny'][0],ans['biny'][-1]))
+axarr[0].set_ylim((ans['bin_y'][0],ans['bin_y'][-1]))
 plt.colorbar(im,ax=axarr[0], label='Occurrence Probability')
 
-im=axarr[1].pcolor(ans['binx'], ans['biny'],ans['count'])
+im=axarr[1].pcolor(ans['bin_x'], ans['bin_y'],ans['count'])
 axarr[1].set_xlabel('Longitude')  
 axarr[1].set_xticks((0,60,120,180,240,300,360))
-axarr[1].set_xlim((ans['binx'][0],ans['binx'][-1]))
+axarr[1].set_xlim((ans['bin_x'][0],ans['bin_x'][-1]))
 axarr[1].set_ylabel('Latitude')
 axarr[1].set_title('Number of Orbits in Bin')
 
