@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import numpy as np
 import pandas as pds
 from pysat import Series, DataFrame
@@ -49,7 +51,7 @@ class Orbits(object):
         
         # iterate over orbits
         for vefi in vefi.orbits:
-            print 'Next available orbit ', vefi['dB_mer']
+            print('Next available orbit ', vefi['dB_mer'])
                             
         # load fifth orbit of first day
         vefi.load(date=start)
@@ -107,7 +109,7 @@ class Orbits(object):
         
             inst.load(date=date)
             inst.orbits[4]
-            print 'Orbit data ', inst.data
+            print('Orbit data ', inst.data)
         
         Note
         ----
@@ -181,7 +183,7 @@ class Orbits(object):
             #done for robustness
             if len(ind) > 1:
                 if min(dist)==1:
-                    print 'There are orbit breaks right next to each other'
+                    print('There are orbit breaks right next to each other')
                 ind = ind[dist>1]
                 
             #check for large positive gradients around the break that would
@@ -238,7 +240,7 @@ class Orbits(object):
             ind = np.hstack((ind,ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            print 'Time Gap'
+            print('Time Gap')
             #print ut_diff[1]/self.orbit_period*24., lt_diff[1], ut_diff[1], 0.97*self.orbit_period
             #print ut_diff.iloc[ut_ind], lt_diff.iloc[ut_ind], np.abs(lt_diff.iloc[ut_ind]/24.), ut_diff[ut_ind]/self.orbit_period
             #print np.abs(lt_diff.iloc[ut_ind]/24.*self.orbit_period)
@@ -310,7 +312,7 @@ class Orbits(object):
             # done for robustness, though this could rarely introduce a problem
             if len(ind) > 1:
                 if min(dist)==1:
-                    print 'There are orbit breaks right next to each other'
+                    print('There are orbit breaks right next to each other')
                 ind = ind[dist>1]
                 
             # check for large positive gradients around the break that would
@@ -348,7 +350,7 @@ class Orbits(object):
             ind = np.hstack((ind,ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            print 'Time Gap'
+            print('Time Gap')
 
 	# now that most problems in orbits should have been caught, look at 
 	# the time difference between orbits
@@ -402,7 +404,7 @@ class Orbits(object):
             # done for robustness
             if len(ind) > 1:
                 if min(dist)==1:
-                    print 'There are orbit breaks right next to each other'
+                    print('There are orbit breaks right next to each other')
                 ind = ind[dist>1]
 
         ut_diff = Series(self.sat.data.index).diff()
@@ -527,7 +529,7 @@ class Orbits(object):
 		    except StopIteration:
 		        #print 'going for basic orbit'
 		        self._getBasicOrbit(orbit=1)
-		        print 'Loaded Orbit:%i' % self.current
+		        print('Loaded Orbit:%i' % self.current)
                     #check if the first orbit is also the last orbit
                     
                 elif orbit==self.num:
@@ -546,7 +548,7 @@ class Orbits(object):
                 elif orbit < self.num:
                     #load orbit data into data
                     self._getBasicOrbit(orbit)
-                    print 'Loaded Orbit:%i' % self.current
+                    print('Loaded Orbit:%i' % self.current)
 
                 else:
                     #gone too far
@@ -555,7 +557,7 @@ class Orbits(object):
             else:
                 raise Exception('Must set an orbit')
         else:
-            print 'No data loaded in instrument object to determine orbits.'
+            print('No data loaded in instrument object to determine orbits.')
             
     def next(self, *arg, **kwarg):
         """Load the next orbit into .data.
@@ -602,7 +604,7 @@ class Orbits(object):
                     except StopIteration:
                         pass
                     del temp_orbit_data
-                print 'Loaded Orbit:%i' % self.current  
+                print('Loaded Orbit:%i' % self.current)
 
             elif self.current == (self.num):
                 #self._getBasicOrbit(orbit=-1)
@@ -643,7 +645,7 @@ class Orbits(object):
 
                 #print 'Loaded Orbit:%i' % self.current
                 del temp_orbit_data
-                print 'Loaded Orbit:%i' % self.current  
+                print('Loaded Orbit:%i' % self.current)
 
            #get next orbit
 	    elif self.current == 0:
@@ -653,7 +655,7 @@ class Orbits(object):
             #if not close to the last orbit,just pull the next orbit
             elif self.current < (self.num - 1):
                 self._getBasicOrbit(orbit=self.current+1)
-                print 'Loaded Orbit:%i' % self.current  
+                print('Loaded Orbit:%i' % self.current)
 
             else:
                 raise Exception('You ended up where noone should ever be. Talk to someone about this fundamental failure.')
@@ -737,11 +739,11 @@ class Orbits(object):
 
             else:
                 raise Exception('You ended up where noone should ever be. Talk to someone about this fundamental failure.')
-            print 'Loaded Orbit:%i' % self.current 
+            print('Loaded Orbit:%i' % self.current)
         else:
            #no data
     	    while len(self.sat.data) == 0:
-    	        self.sat.prev()#raises stopIteration at end of dataset
+                self.sat.prev()#raises stopIteration at end of dataset
             self.prev()    
             
     def __iter__(self):

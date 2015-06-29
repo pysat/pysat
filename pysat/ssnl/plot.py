@@ -82,7 +82,7 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None, ylim=None)
         try:
             cbar = plt.colorbar(p[j],ax=ax[0], label='Amplitude (m/s)')
         except:
-            print 'Tried colorbar but failed, thus no colorbar.'
+            print('Tried colorbar but failed, thus no colorbar.')
         ax[0].elev=30.
     # interactive plotting back on
     plt.ion()

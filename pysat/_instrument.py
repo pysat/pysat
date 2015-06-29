@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import string
 import os
 import copy
@@ -93,8 +95,8 @@ class Instrument(object):
         stop = pysat.datetime(2009,1,2)
         vefi.download(start, stop)
         vefi.load(date=start)
-        print vefi['dB_mer']
-        print vefi.meta['db_mer']
+        print(vefi['dB_mer'])
+        print(vefi.meta['db_mer'])
     
         # 1-second thermal plasma parameters
         ivm = pysat.Instrument(platform='cnofs', 
@@ -103,7 +105,7 @@ class Instrument(object):
                                 clean_level='clean')
         ivm.download(start,stop)
         ivm.load(2009,1)
-        print ivm['ionVelmeridional'] 
+        print(ivm['ionVelmeridional'])
         
         # Ionosphere profiles from GPS occultation
         cosmic = pysat.Instrument('cosmic2013', 
@@ -350,20 +352,20 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-                print string.join(('Returning', self.platform, self.name, self.tag, 'data for',
-                                   date.strftime('%D')))
+                print(string.join(('Returning', self.platform, self.name, self.tag, 'data for',
+                                   date.strftime('%D'))))
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    print string.join(('Returning', self.platform, self.name, self.tag,
-                                       'data from', fname[0]))
+                    print(string.join(('Returning', self.platform, self.name, self.tag,
+                                       'data from', fname[0])))
                 else:
-                    print string.join(('Returning', self.platform, self.name, self.tag,
-                                       'data from', fname[0], '::', fname[-1]))
+                    print(string.join(('Returning', self.platform, self.name, self.tag,
+                                       'data from', fname[0], '::', fname[-1])))
         else:
             # no data signal
-            print string.join(('No', self.platform, self.name, self.tag, 'data for',
-                               date.strftime('%D')))
+            print(string.join(('No', self.platform, self.name, self.tag, 'data for',
+                               date.strftime('%D'))))
     
         return data, mdata
         
@@ -470,7 +472,7 @@ class Instrument(object):
             if self._next_data.empty & self._prev_data.empty:
                 # data has not already been loaded for previous and next days
                 # load data for all three
-                print 'Initializing three day/file window'
+                print('Initializing three day/file window')
                 # using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
                 self._curr_data, self._curr_meta = self._load_data(date=self.date, fid=self._fid)

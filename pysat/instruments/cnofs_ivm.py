@@ -39,7 +39,7 @@ def list_files(tag=None, data_path=None):
     else:
         raise ValueError ('A tag name must be passed to the loading routine for C/NOFS')           
                 
-           
+        
 def load(fnames, tag=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
@@ -52,11 +52,9 @@ def load(fnames, tag=None):
                             'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']:
                 data[key] = cdf[key][...]
                 try:
-
                     meta[key] = {'units':cdf[key].attrs['UNITS'],
                                 'long_name':cdf[key].attrs['LABLAXIS'], 
                                 'description':cdf[key].attrs['CATDESC']} 
-          
                 except KeyError:
                     pass
          # matrices have storage issues (double split intwo two floats),

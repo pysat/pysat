@@ -1,4 +1,6 @@
+from __future__ import print_function
 import pandas as pds
+
 
 class Custom(object):
     """
@@ -22,7 +24,7 @@ class Custom(object):
             return data_to_be_added
         instrument.custom.add(custom_func2, 'add', opt_param2=True)
         instrument.load(date=date)
-        print instrument['data_to_be_added']
+        print(instrument['data_to_be_added'])
     
     See Also
     --------

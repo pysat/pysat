@@ -100,7 +100,7 @@ class Meta(object):
         --------
         ::
         
-            print meta['name']
+            print(meta['name'])
         
         """
         return self.data.ix[key]

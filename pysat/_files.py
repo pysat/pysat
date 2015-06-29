@@ -48,13 +48,13 @@ class Files(object):
         # files from start up to stop (exclusive on stop)
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,3)
-        print vefi.files[start:stop]
+        print(vefi.files[start:stop])
         
         # files for date
-        print vefi.files[start]
+        print(vefi.files[start])
         
         # files by slicing
-        print vefi.files[0:4]
+        print(vefi.files[0:4])
         
         # get a list of new files
         # new files are those that weren't present the last time
@@ -88,7 +88,7 @@ class Files(object):
             if info is not False:
                 self._attach_files(info)
             else:
-                print "pysat is searching for the requested instrument's files."
+                print("pysat is searching for the requested instrument's files.")
                 # couldn't find stored info, load file list and then store
                 info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
                 if not info.empty:
@@ -172,7 +172,7 @@ class Files(object):
             new_files = new_info[~new_info.isin(stored_info) ]
             return new_files
         else:
-            print 'No previously stored files that we may compare to.'
+            print('No previously stored files that we may compare to.')
             return False
 
     def get_index(self, fname):
