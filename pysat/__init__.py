@@ -16,7 +16,7 @@ else:
     with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'),'r') as f:
         data_dir = f.readline()
     if data_dir == '':
-        print 'Run pysat.utils.set_data_dir to set the path to top-level directory containing science data.'
+        print('Run pysat.utils.set_data_dir to set the path to top-level directory containing science data.')
 del f
 
 from pandas import Panel, DataFrame, Series, datetime
