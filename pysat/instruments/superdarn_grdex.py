@@ -83,7 +83,7 @@ def load(fnames, tag=None):
         #                            fileName=fnames[0])
         
         myPtr = pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980,1,1),
-                          eTime=pysat.datetime(2050,1,1),
+                          eTime=pysat.datetime(2250,1,1),
                           hemi=tag)  
         myPtr.fType, myPtr.dType = 'grdex', 'dmap'                 
         myPtr.ptr = open(fnames[0],'r')
