@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import os
 # make sure a pysat directory exists
 if not os.path.isdir(os.path.join(os.getenv('HOME'), '.pysat')):
     # create directory
-    print ''.join(('Creating .pysat directory. Run pysat.utils.set_data_dir to set the path',
-                   ' to top-level directory containing science data.'))
+    print(''.join(('Creating .pysat directory. Run pysat.utils.set_data_dir to set the path',
+                   ' to top-level directory containing science data.')))
     os.mkdir(os.path.join(os.getenv('HOME'), '.pysat'))
     with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'),'w') as f:
         f.write('')
