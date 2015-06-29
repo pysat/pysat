@@ -17,14 +17,14 @@ def list_files(tag=None, data_path=None):
     if tag is not None:
         if tag == 'north':
             return pysat.Files.from_os(data_path=data_path, 
-                format_str='{year:4d}{month:02d}{day:02d}.north.grdex.bz2')
+                format_str='{year:4d}{month:02d}{day:02d}.north.grdex')
         else:
             raise ValueError('Unrecognized tag name for SuperDARN, north or south.')                  
     else:
         raise ValueError ('A tag name must be passed to SuperDARN.')           
                 
            
-def load(fnames, tag=None):
+def load_orig(fnames, tag=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames)==1:
@@ -72,6 +72,84 @@ def load(fnames, tag=None):
     else:
         raise ValueError('Only one filename currently supported.')
 
+def load(fnames, tag=None):
+    if len(fnames) <= 0 :
+        return pysat.DataFrame(None), pysat.Meta(None)
+    elif len(fnames)==1:
+        
+        #b = pydarn.sdio.sdDataOpen(pysat.datetime(1980,1,1), 
+        #                            src='local', 
+        #                            eTime=pysat.datetime(2050,1,1),
+        #                            fileName=fnames[0])
+        
+        myPtr = pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980,1,1),
+                          eTime=pysat.datetime(2050,1,1),
+                          hemi=tag)  
+        myPtr.fType, myPtr.dType = 'grdex', 'dmap'                 
+        myPtr.ptr = open(fnames[0],'r')
+                                                                                            
+        #data_list = pydarn.sdio.sdDataReadAll(myPtr)
+        in_list = []
+        in_dict = {'stid':[],
+            'channel':[],
+            'noisemean':[],
+            'noisesd':[],
+            'gsct':[],
+            'nvec':[],
+            'pmax':[],
+            'start_time':[],
+            'end_time':[],
+            'vemax':[],
+            'vemin':[],
+            'pmin':[],
+            'programid':[],
+            'wmax':[],
+            'wmin':[],
+            'freq':[]}
+        
+        #for info in data_list:
+        while True:
+            info = pydarn.dmapio.readDmapRec(myPtr.ptr)   
+            info = pydarn.sdio.sdDataTypes.gridData(dataDict=info)
+            if info.channel is None:
+                break 
+                   
+            drift_frame = pds.DataFrame.from_records(info.vector.__dict__, 
+                                                     nrows=len(info.pmax),
+                                                     index=info.vector.index)
+            drift_frame.index.name = 'index'
+            sum_vec = 0
+            for nvec in info.nvec:
+                #in_frame = drift_frame.iloc[0:nvec]
+                #drift_frame = drift_frame.iloc[nvec:]
+                in_list.append(drift_frame.iloc[sum_vec:sum_vec+nvec])
+                sum_vec += nvec
+
+            in_dict['stid'].extend(info.stid)
+            in_dict['channel'].extend(info.channel)
+            in_dict['noisemean'].extend(info.noisemean)
+            in_dict['noisesd'].extend(info.noisesd)
+            in_dict['gsct'].extend(info.gsct)
+            in_dict['nvec'].extend(info.nvec)
+            in_dict['pmax'].extend(info.pmax)
+            in_dict['start_time'].extend([info.sTime]*len(info.pmax))
+            in_dict['end_time'].extend([info.eTime]*len(info.pmax))
+            in_dict['vemax'].extend(info.vemax)
+            in_dict['vemin'].extend(info.vemin)
+            in_dict['pmin'].extend(info.pmin)
+            in_dict['programid'].extend(info.programid)
+            in_dict['wmax'].extend(info.wmax)
+            in_dict['wmin'].extend(info.wmin)
+            in_dict['freq'].extend(info.freq)
+
+        output = pds.DataFrame(in_dict)
+        output['vector'] = in_list
+        output.index = output.start_time
+        output.drop('start_time', axis=1, inplace=True)
+        return output, pysat.Meta()
+    else:
+        raise ValueError('Only one filename currently supported.')
+
                                         
 #def default(ivm):
 #
@@ -106,13 +184,16 @@ def download(date_array, tag, data_path, user=None, password=None):
             
         for date in date_array:
             myDir = '/data/'+date.strftime("%Y")+'/grdex/'+tag+'/'
-            fname = date.strftime("%Y%m%d")+'.north.grdex.bz2'
-            local_fname = fname
+            fname = date.strftime("%Y%m%d")+'.north.grdex'
+            local_fname = fname+'.bz2'
             saved_fname = os.path.join(data_path,local_fname) 
+            full_fname = os.path.join(data_path,fname) 
             try:
                 print 'Downloading file for '+date.strftime('%D')
                 sys.stdout.flush()
                 sftp.get(myDir+fname, saved_fname)
+                os.system('bunzip2 -c '+saved_fname+' > '+ full_fname)
+                os.system('rm ' + saved_fname)
             except IOError:
                 print 'File not available for '+date.strftime('%D')
 
