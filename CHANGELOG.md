@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
+### Changed
+ - Moving toward python 3 compatibility
+ - PEP 8 improvements
+ - fixed demo ssnl_occurence_by_orbit file, replaced binx with bin_x
+ - Doubled loading performance for SuperDARN grdex files (3 seconds down to 1.5)
+ - 
+## [0.3] - 2015-06-18
+### Changed
+ - Improved polar orbit determination
+ - Added file sorting in files.from_os constructor to ensure datetime index is correct
+ - Added Instrument instantiation option, multi_file_day
+  - good when data for day n is in a file labeled by day n-1, or n+1
+ - Chaged binx to bin_x in return statements
+ - Improved PEP-8 compatibility
+ - Fixed bad path call in meta.from_csv
+ - Added simple averaging by day/file/orbit instrument independent routines
+ - Added instrument independent seasonal averaging routines
+ - Improved loading performance for cosmic2013
  - made pysat import statements more specific
  - fixed bad import call on load_netcdf3
  - fixed tab/space issues
