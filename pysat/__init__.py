@@ -21,11 +21,11 @@ del f
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils
-from _instrument import Instrument
-from _meta import Meta
-from _files import Files
-from _custom import Custom
-from _orbits import Orbits
+from ._instrument import Instrument
+from ._meta import Meta
+from ._files import Files
+from ._custom import Custom
+from ._orbits import Orbits
 from . import instruments
 
 from . import ssnl
