@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import
+
 import string
 import os
 import weakref
@@ -307,7 +310,7 @@ class Files(object):
         """
         import collections
         
-        from .utils import create_datetime_index
+        from pysat.utils import create_datetime_index
         
         if format_str is None:
             raise ValueError("Must supply a filename template (format_str).")

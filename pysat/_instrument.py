@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import absolute_import
 
 import string
 import os
@@ -8,11 +9,11 @@ import sys
 import pandas as pds
 import numpy as np
 
-import _custom
-import _files
-import _orbits
-import _meta
-import utils
+from . import _custom
+from . import _files
+from . import _orbits
+from . import _meta
+from . import utils
 from pysat import data_dir
 from pysat import DataFrame, Series
 

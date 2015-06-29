@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 # make sure a pysat directory exists
 if not os.path.isdir(os.path.join(os.getenv('HOME'), '.pysat')):

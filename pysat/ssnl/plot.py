@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import absolute_import
+
 from matplotlib import cm
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt

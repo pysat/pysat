@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+from __future__ import absolute_import
 """
 Instrument independent seasonal averaging routine. Supports averaging
 1D and 2D data.
