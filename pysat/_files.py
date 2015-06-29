@@ -85,30 +85,29 @@ class Files(object):
         
         if self._sat.platform != '':
             info = self._load()
-       	    if info is not False:
-       	        self._attach_files(info)
-       	    else:
-       	        print "pysat is searching for the requested instrument's files."
-   	        # couldn't find stored info, load file list and then store
-   	        info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
+            if info is not False:
+                self._attach_files(info)
+            else:
+                print "pysat is searching for the requested instrument's files."
+                # couldn't find stored info, load file list and then store
+                info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
                 if not info.empty:
                     info = self._remove_data_dir_path(info)	
-   	            self._attach_files(info)
-   	            self._store()
+                    self._attach_files(info)
+                    self._store()
 
     def _attach_files(self, files_info):
         """Attaches info returned by instrument list_files routine to Instrument object."""
 
-	if (len(files_info.unique()) != len(files_info)): 
-	    raise ValueError('List of files must have unique datetimes.')
-   
-	self.files = files_info.sort_index()
-	date = files_info.index[0] 
-	self.start_date = pds.datetime(date.year, date.month, date.day)
-	date = files_info.index[-1] 
-	self.stop_date = pds.datetime(date.year, date.month, date.day)
+        if (len(files_info.unique()) != len(files_info)):
+            raise ValueError('List of files must have unique datetimes.')
 
-                
+        self.files = files_info.sort_index()
+        date = files_info.index[0]
+        self.start_date = pds.datetime(date.year, date.month, date.day)
+        date = files_info.index[-1]
+        self.stop_date = pds.datetime(date.year, date.month, date.day)
+
     def _store(self, dir=None):
         """Store currently loaded filelist for instrument onto filesystem"""
         name = ''.join((self._sat.platform,'_',self._sat.name,'_',self._sat.tag,
@@ -123,7 +122,6 @@ class Files(object):
         except IOError:
             return False	
 
-
     def _load(self):
         """Load stored filelist and return as Pandas Series"""
         fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
@@ -135,7 +133,6 @@ class Files(object):
             return False
         else:
             return data
-
 
     def refresh(self, store=False):
         """Refresh loaded instrument filelist by searching filesystem.
@@ -154,8 +151,7 @@ class Files(object):
         self._attach_files(info)
         if store:
             self._store()
-        
-    
+
     def get_new(self):
         """List all new files since last time list was stored.
         
@@ -169,13 +165,12 @@ class Files(object):
             pandas Series of filenames
             False if no filenames
         """
-        storedInfo = self._load()
-        if storedInfo is not False:
-            newInfo = self._sat._list_rtn(tag = self._sat.tag, data_path=self.data_path)
-            newInfo = self._remove_data_dir_path(newInfo)
-            boolArr = newInfo.isin(storedInfo) 
-            newFiles = newInfo[~boolArr]
-            return newFiles
+        stored_info = self._load()
+        if stored_info is not False:
+            new_info = self._sat._list_rtn(tag = self._sat.tag, data_path=self.data_path)
+            new_info = self._remove_data_dir_path(new_info)
+            new_files = new_info[~new_info.isin(stored_info) ]
+            return new_files
         else:
             print 'No previously stored files that we may compare to.'
             return False
@@ -201,19 +196,19 @@ class Files(object):
             self.refresh()
             idx, = np.where(fname == self.files)
             if len(idx) == 0:
-		raise IOError('Could not find supplied file on disk')
-	return idx 
-	
-    #convert this to a normal get so files[in:in2] gives the same as requested here
-    #support slicing via date and index
-    #filename is inclusive slicing, date and index are normal non-inclusive end point
-  	  	
+                raise IOError('Could not find supplied file on disk')
+        return idx
+
+    # convert this to a normal get so files[in:in2] gives the same as requested here
+    # support slicing via date and index
+    # filename is inclusive slicing, date and index are normal non-inclusive end point
+
     def __getitem__(self, key):
         if isinstance(key, slice):
             try:
                 out = self.files.ix[key]
-	    except IndexError:
-	        raise IndexError('Date requested outside file bounds.')                
+            except IndexError:
+                raise IndexError('Date requested outside file bounds.')
             if isinstance(key.start, pds.datetime):
                 # enforce exclusive slicing on datetime
                 if len(out) > 1:
@@ -261,24 +256,27 @@ class Files(object):
             files = []
             for (sta,stp) in zip(start, end):
                 id1 = self.get_index(sta)
-		id2 = self.get_index(stp)
-		files.extend(self.files.iloc[id1[0] : id2[0]+1])
-	elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
-	    raise ValueError('Either both or none of the inputs need to be iterable')
+                id2 = self.get_index(stp)
+                files.extend(self.files.iloc[id1[0] : id2[0]+1])
+        elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
+            raise ValueError('Either both or none of the inputs need to be iterable')
         else:
             id1 = self.get_index(start)
-	    id2 = self.get_index(end)
-	    files = self.files[id1[0]:id2[0]+1].to_list()   
-	return files
-	                      
+            id2 = self.get_index(end)
+            files = self.files[id1[0]:id2[0]+1].to_list()
+        return files
+
     def _remove_data_dir_path(self, inp=None):
+        import string
         """Remove the data directory path from filenames"""
         # need to add a check in here to make sure data_dir path is actually in
         # the filename
         if inp is not None:
-            match = os.path.join(self.data_path,'')
-            num = len(match)	 
-            return inp.apply(lambda x: x[num:])	
+            split_str = os.path.join(self.data_path, '')
+            return inp.apply(lambda x: string.split(x, sep=split_str)[-1])
+            # match = os.path.join(self.data_path,'')
+            # num = len(match)
+            # return inp.apply(lambda x: x[num:])
         
     @classmethod    
     def from_os(cls, data_path=None, format_str=None, 
@@ -311,9 +309,9 @@ class Files(object):
         
         from .utils import create_datetime_index
         
-        if (format_str is None):
+        if format_str is None:
             raise ValueError("Must supply a filename template (format_str).")
-        if (data_path is None):
+        if data_path is None:
             raise ValueError("Must supply instrument directory path (dir_path)")
         
         # parse format string to figure out the search string to use
@@ -352,7 +350,7 @@ class Files(object):
         
         # determine the loactaions the date information in a filename is stored
         # use these indices to slice out date from loaded filenames
-        #test_str = format_str.format(**periods)  
+        # test_str = format_str.format(**periods)
         if len(files) > 0:  
             idx = 0
             begin_key = []
@@ -386,19 +384,16 @@ class Files(object):
                 idx, = np.where(stored['year'] < two_digit_year_break)
                 stored['year'][idx] = stored['year'][idx] + 2000 
             # need to sort the information for things to work
-            rec_arr = []
-            val_keys = []
-            for key in keys:
-                rec_arr.append(stored[key])
+            rec_arr = [stored[key] for key in keys]
             rec_arr.append(files)
-	    # sort all arrays	
+            # sort all arrays
             val_keys = keys+['files']
             rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
             rec_arr.sort(order=val_keys, axis=0)
             # pull out sorted info
             for key in keys:
                 stored[key] = rec_arr[key]
-	    files = rec_arr['files'] 		
+            files = rec_arr['files']
             # add hour and minute information to 'sec'
             if stored['sec'] is None:
                 stored['sec'] = np.zeros(len(files))                
@@ -413,7 +408,6 @@ class Files(object):
             return pds.Series(files, index=index)
         else:
             print ("Unable to find any files. If you have the necessary files "+
-                    "please check pysat settings and file locations.")
+                   "please check pysat settings and file locations.")
             return pds.Series(None) 
 
-        
