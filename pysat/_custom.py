@@ -115,9 +115,9 @@ class Custom(object):
             raise TypeError('Must enter an index between 0 and %i' % len(self._functions))
 
     def _apply_all(self, sat):
-        '''
+        """
         Apply all of the custom functions to the satellite data object.
-        '''
+        """
         if len(self._functions) > 0:
             for func, arg, kwarg, kind in zip(self._functions, self._args, 
                                                 self._kwargs, self._kind):
@@ -153,8 +153,8 @@ class Custom(object):
                         elif isinstance(newData, pds.Series):
                             sat[newData.name] = newData                            
                         elif hasattr(newData, '__iter__'):
-			    # falling back to older behavior 
-			    # unpack tuple/list that was returned 
+                            # falling back to older behavior
+                            # unpack tuple/list that was returned
                             newName = newData[0]
                             newData = newData[1]
                             if len(newData)>0:
@@ -174,15 +174,15 @@ class Custom(object):
                     # modifying loaded data
                     if kind == 'modify':
                         t = func(sat,*arg,**kwarg)
-			if t is not None:
-			    raise ValueError('Modify functions should not return any information via return. Information may only be propagated back by modifying supplied pysat object.')	
+                        if t is not None:
+                            raise ValueError('Modify functions should not return any information via return. Information may only be propagated back by modifying supplied pysat object.')
                     # pass function (function runs, no data allowed back)
                     if kind == 'pass':
                         tempd = sat.copy()
                         t = func(tempd,*arg,**kwarg)
                         del tempd
-			if t is not None:
-			    raise ValueError('Pass functions should not return any information via return.')	
+                        if t is not None:
+                            raise ValueError('Pass functions should not return any information via return.')
 
     def clear(self):
         """Clear custom function list."""
