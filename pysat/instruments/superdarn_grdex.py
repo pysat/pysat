@@ -2,6 +2,8 @@
 """SuperDARN data support (Alpha Level!)
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import os
 
@@ -189,13 +191,13 @@ def download(date_array, tag, data_path, user=None, password=None):
             saved_fname = os.path.join(data_path,local_fname) 
             full_fname = os.path.join(data_path,fname) 
             try:
-                print 'Downloading file for '+date.strftime('%D')
+                print('Downloading file for '+date.strftime('%D'))
                 sys.stdout.flush()
                 sftp.get(myDir+fname, saved_fname)
                 os.system('bunzip2 -c '+saved_fname+' > '+ full_fname)
                 os.system('rm ' + saved_fname)
             except IOError:
-                print 'File not available for '+date.strftime('%D')
+                print('File not available for '+date.strftime('%D'))
 
 
          

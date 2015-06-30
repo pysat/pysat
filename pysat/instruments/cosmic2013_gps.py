@@ -26,6 +26,8 @@ Warnings
 - Routine was not produced by COSMIC team
   
 """
+from __future__ import print_function
+from __future__ import absolute_import
 import glob
 import os
 import sys
@@ -43,7 +45,7 @@ def list_files(tag=None, data_path=None):
     #    # filename components at the end of each string.....
     #    #return pysat.Files.from_os(dir_path=os.path.join('cosmic', 'ionprf'),
     #        #format_str='*/ionPrf_*.{year:04d}.{day:03d}.{hour:02d}.{min:02d}*_nc')          
-    print 'Building a list of COSMIC files, which can possibly take time. ~1s per 100K files'
+    print('Building a list of COSMIC files, which can possibly take time. ~1s per 100K files')
     sys.stdout.flush()
 
     # number of files may be large
@@ -52,7 +54,7 @@ def list_files(tag=None, data_path=None):
     # need to get date and time from filename to generate index
     num = len(cosmicFiles) 
     if num != 0:
-        print 'Estimated time:', num*1.E-5,'seconds'
+        print('Estimated time:', num*1.E-5,'seconds')
         sys.stdout.flush()
         # preallocate lists
         year=[None]*num; days=[None]*num; hours=[None]*num; 
@@ -74,7 +76,7 @@ def list_files(tag=None, data_path=None):
         file_list = pysat.Series(cosmicFiles, index=index)
         return file_list
     else:
-        print 'Found no files, check your path or download them.'
+        print('Found no files, check your path or download them.')
         return pysat.Series(None)
         
 
@@ -92,12 +94,12 @@ def load(cosmicFiles, tag=None, altitude_bin=None):
                 month=output.month, day=output.day, 
                 uts=output.hour*3600.+output.minute*60.+output.second)
         # make sure UTS strictly increasing
-	output.sort(inplace=True)	
-	# use the first available file to pick out meta information
-	meta = pysat.Meta()
-	ind = 0 
-	repeat = True
-	while repeat:
+        output.sort(inplace=True)
+        # use the first available file to pick out meta information
+        meta = pysat.Meta()
+        ind = 0
+        repeat = True
+        while repeat:
             try:
                 data = netCDF4.Dataset(cosmicFiles[ind]) 
                 keys = data.variables.keys()
@@ -197,17 +199,17 @@ def clean(self):
                 densDiff = profile.ELEC_dens.diff()
                 altDiff = profile.MSL_alt.diff()
                 normGrad = ( densDiff/(altDiff*profile.ELEC_dens) ).abs()
-           	idx, = np.where((normGrad > 1.) & normGrad.notnull())
-           	if len(idx) > 0:
-           	    self[i,'edmaxalt'] = np.nan
-           	    self[i,'edmax'] = np.nan
-           	    self[i,'edmaxlat'] = np.nan
-           	    profile['ELEC_dens'] *= np.nan
-           	        #self.data['profiles'][i]['ELEC_dens'] *= np.nan
-    
-       	# filter out any measurements where things have been set to NaN    
-       	self.data = self.data[self.data.edmaxalt.notnull()]  
-           	  
+                idx, = np.where((normGrad > 1.) & normGrad.notnull())
+                if len(idx) > 0:
+                    self[i,'edmaxalt'] = np.nan
+                    self[i,'edmax'] = np.nan
+                    self[i,'edmaxlat'] = np.nan
+                    profile['ELEC_dens'] *= np.nan
+                    #self.data['profiles'][i]['ELEC_dens'] *= np.nan
+
+        # filter out any measurements where things have been set to NaN
+        self.data = self.data[self.data.edmaxalt.notnull()]
+
     elif self.tag == 'scnlvl1':
         # scintillation files
         if self.clean_level == 'clean':
@@ -238,7 +240,7 @@ def download(date_array, tag, data_path=None, user=None, password=None):
         raise ValueError('Unknown cosmic_gps tag')
         
     for date in date_array:
-        print 'Downloading COSMIC data for '+date.strftime('%D')
+        print('Downloading COSMIC data for '+date.strftime('%D'))
         sys.stdout.flush()
         yr,doy = pysat.utils.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)

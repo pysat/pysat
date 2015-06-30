@@ -19,6 +19,8 @@ Warnings
         
 """
 
+from __future__ import print_function
+from __future__ import absolute_import
 import pandas as pds
 import numpy as np
 import pysat
@@ -62,8 +64,8 @@ def load(fnames, tag=None):
             except KeyError:
                 pass
         epoch = data.pop('Epoch')
-	data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
-	return data, meta.copy()
+    data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
+    return data, meta
 
 def download(date_array, tag, data_path=None, user=None, password=None):
     """
@@ -87,7 +89,7 @@ def download(date_array, tag, data_path=None, user=None, password=None):
                     year=date.year, month=date.month, day=date.day)
             saved_fname = os.path.join(data_path,local_fname) 
             try:
-                print 'Downloading file for '+date.strftime('%D')
+                print('Downloading file for '+date.strftime('%D'))
                 sys.stdout.flush()
                 ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
             except ftplib.error_perm as exception:
@@ -95,4 +97,4 @@ def download(date_array, tag, data_path=None, user=None, password=None):
                     raise
                 else:
                     os.remove(saved_fname)
-                    print 'File not available for '+ date.strftime('%D')
+                    print('File not available for '+ date.strftime('%D'))
