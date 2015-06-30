@@ -8,7 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - PEP 8 improvements
  - fixed demo ssnl_occurence_by_orbit file, replaced binx with bin_x
  - Doubled loading performance for SuperDARN grdex files (3 seconds down to 1.5)
- - 
+
 ## [0.3] - 2015-06-18
 ### Changed
  - Improved polar orbit determination
