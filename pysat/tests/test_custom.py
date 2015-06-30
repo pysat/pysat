@@ -6,7 +6,7 @@ import nose.tools
 
 class TestBasics:
     def setup(self):
-	'''Runs before every method to create a clean testing setup.'''
+        '''Runs before every method to create a clean testing setup.'''
         self.testInst = pysat.Instrument('pysat','testing', '10', 'clean')
 
     def teardown(self):
@@ -15,16 +15,17 @@ class TestBasics:
 
     @raises(ValueError)        
     def test_single_modifying_custom_function(self):
-	'''Test if custom function works correctly. Modify function that returns pandas object. Modify function returns an object which will produce an Error.'''
+        """Test if custom function works correctly. Modify function that returns pandas object.
+        Modify function returns an object which will produce an Error."""
         def custom1(inst):
             inst.data['doubleMLT'] = 2.*inst.data.mlt
             return 5.*inst.data
-	
-        self.testInst.custom.add(custom1, 'modify')  
+
+        self.testInst.custom.add(custom1, 'modify')
         self.testInst.load(2009,1)
 
     def test_single_adding_custom_function(self):
-	'''Test if custom function works correctly. Add function that returns pandas object.'''
+        '''Test if custom function works correctly. Add function that returns pandas object.'''
         def custom1(inst):
             d = 2.*inst.data.mlt
             d.name='doubleMLT'
@@ -36,7 +37,7 @@ class TestBasics:
         assert ans
 
     def test_single_adding_custom_function_wrong_times(self):
-	'''Only the data at the correct time should be accepted, otherwise nan'''
+        '''Only the data at the correct time should be accepted, otherwise nan'''
         def custom1(inst):
             d = 2.*inst.data.mlt
             d.name='doubleMLT'
@@ -49,8 +50,8 @@ class TestBasics:
         assert ans
 
     def test_single_adding_custom_function_that_modifies_passed_data(self):
-	'''Test if custom function works correctly. Add function that returns pandas object but modifies passed satellite object. 
-		Changes to passed object should not propagate back.'''
+        '''Test if custom function works correctly. Add function that returns pandas object but modifies passed satellite object.
+        Changes to passed object should not propagate back.'''
         def custom1(inst):
             inst.data['doubleMLT'] = 2.*inst.data.mlt
             inst.data.mlt=0.
@@ -62,7 +63,7 @@ class TestBasics:
         assert ans
 
     def test_add_function_tuple_return_style(self):
-	'''Test if custom function works correctly. Add function that returns name and numpy array.'''
+        '''Test if custom function works correctly. Add function that returns name and numpy array.'''
         def custom1(inst):
             return ('doubleMLT',2.*inst.data.mlt.values)
         self.testInst.custom.add(custom1, 'add')  
@@ -71,7 +72,7 @@ class TestBasics:
         assert ans
         
     def test_add_multiple_custom_functions_tuple_return_style(self):
-	'''Test if multiple custom functions that add data work correctly. Add function that returns name and numpy array.'''
+        '''Test if multiple custom functions that add data work correctly. Add function that returns name and numpy array.'''
         def custom1(inst):
             return (['doubleMLT', 'tripleMLT'],[2.*inst.data.mlt.values, 3.*inst.data.mlt.values])
         self.testInst.custom.add(custom1, 'add')  
@@ -81,7 +82,7 @@ class TestBasics:
 
     @raises(ValueError)
     def test_add_function_tuple_return_style_too_few_elements(self):
-	'''Test if custom function works correctly. Add function that returns name and numpy array.'''
+        '''Test if custom function works correctly. Add function that returns name and numpy array.'''
         def custom1(inst):
             return ('doubleMLT',2.*inst.data.mlt.values[0:-5])
         self.testInst.custom.add(custom1, 'add')  
@@ -89,7 +90,7 @@ class TestBasics:
 
     @raises(ValueError)
     def test_add_function_tuple_return_style_too_many_elements(self):
-	'''Test if custom function works correctly. Add function that returns name and numpy array.'''
+        '''Test if custom function works correctly. Add function that returns name and numpy array.'''
         def custom1(inst):
             return ('doubleMLT',np.arange(2.*len(inst.data.mlt)))
         self.testInst.custom.add(custom1, 'add')  

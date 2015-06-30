@@ -4,7 +4,10 @@ from __future__ import absolute_import
 import pandas as pds
 import numpy as np
 import copy
-
+try:
+    from importlib import reload
+except:
+    pass
 
 from pysat import DataFrame, Series, datetime, Panel
 
@@ -12,8 +15,17 @@ def set_data_dir(path=None):
     """
     set the top level directory pysat uses to look for data.
     """
+    import sys
     import os
     import pysat
+    if sys.version_info[0] >= 3:
+        if sys.version_info[1] < 4:
+            import imp
+            reload = imp.reload
+        else:
+            import importlib
+            reload = importlib.reload
+
     if os.path.isdir(path):
         with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'), 'w') as f:
             f.write(path)

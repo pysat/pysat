@@ -1,3 +1,3 @@
-import occur_prob
-import avg
-import plot
+from . import occur_prob
+from . import avg
+from . import plot

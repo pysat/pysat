@@ -353,19 +353,19 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-                print(string.join(('Returning', self.platform, self.name, self.tag, 'data for',
+                print(' '.join(('Returning', self.platform, self.name, self.tag, 'data for',
                                    date.strftime('%D'))))
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    print(string.join(('Returning', self.platform, self.name, self.tag,
+                    print(' '.join(('Returning', self.platform, self.name, self.tag,
                                        'data from', fname[0])))
                 else:
-                    print(string.join(('Returning', self.platform, self.name, self.tag,
+                    print(' '.join(('Returning', self.platform, self.name, self.tag,
                                        'data from', fname[0], '::', fname[-1])))
         else:
             # no data signal
-            print(string.join(('No', self.platform, self.name, self.tag, 'data for',
+            print(' '.join(('No', self.platform, self.name, self.tag, 'data for',
                                date.strftime('%D'))))
     
         return data, mdata
@@ -675,8 +675,8 @@ class Instrument(object):
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
                 self._iter_list = utils.season_date_range(self._iter_start, self._iter_stop)
-
-        elif hasattr(start, '__iter__') and hasattr(end, '__iter__'):
+        # elif (not isinstance(start, str)) and (not isinstance(end, str)):
+        elif (hasattr(start, '__iter__') and not isinstance(start,str)) and (hasattr(end, '__iter__') and not isinstance(end,str)):
             base = type(start[0])
             for s, t in zip(start, end):
                 if (type(s) != type(t)) or (type(s) != base):
@@ -691,8 +691,8 @@ class Instrument(object):
                 raise ValueError('Input is not a known type, string or datetime')
             self._iter_start = start
             self._iter_stop = end
-
-        elif hasattr(start, '__iter__') or hasattr(end, '__iter__'):
+        # elif (not isinstance(start, str)) or (not isinstance(end, str)):
+        elif (hasattr(start, '__iter__') and not isinstance(start,str)) or (hasattr(end, '__iter__') and not isinstance(end,str)):
             raise ValueError('Both start and end must be iterable if one bound is iterable')
 
         elif isinstance(start, str) or isinstance(end, str):

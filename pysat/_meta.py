@@ -71,7 +71,8 @@ class Meta(object):
                 else:
                     value['long_name'] = self.data.ix[name, 'long_name']
                 
-            if hasattr(value[value.keys()[0]], '__iter__' ):
+            # if hasattr(value[value.keys()[0]], '__iter__' ):
+            if not isinstance(name, str): #hasattr(name, '__iter__' ):
                 # an iterable of things         
                 for key in value.keys():
                     if len(name) != len(value[key]):
@@ -84,12 +85,10 @@ class Meta(object):
                 new = DataFrame(value, index=[name])
 
                 if name in self.data.index:
-                    #self.data.ix[name] = new.ix[name]
                     self.data = self.data.drop(name)
                     self.data = self.data.append(new)
                 else:
                     self.data = self.data.append(new)
-                #self.data.ix[name] = new[name]
                 
         if isinstance(value, Series):
             self.data.ix[name] = value

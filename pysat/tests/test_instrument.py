@@ -1,17 +1,25 @@
 # -*- coding: utf-8 -*-
 #Test some of the basic _core functions
-
+import sys
 import pysat
 import pandas as pds
 from nose.tools import assert_raises, raises
 import nose.tools
 import pysat.instruments.pysat_testing
 import numpy as np
+if sys.version_info[0] >= 3:
+    if sys.version_info[1] < 4:
+        import imp
+        reload = imp.reload
+    else:
+        import importlib
+        reload = importlib.reload
+
 
 class TestBasics:
     def setup(self):
         reload(pysat.instruments.pysat_testing)
-	'''Runs before every method to create a clean testing setup.'''
+        '''Runs before every method to create a clean testing setup.'''
         self.testInst = pysat.Instrument('pysat', 'testing', '10', 'clean')
 
     def teardown(self):
@@ -67,17 +75,16 @@ class TestBasics:
         assert self.testInst.date == pds.datetime(2008,12,31)	
 
     def test_getyrdoy_1(self):
-	'''Test the date to year, day of year code functionality'''
+        '''Test the date to year, day of year code functionality'''
         date = pds.datetime(2009,1,1)
         yr, doy = pysat.utils.getyrdoy(date)
         assert ((yr == 2009) & (doy == 1))
 
     def test_getyrdoy_leap_year(self):
-	'''Test the date to year, day of year code functionality (leap_year)'''
+        '''Test the date to year, day of year code functionality (leap_year)'''
         date = pds.datetime(2008,12,31)
         yr, doy = pysat.utils.getyrdoy(date)
         assert ((yr == 2008) & (doy == 366)) 
-
 
     def test_custom_instrument_load(self):
         '''
@@ -154,7 +161,6 @@ class TestBasics:
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,15)
         self.testInst.bounds = (start, stop)
-        print pds.date_range(start, stop).tolist()
         assert np.all(self.testInst._iter_list == pds.date_range(start, stop).tolist())
 
     def test_iterate_over_bounds_set_by_date(self):
