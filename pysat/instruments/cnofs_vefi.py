@@ -64,8 +64,8 @@ def load(fnames, tag=None):
             except KeyError:
                 pass
         epoch = data.pop('Epoch')
-    data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
-    return data, meta
+        data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
+        return data, meta
 
 def download(date_array, tag, data_path=None, user=None, password=None):
     """
