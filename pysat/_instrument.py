@@ -558,7 +558,7 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def download(self, start, stop, user=None, password=None):
+    def download(self, start, stop, freq='D', user=None, password=None):
         """Download data for given Instrument object from start to stop.
         
         Parameters
@@ -567,6 +567,8 @@ class Instrument(object):
             start date to download data
         stop : pandas.datetime
             stop date to download data
+        freq : string
+            Stepsize between dates for season, 'D' for daily, 'M' monthly (see pandas)
         user : string
             username, if required by instrument data archive
         password : string
@@ -597,7 +599,7 @@ class Instrument(object):
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-        date_array = utils.season_date_range(start, stop)
+        date_array = utils.season_date_range(start, stop, freq=freq)
         if user is None:
             self._download_rtn(date_array,
                                tag=self.tag,
@@ -666,6 +668,12 @@ class Instrument(object):
 
         start = value[0]
         end = value[1]
+        # get the frequency, or step size, of season
+        if len(value) == 3:
+            step = value[2]
+        else:
+            # default do daily
+            step = 'D'
 
         if (start is None) and (end is None):
             # set default
@@ -674,7 +682,7 @@ class Instrument(object):
             self._iter_type = 'date'
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
-                self._iter_list = utils.season_date_range(self._iter_start, self._iter_stop)
+                self._iter_list = utils.season_date_range(self._iter_start, self._iter_stop, freq=step)
         # elif (not isinstance(start, str)) and (not isinstance(end, str)):
         elif (hasattr(start, '__iter__') and not isinstance(start,str)) and (hasattr(end, '__iter__') and not isinstance(end,str)):
             base = type(start[0])
@@ -686,7 +694,7 @@ class Instrument(object):
                 self._iter_list = self.files.get_file_array(start, end)
             elif isinstance(start[0], pds.datetime):
                 self._iter_type = 'date'
-                self._iter_list = utils.season_date_range(start, end)
+                self._iter_list = utils.season_date_range(start, end, freq=step)
             else:
                 raise ValueError('Input is not a known type, string or datetime')
             self._iter_start = start
@@ -714,7 +722,7 @@ class Instrument(object):
                 end = self.files.stop_date
             self._iter_start = [start]
             self._iter_stop = [end]
-            self._iter_list = utils.season_date_range(start, end)
+            self._iter_list = utils.season_date_range(start, end, freq=step)
             self._iter_type = 'date'
         else:
             raise ValueError('Provided an invalid combination of bounds. ' +
