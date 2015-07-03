@@ -68,16 +68,31 @@ def load(fnames, tag=None):
         data = {}
         meta = pysat.Meta()
         for key in cdf.iterkeys():
-            data[key] = cdf[key][...]
+            key_low = key.lower()
+            data[key_low] = cdf[key][...]
             try:             
-                meta[key] = {'units':cdf[key].attrs['UNITS'],
+                meta[key_low] = {'units':cdf[key].attrs['UNITS'],
                             'long_name':cdf[key].attrs['LABLAXIS'], 
-                            'description':cdf[key].attrs['CATDESC']}
+                            'description':cdf[key].attrs['CATDESC'],
+                            'fill_value':cdf[key].attrs['FILLVAL']}
             except KeyError:
+                if 'UNITS' in cdf[key].attrs:
+                    meta[key_low] = {'units':cdf[key].attrs['UNITS']}
+                if 'LABLAXIS' in cdf[key].attrs:
+                    meta[key_low] = {'long_name':cdf[key].attrs['LABLAXIS']}
+                if 'CATDESC' in cdf[key].attrs:
+                    meta[key_low] = {'description':cdf[key].attrs['CATDESC']}
+                if 'FILLVAL' in cdf[key].attrs:
+                    meta[key_low] = {'fill_value':cdf[key].attrs['FILLVAL']}
                 pass
-        epoch = data.pop('Epoch')
+        epoch = data.pop('epoch')
     data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
     return data, meta
+
+def clean(omni):
+    for key in omni.data.columns:
+        idx, = np.where(omni[key] == omni.meta[key].fill_value)
+        omni.data.ix[idx, key] = np.nan
 
 def default(omni):
     """ OMNI data stored monthly. Select out desired day."""
