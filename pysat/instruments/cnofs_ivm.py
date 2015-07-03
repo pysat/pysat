@@ -7,8 +7,12 @@ NASA Coordinated Data Analysis Web (CDAWeb) in CDF format.
 
 Parameters
 ----------
+platform : string
+    'cnofs'
+name : string
+    'ivm'
 tag : string
-    No tags supported
+    None supported
 
 Warnings
 --------

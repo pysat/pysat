@@ -9,13 +9,14 @@ platform : string
     'omni'
 name : string
     'hro'
-tag : {'1min', '5min'}
+tag : string
+    Select time between samples, one of {'1min', '5min'}
 
-Notes
------
-     Files are stored by the first day of each month. To limit wasted time, when downloading use
-     omni.download(start, stop, freq='MS')
-     to only download days that could possibly have data. 'MS' gives a monthly start frequency.
+Note
+----
+Files are stored by the first day of each month. When downloading use
+omni.download(start, stop, freq='MS') to only download days that could possibly have data.
+'MS' gives a monthly start frequency.
 
 Warnings
 --------

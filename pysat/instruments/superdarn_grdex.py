@@ -1,6 +1,26 @@
 # -*- coding: utf-8 -*-
-"""SuperDARN data support (Alpha Level!)
+"""SuperDARN data support for grdex files(Alpha Level!)
 
+Parameters
+----------
+platform : string
+    'superdarn'
+name : string
+    'grdex'
+tag : string
+    'north' or 'south' for Northern/Southern hemisphere data
+
+Note
+----
+Requires davitpy and pydarn to load SuperDARN files.
+Uses environment variables set by davitpy to download files
+from Virginia Tech SuperDARN data servers. Pydarn routines
+are used to load SuperDARN data.
+
+Warnings
+--------
+Cleaning only removes entries that have 0 vectors, grdex files
+are constituted from what it is thought to be good data.
 """
 from __future__ import print_function
 from __future__ import absolute_import

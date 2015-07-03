@@ -8,8 +8,17 @@ of GPS signals by the atmosphere provides a measurement of atmospheric
 parameters. Data downloaded from the COSMIC Data Analaysis and
 Archival Center.
 
-Notes
------
+Parameters
+----------
+platform : string
+    'cosmic'
+name : string
+    'gps' for Radio Occultation profiles
+tag : string
+    Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
+
+Note
+----
 - 'ionprf: 'ionPrf' ionosphere profiles
 - 'sonprf': 'sonPrf' files
 - 'wetprf': 'wetPrf' files

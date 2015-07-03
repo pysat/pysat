@@ -6,10 +6,15 @@ NASA Coordinated Data Analysis Web (CDAWeb).
 
 Parameters
 ----------
-tag : {'dc_b'}
+platform : string
+    'cnofs'
+name : string
+    'vefi'
+tag : string
+    Select measurement type, one of {'dc_b'}
 
-Notes
------
+Note
+----
 - tag = 'dc_b': 1 second DC magnetometer data
 
 Warnings

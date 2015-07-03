@@ -13,9 +13,15 @@ Parameters
 altitude_bin : integer
     Number of kilometers to bin altitude profiles by when loading.
     Currently only supported for tag='ionprf'.
+platform : string
+    'cosmic2013'
+name : string
+    'gps' for Radio Occultation profiles
+tag : string
+    Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
 
-Notes
------
+Note
+----
 - 'ionprf: 'ionPrf' ionosphere profiles
 - 'sonprf': 'sonPrf' files
 - 'wetprf': 'wetPrf' files
