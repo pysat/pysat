@@ -102,7 +102,7 @@ class Files(object):
     def _attach_files(self, files_info):
         """Attaches info returned by instrument list_files routine to Instrument object."""
 
-        if (len(files_info.unique()) != len(files_info)):
+        if (len(files_info.index.unique()) != len(files_info)):
             raise ValueError('List of files must have unique datetimes.')
 
         self.files = files_info.sort_index()
