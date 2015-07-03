@@ -4,10 +4,9 @@ from __future__ import absolute_import
 import pandas as pds
 import numpy as np
 import copy
-try:
-    from importlib import reload
-except:
-    pass
+# python 2/3 compatibility
+if 'basestring' not in globals():
+    basestring = str
 
 from pysat import DataFrame, Series, datetime, Panel
 
@@ -59,8 +58,8 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
     import pysat
 
     if fnames is None:
-        raise ValueError("Must supply a list of filenames")
-    if not hasattr(fnames, '__iter__'):
+        raise ValueError("Must supply a filename/list of filenames")
+    if not isinstance(fnames, basestring): # hasattr(fnames, '__iter__'):
         fnames = [fnames]
 
     saved_mdata = None
