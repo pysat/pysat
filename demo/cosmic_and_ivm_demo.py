@@ -41,20 +41,20 @@ def addTopsideScaleHeight(cosmic):
     
     for i,profile in enumerate(cosmic['profiles']):
         profile = profile[(profile['ELEC_dens'] >= (1./np.e)*cosmic['edmax'].iloc[i]) & (profile.index >= cosmic['edmaxalt'].iloc[i]) ]
-        #want the first altitude where density drops below NmF2/e
-        #first, resample such that we know all altitudes in between samples are there
+        # want the first altitude where density drops below NmF2/e
+        # first, resample such that we know all altitudes in between samples are there
         if len(profile) > 10:
             i1 = profile.index[1:]
             i2 = profile.index[0:-1]
             modeDiff = mode(i1.values - i2.values)[0][0]
             profile = profile.reindex(np.arange(profile.index[0],profile.index[-1]+modeDiff,modeDiff))
+            # ensure there are no gaps, if so, remove all data above gap
             idx, = np.where(profile['ELEC_dens'].isnull())
             if len(idx) > 0:
                 profile = profile.iloc[0:idx[0]]
         
         if len(profile) > 10:
-            #maxDensInd = np.argmax(profile)
-            #make sure density at highest altitude is near Nm/e
+            # make sure density at highest altitude is near Nm/e
             if( profile['ELEC_dens'].iloc[-1]/profile['ELEC_dens'].iloc[0] < .4):
                 altDiff = profile.index.values[-1] - profile.index.values[0]
                 if altDiff >= 500:
@@ -76,7 +76,7 @@ ivm.bounds = (startDate, stopDate)
 ivmResults = pysat.ssnl.avg.median2D(ivm, [0,360,24], 'alon',
                   [0,24,24], 'mlt', ['ionVelmeridional'])
 
-# create CODMIC instrument object
+# create COSMIC instrument object
 cosmic = pysat.Instrument(platform='cosmic2013', name='gps',tag='ionprf',
              clean_level='clean', altitude_bin=3)
 # apply custom functions to all data that is loaded through cosmic
@@ -122,9 +122,9 @@ maxDens = cosmicResults['lognm']['median']
 cx_arr = cosmicResults['lognm']['bin_x']
 cy_arr = cosmicResults['lognm']['bin_y']
 
- #mask out NaN values
+# mask out NaN values
 masked = np.ma.array(maxDens, mask=np.isnan(maxDens))
-#do plot, NaN values are white
+# do plot, NaN values are white
 cax.append( axarr[1].pcolor(cx_arr, cy_arr, masked, vmax = 6.1, vmin = 4.8, edgecolors='none')  )
 axarr[1].set_title('COSMIC Log Density Maximum') 
 axarr[1].set_ylabel('Solar Local Time')
@@ -132,9 +132,9 @@ cbar1 = f.colorbar(cax[1], ax = axarr[1])
 cbar1.set_label('Log Density')
 
 maxAlt = cosmicResults['edmaxalt']['median']
- #mask out NaN values
+# mask out NaN values
 masked = np.ma.array(maxAlt, mask=np.isnan(maxAlt))
-#do plot, NaN values are white
+# do plot, NaN values are white
 cax.append( axarr[2].pcolor(cx_arr, cy_arr, masked, vmax =375., vmin = 200., edgecolors='none') )       
 axarr[2].set_title('COSMIC Altitude Density Maximum')  
 axarr[2].set_ylabel('Solar Local Time')           
@@ -143,9 +143,9 @@ cbar.set_label('Altitude (km)')
 
 
 maxTh = cosmicResults['thf2']['median']
- #mask out NaN values
+# mask out NaN values
 masked = np.ma.array(maxTh, mask=np.isnan(maxTh))
-#do plot, NaN values are white
+# do plot, NaN values are white
 cax.append( axarr[3].pcolor(cx_arr, cy_arr, masked, vmax =225., vmin = 75., edgecolors='none') )       
 axarr[3].set_title('COSMIC Topside Scale Height')      
 axarr[3].set_ylabel('Solar Local Time')       
@@ -156,8 +156,8 @@ f.tight_layout()
 f.savefig('1D_params.png')
 
 
-#make COSMIC profile plots
-
+# make COSMIC profile plots
+# 6 pages of plots, 4 plots per page
 for k in np.arange(6):
     f, axarr = plt.subplots(4, sharex=True, figsize=(8.5,11))
     # iterate over a group of four sectors at a time (4 plots per page)
