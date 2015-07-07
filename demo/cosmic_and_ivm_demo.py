@@ -102,7 +102,7 @@ def geo2mag(incoord):
     return outcoord
 
 def addApexLong(inst, *arg, **kwarg):
-    magCoords = geo2mag.geo2mag(np.array([inst.data.edmaxlat, inst.data.edmaxlon]))
+    magCoords = geo2mag(np.array([inst.data.edmaxlat, inst.data.edmaxlon]))
     idx,= np.where(magCoords[1,:]< 0)
     magCoords[1,idx] += 360.
     return( ['mlat','apex_long'], [magCoords[0,:], magCoords[1,:]] )
