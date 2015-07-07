@@ -5,7 +5,10 @@ import pandas as pds
 import numpy as np
 import copy
 # python 2/3 compatibility
-if 'basestring' not in globals():
+try:
+    basestring
+except NameError:
+    print ('setting basestring')
     basestring = str
 
 from pysat import DataFrame, Series, datetime, Panel
