@@ -30,7 +30,26 @@ def geo2mag(incoord):
     -------    
     array([mlat0,mlat1,...],[mlon0,mlon1,...]])
     
-        
+    Note
+    ----
+    Routine is generally verified as coarsely correct using 2010 values from
+    http://wdc.kugi.kyoto-u.ac.jp/igrf/gggm/index.html.
+    
+    Examples
+    --------
+    mag =  geo2mag(np.array([[80.08,287.789]]).T).T
+    print mag  
+    print 'We should get [90,0]'
+
+    mag =  geo2mag(np.array([[90,0]]).T).T
+    print mag  
+    print 'We should get something close to [80.02, 180]'
+
+
+    # kyoto, japan
+    mag =  geo2mag(np.array([[35.,135.45]]).T).T
+    print mag  
+    print 'We should get something close to [25.87, -154.94]'    
     
     """
 
