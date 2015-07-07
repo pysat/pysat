@@ -75,9 +75,9 @@ def list_files(tag=None, data_path=None):
     
         year=np.array(year).astype(int)
         days=np.array(days).astype(int)
-        uts=np.array(hours).astype(int)*3600+np.array(minutes).astype(int)*60
+        uts=np.array(hours).astype(int)*3600.+np.array(minutes).astype(int)*60.
         # adding microseconds to ensure each time is unique, not allowed to pass 1.E-3 s
-        uts+=np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
+        uts+=np.mod(np.array(microseconds).astype(int)*4, 8000)*1.E-5
         index = pysat.utils.create_datetime_index(year=year, day=days, uts=uts)
         file_list = pysat.Series(cosmicFiles, index=index)
         return file_list
