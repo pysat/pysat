@@ -103,6 +103,7 @@ class Files(object):
         """Attaches info returned by instrument list_files routine to Instrument object."""
 
         if (len(files_info.index.unique()) != len(files_info)):
+            print('Duplicate datetimes ', files_info.index.get_duplicates())
             raise ValueError('List of files must have unique datetimes.')
 
         self.files = files_info.sort_index()
@@ -120,7 +121,7 @@ class Files(object):
         else:
             name = os.path.join(dir, name)
         try:
-            self.files.to_csv(name)
+            self.files.to_csv(name, date_format='%Y-%m-%d %H:%M:%S.%f')
             return True
         except IOError:
             return False	
