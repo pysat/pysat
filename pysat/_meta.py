@@ -3,7 +3,17 @@ from __future__ import absolute_import
 
 import os
 import pandas as pds
+# python 2/3 compatibility
+try:
+    basestring
+except NameError:
+    print ('setting basestring')
+    basestring = str
 
+#if 'basestring' not in globals():
+    #print ('setting basestring')
+    #basestring = str
+    
 from pysat import DataFrame, Series
 
 class Meta(object):
@@ -72,7 +82,7 @@ class Meta(object):
                     value['long_name'] = self.data.ix[name, 'long_name']
                 
             # if hasattr(value[value.keys()[0]], '__iter__' ):
-            if not isinstance(name, str): #hasattr(name, '__iter__' ):
+            if not isinstance(name, basestring): #hasattr(name, '__iter__' ):
                 # an iterable of things         
                 for key in value.keys():
                     if len(name) != len(value[key]):
