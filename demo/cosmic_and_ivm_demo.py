@@ -183,6 +183,7 @@ cosmic.bounds = (startDate, stopDate)
 cosmicResults = pysat.ssnl.avg.median2D(cosmic, [0,360,24], 'apex_long',
        [0,24,24],'edmaxlct', ['profiles', 'edmaxalt', 'lognm', 'thf2'])
 
+
 # the work is done, plot the results
 
 #make IVM and COSMIC plots
