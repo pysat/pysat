@@ -3,7 +3,6 @@ import pandas as pds
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
-import pysat.coords.geo2mag as geo2mag
 
 # dates for demo
 ssnDays = 67
@@ -11,6 +10,77 @@ startDate = pds.datetime(2009,12,21) - pds.DateOffset(days=ssnDays)
 stopDate = pds.datetime(2009,12,21) + pds.DateOffset(days=ssnDays)
 
 # define functions to customize data for application
+def geo2mag(incoord):
+    """geographic coordinate to magnetic coordinate (coarse):
+
+    Parameters
+    ----------
+    incoord : numpy.array of shape (2,*)
+        array([[glat0,glat1,glat2,...],[glon0,glon1,glon2,...]), 
+        where glat, glon are geographic latitude and longitude
+        (or if you have only one point it is [[glat,glon]]).
+
+    Warnings
+    --------
+    Calculation of geomagnetic coordinates is approximate.
+    Coordinates are for a geomagnetic dipole, not the full field.
+    Location of geomagnetic dipole set for 2010.
+    
+    Returns
+    -------    
+    array([mlat0,mlat1,...],[mlon0,mlon1,...]])
+    
+        
+    
+    """
+
+    from numpy import pi, cos, sin, arctan2, sqrt, dot
+
+    # SOME 'constants' for location of northern mag pole
+    lat = 80.08#79.3
+    lon = -72.211+360.#287.789 # or 71.41W
+    r = 1.0
+
+    # convert first to radians
+    lon, lat = [x*pi/180 for x in lon, lat]
+
+    glat = incoord[0] * pi / 180.0
+    glon = incoord[1] * pi / 180.0
+    galt = glat * 0. + r
+
+    coord = np.vstack([glat,glon,galt])
+
+    # convert to rectangular coordinates
+    x = coord[2]*cos(coord[0])*cos(coord[1])
+    y = coord[2]*cos(coord[0])*sin(coord[1])
+    z = coord[2]*sin(coord[0])
+    xyz = np.vstack((x,y,z))
+
+    # computer 1st rotation matrix:
+    geo2maglon = np.zeros((3,3), dtype='float64')
+    geo2maglon[0,0] = cos(lon)
+    geo2maglon[0,1] = sin(lon)
+    geo2maglon[1,0] = -sin(lon)
+    geo2maglon[1,1] = cos(lon)
+    geo2maglon[2,2] = 1.
+    out = dot(geo2maglon , xyz)
+
+    tomaglat = np.zeros((3,3), dtype='float64')
+    tomaglat[0,0] = cos(.5*pi-lat)
+    tomaglat[0,2] = -sin(.5*pi-lat)
+    tomaglat[2,0] = sin(.5*pi-lat)
+    tomaglat[2,2] = cos(.5*pi-lat)
+    tomaglat[1,1] = 1.
+    out = dot(tomaglat , out)
+
+    mlat = arctan2(out[2],
+            sqrt(out[0]*out[0] + out[1]*out[1]))
+    mlat = mlat * 180 / pi
+    mlon = arctan2(out[1], out[0])
+    mlon = mlon * 180 / pi
+
+    outcoord = np.vstack((mlat, mlon))
+    return outcoord
 
 def addApexLong(inst, *arg, **kwarg):
     magCoords = geo2mag.geo2mag(np.array([inst.data.edmaxlat, inst.data.edmaxlon]))
