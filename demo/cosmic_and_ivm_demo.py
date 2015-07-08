@@ -198,6 +198,7 @@ y_arr = ivmResults['ionVelmeridional']['bin_y']
 #mask out NaN values
 masked = np.ma.array(merDrifts, mask=np.isnan(merDrifts))
 #do plot, NaN values are white
+# note how the data returned from the median function is in plot order
 cax.append(axarr[0].pcolor(x_arr, y_arr, masked, vmax = 30., vmin = -30., edgecolors='none') )
 axarr[0].set_ylim(0,24)
 axarr[0].set_yticks([0,6,12,18,24])
@@ -253,6 +254,8 @@ for k in np.arange(6):
     # iterate over a group of four sectors at a time (4 plots per page)
     for (j,sector) in enumerate(np.transpose(cosmicResults['profiles']['median'])[k*4:(k+1)*4]):
         # iterate over all local times within longitude sector
+        # data is returned from the median routine in plot order, [y, x] instead of [x,y]
+        # the transpose above puts data back into [x,y], and I select based upon x (apex_long)
         for (i,ltview) in enumerate(sector):
             if ltview is not None:
                 # plot a given longitude/local time profile
