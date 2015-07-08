@@ -37,17 +37,17 @@ def geo2mag(incoord):
     
     Examples
     --------
-    mag =  geo2mag(np.array([[80.08,287.789]]).T).T
+    mag =  geo2mag(np.array([[80.08],[287.789]]))
     print mag  
     print 'We should get [90,0]'
 
-    mag =  geo2mag(np.array([[90,0]]).T).T
+    mag =  geo2mag(np.array([[90],[0]]))
     print mag  
     print 'We should get something close to [80.02, 180]'
 
 
     # kyoto, japan
-    mag =  geo2mag(np.array([[35.,135.45]]).T).T
+    mag =  geo2mag(np.array([[35.],[135.45]]))
     print mag  
     print 'We should get something close to [25.87, -154.94]'    
     
