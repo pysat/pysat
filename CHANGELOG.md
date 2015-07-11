@@ -4,6 +4,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
 ### Changed
+ - Fixed COSMIC UTS bug
+ - Fixed check for unique datetimes associated with files
+ - Improved instrument docstrings
+ - Added step size (freq) keyword to bounds and download methods
+ - Added C/NOFS IVM and COSMIC GPS demo
+ - Added support for OMNI data, 1 and 5 min files, time shifted to magnetopause
  - Moving toward python 3 compatibility
  - PEP 8 improvements
  - fixed demo ssnl_occurence_by_orbit file, replaced binx with bin_x
