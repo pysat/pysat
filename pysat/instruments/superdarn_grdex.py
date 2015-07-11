@@ -168,6 +168,7 @@ def load(fnames, tag=None):
         output['vector'] = in_list
         output.index = output.start_time
         output.drop('start_time', axis=1, inplace=True)
+        myPtr.ptr.close()
         return output, pysat.Meta()
     else:
         raise ValueError('Only one filename currently supported.')
