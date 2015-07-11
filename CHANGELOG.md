@@ -4,6 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
 ### Changed
+ - Added missing file close statement in SuperDARN load command
  - Fixed COSMIC UTS bug
  - Fixed check for unique datetimes associated with files
  - Improved instrument docstrings
