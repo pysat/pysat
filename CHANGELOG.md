@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
+
+## [0.3.1] - 2015-07-21
 ### Changed
  - Added missing file close statement in SuperDARN load command
  - Fixed COSMIC UTS bug
