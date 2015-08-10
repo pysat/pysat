@@ -1,4 +1,4 @@
-#pysat: Python Science Analysis Toolkit
+#pysat: Python Satellite Data Analysis Toolkit
 [![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
 
 #What is it
