@@ -27,11 +27,7 @@ has a name, long name, and units. Note units are informational only.
   * Iterate through a data set orbit-by-orbit; orbits are calculated on the fly
 from loaded data and span day/month/year breaks.
   * Iterate over custom seasons
-* Supports rigorous time-series calculations. Frequently these methods need
-time to spin up and down to produce accurate analysis. The instrument object
-appends real data for a buffer on each end of desired data, applies the custom 
-functions, then removes buffer data before presenting output. The time
-series code does not need to do anything to support this behavior. 
+* Supports rigorous time-series calculations. 
 * Uses pandas for the underlying underlying data structure;
 capable of handling the many forms scientific measurements take in a consistent
 manner.
