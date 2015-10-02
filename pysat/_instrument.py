@@ -903,7 +903,11 @@ class Instrument(object):
                         coltype = self[key].iloc[0][col].dtype
                         if coltype == np.int64:
                             coltype = np.int32
-                        cdfkey = out_data.createVariable(col, 
+                        #elif coltype == np.dtype('O'):
+                        #    if isinstance(self[key].iloc[0][col][0], basestring):
+                        #        coltype = 'S1'
+                        #print (key+'_' +col, var_dim, coltype)
+                        cdfkey = out_data.createVariable(key + '_' +col, 
                                                          coltype,
                                                          dimensions=var_dim)
                         cdfkey.long_name = col
@@ -918,7 +922,9 @@ class Instrument(object):
                     if coltype == np.dtype('<M8[ns]'):
                         coltype = 'f8'
                         datetime_flag = True
-                    
+                    if coltype == np.int64:
+                        coltype = np.int32
+                    #print (key+'_' + '_ample', var_dim, coltype)
                     cdfkey = out_data.createVariable(key+'_sample_index', 
                                                      coltype, dimensions=var_dim)
                     if datetime_flag:
@@ -950,7 +956,7 @@ class Instrument(object):
             for key in this_attrb:
                 if key not in base_attrb:
                     if key[0] != '_':
-                        adict[key] = self.__getattribute__(key)
+                        adict[key] = self.meta.__getattribute__(key)
             adict['pysat_version'] = 1.0
             adict['Conventions'] = 'CF-1.6'
             out_data.setncatts(adict)
