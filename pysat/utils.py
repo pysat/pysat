@@ -8,7 +8,7 @@ import copy
 try:
     basestring
 except NameError:
-    print ('setting basestring')
+    #print ('setting basestring')
     basestring = str
 
 from pysat import DataFrame, Series, datetime, Panel
@@ -62,7 +62,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
-    if not isinstance(fnames, basestring): # hasattr(fnames, '__iter__'):
+    if isinstance(fnames, basestring): # hasattr(fnames, '__iter__'):
         fnames = [fnames]
 
     saved_mdata = None
@@ -85,13 +85,16 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
             loadedVars={}
             for key in data.variables.keys():
                 # load up metadata
-                mdata[key] = {'long_name':data.variables[key].long_name,
-                              'units':data.variables[key].units}
-                              # 'nc_dimensions':data.variables[key].dimensions}
                 # from here group unique dimensions and act accordingly, 1D, 2D, 3D  
                 if len(data.variables[key].dimensions) == 1:
                     # assuming basic time dimension
                     loadedVars[key] = data.variables[key][:] 
+                    if key != index_label:
+                        mdata[key] = {'long_name':data.variables[key].long_name,
+                              'units':data.variables[key].units}
+                              # 'nc_dimensions':data.variables[key].dimensions}
+
+
                 if len(data.variables[key].dimensions) == 2:
                     # part of dataframe within dataframe
                     two_d_keys.append(key)
@@ -100,6 +103,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
             # we now have a list of keys that need to go into a dataframe,
             # could be more than one, collect unique dimensions for 2D keys
             for dim in set(two_d_dims):
+                
                 # get the name of the final data column
                 # dimension naming follows name_dim_number, 
                 # pull out name by finding last _ and tracking back
@@ -115,9 +119,9 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                 init_frame = DataFrame(None)
                 loop_list = [init_frame]*data.variables[obj_var_keys[0]].shape[0]
                 for i, loop_frame in enumerate(loop_list):
-                    #loop_frame = saved_frame.copy()
+                    loop_frame = init_frame.copy()
                     for key in obj_var_keys:
-                        loop_frame[key] = data.variables[key][i,:]
+                        loop_frame[key[len(obj_key_name)+1:]] = data.variables[key][i,:]
                         
                     # if the object index uses unix time, process into datetime index    
                     if data.variables[obj_key_name+'_sample_index'].long_name == 'UNIX time':
@@ -125,10 +129,14 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                         # no 64-bit integers
                         # it is stored as a float, need to undo processing 
                         # due to precision loss, resolution limited to the microsecond
-                        loop_frame.index = pds.to_datetime((1E6*loop_frame[obj_key_name+'_sample_index']).astype(int)*1000)
+                        loop_frame.index = pds.to_datetime((1E6*loop_frame['sample_index']).astype(int)*1000)
                     else:
-                        loop_frame.index = loop_frame[obj_key_name+'_sample_index']
-                    del loop_frame[obj_key_name+'_sample_index']  
+                        loop_frame.index = loop_frame['sample_index']
+
+
+                    del loop_frame['sample_index'] 
+                    loop_list[i] = loop_frame
+                    #print (loop_list[i] )
                     #loop_list.append(loop_frame)
                 # add object data to loaded data dictionary
                 loadedVars[obj_key_name] = loop_list
