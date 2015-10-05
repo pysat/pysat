@@ -21,7 +21,7 @@ Full [Documenation](http://rstoneback.github.io/pysat/)
   * Iterator support for loading data by day/file/orbit
   * Orbits are calculated on the fly from loaded data and span day breaks.
   * Iterate over custom seasons
-* Supports rigorous time-series calculations. 
+* Supports rigorous time-series calculations that require spin up/down time across day/file breaks. 
 * Includes helper functions to reduce the barrier in adding new science instruments to pysat
 * Instrument independent analysis routines.
 
