@@ -10,7 +10,7 @@ satellite based measurements it aims to support all instruments in space science
 Full [Documenation](http://rstoneback.github.io/pysat/)
 
 #Main Features
-* Single interface for downloading and analyzing a wide variety of science data sets.
+* Instrument object providing an interface for downloading and analyzing a wide variety of science data sets.
   * Uses pandas for the underlying underlying data structure;
   capable of handling the many forms scientific measurements take in a consistent manner.
   * Science data pipeline tasks of identifying files, loading, cleaning, and modifying
