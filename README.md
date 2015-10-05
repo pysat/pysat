@@ -10,17 +10,13 @@ satellite based measurements it aims to support all instruments in space science
 Full [Documenation](http://rstoneback.github.io/pysat/)
 
 #Main Features
-* Single interface for a wide variety of science data sets.
-* Single interface to download data for all supported instruments.
-* Data model (modified pandas) that supports a combination of 1D, 2D, 3D, and nD data in a single structure
-* Instrument independent analysis routines.
-* Science data pipeline tasks of identifying files, loading, and cleaning
-data sets are built into the instrument object. 
-* Supports the automatic application of arbitray custom functions 
- upon each load. This nano-kernel funcitonality ensures that any routine that
- interacts with the instrument object receives properly processed data.
-* Supports metadata consistent with the netCDF CF-1.6 standard. Each variable 
-has a name, long name, and units. Note units are informational only.
+* Single interface for downloading and analyzing a wide variety of science data sets.
+  * Uses pandas for the underlying underlying data structure;
+  capable of handling the many forms scientific measurements take in a consistent manner.
+  * Science data pipeline tasks of identifying files, loading, cleaning, and modifying
+  data sets are built into the instrument object.
+  * Supports metadata consistent with the netCDF CF-1.6 standard. Each variable 
+  has a name, long name, and units. Note units are informational only.
 * Simplifies data management
   * Iterates by day/file using the for loop, manual next/prev methods, or any iterative
   method.
@@ -28,13 +24,8 @@ has a name, long name, and units. Note units are informational only.
 from loaded data and span day/month/year breaks.
   * Iterate over custom seasons
 * Supports rigorous time-series calculations. 
-* Uses pandas for the underlying underlying data structure;
-capable of handling the many forms scientific measurements take in a consistent
-manner.
-  * pandas has been forked to accomodate the assignment of pandas Series/
-  Dateframes as single elements of a Series/Dataframe.
-* Includes helper functions to reduce the barrier to adding new science instruments to pysat
-
+* Includes helper functions to reduce the barrier in adding new science instruments to pysat
+* Instrument independent analysis routines.
 
 #Installation
 ##Starting from scratch
