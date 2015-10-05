@@ -18,10 +18,8 @@ Full [Documenation](http://rstoneback.github.io/pysat/)
   * Supports metadata consistent with the netCDF CF-1.6 standard. Each variable 
   has a name, long name, and units. Note units are informational only.
 * Simplifies data management
-  * Iterates by day/file using the for loop, manual next/prev methods, or any iterative
-  method.
-  * Iterate through a data set orbit-by-orbit; orbits are calculated on the fly
-from loaded data and span day/month/year breaks.
+  * Iterator support for loading data by day/file/orbit
+  * Orbits are calculated on the fly from loaded data and span day breaks.
   * Iterate over custom seasons
 * Supports rigorous time-series calculations. 
 * Includes helper functions to reduce the barrier in adding new science instruments to pysat
