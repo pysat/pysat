@@ -18,7 +18,7 @@ Full [Documenation](http://rstoneback.github.io/pysat/)
   * Supports metadata consistent with the netCDF CF-1.6 standard. Each variable 
   has a name, long name, and units. Note units are informational only.
 * Simplifies data management
-  * Iterator support for loading data by day/file/orbit
+  * Iterator support for loading data by day/file/orbit, independent of data storage details.
   * Orbits are calculated on the fly from loaded data and span day breaks.
   * Iterate over custom seasons
 * Supports rigorous time-series calculations that require spin up/down time across day/file breaks. 
