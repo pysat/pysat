@@ -48,11 +48,8 @@ def load_netcdf3(fnames=None, strict_meta=False): #, index_label=None,
     fnames : string or array_like of strings
         filenames to load
     strict_meta : boolean
-        check if metadata across filenames is the same
-    index_label : string
-        name of data to be used as DataFrame index
-    unix_time : boolean
-        True if index_label refers to UNIX time
+        check if metadata across fnames is the same
+
         
     """
                     
@@ -123,19 +120,19 @@ def load_netcdf3(fnames=None, strict_meta=False): #, index_label=None,
                         loop_frame[key[len(obj_key_name)+1:]] = data.variables[key][i, :]
                         
                     # if the object index uses unix time, process into datetime index    
-                    if data.variables[obj_key_name+'_sample_index'].long_name == 'UNIX time':
+                    if data.variables[obj_key_name+'_dim_1'].long_name == 'UNIX time':
                         # nanosecond resolution from datetime64 can't be stored in netcdf3
                         # no 64-bit integers
                         # it is stored as a float, need to undo processing 
                         # due to precision loss, resolution limited to the microsecond
-                        loop_frame.index = pds.to_datetime((1E6*loop_frame['sample_index']).astype(int)*1000)
+                        loop_frame.index = pds.to_datetime((1E6*loop_frame['dim_1']).astype(int)*1000)
                         loop_frame.index.name = 'time'
                     else:
-                        loop_frame.index = loop_frame['sample_index']
-                        loop_frame.index.name = data.variables[obj_key_name+'_sample_index'].long_name
+                        loop_frame.index = loop_frame['dim_1']
+                        loop_frame.index.name = data.variables[obj_key_name+'_dim_1'].long_name
 
 
-                    del loop_frame['sample_index'] 
+                    del loop_frame['dim_1']
                     loop_list[i] = loop_frame
                     #print (loop_list[i] )
                     #loop_list.append(loop_frame)
