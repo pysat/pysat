@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pds
 from pysat import data_dir as data_dir
 
+
 class Files(object):
     """Maintains collection of files for instrument object.
     
@@ -88,16 +89,17 @@ class Files(object):
         
         if self._sat.platform != '':
             info = self._load()
-            if info is not False:
+            if not info.empty: # is not False:
                 self._attach_files(info)
             else:
                 print("pysat is searching for the requested instrument's files.")
                 # couldn't find stored info, load file list and then store
-                info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
-                if not info.empty:
-                    info = self._remove_data_dir_path(info)	
-                    self._attach_files(info)
-                    self._store()
+                self.refresh()
+                # info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
+                # if not info.empty:
+                #     info = self._remove_data_dir_path(info)
+                #     self._attach_files(info)
+                #     self._store()
 
     def _attach_files(self, files_info):
         """Attaches info returned by instrument list_files routine to Instrument object."""
@@ -112,29 +114,61 @@ class Files(object):
         date = files_info.index[-1]
         self.stop_date = pds.datetime(date.year, date.month, date.day)
 
-    def _store(self, dir=None):
+    def _store(self): #, dir=None):
         """Store currently loaded filelist for instrument onto filesystem"""
         name = ''.join((self._sat.platform,'_',self._sat.name,'_',self._sat.tag,
                         '_stored_file_info.txt'))
-        if dir is None:
-            name = os.path.join(self.base_path, name)
-        else:
-            name = os.path.join(dir, name)
-        try:
-            self.files.to_csv(name, date_format='%Y-%m-%d %H:%M:%S.%f')
-            return True
-        except IOError:
-            return False	
+        # if dir is None:
+        #     name = os.path.join(self.base_path, name)
+        # else:
+        #     name = os.path.join(dir, name)
 
-    def _load(self):
-        """Load stored filelist and return as Pandas Series"""
+        # check if current file data is different than stored file list
+        # if so, move file list to previous file list, store current to file list
+        # if not, do nothing
+        stored_files = self._load()
+        if len(stored_files) != len(self.files):
+            new_flag = True
+        elif len(stored_files) == len(self.files):
+            if (stored_files != self.files).any():
+                new_flag = True
+            else:
+                new_flag = False
+
+        if new_flag:
+            print('New files')
+            try:
+                stored_files.to_csv(os.path.join(self.base_path, 'previous_'+name),
+                                    date_format='%Y-%m-%d %H:%M:%S.%f')
+                self.files.to_csv(os.path.join(self.base_path, name),
+                                  date_format='%Y-%m-%d %H:%M:%S.%f')
+                return True
+            except IOError:
+                return False
+        else:
+            print('No new files')
+
+    def _load(self, prev_version=False):
+        """Load stored filelist and return as Pandas Series
+
+        Parameters
+        ----------
+        prev_version : boolean
+            if True, will load previous version of file list
+
+        """
+
         fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
                         self._sat.tag, '_stored_file_info.txt'))
-        fname = os.path.join(self.base_path, fname)
+        if prev_version:
+            fname = os.path.join(self.base_path, 'previous_'+fname)
+        else:
+            fname = os.path.join(self.base_path, fname)
+
         try:
             data = pds.Series.from_csv(fname, index_col=0)
         except IOError:
-            return False
+            return pds.Series([]) #False
         else:
             return data
 
@@ -144,17 +178,18 @@ class Files(object):
         Searches pysat provided path, pysat_data_dir/platform/name/tag/, 
         where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
         
-        Parameters
-        ----------
-        store : boolean
-            set True to store loaded file names into .pysat directory
+        # Parameters
+        # ----------
+        # store : boolean
+        #     set True to store loaded file names into .pysat directory
             
         """
         info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
-        if store:
-            self._store()
+        self._store()
+        # if store:
+        #     self._store()
 
     def get_new(self):
         """List all new files since last time list was stored.
@@ -169,15 +204,26 @@ class Files(object):
             pandas Series of filenames
             False if no filenames
         """
-        stored_info = self._load()
-        if stored_info is not False:
-            new_info = self._sat._list_rtn(tag = self._sat.tag, data_path=self.data_path)
-            new_info = self._remove_data_dir_path(new_info)
-            new_files = new_info[~new_info.isin(stored_info) ]
-            return new_files
-        else:
-            print('No previously stored files that we may compare to.')
-            return False
+
+        # refresh files
+        self.refresh()
+        # current files
+        new_info = self._load()
+        # previous set of files
+        old_info = self._load(prev_version=True)
+
+        new_files = new_info[~new_info.isin(old_info) ]
+        return new_files
+
+        # stored_info = self._load()
+        # if not stored_info.empty: # is not False:
+        #     new_info = self._sat._list_rtn(tag = self._sat.tag, data_path=self.data_path)
+        #     new_info = self._remove_data_dir_path(new_info)
+        #     new_files = new_info[~new_info.isin(stored_info) ]
+        #     return new_files
+        # else:
+        #     print('No previously stored files that we may compare to.')
+        #     return pds.Series([]) #False
 
     def get_index(self, fname):
         """Return index for a given filename. 
@@ -353,7 +399,7 @@ class Files(object):
         # code below works, but only if the size of file string 
         # remains unchanged
         
-        # determine the loactaions the date information in a filename is stored
+        # determine the locations the date information in a filename is stored
         # use these indices to slice out date from loaded filenames
         # test_str = format_str.format(**periods)
         if len(files) > 0:  
