@@ -131,3 +131,5 @@ def download(date_array, tag, data_path=None, user=None, password=None):
                 else:
                     os.remove(saved_fname)
                     print('File not available for '+ date.strftime('%D'))
+    ftp.quit()
+    return

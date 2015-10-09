@@ -32,7 +32,7 @@ import numpy as np
 
 import pysat
 from spacepy import pycdf
-import cdf
+#import cdf
 
 def list_files(tag=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
@@ -44,7 +44,7 @@ def list_files(tag=None, data_path=None):
         else:
             raise ValueError('Unrecognized tag name for C/NOFS IVM')                  
     else:
-        raise ValueError ('A tag name must be passed to the loading routine for C/NOFS')           
+        raise ValueError ('A tag name must be passed to the loading routine for C/NOFS')
 
 
 def load(fnames, tag=None):
@@ -153,4 +153,6 @@ def download(date_array, tag, data_path, user=None, password=None):
             else:
                 os.remove(saved_fname)
                 print('File not available for '+date.strftime('%D'))
-
+    # exit out of ftp program
+    ftp.quit()
+    return 
