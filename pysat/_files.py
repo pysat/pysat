@@ -114,14 +114,10 @@ class Files(object):
         date = files_info.index[-1]
         self.stop_date = pds.datetime(date.year, date.month, date.day)
 
-    def _store(self): #, dir=None):
+    def _store(self):
         """Store currently loaded filelist for instrument onto filesystem"""
         name = ''.join((self._sat.platform,'_',self._sat.name,'_',self._sat.tag,
                         '_stored_file_info.txt'))
-        # if dir is None:
-        #     name = os.path.join(self.base_path, name)
-        # else:
-        #     name = os.path.join(dir, name)
 
         # check if current file data is different than stored file list
         # if so, move file list to previous file list, store current to file list
@@ -136,17 +132,13 @@ class Files(object):
                 new_flag = False
 
         if new_flag:
-            print('New files')
-            try:
-                stored_files.to_csv(os.path.join(self.base_path, 'previous_'+name),
-                                    date_format='%Y-%m-%d %H:%M:%S.%f')
-                self.files.to_csv(os.path.join(self.base_path, name),
-                                  date_format='%Y-%m-%d %H:%M:%S.%f')
-                return True
-            except IOError:
-                return False
-        else:
-            print('No new files')
+            # print('New files')
+            stored_files.to_csv(os.path.join(self.base_path, 'previous_'+name),
+                                date_format='%Y-%m-%d %H:%M:%S.%f')
+            self.files.to_csv(os.path.join(self.base_path, name),
+                              date_format='%Y-%m-%d %H:%M:%S.%f')
+        return
+
 
     def _load(self, prev_version=False):
         """Load stored filelist and return as Pandas Series
@@ -168,7 +160,7 @@ class Files(object):
         try:
             data = pds.Series.from_csv(fname, index_col=0)
         except IOError:
-            return pds.Series([]) #False
+            return pds.Series([])
         else:
             return data
 
@@ -184,8 +176,7 @@ class Files(object):
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
         self._store()
-        # if store:
-        #     self._store()
+
 
     def get_new(self):
         """List all new files since last time list was stored.
