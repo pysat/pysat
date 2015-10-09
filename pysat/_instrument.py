@@ -179,7 +179,7 @@ class Instrument(object):
         # as well as data start and end dates
         self.files = _files.Files(self)
         if update_files:
-            self.files.refresh(store=True)
+            self.files.refresh()
         # set bounds for iteration based upon data properties
         # setting (None,None) loads default bounds
         self.bounds = (None, None)
@@ -926,7 +926,7 @@ class Instrument(object):
                     if coltype == np.int64:
                         coltype = np.int32
                     #print (key+'_' + '_ample', var_dim, coltype)
-                    cdfkey = out_data.createVariable(key+'_sample_index', 
+                    cdfkey = out_data.createVariable(key+'_dim_1',
                                                      coltype, dimensions=var_dim)
                     if datetime_flag:
                         cdfkey.units = 'seconds since 1970-1-1 0:0:0'
