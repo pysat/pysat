@@ -39,8 +39,8 @@ def set_data_dir(path=None):
         raise ValueError('Path does not lead to a valid directory.')
         
 
-def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
-                    unix_time=False, **kwargs):
+def load_netcdf3(fnames=None, strict_meta=False): #, index_label=None,
+                    # unix_time=False, **kwargs):
     """Load netCDF-3 file produced by pysat.
     
     Parameters
@@ -89,11 +89,10 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                 if len(data.variables[key].dimensions) == 1:
                     # assuming basic time dimension
                     loadedVars[key] = data.variables[key][:] 
-                    if key != index_label:
+                    if key != 'time':
                         mdata[key] = {'long_name':data.variables[key].long_name,
-                              'units':data.variables[key].units}
+                                      'units':data.variables[key].units}
                               # 'nc_dimensions':data.variables[key].dimensions}
-
 
                 if len(data.variables[key].dimensions) == 2:
                     # part of dataframe within dataframe
@@ -121,7 +120,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                 for i, loop_frame in enumerate(loop_list):
                     loop_frame = init_frame.copy()
                     for key in obj_var_keys:
-                        loop_frame[key[len(obj_key_name)+1:]] = data.variables[key][i,:]
+                        loop_frame[key[len(obj_key_name)+1:]] = data.variables[key][i, :]
                         
                     # if the object index uses unix time, process into datetime index    
                     if data.variables[obj_key_name+'_sample_index'].long_name == 'UNIX time':
@@ -130,8 +129,10 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                         # it is stored as a float, need to undo processing 
                         # due to precision loss, resolution limited to the microsecond
                         loop_frame.index = pds.to_datetime((1E6*loop_frame['sample_index']).astype(int)*1000)
+                        loop_frame.index.name = 'time'
                     else:
                         loop_frame.index = loop_frame['sample_index']
+                        loop_frame.index.name = data.variables[obj_key_name+'_sample_index'].long_name
 
 
                     del loop_frame['sample_index'] 
@@ -142,22 +143,25 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
                 loadedVars[obj_key_name] = loop_list
                 del loop_list
                 
-            # prepare dataframe index for this netcdf file    
-            if index_label is not None:
-                if unix_time:
-                    loadedVars['_index'] = pds.to_datetime((loadedVars.pop(index_label)*1E6).astype(int)*1000)
-                else:
-                    loadedVars['_index'] = loadedVars.pop(index_label)
-                running_store.append(loadedVars)
-                running_idx += len(loadedVars['_index'])
-            else:
-                # keep a running integer index if none provided                          
-                num = len(loadedVars[loadedVars.keys()[0]]) 
-                # this only guaranteed to work if all variables share the same
-                # first dimension  
-                loadedVars['_index'] = np.arange(num) + running_idx                           
-                running_store.append(loadedVars)     
-                running_idx += num   
+            # prepare dataframe index for this netcdf file
+            loadedVars['time'] = pds.to_datetime((loadedVars.pop('time')*1E6).astype(int)*1000)
+            running_store.append(loadedVars)
+            running_idx += len(loadedVars['time'])
+            # if index_label is not None:
+            #     if unix_time:
+            #         loadedVars['_index'] = pds.to_datetime((loadedVars.pop(index_label)*1E6).astype(int)*1000)
+            #     else:
+            #         loadedVars['_index'] = loadedVars.pop(index_label)
+            #     running_store.append(loadedVars)
+            #     running_idx += len(loadedVars['_index'])
+            # else:
+            #     # keep a running integer index if none provided
+            #     num = len(loadedVars[loadedVars.keys()[0]])
+            #     # this only guaranteed to work if all variables share the same
+            #     # first dimension
+            #     loadedVars['_index'] = np.arange(num) + running_idx
+            #     running_store.append(loadedVars)
+            #     running_idx += num
 
             if strict_meta:
                 if saved_mdata is None:
@@ -168,7 +172,7 @@ def load_netcdf3(fnames=None, strict_meta=False, index_label=None,
     # combine all of the data loaded across files together
     # currently doesn't work if list of dicts of lists is provided
     # in other words, only one file at a time
-    out = DataFrame.from_records(running_store[0], index='_index')
+    out = DataFrame.from_records(running_store[0], index='time')
          
     return out, mdata        
 
@@ -258,6 +262,8 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         
     if uts is None:
         uts = np.zeros(len(year))
+    if day is None:
+        day = np.ones(len(year))
     day = day.astype(int)
     # track changes in seconds
     uts_del = uts.copy().astype(float)

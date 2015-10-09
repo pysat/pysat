@@ -546,7 +546,7 @@ class Instrument(object):
         if not self.data.empty:
             self.custom._apply_all(self)
         # remove the excess padding, if any applied
-        if (self.pad is not None)& (not self.data.empty) & (not verifyPad) :
+        if (self.pad is not None) & (not self.data.empty) & (not verifyPad) :
             self.data = self.data[self._curr_data.index[0]:self._curr_data.index[-1]]
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
@@ -871,13 +871,14 @@ class Instrument(object):
             out_data.createDimension('time', num)
             
             # write out the datetime index
-            cdfkey = out_data.createVariable('unix_time', 'f8', dimensions=('time'),)
-            cdfkey.units = 's'
+            cdfkey = out_data.createVariable('time', 'f8', dimensions=('time'),)
+            cdfkey.units = 'seconds since 1970-1-1 0:0:0'
             cdfkey.long_name = 'UNIX time'
-            cdfkey.calendar = 'noleap'
+            cdfkey.calendar = 'standard'
             cdfkey[:] = self.data.index.astype(int)*1.E-9
-            # store all of the data names in meta            
-            for key in self.meta.data.index:
+
+            # store all of the data in dataframe columns
+            for key in self.data.columns:
                 if self[key].dtype != np.dtype('O'):
                     # not an object, simple column of data, write it out
                     cdfkey = out_data.createVariable(key, 
@@ -928,7 +929,7 @@ class Instrument(object):
                     cdfkey = out_data.createVariable(key+'_sample_index', 
                                                      coltype, dimensions=var_dim)
                     if datetime_flag:
-                        cdfkey.units = 's'
+                        cdfkey.units = 'seconds since 1970-1-1 0:0:0'
                         cdfkey.long_name = 'UNIX time'
                         for i in xrange(num):
                             cdfkey[i, :] = self[key].iloc[i].index.astype(int)*1.E-9
