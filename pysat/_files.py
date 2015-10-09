@@ -172,17 +172,13 @@ class Files(object):
         else:
             return data
 
-    def refresh(self, store=False):
+    def refresh(self):
         """Refresh loaded instrument filelist by searching filesystem.
         
         Searches pysat provided path, pysat_data_dir/platform/name/tag/, 
         where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
         
-        # Parameters
-        # ----------
-        # store : boolean
-        #     set True to store loaded file names into .pysat directory
-            
+
         """
         info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
         info = self._remove_data_dir_path(info)
