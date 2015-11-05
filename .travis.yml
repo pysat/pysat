@@ -16,30 +16,18 @@ before_install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda update --yes conda
+  - conda update -q --yes conda
   # Useful for debugging any issues with conda
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
 
-
-  #- wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  #- chmod +x miniconda.sh
-  #- ./miniconda.sh -b
-  #- export PATH=/home/travis/miniconda/bin:$PATH
-  #- conda update --yes conda
-  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
-  #- sudo rm -rf /dev/shm
-  #- sudo ln -s /run/shm /dev/shm
-  
 # command to install dependencies
 install:
   # Coverage packages are on my binstar channel
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
   - "python setup.py install"
 # command to run tests
 script: nosetests
