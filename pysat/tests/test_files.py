@@ -170,7 +170,7 @@ class TestBasics:
         check3 = files.index[1].to_datetime() == pysat.datetime(2008,1,1,0,30)
         check4 = files.index[10].to_datetime() == pysat.datetime(2008,1,1,5,0)
         check5 = files.index[-1].to_datetime() == pysat.datetime(2008,1,4)
-        print check1, check2, check3, check4, len(files)
+
         assert(check1 & check2 & check3 & check4 & check5)
 
     def test_year_month_day_hour_minute_second_files_direct_call_to_from_os(self):
@@ -190,7 +190,7 @@ class TestBasics:
         check2 = files.index[0].to_datetime() == pysat.datetime(2008,1,1)
         check3 = files.index[1].to_datetime() == pysat.datetime(2008,1,1,0,0,30)
         check4 = files.index[-1].to_datetime() == pysat.datetime(2008,1,3)
-        print check1, check2, check3, check4, len(files)
+
         assert(check1 & check2 & check3 & check4)
 
 
