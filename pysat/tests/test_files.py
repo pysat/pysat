@@ -28,13 +28,11 @@ def prep_dir():
     for the_file in os.listdir(dir):
         if the_file[0:13] == 'pysat_testing':
             file_path = os.path.join(dir, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    #print(file_path)
-                    os.unlink(file_path)
+            if os.path.isfile(file_path):
+                #print(file_path)
+                os.unlink(file_path)
                 #elif os.path.isdir(file_path): shutil.rmtree(file_path)
-            except Exception, e:
-                print e
+
 
 # create year doy file set
 def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
