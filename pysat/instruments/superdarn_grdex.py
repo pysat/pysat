@@ -187,7 +187,7 @@ def clean(self):
     
 def download(date_array, tag, data_path, user=None, password=None):
     """
-    download IVM data consistent with pysat
+    download SuperDARN data from VT organized for loading by pysat
 
     """
 
