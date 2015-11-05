@@ -66,14 +66,9 @@ class Files(object):
         new_files = vefi.files.get_new()
         
         # search pysat appropriate directory for instrument files and
-        # update Files instance, knowledge not written to disk.
+        # update Files instance.
         vefi.files.refresh()
-        
-        # search pysat appropriate directory for files and store new list
-        vefi.files.refresh(store=True)
-        # running get_new will now return an empty list until
-        # additional files are introduced
-        
+
         
     """
         
@@ -95,11 +90,6 @@ class Files(object):
                 print("pysat is searching for the requested instrument's files.")
                 # couldn't find stored info, load file list and then store
                 self.refresh()
-                # info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
-                # if not info.empty:
-                #     info = self._remove_data_dir_path(info)
-                #     self._attach_files(info)
-                #     self._store()
 
     def _attach_files(self, files_info):
         """Attaches info returned by instrument list_files routine to Instrument object."""
@@ -139,7 +129,6 @@ class Files(object):
                               date_format='%Y-%m-%d %H:%M:%S.%f')
         return
 
-
     def _load(self, prev_version=False):
         """Load stored filelist and return as Pandas Series
 
@@ -148,6 +137,11 @@ class Files(object):
         prev_version : boolean
             if True, will load previous version of file list
 
+        Returns
+        -------
+        pandas.Series
+            Full path file names are indexed by datetime
+            Series is empty if there is no file list to load
         """
 
         fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
@@ -165,31 +159,33 @@ class Files(object):
             return data
 
     def refresh(self):
-        """Refresh loaded instrument filelist by searching filesystem.
+        """Update list of files, if there are changes.
         
-        Searches pysat provided path, pysat_data_dir/platform/name/tag/, 
+        Calls underlying list_rtn for the particular science instrument.
+        Typically, these routines search in the pysat provided path, pysat_data_dir/platform/name/tag/,
         where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
         
 
         """
         info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
-        info = self._remove_data_dir_path(info)
-        self._attach_files(info)
-        self._store()
-
+        if not info.empty:
+            info = self._remove_data_dir_path(info)
+            self._attach_files(info)
+            self._store()
 
     def get_new(self):
-        """List all new files since last time list was stored.
+        """List new files since last recorded file state.
         
         pysat stores filenames in the user_home/.pysat directory. Returns
-        a list of all new fileanmes since the last store. Filenames
-        are stored if update_files is True at instrument object level and
-        if files.refresh(store=True) is called.
+        a list of all new fileanmes since the last known change to files.
+        Filenames are stored if there is a change and either update_files
+        is True at instrument object level or files.refresh() is called.
         
         Returns
         -------
-            pandas Series of filenames
-            False if no filenames
+        pandas.Series
+            files are indexed by datetime
+
         """
 
         # refresh files
@@ -201,6 +197,13 @@ class Files(object):
 
         new_files = new_info[~new_info.isin(old_info) ]
         return new_files
+
+    def mark_as_new(self, files):
+        """Set list of files as new.
+
+        """
+        pass
+
 
         # stored_info = self._load()
         # if not stored_info.empty: # is not False:
