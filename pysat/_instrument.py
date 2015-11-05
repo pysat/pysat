@@ -615,7 +615,7 @@ class Instrument(object):
         last_date = self.files.stop_date
             
         print('Updating pysat file list')
-        self.files.refresh(store=True)
+        self.files.refresh()
 
         # if instrument object has default bounds, update them
         if len(self.bounds[0]) == 1:
@@ -875,7 +875,7 @@ class Instrument(object):
             cdfkey.units = 'seconds since 1970-1-1 0:0:0'
             cdfkey.long_name = 'UNIX time'
             cdfkey.calendar = 'standard'
-            cdfkey[:] = self.data.index.astype(int)*1.E-9
+            cdfkey[:] = (self.data.index.astype(int)*1.E-3).astype(int)*1.E-6
 
             # store all of the data in dataframe columns
             for key in self.data.columns:
@@ -932,15 +932,16 @@ class Instrument(object):
                         cdfkey.units = 'seconds since 1970-1-1 0:0:0'
                         cdfkey.long_name = 'UNIX time'
                         for i in xrange(num):
-                            cdfkey[i, :] = self[key].iloc[i].index.astype(int)*1.E-9
+                            cdfkey[i, :] = (self[key].iloc[i].index.astype(int)*1.E-3).astype(int)*1.E-6
                     else:
                         cdfkey.units = ''
-                        cdfkey.long_name = key
+                        if self[key].iloc[0].index.name is not None:
+                            cdfkey.long_name = self[key].iloc[0].index.name
+                        else:    
+                            cdfkey.long_name = key
                         for i in xrange(num):
                             cdfkey[i, :] = self[key].iloc[i].index.to_native_types()
 
-                    if self[key].iloc[0].index.name is not None:
-                        cdfkey.long_name = self[key].iloc[0].index.name
                     
             # store any non standard attributes
             base_attrb = dir(Instrument())
