@@ -77,7 +77,7 @@ setup(
     install_requires = ['pandas', 'pysftp'],
     #install_requires=['pandas'], #,'git+git://github.com/rstoneback/pandas/tarball/master#egg=rstoneback-pandas-0.16.0-54-ga32da86'],
     #dependency_links = ['https://github.com/rstoneback/pandas/tarball/master#egg=rstoneback-pandas-0.16.0-54-ga32da86'],
-    dependency_links = ['https://github.com/rstoneback/pandas.git'],
+    #dependency_links = ['https://github.com/rstoneback/pandas.git'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
