@@ -78,6 +78,7 @@ class TestBasics:
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        prep_dir()
         del self.testInst
     
     def test_year_doy_files_direct_call_to_from_os(self):
