@@ -34,6 +34,7 @@ import sys
 import pandas as pds
 import numpy as np
 
+import spacepy
 from spacepy import pycdf
 import pysat
 
@@ -57,34 +58,41 @@ def list_files(tag=None, data_path=None):
             
 
 def load(fnames, tag=None):
+
+    
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), None
     else:
+
         try:
-            cdf = pycdf.CDF(fnames[0])
+            with spacepy.pycdf.CDF(fnames[0]) as temporary:
+                omni_cdf = temporary.copy()
+                #print ('Clean Read')
         except pycdf.CDFError:
             return pysat.DataFrame(), pysat.Meta()
             
         data = {}
         meta = pysat.Meta()
-        for key in cdf.iterkeys():
+        for key in omni_cdf.iterkeys():
             key_low = key.lower()
-            data[key_low] = cdf[key][...]
+            data[key_low] = omni_cdf[key][...]
             try:             
-                meta[key_low] = {'units':cdf[key].attrs['UNITS'],
-                            'long_name':cdf[key].attrs['LABLAXIS'], 
-                            'description':cdf[key].attrs['CATDESC'],
-                            'fill_value':cdf[key].attrs['FILLVAL']}
+                meta[key_low] = {'units':omni_cdf[key].attrs['UNITS'],
+                            'long_name':omni_cdf[key].attrs['LABLAXIS'], 
+                            'description':omni_cdf[key].attrs['CATDESC'],
+                            'fill_value':omni_cdf[key].attrs['FILLVAL']}
             except KeyError:
-                if 'UNITS' in cdf[key].attrs:
-                    meta[key_low] = {'units':cdf[key].attrs['UNITS']}
-                if 'LABLAXIS' in cdf[key].attrs:
-                    meta[key_low] = {'long_name':cdf[key].attrs['LABLAXIS']}
-                if 'CATDESC' in cdf[key].attrs:
-                    meta[key_low] = {'description':cdf[key].attrs['CATDESC']}
-                if 'FILLVAL' in cdf[key].attrs:
-                    meta[key_low] = {'fill_value':cdf[key].attrs['FILLVAL']}
-                pass
+                attrs = omni_cdf[key].attrs.keys()
+    
+                if 'UNITS' in attrs:
+                    meta[key_low] = {'units':omni_cdf[key].attrs['UNITS']}
+                if 'LABLAXIS' in attrs:
+                    meta[key_low] = {'long_name':omni_cdf[key].attrs['LABLAXIS']}
+                if 'CATDESC' in attrs:
+                    meta[key_low] = {'description':omni_cdf[key].attrs['CATDESC']}
+                if 'FILLVAL' in attrs:
+                    meta[key_low] = {'fill_value':omni_cdf[key].attrs['FILLVAL']}
+
         epoch = data.pop('epoch')
     data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
     return data, meta
@@ -96,7 +104,6 @@ def clean(omni):
 
 def default(omni):
     """ OMNI data stored monthly. Select out desired day."""
-
     start = omni.date
     stop = omni.date + pds.DateOffset(days=1) - pds.DateOffset(microseconds=1)
     omni.data = omni.data.ix[start:stop]
