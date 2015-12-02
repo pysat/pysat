@@ -139,6 +139,7 @@ def load(fnames, tag=None):
             drift_frame = pds.DataFrame.from_records(info.vector.__dict__, 
                                                      nrows=len(info.pmax),
                                                      index=info.vector.index)
+            drift_frame['partial'] = 1
             drift_frame.index.name = 'index'
             sum_vec = 0
             for nvec in info.nvec:
