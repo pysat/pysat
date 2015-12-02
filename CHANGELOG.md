@@ -4,6 +4,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
 
+## [0.3.2] - 2015-12-01
+### Changed
+ - Fixed error raised by pysat.utils.set_data_dir
+ - Partial unit test coverage for files class
+ - File tracking more robust
+ - Download methods now log off from server at the end of download
+ - Improved to_netcdf3 and load_netcdf3 routines, netcdf files produced pass standards check
+
 ## [0.3.1] - 2015-07-21
 ### Changed
  - Added missing file close statement in SuperDARN load command
