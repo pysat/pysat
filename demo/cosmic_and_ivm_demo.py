@@ -252,7 +252,7 @@ f.savefig('1D_params.png')
 for k in np.arange(6):
     f, axarr = plt.subplots(4, sharex=True, figsize=(8.5,11))
     # iterate over a group of four sectors at a time (4 plots per page)
-    for (j,sector) in enumerate(np.transpose(cosmicResults['profiles']['median'])[k*4:(k+1)*4]):
+    for (j,sector) in enumerate(zip(*cosmicResults['profiles']['median'])[k*4:(k+1)*4]):
         # iterate over all local times within longitude sector
         # data is returned from the median routine in plot order, [y, x] instead of [x,y]
         # the transpose above puts data back into [x,y], and I select based upon x (apex_long)
