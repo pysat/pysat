@@ -198,11 +198,11 @@ class Files(object):
         new_files = new_info[~new_info.isin(old_info) ]
         return new_files
 
-    def mark_as_new(self, files):
-        """Set list of files as new.
-
-        """
-        pass
+    # def mark_as_new(self, files):
+    #     """Set list of files as new.
+    #
+    #     """
+    #     pass
 
 
         # stored_info = self._load()
