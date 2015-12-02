@@ -26,7 +26,7 @@ def prep_dir():
     # remove any files
     dir = os.path.join(pysat.data_dir, inst.platform, inst.name)
     for the_file in os.listdir(dir):
-        if the_file[0:13] == 'pysat_testing':
+        if (the_file[0:13] == 'pysat_testing') & (the_file[-19:] == '.pysat_testing_file'):
             file_path = os.path.join(dir, the_file)
             if os.path.isfile(file_path):
                 #print(file_path)
@@ -46,7 +46,7 @@ def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
     dates = pysat.utils.season_date_range(start, stop, freq=freq)
     
     if root_fname is None:
-        root_fname = 'pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.txt'
+        root_fname = 'pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file'
         
     for date in dates:
         yr, doy = pysat.utils.getyrdoy(date)
@@ -63,7 +63,7 @@ def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
 def list_year_doy_files(tag=None, data_path=None):
     if data_path is not None:
         return pysat.Files.from_os(data_path=data_path,
-            format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.txt')
+            format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file')
     else:
         raise ValueError ('A directory must be passed to the loading routine.')
 
@@ -87,7 +87,7 @@ class TestBasics:
         create_files(self.testInst, start, stop, freq='1D')
         # use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-            format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.txt')
+            format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file')
         # check overall length
         check1 = len(files) == (365+366)  
         # check specific dates
@@ -102,10 +102,10 @@ class TestBasics:
         start = pysat.datetime(2008,1,1)
         stop = pysat.datetime(2009,12,31)
         create_files(self.testInst, start, stop, freq='1D', 
-                     root_fname='pysat_testing_junk_{year:04d}{day:03d}_stuff.txt')
+                     root_fname='pysat_testing_junk_{year:04d}{day:03d}_stuff.pysat_testing_file')
         # use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-            format_str='pysat_testing_junk_{year:04d}{day:03d}_stuff.txt')
+            format_str='pysat_testing_junk_{year:04d}{day:03d}_stuff.pysat_testing_file')
         # check overall length
         check1 = len(files) == (365+366)  
         # check specific dates
@@ -120,10 +120,10 @@ class TestBasics:
         start = pysat.datetime(2008,1,1)
         stop = pysat.datetime(2009,12,31)
         create_files(self.testInst, start, stop, freq='1D', use_doy=False,
-                     root_fname='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}.txt')
+                     root_fname='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}.pysat_testing_file')
         # use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-            format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}.txt')
+            format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}.pysat_testing_file')
         # check overall length
         check1 = len(files) == (365+366)  
         # check specific dates
@@ -140,10 +140,10 @@ class TestBasics:
         stop = pysat.datetime(2009,12,31)
         create_files(self.testInst, start, stop, freq='6h',  
                      use_doy=False,
-                     root_fname='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}.txt')
+                     root_fname='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}.pysat_testing_file')
         # use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-            format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}.txt')
+            format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}.pysat_testing_file')
         # check overall length
         check1 = len(files) == (365+366)*4-3 
         # check specific dates
@@ -153,7 +153,7 @@ class TestBasics:
         assert(check1 & check2 & check3 & check4)
 
     def test_year_month_day_hour_minute_files_direct_call_to_from_os(self):
-        root_fname='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}{min:02d}.txt'
+        root_fname='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}{min:02d}.pysat_testing_file'
         # create a bunch of files by year and doy
         start = pysat.datetime(2008,1,1)
         stop = pysat.datetime(2008,1,4)
@@ -174,7 +174,7 @@ class TestBasics:
         assert(check1 & check2 & check3 & check4 & check5)
 
     def test_year_month_day_hour_minute_second_files_direct_call_to_from_os(self):
-        root_fname='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}_{min:02d}_{sec:02d}.txt'
+        root_fname='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}_{min:02d}_{sec:02d}.pysat_testing_file'
         # create a bunch of files by year and doy
         start = pysat.datetime(2008,1,1)
         stop = pysat.datetime(2008,1,3)
@@ -199,10 +199,10 @@ class TestBasics:
         start = pysat.datetime(2008,1,1)
         stop = pysat.datetime(2009,12,31)
         create_files(self.testInst, start, stop, freq='1MS',  
-                     root_fname='pysat_testing_junk_{year:04d}_gold_stuff_{month:02d}.txt')
+                     root_fname='pysat_testing_junk_{year:04d}_gold_stuff_{month:02d}.pysat_testing_file')
         # use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-            format_str='pysat_testing_junk_{year:04d}_gold_stuff_{month:02d}.txt')
+            format_str='pysat_testing_junk_{year:04d}_gold_stuff_{month:02d}.pysat_testing_file')
         # check overall length
         check1 = len(files) == 24
         # check specific dates
