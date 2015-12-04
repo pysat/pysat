@@ -17,11 +17,20 @@ Uses environment variables set by davitpy to download files
 from Virginia Tech SuperDARN data servers. Pydarn routines
 are used to load SuperDARN data.
 
+This material is based upon work supported by the 
+National Science Foundation under Grant Number 1259508. 
+
+Any opinions, findings, and conclusions or recommendations expressed in this 
+material are those of the author(s) and do not necessarily reflect the views 
+of the National Science Foundation.
+
 Warnings
 --------
 Cleaning only removes entries that have 0 vectors, grdex files
 are constituted from what it is thought to be good data.
+
 """
+
 from __future__ import print_function
 from __future__ import absolute_import
 import sys
@@ -46,53 +55,6 @@ def list_files(tag=None, data_path=None):
         raise ValueError ('A tag name must be passed to SuperDARN.')           
                 
            
-def load_orig(fnames, tag=None):
-    if len(fnames) <= 0 :
-        return pysat.DataFrame(None), pysat.Meta(None)
-    elif len(fnames)==1:
-        b = pydarn.sdio.sdDataOpen(pysat.datetime(1980,1,1), 
-                                    src='local', 
-                                    eTime=pysat.datetime(2050,1,1),
-                                    fileName=fnames[0])
-                                    
-        data_list = pydarn.sdio.sdDataReadAll(b)
-        sys.stdout.flush()
-        in_dict = []
-        for info in data_list:
-            arr = np.arange(len(info.stid))
-            drift_frame = pds.DataFrame(info.vector.__dict__, 
-                                    #index=[info.vector.mlon, info.vector.mlat])
-                                    index=info.vector.index)
-            drift_frame.index.name = 'index'
-            drift_frame.sort(inplace=True)
-            #drift_frame.index.names=['mlon', 'mlat']
-            for i in arr:
-                nvec = info.nvec[i]
-                in_frame = drift_frame.iloc[0:nvec]
-                drift_frame = drift_frame.iloc[nvec:]
-                in_dict.append({'stid':info.stid[i],
-                            'channel':info.channel[i],
-                            'noisemean':info.noisemean[i],
-                            'noisesd':info.noisesd[i],
-                            'gsct':info.gsct[i],
-                            'nvec':info.nvec[i],
-                            'pmax':info.pmax[i],
-                            'vector':in_frame,
-                            'start_time':info.sTime,
-                            'end_time':info.eTime,
-                            'vemax':info.vemax[i],
-                            'vemin':info.vemin[i],
-                            'pmin':info.pmin[i],
-                            'programid':info.programid[i],
-                            'wmax':info.wmax[i],
-                            'wmin':info.wmin[i],
-                            'freq':info.freq[i]})
-        output = pds.DataFrame(in_dict)
-        output.index = output.start_time
-        output.drop('start_time', axis=1, inplace=True)
-        return output, pysat.Meta()
-    else:
-        raise ValueError('Only one filename currently supported.')
 
 def load(fnames, tag=None):
     if len(fnames) <= 0 :
@@ -188,7 +150,7 @@ def clean(self):
     
 def download(date_array, tag, data_path, user=None, password=None):
     """
-    download SuperDARN data from VT organized for loading by pysat
+    Download SuperDARN data from Virginia Tech organized for loading by pysat.
 
     """
 
@@ -222,7 +184,57 @@ def download(date_array, tag, data_path, user=None, password=None):
                 print('File not available for '+date.strftime('%D'))
 
 
+ 
          
+def load_orig(fnames, tag=None):
+    if len(fnames) <= 0 :
+        return pysat.DataFrame(None), pysat.Meta(None)
+    elif len(fnames)==1:
+        b = pydarn.sdio.sdDataOpen(pysat.datetime(1980,1,1), 
+                                    src='local', 
+                                    eTime=pysat.datetime(2050,1,1),
+                                    fileName=fnames[0])
+                                    
+        data_list = pydarn.sdio.sdDataReadAll(b)
+        sys.stdout.flush()
+        in_dict = []
+        for info in data_list:
+            arr = np.arange(len(info.stid))
+            drift_frame = pds.DataFrame(info.vector.__dict__, 
+                                    #index=[info.vector.mlon, info.vector.mlat])
+                                    index=info.vector.index)
+            drift_frame.index.name = 'index'
+            drift_frame.sort(inplace=True)
+            #drift_frame.index.names=['mlon', 'mlat']
+            for i in arr:
+                nvec = info.nvec[i]
+                in_frame = drift_frame.iloc[0:nvec]
+                drift_frame = drift_frame.iloc[nvec:]
+                in_dict.append({'stid':info.stid[i],
+                            'channel':info.channel[i],
+                            'noisemean':info.noisemean[i],
+                            'noisesd':info.noisesd[i],
+                            'gsct':info.gsct[i],
+                            'nvec':info.nvec[i],
+                            'pmax':info.pmax[i],
+                            'vector':in_frame,
+                            'start_time':info.sTime,
+                            'end_time':info.eTime,
+                            'vemax':info.vemax[i],
+                            'vemin':info.vemin[i],
+                            'pmin':info.pmin[i],
+                            'programid':info.programid[i],
+                            'wmax':info.wmax[i],
+                            'wmin':info.wmin[i],
+                            'freq':info.freq[i]})
+        output = pds.DataFrame(in_dict)
+        output.index = output.start_time
+        output.drop('start_time', axis=1, inplace=True)
+        return output, pysat.Meta()
+    else:
+        raise ValueError('Only one filename currently supported.')
+                 
+                                 
 #
 #
 #def test3():
