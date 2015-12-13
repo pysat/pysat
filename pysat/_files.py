@@ -94,15 +94,20 @@ class Files(object):
     def _attach_files(self, files_info):
         """Attaches info returned by instrument list_files routine to Instrument object."""
 
-        if (len(files_info.index.unique()) != len(files_info)):
-            print('Duplicate datetimes ', files_info.index.get_duplicates())
-            raise ValueError('List of files must have unique datetimes.')
+        if not files_info.empty:
+            if (len(files_info.index.unique()) != len(files_info)):
+                print('Duplicate datetimes ', files_info.index.get_duplicates())
+                raise ValueError('List of files must have unique datetimes.')
 
-        self.files = files_info.sort_index()
-        date = files_info.index[0]
-        self.start_date = pds.datetime(date.year, date.month, date.day)
-        date = files_info.index[-1]
-        self.stop_date = pds.datetime(date.year, date.month, date.day)
+            self.files = files_info.sort_index()
+            date = files_info.index[0]
+            self.start_date = pds.datetime(date.year, date.month, date.day)
+            date = files_info.index[-1]
+            self.stop_date = pds.datetime(date.year, date.month, date.day)
+        else:
+            self.start_date = None
+            self.stop_date = None
+            self.files = files_info
 
     def _store(self):
         """Store currently loaded filelist for instrument onto filesystem"""
@@ -151,12 +156,11 @@ class Files(object):
         else:
             fname = os.path.join(self.base_path, fname)
 
-        try:
-            data = pds.Series.from_csv(fname, index_col=0)
-        except IOError:
-            return pds.Series([])
+        if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
+            return pds.Series.from_csv(fname, index_col=0)
         else:
-            return data
+            return pds.Series([])
+
 
     def refresh(self):
         """Update list of files, if there are changes.
@@ -168,10 +172,10 @@ class Files(object):
 
         """
         info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
-        if not info.empty:
-            info = self._remove_data_dir_path(info)
-            self._attach_files(info)
-            self._store()
+        #if not info.empty:
+        info = self._remove_data_dir_path(info)
+        self._attach_files(info)
+        self._store()
 
     def get_new(self):
         """List new files since last recorded file state.

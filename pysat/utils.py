@@ -34,7 +34,7 @@ def set_data_dir(path=None):
         with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'), 'w') as f:
             f.write(path)
             pysat.data_dir = path
-            f.close()
+            #f.close()
             pysat._files = re_load(pysat._files)
             pysat._instrument = re_load(pysat._instrument)
     else:
