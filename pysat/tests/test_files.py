@@ -134,7 +134,6 @@ class TestBasics:
 
         assert(check1 & check2 & check3 & check4)
 
-
     def test_year_month_day_hour_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
         start = pysat.datetime(2008,1,1)
@@ -194,7 +193,6 @@ class TestBasics:
 
         assert(check1 & check2 & check3 & check4)
 
-
     def test_year_month_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
         start = pysat.datetime(2008,1,1)
@@ -212,3 +210,7 @@ class TestBasics:
         check4 = files.index[-1].to_datetime() == pysat.datetime(2009,12,1)
         assert(check1 & check2 & check3 & check4)
 
+    # def test_instrument_has_no_files(self):
+    #     inst = pysat.Instrument(platform='pysat', name='testing', update_files=True)
+    #
+    #     assert(inst.files.files.empty)
