@@ -51,7 +51,9 @@ class Instrument(object):
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
         with a timestamp of day n-1 or n+1.
-        
+    manual_org : bool
+        if True, then pysat will look directly in pysat data directory
+        for data files and will not use /platform/name/tag        
     Attributes
     ----------
     data : pandas.DataFrame
@@ -121,7 +123,8 @@ class Instrument(object):
 
     def __init__(self, platform=None, name=None, tag=None, clean_level='clean',
                  update_files=False, pad=None, orbit_info=None,
-                 inst_module=None, multi_file_day=False, *arg, **kwargs):
+                 inst_module=None, multi_file_day=False, manual_org=False,
+                 *arg, **kwargs):
 
         if inst_module is None:
             if isinstance(platform, str) and isinstance(name, str):              
@@ -177,7 +180,7 @@ class Instrument(object):
 
         # load file list function, which returns dict of files
         # as well as data start and end dates
-        self.files = _files.Files(self)
+        self.files = _files.Files(self, manual_org=manual_org)
         if update_files:
             self.files.refresh()
         # set bounds for iteration based upon data properties
@@ -881,6 +884,8 @@ class Instrument(object):
             for key in self.data.columns:
                 if self[key].dtype != np.dtype('O'):
                     # not an object, simple column of data, write it out
+                    if self[key].dtype == np.int64:
+                        self[key] = self[key].astype(np.int32)
                     cdfkey = out_data.createVariable(key, 
                                                      self[key].dtype,
                                                      dimensions=('time'), )
@@ -962,3 +967,4 @@ class Instrument(object):
             adict['pysat_version'] = 1.0
             adict['Conventions'] = 'CF-1.6'
             out_data.setncatts(adict)
+        return

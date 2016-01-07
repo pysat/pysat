@@ -33,6 +33,10 @@ class Files(object):
     data_path : string
         path to the directory containing instrument files,
         top_dir/platform/name/tag/
+    manual_org : bool
+        if True, then Files will look directly in pysat data directory
+        for data files and will not use /platform/name/tag
+
         
     Note
     ----
@@ -72,23 +76,31 @@ class Files(object):
         
     """
         
-    def __init__(self, sat):
-
+    def __init__(self, sat, manual_org=False):
+        # pysat.Instrument object
         self._sat = weakref.proxy(sat)
-        self.base_path = os.path.join(os.getenv('HOME'), '.pysat')
+        # location of .pysat file
+        self.home_path = os.path.join(os.getenv('HOME'), '.pysat')
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None)
-        self.data_path = os.path.join(data_dir, self._sat.platform, 
-                                      self._sat.name, self._sat.tag)
+        # path for sub-directories under pysat data path
+        self.manual_org = manual_org
+        if not manual_org:
+            self.sub_dir_path = os.path.join(self._sat.platform, 
+                                             self._sat.name, self._sat.tag)
+        else:
+            self.sub_dir_path = ''
+        self.data_path = os.path.join(data_dir, self.sub_dir_path)
         
         if self._sat.platform != '':
+            # load stored file info
             info = self._load()
             if not info.empty: # is not False:
                 self._attach_files(info)
             else:
-                print("pysat is searching for the requested instrument's files.")
                 # couldn't find stored info, load file list and then store
+                print("pysat is searching for the requested instrument's files.")
                 self.refresh()
 
     def _attach_files(self, files_info):
@@ -128,9 +140,9 @@ class Files(object):
 
         if new_flag:
             # print('New files')
-            stored_files.to_csv(os.path.join(self.base_path, 'previous_'+name),
+            stored_files.to_csv(os.path.join(self.home_path, 'previous_'+name),
                                 date_format='%Y-%m-%d %H:%M:%S.%f')
-            self.files.to_csv(os.path.join(self.base_path, name),
+            self.files.to_csv(os.path.join(self.home_path, name),
                               date_format='%Y-%m-%d %H:%M:%S.%f')
         return
 
@@ -152,9 +164,9 @@ class Files(object):
         fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
                         self._sat.tag, '_stored_file_info.txt'))
         if prev_version:
-            fname = os.path.join(self.base_path, 'previous_'+fname)
+            fname = os.path.join(self.home_path, 'previous_'+fname)
         else:
-            fname = os.path.join(self.base_path, fname)
+            fname = os.path.join(self.home_path, fname)
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             return pds.Series.from_csv(fname, index_col=0)
@@ -234,6 +246,7 @@ class Files(object):
         is made.
         
         """
+        #print( fname)
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
             # filename not in index, try reloading files from disk
