@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
+## [0.3.3] - 2016-01-07
+### Changed
+ - Added manual_org flag to Instrument instantion. Simple file management flag.
+ - Improved COSMIC demo plotting
+ - Improved support for instruments with no files
 
 ## [0.3.2] - 2015-12-01
 ### Changed
