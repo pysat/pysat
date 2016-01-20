@@ -175,7 +175,9 @@ class Custom(object):
                     if kind == 'modify':
                         t = func(sat,*arg,**kwarg)
                         if t is not None:
-                            raise ValueError('Modify functions should not return any information via return. Information may only be propagated back by modifying supplied pysat object.')
+                            raise ValueError('Modify functions should not return any information via return. '+ 
+                                             'Information may only be propagated back by modifying supplied ' +
+                                             'pysat object.')
                     # pass function (function runs, no data allowed back)
                     if kind == 'pass':
                         tempd = sat.copy()
