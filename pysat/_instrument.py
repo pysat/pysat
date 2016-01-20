@@ -30,9 +30,8 @@ class Instrument(object):
         name of instrument. 
     tag : string, optional
         identifies particular subset of instrument data.
-    inst_module : module, optional
-        Provide instrument module directly. 
-        Takes precedence over platform/name.
+    sat_id : string, optional
+        identity within constellation
     clean_level : {'clean','dusty','dirty','none'}, optional
         level of data quality
     pad : pandas.DateOffset, or dictionary, optional
@@ -43,6 +42,9 @@ class Instrument(object):
     orbit_info : dict    
         Orbit information, {'index':index, 'kind':kind, 'period':period}.
         See pysat.Orbits for more information.            
+    inst_module : module, optional
+        Provide instrument module directly. 
+        Takes precedence over platform/name.
     update_files : boolean, optional
         If True, query filesystem for instrument files and store. 
         files.get_new() will return no files after this call until 
@@ -121,8 +123,8 @@ class Instrument(object):
 
     """
 
-    def __init__(self, platform=None, name=None, tag=None, clean_level='clean',
-                 update_files=False, pad=None, orbit_info=None,
+    def __init__(self, platform=None, name=None, tag=None, sat_id=None,
+                 clean_level='clean', update_files=False, pad=None, orbit_info=None,
                  inst_module=None, multi_file_day=False, manual_org=False,
                  *arg, **kwargs):
 
@@ -148,9 +150,11 @@ class Instrument(object):
                                      'instrument is required if supplying routine module directly.')))
             self._assign_funcs(inst_module=inst_module)
             
-        self.tag = tag.lower() if tag is not None else ''    
+        # more reasonable defaults for optional parameters
+        self.tag = tag.lower() if tag is not None else ''
+        self.sat_id = sat_id.lower() if sat_id is not None else ''
         self.clean_level = clean_level.lower() if clean_level is not None else 'none'
-
+        # set up empty data and metadata
         self.data = DataFrame(None)
         self.meta = _meta.Meta()
         # function processing class, processes data on load
@@ -338,13 +342,13 @@ class Instrument(object):
             # remove direct access of data
             fname = self.files[fid]
         elif date is not None:
-            fname = self.files[date: date+pds.DateOffset(days=1)]
+            fname = self.files[date : date+pds.DateOffset(days=1)]
         else:
             raise ValueError('Must supply either a date or file id number.')
    
         if len(fname) > 0:    
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
-            data, mdata = self._load_rtn(load_fname, tag=self.tag, **self.kwargs)
+            data, mdata = self._load_rtn(load_fname, tag=self.tag, sat_id=self.sat_id, **self.kwargs)
         else:
             data = DataFrame(None)
             mdata = _meta.Meta()
@@ -356,19 +360,19 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-                print(' '.join(('Returning', self.platform, self.name, self.tag, 'data for',
+                print(' '.join(('Returning', self.platform, self.name, self.tag, self.sat_id, 'data for',
                                    date.strftime('%D'))))
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    print(' '.join(('Returning', self.platform, self.name, self.tag,
+                    print(' '.join(('Returning', self.platform, self.name, self.tag, self.sat_id,
                                        'data from', fname[0])))
                 else:
-                    print(' '.join(('Returning', self.platform, self.name, self.tag,
+                    print(' '.join(('Returning', self.platform, self.name, self.tag, self.sat_id,
                                        'data from', fname[0], '::', fname[-1])))
         else:
             # no data signal
-            print(' '.join(('No', self.platform, self.name, self.tag, 'data for',
+            print(' '.join(('No', self.platform, self.name, self.tag, self.sat_id, 'data for',
                                date.strftime('%D'))))
     
         return data, mdata
@@ -497,7 +501,15 @@ class Instrument(object):
                     self._prev_data, self._prev_meta = self._load_prev()
                     self._curr_data, self._curr_meta = self._load_data(date=self.date, fid=self._fid)   
                     self._next_data, self._next_meta = self._load_next()
-
+                    
+            # make sure datetime indices for all data is monotonic
+            if not self._prev_data.index.is_monotonic_increasing:
+                self._prev_data.sort_index(inplace=True)
+            if not self._curr_data.index.is_monotonic_increasing:
+                self._curr_data.sort_index(inplace=True)
+            if not self._next_data.index.is_monotonic_increasing:
+                self._next_data.sort_index(inplace=True)
+                
             # make tracking indexes consistent with new loads
             self._next_data_track = curr + inc
             self._prev_data_track = curr - inc
@@ -512,22 +524,22 @@ class Instrument(object):
                 # self.meta = _meta.Meta()
 
             if self.multi_file_day:
-                self.data = self.data[self.date : self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999)]
+                self.data = self.data.ix[self.date : self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999)]
             # pad data based upon passed parameter
 
             if (not self._prev_data.empty) & (not self.data.empty):
                 if self.multi_file_day and self._load_by_date:
-                    padLeft = self._prev_data[(self.date):self._curr_data.index[0]]
+                    padLeft = self._prev_data.ix[(self.date):self._curr_data.index[0]]
                 else:
-                    padLeft = self._prev_data[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
+                    padLeft = self._prev_data.ix[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
 
             if (not self._next_data.empty) & (not self.data.empty):
 
                 if self.multi_file_day and self._load_by_date:
-                    padRight = self._next_data[self.date : (self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999))]
+                    padRight = self._next_data.ix[self.date : (self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999))]
                 else:
-                    padRight = self._next_data[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
+                    padRight = self._next_data.ix[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
                 self.data = pds.concat([self.data, padRight[1:]])
                 
         # if self.pad is False, load single day
@@ -606,10 +618,12 @@ class Instrument(object):
         if user is None:
             self._download_rtn(date_array,
                                tag=self.tag,
+                               sat_id=self.sat_id,
                                data_path=self.files.data_path)
         else:
             self._download_rtn(date_array,
                                tag=self.tag,
+                               sat_id=self.sat_id,
                                data_path=self.files.data_path,
                                user=user,
                                password=password)

@@ -39,7 +39,7 @@ import numpy as np
 import pysat
 
 
-def list_files(tag=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
     import sys
     #if tag == 'ionprf':
@@ -82,7 +82,7 @@ def list_files(tag=None, data_path=None):
         return pysat.Series(None)
         
 
-def load(cosmicFiles, tag=None):
+def load(cosmicFiles, tag=None, sat_id=None):
     """
     cosmic data load routine, called by pysat
     """   
@@ -91,7 +91,7 @@ def load(cosmicFiles, tag=None):
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pysat.DataFrame(load_files(cosmicFiles, tag=tag))
+        output = pysat.DataFrame(load_files(cosmicFiles, tag=tag, sat_id=sat_id))
         output.index = pysat.utils.create_datetime_index(year=output.year, 
                 month=output.month, day=output.day, 
                 uts=output.hour*3600.+output.minute*60.+output.second)
@@ -126,7 +126,7 @@ def load(cosmicFiles, tag=None):
 # seperate routine for doing actual loading. This was broken off from main load
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
-def load_files(files, tag=None):
+def load_files(files, tag=None, sat_id=None):
     '''Loads a list of COSMIC data files, supplied by user.
     
     Returns a list of dicts, a dict for each file.

@@ -42,7 +42,7 @@ import numpy as np
 import pysat
 import pydarn
 
-def list_files(tag=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
     if tag is not None:
@@ -56,7 +56,7 @@ def list_files(tag=None, data_path=None):
                 
            
 
-def load(fnames, tag=None):
+def load(fnames, tag=None, sat_id=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames)==1:
@@ -148,7 +148,7 @@ def clean(self):
 
     return  
     
-def download(date_array, tag, data_path, user=None, password=None):
+def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """
     Download SuperDARN data from Virginia Tech organized for loading by pysat.
 

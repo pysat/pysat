@@ -49,7 +49,8 @@ class Files(object):
     ::
     
         # convenient file access
-        inst = pysat.Instrument(platform=platform, name=name, tag=tag)
+        inst = pysat.Instrument(platform=platform, name=name, tag=tag,
+                                sat_id=sat_id)
         # first file
         inst.files[0]
         
@@ -108,8 +109,13 @@ class Files(object):
 
         if not files_info.empty:
             if (len(files_info.index.unique()) != len(files_info)):
-                print('Duplicate datetimes ', files_info.index.get_duplicates())
-                raise ValueError('List of files must have unique datetimes.')
+                print('WARNING! Duplicate datetimes in provided file information.')
+                print('Keeping one of each of the duplicates, dropping the rest.')
+                print(files_info.index.get_duplicates())
+
+                idx = np.unique(files_info.index, return_index=True)
+                files_info = files_info.ix[idx[1]]
+                #raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
             date = files_info.index[0]
@@ -123,7 +129,7 @@ class Files(object):
 
     def _store(self):
         """Store currently loaded filelist for instrument onto filesystem"""
-        name = ''.join((self._sat.platform,'_',self._sat.name,'_',self._sat.tag,
+        name = ''.join((self._sat.platform,'_',self._sat.name,'_',self._sat.tag, '_', self._sat.sat_id,
                         '_stored_file_info.txt'))
 
         # check if current file data is different than stored file list
@@ -162,7 +168,7 @@ class Files(object):
         """
 
         fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
-                        self._sat.tag, '_stored_file_info.txt'))
+                        self._sat.tag, '_', self._sat.sat_id, '_stored_file_info.txt'))
         if prev_version:
             fname = os.path.join(self.home_path, 'previous_'+fname)
         else:
@@ -183,7 +189,7 @@ class Files(object):
         
 
         """
-        info = self._sat._list_rtn(tag=self._sat.tag, data_path=self.data_path)
+        info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id, data_path=self.data_path)
         #if not info.empty:
         info = self._remove_data_dir_path(info)
         self._attach_files(info)

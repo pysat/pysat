@@ -36,7 +36,7 @@ from spacepy import pycdf
 import pysat
 
 
-def list_files(tag=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
     if data_path is not None:
         if tag == 'dc_b':
@@ -48,7 +48,7 @@ def list_files(tag=None, data_path=None):
         raise ValueError ('A directory must be passed to the loading routine for VEFI')
             
 
-def load(fnames, tag=None):
+def load(fnames, tag=None, sat_id=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), None
     else:
@@ -72,7 +72,7 @@ def load(fnames, tag=None):
         data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
         return data, meta
 
-def download(date_array, tag, data_path=None, user=None, password=None):
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     """
     download vefi 1_second magnetic field data, layout consistent with pysat
 

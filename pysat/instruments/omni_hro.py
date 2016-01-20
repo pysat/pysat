@@ -47,7 +47,7 @@ from spacepy import pycdf
 import pysat
 
 
-def list_files(tag=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
     if data_path is not None:
         if (tag == '1min') | (tag == '5min'):
@@ -65,7 +65,7 @@ def list_files(tag=None, data_path=None):
         raise ValueError ('A directory must be passed to the loading routine for VEFI')
             
 
-def load(fnames, tag=None):
+def load(fnames, tag=None, sat_id=None):
 
     
     if len(fnames) <= 0 :
@@ -117,7 +117,7 @@ def default(omni):
     omni.data = omni.data.ix[start:stop]
     return omni
 
-def download(date_array, tag, data_path=None, user=None, password=None):
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     """
     download OMNI data, layout consistent with pysat
     """

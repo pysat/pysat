@@ -19,7 +19,7 @@ meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
 def init(self):
     self.new_thing=True        
                 
-def load(fnames, tag=None):
+def load(fnames, tag=None, sat_id=None):
     # create an artifical satellite data set
     parts = fnames[0].split('/')
     yr = int('20'+parts[-1][0:2])
@@ -46,12 +46,12 @@ def load(fnames, tag=None):
     data.index=index
     return data, meta.copy()
 
-def list_files(tag=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None):
     """Produce a fake list of files spanning a year"""
     
     index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31)) 
     names = [ data_path+'/'+date.strftime('%D')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
     
-def download(start, stop, data_path=None,user=None, password=None):
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     pass

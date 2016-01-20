@@ -34,7 +34,7 @@ import pysat
 from spacepy import pycdf
 #import cdf
 
-def list_files(tag=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
     if tag is not None:
@@ -47,7 +47,7 @@ def list_files(tag=None, data_path=None):
         raise ValueError ('A tag name must be passed to the loading routine for C/NOFS')
 
 
-def load(fnames, tag=None):
+def load(fnames, tag=None, sat_id=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
     else:
@@ -124,7 +124,7 @@ def clean(self):
     self.data = self.data.iloc[idx,:]
     return
 
-def download(date_array, tag, data_path, user=None, password=None):
+def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """
     download IVM data consistent with pysat
 
