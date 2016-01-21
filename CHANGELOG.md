@@ -3,9 +3,10 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
+
 ### Changed
  - Initial support for sat_id in Instrument
- - Files class will now remove duplicate file times rather than simply raise an Exception
+ - Files class will now remove duplicate file times rather than simply raise an exception
 
 ## [0.3.3] - 2016-01-07
 ### Changed
