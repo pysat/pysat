@@ -552,6 +552,15 @@ class Instrument(object):
         if self.meta.data.empty:
             self.meta[self.data.columns] = {'long_name': self.data.columns,
                                             'units': ['']*len(self.data.columns)}
+        # if loading by file set the yr, doy, and date
+        if not self._load_by_date:
+            temp = self.data.index[0]
+            temp = pds.datetime(temp.year, temp.month, temp.day)
+            self.date = temp
+            self.yr, self.doy = utils.getyrdoy(self.date)
+            #print ('hello')
+            #print (self.date, self.yr, self.doy)
+
         if not self.data.empty:
             self._default_rtn(self)
         # clean
@@ -563,12 +572,6 @@ class Instrument(object):
         # remove the excess padding, if any applied
         if (self.pad is not None) & (not self.data.empty) & (not verifyPad) :
             self.data = self.data[self._curr_data.index[0]:self._curr_data.index[-1]]
-        # if loading by file set the yr, doy, and date
-        if not self._load_by_date:
-            temp = self.data.index[0]
-            temp = pds.datetime(temp.year, temp.month, temp.day)
-            self.date = temp
-            self.yr, self.doy = utils.getyrdoy(self.date)
 
         sys.stdout.flush()
         return
