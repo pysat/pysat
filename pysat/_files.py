@@ -257,7 +257,7 @@ class Files(object):
         if len(idx) == 0:
             # filename not in index, try reloading files from disk
             self.refresh()
-            print (fname, self.files)
+            #print (fname, self.files)
             idx, = np.where(fname == self.files)
             if len(idx) == 0:
                 raise IOError('Could not find supplied file on disk')
