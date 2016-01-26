@@ -46,16 +46,20 @@ class Instrument(object):
         Provide instrument module directly. 
         Takes precedence over platform/name.
     update_files : boolean, optional
-        If True, query filesystem for instrument files and store. 
-        files.get_new() will return no files after this call until 
-        additional files are added.
-    multi_file_day : boolean, optional (False by default)
+        If True, immediately query filesystem for instrument files and store. 
+    multi_file_day : boolean, optional 
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
         with a timestamp of day n-1 or n+1.
     manual_org : bool
         if True, then pysat will look directly in pysat data directory
-        for data files and will not use /platform/name/tag        
+        for data files and will not use default /platform/name/tag
+    directory_format : str
+        directory naming structure in string format. Variables such as
+        platform, name, and tag will be filled in as needed using python
+        string formatting. The default directory structure would be 
+        expressed as '{platform}/{name}/{tag}'
+               
     Attributes
     ----------
     data : pandas.DataFrame
@@ -124,14 +128,16 @@ class Instrument(object):
     """
 
     def __init__(self, platform=None, name=None, tag=None, sat_id=None,
-                 clean_level='clean', update_files=False, pad=None, orbit_info=None,
-                 inst_module=None, multi_file_day=False, manual_org=False,
-                 *arg, **kwargs):
+                 clean_level='clean', update_files=None, pad=None, orbit_info=None,
+                 inst_module=None, multi_file_day=None, manual_org=None,
+                 directory_format=None, *arg, **kwargs):
 
         if inst_module is None:
+            # use strings to look up module name
             if isinstance(platform, str) and isinstance(name, str):              
                 self.platform = platform.lower() 
                 self.name = name.lower() 
+                # look to module for instrument functions and defaults
                 self._assign_funcs(by_name=True)
             elif (platform is None) and (name is None):
                 # creating "empty" Instrument object with this path
@@ -141,8 +147,9 @@ class Instrument(object):
             else:
                 raise ValueError('Inputs platform and name must both be strings, or both None.')                        
         else:
-            # user expected to have provided module
+            # user has provided a module
             try:
+                # platform and name are expected to be part of module
                 self.name = inst_module.name.lower()
                 self.platform = inst_module.platform.lower()
             except AttributeError:
@@ -154,9 +161,21 @@ class Instrument(object):
         self.tag = tag.lower() if tag is not None else ''
         self.sat_id = sat_id.lower() if sat_id is not None else ''
         self.clean_level = clean_level.lower() if clean_level is not None else 'none'
+        
+        # assign_func sets some instrument defaults, direct info rules all
+        if directory_format is not None:
+            self.directory_format = directory_format.lower()
+        elif self.directory_format is not None:
+            try:
+                # check if it is a function
+                self.directory_format = self.directory_format(tag, sat_id)
+            except TypeError:
+                pass
+            
         # set up empty data and metadata
         self.data = DataFrame(None)
         self.meta = _meta.Meta()
+        
         # function processing class, processes data on load
         self.custom = _custom.Custom()
         # create arrays to store data around loaded day
@@ -166,7 +185,11 @@ class Instrument(object):
         self._prev_data = DataFrame(None)
         self._prev_data_track = []
         self._curr_data = DataFrame(None)
-        
+
+        # multi file day, default set by assign_funcs
+        if multi_file_day is not None:
+            self.multi_file_day = multi_file_day
+                    
         # arguments for padding
         if isinstance(pad, pds.DateOffset):
             self.pad = pad
@@ -177,17 +200,14 @@ class Instrument(object):
         else:
             raise ValueError('pad must be a dictionary or a pandas.DateOffset instance.')
 
-        # multi file day
-        self.multi_file_day = multi_file_day
+        # instantiate Files class
+        manual_org = False if manual_org is None else manual_org
+        self.files = _files.Files(self, manual_org=manual_org, 
+                                  directory_format=self.directory_format,
+                                  update_files=update_files)
 
-        self.kwargs = kwargs
-
-        # load file list function, which returns dict of files
-        # as well as data start and end dates
-        self.files = _files.Files(self, manual_org=manual_org)
-        if update_files:
-            self.files.refresh()
-        # set bounds for iteration based upon data properties
+        # set bounds for iteration
+        # self.bounds requires the Files class
         # setting (None,None) loads default bounds
         self.bounds = (None, None)
         self.date = None
@@ -198,8 +218,17 @@ class Instrument(object):
 
         # initialize orbit support
         if orbit_info is None:
-            orbit_info = {'index': None, 'kind': None, 'period': None}
+            if self.orbit_info is None:
+                # if default info not provided, set None as default
+                orbit_info = {'index': None, 'kind': None, 'period': None}
+            else:
+                # default provided by instrument module
+                orbit_info = self.orbit_info
         self.orbits = _orbits.Orbits(self, **orbit_info)
+
+        # store kwargs, passed to load routine
+        self.kwargs = kwargs        
+
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
         self._init_rtn(self)
@@ -328,6 +357,20 @@ class Instrument(object):
             self._clean_rtn = inst.clean
         except AttributeError:
             pass
+
+        # look for instrument default parameters
+        try:
+            self.directory_format = inst.directory_format
+        except AttributeError:
+            self.directory_format = None
+        try:
+            self.multi_file_day = inst.self.multi_file_day
+        except AttributeError:
+            self.multi_file_day = False
+        try:
+            self.orbit_info = inst.orbit_info
+        except AttributeError:
+            self.orbit_info = None
 
         return
 
@@ -525,8 +568,8 @@ class Instrument(object):
 
             if self.multi_file_day:
                 self.data = self.data.ix[self.date : self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999)]
-            # pad data based upon passed parameter
 
+            # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty):
                 if self.multi_file_day and self._load_by_date:
                     padLeft = self._prev_data.ix[(self.date):self._curr_data.index[0]]
@@ -603,20 +646,26 @@ class Instrument(object):
         import errno
         # make sure directories are there, otherwise create them
         try:
-            os.mkdir(os.path.join(data_dir, self.platform))
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise    
-        try:
-            os.mkdir(os.path.join(data_dir, self.platform, self.name))
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise    
-        try:
-            os.mkdir(self.files.data_path)
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
+            os.makedirs(self.files.data_path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
                 raise
+        
+        #try:
+        #    os.mkdir(os.path.join(data_dir, self.platform))
+        #except OSError as exception:
+        #    if exception.errno != errno.EEXIST:
+        #        raise    
+        #try:
+        #    os.mkdir(os.path.join(data_dir, self.platform, self.name))
+        #except OSError as exception:
+        #    if exception.errno != errno.EEXIST:
+        #        raise    
+        #try:
+        #    os.mkdir(self.files.data_path)
+        #except OSError as exception:
+        #    if exception.errno != errno.EEXIST:
+        #        raise
         date_array = utils.season_date_range(start, stop, freq=freq)
         if user is None:
             self._download_rtn(date_array,

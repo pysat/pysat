@@ -36,8 +36,9 @@ class Files(object):
     manual_org : bool
         if True, then Files will look directly in pysat data directory
         for data files and will not use /platform/name/tag
+    update_files : bool
+        updates files on instantiation if True
 
-        
     Note
     ----
     User should generally use the interface provided by a pysat.Instrument
@@ -77,7 +78,7 @@ class Files(object):
         
     """
         
-    def __init__(self, sat, manual_org=False):
+    def __init__(self, sat, manual_org=False, directory_format=None, update_files=False):
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
         # location of .pysat file
@@ -85,23 +86,40 @@ class Files(object):
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None)
-        # path for sub-directories under pysat data path
+        # location of stored files
+        self.stored_file_name = ''.join((self._sat.platform,'_',self._sat.name,
+                                        '_',self._sat.tag, '_', self._sat.sat_id,
+                                        '_stored_file_info.txt'))
+
+        # flag for setting simple organization of files, only
+        # look under pysat_data_dir
         self.manual_org = manual_org
-        if not manual_org:
-            self.sub_dir_path = os.path.join(self._sat.platform, 
-                                             self._sat.name, self._sat.tag)
-        else:
+        # path for sub-directories under pysat data path
+        if directory_format is None:
+            directory_format = os.path.join('{platform}','{name}','{tag}')
+        self.directory_format = directory_format
+        
+        if manual_org:
             self.sub_dir_path = ''
+        else:
+            # construct subdirectory path
+            self.sub_dir_path = self.directory_format.format(name=self._sat.name,
+                                     platform=self._sat.platform,
+                                     tag=self._sat.tag)
+            #self.sub_dir_path = os.path.join(self._sat.platform, 
+            #                                 self._sat.name, self._sat.tag)
+
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         
         if self._sat.platform != '':
             # load stored file info
             info = self._load()
-            if not info.empty: # is not False:
+            if not info.empty: 
                 self._attach_files(info)
+                if update_files:
+                    self.refresh()
             else:
                 # couldn't find stored info, load file list and then store
-                print("pysat is searching for the requested instrument's files.")
                 self.refresh()
 
     def _attach_files(self, files_info):
@@ -129,9 +147,9 @@ class Files(object):
 
     def _store(self):
         """Store currently loaded filelist for instrument onto filesystem"""
-        name = ''.join((self._sat.platform,'_',self._sat.name,'_',self._sat.tag, '_', self._sat.sat_id,
-                        '_stored_file_info.txt'))
-
+        #name = ''.join((self._sat.platform,'_',self._sat.name,'_',self._sat.tag, '_', self._sat.sat_id,
+                        #'_stored_file_info.txt'))
+        name = self.stored_file_name
         # check if current file data is different than stored file list
         # if so, move file list to previous file list, store current to file list
         # if not, do nothing
@@ -167,8 +185,9 @@ class Files(object):
             Series is empty if there is no file list to load
         """
 
-        fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
-                        self._sat.tag, '_', self._sat.sat_id, '_stored_file_info.txt'))
+        #fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
+                        #self._sat.tag, '_', self._sat.sat_id, '_stored_file_info.txt'))
+        fname = self.stored_file_name
         if prev_version:
             fname = os.path.join(self.home_path, 'previous_'+fname)
         else:
@@ -189,8 +208,13 @@ class Files(object):
         
 
         """
+        print("pysat is searching for the requested instrument's files.")
         info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id, data_path=self.data_path)
-        #if not info.empty:
+        if not info.empty:
+            print('Found {ll:d} of them.'.format(ll=len(info)))
+        else:
+            print ("Unable to find any files. If you have the necessary files "+
+                   "please check pysat settings and file locations.")
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
         self._store()
@@ -260,7 +284,7 @@ class Files(object):
             #print (fname, self.files)
             idx, = np.where(fname == self.files)
             if len(idx) == 0:
-                raise IOError('Could not find supplied file on disk')
+                raise ValueError('Could not find supplied file on disk')
         return idx
 
     # convert this to a normal get so files[in:in2] gives the same as requested here
@@ -471,7 +495,5 @@ class Files(object):
 
             return pds.Series(files, index=index)
         else:
-            print ("Unable to find any files. If you have the necessary files "+
-                   "please check pysat settings and file locations.")
             return pds.Series(None) 
 
