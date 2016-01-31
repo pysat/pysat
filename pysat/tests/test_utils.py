@@ -29,7 +29,7 @@ def prep_dir(inst=None):
     # create data directories
     try:
         os.makedirs(inst.files.data_path)
-        print ('Made Directory')
+        #print ('Made Directory')
     except OSError:
         pass
     #dir = os.path.join(pysat.data_dir, inst.platform)
@@ -124,7 +124,7 @@ class TestBasics:
         
         # test Series of DataFrames
         test_list = []
-        print (loaded_inst.columns)
+        #print (loaded_inst.columns)
         for frame1, frame2 in zip(test_inst.data['profiles'], loaded_inst['profiles']):
             test_list.append((frame1 == frame2).all())
         loaded_inst.drop('profiles', inplace=True, axis=1) 

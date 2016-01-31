@@ -255,8 +255,6 @@ class TestBasics:
             self.testInst.prev()
             dates.append(self.testInst.date)            
         out = pds.date_range(start_d, stop_d).tolist()
-        print out
-        print dates
         assert np.all(dates == out[::-1])
 
     def test_set_bounds_by_fname_season(self):

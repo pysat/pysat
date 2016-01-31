@@ -29,7 +29,7 @@ def prep_dir(inst=None):
     # create data directories
     try:
         os.makedirs(inst.files.data_path)
-        print ('Made Directory')
+        #print ('Made Directory')
     except OSError:
         pass
     #dir = os.path.join(pysat.data_dir, inst.platform)
