@@ -165,6 +165,8 @@ class Instrument(object):
         # assign_func sets some instrument defaults, direct info rules all
         if directory_format is not None:
             self.directory_format = directory_format.lower()
+        # value not provided by user, check if there is a value provided by
+        # instrument module
         elif self.directory_format is not None:
             try:
                 # check if it is a function
@@ -326,7 +328,11 @@ class Instrument(object):
         self._clean_rtn = self._pass_func
         self._init_rtn = self._pass_func
         self._download_rtn = self._pass_func
-            
+        # default params
+        self.directory_format = None
+        self.multi_file_day = False
+        self.orbit_info = None
+                        
         if by_name: 
             # look for code with filename name, any errors passed up
             inst = importlib.import_module(''.join(('.', self.platform, '_',
@@ -362,15 +368,15 @@ class Instrument(object):
         try:
             self.directory_format = inst.directory_format
         except AttributeError:
-            self.directory_format = None
+            pass
         try:
             self.multi_file_day = inst.self.multi_file_day
         except AttributeError:
-            self.multi_file_day = False
+            pass
         try:
             self.orbit_info = inst.orbit_info
         except AttributeError:
-            self.orbit_info = None
+            pass
 
         return
 
@@ -859,14 +865,16 @@ class Instrument(object):
 
         elif self._iter_type == 'file':
             if self._fid is not None:
-                idx, = np.where(self._iter_list == self._fid)
-                if (len(idx) == 0) | (idx+1 >= len(self._iter_list)):
+                first = self.files.get_index(self._iter_list[0])
+                last = self.files.get_index(self._iter_list[-1])
+                #idx, = np.where(self._iter_list == self._fid)
+                if (self._fid < first) | (self._fid+1 > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    idx += 1
-                    self.load(fid=self._iter_list[idx[0]])
+                    #idx += 1
+                    self.load(fname=self._iter_list[self._fid+1-first])
             else:
-                self.load(fid=self._iter_list[0])
+                self.load(fname=self._iter_list[0])
 
     def prev(self):
         """Manually iterate backwards through the data in Instrument object.
@@ -894,23 +902,26 @@ class Instrument(object):
 
         elif self._iter_type == 'file':
             if self._fid is not None:
-                idx, = np.where(self._iter_list == self._fid)
-                if (len(idx) == 0) | (idx-1 < 0):
+                first = self.files.get_index(self._iter_list[0])
+                last = self.files.get_index(self._iter_list[-1])
+                if (self._fid-1 < first) | (self._fid > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    idx -= 1
-                    self.load(fid=self._iter_list[idx[0]])
+                    self.load(fname=self._iter_list[self._fid-1-first])
             else:
-                # last file by default
-                self.load(fid=self._iter_list[-1])
+                self.load(fname=self._iter_list[-1])
 
-    def to_netcdf3(self, fname=None):
-        """Stores loaded data into a netCDF3 64-bit file.
+
+    def to_netcdf4(self, fname=None, format=None):
+        """Stores loaded data into a netCDF3/4 file.
         
         Parameters
         ----------
         fname : string
             full path to save instrument object to
+        format : string
+            format keyword passed to netCDF4 routine
+            NETCDF3_CLASSIC, NETCDF3_64BIT, NETCDF4_CLASSIC, and NETCDF4
         
         Note
         ----
@@ -934,7 +945,12 @@ class Instrument(object):
         
         import netCDF4
         
-        with netCDF4.Dataset(fname, mode='w', format='NETCDF3_64BIT') as out_data:
+        if format is None:
+            format = 'NETCDF3_64BIT'
+        else:
+            format = format.upper()
+        
+        with netCDF4.Dataset(fname, mode='w', format=format) as out_data:
         
             num = len(self.data.index)
             out_data.createDimension('time', num)
@@ -945,12 +961,11 @@ class Instrument(object):
             cdfkey.long_name = 'UNIX time'
             cdfkey.calendar = 'standard'
             cdfkey[:] = (self.data.index.astype(int)*1.E-3).astype(int)*1.E-6
-
             # store all of the data in dataframe columns
             for key in self.data.columns:
                 if self[key].dtype != np.dtype('O'):
                     # not an object, simple column of data, write it out
-                    if self[key].dtype == np.int64:
+                    if ((self[key].dtype == np.int64) & (format[:7] == 'NETCDF3')):
                         self[key] = self[key].astype(np.int32)
                     cdfkey = out_data.createVariable(key, 
                                                      self[key].dtype,
@@ -969,11 +984,22 @@ class Instrument(object):
                         obj_dim_names.append(key+'_dim_%i' % (i+1))
                         out_data.createDimension(obj_dim_names[-1], dim)
                     var_dim = tuple(['time']+obj_dim_names)
-                    
+                    print (var_dim)
                     # iterate over columns and store
-                    for col in self[key].iloc[0].columns:
-                        coltype = self[key].iloc[0][col].dtype
-                        if coltype == np.int64:
+                    try:
+                        iterable = self[key].iloc[0].columns
+                        is_frame = True
+                    except AttributeError:
+                        # looking at a series, which doesn't have columns
+                        iterable = self[key].iloc[0].name
+                        is_frame = False
+                        
+                    for col in iterable:
+                        if is_frame:
+                            coltype = self[key].iloc[0][col].dtype
+                        else:
+                            coltype = self[key].iloc[0].dtype
+                        if ((coltype == np.int64) & (format[:7] == 'NETCDF3')):
                             coltype = np.int32
                         #elif coltype == np.dtype('O'):
                         #    if isinstance(self[key].iloc[0][col][0], basestring):
@@ -984,8 +1010,16 @@ class Instrument(object):
                                                          dimensions=var_dim)
                         cdfkey.long_name = col
                         cdfkey.units = ''
-                        for i in xrange(num):
-                            cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
+                        if is_frame:
+                            for i in xrange(num):
+                                cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
+                        else:
+                            #print (self[key])
+                            print (np.shape(cdfkey))
+                            for i in xrange(num):
+                                print (i)
+                                cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
+
                             
                     # store the dataframe index for each time of main dataframe
                     datetime_flag = False
@@ -1032,5 +1066,11 @@ class Instrument(object):
                         adict[key] = self.meta.__getattribute__(key)
             adict['pysat_version'] = 1.0
             adict['Conventions'] = 'CF-1.6'
+
+            # check for binary types
+            for key in adict.keys():
+                if type(adict[key]) is bool:
+                    adict[key] = int(adict[key])
+                    
             out_data.setncatts(adict)
         return

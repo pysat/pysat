@@ -13,9 +13,18 @@ except NameError:
 
 from pysat import DataFrame, Series, datetime, Panel
 
-def set_data_dir(path=None):
+def set_data_dir(path=None, store=None):
     """
-    set the top level directory pysat uses to look for data.
+    Set the top level directory pysat uses to look for data and reload.
+    
+    Parameters
+    ----------
+    path : string
+        valid path to directory pysat uses to look for data
+    store : bool
+        if True, store data directory for future runs
+        
+        
     """
     import sys
     import os
@@ -29,21 +38,22 @@ def set_data_dir(path=None):
             re_load = importlib.reload
     else:
         re_load = reload
-        
+    if store is None:
+        store = True    
     if os.path.isdir(path):
-        with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'), 'w') as f:
-            f.write(path)
-            pysat.data_dir = path
-            #f.close()
-            pysat._files = re_load(pysat._files)
-            pysat._instrument = re_load(pysat._instrument)
+        if store:
+            with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'), 'w') as f:
+                f.write(path)
+        pysat.data_dir = path
+        pysat._files = re_load(pysat._files)
+        pysat._instrument = re_load(pysat._instrument)
     else:
         raise ValueError('Path does not lead to a valid directory.')
         
 
-def load_netcdf3(fnames=None, strict_meta=False): #, index_label=None,
+def load_netcdf4(fnames=None, strict_meta=False, format=None): #, index_label=None,
                     # unix_time=False, **kwargs):
-    """Load netCDF-3 file produced by pysat.
+    """Load netCDF-3/4 file produced by pysat.
     
     Parameters
     ----------
@@ -51,8 +61,10 @@ def load_netcdf3(fnames=None, strict_meta=False): #, index_label=None,
         filenames to load
     strict_meta : boolean
         check if metadata across fnames is the same
-
-        
+    format : string
+        format keyword passed to netCDF4 routine
+        NETCDF3_CLASSIC, NETCDF3_64BIT, NETCDF4_CLASSIC, and NETCDF4
+     
     """
                     
     import netCDF4
@@ -61,15 +73,20 @@ def load_netcdf3(fnames=None, strict_meta=False): #, index_label=None,
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
-    if isinstance(fnames, basestring): # hasattr(fnames, '__iter__'):
+    if isinstance(fnames, basestring): 
         fnames = [fnames]
+
+    if format is None:
+        format = 'NETCDF3_64BIT'
+    else:
+        format = format.upper()
 
     saved_mdata = None
     running_idx = 0
     running_store=[]
     two_d_keys = []; two_d_dims = [];
     for fname in fnames:
-        with netCDF4.Dataset(fname, mode='r', format='NETCDF3_64BIT') as data:
+        with netCDF4.Dataset(fname, mode='r', format=format) as data:
             # build up dictionary with all ncattrs
             # and add those attributes to a pysat meta object
             ncattrsList = data.ncattrs()

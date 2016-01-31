@@ -65,6 +65,11 @@ class TestBasics:
                 (self.meta['new'].long_name == 'boo') &
                 (self.meta['new'].description == 'boohoo'))
                                                                                                                                                                                                                         
+
+    def test_meta_equality(self):
+        
+        assert self.testInst.meta == self.testInst.meta  
+          
     #def test_replace_meta_units_list(self):
     #    self.meta['new'] = {'units':'hey', 'long_name':'boo'}
     #    self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}

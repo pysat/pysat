@@ -20,7 +20,9 @@ class TestBasics:
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         '''Runs before every method to create a clean testing setup.'''
-        self.testInst = pysat.Instrument('pysat', 'testing', '10', 'clean')
+        self.testInst = pysat.Instrument('pysat', 'testing', '10', 
+                                         clean_level='clean',
+                                         update_files=True)
 
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''
@@ -119,6 +121,8 @@ class TestBasics:
         testIn.load(2009,1)
 
     def test_data_padding(self):
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
         te.load(2009,1, verifyPad=True)
         assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
@@ -126,6 +130,8 @@ class TestBasics:
                                         pds.DateOffset(minutes=5)) )
             
     def test_data_padding_removal(self):
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
         te.load(2009,1)
         assert (te.data.index[0] == te.date ) & \
@@ -220,6 +226,38 @@ class TestBasics:
             dates.append(inst.date)            
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out)
+
+    def test_iterate_over_bounds_set_by_fname_via_next(self):
+        start = '01/01/09.nofile'
+        stop = '01/15/09.nofile'
+        start_d = pysat.datetime(2009,1,1)
+        stop_d = pysat.datetime(2009,1,15)
+        self.testInst.bounds = (start, stop)
+        dates = []
+        self.testInst.next()
+        dates.append(self.testInst.date) 
+        while self.testInst.date < stop_d:
+            self.testInst.next()
+            dates.append(self.testInst.date)            
+        out = pds.date_range(start_d, stop_d).tolist()
+        assert np.all(dates == out)
+
+    def test_iterate_over_bounds_set_by_fname_via_prev(self):
+        start = '01/01/09.nofile'
+        stop = '01/15/09.nofile'
+        start_d = pysat.datetime(2009,1,1)
+        stop_d = pysat.datetime(2009,1,15)
+        self.testInst.bounds = (start, stop)
+        dates = []
+        self.testInst.prev()
+        dates.append(self.testInst.date) 
+        while self.testInst.date > start_d:
+            self.testInst.prev()
+            dates.append(self.testInst.date)            
+        out = pds.date_range(start_d, stop_d).tolist()
+        print out
+        print dates
+        assert np.all(dates == out[::-1])
 
     def test_set_bounds_by_fname_season(self):
         start = ['01/01/09.nofile', '02/01/09.nofile']

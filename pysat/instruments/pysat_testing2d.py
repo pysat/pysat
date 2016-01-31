@@ -14,7 +14,7 @@ meta = pysat.Meta()
 meta['uts'] = {'units':'s', 'long_name':'Universal Time'}
 meta['mlt'] = {'units':'hours', 'long_name':'Magnetic Local Time'}
 meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
-
+meta['profiles'] = {'units':'', 'long_name':'profiles'}
         
 def init(self):
     self.new_thing=True        
@@ -26,7 +26,7 @@ def load(fnames, tag=None, sat_id=None):
     month = int(parts[-3])
     day = int(parts[-2])
     date = pysat.datetime(yr,month,day)
-    num = 86400 #int(tag)
+    num = 864 #int(tag)
     uts = np.arange(num)
     data = pysat.DataFrame(uts, columns=['uts'])
 
@@ -42,9 +42,15 @@ def load(fnames, tag=None, sat_id=None):
     uts_root = np.mod(time_delta.total_seconds()+20, 5820)
     data['slt'] = np.mod(uts_root+np.arange(num), 5820)*(24./5820.)
 
-    index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq='S')
+    index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq='100S')
     data.index=index
     data.index.name = 'time'
+    
+    profiles = []
+    for time in data.index:
+        profiles.append(pds.DataFrame(data.ix[0:50,'mlt'].copy(), index = data.index[0:50]))
+    data['profiles'] = pds.DataFrame({'density':profiles}, index=data.index)
+    
     return data, meta.copy()
 
 def list_files(tag=None, sat_id=None, data_path=None):

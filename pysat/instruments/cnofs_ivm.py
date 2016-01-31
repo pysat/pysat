@@ -56,7 +56,7 @@ def load(fnames, tag=None, sat_id=None):
         meta = pysat.Meta()
         for key in cdf.iterkeys():
             if key not in ['ECISC_matrix','ECISC_index', 'ECISC_index1',
-                           'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']:
+                        'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']:
                 data[key] = cdf[key][...]
             try:
                 meta[key] = {'units':cdf[key].attrs['UNITS'],
@@ -67,8 +67,9 @@ def load(fnames, tag=None, sat_id=None):
         # matrices have storage issues (double split intwo two floats),
         # defer issue and drop for now
         epoch = data.pop('Epoch')
+        cdf.close()
     data = pysat.DataFrame(data, index=epoch)
-    cdf.close()
+    #
     return data, meta
 
 def default(ivm):

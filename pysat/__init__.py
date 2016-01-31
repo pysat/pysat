@@ -10,7 +10,7 @@ if not os.path.isdir(os.path.join(os.getenv('HOME'), '.pysat')):
     os.mkdir(os.path.join(os.getenv('HOME'), '.pysat'))
     with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'),'w') as f:
         f.write('')
-        f.close()
+        #f.close()
     data_dir=''
 else:
     # load up stored data path
@@ -18,7 +18,7 @@ else:
         data_dir = f.readline()
     if data_dir == '':
         print('Run pysat.utils.set_data_dir to set the path to top-level directory containing science data.')
-del f
+#del f
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils

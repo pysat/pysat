@@ -105,7 +105,8 @@ class Files(object):
             # construct subdirectory path
             self.sub_dir_path = self.directory_format.format(name=self._sat.name,
                                      platform=self._sat.platform,
-                                     tag=self._sat.tag)
+                                     tag=self._sat.tag,
+                                     sat_id=self._sat.sat_id)
             #self.sub_dir_path = os.path.join(self._sat.platform, 
             #                                 self._sat.name, self._sat.tag)
 
