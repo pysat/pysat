@@ -9,6 +9,16 @@ import pysat.instruments.pysat_testing
 import numpy as np
 import os
 
+import sys
+if sys.version_info[0] >= 3:
+    if sys.version_info[1] < 4:
+        import imp
+        re_load = imp.reload
+    else:
+        import importlib
+        re_load = importlib.reload
+else:
+    re_load = reload
 
 def prep_dir(inst=None):
     import os
@@ -236,7 +246,7 @@ class TestBasics:
 
         pysat.instruments.pysat_testing.list_files = list_files
         inst = pysat.Instrument(platform='pysat', name='testing', update_files=True)
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         assert(inst.files.files.empty)
         
     def test_instrument_has_files(self):
@@ -253,7 +263,7 @@ class TestBasics:
         dates = pysat.utils.season_date_range(start, stop, freq='100min')
         pysat.instruments.pysat_testing.list_files = list_files
         inst = pysat.Instrument(platform='pysat', name='testing', update_files=True)
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         assert (np.all(inst.files.files.index == dates))
 
 
@@ -265,7 +275,7 @@ class TestInstrumentWithFiles:
         prep_dir()
         # create a test instrument, make sure it is getting files fmor filesystem
         #import pysat.instruments.pysat_testing
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         #self.stored_files_fcn = pysat.instruments.pysat_testing.list_files
         pysat.instruments.pysat_testing.list_files = list_files
         # create a bunch of files by year and doy
@@ -287,8 +297,8 @@ class TestInstrumentWithFiles:
         prep_dir(self.testInst)
         del self.testInst
         #pysat.instruments.pysat_testing = self.stored_files_fcn
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
+        re_load(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 

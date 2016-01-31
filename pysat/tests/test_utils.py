@@ -9,6 +9,16 @@ import pysat.instruments.pysat_testing
 import numpy as np
 import os
 
+import sys
+if sys.version_info[0] >= 3:
+    if sys.version_info[1] < 4:
+        import imp
+        re_load = imp.reload
+    else:
+        import importlib
+        re_load = importlib.reload
+else:
+    re_load = reload
 
 def prep_dir(inst=None):
     import os
@@ -193,7 +203,7 @@ class TestBasics:
         except:
             pass
             
-        reload(pysat)
+        re_load(pysat)
         
         try:
             if saved:
