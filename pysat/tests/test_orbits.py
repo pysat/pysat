@@ -1,3 +1,4 @@
+import numpy as np
 import pysat
 import pandas as pds
 from nose.tools import assert_raises, raises
@@ -16,6 +17,34 @@ class TestOrbits:
         '''Runs after every method to clean up previous testing.'''
         del self.testInst 
     
+    def test_single_orbit_call_by_0_index(self):
+        self.testInst.load(2009,1)
+        self.testInst.orbits[0]
+        ans = (self.testInst.data.index[0] == pds.datetime(2009,1,1))
+        ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1,1,36,59) ))
+        # print (ans,ans2)
+        # print (self.testInst.data.index[0], self.testInst.data.index[-1])
+        assert ans & ans2
+
+    def test_single_orbit_call_by_negative_1_index(self):
+        self.testInst.load(2008,366)
+        self.testInst.orbits[-1]
+        ans = (self.testInst.data.index[0] == (pds.datetime(2009,1,1)-relativedelta(hours=1, minutes=37)) )
+        ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1)-relativedelta(seconds=1) ))
+        assert ans & ans2
+
+    def test_all_single_orbit_calls_in_day(self):
+        self.testInst.load(2009,1)
+        ans = []; ans2=[];
+        for i,inst in enumerate(self.testInst.orbits):
+            if i > 15:
+                break
+            ans.append(self.testInst.data.index[0] == (pds.datetime(2009,1,1)+i*relativedelta(hours=1, minutes=37)))
+            ans2.append(self.testInst.data.index[-1] == (pds.datetime(2009,1,1)+(i+1)*relativedelta(hours=1, minutes=37) -
+                                                         relativedelta(seconds=1) ))
+        assert np.all(ans) & np.all(ans2)
+        
+                        
     def test_single_orbit_call_orbit_starts_0_UT_using_next(self):
         self.testInst.load(2009,1)
         self.testInst.orbits.next()

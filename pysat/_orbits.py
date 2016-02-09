@@ -118,7 +118,10 @@ class Orbits(object):
             
         """
         # hack included so that orbits appear to be zero indexed
-        self.load(key-1)
+        if key < 0:
+            self.load(key)
+        else:
+            self.load(key+1)
 
     def _reset(self):
         # create null arrays for storing orbit info
@@ -342,7 +345,8 @@ class Orbits(object):
 
         if self.orbit_index is None:
             raise ValueError('Orbit properties must be defined at ' +
-                             'pysat.Instrument object instantiation. See Instrument docs.')
+                             'pysat.Instrument object instantiation.' + 
+                             'See Instrument docs.')
         else:
             try:
                 self.sat[self.orbit_index]
