@@ -117,8 +117,8 @@ class Orbits(object):
         A day of data must already be loaded.
             
         """
-
-        self.load(key)
+        # hack included so that orbits appear to be zero indexed
+        self.load(key-1)
 
     def _reset(self):
         # create null arrays for storing orbit info
@@ -424,7 +424,7 @@ class Orbits(object):
                     self.sat.data = self._fullDayData[self._orbit_breaks[orbit - 1]:]
                     self.current = orbit  # recent addition, wondering why it wasn't there before, could just be a bug
                 elif orbit == 0:
-                    raise ValueError('Orbits start at 1, 0 not allowed')
+                    raise ValueError('Orbits internally indexed by 1, 0 not allowed')
                 else:
                     # gone too far
                     self.sat.data = []
@@ -486,7 +486,8 @@ class Orbits(object):
                     except StopIteration:
                         # print 'going for basic orbit'
                         self._getBasicOrbit(orbit=1)
-                        print('Loaded Orbit:%i' % self.current)
+                        # includes hack to appear to be zero indexed
+                        print('Loaded Orbit:%i' % self.current - 1)
                         # check if the first orbit is also the last orbit
 
                 elif orbit == self.num:
@@ -502,7 +503,8 @@ class Orbits(object):
                 elif orbit < self.num:
                     # load orbit data into data
                     self._getBasicOrbit(orbit)
-                    print('Loaded Orbit:%i' % self.current)
+                    # includes hack to appear to be zero indexed
+                    print('Loaded Orbit:%i' % (self.current - 1))
 
                 else:
                     # gone too far
@@ -561,7 +563,8 @@ class Orbits(object):
                     except StopIteration:
                         pass
                     del temp_orbit_data
-                print('Loaded Orbit:%i' % self.current)
+                # includes hack to appear to be zero indexed
+                print('Loaded Orbit:%i' % (self.current - 1))
 
             elif self.current == (self.num):
                 # at the last orbit, need to be careful about getting the next orbit
@@ -607,7 +610,8 @@ class Orbits(object):
                     self._getBasicOrbit(orbit=1)
 
                 del temp_orbit_data
-                print('Loaded Orbit:%i' % self.current)
+                # includes hack to appear to be zero indexed
+                print('Loaded Orbit:%i' % (self.current - 1))
 
             elif self.current == 0:
                 # no current orbit set, grab the first one
@@ -618,7 +622,8 @@ class Orbits(object):
             elif self.current < (self.num - 1):
                 # since we aren't close to the last orbit, just pull the next orbit
                 self._getBasicOrbit(orbit=self.current + 1)
-                print('Loaded Orbit:%i' % self.current)
+                # includes hack to appear to be zero indexed
+                print('Loaded Orbit:%i' % (self.current - 1))
 
             else:
                 raise Exception(
@@ -697,7 +702,8 @@ class Orbits(object):
             else:
                 raise Exception(
                     'You ended up where noone should ever be. Talk to someone about this fundamental failure.')
-            print('Loaded Orbit:%i' % self.current)
+            # includes hack to appear to be zero indexed
+            print('Loaded Orbit:%i' % (self.current - 1))
         else:
             # no data
             while len(self.sat.data) == 0:
