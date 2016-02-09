@@ -45,6 +45,20 @@ class TestOrbits:
         assert np.all(ans) & np.all(ans2)
         
                         
+    def test_orbit_next_call_no_loaded_data(self):
+        self.testInst.orbits.next()
+        ans = (self.testInst.data.index[0] == pds.datetime(2008,1,1))
+        #ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1,1,36,59) ))
+
+        assert ans 
+
+    def test_orbit_prev_call_no_loaded_data(self):
+        self.testInst.orbits.prev()
+        ans = (self.testInst.data.index[-1] == pds.datetime(2010,12,31,23,59,59))
+        #ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1,1,36,59) ))
+
+        assert ans 
+
     def test_single_orbit_call_orbit_starts_0_UT_using_next(self):
         self.testInst.load(2009,1)
         self.testInst.orbits.next()
@@ -57,8 +71,8 @@ class TestOrbits:
     def test_single_orbit_call_orbit_starts_0_UT_using_prev(self):
         self.testInst.load(2009,1)
         self.testInst.orbits.prev()
-        ans = (self.testInst.data.index[0] == (pds.datetime(2009,1,1)-relativedelta(hours=1, minutes=37)) )
-        ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1)-relativedelta(seconds=1) ))
+        ans = (self.testInst.data.index[0] == (pds.datetime(2009,1,1)+14*relativedelta(hours=1, minutes=37)) )
+        ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1)+15*relativedelta(hours=1, minutes=37)-relativedelta(seconds=1) ))
         assert ans & ans2
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_next(self):
@@ -73,8 +87,8 @@ class TestOrbits:
     def test_single_orbit_call_orbit_starts_off_0_UT_using_prev(self):
         self.testInst.load(2008,366)
         self.testInst.orbits.prev()
-        ans = (self.testInst.data.index[0] == (pds.datetime(2008,12,30, 23, 45)-relativedelta(hours=1, minutes=37)) )
-        ans2 = (self.testInst.data.index[-1] == (pds.datetime(2008,12,30, 23, 45)-relativedelta(seconds=1) ))
+        ans = (self.testInst.data.index[0] == (pds.datetime(2009,1,1)-relativedelta(hours=1, minutes=37)) )
+        ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1)-relativedelta(seconds=1) ))
         assert ans & ans2
 
     def test_repeated_orbit_calls_symmetric_single_day_0_UT(self):

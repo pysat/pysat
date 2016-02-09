@@ -151,19 +151,23 @@ class Orbits(object):
         """
 
         if self.orbit_index is None:
-            try:
-                self.sat['slt']
-                self.orbit_index = 'slt'
-            except ValueError:
-                try:
-                    self.sat['mlt']
-                    self.orbit_index = 'mlt'
-                except ValueError:
-                    try:
-                        self.sat['glong']
-                        self.orbit_index = 'glong'
-                    except ValueError:
-                        raise ValueError('Unable to find a valid index (slt/mlt/glong) for determining orbits.')
+            raise ValueError('Orbit properties must be defined at ' +
+                             'pysat.Instrument object instantiation.' + 
+                             'See Instrument docs.')
+
+            #try:
+            #    self.sat['slt']
+            #    self.orbit_index = 'slt'
+            #except ValueError:
+            #    try:
+            #        self.sat['mlt']
+            #        self.orbit_index = 'mlt'
+            #    except ValueError:
+            #        try:
+            #            self.sat['glong']
+            #            self.orbit_index = 'glong'
+            #        except ValueError:
+            #            raise ValueError('Unable to find a valid index (slt/mlt/glong) for determining orbits.')
         else:
             try:
                 self.sat[self.orbit_index]
@@ -248,12 +252,15 @@ class Orbits(object):
 
         """
         if self.orbit_index is None:
-            try:
-                self.sat['glong']
-                self.orbit_index = 'glong'
-            except ValueError:
-                raise ValueError(''.join(('Unable to find a valid index',
-                                          'for determining orbits. Provide one in orbit_index')))
+            raise ValueError('Orbit properties must be defined at ' +
+                             'pysat.Instrument object instantiation.' + 
+                             'See Instrument docs.')
+            #try:
+            #    self.sat['glong']
+            #    self.orbit_index = 'glong'
+            #except ValueError:
+            #    raise ValueError(''.join(('Unable to find a valid index',
+            #                              'for determining orbits. Provide one in orbit_index')))
         else:
             try:
                 self.sat[self.orbit_index]
@@ -491,7 +498,7 @@ class Orbits(object):
                         # print 'going for basic orbit'
                         self._getBasicOrbit(orbit=1)
                         # includes hack to appear to be zero indexed
-                        print('Loaded Orbit:%i' % self.current - 1)
+                        print('Loaded Orbit:%i' % (self.current - 1))
                         # check if the first orbit is also the last orbit
 
                 elif orbit == self.num:
@@ -642,7 +649,7 @@ class Orbits(object):
             self.next()
 
     def prev(self, *arg, **kwarg):
-        """Load the next orbit into .data.
+        """Load the previous orbit into .data.
 
         Note
         ----
@@ -661,7 +668,7 @@ class Orbits(object):
                 # load orbit and put it into self.sat.data
                 self._getBasicOrbit(orbit=self.current - 1)
 
-            # if current orbit near the last, must be careful
+            # if current orbit near the first, must be careful
             elif self.current == 2:
                 # first, load prev orbit data
                 self._getBasicOrbit(orbit=self.current - 1)
@@ -687,7 +694,11 @@ class Orbits(object):
                     pass
 
                 del temp_orbit_data
-
+                
+            elif self.current == 0:
+                self.load(orbit=-1)
+                return
+                
             elif self.current < 2:
                 # first, load next orbit data
                 self._getBasicOrbit(orbit=1)
