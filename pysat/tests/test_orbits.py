@@ -36,15 +36,17 @@ class TestOrbits:
     def test_all_single_orbit_calls_in_day(self):
         self.testInst.load(2009,1)
         ans = []; ans2=[];
+        self.testInst.bounds= (pysat.datetime(2009,1,1), None)
         for i,inst in enumerate(self.testInst.orbits):
-            if i > 15:
+            if i > 14:
                 break
+
             ans.append(self.testInst.data.index[0] == (pds.datetime(2009,1,1)+i*relativedelta(hours=1, minutes=37)))
             ans2.append(self.testInst.data.index[-1] == (pds.datetime(2009,1,1)+(i+1)*relativedelta(hours=1, minutes=37) -
                                                          relativedelta(seconds=1) ))
+
         assert np.all(ans) & np.all(ans2)
-        
-                        
+
     def test_orbit_next_call_no_loaded_data(self):
         self.testInst.orbits.next()
         ans = (self.testInst.data.index[0] == pds.datetime(2008,1,1))
