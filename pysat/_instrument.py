@@ -984,7 +984,7 @@ class Instrument(object):
                         obj_dim_names.append(key+'_dim_%i' % (i+1))
                         out_data.createDimension(obj_dim_names[-1], dim)
                     var_dim = tuple(['time']+obj_dim_names)
-                    print (var_dim)
+                    #print (key, var_dim)
                     # iterate over columns and store
                     try:
                         iterable = self[key].iloc[0].columns
