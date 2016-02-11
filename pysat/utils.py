@@ -13,6 +13,32 @@ except NameError:
 
 from pysat import DataFrame, Series, datetime, Panel
 
+def computational_form(data):
+    """
+    Input Series of numbers, Series, or DataFrames repackaged
+    for calculation.
+    
+    Parameters
+    ----------
+    data : pandas.Series
+        Series of numbers, Series, DataFrames
+
+    Returns
+    -------
+    pandas.Series, DataFrame, or Panel
+        repacked data, aligned by indices, ready for calculation
+        
+    """
+
+    if isinstance(data.iloc[0], DataFrame):
+        dslice = Panel.from_dict(dict([(i,data.iloc[i]) for i in xrange(len(data))]))
+    elif isinstance(data.iloc[0], Series):
+        dslice = DataFrame(data.tolist())
+        dslice.index = data.index
+    else:
+        dslice = data
+    return dslice
+
 def set_data_dir(path=None, store=None):
     """
     Set the top level directory pysat uses to look for data and reload.
