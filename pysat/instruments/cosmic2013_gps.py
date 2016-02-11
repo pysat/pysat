@@ -113,14 +113,14 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
                 for key in keys:
                     meta[key] = {'units':data.variables[key].units, 
                                 'long_name':data.variables[key].long_name} 
-                #ncattrsList = data.ncattrs()
+                # ncattrsList = data.ncattrs()
                 ncattrsList = data._attributes.keys()
                 for d in ncattrsList:
                     meta[d] = {'units':'', 'long_name':d}
                 repeat = False                  
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind
-                ind+=1
+                ind += 1
                                     
         return output, meta
     else:
@@ -143,19 +143,23 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     for (i,file) in enumerate(files):
         try:
             #data = netCDF4.Dataset(file)    
-            data = netcdf_file(file, mode='r', mmap=False) 
+            data = netcdf_file(file, mode='r', mmap=True) 
             # build up dictionary will all ncattrs
             new = {} 
             # get list of file attributes
             #ncattrsList = data.ncattrs()
             ncattrsList = data._attributes.keys()
             for d in ncattrsList:
-                new[d] = data._attributes[d] #data.getncattr(d)            
+                new[d] = data._attributes[d] #data.getncattr(d)
             # load all of the variables in the netCDF
             loadedVars={}
             keys = data.variables.keys()
             for key in keys:
-                loadedVars[key] = data.variables[key][:]               
+                if data.variables[key][:].dtype.byteorder != '=':
+                    loadedVars[key] = data.variables[key][:].byteswap().newbyteorder().copy()
+                else:
+                    loadedVars[key] = data.variables[key][:].copy()
+
             new['profiles'] = pysat.DataFrame(loadedVars)
                     
             output[i] = new   
