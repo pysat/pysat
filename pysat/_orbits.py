@@ -743,6 +743,21 @@ class Orbits(object):
         Limits of iteration set by setting inst.bounds.
 
         """
+        # load up the first increment of data
+        # coupling with Instrument frame is high, but it is already
+        # high in a number of areas
+        if self.sat._iter_type == 'file':
+            for fname in self.sat._iter_list:
+                self.sat.load(fname=fname)
+                break       
+ 
+        elif self.sat._iter_type == 'date':
+            for date in self.sat._iter_list:
+                self.sat.load(date=date)
+                break    
+        else:
+            raise ValueError('Iteration type not set')
+                    
         while True:
             self.next()
             yield self.sat
