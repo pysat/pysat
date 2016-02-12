@@ -295,19 +295,19 @@ class Instrument(object):
         else:
             if isinstance(key, tuple):
                 self.data.ix[key[0], key[1]] = new
-                if key[1] not in self.meta.data.index:
-                    self.meta[key[1]] = {'long_name': key, 'units': ''}
+                #if key[1] not in self.meta:#.data.index:
+                self.meta[key[1]] = {}#{'long_name': key, 'units': ''}
             elif isinstance(key, str):
                 self.data[key] = new  
-                if key not in self.meta.data.index:   
+                #if key not in self.meta:#.data.index:   
                     # add in default metadata because none was supplied
-                    self.meta[key] = {'long_name': key, 'units': ''}
+                self.meta[key] = {}#{'long_name': key, 'units': ''}
             elif isinstance(new, DataFrame):
                 self.data[key] = new[key]
                 for ke in key:
-                    if ke not in self.meta.data.index:   
+                    #if ke not in self.meta.data.index:   
                         # add in default metadata because none was supplied
-                        self.meta[ke] = {'long_name': ke, 'units': ''}
+                    self.meta[ke] = {}#{'long_name': ke, 'units': ''}
             else:
                 raise ValueError("No support for supplied input key")           
     
