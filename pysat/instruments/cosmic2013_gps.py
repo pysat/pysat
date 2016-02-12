@@ -103,6 +103,7 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
         # make sure UTS strictly increasing
         output.sort(inplace=True)
         # use the first available file to pick out meta information
+        profile_meta = pysat.Meta()
         meta = pysat.Meta()
         ind = 0
         repeat = True
@@ -111,7 +112,7 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
                 data = netcdf_file(cosmicFiles[ind], mode='r', mmap=False) 
                 keys = data.variables.keys()
                 for key in keys:
-                    meta[key] = {'units':data.variables[key].units, 
+                    profile_meta[key] = {'units':data.variables[key].units,
                                 'long_name':data.variables[key].long_name} 
                 # ncattrsList = data.ncattrs()
                 ncattrsList = data._attributes.keys()
@@ -121,7 +122,7 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind
                 ind += 1
-                                    
+        meta['profiles'] = profile_meta
         return output, meta
     else:
         # no data
