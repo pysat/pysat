@@ -35,12 +35,21 @@ class Meta(object):
         
     """
     def __init__(self, metadata=None):
-        self.replace(metadata=metadata)  
+        self.replace(metadata=metadata)
+        self.ho_data = {}
 
     def __eq__(self, other):
         if type(other) is type(self):
             return self.__dict__ == other.__dict__
-        return False    
+        else:
+            return False
+
+    def __contains__(self, other):
+        if other in self.data.index:
+            return True
+        if other in self.ho_data.keys():
+            return True
+        return False
 
     def copy(self):
         from copy import deepcopy as deepcopy
@@ -68,41 +77,70 @@ class Meta(object):
         """
         
         if isinstance(value,dict):
-            if 'units' not in value.keys():
-                if name not in self.data.index:
-                    value['units'] = ''
-                else:
-                    value['units'] = self.data.ix[name,'units']
+            # check if dict empty
+            if value.keys() == []:
+                if name in self:
+                    return
+                # otherwise, continue on and set defaults
 
-            if 'long_name' not in value.keys():
-                if name not in self.data.index:
-                    # only set default if name not already in meta
-                    value['long_name'] = name  
-                else:
-                    value['long_name'] = self.data.ix[name, 'long_name']
-                
-            # if hasattr(value[value.keys()[0]], '__iter__' ):
-            if not isinstance(name, basestring): #hasattr(name, '__iter__' ):
-                # an iterable of things         
-                for key in value.keys():
-                    if len(name) != len(value[key]):
-                        raise ValueError('Length of names and inputs must be equal.')
-                new = DataFrame(value, index=name)
-                self.data = self.data.append(new) 
-            else:
+            # if not passed an iterable, make it one
+            if isinstance(name, basestring):
+                name = [name]
                 for key in value.keys():
                     value[key] = [value[key]]
-                new = DataFrame(value, index=[name])
 
-                if name in self.data.index:
-                    self.data = self.data.drop(name)
-                    self.data = self.data.append(new)
+            # if len(name) != len(value):
+            #     raise ValueError('Length of names and all inputs must be equal.')
+
+            for key in value.keys():
+                if len(name) != len(value[key]):
+                    raise ValueError('Length of names and inputs must be equal.')
+
+            if 'meta' in value.keys():
+                # process higher order stuff first
+                # multiple assignment, check length is appropriate
+                pop_list = []
+                for item, val in zip(name, value['meta']):
+                    if val is not None:
+                        self[item] = val
+                        pop_list.append(item)
+                for item in pop_list:
+                    value = value.pop(item)
+
+            if 'units' not in value.keys():
+                # provide default value, or copy existing
+                value['units'] = []
+                for item_name in name:
+                    if item_name not in self:
+                        value['units'].append('')
+                    else:
+                        value['units'].append(self.data.ix[item_name,'units'])
+
+            if 'long_name' not in value.keys():
+                # provide default value, or copy existing
+                value['long_name'] = []
+                for item_name in name:
+                    if item_name not in self:
+                        value['long_name'].append(item_name)
+                    else:
+                        value['long_name'].append(self.data.ix[item_name,'long_name'])
+
+            new = DataFrame(value, index=name)
+            for item_name,item in new.iterrows():
+                if item_name not in self:
+                    self.data = self.data.append(item)
                 else:
-                    self.data = self.data.append(new)
-                
-        if isinstance(value, Series):
+                    # info already exists, update with new info
+                    for item_key in item.keys():
+                        self.data.ix[item_name,item_key] = item[item_key]
+
+        elif isinstance(value, Series):
             self.data.ix[name] = value
-        
+
+        elif isinstance(value, Meta):
+            # dealing with higher order data set
+            self.ho_data[name] = value
+
     def __getitem__(self,key):
         """Convenience method for obtaining metadata.
         
@@ -115,7 +153,10 @@ class Meta(object):
             print(meta['name'])
         
         """
-        return self.data.ix[key]
+        if key in self.ho_data.keys():
+            return self.ho_data[key]
+        else:
+            return self.data.ix[key]
         
     def replace(self, metadata=None):
         """Replace stored metadata with input data.
@@ -132,7 +173,7 @@ class Meta(object):
             if isinstance(metadata, DataFrame):
                 self.data = metadata
             else:
-                raise ValueError("Input must be a pandas DataFrame type."+
+                raise ValueError("Input must be a pandas DataFrame type. "+
                             "See other constructors for alternate inputs.")
             
         else:
@@ -176,7 +217,6 @@ class Meta(object):
         elif not os.path.isfile(name):
                 # Not a real file, assume input is a pysat instrument name
                 # and look in the standard pysat location.
-
                 test =  os.path.join(pysat.__path__[0],'instruments',name)
                 if os.path.isfile(test):
                     name = test
@@ -199,12 +239,12 @@ class Meta(object):
         else:
             raise ValueError('Unable to retrieve information from ' + name)
         
-    @classmethod
-    def from_nc():
-        """not implemented yet, load metadata from netCDF"""
-        pass
-        
-    @classmethod
-    def from_dict():
-        """not implemented yet, load metadata from dict of items/list types"""
-        pass
+    # @classmethod
+    # def from_nc():
+    #     """not implemented yet, load metadata from netCDF"""
+    #     pass
+    #
+    # @classmethod
+    # def from_dict():
+    #     """not implemented yet, load metadata from dict of items/list types"""
+    #     pass
