@@ -51,6 +51,20 @@ class Meta(object):
             return True
         return False
 
+    def __repr__(self):
+        # cover 1D parameters
+        output_str = 'Metadata for 1D parameters\n'
+        # print('Metadata for 1D parameters')
+        # print(self.data)
+        output_str += self.data.__repr__()
+        output_str += '\n'
+        for item_name in self.ho_data.keys():
+            output_str += '\n\n'
+            output_str += 'Metadata for '+item_name+'\n'
+            # print(self.ho_data[item_name].data)
+            output_str += self.ho_data[item_name].data.__repr__()
+        return output_str
+
     def copy(self):
         from copy import deepcopy as deepcopy
         """Deep copy of the meta object."""
