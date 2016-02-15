@@ -31,8 +31,8 @@ import pandas as pds
 import numpy as np
 
 import pysat
-from spacepy import pycdf
-import pysatCDF
+
+
 #import cdf
 
 def list_files(tag=None, sat_id=None, data_path=None):
@@ -53,6 +53,7 @@ def load(fnames, tag=None, sat_id=None):
         return pysat.DataFrame(None), pysat.Meta(None)
     else:
         if sat_id != 'pysatcdf':
+            from spacepy import pycdf
             cdf = pycdf.CDF(fnames[0])
             data = {}
             meta = pysat.Meta()
@@ -71,6 +72,7 @@ def load(fnames, tag=None, sat_id=None):
             epoch = data.pop('Epoch')
             cdf.close()
         else:
+            import pysatCDF
             meta = pysat.Meta()
             cdf = pysatCDF.cdf.CDF(fnames[0])
             #return cdf.to_pysat()
