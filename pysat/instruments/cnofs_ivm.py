@@ -32,13 +32,14 @@ import numpy as np
 
 import pysat
 from spacepy import pycdf
+import pysatCDF
 #import cdf
 
 def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
     if tag is not None:
-        if tag == '':
+        if (tag == '') or (tag == 'pysatcdf'):
             return pysat.Files.from_os(data_path=data_path, 
                 format_str='cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf')
         else:
@@ -51,23 +52,41 @@ def load(fnames, tag=None, sat_id=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
     else:
-        cdf = pycdf.CDF(fnames[0])
-        data = {}
-        meta = pysat.Meta()
-        for key in cdf.iterkeys():
-            if key not in ['ECISC_matrix','ECISC_index', 'ECISC_index1',
-                        'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']:
-                data[key] = cdf[key][...]
-            try:
-                meta[key] = {'units':cdf[key].attrs['UNITS'],
-                            'long_name':cdf[key].attrs['LABLAXIS'],
-                            'description':cdf[key].attrs['CATDESC']}
-            except KeyError:
-                pass
-        # matrices have storage issues (double split intwo two floats),
-        # defer issue and drop for now
-        epoch = data.pop('Epoch')
-        cdf.close()
+        if sat_id != 'pysatcdf':
+            cdf = pycdf.CDF(fnames[0])
+            data = {}
+            meta = pysat.Meta()
+            for key in cdf.iterkeys():
+                if key not in ['ECISC_matrix','ECISC_index', 'ECISC_index1',
+                            'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']:
+                    data[key] = cdf[key][...]
+                try:
+                    meta[key] = {'units':cdf[key].attrs['UNITS'],
+                                'long_name':cdf[key].attrs['LABLAXIS'],
+                                'description':cdf[key].attrs['CATDESC']}
+                except KeyError:
+                    pass
+            # matrices have storage issues (double split intwo two floats),
+            # defer issue and drop for now
+            epoch = data.pop('Epoch')
+            cdf.close()
+        else:
+            meta = pysat.Meta()
+            cdf = pysatCDF.cdf.CDF(fnames[0])
+            #return cdf.to_pysat()
+            drops = ['ECISC_matrix','ECISC_index', 'ECISC_index1',
+                            'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']
+            for item in cdf.meta.keys():
+                if item not in drops:
+                    pass
+                    #meta[item] = cdf.attributes[item]
+                else:
+                  cdf.data.pop(item)
+            meta = pysat.Meta(pysat.DataFrame.from_dict(cdf.meta, 
+                                                        orient = 'index'))
+            data = cdf.data
+            epoch = data.pop('Epoch')    
+            
     data = pysat.DataFrame(data, index=epoch)
     #
     return data, meta
