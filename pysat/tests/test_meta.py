@@ -22,6 +22,21 @@ class TestBasics:
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
         assert (self.meta['new'].units == 'hey') & (self.meta['new'].long_name == 'boo')
 
+    def test_basic_meta_assignment_w_Series(self):
+        self.meta['new'] = pds.Series({'units':'hey', 'long_name':'boo'})
+        assert (self.meta['new'].units == 'hey') & (self.meta['new'].long_name == 'boo')
+
+    def test_multiple_meta_assignment(self):
+        self.meta[['new','new2']] = {'units':['hey', 'hey2'], 'long_name':['boo', 'boo2']}
+        assert ((self.meta['new'].units == 'hey') & (self.meta['new'].long_name == 'boo') &
+               (self.meta['new2'].units == 'hey2') & (self.meta['new2'].long_name == 'boo2'))
+
+    @raises(ValueError)
+    def test_multiple_meta_assignment_error(self):
+        self.meta[['new','new2']] = {'units':['hey', 'hey2'], 'long_name':['boo']}
+        assert ((self.meta['new'].units == 'hey') & (self.meta['new'].long_name == 'boo') &
+               (self.meta['new2'].units == 'hey2') & (self.meta['new2'].long_name == 'boo2'))
+
     def test_replace_meta_units(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
         self.meta['new'] = {'units':'yep'}
@@ -64,12 +79,15 @@ class TestBasics:
         assert ((self.meta['new'].units == 'hey') & 
                 (self.meta['new'].long_name == 'boo') &
                 (self.meta['new'].description == 'boohoo'))
-                                                                                                                                                                                                                        
 
     def test_meta_equality(self):
         
         assert self.testInst.meta == self.testInst.meta  
-          
+
+    def test_false_meta_equality(self):
+
+        assert not (self.testInst.meta == self.testInst)
+
     #def test_replace_meta_units_list(self):
     #    self.meta['new'] = {'units':'hey', 'long_name':'boo'}
     #    self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}

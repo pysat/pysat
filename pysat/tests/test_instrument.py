@@ -162,7 +162,19 @@ class TestBasics:
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
-        
+
+    def test_setting_partial_data_by_name(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst[0,'doubleMLT'] = 0
+        assert np.all(self.testInst[1:,'doubleMLT'] == 2.*self.testInst[1:,'mlt']) & (self.testInst[0,'doubleMLT'] == 0)
+
+    def test_setting_partial_slice_data_by_name(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst[0:10,'doubleMLT'] = 0
+        assert np.all(self.testInst[10:,'doubleMLT'] == 2.*self.testInst[10:,'mlt']) & np.all(self.testInst[0:10,'doubleMLT'] == 0)
+                        
     def test_set_bounds_by_date(self):
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,15)
