@@ -74,7 +74,7 @@ def load(fnames, tag=None, sat_id=None):
         else:
             import pysatCDF
             meta = pysat.Meta()
-            cdf = pysatCDF.cdf.CDF(fnames[0])
+            cdf = pysatCDF.CDF(fnames[0])
             #return cdf.to_pysat()
             drops = ['ECISC_matrix','ECISC_index', 'ECISC_index1',
                             'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']
