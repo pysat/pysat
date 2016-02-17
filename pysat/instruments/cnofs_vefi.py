@@ -31,9 +31,9 @@ import numpy as np
 import pysat
 import sys
 
-import spacepy
-from spacepy import pycdf
-import pysat
+#import spacepy
+#from spacepy import pycdf
+import pysatCDF
 
 
 def list_files(tag=None, sat_id=None, data_path=None):
@@ -52,25 +52,28 @@ def load(fnames, tag=None, sat_id=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), None
     else:
-        try:
-            cdf = pycdf.CDF(fnames[0])
-        except pycdf.CDFError:
-            return pysat.DataFrame(), pysat.Meta()
-            
-        data = {}
-        meta = pysat.Meta()
-        for key in cdf.iterkeys():
-            data[key] = cdf[key][...]
-            try:             
-                meta[key] = {'units':cdf[key].attrs['UNITS'],
-                            'long_name':cdf[key].attrs['LABLAXIS'], 
-                            'description':cdf[key].attrs['CATDESC']} 
-                #meta[key] = {'description':cdf[key].attrs['VAR_NOTES']}          
-            except KeyError:
-                pass
-        epoch = data.pop('Epoch')
-        data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
-        return data, meta
+        
+        with pysatCDF.CDF(fnames[0]) as cdf:
+            return cdf.to_pysat()
+        #try:
+        #    cdf = pysatCDF.CDF(fnames[0])
+        #except pysatCDF.CDFError:
+        #    return pysat.DataFrame(), pysat.Meta()
+        #    
+        #data = {}
+        #meta = pysat.Meta()
+        #for key in cdf.iterkeys():
+        #    data[key] = cdf[key][...]
+        #    try:             
+        #        meta[key] = {'units':cdf[key].attrs['UNITS'],
+        #                    'long_name':cdf[key].attrs['LABLAXIS'], 
+        #                    'description':cdf[key].attrs['CATDESC']} 
+        #        #meta[key] = {'description':cdf[key].attrs['VAR_NOTES']}          
+        #    except KeyError:
+        #        pass
+        #epoch = data.pop('Epoch')
+        #data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
+        #return data, meta
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     """
