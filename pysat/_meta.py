@@ -183,9 +183,15 @@ class Meta(object):
             pysat Instrument object.
             
         """
+        import string
         if metadata is not None:
             if isinstance(metadata, DataFrame):
                 self.data = metadata
+                self.data.columns = map(string.lower, self.data.columns)
+                if 'long_name' not in self.data.columns:
+                    self.data['long_name'] = self.data.index
+                if 'units' not in self.data.columns:
+                    self.data['units'] = ''
             else:
                 raise ValueError("Input must be a pandas DataFrame type. "+
                             "See other constructors for alternate inputs.")
