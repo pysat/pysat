@@ -253,6 +253,9 @@ def download(date_array, tag, data_path=None, user=None, password=None):
         sub_dir = 'atmPrf'
     else:
         raise ValueError('Unknown cosmic_gps tag')
+    
+    if (user is None) or (password is None):
+        raise ValueError('CDAAC user account information must be provided.')
         
     for date in date_array:
         print('Downloading COSMIC data for '+date.strftime('%D'))
