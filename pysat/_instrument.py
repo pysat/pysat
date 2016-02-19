@@ -656,22 +656,7 @@ class Instrument(object):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-        
-        #try:
-        #    os.mkdir(os.path.join(data_dir, self.platform))
-        #except OSError as exception:
-        #    if exception.errno != errno.EEXIST:
-        #        raise    
-        #try:
-        #    os.mkdir(os.path.join(data_dir, self.platform, self.name))
-        #except OSError as exception:
-        #    if exception.errno != errno.EEXIST:
-        #        raise    
-        #try:
-        #    os.mkdir(self.files.data_path)
-        #except OSError as exception:
-        #    if exception.errno != errno.EEXIST:
-        #        raise
+        print('Downloading data to: ', self.files.data_path)
         date_array = utils.season_date_range(start, stop, freq=freq)
         if user is None:
             self._download_rtn(date_array,
@@ -825,7 +810,7 @@ class Instrument(object):
             stop = pysat.datetime(2009,1,31)
             inst.bounds = (start,stop)
             for inst in inst:
-            print('Another day loaded', inst.date)
+                print('Another day loaded', inst.date)
 
         """
 
