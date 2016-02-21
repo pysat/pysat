@@ -42,10 +42,8 @@ import sys
 import pandas as pds
 import numpy as np
 
-#import spacepy
-#from spacepy import pycdf
 import pysat
-import pysatCDF
+
 
 def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
@@ -66,46 +64,13 @@ def list_files(tag=None, sat_id=None, data_path=None):
             
 
 def load(fnames, tag=None, sat_id=None):
-
+    import pysatCDF
     
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), None
     else:
         with pysatCDF.CDF(fnames[0]) as cdf:
             return cdf.to_pysat()
-
-#        try:
-#            with spacepy.pycdf.CDF(fnames[0]) as temporary:
-#                omni_cdf = temporary.copy()
-#                #print ('Clean Read')
-#        except pycdf.CDFError:
-#            return pysat.DataFrame(), pysat.Meta()
-#            
-#        data = {}
-#        meta = pysat.Meta()
-#        for key in omni_cdf.iterkeys():
-#            key_low = key.lower()
-#            data[key_low] = omni_cdf[key][...]
-#            try:             
-#                meta[key_low] = {'units':omni_cdf[key].attrs['UNITS'],
-#                            'long_name':omni_cdf[key].attrs['LABLAXIS'], 
-#                            'description':omni_cdf[key].attrs['CATDESC'],
-#                            'fill_value':omni_cdf[key].attrs['FILLVAL']}
-#            except KeyError:
-#                attrs = omni_cdf[key].attrs.keys()
-#    
-#                if 'UNITS' in attrs:
-#                    meta[key_low] = {'units':omni_cdf[key].attrs['UNITS']}
-#                if 'LABLAXIS' in attrs:
-#                    meta[key_low] = {'long_name':omni_cdf[key].attrs['LABLAXIS']}
-#                if 'CATDESC' in attrs:
-#                    meta[key_low] = {'description':omni_cdf[key].attrs['CATDESC']}
-#                if 'FILLVAL' in attrs:
-#                    meta[key_low] = {'fill_value':omni_cdf[key].attrs['FILLVAL']}
-#
-#        epoch = data.pop('epoch')
-#    data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
-#    return data, meta
 
 def clean(omni):
     for key in omni.data.columns:
@@ -151,3 +116,45 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
                     print('File not available for '+ date.strftime('%D'))
     ftp.quit()
     return
+    
+    
+
+
+
+
+
+
+
+#        try:
+#            with spacepy.pycdf.CDF(fnames[0]) as temporary:
+#                omni_cdf = temporary.copy()
+#                #print ('Clean Read')
+#        except pycdf.CDFError:
+#            return pysat.DataFrame(), pysat.Meta()
+#            
+#        data = {}
+#        meta = pysat.Meta()
+#        for key in omni_cdf.iterkeys():
+#            key_low = key.lower()
+#            data[key_low] = omni_cdf[key][...]
+#            try:             
+#                meta[key_low] = {'units':omni_cdf[key].attrs['UNITS'],
+#                            'long_name':omni_cdf[key].attrs['LABLAXIS'], 
+#                            'description':omni_cdf[key].attrs['CATDESC'],
+#                            'fill_value':omni_cdf[key].attrs['FILLVAL']}
+#            except KeyError:
+#                attrs = omni_cdf[key].attrs.keys()
+#    
+#                if 'UNITS' in attrs:
+#                    meta[key_low] = {'units':omni_cdf[key].attrs['UNITS']}
+#                if 'LABLAXIS' in attrs:
+#                    meta[key_low] = {'long_name':omni_cdf[key].attrs['LABLAXIS']}
+#                if 'CATDESC' in attrs:
+#                    meta[key_low] = {'description':omni_cdf[key].attrs['CATDESC']}
+#                if 'FILLVAL' in attrs:
+#                    meta[key_low] = {'fill_value':omni_cdf[key].attrs['FILLVAL']}
+#
+#        epoch = data.pop('epoch')
+#    data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
+#    return data, meta
+

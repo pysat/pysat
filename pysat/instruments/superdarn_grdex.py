@@ -40,7 +40,6 @@ import pandas as pds
 import numpy as np
 
 import pysat
-import pydarn
 
 def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
@@ -57,6 +56,7 @@ def list_files(tag=None, sat_id=None, data_path=None):
            
 
 def load(fnames, tag=None, sat_id=None):
+    import pydarn
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames)==1:
@@ -157,6 +157,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     import sys
     import os
     import pysftp
+    import pydarn
     
     if user is None:
         user = os.environ['DBREADUSER']
@@ -187,6 +188,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
  
          
 def load_orig(fnames, tag=None):
+    import pydarn
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames)==1:
