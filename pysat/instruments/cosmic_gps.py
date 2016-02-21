@@ -33,7 +33,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 import glob
 import os
-import netCDF4
 import pandas as pds
 import numpy as np
 import pysat
@@ -86,6 +85,8 @@ def load(cosmicFiles, tag=None, sat_id=None):
     """
     cosmic data load routine, called by pysat
     """   
+    import netCDF4
+
     num = len(cosmicFiles)
     # make sure there are files to read
     if num != 0:
