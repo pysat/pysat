@@ -211,7 +211,15 @@ class Files(object):
         
 
         """
-        print("pysat is searching for the requested instrument's files.")
+        
+        output_str = '{platform} {name} {tag} {sat_id}'
+        output_str = output_str.format(platform=self._sat.platform,
+                                       name=self._sat.name, tag=self._sat.tag, 
+                                       sat_id=self._sat.sat_id)
+        output_str = "".join(("pysat is searching for ", output_str, "files."))
+        output_str = " ".join(output_str.split())
+        print (output_str)
+        
         info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id, data_path=self.data_path)
         if not info.empty:
             print('Found {ll:d} of them.'.format(ll=len(info)))
@@ -287,7 +295,7 @@ class Files(object):
             #print (fname, self.files)
             idx, = np.where(fname == self.files)
             if len(idx) == 0:
-                raise ValueError('Could not find supplied file on disk')
+                raise ValueError('Could not find file in available file list.')
         return idx
 
     # convert this to a normal get so files[in:in2] gives the same as requested here
