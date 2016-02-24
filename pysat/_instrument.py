@@ -295,19 +295,14 @@ class Instrument(object):
         else:
             if isinstance(key, tuple):
                 self.data.ix[key[0], key[1]] = new
-                #if key[1] not in self.meta:#.data.index:
-                self.meta[key[1]] = {}#{'long_name': key, 'units': ''}
+                self.meta[key[1]] = {}
             elif isinstance(key, str):
                 self.data[key] = new  
-                #if key not in self.meta:#.data.index:   
-                    # add in default metadata because none was supplied
-                self.meta[key] = {}#{'long_name': key, 'units': ''}
+                self.meta[key] = {}
             elif isinstance(new, DataFrame):
                 self.data[key] = new[key]
                 for ke in key:
-                    #if ke not in self.meta.data.index:   
-                        # add in default metadata because none was supplied
-                    self.meta[ke] = {}#{'long_name': ke, 'units': ''}
+                    self.meta[ke] = {}
             else:
                 raise ValueError("No support for supplied input key")           
     
@@ -388,7 +383,6 @@ class Instrument(object):
 
         if fid is not None:
             # get filename based off of index value
-            # remove direct access of data
             fname = self.files[fid]
         elif date is not None:
             fname = self.files[date : date+pds.DateOffset(days=1)]
@@ -406,8 +400,6 @@ class Instrument(object):
         output_str = output_str.format(platform=self.platform,
                                        name=self.name, tag=self.tag, 
                                        sat_id=self.sat_id)
-
-
         if not data.empty: 
             if not isinstance(data, DataFrame):
                 raise TypeError(string.join(('Data returned by instrument load',
@@ -425,7 +417,7 @@ class Instrument(object):
         else:
             # no data signal
             output_str = ' '.join(('No', output_str, 'data for', date.strftime('%D')))
-       
+        # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         print (output_str)                
         return data, mdata
@@ -511,7 +503,7 @@ class Instrument(object):
             self.doy = None
             self._load_by_date = False
             # if no index, called func tries to find file in instrument dir,
-            # throws IOError if it fails
+            # throws error if it fails
             self._fid = self.files.get_index(fname)
             inc = 1
             curr = self._fid.copy()
@@ -611,8 +603,6 @@ class Instrument(object):
             temp = pds.datetime(temp.year, temp.month, temp.day)
             self.date = temp
             self.yr, self.doy = utils.getyrdoy(self.date)
-            #print ('hello')
-            #print (self.date, self.yr, self.doy)
 
         if not self.data.empty:
             self._default_rtn(self)
@@ -747,7 +737,7 @@ class Instrument(object):
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
                 self._iter_list = utils.season_date_range(self._iter_start, self._iter_stop, freq=step)
-        # elif (not isinstance(start, str)) and (not isinstance(end, str)):
+                
         elif (hasattr(start, '__iter__') and not isinstance(start,str)) and (hasattr(end, '__iter__') and not isinstance(end,str)):
             base = type(start[0])
             for s, t in zip(start, end):
@@ -763,7 +753,7 @@ class Instrument(object):
                 raise ValueError('Input is not a known type, string or datetime')
             self._iter_start = start
             self._iter_stop = end
-        # elif (not isinstance(start, str)) or (not isinstance(end, str)):
+            
         elif (hasattr(start, '__iter__') and not isinstance(start,str)) or (hasattr(end, '__iter__') and not isinstance(end,str)):
             raise ValueError('Both start and end must be iterable if one bound is iterable')
 
@@ -856,11 +846,9 @@ class Instrument(object):
             if self._fid is not None:
                 first = self.files.get_index(self._iter_list[0])
                 last = self.files.get_index(self._iter_list[-1])
-                #idx, = np.where(self._iter_list == self._fid)
                 if (self._fid < first) | (self._fid+1 > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    #idx += 1
                     self.load(fname=self._iter_list[self._fid+1-first])
             else:
                 self.load(fname=self._iter_list[0])
