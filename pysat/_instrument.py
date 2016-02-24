@@ -59,6 +59,11 @@ class Instrument(object):
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be 
         expressed as '{platform}/{name}/{tag}'
+    file_format : str or NoneType
+        File naming structure in string format.  Variables such as year,
+        month, and sat_id will be filled in as needed using python string
+        formatting.  The default file format structure is supplied in the
+        instrument list_files routine.
                
     Attributes
     ----------
@@ -128,13 +133,14 @@ class Instrument(object):
     """
 
     def __init__(self, platform=None, name=None, tag=None, sat_id=None,
-                 clean_level='clean', update_files=None, pad=None, orbit_info=None,
-                 inst_module=None, multi_file_day=None, manual_org=None,
-                 directory_format=None, *arg, **kwargs):
+                 clean_level='clean', update_files=None, pad=None,
+                 orbit_info=None, inst_module=None, multi_file_day=None,
+                 manual_org=None, directory_format=None, file_format=None,
+                 *arg, **kwargs):
 
         if inst_module is None:
             # use strings to look up module name
-            if isinstance(platform, str) and isinstance(name, str):              
+            if isinstance(platform, str) and isinstance(name, str):
                 self.platform = platform.lower() 
                 self.name = name.lower() 
                 # look to module for instrument functions and defaults
@@ -160,8 +166,9 @@ class Instrument(object):
         # more reasonable defaults for optional parameters
         self.tag = tag.lower() if tag is not None else ''
         self.sat_id = sat_id.lower() if sat_id is not None else ''
-        self.clean_level = clean_level.lower() if clean_level is not None else 'none'
-        
+        self.clean_level = (clean_level.lower() if clean_level is not None
+                            else 'none')
+
         # assign_func sets some instrument defaults, direct info rules all
         if directory_format is not None:
             self.directory_format = directory_format.lower()
@@ -173,7 +180,22 @@ class Instrument(object):
                 self.directory_format = self.directory_format(tag, sat_id)
             except TypeError:
                 pass
-            
+
+        if file_format is not None:
+            self.file_format = file_format
+        # value not provided by user, check if there is a value provided by
+        # instrument module
+        elif self.file_format is not None:
+            # check if it is an iteratable string.  If it isn't formatted
+            # properly, give a warning and set file_format to None
+            if(not isinstance(self.file_format, str) or
+               self.file_format.find("{") < 0 or
+               self.file_format.find("}") < 1):
+                estr = 'file format set to default, supplied string must be '
+                estr = '{:s}iteratable [{:}]'.format(estr, self.file_format)
+                print(estr)
+                self.file_format = None
+
         # set up empty data and metadata
         self.data = DataFrame(None)
         self.meta = _meta.Meta()
@@ -200,13 +222,15 @@ class Instrument(object):
         elif pad is None:
             self.pad = None
         else:
-            raise ValueError('pad must be a dictionary or a pandas.DateOffset instance.')
+            estr = 'pad must be a dictionary or a pandas.DateOffset instance.'
+            raise ValueError(estr)
 
         # instantiate Files class
         manual_org = False if manual_org is None else manual_org
         self.files = _files.Files(self, manual_org=manual_org, 
                                   directory_format=self.directory_format,
-                                  update_files=update_files)
+                                  update_files=update_files,
+                                  file_format=self.file_format)
 
         # set bounds for iteration
         # self.bounds requires the Files class
@@ -325,6 +349,7 @@ class Instrument(object):
         self._download_rtn = self._pass_func
         # default params
         self.directory_format = None
+        self.file_format = None
         self.multi_file_day = False
         self.orbit_info = None
                         
@@ -344,8 +369,8 @@ class Instrument(object):
             self._list_rtn = inst.list_files
             self._download_rtn = inst.download
         except AttributeError:
-            raise AttributeError(string.join(('A load, file_list, and download routine',
-                                 'are required for every instrument.')))
+            estr = 'A load, file_list, and download routine are required for '
+            raise AttributeError('{:s}every instrument.'.format(estr))
         try:
             self._default_rtn = inst.default
         except AttributeError:
@@ -391,7 +416,8 @@ class Instrument(object):
    
         if len(fname) > 0:    
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
-            data, mdata = self._load_rtn(load_fname, tag=self.tag, sat_id=self.sat_id, **self.kwargs)
+            data, mdata = self._load_rtn(load_fname, tag=self.tag,
+                                         sat_id=self.sat_id, **self.kwargs)
         else:
             data = DataFrame(None)
             mdata = _meta.Meta()
@@ -407,11 +433,23 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
+<<<<<<< HEAD
                 output_str = ' '.join(('Returning', output_str, 'data for', date.strftime('%D')))
             else:
                 if len(fname) == 1:
                     # this check was zero
                     output_str = ' '.join(('Returning', output_str,'data from', fname[0]))
+=======
+                print(' '.join(('Returning', self.platform, self.name, self.tag,
+                                self.sat_id, 'data for', date.strftime('%D'))))
+            else:
+                if len(fname) == 1:
+                    # this check was zero
+                    estr = 'Returning {:} {:}'.format(self.platform, self.name)
+                    estr = '{:s} {:} {:} '.format(estr, self.tag, self.sat_id)
+                    estr = '{:s}data from {:}'.format(estr, fname[0])
+                    print(estr)
+>>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
                 else:
                     output_str = ' '.join(('Returning', output_str,'data from', fname[0], '::', fname[-1]))
         else:
@@ -468,6 +506,10 @@ class Instrument(object):
         verifyPad : boolean 
             if True, padding data not removed (debug purposes)
 
+        Returns
+        --------
+        Void.  Data is added to self.data
+
         Note
         ----
         Loads data for a chosen instrument into .data. Any functions chosen
@@ -516,8 +558,9 @@ class Instrument(object):
             inc = 1
             curr = fid
         else:
-            raise TypeError('Must supply a yr,doy pair, or datetime object, ' +
-                            'or filename to load data from.')
+            estr = 'Must supply a yr,doy pair, or datetime object, or filename'
+            estr = '{:s} to load data from.'.format(estr)
+            raise TypeError(estr)
 
         self.orbits._reset()
         # if pad is true, need to have a three day/file load
@@ -528,25 +571,31 @@ class Instrument(object):
                 print('Initializing three day/file window')
                 # using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
-                self._curr_data, self._curr_meta = self._load_data(date=self.date, fid=self._fid)
+                self._curr_data, self._curr_meta = \
+                                self._load_data(date=self.date, fid=self._fid)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 # moving forward in time
                 if self._next_data_track == curr:
-                    self._prev_data, self._prev_meta = self._curr_data, self._curr_meta
-                    self._curr_data, self._curr_meta = self._next_data, self._next_meta
+                    self._prev_data = self._curr_data
+                    self._prev_meta = self._curr_meta
+                    self._curr_data = self._next_data
+                    self._curr_meta = self._next_meta
                     self._next_data, self._next_meta = self._load_next()
                 # moving backward in time
                 elif self._prev_data_track == curr:
-                    self._next_data, self._next_meta = self._curr_data, self._curr_meta
-                    self._curr_data, self._curr_meta = self._prev_data, self._prev_meta
+                    self._next_data = self._curr_data
+                    self._next_meta = self._curr_meta
+                    self._curr_data = self._prev_data
+                    self._curr_meta = self._prev_meta
                     self._prev_data, self._prev_meta = self._load_prev()
                 # jumped in time/or switched from filebased to date based access
                 else:
                     self._prev_data, self._prev_meta = self._load_prev()
-                    self._curr_data, self._curr_meta = self._load_data(date=self.date, fid=self._fid)   
+                    self._curr_data, self._curr_meta = \
+                                self._load_data(date=self.date, fid=self._fid)
                     self._next_data, self._next_meta = self._load_next()
-                    
+
             # make sure datetime indices for all data is monotonic
             if not self._prev_data.index.is_monotonic_increasing:
                 self._prev_data.sort_index(inplace=True)
@@ -565,26 +614,35 @@ class Instrument(object):
             else:
                 self.data = DataFrame(None)
                 # line below removed as it would delete previous meta, if any
-                # if you end a seasonal analysis with a day with no data, then no meta
-                # self.meta = _meta.Meta()
+                # if you end a seasonal analysis with a day with no data, then
+                # no meta: self.meta = _meta.Meta()
 
             if self.multi_file_day:
-                self.data = self.data.ix[self.date : self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999)]
+                self.data = self.data.ix[self.date : self.date +
+                                         pds.DateOffset(hours=23, minutes=59,
+                                                        seconds=59,
+                                                        nanoseconds=99999999)]
 
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty):
                 if self.multi_file_day and self._load_by_date:
-                    padLeft = self._prev_data.ix[(self.date):self._curr_data.index[0]]
+                    padLeft = self._prev_data.ix[(self.date) :
+                                                 self._curr_data.index[0]]
                 else:
-                    padLeft = self._prev_data.ix[(self._curr_data.index[0]-self.pad):self._curr_data.index[0]]
+                    padLeft = self._prev_data.ix[(self._curr_data.index[0] -
+                                                  self.pad) :
+                                                 self._curr_data.index[0]]
                 self.data = pds.concat([padLeft[0:-1], self.data])
 
             if (not self._next_data.empty) & (not self.data.empty):
 
                 if self.multi_file_day and self._load_by_date:
-                    padRight = self._next_data.ix[self.date : (self.date+pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999))]
+                    padRight = self._next_data.ix[self.date : (self.date + \
+        pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999))]
                 else:
-                    padRight = self._next_data.ix[self._curr_data.index[-1]:(self._curr_data.index[-1]+self.pad)]
+                    padRight = self._next_data.ix[self._curr_data.index[-1] :
+                                                  (self._curr_data.index[-1] +
+                                                   self.pad)]
                 self.data = pds.concat([self.data, padRight[1:]])
                 
         # if self.pad is False, load single day
@@ -596,7 +654,7 @@ class Instrument(object):
         # check if load routine actually returns meta
         if self.meta.data.empty:
             self.meta[self.data.columns] = {'long_name': self.data.columns,
-                                            'units': ['']*len(self.data.columns)}
+                                            'units':['']*len(self.data.columns)}
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
             temp = self.data.index[0]
@@ -613,8 +671,9 @@ class Instrument(object):
         if not self.data.empty:
             self.custom._apply_all(self)
         # remove the excess padding, if any applied
-        if (self.pad is not None) & (not self.data.empty) & (not verifyPad) :
-            self.data = self.data[self._curr_data.index[0]:self._curr_data.index[-1]]
+        if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
+            self.data = self.data[self._curr_data.index[0] :
+                                  self._curr_data.index[-1]]
 
         sys.stdout.flush()
         return
@@ -629,7 +688,8 @@ class Instrument(object):
         stop : pandas.datetime
             stop date to download data
         freq : string
-            Stepsize between dates for season, 'D' for daily, 'M' monthly (see pandas)
+            Stepsize between dates for season, 'D' for daily, 'M' monthly 
+            (see pandas)
         user : string
             username, if required by instrument data archive
         password : string
@@ -673,10 +733,11 @@ class Instrument(object):
 
         # if instrument object has default bounds, update them
         if len(self.bounds[0]) == 1:
-            if (self.bounds[0][0] == first_date) and (self.bounds[1][0] == last_date):
+            if(self.bounds[0][0] == first_date and
+               self.bounds[1][0] == last_date):
                 print('Updating instrument object bounds.')
                 self.bounds = None
-        
+
     @property
     def bounds(self):
         """Boundaries for iterating over instrument object by date or file.

@@ -32,17 +32,51 @@ import numpy as np
 
 import pysat
 
+<<<<<<< HEAD
 def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
+=======
 
-    if tag is not None:
+#import cdf
+
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+    """Return a Pandas Series of every file for chosen satellite data
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are '' and 'ascii'.
+        If '' is specified, the primary data type (ascii) is loaded.
+        (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    data_path : (string or NoneType)
+        Path to data directory.  If None is specified, the value previously
+        set in Instrument.files.data_path is used.  (default=None)
+    format_str : (string or NoneType)
+        User specified file format.  If None is specified, the default
+        formats associated with the supplied tags are used. (default=None)
+
+    Returns
+    --------
+    pysat.Files.from_os : (pysat._files.Files)
+        A class containing the verified available files
+    """
+>>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
+
+    if format_str is None and tag is not None:
         if (tag == '') or (tag == 'pysatcdf'):
-            return pysat.Files.from_os(data_path=data_path, 
-                format_str='cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf')
+            cdf_fmt = \
+                'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+            return pysat.Files.from_os(data_path=data_path, format_str=cdf_fmt)
         else:
-            raise ValueError('Unrecognized tag name for C/NOFS IVM')                  
+            raise ValueError('Unrecognized tag name for C/NOFS IVM')
+    elif format_str is None:
+        estr = 'A tag name must be passed to the loading routine for C/NOFS'
+        raise ValueError (estr)
     else:
-        raise ValueError ('A tag name must be passed to the loading routine for C/NOFS')
+        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -138,6 +172,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     # exit out of ftp program
     ftp.quit()
     return 
+<<<<<<< HEAD
     
    
     
@@ -184,3 +219,5 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     #data = pysat.DataFrame(data, index=epoch)
     ##
     #return data, meta
+=======
+>>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
