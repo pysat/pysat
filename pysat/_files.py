@@ -144,7 +144,9 @@ class Files(object):
         else:
             self.start_date = None
             self.stop_date = None
-            self.files = files_info
+            # convert to object type
+            # necessary if Series is empty, enables == checks with strings
+            self.files = files_info.astype(np.dtype('O'))
 
     def _store(self):
         """Store currently loaded filelist for instrument onto filesystem"""
