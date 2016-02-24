@@ -402,6 +402,12 @@ class Instrument(object):
             data = DataFrame(None)
             mdata = _meta.Meta()
 
+        output_str = '{platform} {name} {tag} {sat_id}'
+        output_str = output_str.format(platform=self.platform,
+                                       name=self.name, tag=self.tag, 
+                                       sat_id=self.sat_id)
+
+
         if not data.empty: 
             if not isinstance(data, DataFrame):
                 raise TypeError(string.join(('Data returned by instrument load',
@@ -409,21 +415,19 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-                print(' '.join(('Returning', self.platform, self.name, self.tag, self.sat_id, 'data for',
-                                   date.strftime('%D'))))
+                output_str = ' '.join(('Returning', output_str, 'data for', date.strftime('%D')))
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    print(' '.join(('Returning', self.platform, self.name, self.tag, self.sat_id,
-                                       'data from', fname[0])))
+                    output_str = ' '.join(('Returning', output_str,'data from', fname[0]))
                 else:
-                    print(' '.join(('Returning', self.platform, self.name, self.tag, self.sat_id,
-                                       'data from', fname[0], '::', fname[-1])))
+                    output_str = ' '.join(('Returning', output_str,'data from', fname[0], '::', fname[-1]))
         else:
             # no data signal
-            print(' '.join(('No', self.platform, self.name, self.tag, self.sat_id, 'data for',
-                               date.strftime('%D'))))
-    
+            output_str = ' '.join(('No', output_str, 'data for', date.strftime('%D')))
+       
+        output_str = " ".join(output_str.split())
+        print (output_str)                
         return data, mdata
         
     def _load_next(self):
