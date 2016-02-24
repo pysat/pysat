@@ -39,15 +39,37 @@ import numpy as np
 import pysat
 
 
-def list_files(tag=None, sat_id=None, data_path=None):
-    """Return a Pandas Series of every file for chosen satellite data"""
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+    """Return a Pandas Series of every file for chosen satellite data
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load, not supported by this routine.
+        (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    data_path : (string or NoneType)
+        Path to data directory.  If None is specified, the value previously
+        set in Instrument.files.data_path is used.  (default=None)
+    format_str : (string or NoneType)
+        User specified file format, not supported here. (default=None)
+
+    Returns
+    --------
+    pysat.Files.from_os : (pysat._files.Files)
+        A class containing the verified available files
+    """
     import sys
     #if tag == 'ionprf':
     #    # from_os constructor currently doesn't work because of the variable 
     #    # filename components at the end of each string.....
-    #    #return pysat.Files.from_os(dir_path=os.path.join('cosmic', 'ionprf'),
-    #        #format_str='*/ionPrf_*.{year:04d}.{day:03d}.{hour:02d}.{min:02d}*_nc')          
-    print('Building a list of COSMIC files, which can possibly take time. ~1s per 100K files')
+    #    ion_fmt = '*/ionPrf_*.{year:04d}.{day:03d}.{hour:02d}.{min:02d}*_nc'
+    #    return pysat.Files.from_os(dir_path=os.path.join('cosmic', 'ionprf'),
+    #                               format_str=ion_fmt)
+    estr = 'Building a list of COSMIC files, which can possibly take time. '
+    print('{:s}~1s per 100K files'.format(estr))
     sys.stdout.flush()
 
     # number of files may be large, written with this in mind
@@ -72,7 +94,8 @@ def list_files(tag=None, sat_id=None, data_path=None):
         year=np.array(year).astype(int)
         days=np.array(days).astype(int)
         uts=np.array(hours).astype(int)*3600+np.array(minutes).astype(int)*60
-        # adding microseconds to ensure each time is unique, not allowed to pass 1.E-3 s
+        # adding microseconds to ensure each time is unique, not allowed to
+        # pass 1.E-3 s
         uts+=np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
         index = pysat.utils.create_datetime_index(year=year, day=days, uts=uts)
         file_list = pysat.Series(cosmicFiles, index=index)

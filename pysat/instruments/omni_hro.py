@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Supports OMNI Combined, Definitive, IMF and Plasma Data, and Energetic Proton Fluxes,
-Time-Shifted to the Nose of the Earth's Bow Shock, plus Solar and Magnetic Indices. Downloads data from the
-NASA Coordinated Data Analysis Web (CDAWeb). Supports both 5 and 1 minute files.
+"""Supports OMNI Combined, Definitive, IMF and Plasma Data, and Energetic
+Proton Fluxes, Time-Shifted to the Nose of the Earth's Bow Shock, plus Solar
+and Magnetic Indices. Downloads data from the NASA Coordinated Data Analysis
+Web (CDAWeb). Supports both 5 and 1 minute files.
 
 Parameters
 ----------
@@ -15,8 +16,8 @@ tag : string
 Note
 ----
 Files are stored by the first day of each month. When downloading use
-omni.download(start, stop, freq='MS') to only download days that could possibly have data.
-'MS' gives a monthly start frequency.
+omni.download(start, stop, freq='MS') to only download days that could possibly
+have data.  'MS' gives a monthly start frequency.
 
 This material is based upon work supported by the 
 National Science Foundation under Grant Number 1259508. 
@@ -28,10 +29,9 @@ of the National Science Foundation.
 
 Warnings
 --------
-- Currently no cleaning routine. Though the CDAWEB description indicates that these level-2 products
-  are expected to be ok.
+- Currently no cleaning routine. Though the CDAWEB description indicates that
+  these level-2 products are expected to be ok.
 - Module not written by OMNI team.
-        
 """
 
 from __future__ import print_function
@@ -47,22 +47,49 @@ from spacepy import pycdf
 import pysat
 
 
-def list_files(tag=None, sat_id=None, data_path=None):
-    """Return a Pandas Series of every file for chosen satellite data"""
-    if data_path is not None:
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+    """Return a Pandas Series of every file for chosen satellite data
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are '1min' and '5min'.
+        (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    data_path : (string or NoneType)
+        Path to data directory.  If None is specified, the value previously
+        set in Instrument.files.data_path is used.  (default=None)
+    format_str : (string or NoneType)
+        User specified file format.  If None is specified, the default
+        formats associated with the supplied tags are used. (default=None)
+
+    Returns
+    --------
+    pysat.Files.from_os : (pysat._files.Files)
+        A class containing the verified available files
+    """
+    if format_str is None and data_path is not None:
         if (tag == '1min') | (tag == '5min'):
-            files = pysat.Files.from_os(data_path=data_path,
-                    format_str=''.join(['omni_hro_',tag,'{year:4d}{month:02d}{day:02d}_v01.cdf']))
-            # files are by month, just repeat filename in a given month for each day of the month
-            # load routine will select out appropriate data
+            min_fmt = ''.join(['omni_hro_', tag,
+                               '{year:4d}{month:02d}{day:02d}_v01.cdf'])
+            files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
+            # files are by month, just repeat filename in a given month for
+            # each day of the month load routine will select out appropriate
+            # data
             if not files.empty:
-                files.ix[files.index[-1]+pds.DateOffset(months=1)-pds.DateOffset(days=1)] = files.iloc[-1]
+                files.ix[files.index[-1] + pds.DateOffset(months=1) -
+                         pds.DateOffset(days=1)] = files.iloc[-1]
                 files = files.asfreq('D', 'pad')
             return files
         else:
             raise ValueError('Unknown tag')
+    elif format_str is None:
+        estr = 'A directory must be passed to the loading routine for VEFI'
+        raise ValueError (estr)
     else:
-        raise ValueError ('A directory must be passed to the loading routine for VEFI')
+        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
             
 
 def load(fnames, tag=None, sat_id=None):
