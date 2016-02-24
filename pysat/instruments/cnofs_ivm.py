@@ -32,12 +32,6 @@ import numpy as np
 
 import pysat
 
-<<<<<<< HEAD
-def list_files(tag=None, sat_id=None, data_path=None):
-    """Return a Pandas Series of every file for chosen satellite data"""
-=======
-
-#import cdf
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -63,7 +57,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     pysat.Files.from_os : (pysat._files.Files)
         A class containing the verified available files
     """
->>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
 
     if format_str is None and tag is not None:
         if (tag == '') or (tag == 'pysatcdf'):
@@ -172,52 +165,3 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     # exit out of ftp program
     ftp.quit()
     return 
-<<<<<<< HEAD
-    
-   
-    
-      
-    
-    
-        #    if sat_id != 'pysatcdf':
-    #        from spacepy import pycdf
-    #        cdf = pycdf.CDF(fnames[0])
-    #        data = {}
-    #        meta = pysat.Meta()
-    #        for key in cdf.iterkeys():
-    #            if key not in ['ECISC_matrix','ECISC_index', 'ECISC_index1',
-    #                        'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']:
-    #                data[key] = cdf[key][...]
-    #            try:
-    #                meta[key] = {'units':cdf[key].attrs['UNITS'],
-    #                            'long_name':cdf[key].attrs['LABLAXIS'],
-    #                            'description':cdf[key].attrs['CATDESC']}
-    #            except KeyError:
-    #                pass
-    #        # matrices have storage issues (double split intwo two floats),
-    #        # defer issue and drop for now
-    #        epoch = data.pop('Epoch')
-    #        cdf.close()
-    #    else:
-    #        import pysatCDF
-    #        meta = pysat.Meta()
-    #        cdf = pysatCDF.CDF(fnames[0])
-    #        #return cdf.to_pysat()
-    #        drops = ['ECISC_matrix','ECISC_index', 'ECISC_index1',
-    #                        'LVLHSC_matrix','LVLHSC_index', 'LVLHSC_index1']
-    #        for item in cdf.meta.keys():
-    #            if item not in drops:
-    #                pass
-    #                #meta[item] = cdf.attributes[item]
-    #            else:
-    #              cdf.data.pop(item)
-    #        meta = pysat.Meta(pysat.DataFrame.from_dict(cdf.meta, 
-    #                                                    orient = 'index'))
-    #        data = cdf.data
-    #        epoch = data.pop('Epoch')    
-    #        
-    #data = pysat.DataFrame(data, index=epoch)
-    ##
-    #return data, meta
-=======
->>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120

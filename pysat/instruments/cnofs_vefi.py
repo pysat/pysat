@@ -31,14 +31,6 @@ import numpy as np
 import pysat
 import sys
 
-<<<<<<< HEAD
-def list_files(tag=None, sat_id=None, data_path=None):
-    """Return a Pandas Series of every file for chosen satellite data"""
-=======
-import spacepy
-from spacepy import pycdf
-import pysat
-
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -63,7 +55,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         A class containing the verified available files
     """
 
->>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
     if data_path is not None:
         if tag == 'dc_b':
             dc_fmt = \

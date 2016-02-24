@@ -222,8 +222,7 @@ class Files(object):
         
 
         """
-<<<<<<< HEAD
-        
+
         output_str = '{platform} {name} {tag} {sat_id}'
         output_str = output_str.format(platform=self._sat.platform,
                                        name=self._sat.name, tag=self._sat.tag, 
@@ -232,13 +231,10 @@ class Files(object):
         output_str = " ".join(output_str.split())
         print (output_str)
         
-        info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id, data_path=self.data_path)
-=======
-        print("pysat is searching for the requested instrument's files.")
         info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id,
                                    data_path=self.data_path,
                                    format_str=self.file_format)
->>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
+
         if not info.empty:
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
@@ -308,19 +304,13 @@ class Files(object):
         is made.
         
         """
-<<<<<<< HEAD
 
         #print( fname)
         idx, = np.where(fname == self.files)
-=======
-        # print("DEBUG get_index:", fname)
-        idx, = np.where(fname == np.array(self.files))
-
->>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
         if len(idx) == 0:
             # filename not in index, try reloading files from disk
             self.refresh()
-            print("DEBUG get_index:", fname, self.files)
+            #print("DEBUG get_index:", fname, self.files)
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
@@ -400,12 +390,13 @@ class Files(object):
         """Remove the data directory path from filenames"""
         # need to add a check in here to make sure data_dir path is actually in
         # the filename
-        split_str = os.path.join(self.data_path, '')
-        if isinstance(inp, pds.Series):
+        if inp is not None:
+            split_str = os.path.join(self.data_path, '')
             return inp.apply(lambda x: x.split(split_str)[-1])
-        elif inp is not None:
-            
-            return inp.split(split_str)[-1]
+
+        #elif inp is not None:
+        #    
+        #    return inp.split(split_str)[-1]
             
             # match = os.path.join(self.data_path,'')
             # num = len(match)

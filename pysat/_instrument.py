@@ -433,23 +433,11 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-<<<<<<< HEAD
                 output_str = ' '.join(('Returning', output_str, 'data for', date.strftime('%D')))
             else:
                 if len(fname) == 1:
                     # this check was zero
                     output_str = ' '.join(('Returning', output_str,'data from', fname[0]))
-=======
-                print(' '.join(('Returning', self.platform, self.name, self.tag,
-                                self.sat_id, 'data for', date.strftime('%D'))))
-            else:
-                if len(fname) == 1:
-                    # this check was zero
-                    estr = 'Returning {:} {:}'.format(self.platform, self.name)
-                    estr = '{:s} {:} {:} '.format(estr, self.tag, self.sat_id)
-                    estr = '{:s}data from {:}'.format(estr, fname[0])
-                    print(estr)
->>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
                 else:
                     output_str = ' '.join(('Returning', output_str,'data from', fname[0], '::', fname[-1]))
         else:
