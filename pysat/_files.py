@@ -287,6 +287,7 @@ class Files(object):
         is made.
         
         """
+
         #print( fname)
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
@@ -370,9 +371,13 @@ class Files(object):
         """Remove the data directory path from filenames"""
         # need to add a check in here to make sure data_dir path is actually in
         # the filename
-        if inp is not None:
-            split_str = os.path.join(self.data_path, '')
+        split_str = os.path.join(self.data_path, '')
+        if isinstance(inp, pds.Series):
             return inp.apply(lambda x: x.split(split_str)[-1])
+        elif inp is not None:
+            
+            return inp.split(split_str)[-1]
+            
             # match = os.path.join(self.data_path,'')
             # num = len(match)
             # return inp.apply(lambda x: x[num:])
