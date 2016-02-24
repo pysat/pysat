@@ -124,7 +124,7 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None): #, index_label=No
                     mdata.__setattr__(d, data.getncattr(d))
                
             # loadup all of the variables in the netCDF
-            loadedVars={}
+            loadedVars = {}
             for key in data.variables.keys():
                 # load up metadata
                 # from here group unique dimensions and act accordingly, 1D, 2D, 3D  
@@ -265,7 +265,8 @@ def median1D(self, bin_params, bin_label,data_label):
 
 
 def create_datetime_index(year=None, month=None, day=None, uts=None):
-    """Create a timeseries index using supplied year, month, day, and ut in seconds.
+    """Create a timeseries index using supplied year, month, day, and ut in
+    seconds.
 
     Parameters
     ----------

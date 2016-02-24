@@ -31,16 +31,51 @@ import numpy as np
 import pysat
 import sys
 
+<<<<<<< HEAD
 def list_files(tag=None, sat_id=None, data_path=None):
     """Return a Pandas Series of every file for chosen satellite data"""
+=======
+import spacepy
+from spacepy import pycdf
+import pysat
+
+
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+    """Return a Pandas Series of every file for chosen satellite data
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are 'dc_b'. (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    data_path : (string or NoneType)
+        Path to data directory.  If None is specified, the value previously
+        set in Instrument.files.data_path is used.  (default=None)
+    format_str : (string or NoneType)
+        User specified file format.  If None is specified, the default
+        formats associated with the supplied tags are used. (default=None)
+
+    Returns
+    --------
+    pysat.Files.from_os : (pysat._files.Files)
+        A class containing the verified available files
+    """
+
+>>>>>>> 0ec24d7fd85b43282a2b6e42111eedf5d5398120
     if data_path is not None:
         if tag == 'dc_b':
-            return pysat.Files.from_os(data_path=data_path, 
-            format_str='cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf')
+            dc_fmt = \
+                'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
+            return pysat.Files.from_os(data_path=data_path, format_str=dc_fmt)
         else:
             raise ValueError('Unknown tag')
+    elif format_str is None:
+        estr = 'A directory must be passed to the loading routine for VEFI'
+        raise ValueError (estr)
     else:
-        raise ValueError ('A directory must be passed to the loading routine for VEFI')
+        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
             
 
 def load(fnames, tag=None, sat_id=None):
