@@ -227,7 +227,7 @@ class Files(object):
         output_str = output_str.format(platform=self._sat.platform,
                                        name=self._sat.name, tag=self._sat.tag, 
                                        sat_id=self._sat.sat_id)
-        output_str = "".join(("pysat is searching for ", output_str, "files."))
+        output_str = " ".join(("pysat is searching for", output_str, "files."))
         output_str = " ".join(output_str.split())
         print (output_str)
         
