@@ -169,7 +169,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     for (i,file) in enumerate(files):
         try:
             #data = netCDF4.Dataset(file)    
-            data = netcdf_file(file, mode='r', mmap=True) 
+            data = netcdf_file(file, mode='r', mmap=False) 
             # build up dictionary will all ncattrs
             new = {} 
             # get list of file attributes
@@ -182,9 +182,9 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             keys = data.variables.keys()
             for key in keys:
                 if data.variables[key][:].dtype.byteorder != '=':
-                    loadedVars[key] = data.variables[key][:].byteswap().newbyteorder().copy()
+                    loadedVars[key] = data.variables[key][:].byteswap().newbyteorder()
                 else:
-                    loadedVars[key] = data.variables[key][:].copy()
+                    loadedVars[key] = data.variables[key][:]
 
             new['profiles'] = pysat.DataFrame(loadedVars)
                     
@@ -204,8 +204,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     if tag == 'ionprf':           
         if altitude_bin is not None:
             for out in output:    
-                roundMSL_alt = np.round(out['profiles']['MSL_alt']/altitude_bin)*altitude_bin
-                out['profiles'].index = roundMSL_alt
+                out['profiles'].index = (out['profiles']['MSL_alt']/altitude_bin).round().values*altitude_bin
                 out['profiles'] = out['profiles'].groupby(out['profiles'].index.values).mean()
         else:
             for out in output:
