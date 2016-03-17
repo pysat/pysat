@@ -259,7 +259,7 @@ def clean(self):
 
     return
 
-def download(date_array, tag, data_path=None, user=None, password=None):
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     import ftplib
     import urllib2
     import base64
