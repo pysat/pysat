@@ -1,6 +1,6 @@
 <div align="center">
         <img height="0" width="0px">
-        <img width="15%" src="/logo.png" alt="pysat" title="pysat"</img>
+        <img width="18%" src="/logo.png" alt="pysat" title="pysat"</img>
 </div>
 #pysat: Python Satellite Data Analysis Toolkit
 [![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
