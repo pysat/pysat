@@ -46,8 +46,7 @@ pip install pysat
   pip install netCDF4
   ```
 * CDF Support
-  * Download and install NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html)  
-  * Download and install [pysatCDF](https://github.com/rstoneback/pysatCDF) which supports python CDF interface using
+  * Download and install [pysatCDF](https://github.com/rstoneback/pysatCDF) which supports a python CDF interface using
   ```
   pip install pysatCDF
   ```
@@ -55,7 +54,7 @@ pip install pysat
   ```
   git clone https://github.com/rstoneback/pysatCDF.git
   cd pysatCDF
-  python setup.py install
+  python setup.py build install
   ```
   
 * To get the forked pandas, needed for full support of mixed data types.
