@@ -190,7 +190,7 @@ class Orbits(object):
             if len(ind) > 1:
                 if min(dist) == 1:
                     print('There are orbit breaks right next to each other')
-                ind = ind[dist > 1]
+                ind = ind[:-1][dist > 1]
 
             # check for large positive gradients around the break that would
             # suggest not a true orbit break, but rather bad orbit_index values
@@ -202,7 +202,7 @@ class Orbits(object):
                     for tidx in tidx:
                         # look at time change vs local time change
                         if ut_diff[idx - 5:idx + 6].iloc[tidx] < lt_diff[idx - 5:idx + 6].iloc[
-                            tidx] / 24. * self.orbit_period:
+                              tidx] / 24. * self.orbit_period:
                             # change in ut inconsistent with change in local time
                             # increases in local time require a change in ut
                             pass
@@ -367,16 +367,16 @@ class Orbits(object):
 
         ind, = np.where(change)
         ind += 1
-        if len(ind) > 0:
-            ind = np.hstack((ind, np.array([len(self.sat[self.orbit_index])])))
-            # look at distance between breaks
-            dist = ind[1:] - ind[0:-1]
-            # only keep orbit breaks with a distance greater than 1
-            # done for robustness
-            if len(ind) > 1:
-                if min(dist) == 1:
-                    print('There are orbit breaks right next to each other')
-                ind = ind[dist > 1]
+        #if len(ind) > 0:
+        #    ind = np.hstack((ind, np.array([len(self.sat[self.orbit_index])])))
+        #    # look at distance between breaks
+        #    dist = ind[1:] - ind[0:-1]
+        #    # only keep orbit breaks with a distance greater than 1
+        #    # done for robustness
+        #    if len(ind) > 1:
+        #        if min(dist) == 1:
+        #            print('There are orbit breaks right next to each other')
+        #        ind = ind[:-1][dist > 1]
 
         ut_diff = Series(self.sat.data.index).diff()
         ut_ind, = np.where(ut_diff / self.orbit_period > 0.95)
