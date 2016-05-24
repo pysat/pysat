@@ -67,7 +67,7 @@ def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
 
     if format_str is None and tag is not None:
         if tag == 'north' or tag == 'south':
-            hemi_fmt = '{year:4d}{month:02d}{day:02d}.{:s}.grdex'.format(tag)
+            hemi_fmt = ''.join(('{year:4d}{month:02d}{day:02d}.', tag, '.grdex'))
             return pysat.Files.from_os(data_path=data_path, format_str=hemi_fmt)
         else:
             estr = 'Unrecognized tag name for SuperDARN, north or south.'
@@ -126,6 +126,7 @@ def load(fnames, tag=None, sat_id=None):
                                                      nrows=len(info.pmax),
                                                      index=info.vector.index)
             drift_frame['partial'] = 1
+            drift_frame.drop('index', axis=1, inplace=True)
             drift_frame.index.name = 'index'
             sum_vec = 0
             for nvec in info.nvec:
@@ -202,7 +203,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             try:
                 print('Downloading file for '+date.strftime('%D'))
                 sys.stdout.flush()
-                sftp.get(myDir+fname, saved_fname)
+                sftp.get(myDir+local_fname, saved_fname)
                 os.system('bunzip2 -c '+saved_fname+' > '+ full_fname)
                 os.system('rm ' + saved_fname)
             except IOError:
