@@ -423,7 +423,8 @@ class TestInstrumentWithFiles:
         self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
                                          clean_level='clean',
                                          sat_id='hello',
-                                         directory_format='pysat_testing_{tag}_{sat_id}')                    
+                                         directory_format='pysat_testing_{tag}_{sat_id}',
+                                         update_files=True)                    
         # add new files
         prep_dir(self.testInst)
         create_files(self.testInst, start, stop, freq='100min',  
