@@ -73,13 +73,15 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             min_fmt = ''.join(['omni_hro_', tag,
                                '{year:4d}{month:02d}{day:02d}_v01.cdf'])
             files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
-            # files are by month, just repeat filename in a given month for
-            # each day of the month load routine will select out appropriate
+            # files are by month, just add date to monthly filename for
+            # each day of the month. load routine will use date to select out appropriate
             # data
             if not files.empty:
                 files.ix[files.index[-1] + pds.DateOffset(months=1) -
                          pds.DateOffset(days=1)] = files.iloc[-1]
                 files = files.asfreq('D', 'pad')
+                # add the date to the filename
+                files = files + '_' + files.index.strftime('%Y-%m-%d')
             return files
         else:
             raise ValueError('Unknown tag')
@@ -96,8 +98,15 @@ def load(fnames, tag=None, sat_id=None):
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), None
     else:
-        with pysatCDF.CDF(fnames[0]) as cdf:
-            return cdf.to_pysat()
+        # pull out date appended to filename
+        fname = fnames[0][0:-11]
+        date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
+        with pysatCDF.CDF(fname) as cdf:
+            data, meta = cdf.to_pysat()
+            # pick out data for date
+            data = data.ix[date:date+pds.DateOffset(days=1) - pds.DateOffset(microseconds=1)] 
+            return data, meta
+            #return cdf.to_pysat()
 
 def clean(omni):
     for key in omni.data.columns:
@@ -105,12 +114,12 @@ def clean(omni):
           idx, = np.where(omni[key] == omni.meta[key].fillval)
           omni.data.ix[idx, key] = np.nan
 
-def default(omni):
-    """ OMNI data stored monthly. Select out desired day."""
-    start = omni.date
-    stop = omni.date + pds.DateOffset(days=1) - pds.DateOffset(microseconds=1)
-    omni.data = omni.data.ix[start:stop]
-    return omni
+#def default(omni):
+#    """ OMNI data stored monthly. Select out desired day."""
+#    start = omni.date
+#    stop = omni.date + pds.DateOffset(days=1) - pds.DateOffset(microseconds=1)
+#    omni.data = omni.data.ix[start:stop]
+#    return omni
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     """
