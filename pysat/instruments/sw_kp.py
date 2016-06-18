@@ -10,10 +10,18 @@ name : string
 tag : string
     None supported
 
-Notes
------
-- Files are stored monthly. Thus, when downloading it is recommended to use
-  kp.download(start, stop, freq='MS'), where 'MS' refers to the start of each month.
+Note
+----
+Files are stored by the first day of each month. When downloading use
+kp.download(start, stop, freq='MS') to only download days that could possibly
+have data.  'MS' gives a monthly start frequency.
+
+This material is based upon work supported by the 
+National Science Foundation under Grant Number 1259508. 
+
+Any opinions, findings, and conclusions or recommendations expressed in this 
+material are those of the author(s) and do not necessarily reflect the views 
+of the National Science Foundation.
        
 """
 
