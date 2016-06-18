@@ -25,11 +25,13 @@ import numpy as np
 import pysat
 import sys
 
-def list_files(tag=None, sat_id=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data"""
+    if format_str is None:
+        format_str = 'rs_k0_ipei_{year:04d}{month:02d}{day:02d}_v01.cdf'
     if data_path is not None:
         return pysat.Files.from_os(data_path=data_path, 
-        format_str='rs_k0_ipei_{year:04d}{month:02d}{day:02d}_v01.cdf')
+                                   format_str=format_str)
     else:
         raise ValueError ('A directory must be passed to the loading routine for IVM')
             
