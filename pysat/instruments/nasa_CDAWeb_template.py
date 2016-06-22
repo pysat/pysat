@@ -104,11 +104,6 @@ def load(fnames, tag=None, sat_id=None):
             return cdf.to_pysat()
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
-    """
-    Download <Instrument> data, layout consistent with pysat
-
-    start and stop should be datetimes
-    """
     """Routine to download <Instrument> data
 
     Parameters
