@@ -35,6 +35,21 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     --------
     pysat.Files.from_os : (pysat._files.Files)
         A class containing the verified available files
+
+    Examples
+    --------
+    :: 
+
+        fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
+        supported_tags = {'dc_b':fname}
+        list_files = functools.partial(nasa_cdaweb_methods.list_files, 
+                                       supported_tags=supported_tags)
+
+        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        supported_tags = {'':ivm_fname}
+        list_files = functools.partial(cdw.list_files, 
+                                       supported_tags=supported_tags)
+    
     """
 
     if data_path is not None:
@@ -50,7 +65,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         raise ValueError (estr)            
 
 def load(fnames, tag=None, sat_id=None):
-    """Load <Instrument> files
+    """Load NASA CDAWeb CDF files
 
     Parameters
     ------------
@@ -67,7 +82,9 @@ def load(fnames, tag=None, sat_id=None):
         Object containing satellite data
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
+        
     """
+    
     import pysatCDF
 
     if len(fnames) <= 0 :
@@ -85,13 +102,14 @@ def load(fnames, tag=None, sat_id=None):
 def download(supported_tags, date_array, tag, sat_id, 
              ftp_site='cdaweb.gsfc.nasa.gov', 
              data_path=None, user=None, password=None):
-    """Routine to download <Instrument> data
+    """Routine to download NASA CDAWeb CDF data
 
     Parameters
     -----------
     supported_tags : dict
         dict of dicts. Keys are supported tag names for download. Value is 
-        a dict with 'dir', 'remote_fname', 'local_fname'
+        a dict with 'dir', 'remote_fname', 'local_fname'. Inteded to be
+        pre-set with functools.partial then assigned to new instrument code.
     date_array : array_like
         Array of datetimes to download data for. Provided by pysat.
     tag : (str or NoneType)
@@ -115,10 +133,17 @@ def download(supported_tags, date_array, tag, sat_id,
 
     Examples
     --------
-    dc_b_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
-                'remote_fname':'{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf',
-                'local_fname':'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'}
-    supported_tags = {'dc_b':dc_b_tag}
+    :: 
+    
+        rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
+        ln = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
+        dc_b_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
+                    'remote_fname':rn,
+                    'local_fname':ln}
+        supported_tags = {'dc_b':dc_b_tag}
+    
+        download = functools.partial(nasa_cdaweb_methods.download, 
+                                     supported_tags=supported_tags)
     
     """
 
