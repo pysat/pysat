@@ -24,68 +24,58 @@ Warnings
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import sys
-import os
+
+import functools
 
 import pandas as pds
 import numpy as np
 
 import pysat
 
+from . import nasa_cdaweb_methods as cdw
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data
+# support list files routine
+# use the default CDAWeb method
+ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+supported_tags = {'':ivm_fname}
+list_files = functools.partial(cdw.list_files, 
+                               supported_tags=supported_tags)
+# support load routine
+# use the default CDAWeb method
+load = cdw.load
+
+# support download routine
+# use the default CDAWeb method
+basic_tag = {'dir':'/pub/data/cnofs/cindi/ivm_500ms_cdf',
+            'remote_fname':'{year:4d}/'+ivm_fname,
+            'local_fname':ivm_fname}
+supported_tags = {'':basic_tag}
+download = functools.partial(cdw.download, supported_tags)
+
+
+def default(ivm):
+    ivm.sample_rate = 1.0 if ivm.date >= pysat.datetime(2010, 7, 29) else 2.0
+   
+        
+def clean(self):
+    """Routine to return C/NOFS IVM data cleaned to the specified level
 
     Parameters
     -----------
-    tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are '' and 'ascii'.
-        If '' is specified, the primary data type (ascii) is loaded.
-        (default=None)
-    sat_id : (string or NoneType)
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : (string or NoneType)
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
-        User specified file format.  If None is specified, the default
-        formats associated with the supplied tags are used. (default=None)
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
 
     Returns
     --------
-    pysat.Files.from_os : (pysat._files.Files)
-        A class containing the verified available files
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Notes
+    --------
+    Supports 'clean', 'dusty', 'dirty'
+    
     """
-
-    if format_str is None and tag is not None:
-        if (tag == '') or (tag == 'pysatcdf'):
-            cdf_fmt = \
-                'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-            return pysat.Files.from_os(data_path=data_path, format_str=cdf_fmt)
-        else:
-            raise ValueError('Unrecognized tag name for C/NOFS IVM')
-    elif format_str is None:
-        estr = 'A tag name must be passed to the loading routine for C/NOFS'
-        raise ValueError (estr)
-    else:
-        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
-
-
-def load(fnames, tag=None, sat_id=None):
-    import pysatCDF
-    if len(fnames) <= 0 :
-        return pysat.DataFrame(None), pysat.Meta(None)
-    else:
-        with pysatCDF.CDF(fnames[0]) as cdf:
-            return cdf.to_pysat()
-
-def default(ivm):
-
-    ivm.sample_rate = 1.0 if ivm.date >= pysat.datetime(2010, 7, 29) else 2.0
-   
-            
-def clean(self):
 
     # cleans cindi data
     if self.clean_level == 'clean':
@@ -133,35 +123,3 @@ def clean(self):
     self.data = self.data.iloc[idx,:]
     return
 
-def download(date_array, tag, sat_id, data_path, user=None, password=None):
-    """
-    download IVM data consistent with pysat
-
-    """
-    import ftplib
-    from ftplib import FTP
-    import sys
-    ftp = FTP('cdaweb.gsfc.nasa.gov')   # connect to host, default port
-    ftp.login()               # user anonymous, passwd anonymous@
-    ftp.cwd('/pub/data/cnofs/cindi/ivm_500ms_cdf')
-
-    for date in date_array:
-        fname = '{year1:4d}/cnofs_cindi_ivm_500ms_{year2:4d}{month:02d}{day:02d}_v01.cdf'
-        fname = fname.format(year1=date.year, year2=date.year, 
-                                month=date.month, day=date.day)
-        local_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'.format(
-                        year=date.year, month=date.month, day=date.day)
-        saved_fname = os.path.join(data_path,local_fname) 
-        try:
-            print('Downloading file for '+date.strftime('%D'))
-            sys.stdout.flush()
-            ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
-        except ftplib.error_perm as exception:
-            if exception[0][0:3] != '550':
-                raise
-            else:
-                os.remove(saved_fname)
-                print('File not available for '+date.strftime('%D'))
-    # exit out of ftp program
-    ftp.quit()
-    return 
