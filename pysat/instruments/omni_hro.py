@@ -32,12 +32,14 @@ Warnings
 - Currently no cleaning routine. Though the CDAWEB description indicates that
   these level-2 products are expected to be ok.
 - Module not written by OMNI team.
+
 """
 
 from __future__ import print_function
 from __future__ import absolute_import
 import os
 import sys
+import functools
 
 import pandas as pds
 import numpy as np
@@ -114,12 +116,6 @@ def clean(omni):
           idx, = np.where(omni[key] == omni.meta[key].fillval)
           omni.data.ix[idx, key] = np.nan
 
-#def default(omni):
-#    """ OMNI data stored monthly. Select out desired day."""
-#    start = omni.date
-#    stop = omni.date + pds.DateOffset(days=1) - pds.DateOffset(microseconds=1)
-#    omni.data = omni.data.ix[start:stop]
-#    return omni
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     """
