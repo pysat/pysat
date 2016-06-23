@@ -26,11 +26,14 @@ of the National Science Foundation.
 """
 
 import os
+import functools
+
 import pandas as pds
 import numpy as np
-import glob
-import pandas as pds
+
 import pysat
+from . import nasa_cdaweb_methods as cdw
+
 
 # create a basic parser to deal with date format of the Kp file
 def _parse(yr, mo, day):
@@ -70,15 +73,21 @@ def load(fnames, tag=None, sat_id=None):
     
     """
 
+    # Kp data stored monthly, need to return data daily
+    # the daily date is attached to filename
+    # parse off the last date, load month of data, downselect to desired day
     data = pds.DataFrame()
     #set up fixed width format for these files
     colspec = [(0,2),(2,4),(4,6),(7,10),(10,13),(13,16),(16,19),(19,23),(23,26),(26,29),(29,32),(32,50)]
-    
     for filename in fnames:
+        # the daily date is attached to filename
+        # parse off the last date, load month of data, downselect to desired day
         fname = filename[0:-11]
         date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
 
-        temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,header=None, parse_dates=[[0,1,2]], date_parser=_parse, index_col='0_1_2')
+        temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,header=None, 
+                            parse_dates=[[0,1,2]], date_parser=_parse, 
+                            index_col='0_1_2')
         idx, = np.where((temp.index >= date) & (temp.index < date+pds.DateOffset(days=1)))
         temp = temp.iloc[idx,:]
         data = pds.concat([data,temp], axis=0)
@@ -91,12 +100,13 @@ def load(fnames, tag=None, sat_id=None):
     # with appropriate datetime indices
     s = pds.Series()
     for i in np.arange(8):
-        temp = pds.Series(data.iloc[:,i].values, index=data.index+pds.DateOffset(hours=int(3*i))  )
+        temp = pds.Series(data.iloc[:,i].values, 
+                          index=data.index+pds.DateOffset(hours=int(3*i))  )
         #print temp
-        s = s.append(temp)
-    #sort index    
+        s = s.append(temp) 
     s = s.sort_index()
     s.index.name = 'time'
+    
     # now, Kp comes in non-user friendly values
     # 2-, 2o, and 2+ relate to 1.6, 2.0, 2.3
     # will convert for user friendliness
@@ -141,26 +151,28 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     
     """
 
-    if tag is not None:
+    if data_path is not None:
         if tag == '':
-            # files are by month, just add date to monthly filename for
-            # each day of the month. load routine will use date to select out appropriate
-            # data
+            # files are by month, going to add date to monthly filename for
+            # each day of the month. The load routine will load a month of
+            # data and use the appended date to select out appropriate data.
+            if format_str is None:
+                format_str = 'kp{year:2d}{month:02d}.tab'
             out = pysat.Files.from_os(data_path=data_path, 
-                format_str='kp{year:2d}{month:02d}.tab',
+                format_str=format_str,
                 two_digit_year_break=94)
             if not out.empty:
                 out.ix[out.index[-1]+pds.DateOffset(months=1)-
                          pds.DateOffset(days=1)] = out.iloc[-1]  
                 out = out.asfreq('D', 'pad')
                 out = out + '_' + out.index.strftime('%Y-%m-%d')  
-                return out
-            else:
-                return out
+            return out
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index Kp')                  
     else:
-        raise ValueError ('A tag name must be passed to the loading routine for Kp')  
+        raise ValueError ('A data_path must be passed to the loading routine for Kp')  
+
+
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """Routine to download Kp index data
@@ -216,6 +228,31 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     return        
     
 def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None, kp_inst=None):
+    """Filters pysat.Instrument data for given time after Kp drops below gate.
+    
+    Loads Kp data for the same timeframe covered by sat and sets sat.data to
+    NaN for times when Kp > maxKp and for filterTime after Kp drops below maxKp.
+    
+    Parameters
+    ----------
+    sat : pysat.Instrument
+        Instrument to be filtered
+    maxKp : float
+        Maximum Kp value allowed. Kp values above this trigger
+        sat.data filtering.
+    filterTime : int
+        Number of hours to filter data after Kp drops below maxKp
+    kpData : pysat.Instrument (optional)
+        Kp pysat.Instrument object with data already loaded
+    kp_inst : pysat.Instrument (optional)
+        Kp pysat.Instrument object ready to load Kp data.Overrides kpData.
+        
+    Returns
+    -------
+    None : NoneType
+        sat Instrument object modified in place
+        
+    """
     if kp_inst is not None:
         kp_inst.load(date=sat.date, verifyPad=True)
         kpData = kp_inst
