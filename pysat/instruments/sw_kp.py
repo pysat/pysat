@@ -4,9 +4,9 @@
 Parameters
 ----------
 platform : string
-    'cnofs'
+    'sw'
 name : string
-    'ivm'
+    'kp'
 tag : string
     None supported
 
