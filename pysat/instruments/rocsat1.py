@@ -6,7 +6,7 @@ NASA Coordinated Data Analysis Web (CDAWeb).
 Parameters
 ----------
 platform : string
-    'rocsat-1'
+    'rocsat1'
 name : string
     'ivm'
 tag : string
