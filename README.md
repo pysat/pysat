@@ -1,3 +1,7 @@
+<div align="center">
+        <img height="0" width="0px">
+        <img width="20%" src="/logo.png" alt="pysat" title="pysat"</img>
+</div>
 #pysat: Python Satellite Data Analysis Toolkit
 [![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
 
@@ -34,18 +38,25 @@ pip install pysat
 ```
 * in python, run pysat.utils.set_data_dir('path to top level data dir')
   * Nominal organization of data is top_dir/platform/name/tag/*/files
-* NetCDF support
+* netCDF support
+  * netCDF3 is supported by SciPy, no other libraries needed
   * Download and install netCDF-4 C [library](http://www.unidata.ucar.edu/downloads/netcdf/index.jsp)
   * Download and install python interface to netCDF using
   ```
   pip install netCDF4
   ```
 * CDF Support
-  * Download and install NASA CDF [library](http://cdf.gsfc.nasa.gov/html/sw_and_docs.html)  
-  * Download and install spacepy which supports python CDF interface using
+  * Download and install [pysatCDF](https://github.com/rstoneback/pysatCDF) which supports a python CDF interface using
   ```
-  pip install spacepy
+  pip install pysatCDF
   ```
+  or
+  ```
+  git clone https://github.com/rstoneback/pysatCDF.git
+  cd pysatCDF
+  python setup.py build install
+  ```
+  
 * To get the forked pandas, needed for full support of mixed data types.
 ```
 pip install git+https://github.com/rstoneback/pandas.git

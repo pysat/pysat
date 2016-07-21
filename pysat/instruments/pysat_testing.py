@@ -47,7 +47,7 @@ def load(fnames, tag=None, sat_id=None):
     data.index.name = 'time'
     return data, meta.copy()
 
-def list_files(tag=None, sat_id=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
     
     index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31)) 

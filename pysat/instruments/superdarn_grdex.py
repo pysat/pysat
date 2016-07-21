@@ -40,23 +40,47 @@ import pandas as pds
 import numpy as np
 
 import pysat
-import pydarn
 
-def list_files(tag=None, sat_id=None, data_path=None):
-    """Return a Pandas Series of every file for chosen satellite data"""
+def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
+    """Return a Pandas Series of every file for chosen satellite data
 
-    if tag is not None:
-        if tag == 'north':
-            return pysat.Files.from_os(data_path=data_path, 
-                format_str='{year:4d}{month:02d}{day:02d}.north.grdex')
+    Parameters
+    -----------
+    tag : (string)
+        Denotes type of file to load.  Accepted types are 'north' and 'south'.
+        (default='north')
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    data_path : (string or NoneType)
+        Path to data directory.  If None is specified, the value previously
+        set in Instrument.files.data_path is used.  (default=None)
+    format_str : (string or NoneType)
+        User specified file format.  If None is specified, the default
+        formats associated with the supplied tags are used. (default=None)
+
+    Returns
+    --------
+    pysat.Files.from_os : (pysat._files.Files)
+        A class containing the verified available files
+    """
+
+    if format_str is None and tag is not None:
+        if tag == 'north' or tag == 'south':
+            hemi_fmt = ''.join(('{year:4d}{month:02d}{day:02d}.', tag, '.grdex'))
+            return pysat.Files.from_os(data_path=data_path, format_str=hemi_fmt)
         else:
-            raise ValueError('Unrecognized tag name for SuperDARN, north or south.')                  
+            estr = 'Unrecognized tag name for SuperDARN, north or south.'
+            raise ValueError(estr)                  
+    elif format_str is None:
+        estr = 'A tag name must be passed to SuperDARN.'
+        raise ValueError (estr)
     else:
-        raise ValueError ('A tag name must be passed to SuperDARN.')           
-                
+        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
            
 
 def load(fnames, tag=None, sat_id=None):
+    import pydarn
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames)==1:
@@ -102,6 +126,7 @@ def load(fnames, tag=None, sat_id=None):
                                                      nrows=len(info.pmax),
                                                      index=info.vector.index)
             drift_frame['partial'] = 1
+            drift_frame.drop('index', axis=1, inplace=True)
             drift_frame.index.name = 'index'
             sum_vec = 0
             for nvec in info.nvec:
@@ -157,6 +182,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     import sys
     import os
     import pysftp
+    import pydarn
     
     if user is None:
         user = os.environ['DBREADUSER']
@@ -177,7 +203,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             try:
                 print('Downloading file for '+date.strftime('%D'))
                 sys.stdout.flush()
-                sftp.get(myDir+fname, saved_fname)
+                sftp.get(myDir+local_fname, saved_fname)
                 os.system('bunzip2 -c '+saved_fname+' > '+ full_fname)
                 os.system('rm ' + saved_fname)
             except IOError:
@@ -187,6 +213,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
  
          
 def load_orig(fnames, tag=None):
+    import pydarn
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames)==1:

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Supports OMNI Combined, Definitive, IMF and Plasma Data, and Energetic Proton Fluxes,
-Time-Shifted to the Nose of the Earth's Bow Shock, plus Solar and Magnetic Indices. Downloads data from the
-NASA Coordinated Data Analysis Web (CDAWeb). Supports both 5 and 1 minute files.
+"""Supports OMNI Combined, Definitive, IMF and Plasma Data, and Energetic
+Proton Fluxes, Time-Shifted to the Nose of the Earth's Bow Shock, plus Solar
+and Magnetic Indices. Downloads data from the NASA Coordinated Data Analysis
+Web (CDAWeb). Supports both 5 and 1 minute files.
 
 Parameters
 ----------
@@ -15,8 +16,8 @@ tag : string
 Note
 ----
 Files are stored by the first day of each month. When downloading use
-omni.download(start, stop, freq='MS') to only download days that could possibly have data.
-'MS' gives a monthly start frequency.
+omni.download(start, stop, freq='MS') to only download days that could possibly
+have data.  'MS' gives a monthly start frequency.
 
 This material is based upon work supported by the 
 National Science Foundation under Grant Number 1259508. 
@@ -28,84 +29,86 @@ of the National Science Foundation.
 
 Warnings
 --------
-- Currently no cleaning routine. Though the CDAWEB description indicates that these level-2 products
-  are expected to be ok.
+- Currently no cleaning routine. Though the CDAWEB description indicates that
+  these level-2 products are expected to be ok.
 - Module not written by OMNI team.
-        
+
 """
 
 from __future__ import print_function
 from __future__ import absolute_import
 import os
 import sys
+import functools
 
 import pandas as pds
 import numpy as np
 
-#import spacepy
-#from spacepy import pycdf
 import pysat
-import pysatCDF
 
-def list_files(tag=None, sat_id=None, data_path=None):
-    """Return a Pandas Series of every file for chosen satellite data"""
-    if data_path is not None:
+
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+    """Return a Pandas Series of every file for chosen satellite data
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are '1min' and '5min'.
+        (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    data_path : (string or NoneType)
+        Path to data directory.  If None is specified, the value previously
+        set in Instrument.files.data_path is used.  (default=None)
+    format_str : (string or NoneType)
+        User specified file format.  If None is specified, the default
+        formats associated with the supplied tags are used. (default=None)
+
+    Returns
+    --------
+    pysat.Files.from_os : (pysat._files.Files)
+        A class containing the verified available files
+    """
+    if format_str is None and data_path is not None:
         if (tag == '1min') | (tag == '5min'):
-            files = pysat.Files.from_os(data_path=data_path,
-                    format_str=''.join(['omni_hro_',tag,'{year:4d}{month:02d}{day:02d}_v01.cdf']))
-            # files are by month, just repeat filename in a given month for each day of the month
-            # load routine will select out appropriate data
+            min_fmt = ''.join(['omni_hro_', tag,
+                               '{year:4d}{month:02d}{day:02d}_v01.cdf'])
+            files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
+            # files are by month, just add date to monthly filename for
+            # each day of the month. load routine will use date to select out appropriate
+            # data
             if not files.empty:
-                files.ix[files.index[-1]+pds.DateOffset(months=1)-pds.DateOffset(days=1)] = files.iloc[-1]
+                files.ix[files.index[-1] + pds.DateOffset(months=1) -
+                         pds.DateOffset(days=1)] = files.iloc[-1]
                 files = files.asfreq('D', 'pad')
+                # add the date to the filename
+                files = files + '_' + files.index.strftime('%Y-%m-%d')
             return files
         else:
             raise ValueError('Unknown tag')
+    elif format_str is None:
+        estr = 'A directory must be passed to the loading routine for VEFI'
+        raise ValueError (estr)
     else:
-        raise ValueError ('A directory must be passed to the loading routine for VEFI')
+        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
             
 
 def load(fnames, tag=None, sat_id=None):
-
+    import pysatCDF
     
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), None
     else:
-        with pysatCDF.CDF(fnames[0]) as cdf:
-            return cdf.to_pysat()
-
-#        try:
-#            with spacepy.pycdf.CDF(fnames[0]) as temporary:
-#                omni_cdf = temporary.copy()
-#                #print ('Clean Read')
-#        except pycdf.CDFError:
-#            return pysat.DataFrame(), pysat.Meta()
-#            
-#        data = {}
-#        meta = pysat.Meta()
-#        for key in omni_cdf.iterkeys():
-#            key_low = key.lower()
-#            data[key_low] = omni_cdf[key][...]
-#            try:             
-#                meta[key_low] = {'units':omni_cdf[key].attrs['UNITS'],
-#                            'long_name':omni_cdf[key].attrs['LABLAXIS'], 
-#                            'description':omni_cdf[key].attrs['CATDESC'],
-#                            'fill_value':omni_cdf[key].attrs['FILLVAL']}
-#            except KeyError:
-#                attrs = omni_cdf[key].attrs.keys()
-#    
-#                if 'UNITS' in attrs:
-#                    meta[key_low] = {'units':omni_cdf[key].attrs['UNITS']}
-#                if 'LABLAXIS' in attrs:
-#                    meta[key_low] = {'long_name':omni_cdf[key].attrs['LABLAXIS']}
-#                if 'CATDESC' in attrs:
-#                    meta[key_low] = {'description':omni_cdf[key].attrs['CATDESC']}
-#                if 'FILLVAL' in attrs:
-#                    meta[key_low] = {'fill_value':omni_cdf[key].attrs['FILLVAL']}
-#
-#        epoch = data.pop('epoch')
-#    data = pysat.DataFrame(data, index=pds.to_datetime(epoch, unit='s'))
-#    return data, meta
+        # pull out date appended to filename
+        fname = fnames[0][0:-11]
+        date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
+        with pysatCDF.CDF(fname) as cdf:
+            data, meta = cdf.to_pysat()
+            # pick out data for date
+            data = data.ix[date:date+pds.DateOffset(days=1) - pds.DateOffset(microseconds=1)] 
+            return data, meta
+            #return cdf.to_pysat()
 
 def clean(omni):
     for key in omni.data.columns:
@@ -113,12 +116,6 @@ def clean(omni):
           idx, = np.where(omni[key] == omni.meta[key].fillval)
           omni.data.ix[idx, key] = np.nan
 
-def default(omni):
-    """ OMNI data stored monthly. Select out desired day."""
-    start = omni.date
-    stop = omni.date + pds.DateOffset(days=1) - pds.DateOffset(microseconds=1)
-    omni.data = omni.data.ix[start:stop]
-    return omni
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     """
@@ -151,3 +148,4 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
                     print('File not available for '+ date.strftime('%D'))
     ftp.quit()
     return
+

@@ -80,14 +80,14 @@ def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
             pass
         #f.close()
 
-def list_year_doy_files(tag=None, data_path=None):
+def list_year_doy_files(tag=None, data_path=None, format_str=None):
     if data_path is not None:
         return pysat.Files.from_os(data_path=data_path,
             format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file')
     else:
         raise ValueError ('A directory must be passed to the loading routine.')
 
-def list_files(tag=None, sat_id=None, data_path=None):
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data"""        
     if tag is not None:
         if tag == '':
@@ -423,7 +423,8 @@ class TestInstrumentWithFiles:
         self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
                                          clean_level='clean',
                                          sat_id='hello',
-                                         directory_format='pysat_testing_{tag}_{sat_id}')                    
+                                         directory_format='pysat_testing_{tag}_{sat_id}',
+                                         update_files=True)                    
         # add new files
         prep_dir(self.testInst)
         create_files(self.testInst, start, stop, freq='100min',  
@@ -438,6 +439,8 @@ class TestInstrumentWithFiles:
                      
         # get new files   
         new_files = self.testInst.files.get_new()
-
+        print (dates)
+        print(self.testInst.files.files.index)
+        print('new_files ', new_files.index)
         assert (np.all(self.testInst.files.files.index == dates) & 
                 np.all(new_files.index == dates) )

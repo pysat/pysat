@@ -129,7 +129,8 @@ def addTopsideScaleHeight(cosmic):
     output.name = 'thf2'
     
     for i,profile in enumerate(cosmic['profiles']):
-        profile = profile[(profile['ELEC_dens'] >= (1./np.e)*cosmic['edmax'].iloc[i]) & (profile.index >= cosmic['edmaxalt'].iloc[i]) ]
+        profile = profile[(profile['ELEC_dens'] >= (1./np.e)*cosmic['edmax'].iloc[i]) & 
+                          (profile.index >= cosmic['edmaxalt'].iloc[i]) ]
         # want the first altitude where density drops below NmF2/e
         # first, resample such that we know all altitudes in between samples are there
         if len(profile) > 10:
@@ -157,7 +158,9 @@ def addTopsideScaleHeight(cosmic):
     return output
 
 # instantiate IVM Object
-ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='', clean_level='clean')
+ivm = pysat.Instrument(platform='cnofs', 
+                       name='ivm', tag='', 
+                       clean_level='clean')
 # restrict meausurements to those near geomagnetic equator
 ivm.custom.add(restrictMLAT, 'modify', maxMLAT=25.)
 # perform seasonal average
@@ -166,8 +169,10 @@ ivmResults = pysat.ssnl.avg.median2D(ivm, [0,360,24], 'alon',
                   [0,24,24], 'mlt', ['ionVelmeridional'])
 
 # create COSMIC instrument object
-cosmic = pysat.Instrument(platform='cosmic2013', name='gps',tag='ionprf',
-             clean_level='clean', altitude_bin=3)
+cosmic = pysat.Instrument(platform='cosmic2013', 
+                          name='gps',tag='ionprf',
+                          clean_level='clean', 
+                          altitude_bin=3)
 # apply custom functions to all data that is loaded through cosmic
 cosmic.custom.add(addApexLong, 'add')
 # select locations near the magnetic equator
@@ -177,7 +182,8 @@ cosmic.custom.add(addlogNm, 'add')
 # calculates the height above hmF2 to reach Ne < NmF2/e
 cosmic.custom.add(addTopsideScaleHeight, 'add')
 
-# do an average of multiple COSMIC data products from startDate through stopDate
+# do an average of multiple COSMIC data products 
+# from startDate through stopDate
 # a mixture of 1D and 2D data is averaged
 cosmic.bounds = (startDate, stopDate)
 cosmicResults = pysat.ssnl.avg.median2D(cosmic, [0,360,24], 'apex_long',
@@ -199,7 +205,9 @@ y_arr = ivmResults['ionVelmeridional']['bin_y']
 masked = np.ma.array(merDrifts, mask=np.isnan(merDrifts))
 #do plot, NaN values are white
 # note how the data returned from the median function is in plot order
-cax.append(axarr[0].pcolor(x_arr, y_arr, masked, vmax = 30., vmin = -30., edgecolors='none') )
+cax.append(axarr[0].pcolor(x_arr, y_arr, 
+           masked, vmax = 30., vmin = -30.,
+           edgecolors='none') )
 axarr[0].set_ylim(0,24)
 axarr[0].set_yticks([0,6,12,18,24])
 axarr[0].set_xlim(0,360)
@@ -214,9 +222,12 @@ cx_arr = cosmicResults['lognm']['bin_x']
 cy_arr = cosmicResults['lognm']['bin_y']
 
 # mask out NaN values
-masked = np.ma.array(maxDens, mask=np.isnan(maxDens))
+masked = np.ma.array(maxDens, 
+                     mask=np.isnan(maxDens))
 # do plot, NaN values are white
-cax.append( axarr[1].pcolor(cx_arr, cy_arr, masked, vmax = 6.1, vmin = 4.8, edgecolors='none')  )
+cax.append(axarr[1].pcolor(cx_arr, cy_arr, 
+           masked, vmax = 6.1, vmin = 4.8, 
+           edgecolors='none')  )
 axarr[1].set_title('COSMIC Log Density Maximum') 
 axarr[1].set_ylabel('Solar Local Time')
 cbar1 = f.colorbar(cax[1], ax = axarr[1])         
@@ -226,7 +237,9 @@ maxAlt = cosmicResults['edmaxalt']['median']
 # mask out NaN values
 masked = np.ma.array(maxAlt, mask=np.isnan(maxAlt))
 # do plot, NaN values are white
-cax.append( axarr[2].pcolor(cx_arr, cy_arr, masked, vmax =375., vmin = 200., edgecolors='none') )       
+cax.append(axarr[2].pcolor(cx_arr, cy_arr, 
+           masked, vmax =375., vmin = 200.,
+           edgecolors='none') )       
 axarr[2].set_title('COSMIC Altitude Density Maximum')  
 axarr[2].set_ylabel('Solar Local Time')           
 cbar = f.colorbar(cax[2], ax = axarr[2])
@@ -237,7 +250,8 @@ maxTh = cosmicResults['thf2']['median']
 # mask out NaN values
 masked = np.ma.array(maxTh, mask=np.isnan(maxTh))
 # do plot, NaN values are white
-cax.append( axarr[3].pcolor(cx_arr, cy_arr, masked, vmax =225., vmin = 75., edgecolors='none') )       
+cax.append(axarr[3].pcolor(cx_arr, cy_arr, masked,
+           vmax =225., vmin = 75., edgecolors='none'))       
 axarr[3].set_title('COSMIC Topside Scale Height')      
 axarr[3].set_ylabel('Solar Local Time')       
 cbar = f.colorbar(cax[3], ax = axarr[3])
@@ -255,7 +269,6 @@ for k in np.arange(6):
     for (j,sector) in enumerate(zip(*cosmicResults['profiles']['median'])[k*4:(k+1)*4]):
         # iterate over all local times within longitude sector
         # data is returned from the median routine in plot order, [y, x] instead of [x,y]
-        # the transpose above puts data back into [x,y], and I select based upon x (apex_long)
         for (i,ltview) in enumerate(sector):
             if ltview is not None:
                 # plot a given longitude/local time profile

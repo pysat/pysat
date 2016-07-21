@@ -43,15 +43,39 @@ import numpy as np
 import pysat
 
 
-def list_files(tag=None, sat_id=None, data_path=None):
-    """Return a Pandas Series of every file for chosen satellite data"""
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+    """Return a Pandas Series of every file for chosen satellite data
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are '' and 'ascii'.
+        If '' is specified, the primary data type (ascii) is loaded.
+        (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    data_path : (string or NoneType)
+        Path to data directory.  If None is specified, the value previously
+        set in Instrument.files.data_path is used.  (default=None)
+    format_str : (NoneType)
+        User specified file format not supported. (default=None)
+
+    Returns
+    --------
+    pysat.Files.from_os : (pysat._files.Files)
+        A class containing the verified available files
+    """
     import sys
     #if tag == 'ionprf':
     #    # from_os constructor currently doesn't work because of the variable 
     #    # filename components at the end of each string.....
-    #    #return pysat.Files.from_os(dir_path=os.path.join('cosmic', 'ionprf'),
-    #        #format_str='*/ionPrf_*.{year:04d}.{day:03d}.{hour:02d}.{min:02d}*_nc')          
-    print('Building a list of COSMIC files, which can possibly take time. ~1s per 100K files')
+    #    ion_fmt = '*/ionPrf_*.{year:04d}.{day:03d}.{hour:02d}.{min:02d}*_nc'
+    #    return pysat.Files.from_os(dir_path=os.path.join('cosmic', 'ionprf'),
+    #                               format_str=ion_fmt)
+    estr = 'Building a list of COSMIC files, which can possibly take time. '
+    estr = '{:s}~1s per 100K files'.format(estr)
+    print(estr)
     sys.stdout.flush()
 
     # number of files may be large
@@ -76,7 +100,8 @@ def list_files(tag=None, sat_id=None, data_path=None):
         year=np.array(year).astype(int)
         days=np.array(days).astype(int)
         uts=np.array(hours).astype(int)*3600.+np.array(minutes).astype(int)*60.
-        # adding microseconds to ensure each time is unique, not allowed to pass 1.E-3 s
+        # adding microseconds to ensure each time is unique, not allowed to
+        # pass 1.E-3 s
         uts+=np.mod(np.array(microseconds).astype(int)*4, 8000)*1.E-5
         index = pysat.utils.create_datetime_index(year=year, day=days, uts=uts)
         file_list = pysat.Series(cosmicFiles, index=index)
@@ -144,7 +169,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     for (i,file) in enumerate(files):
         try:
             #data = netCDF4.Dataset(file)    
-            data = netcdf_file(file, mode='r', mmap=True) 
+            data = netcdf_file(file, mode='r', mmap=False) 
             # build up dictionary will all ncattrs
             new = {} 
             # get list of file attributes
@@ -157,9 +182,9 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             keys = data.variables.keys()
             for key in keys:
                 if data.variables[key][:].dtype.byteorder != '=':
-                    loadedVars[key] = data.variables[key][:].byteswap().newbyteorder().copy()
+                    loadedVars[key] = data.variables[key][:].byteswap().newbyteorder()
                 else:
-                    loadedVars[key] = data.variables[key][:].copy()
+                    loadedVars[key] = data.variables[key][:]
 
             new['profiles'] = pysat.DataFrame(loadedVars)
                     
@@ -179,8 +204,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     if tag == 'ionprf':           
         if altitude_bin is not None:
             for out in output:    
-                roundMSL_alt = np.round(out['profiles']['MSL_alt']/altitude_bin)*altitude_bin
-                out['profiles'].index = roundMSL_alt
+                out['profiles'].index = (out['profiles']['MSL_alt']/altitude_bin).round().values*altitude_bin
                 out['profiles'] = out['profiles'].groupby(out['profiles'].index.values).mean()
         else:
             for out in output:
@@ -235,7 +259,7 @@ def clean(self):
 
     return
 
-def download(date_array, tag, data_path=None, user=None, password=None):
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     import ftplib
     import urllib2
     import base64
@@ -253,6 +277,9 @@ def download(date_array, tag, data_path=None, user=None, password=None):
         sub_dir = 'atmPrf'
     else:
         raise ValueError('Unknown cosmic_gps tag')
+    
+    if (user is None) or (password is None):
+        raise ValueError('CDAAC user account information must be provided.')
         
     for date in date_array:
         print('Downloading COSMIC data for '+date.strftime('%D'))
