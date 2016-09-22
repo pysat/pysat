@@ -620,7 +620,8 @@ class Instrument(object):
                     padLeft = self._prev_data.ix[(self._curr_data.index[0] -
                                                   self.pad) :
                                                  self._curr_data.index[0]]
-                self.data = pds.concat([padLeft[0:-1], self.data])
+                #self.data = pds.concat([padLeft[0:-1], self.data])
+                self.data = pds.concat([padLeft, self.data])
 
             if (not self._next_data.empty) & (not self.data.empty):
 
@@ -631,8 +632,13 @@ class Instrument(object):
                     padRight = self._next_data.ix[self._curr_data.index[-1] :
                                                   (self._curr_data.index[-1] +
                                                    self.pad)]
-                self.data = pds.concat([self.data, padRight[1:]])
+                #self.data = pds.concat([self.data, padRight[1:]])
+                self.data = pds.concat([self.data, padRight])
                 
+            # drop any possible duplicate index times
+            #self.data.drop_duplicates(inplace=True)
+            self.data = self.data[~self.data.index.duplicated(keep='first')]
+            
         # if self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid) 
