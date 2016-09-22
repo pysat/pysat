@@ -439,8 +439,8 @@ class TestInstrumentWithFiles:
                      
         # get new files   
         new_files = self.testInst.files.get_new()
-        print (dates)
-        print(self.testInst.files.files.index)
-        print('new_files ', new_files.index)
+        #print (dates)
+        #print(self.testInst.files.files.index)
+        #print('new_files ', new_files.index)
         assert (np.all(self.testInst.files.files.index == dates) & 
                 np.all(new_files.index == dates) )
