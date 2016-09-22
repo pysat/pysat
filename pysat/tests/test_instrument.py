@@ -129,6 +129,22 @@ class TestBasics:
                 (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
                                         pds.DateOffset(minutes=5)) )
             
+    def test_data_padding_uniqueness(self):
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
+        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
+        te.load(2009,1, verifyPad=True)
+        assert (te.data.index.is_unique)
+
+    def test_data_padding_all_samples_present(self):
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
+        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
+        te.load(2009,1, verifyPad=True)
+        test_index = pds.date_range(te.data.index[0], te.data.index[-1], freq='S')
+        assert (np.all(te.data.index == test_index))
+
+
     def test_data_padding_removal(self):
         reload(pysat.instruments.pysat_testing)
         reload(pysat.instruments)
