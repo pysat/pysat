@@ -637,7 +637,7 @@ class Instrument(object):
                 
             # drop any possible duplicate index times
             #self.data.drop_duplicates(inplace=True)
-            self.data = self.data[~self.data.index.duplicated(keep='first')]
+            self.data = self.data[~self.data.index.duplicated()]
             
         # if self.pad is False, load single day
         else:
