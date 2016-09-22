@@ -196,7 +196,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         try:
             print('Downloading file for '+date.strftime('%D'))
             sys.stdout.flush()
-            print fname
             ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
         except ftplib.error_perm as exception:
             if exception[0][0:3] != '550':
