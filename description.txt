@@ -3,7 +3,7 @@ The Python Satellite Data Analysis Toolkit (pysat) is a package providing a simp
 Main Features
 -------------
 - Instrument object provides a single an interface for downloading and analyzing a wide variety of science data sets.
-- Instrument independent analysis routines.
+- Includes instrument independent analysis routines.
 - Science data pipeline tasks of identifying files, loading, cleaning, and modifying data sets are built into the instrument object.
 - Supports metadata consistent with the netCDF CF-1.6 standard. Each variable has a name, long name, and units. Note units are informational only.
 - Uses pandas for the underlying underlying data structure; capable of handling the many forms scientific measurements take in a consistent manner.
@@ -22,12 +22,11 @@ Optional External Requirements
 ------------------------------
 For data in CDF format:
 
-- NASA CDF libraries
-- pysatCDF
+- pysatCDF, which includes required NASA CDF libraries
 
 For data in netCDF format:
 
 - netCDF3 files may be loaded using SciPy alone
 
-- For netCDF4 files, Unidata netCDF libraries in C are required
-- netCDF4
+- For netCDF4 files, Unidata netCDF libraries in C are required, along with
+- netCDF4 python package
