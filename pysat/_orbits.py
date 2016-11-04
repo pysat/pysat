@@ -154,30 +154,19 @@ class Orbits(object):
             raise ValueError('Orbit properties must be defined at ' +
                              'pysat.Instrument object instantiation.' + 
                              'See Instrument docs.')
-
-            #try:
-            #    self.sat['slt']
-            #    self.orbit_index = 'slt'
-            #except ValueError:
-            #    try:
-            #        self.sat['mlt']
-            #        self.orbit_index = 'mlt'
-            #    except ValueError:
-            #        try:
-            #            self.sat['glong']
-            #            self.orbit_index = 'glong'
-            #        except ValueError:
-            #            raise ValueError('Unable to find a valid index (slt/mlt/glong) for determining orbits.')
         else:
             try:
                 self.sat[self.orbit_index]
             except ValueError:
                 raise ValueError('Provided orbit index does not exist in loaded data')
-
+        # get difference in orbit index around the orbit
         lt_diff = self.sat[self.orbit_index].diff()
+        # universal time values, from datetime index
         ut_vals = Series(self.sat.data.index)
+        # UT difference
         ut_diff = ut_vals.diff()
-        # locations where derivative is less than 0
+
+        # get locations where orbit index derivative is less than 0
         # or, look for breaks because the length of time between samples is too large
         # deriv of datetime index is in naneseconds
         ind, = np.where((lt_diff < -0.1))
@@ -214,9 +203,16 @@ class Orbits(object):
 
             ind = np.array(new_ind)
 
-        # now, look for breaks because the length of time between samples is too large, thus there is no break in slt/mlt/etc
-        ut_ind, = np.where((ut_diff > self.orbit_period) | ((ut_diff / self.orbit_period > (np.abs(lt_diff / 24.))) & (
-        ut_diff / self.orbit_period > 0.95)))  # & lt_diff.notnull() ))# & (lt_diff != 0)  ) )   #added the or and check after or on 10/20/2014
+        # check if UT breaks are consistent with orbital period
+        ut_change_vs_period = ut_diff > self.orbit_period
+        # characterize ut change using orbital period
+        norm_ut = ut_diff / self.orbit_period
+        # now, look for breaks because the length of time between samples is too large,
+        # thus there is no break in slt/mlt/etc, lt_diff is small but UT change is big
+        norm_ut_vs_norm_lt = norm_ut.gt(np.abs(lt_diff / 24.))
+
+        ut_ind, = np.where(ut_change_vs_period | (norm_ut_vs_norm_lt & (norm_ut > 0.95)))
+        # & lt_diff.notnull() ))# & (lt_diff != 0)  ) )   #added the or and check after or on 10/20/2014
         if len(ut_ind) > 0:
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
