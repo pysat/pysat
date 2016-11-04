@@ -78,7 +78,8 @@ class Files(object):
     """
         
     def __init__(self, sat, manual_org=False, directory_format=None,
-                 update_files=False, file_format=None):
+                       update_files=False, file_format=None,
+                       write_to_disk=True):
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
         # location of .pysat file
@@ -117,6 +118,11 @@ class Files(object):
 
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         
+        self.write_to_disk = write_to_disk
+        if write_to_disk is False:
+            self._previous_file_list = pds.Series([])
+            self._current_file_list = pds.Series([])
+            
         if self._sat.platform != '':
             # load stored file info
             info = self._load()
@@ -168,19 +174,26 @@ class Files(object):
         # list if not, do nothing
         stored_files = self._load()
         if len(stored_files) != len(self.files):
+            # # of items is different, things are new
             new_flag = True
         elif len(stored_files) == len(self.files):
-            if (stored_files != self.files).any():
-                new_flag = True
-            else:
+            # # of items equal, check specifically for equality
+            if stored_files.eq(self.files).all():
                 new_flag = False
+            else:
+                # not equal, there are new files
+                new_flag = True
 
         if new_flag:
             # print('New files')
-            stored_files.to_csv(os.path.join(self.home_path, 'previous_'+name),
+            if self.write_to_disk:
+                stored_files.to_csv(os.path.join(self.home_path, 'previous_'+name),
+                                    date_format='%Y-%m-%d %H:%M:%S.%f')
+                self.files.to_csv(os.path.join(self.home_path, name),
                                 date_format='%Y-%m-%d %H:%M:%S.%f')
-            self.files.to_csv(os.path.join(self.home_path, name),
-                              date_format='%Y-%m-%d %H:%M:%S.%f')
+            else:
+                self._previous_file_list = stored_files
+                self._current_file_list = self.files.copy()
         return
 
     def _load(self, prev_version=False):
@@ -207,7 +220,14 @@ class Files(object):
             fname = os.path.join(self.home_path, fname)
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
-            return pds.Series.from_csv(fname, index_col=0)
+            if self.write_to_disk:
+                return pds.Series.from_csv(fname, index_col=0)
+            else:
+                # grab files from memory
+                if prev_version:
+                    return self._previous_file_list
+                else:
+                    return self._current_file_list
         else:
             return pds.Series([])
 
@@ -305,7 +325,6 @@ class Files(object):
         
         """
 
-        #print( fname)
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
             # filename not in index, try reloading files from disk
@@ -315,7 +334,8 @@ class Files(object):
 
             if len(idx) == 0:
                 raise ValueError('Could not find file in available file list.')
-        return idx
+        # return a scalar rather than array - otherwise introduces array to index warnings.
+        return idx[0]
 
     # convert this to a normal get so files[in:in2] gives the same as requested
     # here support slicing via date and index filename is inclusive slicing,
@@ -375,14 +395,14 @@ class Files(object):
             for (sta,stp) in zip(start, end):
                 id1 = self.get_index(sta)
                 id2 = self.get_index(stp)
-                files.extend(self.files.iloc[id1[0] : id2[0]+1])
+                files.extend(self.files.iloc[id1 : id2+1])
         elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
             estr = 'Either both or none of the inputs need to be iterable'
             raise ValueError(estr)
         else:
             id1 = self.get_index(start)
             id2 = self.get_index(end)
-            files = self.files[id1[0]:id2[0]+1].to_list()
+            files = self.files[id1:id2+1].to_list()
         return files
 
     def _remove_data_dir_path(self, inp=None):

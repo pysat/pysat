@@ -7,12 +7,7 @@ import pandas as pds
 try:
     basestring
 except NameError:
-    print ('setting basestring')
     basestring = str
-
-#if 'basestring' not in globals():
-    #print ('setting basestring')
-    #basestring = str
     
 from pysat import DataFrame, Series
 
