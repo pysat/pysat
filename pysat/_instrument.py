@@ -165,6 +165,7 @@ class Instrument(object):
             except AttributeError:
                 raise AttributeError(string.join(('A name and platform attribute for the ',
                                      'instrument is required if supplying routine module directly.')))
+            # look to module for instrument functions and defaults
             self._assign_funcs(inst_module=inst_module)
             
         # more reasonable defaults for optional parameters
@@ -190,7 +191,7 @@ class Instrument(object):
         # value not provided by user, check if there is a value provided by
         # instrument module
         elif self.file_format is not None:
-            # check if it is an iteratable string.  If it isn't formatted
+            # check if it is an iterable string.  If it isn't formatted
             # properly, give a warning and set file_format to None
             if(not isinstance(self.file_format, str) or
                self.file_format.find("{") < 0 or
