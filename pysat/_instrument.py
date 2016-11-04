@@ -1101,7 +1101,7 @@ class Instrument(object):
 
             # check for binary types
             for key in adict.keys():
-                if type(adict[key]) is bool:
+                if isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
                     
             out_data.setncatts(adict)
