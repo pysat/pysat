@@ -21,12 +21,13 @@ class Orbits(object):
         instrument object to determine orbits for
     index : string
         name of the data series to use for determing orbit breaks
-    kind : {'local time', 'longitude', 'polar'}
+    kind : {'local time', 'longitude', 'polar', 'orbit'}
         kind of orbit, determines how orbital breaks are determined
         
         - local time: negative gradients in lt or breaks in inst.data.index
         - longitude: negative gradients or breaks in inst.data.index
         - polar: zero crossings in latitude or breaks in inst.data.index
+        - orbit: uses unique values of orbit number
     period : np.timedelta64
         length of time for orbital period, used to gauge when a break
         in the datetime index (inst.data.index) is large enough to
@@ -95,6 +96,8 @@ class Orbits(object):
             self._detBreaks = functools.partial(self._equaBreaks, orbit_index_period=360.)
         elif kind == 'polar':
             self._detBreaks = self._polarBreaks
+        elif kind == 'orbit':
+            self._detBreaks = self._orbitNumberBreaks
         else:
             raise ValueError('Unknown kind of orbit requested.')
 
@@ -259,7 +262,6 @@ class Orbits(object):
         # set number of orbits for the day
         self.num = num_orbits
 
-
     def _polarBreaks(self):
         """Determine where breaks in a polar orbiting satellite orbit occur.
         
@@ -338,7 +340,6 @@ class Orbits(object):
         self._orbit_breaks = ind
         # set number of orbits for the day
         self.num = num_orbits
-
 
     def _getBasicOrbit(self, orbit=None):
         """Load a particular orbit into .data for loaded day.
