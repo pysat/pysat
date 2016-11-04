@@ -325,7 +325,6 @@ class Files(object):
         
         """
 
-        #print( fname)
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
             # filename not in index, try reloading files from disk
@@ -335,7 +334,8 @@ class Files(object):
 
             if len(idx) == 0:
                 raise ValueError('Could not find file in available file list.')
-        return idx
+        # return a scalar rather than array - otherwise introduces array to index warnings.
+        return idx[0]
 
     # convert this to a normal get so files[in:in2] gives the same as requested
     # here support slicing via date and index filename is inclusive slicing,
