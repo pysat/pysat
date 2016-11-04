@@ -78,7 +78,8 @@ class Files(object):
     """
         
     def __init__(self, sat, manual_org=False, directory_format=None,
-                 update_files=False, file_format=None):
+                       update_files=False, file_format=None,
+                       write_to_disk=True):
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
         # location of .pysat file
@@ -117,6 +118,11 @@ class Files(object):
 
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         
+        self.write_to_disk = write_to_disk
+        if write_to_disk is False:
+            self._previous_file_list = pds.Series([])
+            self._current_file_list = pds.Series([])
+            
         if self._sat.platform != '':
             # load stored file info
             info = self._load()
@@ -177,10 +183,14 @@ class Files(object):
 
         if new_flag:
             # print('New files')
-            stored_files.to_csv(os.path.join(self.home_path, 'previous_'+name),
+            if self.write_to_disk:
+                stored_files.to_csv(os.path.join(self.home_path, 'previous_'+name),
+                                    date_format='%Y-%m-%d %H:%M:%S.%f')
+                self.files.to_csv(os.path.join(self.home_path, name),
                                 date_format='%Y-%m-%d %H:%M:%S.%f')
-            self.files.to_csv(os.path.join(self.home_path, name),
-                              date_format='%Y-%m-%d %H:%M:%S.%f')
+            else:
+                self._previous_file_list = stored_files
+                self._current_file_list = self.files.copy()
         return
 
     def _load(self, prev_version=False):
@@ -207,7 +217,14 @@ class Files(object):
             fname = os.path.join(self.home_path, fname)
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
-            return pds.Series.from_csv(fname, index_col=0)
+            if self.write_to_disk:
+                return pds.Series.from_csv(fname, index_col=0)
+            else:
+                # grab files from memory
+                if prev_version:
+                    return self._previous_file_list
+                else:
+                    return self._current_file_list
         else:
             return pds.Series([])
 
