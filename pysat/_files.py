@@ -174,12 +174,15 @@ class Files(object):
         # list if not, do nothing
         stored_files = self._load()
         if len(stored_files) != len(self.files):
+            # # of items is different, things are new
             new_flag = True
         elif len(stored_files) == len(self.files):
-            if (stored_files != self.files).any():
-                new_flag = True
-            else:
+            # # of items equal, check specifically for equality
+            if stored_files.eq(self.files).all():
                 new_flag = False
+            else:
+                # not equal, there are new files
+                new_flag = True
 
         if new_flag:
             # print('New files')
