@@ -1,6 +1,8 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+import functools
+
 import numpy as np
 import pandas as pds
 from pysat import Series, DataFrame
@@ -88,9 +90,9 @@ class Orbits(object):
         self.orbit_period = period
 
         if (kind == 'local time') or (kind == 'lt'):
-            self._detBreaks = self._equaBreaks
+            self._detBreaks = functools.partial(self._equaBreaks, orbit_index_period=24.)
         elif (kind == 'longitude') or (kind == 'long'):
-            self._detBreaks = self._longBreaks
+            self._detBreaks = functools.partial(self._equaBreaks, orbit_index_period=360.)
         elif kind == 'polar':
             self._detBreaks = self._polarBreaks
         else:
@@ -142,11 +144,16 @@ class Orbits(object):
             # set current orbit counter to zero (default)
             self.current = 0
 
-    def _equaBreaks(self):
+    def _equaBreaks(self, orbit_index_period=24.):
         """Determine where breaks in an equatorial satellite orbit occur.
         
         Looks for negative gradients in local time (or longitude) as well as 
         breaks in UT.
+
+        Parameters
+        ----------
+        orbit_index_period : float
+           The change in value of supplied index parameter for a single orbit
 
         """
 
@@ -190,8 +197,8 @@ class Orbits(object):
                 if len(tidx) != 0:
                     for tidx in tidx:
                         # look at time change vs local time change
-                        if ut_diff[idx - 5:idx + 6].iloc[tidx] < lt_diff[idx - 5:idx + 6].iloc[
-                              tidx] / 24. * self.orbit_period:
+                        if (ut_diff[idx - 5:idx + 6].iloc[tidx] < lt_diff[idx - 5:idx + 6].iloc[tidx] /
+                            orbit_index_period * self.orbit_period):
                             # change in ut inconsistent with change in local time
                             # increases in local time require a change in ut
                             pass
@@ -203,13 +210,13 @@ class Orbits(object):
 
             ind = np.array(new_ind)
 
-        # check if UT breaks are consistent with orbital period
+        # check if there is a UT break that is larger than orbital period
         ut_change_vs_period = ut_diff > self.orbit_period
         # characterize ut change using orbital period
         norm_ut = ut_diff / self.orbit_period
         # now, look for breaks because the length of time between samples is too large,
         # thus there is no break in slt/mlt/etc, lt_diff is small but UT change is big
-        norm_ut_vs_norm_lt = norm_ut.gt(np.abs(lt_diff / 24.))
+        norm_ut_vs_norm_lt = norm_ut.gt(np.abs(lt_diff / orbit_index_period))
 
         ut_ind, = np.where(ut_change_vs_period | (norm_ut_vs_norm_lt & (norm_ut > 0.95)))
         # & lt_diff.notnull() ))# & (lt_diff != 0)  ) )   #added the or and check after or on 10/20/2014
@@ -224,7 +231,7 @@ class Orbits(object):
         orbit_ut_diff = ut_vals[ind].diff()
         orbit_lt_diff = self.sat[self.orbit_index][ind].diff()
 
-        idx, = np.where((orbit_ut_diff / self.orbit_period - orbit_lt_diff.values / 24.) > 0.97)
+        idx, = np.where((orbit_ut_diff / self.orbit_period - orbit_lt_diff.values / orbit_index_period) > 0.97)
         idx = np.hstack((0, idx))
         if len(ind) > 0:
             ind = ind[idx]
@@ -251,12 +258,6 @@ class Orbits(object):
             raise ValueError('Orbit properties must be defined at ' +
                              'pysat.Instrument object instantiation.' + 
                              'See Instrument docs.')
-            #try:
-            #    self.sat['glong']
-            #    self.orbit_index = 'glong'
-            #except ValueError:
-            #    raise ValueError(''.join(('Unable to find a valid index',
-            #                              'for determining orbits. Provide one in orbit_index')))
         else:
             try:
                 self.sat[self.orbit_index]
@@ -292,7 +293,7 @@ class Orbits(object):
                         # look at time change vs longitude change
                         if ut_diff[idx - 5:idx + 6].iloc[tidx] < lt_diff[idx - 5:idx + 6].iloc[
                             tidx] / 360. * self.orbit_period:
-                            # change in ut inconsistent with change in local time
+                            # change in ut inconsistent with change in longitude
                             # increases in longitude require a change in ut
                             pass
                         # print 'Fake Orbit Break.'
@@ -311,7 +312,6 @@ class Orbits(object):
             ((ut_diff / self.orbit_period > (np.abs(lt_diff / 360.))) &
              (ut_diff / self.orbit_period > 0.95))
         )
-        #  & lt_diff.notnull() ))# & (lt_diff != 0)  ) )   #added the or and check after or on 10/20/2014
 
         if len(ut_ind) > 0:
             ind = np.hstack((ind, ut_ind))
