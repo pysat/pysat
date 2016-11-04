@@ -174,8 +174,7 @@ class Orbits(object):
         ut_diff = ut_vals.diff()
 
         # get locations where orbit index derivative is less than 0
-        # or, look for breaks because the length of time between samples is too large
-        # deriv of datetime index is in naneseconds
+        # then do some basic checks on these locations
         ind, = np.where((lt_diff < -0.1))
         if len(ind) > 0:
             ind = np.hstack((ind, np.array([len(self.sat[self.orbit_index])])))
@@ -195,31 +194,39 @@ class Orbits(object):
                 tidx, = np.where(lt_diff[idx - 5:idx + 6] > 0.1)
 
                 if len(tidx) != 0:
+                    # there are large changes, suggests a false alarm
+                    # iterate over samples and check
                     for tidx in tidx:
                         # look at time change vs local time change
                         if (ut_diff[idx - 5:idx + 6].iloc[tidx] < lt_diff[idx - 5:idx + 6].iloc[tidx] /
-                            orbit_index_period * self.orbit_period):
-                            # change in ut inconsistent with change in local time
-                            # increases in local time require a change in ut
+                                                                    orbit_index_period * self.orbit_period):
+                            # change in ut is small compared to the change in the orbit index
+                            # this is flagged as a false alarm, or dropped from consideration
                             pass
                         else:
+                            # change in UT is significant, keep orbit break
                             new_ind.append(idx)
                             break
                 else:
+                    # no large positive gradients, current orbit break passes the first test
                     new_ind.append(idx)
-
+            # replace all breaks with those that are 'good'
             ind = np.array(new_ind)
 
-        # check if there is a UT break that is larger than orbital period
+        # now, assemble some orbit breaks that are not triggered by changes in the orbit index
+
+        # check if there is a UT break that is larger than orbital period, aka a time gap
         ut_change_vs_period = ut_diff > self.orbit_period
         # characterize ut change using orbital period
         norm_ut = ut_diff / self.orbit_period
         # now, look for breaks because the length of time between samples is too large,
         # thus there is no break in slt/mlt/etc, lt_diff is small but UT change is big
         norm_ut_vs_norm_lt = norm_ut.gt(np.abs(lt_diff / orbit_index_period))
-
+        # indices when one or other flag is true
         ut_ind, = np.where(ut_change_vs_period | (norm_ut_vs_norm_lt & (norm_ut > 0.95)))
         # & lt_diff.notnull() ))# & (lt_diff != 0)  ) )   #added the or and check after or on 10/20/2014
+
+        # combine these UT determined orbit breaks with the orbit index orbit breaks
         if len(ut_ind) > 0:
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
@@ -227,19 +234,26 @@ class Orbits(object):
             print('Time Gap')
 
         # now that most problems in orbits should have been caught, look at
-        # the time difference between orbits
+        # the time difference between orbits (not individual orbits)
         orbit_ut_diff = ut_vals[ind].diff()
         orbit_lt_diff = self.sat[self.orbit_index][ind].diff()
-
+        # look for time gaps between partial orbits. The full orbital time period is not required
+        # between end of one orbit and begining of next if first orbit is partial.
+        # also provides another general test of the orbital breaks determined.
         idx, = np.where((orbit_ut_diff / self.orbit_period - orbit_lt_diff.values / orbit_index_period) > 0.97)
-        idx = np.hstack((0, idx))
+        # pull out breaks that pass the test, need to make sure the first one is always included
+        # it gets dropped via the nature of diff
+        if idx[0] != 0:
+            idx = np.hstack((0, idx))
+        # only keep the good indices
         if len(ind) > 0:
             ind = ind[idx]
 
+        # create orbitbreak index, ensure first element is always 0
+        if ind[0] != 0:
+            ind = np.hstack((np.array([0]), ind))
         # number of orbits
-        num_orbits = len(ind) + 1
-        # create orbitbreak index
-        ind = np.hstack((np.array([0]), ind))
+        num_orbits = len(ind)
         # set index of orbit breaks
         self._orbit_breaks = ind
         # set number of orbits for the day
@@ -280,14 +294,51 @@ class Orbits(object):
             ind = np.sort(ind)
             ind = np.unique(ind)
             # print 'Time Gap'
+
+        # create orbitbreak index, ensure first element is always 0
+        if ind[0] != 0:
+            ind = np.hstack((np.array([0]), ind))
         # number of orbits
-        num_orbits = len(ind) + 1
-        # create orbitbreak index
-        ind = np.hstack((np.array([0]), ind))
+        num_orbits = len(ind)
         # set index of orbit breaks
         self._orbit_breaks = ind
         # set number of orbits for the day
         self.num = num_orbits
+
+    def _orbitNumberBreaks(self):
+        """Determine where orbital breaks in a dataset with orbit numbers occur.
+
+        Looks for changes in unique values.
+
+        """
+
+        if self.orbit_index is None:
+            raise ValueError('Orbit properties must be defined at ' +
+                             'pysat.Instrument object instantiation.' +
+                             'See Instrument docs.')
+        else:
+            try:
+                self.sat[self.orbit_index]
+            except ValueError:
+                raise ValueError('Provided orbit index does not appear to exist in loaded data')
+
+        # determine where the orbit index changes from one value to the next
+        uniq_vals = self.sat[self.orbit_index].unique()
+        orbit_index = []
+        for val in uniq_vals:
+            idx, = np.where(val == self.sat[self.orbit_index])
+            orbit_index.append(idx[0])
+
+        # create orbitbreak index, ensure first element is always 0
+        if orbit_index[0] != 0:
+            ind = np.hstack((np.array([0]), orbit_index))
+        # number of orbits
+        num_orbits = len(ind)
+        # set index of orbit breaks
+        self._orbit_breaks = ind
+        # set number of orbits for the day
+        self.num = num_orbits
+
 
     def _getBasicOrbit(self, orbit=None):
         """Load a particular orbit into .data for loaded day.
