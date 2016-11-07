@@ -22,7 +22,7 @@ else:
     re_load = reload
 
 
-def create_dir(inst=None, temp_file_list=False):
+def create_dir(inst=None, temporary_file_list=False):
     import os
     import tempfile
 
@@ -33,7 +33,7 @@ def create_dir(inst=None, temp_file_list=False):
     if inst is None:
         # create instrument
         inst = pysat.Instrument(platform='pysat', name='testing',
-                                temporary_file_list=temp_file_list)
+                                temporary_file_list=temporary_file_list)
         
     # create data directories
     try:
@@ -104,6 +104,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
 
 class TestBasics:
+    
+    def __init__(self, temporary_file_list=False):
+        self.temporary_file_list = temporary_file_list
+        
+        
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
@@ -115,7 +120,9 @@ class TestBasics:
 
         t_module = pysat.instruments.pysat_testing
         #t_module.list_files = list_year_doy_files
-        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, clean_level='clean')
+        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
+                                         clean_level='clean',
+                                         temporary_file_list=self.temporary_file_list)
         # create testing directory
         create_dir(self.testInst)
 
@@ -282,9 +289,16 @@ class TestBasics:
         re_load(pysat.instruments.pysat_testing)
         assert (np.all(inst.files.files.index == dates))
 
+class TestBasicsNoFileListStorage(TestBasics):
+    def __init__(self, temporary_file_list=True):
+        self.temporary_file_list = temporary_file_list
+
 
 
 class TestInstrumentWithFiles:
+
+    def __init__(self, temporary_file_list=False):
+        self.temporary_file_list = temporary_file_list
         
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -294,7 +308,7 @@ class TestInstrumentWithFiles:
         dir_name = tempfile.gettempdir()
         pysat.utils.set_data_dir(dir_name, store=False)
         # create testing directory
-        create_dir()
+        create_dir(temporary_file_list=self.temporary_file_list)
 
         # create a test instrument, make sure it is getting files from filesystem
         #import pysat.instruments.pysat_testing
@@ -303,7 +317,8 @@ class TestInstrumentWithFiles:
         pysat.instruments.pysat_testing.list_files = list_files
         # create a bunch of files by year and doy
         self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
-                                         clean_level='clean')
+                                         clean_level='clean',
+                                         temporary_file_list=self.temporary_file_list)
 
         self.root_fname = 'pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}_{min:02d}_{sec:02d}.pysat_testing_file'
         start = pysat.datetime(2007,12,31)
@@ -313,7 +328,8 @@ class TestInstrumentWithFiles:
                      root_fname = self.root_fname)
 
         self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
-                                         clean_level='clean', update_files=True)
+                                         clean_level='clean', update_files=True,
+                                         temporary_file_list=self.temporary_file_list)
         
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -325,7 +341,9 @@ class TestInstrumentWithFiles:
         # make sure everything about instrument state is restored
         # restore original file list, no files
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
-                                         clean_level='clean', update_files=True)
+                         clean_level='clean', 
+                         update_files=True,
+                         temporary_file_list=self.temporary_file_list)
         pysat.utils.set_data_dir(self.data_path, store=False)
 
     def test_refresh(self):
@@ -448,7 +466,8 @@ class TestInstrumentWithFiles:
                                          clean_level='clean',
                                          sat_id='hello',
                                          directory_format='pysat_testing_{tag}_{sat_id}',
-                                         update_files=True)                    
+                                         update_files=True,
+                                         temporary_file_list=self.temporary_file_list)                    
         # add new files
         create_dir(self.testInst)
         remove_files(self.testInst)
@@ -460,7 +479,8 @@ class TestInstrumentWithFiles:
                                 clean_level='clean',
                                 sat_id='hello',
                                 directory_format='pysat_testing_{tag}_{sat_id}',
-                                update_files=True)                    
+                                update_files=True,
+                                temporary_file_list=self.temporary_file_list)                    
                      
         # get new files   
         new_files = self.testInst.files.get_new()
@@ -469,3 +489,7 @@ class TestInstrumentWithFiles:
         #print('new_files ', new_files.index)
         assert (np.all(self.testInst.files.files.index == dates) & 
                 np.all(new_files.index == dates) )
+
+class TestInstrumentWithFilesNoFileListStorage(TestInstrumentWithFiles):
+    def __init__(self, temporary_file_list=True):
+        self.temporary_file_list = temporary_file_list
