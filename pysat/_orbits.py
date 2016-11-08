@@ -246,15 +246,19 @@ class Orbits(object):
         idx, = np.where((orbit_ut_diff / self.orbit_period - orbit_lt_diff.values / orbit_index_period) > 0.97)
         # pull out breaks that pass the test, need to make sure the first one is always included
         # it gets dropped via the nature of diff
-        if idx[0] != 0:
-            idx = np.hstack((0, idx))
+        if len(idx) > 0:
+            if idx[0] != 0:
+                idx = np.hstack((0, idx))
+        else:
+            idx = np.array([0])
         # only keep the good indices
         if len(ind) > 0:
             ind = ind[idx]
-
-        # create orbitbreak index, ensure first element is always 0
-        if ind[0] != 0:
-            ind = np.hstack((np.array([0]), ind))
+            # create orbitbreak index, ensure first element is always 0
+            if ind[0] != 0:
+                ind = np.hstack((np.array([0]), ind))
+        else:
+            ind = np.array([0])
         # number of orbits
         num_orbits = len(ind)
         # set index of orbit breaks
