@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports the SEE instrument onboard TIMED. 
+"""Supports the SEE instrument on TIMED.
 
 Downloads data from the NASA Coordinated Data 
 Analysis Web (CDAWeb).
@@ -36,14 +36,9 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
-import pandas as pds
-import numpy as np
-import pysat
-import sys
-
 import functools
 
-
+import pysat
 from . import nasa_cdaweb_methods as cdw
 
 # include basic instrument info
@@ -53,23 +48,21 @@ name = 'see'
 # support list files routine
 # use the default CDAWeb method
 fname = 'timed_l3a_see_{year:04d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'':fname}
+supported_tags = {'': fname}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags,
                                fake_daily_files_from_monthly=True)
 
 # support download routine
 # use the default CDAWeb method
-basic_tag = {'dir':'/pub/data/timed/cdf/see/l3a',
-            'remote_fname':'{year:4d}/{month:02d}/'+fname,
-            'local_fname':fname}
-supported_tags = {'':basic_tag}
+basic_tag = {'dir': '/pub/data/timed/cdf/see/l3a',
+             'remote_fname': '{year:4d}/{month:02d}/'+fname,
+             'local_fname': fname}
+supported_tags = {'': basic_tag}
 download = functools.partial(cdw.download, supported_tags)
 
 # support load routine
 # use the default CDAWeb method
-#load = functools.partial(cdw.load, fake_daily_files_from_monthly=True,
-#                         flatten_twod=True)
 load = functools.partial(cdw.load, fake_daily_files_from_monthly=True)
 
                     
