@@ -17,8 +17,12 @@ tag : string
     None
 flatten_twod : bool (True)
     If True, then two dimensional data is flattened across 
-    columns. If False, then 2D data is stored as a series
-    of DataFrames, indexed by Epoch.
+    columns. Name mangling is used to group data, first column
+    is 'name', last column is 'name_end'. In between numbers are 
+    appended 'name_1', 'name_2', etc. All data for a given 2D array
+    may be accessed via, data.ix[:,'item':'item_end']
+    If False, then 2D data is stored as a series of DataFrames, 
+    indexed by Epoch. data.ix[0, 'item']
 
 Note
 ----
@@ -41,6 +45,10 @@ import functools
 
 
 from . import nasa_cdaweb_methods as cdw
+
+# include basic instrument info
+platform = 'timed'
+name = 'see'
 
 # support list files routine
 # use the default CDAWeb method
