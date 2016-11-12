@@ -74,13 +74,14 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
             out = out + '_' + out.index.strftime('%Y-%m-%d')  
             return out
 
-        return pysat.Files.from_os(data_path=data_path, 
-                                   format_str=format_str)
+        return out
     else:
         estr = 'A directory must be passed to the loading routine for <Instrument Code>'
         raise ValueError (estr)            
 
-def load(fnames, tag=None, sat_id=None, fake_daily_files_from_monthly=False):
+def load(fnames, tag=None, sat_id=None, 
+         fake_daily_files_from_monthly=False,
+         flatten_twod=True):
     """Load NASA CDAWeb CDF files
 
     Parameters
@@ -118,20 +119,21 @@ def load(fnames, tag=None, sat_id=None, fake_daily_files_from_monthly=False):
         # need modification 
         # currently only loads one file, which handles more situations via pysat
         # than you may initially think
-        with pysatCDF.CDF(fnames[0]) as cdf:
-            if fake_daily_files_from_monthly:
-                # parse out date from filename
-                fname = fnames[0][0:-11]
-                date = pysat.datetime.strptime(fname[0][-10:], '%Y-%m-%d')
+        
+        if fake_daily_files_from_monthly:
+            # parse out date from filename
+            fname = fnames[0][0:-11]
+            date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
+            with pysatCDF.CDF(fname) as cdf:
                 # convert data to pysat format
-                data, meta = cdf.to_pysat()
+                data, meta = cdf.to_pysat(flatten_twod=flatten_twod)
                 # select data from monthly
                 data = data.ix[date:date+pds.DateOffset(days=1) - pds.DateOffset(microseconds=1),:]
-                return data, meta
-            
-            else:
-                # basic data return            
-                return cdf.to_pysat()
+                return data, meta     
+        else:
+            # basic data return 
+            with pysatCDF.CDF(fnames[0]) as cdf:     
+                return cdf.to_pysat(flatten_twod=flatten_twod)
 
 def download(supported_tags, date_array, tag, sat_id, 
              ftp_site='cdaweb.gsfc.nasa.gov', 
@@ -220,9 +222,10 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download                  
         try:
-            print('Downloading file for '+date.strftime('%D'))
+            print('Attempting to download file for '+date.strftime('%D'))
             sys.stdout.flush()
             ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'w').write)
+            print('Finished.')
         except ftplib.error_perm as exception:
             if exception[0][0:3] != '550':
                 raise
