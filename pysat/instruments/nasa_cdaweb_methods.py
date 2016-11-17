@@ -11,7 +11,8 @@ import sys
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
-               supported_tags=None):
+               supported_tags=None, fake_daily_files_from_monthly=False,
+               two_digit_year_break=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
@@ -30,6 +31,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     supported_tags : (dict or NoneType)
         keys are tags supported by list_files routine. Values are the
         default format_str values for key. (default=None)
+    fake_daily_files_from_monthly : bool
+        Some CDAWeb instrument data files are stored by month, interfering
+        with pysat's functionality of loading by day. This flag, when true,
+        appends daily dates to monthly files internally. These dates are
+        used by load routine in this module to provide data by day. 
 
     Returns
     --------
@@ -58,13 +64,24 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                     format_str = supported_tags[tag]
                 except KeyError:
                     raise ValueError('Unknown tag')
-        return pysat.Files.from_os(data_path=data_path, 
-                                   format_str=format_str)
+        out = pysat.Files.from_os(data_path=data_path, 
+                                      format_str=format_str)
+
+        if (not out.empty) and fake_daily_files_from_monthly:
+            out.ix[out.index[-1] + pds.DateOffset(months=1) -
+                                   pds.DateOffset(days=1)] = out.iloc[-1]  
+            out = out.asfreq('D', 'pad')
+            out = out + '_' + out.index.strftime('%Y-%m-%d')  
+            return out
+
+        return out
     else:
         estr = 'A directory must be passed to the loading routine for <Instrument Code>'
         raise ValueError (estr)            
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, 
+         fake_daily_files_from_monthly=False,
+         flatten_twod=True):
     """Load NASA CDAWeb CDF files
 
     Parameters
@@ -75,6 +92,12 @@ def load(fnames, tag=None, sat_id=None):
         tag or None (default=None)
     sat_id : (str or NoneType)
         satellite id or None (default=None)
+    fake_daily_files_from_monthly : bool
+        Some CDAWeb instrument data files are stored by month, interfering
+        with pysat's functionality of loading by day. This flag, when true,
+        parses of daily dates to monthly files that were added internally
+        by the list_files routine, when flagged. These dates are
+        used here to provide data by day. 
 
     Returns
     ---------
@@ -96,12 +119,26 @@ def load(fnames, tag=None, sat_id=None):
         # need modification 
         # currently only loads one file, which handles more situations via pysat
         # than you may initially think
-        with pysatCDF.CDF(fnames[0]) as cdf:
-            return cdf.to_pysat()
+        
+        if fake_daily_files_from_monthly:
+            # parse out date from filename
+            fname = fnames[0][0:-11]
+            date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
+            with pysatCDF.CDF(fname) as cdf:
+                # convert data to pysat format
+                data, meta = cdf.to_pysat(flatten_twod=flatten_twod)
+                # select data from monthly
+                data = data.ix[date:date+pds.DateOffset(days=1) - pds.DateOffset(microseconds=1),:]
+                return data, meta     
+        else:
+            # basic data return 
+            with pysatCDF.CDF(fnames[0]) as cdf:     
+                return cdf.to_pysat(flatten_twod=flatten_twod)
 
 def download(supported_tags, date_array, tag, sat_id, 
              ftp_site='cdaweb.gsfc.nasa.gov', 
-             data_path=None, user=None, password=None):
+             data_path=None, user=None, password=None,
+             fake_daily_files_from_monthly=False):
     """Routine to download NASA CDAWeb CDF data
 
     Parameters
@@ -125,6 +162,10 @@ def download(supported_tags, date_array, tag, sat_id,
     password : (string or NoneType)
         User password to be passed along to resource with relevant data.  
         (default=None)
+    fake_daily_files_from_monthly : bool
+        Some CDAWeb instrument data files are stored by month.This flag, 
+        when true, accomodates this reality with user feedback on a monthly
+        time frame. 
 
     Returns
     --------
@@ -150,7 +191,6 @@ def download(supported_tags, date_array, tag, sat_id,
     import os
     import ftplib
 
-
     # connect to CDAWeb default port
     ftp = ftplib.FTP(ftp_site) 
     # user anonymous, passwd anonymous@
@@ -171,8 +211,8 @@ def download(supported_tags, date_array, tag, sat_id,
     # to CDAWeb scheme, though directory structures may be reduced
     # if desired
     local_fname = ftp_dict['local_fname']
-        
-    for date in date_array:
+    
+    for date in date_array:            
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year, 
                         month=date.month, day=date.day)
@@ -182,16 +222,17 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download                  
         try:
-            print('Downloading file for '+date.strftime('%D'))
+            print('Attempting to download file for '+date.strftime('%D'))
             sys.stdout.flush()
             ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'w').write)
+            print('Finished.')
         except ftplib.error_perm as exception:
             if exception[0][0:3] != '550':
                 raise
             else:
                 os.remove(saved_local_fname)
                 print('File not available for '+ date.strftime('%D'))
-                
+               
                     
                     
                     
