@@ -66,13 +66,18 @@ def load(fnames, tag=None, sat_id=None):
         with open(fname) as f:
             lines = f.readlines()
             idx = 0
-            yr = np.zeros(len(lines)*24, dtype=int)
-            mo = np.zeros(len(lines)*24, dtype=int)
-            day = np.zeros(len(lines)*24, dtype=int)
-            ut = np.zeros(len(lines)*24, dtype=int)
-            dst = np.zeros(len(lines)*24, dtype=int)
+            # check if all lines are good
+            max_lines=0
             for line in lines:
-                if len(line) > 0:
+                if len(line) > 1:
+                    max_lines+=1
+            yr = np.zeros(max_lines*24, dtype=int)
+            mo = np.zeros(max_lines*24, dtype=int)
+            day = np.zeros(max_lines*24, dtype=int)
+            ut = np.zeros(max_lines*24, dtype=int)
+            dst = np.zeros(max_lines*24, dtype=int)
+            for line in lines:
+                if len(line) > 1:
                     temp_year = int(line[14:16] + line[3:5]) 
                     if temp_year > 57:
                         temp_year += 1900
