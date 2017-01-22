@@ -5,26 +5,26 @@ import os
 
 # get home directory
 home_dir = os.path.expanduser('~')
-# put pysat directory in home directory
+# set pysat directory path in home directory
 pysat_dir = os.path.join(home_dir, '.pysat')
 # make sure a pysat directory exists
 if not os.path.isdir(pysat_dir):
     # create directory
     os.mkdir(pysat_dir)
+    # create file
     with open(os.path.join(pysat_dir, 'data_path.txt'),'w') as f:
         f.write('')
-
-    print(''.join(('Created .pysat directory. Run pysat.utils.set_data_dir to set the path',
-                   ' to top-level directory containing science data.')))
+    print('Created .pysat directory in user home directory to store settings.')
     data_dir=''
 else:
     # load up stored data path
     with open(os.path.join(pysat_dir, 'data_path.txt'),'r') as f:
         data_dir = f.readline()
-    if data_dir == '':
-        print('Run pysat.utils.set_data_dir to set the path to top-level directory containing science data.')
-#del f
 
+if data_dir == '':
+    print(''.join(('Run pysat.utils.set_data_dir to set the path',
+          ' to top-level directory that will/does contain science data.')))
+          
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils
 from ._instrument import Instrument
@@ -33,7 +33,6 @@ from ._files import Files
 from ._custom import Custom
 from ._orbits import Orbits
 from . import instruments
-
 from . import ssnl
 
 
