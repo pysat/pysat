@@ -2,19 +2,24 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import os
+
+# get home directory
+home_dir = os.path.expanduser('~')
+# put pysat directory in home directory
+pysat_dir = os.path.join(home_dir, '.pysat')
 # make sure a pysat directory exists
-if not os.path.isdir(os.path.join(os.getenv('HOME'), '.pysat')):
+if not os.path.isdir(pysat_dir):
     # create directory
-    print(''.join(('Creating .pysat directory. Run pysat.utils.set_data_dir to set the path',
-                   ' to top-level directory containing science data.')))
-    os.mkdir(os.path.join(os.getenv('HOME'), '.pysat'))
-    with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'),'w') as f:
+    os.mkdir(pysat_dir)
+    with open(os.path.join(pysat_dir, 'data_path.txt'),'w') as f:
         f.write('')
-        #f.close()
+
+    print(''.join(('Created .pysat directory. Run pysat.utils.set_data_dir to set the path',
+                   ' to top-level directory containing science data.')))
     data_dir=''
 else:
     # load up stored data path
-    with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'),'r') as f:
+    with open(os.path.join(pysat_dir, 'data_path.txt'),'r') as f:
         data_dir = f.readline()
     if data_dir == '':
         print('Run pysat.utils.set_data_dir to set the path to top-level directory containing science data.')
