@@ -1,0 +1,7 @@
+include *.py
+include *.f
+include *.c
+recursive-include pysat *.py
+include *.md
+include description.txt
+include LICENSE

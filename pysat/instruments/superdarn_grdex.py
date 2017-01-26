@@ -196,7 +196,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             
         for date in date_array:
             myDir = '/data/'+date.strftime("%Y")+'/grdex/'+tag+'/'
-            fname = date.strftime("%Y%m%d")+'.north.grdex'
+            fname = date.strftime("%Y%m%d")+'.' + tag + '.grdex'
             local_fname = fname+'.bz2'
             saved_fname = os.path.join(data_path,local_fname) 
             full_fname = os.path.join(data_path,fname) 

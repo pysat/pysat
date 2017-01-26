@@ -46,7 +46,10 @@ class Instrument(object):
         Provide instrument module directly. 
         Takes precedence over platform/name.
     update_files : boolean, optional
-        If True, immediately query filesystem for instrument files and store. 
+        If True, immediately query filesystem for instrument files and store.
+    temporary_file_list : boolean, optional
+        If true, the list of Instrument files will not be written to disk.
+        Prevents a race condition when running multiple pysat processes.
     multi_file_day : boolean, optional 
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
@@ -136,6 +139,7 @@ class Instrument(object):
                  clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
+                 temporary_file_list=False,
                  *arg, **kwargs):
 
         if inst_module is None:
@@ -161,6 +165,7 @@ class Instrument(object):
             except AttributeError:
                 raise AttributeError(string.join(('A name and platform attribute for the ',
                                      'instrument is required if supplying routine module directly.')))
+            # look to module for instrument functions and defaults
             self._assign_funcs(inst_module=inst_module)
             
         # more reasonable defaults for optional parameters
@@ -186,7 +191,7 @@ class Instrument(object):
         # value not provided by user, check if there is a value provided by
         # instrument module
         elif self.file_format is not None:
-            # check if it is an iteratable string.  If it isn't formatted
+            # check if it is an iterable string.  If it isn't formatted
             # properly, give a warning and set file_format to None
             if(not isinstance(self.file_format, str) or
                self.file_format.find("{") < 0 or
@@ -227,10 +232,12 @@ class Instrument(object):
 
         # instantiate Files class
         manual_org = False if manual_org is None else manual_org
+        temporary_file_list = not temporary_file_list
         self.files = _files.Files(self, manual_org=manual_org, 
                                   directory_format=self.directory_format,
                                   update_files=update_files,
-                                  file_format=self.file_format)
+                                  file_format=self.file_format,
+                                  write_to_disk=temporary_file_list)
 
         # set bounds for iteration
         # self.bounds requires the Files class
@@ -408,9 +415,9 @@ class Instrument(object):
 
         if fid is not None:
             # get filename based off of index value
-            fname = self.files[fid]
+            fname = self.files[fid:fid+1]
         elif date is not None:
-            fname = self.files[date : date+pds.DateOffset(days=1)]
+            fname = self.files[date: date+pds.DateOffset(days=1)]
         else:
             raise ValueError('Must supply either a date or file id number.')
    
@@ -437,9 +444,9 @@ class Instrument(object):
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    output_str = ' '.join(('Returning', output_str,'data from', fname[0]))
+                    output_str = ' '.join(('Returning', output_str, 'data from', fname[0]))
                 else:
-                    output_str = ' '.join(('Returning', output_str,'data from', fname[0], '::', fname[-1]))
+                    output_str = ' '.join(('Returning', output_str, 'data from', fname[0], '::', fname[-1]))
         else:
             # no data signal
             output_str = ' '.join(('No', output_str, 'data for', date.strftime('%D')))
@@ -519,7 +526,7 @@ class Instrument(object):
             curr = date
         elif (yr is not None) & (doy is not None):
             # if date not defined but both yr and doy are
-            self.date = pds.datetime(yr,1,1) + pds.DateOffset(days=(doy-1))
+            self.date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
             self.yr = yr
             self.doy = doy
             self._fid = None
@@ -560,7 +567,7 @@ class Instrument(object):
                 # using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
                 self._curr_data, self._curr_meta = \
-                                self._load_data(date=self.date, fid=self._fid)
+                    self._load_data(date=self.date, fid=self._fid)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 # moving forward in time
@@ -596,7 +603,7 @@ class Instrument(object):
             self._next_data_track = curr + inc
             self._prev_data_track = curr - inc
             # attach data to object
-            if not self._curr_data.empty :
+            if not self._curr_data.empty:
                 self.data = self._curr_data.copy()
                 self.meta = self._curr_meta.copy()
             else:
@@ -620,7 +627,8 @@ class Instrument(object):
                     padLeft = self._prev_data.ix[(self._curr_data.index[0] -
                                                   self.pad) :
                                                  self._curr_data.index[0]]
-                self.data = pds.concat([padLeft[0:-1], self.data])
+                #self.data = pds.concat([padLeft[0:-1], self.data])
+                self.data = pds.concat([padLeft, self.data])
 
             if (not self._next_data.empty) & (not self.data.empty):
 
@@ -631,8 +639,13 @@ class Instrument(object):
                     padRight = self._next_data.ix[self._curr_data.index[-1] :
                                                   (self._curr_data.index[-1] +
                                                    self.pad)]
-                self.data = pds.concat([self.data, padRight[1:]])
+                #self.data = pds.concat([self.data, padRight[1:]])
+                self.data = pds.concat([self.data, padRight])
                 
+            # drop any possible duplicate index times
+            #self.data.drop_duplicates(inplace=True)
+            self.data = self.data[~self.data.index.duplicated()]
+            
         # if self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid) 
@@ -642,7 +655,7 @@ class Instrument(object):
         # check if load routine actually returns meta
         if self.meta.data.empty:
             self.meta[self.data.columns] = {'long_name': self.data.columns,
-                                            'units':['']*len(self.data.columns)}
+                                            'units': ['']*len(self.data.columns)}
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
             temp = self.data.index[0]
@@ -1095,7 +1108,7 @@ class Instrument(object):
 
             # check for binary types
             for key in adict.keys():
-                if type(adict[key]) is bool:
+                if isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
                     
             out_data.setncatts(adict)
