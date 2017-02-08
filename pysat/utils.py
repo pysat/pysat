@@ -77,7 +77,7 @@ def set_data_dir(path=None, store=None):
         raise ValueError('Path does not lead to a valid directory.')
         
 
-def load_netcdf4(fnames=None, strict_meta=False, format=None): #, index_label=None,
+def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='time'): #, index_label=None,
                     # unix_time=False, **kwargs):
     """Load netCDF-3/4 file produced by pysat.
     
@@ -151,59 +151,91 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None): #, index_label=No
                 obj_key_name = dim[1][ : -string.find(dim[1][::-1], '_')-5]
                 # collect variable names associated with object
                 obj_var_keys = []
+                # place to collect clean names without redundant naming scheme scheme
+                clean_var_keys = []
                 for tkey, tdim in zip(two_d_keys, two_d_dims):
                     if tdim == dim:
                         obj_var_keys.append(tkey)
-                        
-                # loop over first object dimension
-                # preallocate dataframes to hold objects because it is faster
-                init_frame = DataFrame(None)
-                loop_list = [init_frame]*data.variables[obj_var_keys[0]].shape[0]
-                for i, loop_frame in enumerate(loop_list):
-                    loop_frame = init_frame.copy()
-                    for key in obj_var_keys:
-                        loop_frame[key[len(obj_key_name)+1:]] = data.variables[key][i, :]
-                        
-                    # if the object index uses unix time, process into datetime index    
+                        # try to clean variable name based on to_netcdf name mangling
+                        # break off leading 'rpa_' from variable name if 
+                        # the 2D dimension label (obj_key_name) was 'rpa'
+                        clean_var_keys.append(tkey.split(obj_key_name+'_')[-1])
+# where the original code 'ends'
+
+                # check if the dimension is stored as its own variable
+                if (obj_key_name+'_dim_1') in obj_var_keys:
+                    # string used to indentify variable in data.variables that will be index
+                    index_key_name = 'dim_1' #'samples'
+                    # if the object index uses UNIX time, process into datetime index  
                     if data.variables[obj_key_name+'_dim_1'].long_name == 'UNIX time':
-                        # nanosecond resolution from datetime64 can't be stored in netcdf3
-                        # no 64-bit integers
-                        # it is stored as a float, need to undo processing 
-                        # due to precision loss, resolution limited to the microsecond
-                        loop_frame.index = pds.to_datetime((1E6*loop_frame['dim_1']).astype(int)*1000)
-                        loop_frame.index.name = 'time'
+                        # name to be used in DataFrame index
+                        index_name = 'time'
+                        time_index_flag = True
                     else:
-                        loop_frame.index = loop_frame['dim_1']
-                        loop_frame.index.name = data.variables[obj_key_name+'_dim_1'].long_name
+                        time_index_flag = False
+                        # name to be used in DataFrame index
+                        index_name = data.variables[obj_key_name+'_dim_1'].long_name
+                else:
+                    # dimension is not itself a variable
+                    index_key_name  = None                
+                              
+                # iterate over all of the variables for given dimensions
+                # and pull out metadata
+                dim_meta_data = pysat.Meta()
+                for key, clean_key in zip(obj_var_keys, clean_var_keys):
+                    # store attributes in metadata
+                    meta_dict = {}
+                    for nc_key in data.variables[key].ncattrs():
+                        meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
+                    dim_meta_data[clean_key] = meta_dict
+                mdata[obj_key_name] = dim_meta_data    
+                
+                # iterate over all variables with this dimension and store data
+                loop_list = []
+                # make a dict of all flattened variables
+                loop_dict = {}
+                for key, clean_key in zip(obj_var_keys, clean_var_keys):
+                    loop_dict[clean_key] = data.variables[key][:,:].flatten(order='C')
 
-
-                    del loop_frame['dim_1']
-                    loop_list[i] = loop_frame
-                    #print (loop_list[i] )
-                    #loop_list.append(loop_frame)
-                # add object data to loaded data dictionary
+                # number of values in time
+                loop_lim = data.variables[obj_var_keys[0]].shape[0]
+                # number of values per time
+                step_size = len(data.variables[obj_var_keys[0]][0,:])
+                # check for datetime type index
+                if not (index_key_name is None):
+                    # an index was found
+                    time_var = loop_dict.pop(index_key_name)
+                    if time_index_flag:
+                        # create datetime index from data
+                        time_var = pds.to_datetime(1E9*time_var)
+                    new_index = time_var
+                    new_index_name = index_name
+                else:
+                    # using integer indexing
+                    new_index = np.arange(loop_lim*step_size) % step_size
+                    new_index_name = 'index'
+                # load all data into frame
+                loop_frame = pds.DataFrame(loop_dict, columns=clean_var_keys)
+                del loop_frame['dim_1']
+                # break massive frame into bunch of smaller frames
+                for i in np.arange(loop_lim):
+                    loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
+                    loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                    loop_list[-1].index.name = new_index_name
+                        
+                # add 2D object data, all based on a unique dimension within netCDF,
+                # to loaded data dictionary
                 loadedVars[obj_key_name] = loop_list
                 del loop_list
                 
             # prepare dataframe index for this netcdf file
-            loadedVars['time'] = pds.to_datetime((loadedVars.pop('time')*1E6).astype(int)*1000)
+            time_var = loadedVars.pop(time_name)
+            # convert from GPS seconds to seconds used in pandas (unix time, no leap)
+            #time_var = convert_gps_to_unix_seconds(time_var)
+            loadedVars[time_name] = pds.to_datetime((time_var*1E6).astype(int)*1000)
+            
             running_store.append(loadedVars)
-            running_idx += len(loadedVars['time'])
-            # if index_label is not None:
-            #     if unix_time:
-            #         loadedVars['_index'] = pds.to_datetime((loadedVars.pop(index_label)*1E6).astype(int)*1000)
-            #     else:
-            #         loadedVars['_index'] = loadedVars.pop(index_label)
-            #     running_store.append(loadedVars)
-            #     running_idx += len(loadedVars['_index'])
-            # else:
-            #     # keep a running integer index if none provided
-            #     num = len(loadedVars[loadedVars.keys()[0]])
-            #     # this only guaranteed to work if all variables share the same
-            #     # first dimension
-            #     loadedVars['_index'] = np.arange(num) + running_idx
-            #     running_store.append(loadedVars)
-            #     running_idx += num
+            running_idx += len(loadedVars[time_name])
 
             if strict_meta:
                 if saved_mdata is None:
@@ -212,11 +244,79 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None): #, index_label=No
                     raise ValueError('Metadata across filenames is not the same.')
                     
     # combine all of the data loaded across files together
-    # currently doesn't work if list of dicts of lists is provided
-    # in other words, only one file at a time
-    out = DataFrame.from_records(running_store[0], index='time')
-         
+    out = []
+    for item in running_store:
+        out.append(pds.DataFrame.from_records(item, index=time_name))
+    out = pds.concat(out, axis=0)
     return out, mdata        
+
+                        
+                               
+                 
+## where the original code began                                                                        
+#                                                                                                                        
+#                # loop over first object dimension
+#                # preallocate dataframes to hold objects because it is faster
+#                init_frame = DataFrame(None)
+#                loop_list = [init_frame]*data.variables[obj_var_keys[0]].shape[0]
+#                for i, loop_frame in enumerate(loop_list):
+#                    loop_frame = init_frame.copy()
+#                    for key in obj_var_keys:
+#                        loop_frame[key[len(obj_key_name)+1:]] = data.variables[key][i, :]
+#                        
+#                    # if the object index uses unix time, process into datetime index    
+#                    if data.variables[obj_key_name+'_dim_1'].long_name == 'UNIX time':
+#                        # nanosecond resolution from datetime64 can't be stored in netcdf3
+#                        # no 64-bit integers
+#                        # it is stored as a float, need to undo processing 
+#                        # due to precision loss, resolution limited to the microsecond
+#                        loop_frame.index = pds.to_datetime((1E6*loop_frame['dim_1']).astype(int)*1000)
+#                        loop_frame.index.name = 'time'
+#                    else:
+#                        loop_frame.index = loop_frame['dim_1']
+#                        loop_frame.index.name = data.variables[obj_key_name+'_dim_1'].long_name
+#
+#
+#                    del loop_frame['dim_1']
+#                    loop_list[i] = loop_frame
+#                    #print (loop_list[i] )
+#                    #loop_list.append(loop_frame)
+#                # add object data to loaded data dictionary
+#                loadedVars[obj_key_name] = loop_list
+#                del loop_list
+#                
+#            # prepare dataframe index for this netcdf file
+#            loadedVars['time'] = pds.to_datetime((loadedVars.pop('time')*1E6).astype(int)*1000)
+#            running_store.append(loadedVars)
+#            running_idx += len(loadedVars['time'])
+#            # if index_label is not None:
+#            #     if unix_time:
+#            #         loadedVars['_index'] = pds.to_datetime((loadedVars.pop(index_label)*1E6).astype(int)*1000)
+#            #     else:
+#            #         loadedVars['_index'] = loadedVars.pop(index_label)
+#            #     running_store.append(loadedVars)
+#            #     running_idx += len(loadedVars['_index'])
+#            # else:
+#            #     # keep a running integer index if none provided
+#            #     num = len(loadedVars[loadedVars.keys()[0]])
+#            #     # this only guaranteed to work if all variables share the same
+#            #     # first dimension
+#            #     loadedVars['_index'] = np.arange(num) + running_idx
+#            #     running_store.append(loadedVars)
+#            #     running_idx += num
+#
+#            if strict_meta:
+#                if saved_mdata is None:
+#                    saved_mdata = copy.deepcopy(mdata)
+#                elif (mdata != saved_mdata):
+#                    raise ValueError('Metadata across filenames is not the same.')
+#                    
+#    # combine all of the data loaded across files together
+#    # currently doesn't work if list of dicts of lists is provided
+#    # in other words, only one file at a time
+#    out = DataFrame.from_records(running_store[0], index='time')
+#         
+#    return out, mdata        
 
 
 def getyrdoy(date):
