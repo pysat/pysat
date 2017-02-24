@@ -77,7 +77,7 @@ def set_data_dir(path=None, store=None):
         raise ValueError('Path does not lead to a valid directory.')
         
 
-def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='time'): #, index_label=None,
+def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch'): #, index_label=None,
                     # unix_time=False, **kwargs):
     """Load netCDF-3/4 file produced by pysat.
     
@@ -131,7 +131,7 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='time'):
                 if len(data.variables[key].dimensions) == 1:
                     # assuming basic time dimension
                     loadedVars[key] = data.variables[key][:] 
-                    if key != 'time':
+                    if key != 'epoch':
                         # load up metadata
                         meta_dict = {}
                         for nc_key in data.variables[key].ncattrs():
@@ -174,7 +174,7 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='time'):
                     # if the object index uses UNIX time, process into datetime index  
                     if data.variables[obj_key_name+'_dim_1'].long_name == 'UNIX time':
                         # name to be used in DataFrame index
-                        index_name = 'time'
+                        index_name = 'epoch'
                         time_index_flag = True
                     else:
                         time_index_flag = False
