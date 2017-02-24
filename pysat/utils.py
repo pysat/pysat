@@ -132,9 +132,14 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='time'):
                     # assuming basic time dimension
                     loadedVars[key] = data.variables[key][:] 
                     if key != 'time':
-                        mdata[key] = {'long_name':data.variables[key].long_name,
-                                      'units':data.variables[key].units}
-                              # 'nc_dimensions':data.variables[key].dimensions}
+                        # load up metadata
+                        meta_dict = {}
+                        for nc_key in data.variables[key].ncattrs():
+                            meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
+                        mdata[key] = meta_dict
+                            #mdata[key] = {'long_name':data.variables[key].long_name,
+                            #          'units':data.variables[key].units}
+                            #  # 'nc_dimensions':data.variables[key].dimensions}
 
                 if len(data.variables[key].dimensions) == 2:
                     # part of dataframe within dataframe
