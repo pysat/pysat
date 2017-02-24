@@ -68,7 +68,7 @@ def set_data_dir(path=None, store=None):
         store = True    
     if os.path.isdir(path):
         if store:
-            with open(os.path.join(os.getenv('HOME'), '.pysat', 'data_path.txt'), 'w') as f:
+            with open(os.path.join(os.path.expanduser('~'), '.pysat', 'data_path.txt'), 'w') as f:
                 f.write(path)
         pysat.data_dir = path
         pysat._files = re_load(pysat._files)
@@ -341,7 +341,7 @@ def season_date_range(start, stop, freq='D'):
     """
     
     if hasattr(start, '__iter__'):  
-        #missing check for datetime
+        # missing check for datetime
         season = pds.date_range(start[0], stop[0], freq=freq)
         for (sta,stp) in zip(start[1:], stop[1:]):
             season = season.append(pds.date_range(sta, stp, freq=freq))
