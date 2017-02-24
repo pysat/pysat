@@ -616,7 +616,7 @@ class Instrument(object):
                 self.data = self.data.ix[self.date : self.date +
                                          pds.DateOffset(hours=23, minutes=59,
                                                         seconds=59,
-                                                        nanoseconds=99999999)]
+                                                        milliseconds=999)]
 
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty):
@@ -633,8 +633,9 @@ class Instrument(object):
             if (not self._next_data.empty) & (not self.data.empty):
 
                 if self.multi_file_day and self._load_by_date:
-                    padRight = self._next_data.ix[self.date : (self.date + \
-        pds.DateOffset(hours=23, minutes=59, seconds=59, nanoseconds=99999999))]
+                    padRight = self._next_data.ix[self._curr_data.index[-1] : self.date + 
+                               pds.DateOffset(hours=23, minutes=59,
+                               seconds=59, milliseconds=999)]
                 else:
                     padRight = self._next_data.ix[self._curr_data.index[-1] :
                                                   (self._curr_data.index[-1] +
@@ -644,7 +645,8 @@ class Instrument(object):
                 
             # drop any possible duplicate index times
             #self.data.drop_duplicates(inplace=True)
-            self.data = self.data[~self.data.index.duplicated()]
+
+            self.data = self.data[~self.data.index.duplicated(keep='first')]
             
         # if self.pad is False, load single day
         else:
@@ -672,7 +674,7 @@ class Instrument(object):
         if not self.data.empty:
             self.custom._apply_all(self)
         # remove the excess padding, if any applied
-        if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
+        if (self.pad is not None) & (not self.data.empty) & (not verifyPad) & (not self.multi_file_day):
             self.data = self.data[self._curr_data.index[0] :
                                   self._curr_data.index[-1]]
 
@@ -964,7 +966,7 @@ class Instrument(object):
         
         Note
         ----
-        Stores 1-D data along dimension 'time' - the date time index.
+        Stores 1-D data along dimension 'epoch' - the date time index.
         
         Stores object data (e.g. dataframes within series) separately
                     
@@ -992,10 +994,10 @@ class Instrument(object):
         with netCDF4.Dataset(fname, mode='w', format=format) as out_data:
         
             num = len(self.data.index)
-            out_data.createDimension('time', num)
+            out_data.createDimension('epoch', num)
             
             # write out the datetime index
-            cdfkey = out_data.createVariable('time', 'f8', dimensions=('time'),)
+            cdfkey = out_data.createVariable('epoch', 'f8', dimensions=('epoch'),)
             cdfkey.units = 'seconds since 1970-1-1 0:0:0'
             cdfkey.long_name = 'UNIX time'
             cdfkey.calendar = 'standard'
@@ -1008,21 +1010,26 @@ class Instrument(object):
                         self[key] = self[key].astype(np.int32)
                     cdfkey = out_data.createVariable(key, 
                                                      self[key].dtype,
-                                                     dimensions=('time'), )
-                    cdfkey.units = self.meta[key].units
-                    cdfkey.long_name = self.meta[key].long_name
+                                                     dimensions=('epoch'), )
+                    # attach any meta data
+                    cdfkey.setncatts(self.meta[key].to_dict())
+                    #cdfkey.units = self.meta[key].units
+                    #cdfkey.long_name = self.meta[key].long_name
+                    # attach the data
                     cdfkey[:] = self[key].values
                 else:
                     # we are dealing with a more complicated object
                     # presuming a series with a dataframe in each location
                     dims = np.shape(self[key].iloc[0])
                     obj_dim_names = []
-                    # don't need to recreate last dimension, 
-                    # it covers number of columns
+
                     for i, dim in enumerate(dims[:-1]):
+                        # don't need to go over last dimension value, 
+                        # it covers number of columns
                         obj_dim_names.append(key+'_dim_%i' % (i+1))
                         out_data.createDimension(obj_dim_names[-1], dim)
-                    var_dim = tuple(['time']+obj_dim_names)
+                    # total dimensions stored for object are epoch plus ones just above
+                    var_dim = tuple(['epoch']+obj_dim_names)
                     #print (key, var_dim)
                     # iterate over columns and store
                     try:
@@ -1047,18 +1054,21 @@ class Instrument(object):
                         cdfkey = out_data.createVariable(key + '_' +col, 
                                                          coltype,
                                                          dimensions=var_dim)
-                        cdfkey.long_name = col
-                        cdfkey.units = ''
+                        #cdfkey.long_name = col
+                        #cdfkey.units = ''
                         if is_frame:
+                            # attach any meta data
+                            #print (self.meta[key])
+                            cdfkey.setncatts(self.meta[key][col].to_dict())
+                            # attach data
                             for i in xrange(num):
                                 cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
                         else:
-                            #print (self[key])
-                            print (np.shape(cdfkey))
+                            # attach any meta data
+                            cdfkey.setncatts(self.meta[key].to_dict())
+                            # attach data
                             for i in xrange(num):
-                                print (i)
                                 cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
-
                             
                     # store the dataframe index for each time of main dataframe
                     datetime_flag = False
