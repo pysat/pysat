@@ -96,10 +96,12 @@ class TestBasics:
             import netCDF4
         except ImportError:
             raise SkipTest
-            
+  
+        prep_dir(self.testInst)            
         outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
         self.testInst.load(2009,1)
         self.testInst.to_netcdf4(outfile)
+
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
         self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
