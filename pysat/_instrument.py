@@ -646,7 +646,7 @@ class Instrument(object):
             # drop any possible duplicate index times
             #self.data.drop_duplicates(inplace=True)
 
-            self.data = self.data[~self.data.index.duplicated(keep='first')]
+            self.data = self.data[~self.data.index.duplicated()]
             
         # if self.pad is False, load single day
         else:
@@ -990,9 +990,9 @@ class Instrument(object):
             format = 'NETCDF3_64BIT'
         else:
             format = format.upper()
-        
+
         with netCDF4.Dataset(fname, mode='w', format=format) as out_data:
-        
+
             num = len(self.data.index)
             out_data.createDimension('epoch', num)
             
@@ -1012,7 +1012,18 @@ class Instrument(object):
                                                      self[key].dtype,
                                                      dimensions=('epoch'), )
                     # attach any meta data
-                    cdfkey.setncatts(self.meta[key].to_dict())
+                    #print (self.meta[key].to_dict())
+                    new_dict = self.meta[key].to_dict()
+                    if u'_FillValue' in new_dict.keys():
+                        # make sure _FillValue is the same type as the data
+                        new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(self[key].dtype)
+                    if u'FillVal' in new_dict.keys():
+                        # make sure _FillValue is the same type as the data
+                        new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(self[key].dtype)
+
+                    cdfkey.setncatts(new_dict)
+                    #print ("Attributes Set")
+                    
                     #cdfkey.units = self.meta[key].units
                     #cdfkey.long_name = self.meta[key].long_name
                     # attach the data
@@ -1058,8 +1069,10 @@ class Instrument(object):
                         #cdfkey.units = ''
                         if is_frame:
                             # attach any meta data
-                            #print (self.meta[key])
-                            cdfkey.setncatts(self.meta[key][col].to_dict())
+                            try:
+                                cdfkey.setncatts(self.meta[key][col].to_dict())
+                            except:
+                                print(', '.join(('Unable to find MetaData for',key,col)) )
                             # attach data
                             for i in xrange(num):
                                 cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
@@ -1083,12 +1096,13 @@ class Instrument(object):
                     cdfkey = out_data.createVariable(key+'_dim_1',
                                                      coltype, dimensions=var_dim)
                     if datetime_flag:
+                        #print('datetime flag')
                         cdfkey.units = 'seconds since 1970-1-1 0:0:0'
                         cdfkey.long_name = 'UNIX time'
                         for i in xrange(num):
                             cdfkey[i, :] = (self[key].iloc[i].index.astype(int)*1.E-3).astype(int)*1.E-6
                     else:
-                        cdfkey.units = ''
+                        #cdfkey.units = ''
                         if self[key].iloc[0].index.name is not None:
                             cdfkey.long_name = self[key].iloc[0].index.name
                         else:    
@@ -1096,7 +1110,6 @@ class Instrument(object):
                         for i in xrange(num):
                             cdfkey[i, :] = self[key].iloc[i].index.to_native_types()
 
-                    
             # store any non standard attributes
             base_attrb = dir(Instrument())
             this_attrb = dir(self)
@@ -1120,6 +1133,6 @@ class Instrument(object):
             for key in adict.keys():
                 if isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
-                    
+
             out_data.setncatts(adict)
         return
