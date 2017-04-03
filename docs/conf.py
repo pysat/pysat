@@ -69,7 +69,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'pysat'
 copyright = u'2017, Russell Stoneback'
-author = u'Russell Stoneback \and Angeline Burrell \and Jeff Klenzing'
+author = u'Russell Stoneback \\and Angeline Burrell \\and Jeff Klenzing'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
