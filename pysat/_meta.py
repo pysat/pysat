@@ -114,7 +114,10 @@ class Meta(object):
                         self[item] = val
                         pop_list.append(item)
                 for item in pop_list:
-                    value = value.pop(item)
+                    if len(value.keys()) > 1:
+                        value = value.pop('meta')
+                    else:
+                        value = {}
 
             if 'units' not in value.keys():
                 # provide default value, or copy existing
