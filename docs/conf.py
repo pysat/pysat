@@ -42,7 +42,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
-    'sphinx.ext.pngmath',
+    'sphinx.ext.imgmath',
     'numpydoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
@@ -250,7 +250,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = './images/logo.png'
+latex_logo = '../logo.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
