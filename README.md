@@ -59,8 +59,3 @@ pip install pysat
   cd pysatCDF
   python setup.py build install
   ```
-  
-* To get the forked pandas, needed for full support of mixed data types.
-```
-pip install git+https://github.com/rstoneback/pandas.git
-```
