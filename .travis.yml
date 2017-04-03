@@ -21,7 +21,7 @@ before_install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels coveralls
 
 # command to install dependencies
 install:
@@ -30,4 +30,8 @@ install:
   - source activate test-environment
   - "python setup.py install"
 # command to run tests
-script: nosetests
+script: 
+  #- nosetests
+  coverage run --source=pysat setup.py test
+after_sucess:
+  coveralls
