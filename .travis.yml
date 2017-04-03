@@ -31,7 +31,7 @@ install:
   - "python setup.py install"
 # command to run tests
 script: 
-  #- nosetests
-  coverage run --source=pysat setup.py test
-after_sucess:
-  coveralls
+  - nosetests
+  #coverage run --source=pysat setup.py test
+#after_success:
+  #coveralls
