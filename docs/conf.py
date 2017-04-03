@@ -43,9 +43,9 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.imgmath',
-    'numpydoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+    'numpydoc',
     'IPython.sphinxext.ipython_console_highlighting'
 ]
 

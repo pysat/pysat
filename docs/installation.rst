@@ -57,7 +57,3 @@ netCDF libraries must be installed, along with python support, before pysat is a
 
 - netCDF C Library from Unidata (http://www.unidata.ucar.edu/downloads/netcdf/index.jsp)
 - netCDF4-python
-
-::
-
-
