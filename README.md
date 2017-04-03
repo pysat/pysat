@@ -2,10 +2,12 @@
         <img height="0" width="0px">
         <img width="20%" src="/logo.png" alt="pysat" title="pysat"</img>
 </div>
-#pysat: Python Satellite Data Analysis Toolkit
+
+# pysat: Python Satellite Data Analysis Toolkit
 [![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
 
-#What is it
+# What is it
+
 The Python Satellite Data Analysis Toolkit (pysat) is a package providing a simple and flexible interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific 
 measurements. Though pysat was initially designed for in-situ
@@ -13,7 +15,7 @@ satellite based measurements it aims to support all instruments in space science
 
 Full [Documenation](http://rstoneback.github.io/pysat/)
 
-#Main Features
+# Main Features
 * Instrument object providing an interface for downloading and analyzing a wide variety of science data sets.
   * Uses pandas for the underlying underlying data structure;
   capable of handling the many forms scientific measurements take in a consistent manner.
@@ -29,8 +31,8 @@ Full [Documenation](http://rstoneback.github.io/pysat/)
 * Includes helper functions to reduce the barrier in adding new science instruments to pysat
 * Instrument independent analysis routines.
 
-#Installation
-##Starting from scratch
+# Installation
+## Starting from scratch
 * One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
 * at command line type
 ```
