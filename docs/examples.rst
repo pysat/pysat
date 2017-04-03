@@ -78,7 +78,7 @@ How often does a particular thing occur on a orbit-by-orbit basis? Let's find ou
 
 Result
 
-.. image:: ../images/ssnl_occurrence_by_orbit_demo.png
+.. image:: ./images/ssnl_occurrence_by_orbit_demo.png
    :align: center
 
 The top plot shows the occurrence probability of a positive magnetic field perturbation as a function of geographic longitude and latitude. The bottom plot shows the number of times  the satellite was in each bin with data (on per orbit basis). Individual orbit tracks may be seen. The hatched pattern is formed from the satellite traveling North to South and vice-versa. At the latitudinal extremes of the orbit the latitudinal velocity goes through zero providing a greater coverage density. The satellite doesn't return to the same locations on each pass so there is a reduction in counts between orbit tracks. All local times are covered by this plot, overrepresenting the coverage of a single satellite. 
@@ -161,7 +161,7 @@ Plotting a series of orbit-by-orbit plots is a great way to become familiar with
 
 Output
 
-.. image:: ../images/orbit_00000.png
+.. image:: ./images/orbit_00000.png
    :align: center
 
 Seasonal Averaging of Ion Drifts and Density Profiles
@@ -202,7 +202,7 @@ Note the same averaging routine is used for both COSMIC and IVM, and that both 1
 
    # the work is done, plot the results
 
-.. image:: ../images/ssnl_median_ivm_cosmic_1d.png
+.. image:: ./images/ssnl_median_ivm_cosmic_1d.png
    :align: center
 
 The top image is the median ion drift from the IVM, while the remaining plots are derived from the COSMIC density profiles. COSMIC data does not come with the location of the profiles in magnetic coordinates, so this information is added using the nano-kernel. 
@@ -218,7 +218,7 @@ There is a strong correspondence between the distribution of downward drifts bet
    
 The median averaging routine also produced a series a median altitude profiles as a function of longitude and local time. A selection are shown below. 
 
-.. image:: ../images/ssnl_median_ivm_cosmic_2d.png
+.. image:: ./images/ssnl_median_ivm_cosmic_2d.png
    :align: center
 
 There is a gradient in the altitude distribution over longitude near sunset. Between 0-15 longitude an upward slope is seen in bottom-side density levels with local time though higher altitudes have a flatter gradient. This is consistent with the upward ion drifts reported by IVM. Between 45-60 the bottom-side ionosphere is flat with local time, while densities at higher altitudes drop steadily. Ion drifts in this sector become downward at night. Downward drifts lower plasma into exponentially higher neutral densities, rapidly neutralizing plasma and producing an effective flat bottom. Thus, the COSMIC profile in this sector is also consistent with the IVM drifts. 

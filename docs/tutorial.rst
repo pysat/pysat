@@ -740,7 +740,7 @@ You may notice that the mean call could also easily be replaced by a median, or 
 Summary Flow Charts
 -------------------
 
-.. image:: ../images/pysat_load_flow_chart.png
+.. image:: ./images/pysat_load_flow_chart.png
 
 
   
