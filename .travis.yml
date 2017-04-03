@@ -28,10 +28,12 @@ install:
   # Coverage packages are on my binstar channel
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
+  - pip install coveralls
   - "python setup.py install"
 # command to run tests
 script: 
-  - nosetests
+  #- nosetests
+  - nosetests  --with-coverage --cover-package=pysat
   #coverage run --source=pysat setup.py test
-#after_success:
-  #coveralls
+after_success:
+  coveralls
