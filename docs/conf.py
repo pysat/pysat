@@ -21,7 +21,7 @@ import shlex
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 
-sys.path.insert(0,os.path.abspath('../'))
+sys.path.insert(0,os.path.abspath('.'))
 #print sys.path
 import pysat
 #print pysat.__path__
@@ -250,7 +250,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = '../logo.png'
+latex_logo = './logo.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
