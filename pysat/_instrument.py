@@ -953,7 +953,7 @@ class Instrument(object):
                 self.load(fname=self._iter_list[-1])
 
 
-    def to_netcdf4(self, fname=None, format=None):
+    def to_netcdf4(self, fname=None, format=None, base_instrument=None):
         """Stores loaded data into a netCDF3/4 file.
         
         Parameters
@@ -963,6 +963,9 @@ class Instrument(object):
         format : string
             format keyword passed to netCDF4 routine
             NETCDF3_CLASSIC, NETCDF3_64BIT, NETCDF4_CLASSIC, and NETCDF4
+        base_instrument : pysat.Instrument
+            used as a comparison, only attributes that are present with
+            self and not on base_instrument are written to netCDF
         
         Note
         ----
@@ -991,6 +994,7 @@ class Instrument(object):
         else:
             format = format.upper()
 
+        base_instrument = Instrument() if base_instrument is None else base_instrument
         with netCDF4.Dataset(fname, mode='w', format=format) as out_data:
 
             num = len(self.data.index)
@@ -1111,7 +1115,7 @@ class Instrument(object):
                             cdfkey[i, :] = self[key].iloc[i].index.to_native_types()
 
             # store any non standard attributes
-            base_attrb = dir(Instrument())
+            base_attrb = dir(base_instrument)
             this_attrb = dir(self)
             
             adict = {}
@@ -1120,7 +1124,7 @@ class Instrument(object):
                     if key[0] != '_':
                         adict[key] = self.__getattribute__(key)
             # store any non-standard attributes attached to meta
-            base_attrb = dir(_meta.Meta())
+            base_attrb = dir(base_instrument.meta)
             this_attrb = dir(self.meta)
             for key in this_attrb:
                 if key not in base_attrb:
