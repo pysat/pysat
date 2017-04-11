@@ -1001,11 +1001,19 @@ class Instrument(object):
             out_data.createDimension('epoch', num)
             
             # write out the datetime index
-            cdfkey = out_data.createVariable('epoch', 'f8', dimensions=('epoch'),)
-            cdfkey.units = 'seconds since 1970-1-1 0:0:0'
+            if format == 'NETCDF4':
+                cdfkey = out_data.createVariable('epoch', 'i8', dimensions=('epoch'),)
+                cdfkey.units = 'Nanoseconds since 1970-1-1 00:00:00'
+                cdfkey[:] = self.data.index.values.astype(int)
+            else:
+                # can't store full time resolution
+                cdfkey = out_data.createVariable('epoch', 'f8', dimensions=('epoch'),)
+                cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
+                cdfkey[:] = (self.data.index.values.astype(int)*1.E-6).astype(np.float)
+    
             cdfkey.long_name = 'UNIX time'
             cdfkey.calendar = 'standard'
-            cdfkey[:] = (self.data.index.astype(int)*1.E-3).astype(int)*1.E-6
+                            
             # store all of the data in dataframe columns
             for key in self.data.columns:
                 if self[key].dtype != np.dtype('O'):
@@ -1016,7 +1024,6 @@ class Instrument(object):
                                                      self[key].dtype,
                                                      dimensions=('epoch'), )
                     # attach any meta data
-                    #print (self.meta[key].to_dict())
                     new_dict = self.meta[key].to_dict()
                     if u'_FillValue' in new_dict.keys():
                         # make sure _FillValue is the same type as the data
@@ -1024,12 +1031,9 @@ class Instrument(object):
                     if u'FillVal' in new_dict.keys():
                         # make sure _FillValue is the same type as the data
                         new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(self[key].dtype)
-
+                    # really attach metadata now
                     cdfkey.setncatts(new_dict)
-                    #print ("Attributes Set")
-                    
-                    #cdfkey.units = self.meta[key].units
-                    #cdfkey.long_name = self.meta[key].long_name
+
                     # attach the data
                     cdfkey[:] = self[key].values
                 else:
@@ -1092,19 +1096,26 @@ class Instrument(object):
                     coltype = self[key].iloc[0].index.dtype
                     # check for datetime index
                     if coltype == np.dtype('<M8[ns]'):
-                        coltype = 'f8'
+                        if format == 'NETCDF4':
+                            coltype = np.int64
+                        else:
+                            coltype = np.float
                         datetime_flag = True
-                    if coltype == np.int64:
-                        coltype = np.int32
+                        
+                    #if coltype == np.int64:
+                    #    coltype = np.int32
                     #print (key+'_' + '_ample', var_dim, coltype)
                     cdfkey = out_data.createVariable(key+'_dim_1',
                                                      coltype, dimensions=var_dim)
                     if datetime_flag:
                         #print('datetime flag')
-                        cdfkey.units = 'seconds since 1970-1-1 0:0:0'
+                        if format == 'NETCDF4':
+                            cdfkey.units = 'Nanoseconds since 1970-1-1 00:00:00'
+                        else:
+                            cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                         cdfkey.long_name = 'UNIX time'
                         for i in xrange(num):
-                            cdfkey[i, :] = (self[key].iloc[i].index.astype(int)*1.E-3).astype(int)*1.E-6
+                            cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
                     else:
                         #cdfkey.units = ''
                         if self[key].iloc[0].index.name is not None:
