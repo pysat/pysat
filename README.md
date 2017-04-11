@@ -6,6 +6,7 @@
 # pysat: Python Satellite Data Analysis Toolkit
 [![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
 [![Documentation Status](https://readthedocs.org/projects/pysat/badge/?version=latest)](http://pysat.readthedocs.io/en/latest/?badge=latest)
+[![Coverage Status](https://coveralls.io/repos/github/rstoneback/pysat/badge.svg?branch=master)](https://coveralls.io/github/rstoneback/pysat?branch=master)
 
 
 The Python Satellite Data Analysis Toolkit (pysat) is a package providing a simple and flexible interface
@@ -17,7 +18,7 @@ Full [Documenation](http://rstoneback.github.io/pysat/)
 
 # Main Features
 * Instrument object providing an interface for downloading and analyzing a wide variety of science data sets.
-  * Uses pandas for the underlying underlying data structure;
+  * Uses pandas for the underlying data structure;
   capable of handling the many forms scientific measurements take in a consistent manner.
   * Science data pipeline tasks of identifying files, loading, cleaning, and modifying
   data sets are built into the instrument object.
@@ -58,8 +59,3 @@ pip install pysat
   cd pysatCDF
   python setup.py build install
   ```
-  
-* To get the forked pandas, needed for full support of mixed data types.
-```
-pip install git+https://github.com/rstoneback/pandas.git
-```
