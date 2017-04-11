@@ -990,7 +990,7 @@ class Instrument(object):
         import netCDF4
         
         if format is None:
-            format = 'NETCDF3_64BIT'
+            format = 'NETCDF4'
         else:
             format = format.upper()
 
@@ -1004,7 +1004,7 @@ class Instrument(object):
             if format == 'NETCDF4':
                 cdfkey = out_data.createVariable('epoch', 'i8', dimensions=('epoch'),)
                 cdfkey.units = 'Nanoseconds since 1970-1-1 00:00:00'
-                cdfkey[:] = self.data.index.values.astype(int)
+                cdfkey[:] = (self.data.index.values).astype(np.int64)
             else:
                 # can't store full time resolution
                 cdfkey = out_data.createVariable('epoch', 'f8', dimensions=('epoch'),)
@@ -1111,11 +1111,14 @@ class Instrument(object):
                         #print('datetime flag')
                         if format == 'NETCDF4':
                             cdfkey.units = 'Nanoseconds since 1970-1-1 00:00:00'
+                            for i in xrange(num):
+                                cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)).astype(coltype)
                         else:
                             cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
+                            for i in xrange(num):
+                                cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
+
                         cdfkey.long_name = 'UNIX time'
-                        for i in xrange(num):
-                            cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
                     else:
                         #cdfkey.units = ''
                         if self[key].iloc[0].index.name is not None:
