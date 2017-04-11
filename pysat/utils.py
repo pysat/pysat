@@ -103,7 +103,7 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch')
         fnames = [fnames]
 
     if format is None:
-        format = 'NETCDF3_64BIT'
+        format = 'NETCDF4'
     else:
         format = format.upper()
 
@@ -243,6 +243,7 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch')
                 
             # prepare dataframe index for this netcdf file
             time_var = loadedVars.pop(time_name)
+
             # convert from GPS seconds to seconds used in pandas (unix time, no leap)
             #time_var = convert_gps_to_unix_seconds(time_var)
             if format == 'NETCDF4':
