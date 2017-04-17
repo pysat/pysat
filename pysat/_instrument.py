@@ -1003,8 +1003,8 @@ class Instrument(object):
             # write out the datetime index
             if format == 'NETCDF4':
                 cdfkey = out_data.createVariable('epoch', 'i8', dimensions=('epoch'),)
-                cdfkey.units = 'Nanoseconds since 1970-1-1 00:00:00'
-                cdfkey[:] = (self.data.index.values).astype(np.int64)
+                cdfkey.units = 'Microseconds since 1970-1-1 00:00:00'
+                cdfkey[:] = (self.data.index.values.astype(np.int64)*1E-3).astype(np.int64)
             else:
                 # can't store full time resolution
                 cdfkey = out_data.createVariable('epoch', 'f8', dimensions=('epoch'),)
@@ -1024,15 +1024,19 @@ class Instrument(object):
                                                      self[key].dtype,
                                                      dimensions=('epoch'), )
                     # attach any meta data
-                    new_dict = self.meta[key].to_dict()
-                    if u'_FillValue' in new_dict.keys():
-                        # make sure _FillValue is the same type as the data
-                        new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(self[key].dtype)
-                    if u'FillVal' in new_dict.keys():
-                        # make sure _FillValue is the same type as the data
-                        new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(self[key].dtype)
-                    # really attach metadata now
-                    cdfkey.setncatts(new_dict)
+                    try:
+                        new_dict = self.meta[key].to_dict()
+                        if u'_FillValue' in new_dict.keys():
+                            # make sure _FillValue is the same type as the data
+                            new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(self[key].dtype)
+                        if u'FillVal' in new_dict.keys():
+                            # make sure _FillValue is the same type as the data
+                            new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(self[key].dtype)
+                        # really attach metadata now
+                        cdfkey.setncatts(new_dict)
+                    except:
+                        print(', '.join(('Unable to find MetaData for',key)) )
+
 
                     # attach the data
                     cdfkey[:] = self[key].values
@@ -1110,9 +1114,9 @@ class Instrument(object):
                     if datetime_flag:
                         #print('datetime flag')
                         if format == 'NETCDF4':
-                            cdfkey.units = 'Nanoseconds since 1970-1-1 00:00:00'
+                            cdfkey.units = 'Microseconds since 1970-1-1 00:00:00'
                             for i in xrange(num):
-                                cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)).astype(coltype)
+                                cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-3).astype(coltype)
                         else:
                             cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                             for i in xrange(num):
