@@ -85,18 +85,12 @@ def load(fnames, tag=None, sat_id=None):
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames)==1:
         
-        #b = pydarn.sdio.sdDataOpen(pysat.datetime(1980,1,1), 
-        #                            src='local', 
-        #                            eTime=pysat.datetime(2050,1,1),
-        #                            fileName=fnames[0])
-        
         myPtr = pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980,1,1),
                           eTime=pysat.datetime(2250,1,1),
                           hemi=tag)  
         myPtr.fType, myPtr.dType = 'grdex', 'dmap'                 
         myPtr.ptr = open(fnames[0],'r')
                                                                                             
-        #data_list = pydarn.sdio.sdDataReadAll(myPtr)
         in_list = []
         in_dict = {'stid':[],
             'channel':[],
@@ -130,8 +124,6 @@ def load(fnames, tag=None, sat_id=None):
             drift_frame.index.name = 'index'
             sum_vec = 0
             for nvec in info.nvec:
-                #in_frame = drift_frame.iloc[0:nvec]
-                #drift_frame = drift_frame.iloc[nvec:]
                 in_list.append(drift_frame.iloc[sum_vec:sum_vec+nvec])
                 sum_vec += nvec
 
@@ -172,7 +164,8 @@ def clean(self):
     self.data = self.data.iloc[idx]
 
     return  
-    
+
+
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """
     Download SuperDARN data from Virginia Tech organized for loading by pysat.
