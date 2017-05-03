@@ -65,7 +65,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                 except KeyError:
                     raise ValueError('Unknown tag')
         out = pysat.Files.from_os(data_path=data_path, 
-                                      format_str=format_str)
+                                  format_str=format_str)
 
         if (not out.empty) and fake_daily_files_from_monthly:
             out.ix[out.index[-1] + pds.DateOffset(months=1) -

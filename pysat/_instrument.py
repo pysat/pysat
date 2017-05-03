@@ -188,18 +188,16 @@ class Instrument(object):
 
         if file_format is not None:
             self.file_format = file_format
-        # value not provided by user, check if there is a value provided by
-        # instrument module
-        elif self.file_format is not None:
+        # check to make sure value is reasonable
+        if self.file_format is not None:
             # check if it is an iterable string.  If it isn't formatted
-            # properly, give a warning and set file_format to None
-            if(not isinstance(self.file_format, str) or
-               self.file_format.find("{") < 0 or
-               self.file_format.find("}") < 1):
+            # properly, raise Error
+            if (not isinstance(self.file_format, str) or
+                    (self.file_format.find("{") < 0) or
+                    (self.file_format.find("}") < 0)):
                 estr = 'file format set to default, supplied string must be '
                 estr = '{:s}iteratable [{:}]'.format(estr, self.file_format)
-                print(estr)
-                self.file_format = None
+                raise ValueError(estr)
 
         # set up empty data and metadata
         self.data = DataFrame(None)

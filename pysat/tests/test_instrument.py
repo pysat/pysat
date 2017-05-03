@@ -305,3 +305,24 @@ class TestBasics:
         out = pds.date_range(start_d[0], stop_d[0]).tolist()
         out.extend(pds.date_range(start_d[1], stop_d[1]).tolist())
         assert np.all(dates == out)
+        
+    def test_creating_empty_instrument_object(self):
+        null = pysat.Instrument()
+        
+        assert isinstance(null, pysat.Instrument)
+
+    @raises(ValueError)
+    def test_incorrect_creation_empty_instrument_object(self):
+        # both name and platform should be empty
+        null = pysat.Instrument(platform='cnofs')
+        
+    @raises(AttributeError)        
+    def test_supplying_instrument_module_requires_name_and_platform(self):
+        class Dummy: pass
+        Dummy.name = 'help'
+        
+        temp = pysat.Instrument(inst_module=Dummy)
+        
+        
+        
+
