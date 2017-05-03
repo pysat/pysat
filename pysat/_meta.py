@@ -208,7 +208,7 @@ class Meta(object):
         if metadata is not None:
             if isinstance(metadata, DataFrame):
                 self.data = metadata
-                self.data.columns = map(''.lower, self.data.columns)
+                self.data.columns = map(str.lower, self.data.columns)
                 if 'long_name' not in self.data.columns:
                     self.data['long_name'] = self.data.index
                 if 'units' not in self.data.columns:
