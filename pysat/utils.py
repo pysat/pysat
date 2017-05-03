@@ -149,7 +149,7 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch')
                 # get the name of the final data column
                 # dimension naming follows name_dim_number, 
                 # pull out name by finding last _ and tracking back
-                obj_key_name = dim[1][ : -string.find(dim[1][::-1], '_')-5]
+                obj_key_name = dim[1][ : -str.find(dim[1][::-1], '_')-5]
                 # collect variable names associated with object
                 obj_var_keys = []
                 # place to collect clean names without redundant naming scheme scheme
