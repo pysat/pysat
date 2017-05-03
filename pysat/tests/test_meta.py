@@ -94,6 +94,37 @@ class TestBasics:
         meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
         self.meta['higher'] = meta
 
+    def test_assign_higher_order_meta_from_dict(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta['higher'] = {'meta':meta}
+
+    def test_assign_higher_order_meta_from_dict_w_multiple(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta[['higher', 'lower']] = {'meta':[meta, None],
+                                          'units':[None, 'boo'],
+                                          'long_name':[None, 'boohoo']}
+        check1 = self.meta['lower'].units == 'boo'
+        check2 = self.meta['lower'].long_name == 'boohoo'
+        check3 = self.meta['higher'] == meta
+        assert check1 & check2 & check3
+
+    def test_assign_higher_order_meta_from_dict_w_multiple_2(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta[['higher', 'lower', 'lower2']] = {'meta':[meta, None, meta],
+                                          'units':[None, 'boo', None],
+                                          'long_name':[None, 'boohoo', None]}
+        check1 = self.meta['lower'].units == 'boo'
+        check2 = self.meta['lower'].long_name == 'boohoo'
+        check3 = self.meta['higher'] == meta
+        assert check1 & check2 & check3
+
+
     #def test_replace_meta_units_list(self):
     #    self.meta['new'] = {'units':'hey', 'long_name':'boo'}
     #    self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}

@@ -89,6 +89,8 @@ class Meta(object):
             # check if dict empty
             if value.keys() == []:
                 if name in self:
+                    # variable already exists and we don't have anything
+                    # new to add, just leave
                     return
                 # otherwise, continue on and set defaults
 
@@ -107,17 +109,37 @@ class Meta(object):
 
             if 'meta' in value.keys():
                 # process higher order stuff first
-                # multiple assignment, check length is appropriate
+                # could be part of multiple assignment
+                # so assign the Meta objects, then remove all trace
+                # of names with Meta
                 pop_list = []
-                for item, val in zip(name, value['meta']):
+                pop_loc = []
+                for j, (item, val) in enumerate(zip(name, value['meta'])):
                     if val is not None:
+                        # assign meta data, recursive call....
                         self[item] = val
                         pop_list.append(item)
-                for item in pop_list:
-                    if len(value.keys()) > 1:
-                        value = value.pop('meta')
+                        pop_loc.append(j)
+                        
+                # remove 'meta' objects from input
+                if len(value.keys()) > 1:
+                    _ = value.pop('meta')
+                else:
+                    value = {}
+                    name = []
+                    
+                for item, loc in zip(pop_list[::-1], pop_loc[::-1]):
+                    # remove data names that had a Meta object assigned
+                    # they are not part of any future processing
+                    if len(name) > 1:
+                        _ = name.pop(loc)
                     else:
-                        value = {}
+                        name = []
+                    # remove place holder data in other values that used
+                    # to have to account for presence of Meta object
+                    # going through backwards so I don't mess with location references
+                    for key in value.keys():
+                        _ = value[key].pop(loc)
 
             if 'units' not in value.keys():
                 # provide default value, or copy existing
@@ -136,15 +158,16 @@ class Meta(object):
                         value['long_name'].append(item_name)
                     else:
                         value['long_name'].append(self.data.ix[item_name,'long_name'])
-
-            new = DataFrame(value, index=name)
-            for item_name,item in new.iterrows():
-                if item_name not in self:
-                    self.data = self.data.append(item)
-                else:
-                    # info already exists, update with new info
-                    for item_key in item.keys():
-                        self.data.ix[item_name,item_key] = item[item_key]
+            if len(name) > 0:
+                # make sure there is still something to add
+                new = DataFrame(value, index=name)
+                for item_name,item in new.iterrows():
+                    if item_name not in self:
+                        self.data = self.data.append(item)
+                    else:
+                        # info already exists, update with new info
+                        for item_key in item.keys():
+                            self.data.ix[item_name,item_key] = item[item_key]
 
         elif isinstance(value, Series):
             self.data.ix[name] = value
