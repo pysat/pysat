@@ -100,6 +100,13 @@ class TestBasics:
         meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
         self.meta['higher'] = {'meta':meta}
 
+    def test_assign_higher_order_meta_from_dict_correct(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta['higher'] = {'meta':meta}
+        assert self.meta['higher'] == meta
+
     def test_assign_higher_order_meta_from_dict_w_multiple(self):
         meta = pysat.Meta()
         meta['dm'] = {'units':'hey', 'long_name':'boo'}
@@ -123,6 +130,19 @@ class TestBasics:
         check2 = self.meta['lower'].long_name == 'boohoo'
         check3 = self.meta['higher'] == meta
         assert check1 & check2 & check3
+        
+    def test_create_new_metadata_from_old(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta[['higher', 'lower', 'lower2']] = {'meta':[meta, None, meta],
+                                          'units':[None, 'boo', None],
+                                          'long_name':[None, 'boohoo', None]}
+        meta2 = pysat.Meta(metadata=self.meta.data)
+        check1 = np.all(meta2['lower'] == self.meta['lower'])
+        assert check1
+
+        
 
 
     #def test_replace_meta_units_list(self):
