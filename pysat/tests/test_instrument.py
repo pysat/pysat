@@ -179,6 +179,17 @@ class TestBasics:
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
 
+    def test_setting_data_by_name_with_meta(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = {'data':2.*self.testInst['mlt'],
+                                      'units':'hours',
+                                      'long_name':'double trouble'}
+        check1 = np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
+        check2 = self.testInst.meta['doubleMLT'].units == 'hours'
+        check3 = self.testInst.meta['doubleMLT'].long_name == 'double trouble'                               
+        assert check1 & check2 & check3
+
+
     def test_setting_partial_data_by_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']

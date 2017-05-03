@@ -87,6 +87,12 @@ class TestBasics:
     def test_false_meta_equality(self):
 
         assert not (self.testInst.meta == self.testInst)
+        
+    def test_assign_higher_order_meta(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta['higher'] = meta
 
     #def test_replace_meta_units_list(self):
     #    self.meta['new'] = {'units':'hey', 'long_name':'boo'}
