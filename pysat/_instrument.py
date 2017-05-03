@@ -1084,13 +1084,13 @@ class Instrument(object):
                             except:
                                 print(', '.join(('Unable to find MetaData for',key,col)) )
                             # attach data
-                            for i in xrange(num):
+                            for i in range(num):
                                 cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
                         else:
                             # attach any meta data
                             cdfkey.setncatts(self.meta[key].to_dict())
                             # attach data
-                            for i in xrange(num):
+                            for i in range(num):
                                 cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
                             
                     # store the dataframe index for each time of main dataframe
@@ -1113,11 +1113,11 @@ class Instrument(object):
                         #print('datetime flag')
                         if format == 'NETCDF4':
                             cdfkey.units = 'Microseconds since 1970-1-1 00:00:00'
-                            for i in xrange(num):
+                            for i in range(num):
                                 cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-3).astype(coltype)
                         else:
                             cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
-                            for i in xrange(num):
+                            for i in range(num):
                                 cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
 
                         cdfkey.long_name = 'UNIX time'
@@ -1127,7 +1127,7 @@ class Instrument(object):
                             cdfkey.long_name = self[key].iloc[0].index.name
                         else:    
                             cdfkey.long_name = key
-                        for i in xrange(num):
+                        for i in range(num):
                             cdfkey[i, :] = self[key].iloc[i].index.to_native_types()
 
             # store any non standard attributes
