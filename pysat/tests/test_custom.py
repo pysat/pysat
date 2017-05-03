@@ -248,3 +248,24 @@ class TestBasics:
         self.testInst.load(2009, 1)
 
         assert True
+        
+    def add_multiple_functions_one_not_at_end(self):
+        def custom1(inst):
+            out = (inst.data.mlt*2).values
+            return {'data':out, 'long_name':'doubleMLTlong',
+                    'units':'hours1', 'name':'doubleMLT'}
+        def custom2(inst):
+            out = (inst.data.mlt*3).values
+            return {'data':out, 'long_name':'tripleMLTlong',
+                    'units':'hours1', 'name':'tripleMLT'}
+        def custom3(inst):
+            out = (inst.data.tripleMLT*2).values
+            return {'data':out, 'long_name':'quadMLTlong',
+                    'units':'hours1', 'name':'quadMLT'}
+        self.testInst.custom.add(custom1, 'add')
+        self.testInst.custom.add(custom2, 'add')
+        self.testInst.custom.add(custom3, 'add', at_pos=1)
+
+        self.testInst.custom.clear()
+        
+        
