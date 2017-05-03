@@ -218,4 +218,33 @@ class TestBasics:
                     'units':'hours1'}
         self.testInst.custom.add(custom1, 'add')
         self.testInst.load(2009,1)
-    
+        
+    def test_clear_functions(self):
+        def custom1(inst):
+            out = (inst.data.mlt*2).values
+            return {'data':out, 'long_name':'doubleMLTlong',
+                    'units':'hours1', 'name':'doubleMLT'}
+        self.testInst.custom.add(custom1, 'add')
+        self.testInst.custom.clear()
+        check1 = self.testInst.custom._functions == []
+        check2 = self.testInst.custom._kind == []
+        assert check1 & check2
+        
+    def test_pass_functions(self):
+        def custom1(inst):
+            out = (inst.data.mlt*2).values
+            return 
+        self.testInst.custom.add(custom1, 'pass')
+        self.testInst.load(2009, 1)
+
+        assert True
+    @raises(ValueError)    
+    def test_pass_functions_no_return_allowed(self):
+        def custom1(inst):
+            out = (inst.data.mlt*2).values
+            return {'data':out, 'long_name':'doubleMLTlong',
+                    'units':'hours1', 'name':'doubleMLT'}
+        self.testInst.custom.add(custom1, 'pass')
+        self.testInst.load(2009, 1)
+
+        assert True
