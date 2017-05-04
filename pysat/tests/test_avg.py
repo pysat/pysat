@@ -74,6 +74,7 @@ class TestBasics:
         self.testInst = pysat.Instrument('pysat','testing', 'clean', orbit_info=orbit_info)      
         self.testInst.bounds = (pysat.datetime(2009,1,1), pysat.datetime(2009,1,2))
         ans = pysat.ssnl.avg.mean_by_orbit(self.testInst, 'mlt')
+        # note last orbit is incomplete thus not expected to satisfy relation
         assert np.allclose(ans[:-1], np.ones(len(ans)-1)*12., 1.E-2)
 
     def test_basic_file_mean(self):
@@ -81,6 +82,6 @@ class TestBasics:
         names = [ date.strftime('%D')+'.nofile' for date in index]
         
         self.testInst.bounds = (names[0], names[-1])
-        ans = pysat.ssnl.avg.mean_by_day(self.testInst, 'dummy4')
+        ans = pysat.ssnl.avg.mean_by_file(self.testInst, 'dummy4')
         assert np.all(ans == 86399/2.)
         
