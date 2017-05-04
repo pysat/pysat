@@ -27,7 +27,8 @@ def load(fnames, tag=None, sat_id=None):
     day = int(parts[-2])
     date = pysat.datetime(yr,month,day)
     num = 86400 #int(tag)
-    uts = np.arange(num)
+    num_array = np.arange(num)
+    uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
 
 
@@ -35,13 +36,25 @@ def load(fnames, tag=None, sat_id=None):
     # at 2009,1, 0 UT. 14.84 orbits per day	
     time_delta = date  - pysat.datetime(2009,1,1) 
     uts_root = np.mod(time_delta.total_seconds(), 5820)
-    mlt = np.mod(uts_root+np.arange(num), 5820)*(24./5820.)
+    mlt = np.mod(uts_root+num_array, 5820)*(24./5820.)
     data['mlt'] = mlt
+    
+    # create a fake longitude, resets every 6240 seconds
+    # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time 
+    # to go around full longitude
+    longitude = np.mod(uts_root+num_array, 6240)*(360./6240.)
+    data['longitude'] = longitude
     
     # do slt, 20 second offset from mlt
     uts_root = np.mod(time_delta.total_seconds()+20, 5820)
-    data['slt'] = np.mod(uts_root+np.arange(num), 5820)*(24./5820.)
+    data['slt'] = np.mod(uts_root+num_array, 5820)*(24./5820.)
 
+    # create some fake data to support testing of averaging routines
+    data['dummy1'] = data['mlt'].copy().astype(int)
+    data['dummy2'] = (data['longitude']/15.).copy().astype(int)
+    data['dummy3'] = data['mlt'].copy().astype(int) + (data['longitude']/15.).copy().astype(int)*1000.
+    data['dummy4'] = num_array
+        
     index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq='S')
     data.index=index
     data.index.name = 'time'

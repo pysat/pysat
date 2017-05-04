@@ -189,7 +189,6 @@ class TestBasics:
         check3 = self.testInst.meta['doubleMLT'].long_name == 'double trouble'                               
         assert check1 & check2 & check3
 
-
     def test_setting_partial_data_by_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
