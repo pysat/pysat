@@ -1,7 +1,7 @@
 Code Examples
 =============
 
-Pysat tends to reduce certain science data investigations to the construction of a routine(s) that makes that investigation unique, a call to a seasonal analysis routine, and some plotting commands. Several demonstrations are offered in this section.
+Pysat tends to reduce certain science data investigations to the construction of a routine(s) that makes that investigation unique, a call to a seasonal analysis routine, and some plotting commands. Several demonstrations are offered in this section. The full code for each example is available in the repository in the demo folder.
 
 Seasonal Occurrence by Orbit
 ----------------------------
@@ -169,7 +169,7 @@ Seasonal Averaging of Ion Drifts and Density Profiles
 
 In-situ measurements of the ionosphere by the Ion Velocity Meter onboard C/NOFS provides information on plasma density, composition, ion temperature, and ion drifts. This provides a great deal of information on the ionosphere though this information is limited to the immediate vicinity of the satellite. COSMIC GPS measurements, with some processing, provide information on the vertical electron density distribution in the ionosphere. The vertical motion of ions measured by IVM should be reflected in the vertical plasma densities measured by COSMIC. To look at this relationship over all longitudes and local times, for magnetic latitudes near the geomagnetic equator, use the code below:
 
-Note the same averaging routine is used for both COSMIC and IVM, and that both 1D and 2D data are handled correctly. The routine below has not yet been uploaded to the repo. (Pending)
+Note the same averaging routine is used for both COSMIC and IVM, and that both 1D and 2D data are handled correctly. 
 
 .. code:: python
 
