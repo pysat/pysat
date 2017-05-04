@@ -249,7 +249,7 @@ class TestBasics:
 
         assert True
         
-    def add_multiple_functions_one_not_at_end(self):
+    def test_add_multiple_functions_one_not_at_end(self):
         def custom1(inst):
             out = (inst.data.mlt*2).values
             return {'data':out, 'long_name':'doubleMLTlong',
