@@ -5,7 +5,7 @@ from nose.tools import assert_raises, raises
 import nose.tools
 
 from dateutil.relativedelta import relativedelta as relativedelta
-class TestOrbits:
+class TestSpecificUTOrbits:
     
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
@@ -26,9 +26,26 @@ class TestOrbits:
         # print (self.testInst.data.index[0], self.testInst.data.index[-1])
         assert ans & ans2
 
+    def test_single_orbit_call_by_1_index(self):
+        self.testInst.load(2009,1)
+        self.testInst.orbits[1]
+        ans = (self.testInst.data.index[0] == pds.datetime(2009,1,1,1,37))
+        ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1,3,13,59) ))
+        # print (ans,ans2)
+        # print (self.testInst.data.index[0], self.testInst.data.index[-1])
+        assert ans & ans2
+
+
     def test_single_orbit_call_by_negative_1_index(self):
         self.testInst.load(2008,366)
         self.testInst.orbits[-1]
+        ans = (self.testInst.data.index[0] == (pds.datetime(2009,1,1)-relativedelta(hours=1, minutes=37)) )
+        ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1)-relativedelta(seconds=1) ))
+        assert ans & ans2
+
+    def test_single_orbit_call_by_last_index(self):
+        self.testInst.load(2008,366)
+        self.testInst.orbits[14]
         ans = (self.testInst.data.index[0] == (pds.datetime(2009,1,1)-relativedelta(hours=1, minutes=37)) )
         ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1)-relativedelta(seconds=1) ))
         assert ans & ans2
@@ -93,6 +110,17 @@ class TestOrbits:
         ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1)-relativedelta(seconds=1) ))
         assert ans & ans2
 
+class TestGeneralOrbitsMLT:    
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        info = {'index':'mlt'}
+        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+                                        orbit_info=info)
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
+    
     def test_repeated_orbit_calls_symmetric_single_day_0_UT(self):
         self.testInst.load(2009,1)
         self.testInst.orbits.next()
@@ -179,6 +207,80 @@ class TestOrbits:
             self.testInst.orbits.prev()
         for j in range(20):
             self.testInst.orbits.next()
-        print(control.data)
-        print(self.testInst.data)
-        assert all(control.data == self.testInst.data )
+        #print(control.data)
+        #print(self.testInst.data)
+        #print (control.data.columns)
+        #print (self.testInst.data.columns)
+        assert all(control.data == self.testInst.data)
+        
+    #def test_repeated_orbit_calls_antisymmetric_multi_multi_day_0_UT_long(self):
+    #    self.testInst.load(2009,1)
+    #    self.testInst.orbits.next()
+    #    control = self.testInst.copy()
+    #    for j in range(200):
+    #        self.testInst.orbits.next()
+    #    for j in range(400):
+    #        self.testInst.orbits.prev()
+    #    for j in range(200):
+    #        self.testInst.orbits.next()
+    #    print(control.data)
+    #    print(self.testInst.data)
+    #    #print (control.data.columns)
+    #    #print (self.testInst.data.columns)
+    #    assert all(control.data == self.testInst.data)
+
+        
+class TestGeneralOrbitsLong(TestGeneralOrbitsMLT): 
+    
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        info = {'index':'longitude', 'kind':'longitude'}
+        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+                                        orbit_info=info)
+
+class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT): 
+    
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        info = {'index':'orbit_num', 'kind':'orbit'}
+        self.testInst = pysat.Instrument('pysat','testing', 'clean',
+                                        orbit_info=info)
+
+#def filter_data(inst):
+#    """Remove data from instrument, simulating gaps"""
+#    
+#    times = [ [pysat.datetime(2009,1,1,10), pysat.datetime(2009,1,1,12)],
+#              [pysat.datetime(2009,1,1,4), pysat.datetime(2009,1,2,5,37)],
+#              [pysat.datetime(2009,1,1,1,37), pysat.datetime(2009,1,1,3,14)],
+#              [pysat.datetime(2009,1,1,15), pysat.datetime(2009,1,1,16)],
+#              [pysat.datetime(2009,1,1,22), pysat.datetime(2009,1,2,2)],
+#              [pysat.datetime(2009,1,13), pysat.datetime(2009,1,15)]              
+#            ]
+#    for time in times:
+#        idx, = np.where( (inst.data.index > time[1]) | (inst.data.index < time[0]) ) 
+#        inst.data = inst.data.ix[idx, :]
+#    
+#class TestOrbitsGappyData(TestGeneralOrbitsMLT):
+#    def setup(self):
+#        '''Runs before every method to create a clean testing setup.'''
+#        info = {'index':'mlt'}
+#        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+#                                        orbit_info=info)
+#        self.testInst.custom.add(filter_data, 'modify')
+#
+#class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
+#    def setup(self):
+#        '''Runs before every method to create a clean testing setup.'''
+#        info = {'index':'longitude', 'kind':'longitude'}
+#        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+#                                        orbit_info=info)
+#        self.testInst.custom.add(filter_data, 'modify')
+#
+#class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
+#    def setup(self):
+#        '''Runs before every method to create a clean testing setup.'''
+#        info = {'index':'orbit_num', 'kind':'orbit'}
+#        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+#                                        orbit_info=info)
+#        self.testInst.custom.add(filter_data, 'modify')
+    

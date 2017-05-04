@@ -39,6 +39,12 @@ def load(fnames, tag=None, sat_id=None):
     mlt = np.mod(uts_root+num_array, 5820)*(24./5820.)
     data['mlt'] = mlt
     
+    # fake orbit number, consistent with MLT
+    fake_delta = date  - pysat.datetime(2008,1,1) 
+    fake_uts_root = fake_delta.total_seconds()
+
+    data['orbit_num'] = ((fake_uts_root+num_array)/5820.).astype(int)
+    
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time 
     # to go around full longitude
@@ -54,6 +60,7 @@ def load(fnames, tag=None, sat_id=None):
     data['dummy2'] = (data['longitude']/15.).copy().astype(int)
     data['dummy3'] = data['mlt'].copy().astype(int) + (data['longitude']/15.).copy().astype(int)*1000.
     data['dummy4'] = num_array
+    
         
     index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq='S')
     data.index=index
