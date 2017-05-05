@@ -107,7 +107,7 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
                         ans[zk][yj][xi] = list(ans[zk][yj][xi])
                         medianAns[zk][yj][xi] =  pds.DataFrame(ans[zk][yj][xi] ).median(axis=0)
                         countAns[zk][yj][xi] = len(ans[zk][yj][xi])
-                        devAns[zk][yj][xi] = pds.DataFrame([abs(temp) - medianAns[zk][yj][xi] for temp in ans[zk][yj][xi] ] ).median(axis=0)
+                        devAns[zk][yj][xi] = pds.DataFrame([abs(temp - medianAns[zk][yj][xi]) for temp in ans[zk][yj][xi] ] ).median(axis=0)
                                                                     
     # if some pandas DataFrames are returned in average, return a list
     objidx, = np.where(objArray == 'Frame')
@@ -228,15 +228,8 @@ def _core_mean(inst, data_label, by_orbit=False, by_day=False, by_file=False):
                    date = inst.data.index[0]
                 else:
                    date = inst.date
+                # perform average
+                mean_val[date] = pysat.utils.computational_form(data).mean(axis=0, skipna=True)
 
-                if isinstance(data.iloc[0], pds.DataFrame):
-                    data_panel = pds.Panel.from_dict(dict([(i,data.iloc[i]) for i in xrange(len(data))]))
-                    mean_val[date] = data_panel.mean(axis=0,skipna=True)
-                elif isinstance(data.iloc[0], pds.Series):
-                    data_frame = pds.DataFrame(data.tolist())
-                    data_frame.index = data.index
-                    mean_val[date] = data_frame.mean(axis=0, skipna=True)
-                else:
-                    mean_val[date] = inst[data_label].mean(axis=0,skipna=True)
     del iterator
     return mean_val
