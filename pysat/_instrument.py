@@ -527,14 +527,13 @@ class Instrument(object):
         # set options used by loading routine based upon user input
         if date is not None:
             self._set_load_parameters(date=date, fid=None)
-            # increment one day at a time
+            # increment 
             inc = pds.DateOffset(days=1)
             curr = date
         elif (yr is not None) & (doy is not None):
-            # if date not defined but both yr and doy are
             date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
             self._set_load_parameters(date=date, fid=None)
-            # increment one day at a time
+            # increment 
             inc = pds.DateOffset(days=1)
             curr = self.date
         elif fname is not None:
@@ -555,6 +554,7 @@ class Instrument(object):
 
         self.orbits._reset()
         # if pad  or multi_file_day is true, need to have a three day/file load
+        loop_pad = self.pad if self.pad is not None else pds.DateOffset(seconds=0)   
         if (self.pad is not None) | self.multi_file_day:
             if self._next_data.empty & self._prev_data.empty:
                 # data has not already been loaded for previous and next days
@@ -610,41 +610,38 @@ class Instrument(object):
             
             # multi file days can extend past a single day, only want data from 
             # specific date if loading by day
-            if self.multi_file_day:
-                self.data = self.data.ix[self.date : self.date +
-                                         pds.DateOffset(hours=23, minutes=59,
-                                                        seconds=59,
-                                                        milliseconds=999)]
+            # set up times for the possible data padding coming up
+            if self.multi_file_day and self._load_by_date:
+                self.data = self.data.ix[self.date : self.date + pds.DateOffset(days=1)]
+                # want exclusive end slicing behavior from above
+                if self.data.index[-1] == self.date + pds.DateOffset(days=1):
+                    self.data = self.data.ix[:-1, :]
+                first_time = self.data.index[0]
+                first_pad = self.date - loop_pad
+                last_time = self.data.index[-1]
+                last_pad = self.date + pds.DateOffset(days=1) + loop_pad
+            else:
+                first_time = self._curr_data.index[0]
+                first_pad = first_time - loop_pad
+                last_time = self._curr_data.index[-1]
+                last_pad = last_time + loop_pad
 
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty):
-                if self.multi_file_day and self._load_by_date:
-                    padLeft = self._prev_data.ix[(self.date) :
-                                                 self._curr_data.index[0]]
-                else:
-                    padLeft = self._prev_data.ix[(self._curr_data.index[0] -
-                                                  self.pad) :
-                                                 self._curr_data.index[0]]
-                #self.data = pds.concat([padLeft[0:-1], self.data])
+                padLeft = self._prev_data.ix[first_pad : first_time]
+                if padLeft.index[-1] == first_time:
+                    padLeft = padLeft.ix[:-1, :]
                 self.data = pds.concat([padLeft, self.data])
 
             if (not self._next_data.empty) & (not self.data.empty):
-
-                if self.multi_file_day and self._load_by_date:
-                    padRight = self._next_data.ix[self._curr_data.index[-1] : self.date + 
-                               pds.DateOffset(hours=23, minutes=59,
-                               seconds=59, milliseconds=999)]
-                else:
-                    padRight = self._next_data.ix[self._curr_data.index[-1] :
-                                                  (self._curr_data.index[-1] +
-                                                   self.pad)]
-                #self.data = pds.concat([self.data, padRight[1:]])
+                padRight = self._next_data.ix[last_time : last_pad]
+                if self.multi_file_day and self._load_by_date and (padRight.index[-1] == last_pad):
+                    padRight = padRight.ix[:-1, :]
                 self.data = pds.concat([self.data, padRight])
                 
-            # drop any possible duplicate index times
-            #self.data.drop_duplicates(inplace=True)
-
-            self.data = self.data[~self.data.index.duplicated()]
+            ## drop any possible duplicate index times
+            ##self.data.drop_duplicates(inplace=True)
+            #self.data = self.data[~self.data.index.duplicated()]
             
         # if self.pad is False, load single day
         else:
@@ -659,8 +656,7 @@ class Instrument(object):
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
             temp = self.data.index[0]
-            temp = pds.datetime(temp.year, temp.month, temp.day)
-            self.date = temp
+            self.date = pds.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.getyrdoy(self.date)
 
         if not self.data.empty:
@@ -672,9 +668,8 @@ class Instrument(object):
         if not self.data.empty:
             self.custom._apply_all(self)
         # remove the excess padding, if any applied
-        if (self.pad is not None) & (not self.data.empty) & (not verifyPad) & (not self.multi_file_day):
-            self.data = self.data[self._curr_data.index[0] :
-                                  self._curr_data.index[-1]]
+        if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
+            self.data = self.data[first_time : last_time]
 
         sys.stdout.flush()
         return
