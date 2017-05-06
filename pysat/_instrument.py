@@ -482,6 +482,19 @@ class Instrument(object):
         else:
             return self._load_data(fid=self._fid-1)
 
+    def _set_load_parameters(self, date=None, fid=None):
+        self.date = date
+        self._fid = fid
+        if date is not None:
+            year, doy = utils.getyrdoy(date)
+            self.yr = year 
+            self.doy = doy 
+            self._load_by_date = True
+        else:
+            self.yr = None 
+            self.doy = None 
+            self._load_by_date = False        
+
     def load(self, yr=None, doy=None, date=None, fname=None, fid=None, 
              verifyPad=False):
         """Load instrument data into Instrument object .data.
@@ -511,43 +524,28 @@ class Instrument(object):
         user in .data.
         
         """
-
+        # set options used by loading routine based upon user input
         if date is not None:
-            # date supplied getyrdoy checks if it is datetime
-            year, doy = utils.getyrdoy(date)
-            self.yr = year 
-            self.doy = doy 
-            self.date = date
-            self._fid = None
-            self._load_by_date = True
+            self._set_load_parameters(date=date, fid=None)
+            # increment one day at a time
             inc = pds.DateOffset(days=1)
             curr = date
         elif (yr is not None) & (doy is not None):
             # if date not defined but both yr and doy are
-            self.date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
-            self.yr = yr
-            self.doy = doy
-            self._fid = None
-            self._load_by_date = True
+            date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
+            self._set_load_parameters(date=date, fid=None)
+            # increment one day at a time
             inc = pds.DateOffset(days=1)
             curr = self.date
         elif fname is not None:
             # date will have to be set later by looking at the data
-            self.date = None
-            self.yr = None
-            self.doy = None
-            self._load_by_date = False
-            # if no index, called func tries to find file in instrument dir,
-            # throws error if it fails
-            self._fid = self.files.get_index(fname)
+            self._set_load_parameters(date=None, fid=self.files.get_index(fname))
+            # increment one file at a time
             inc = 1
             curr = self._fid.copy()
         elif fid is not None:
-            self._load_by_date = False	    
-            self._fid = fid
-            self.date = None
-            self.yr = None
-            self.doy = None
+            self._set_load_parameters(date=None, fid=fid)
+            # increment one file at a time
             inc = 1
             curr = fid
         else:
@@ -556,7 +554,7 @@ class Instrument(object):
             raise TypeError(estr)
 
         self.orbits._reset()
-        # if pad is true, need to have a three day/file load
+        # if pad  or multi_file_day is true, need to have a three day/file load
         if (self.pad is not None) | self.multi_file_day:
             if self._next_data.empty & self._prev_data.empty:
                 # data has not already been loaded for previous and next days
@@ -609,7 +607,9 @@ class Instrument(object):
                 # line below removed as it would delete previous meta, if any
                 # if you end a seasonal analysis with a day with no data, then
                 # no meta: self.meta = _meta.Meta()
-
+            
+            # multi file days can extend past a single day, only want data from 
+            # specific date if loading by day
             if self.multi_file_day:
                 self.data = self.data.ix[self.date : self.date +
                                          pds.DateOffset(hours=23, minutes=59,
