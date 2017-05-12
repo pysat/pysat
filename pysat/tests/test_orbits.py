@@ -252,7 +252,7 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
         info = {'index':'orbit_num', 'kind':'orbit'}
-        self.testInst = pysat.Instrument('pysat','testing', 'clean',
+        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
                                         orbit_info=info)
 
 #def filter_data(inst):

@@ -117,6 +117,10 @@ class Files(object):
             #                                 self._sat.name, self._sat.tag)
 
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
+        if self.data_path[-2] == os.path.sep:
+            self.data_path = self.data_path[:-1]
+        elif self.data_path[-1] != os.path.sep:
+            self.data_path = os.path.join(self.data_path, '')
         
         self.write_to_disk = write_to_disk
         if write_to_disk is False:

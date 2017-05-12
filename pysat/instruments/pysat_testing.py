@@ -22,11 +22,13 @@ def init(self):
 def load(fnames, tag=None, sat_id=None):
     # create an artifical satellite data set
     parts = fnames[0].split('/')
+    print (fnames[0], parts)
     yr = int('20'+parts[-1][0:2])
     month = int(parts[-3])
     day = int(parts[-2])
-    date = pysat.datetime(yr,month,day)
-    num = 86400 #int(tag)
+    print (yr, month, day)
+    date = pysat.datetime(yr, month, day)
+    num = 86400 if tag is '' else int(tag)
     num_array = np.arange(num)
     uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
@@ -39,7 +41,7 @@ def load(fnames, tag=None, sat_id=None):
     mlt = np.mod(uts_root+num_array, 5820)*(24./5820.)
     data['mlt'] = mlt
     
-    # fake orbit number, consistent with MLT
+    # fake orbit number
     fake_delta = date  - pysat.datetime(2008,1,1) 
     fake_uts_root = fake_delta.total_seconds()
 
@@ -56,14 +58,16 @@ def load(fnames, tag=None, sat_id=None):
     data['slt'] = np.mod(uts_root+num_array, 5820)*(24./5820.)
 
     # create some fake data to support testing of averaging routines
-    data['dummy1'] = data['mlt'].copy().astype(int)
-    data['dummy2'] = (data['longitude']/15.).copy().astype(int)
-    data['dummy3'] = data['mlt'].copy().astype(int) + (data['longitude']/15.).copy().astype(int)*1000.
+    mlt_int = data['mlt'].astype(int)
+    long_int = (data['longitude']/15.).astype(int)
+    data['dummy1'] = mlt_int
+    data['dummy2'] = long_int
+    data['dummy3'] = mlt_int + long_int*1000.
     data['dummy4'] = num_array
     
         
-    index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq='S')
-    data.index=index
+    index = pds.date_range(date, date+pds.DateOffset(hours=23,minutes=59,seconds=59), freq='S')
+    data.index=index[0:num]
     data.index.name = 'time'
     return data, meta.copy()
 
@@ -71,7 +75,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
     
     index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31)) 
-    names = [ data_path+'/'+date.strftime('%D')+'.nofile' for date in index]
+    names = [ data_path+date.strftime('%D')+'.nofile' for date in index]
+    
+    print('data path: ', data_path)
+    #print ('anems ', names)
     return pysat.Series(names, index=index)
     
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):

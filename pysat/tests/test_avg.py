@@ -24,7 +24,7 @@ else:
 class TestBasics:
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
-        self.testInst = pysat.Instrument('pysat','testing', 'clean')
+        self.testInst = pysat.Instrument('pysat','testing', clean_level='clean')
 
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''
@@ -71,7 +71,7 @@ class TestBasics:
         
     def test_basic_orbit_mean(self):
         orbit_info = {'kind':'local time', 'index':'mlt'}
-        self.testInst = pysat.Instrument('pysat','testing', 'clean', orbit_info=orbit_info)      
+        self.testInst = pysat.Instrument('pysat','testing', clean_level='clean', orbit_info=orbit_info)      
         self.testInst.bounds = (pysat.datetime(2009,1,1), pysat.datetime(2009,1,2))
         ans = pysat.ssnl.avg.mean_by_orbit(self.testInst, 'mlt')
         # note last orbit is incomplete thus not expected to satisfy relation
@@ -80,7 +80,8 @@ class TestBasics:
     def test_basic_file_mean(self):
         index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1)) 
         names = [ date.strftime('%D')+'.nofile' for date in index]
-        
+        #print (self.testInst.files.files)
+        #print(names)
         self.testInst.bounds = (names[0], names[-1])
         ans = pysat.ssnl.avg.mean_by_file(self.testInst, 'dummy4')
         assert np.all(ans == 86399/2.)
