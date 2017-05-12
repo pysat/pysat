@@ -124,6 +124,7 @@ class TestGeneralOrbitsMLT:
     def test_repeated_orbit_calls_symmetric_single_day_starting_with_last(self):
         self.testInst.load(2009,1)
         # start on last orbit of last day
+        self.testInst.orbits[0]
         self.testInst.orbits.prev()
         control = self.testInst.copy()
         for j in range(10):
