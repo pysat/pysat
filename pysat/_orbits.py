@@ -628,7 +628,7 @@ class Orbits(object):
 	
                 load_prev = True
                 if self.sat._iter_type == 'date':
-                    delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1])
+                    delta = pds.to_timedelta(self.sat.data.index[-1] - self.sat.date)
                     if delta >= self.orbit_period:
                         # don't need to load the prev day because this orbit ends more than a orbital
                         # period from start of today's date
@@ -678,7 +678,7 @@ class Orbits(object):
 
                     load_prev = True
                     if self.sat._iter_type == 'date':
-                        delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1])
+                        delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1]) + np.timedelta64(1, 'D')
                         if delta >= self.orbit_period:
                             # don't need to load the prev day because this orbit ends more than a orbital
                             # period from start of today's date
@@ -689,11 +689,11 @@ class Orbits(object):
                         # select second to last orbit of combined data
                         self._getBasicOrbit(orbit=-2)
                     else:
-                        # padding from the previous wasn't needed
+                        # padding from the previous is needed
                         self._getBasicOrbit(orbit=-1)
                         if self.sat._iter_type == 'date':
-                            delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1])
-                            if delta >= self.orbit_period:
+                            delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1]) + np.timedelta64(1, 'D')
+                            if delta < self.orbit_period:
                                 self.current = self.num
                                 self.prev()
                 else:
