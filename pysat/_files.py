@@ -287,7 +287,7 @@ class Files(object):
         # previous set of files
         old_info = self._load(prev_version=True)
 
-        new_files = new_info[~new_info.isin(old_info) ]
+        new_files = new_info[-new_info.isin(old_info) ]
         return new_files
 
     # def mark_as_new(self, files):
