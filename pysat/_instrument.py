@@ -655,7 +655,10 @@ class Instrument(object):
                                             'units': ['']*len(self.data.columns)}
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
-            temp = self.data.index[0]
+            if self.pad is not None:
+                temp = first_time
+            else:
+                temp = self.data.index[0]
             self.date = pds.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.getyrdoy(self.date)
 
@@ -875,7 +878,7 @@ class Instrument(object):
                 self.load(date=date)
                 yield self            
                 
-    def next(self):
+    def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
         
         Bounds of iteration and iteration type (day/file) are set by 
@@ -895,9 +898,9 @@ class Instrument(object):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx += 1
-                    self.load(date=self._iter_list[idx[0]])
+                    self.load(date=self._iter_list[idx[0]], verifyPad=verifyPad)
             else:
-                self.load(date=self._iter_list[0])
+                self.load(date=self._iter_list[0], verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             if self._fid is not None:
@@ -906,11 +909,11 @@ class Instrument(object):
                 if (self._fid < first) | (self._fid+1 > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    self.load(fname=self._iter_list[self._fid+1-first])
+                    self.load(fname=self._iter_list[self._fid+1-first], verifyPad=verifyPad)
             else:
-                self.load(fname=self._iter_list[0])
+                self.load(fname=self._iter_list[0], verifyPad=verifyPad)
 
-    def prev(self):
+    def prev(self, verifyPad=False):
         """Manually iterate backwards through the data in Instrument object.
         
         Bounds of iteration and iteration type (day/file) 
@@ -930,9 +933,9 @@ class Instrument(object):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx -= 1
-                    self.load(date=self._iter_list[idx[0]])
+                    self.load(date=self._iter_list[idx[0]], verifyPad=verifyPad)
             else:
-                self.load(date=self._iter_list[-1])
+                self.load(date=self._iter_list[-1], verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             if self._fid is not None:
@@ -941,9 +944,9 @@ class Instrument(object):
                 if (self._fid-1 < first) | (self._fid > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    self.load(fname=self._iter_list[self._fid-1-first])
+                    self.load(fname=self._iter_list[self._fid-1-first], verifyPad=verifyPad)
             else:
-                self.load(fname=self._iter_list[-1])
+                self.load(fname=self._iter_list[-1], verifyPad=verifyPad)
 
 
     def to_netcdf4(self, fname=None, format=None, base_instrument=None):
