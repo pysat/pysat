@@ -49,7 +49,8 @@ def load(fnames, tag=None, sat_id=None):
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time 
     # to go around full longitude
-    longitude = np.mod(uts_root+num_array, 6240)*(360./6240.)
+    long_uts_root = np.mod(time_delta.total_seconds(), 6240)
+    longitude = np.mod(long_uts_root+num_array, 6240)*(360./6240.)
     data['longitude'] = longitude
     
     latitude = 90.*np.cos(np.mod(uts_root+num_array, 5820)*(2.*np.pi/5820.)) 

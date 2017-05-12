@@ -619,7 +619,7 @@ class Orbits(object):
             if (self.current > 2) & (self.current <= self.num):
                 # load orbit and put it into self.sat.data
                 self._getBasicOrbit(orbit=self.current - 1)
-                print('Loaded Orbit:%i' % (self.current - 1))
+                print('Loaded Orbit reg:%i' % (self.current - 1))
 
             # if current orbit near the first, must be careful
             elif self.current == 2:
@@ -658,7 +658,7 @@ class Orbits(object):
     
                     del temp_orbit_data
                     
-                print('Loaded Orbit:%i' % (self.current - 1))
+                print('Loaded Orbit 2:%i' % (self.current - 1))
                 
             elif self.current == 0:
                 self.load(orbit=-1)
@@ -699,10 +699,10 @@ class Orbits(object):
                 else:
                     while len(self.sat.data) == 0:
                         self.sat.prev()
-                    self.getBasicOrbit(orbit=-1)
+                    self._getBasicOrbit(orbit=-1)
                         
                 del temp_orbit_data
-                print('Loaded Orbit:%i' % (self.current - 1))
+                print('Loaded Orbit<2:%i' % (self.current - 1))
 
             else:
                 raise Exception(
