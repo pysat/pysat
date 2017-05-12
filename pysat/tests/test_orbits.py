@@ -332,9 +332,9 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
         times = [ [pysat.datetime(2008,12,31,4), pysat.datetime(2008,12,31,5,37)],              
                 [pysat.datetime(2009,1,1), pysat.datetime(2009,1,1,1,37)]
                 ]
-        for seconds in np.arange(350):
-            day = pysat.datetime(2009,1,2)+pds.DateOffset(days=seconds)
-            times.append([day, day+pds.DateOffset(hours=1, minutes=37, seconds=seconds)-pds.DateOffset(seconds=180)])
+        for seconds in np.arange(38):
+            day = pysat.datetime(2009,1,2)+pds.DateOffset(days=int(seconds))
+            times.append([day, day+pds.DateOffset(hours=1, minutes=37, seconds=int(seconds))-pds.DateOffset(seconds=20)])
 
         self.testInst.custom.add(filter_data2, 'modify', times=times)
 
