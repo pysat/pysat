@@ -55,6 +55,8 @@ def load(fnames, tag=None, sat_id=None):
     # do slt, 20 second offset from mlt
     uts_root = np.mod(time_delta.total_seconds()+20, 5820)
     data['slt'] = np.mod(uts_root+num_array, 5820)*(24./5820.)
+    
+    # create latitude area for testing polar orbits
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
@@ -65,7 +67,7 @@ def load(fnames, tag=None, sat_id=None):
     data['dummy4'] = num_array
     
         
-    index = pds.date_range(date, date+pds.DateOffset(hours=23,minutes=59,seconds=59), freq='S')
+    index = pds.date_range(date, date+pds.DateOffset(seconds=num-1), freq='S')
     data.index=index[0:num]
     data.index.name = 'time'
     return data, meta.copy()

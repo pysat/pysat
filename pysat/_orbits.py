@@ -139,7 +139,7 @@ class Orbits(object):
         # if the breaks between orbit have not been defined, define them
         # also, store the data so that grabbing different orbits does not
         # require reloads of whole dataset
-        if self._orbit_breaks == []:
+        if len(self._orbit_breaks) == 0:
             # determine orbit breaks
             self._detBreaks()
             # store a copy of data
@@ -224,7 +224,7 @@ class Orbits(object):
         norm_ut = ut_diff / self.orbit_period
         # now, look for breaks because the length of time between samples is too large,
         # thus there is no break in slt/mlt/etc, lt_diff is small but UT change is big
-        norm_ut_vs_norm_lt = norm_ut.gt(np.abs(lt_diff / orbit_index_period))
+        norm_ut_vs_norm_lt = norm_ut.gt(np.abs(lt_diff.values / orbit_index_period))
         # indices when one or other flag is true
         ut_ind, = np.where(ut_change_vs_period | (norm_ut_vs_norm_lt & (norm_ut > 0.95)))
         # & lt_diff.notnull() ))# & (lt_diff != 0)  ) )   #added the or and check after or on 10/20/2014

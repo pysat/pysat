@@ -10,7 +10,7 @@ class TestSpecificUTOrbits:
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
         info = {'index':'mlt'}
-        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+        self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
 
     def teardown(self):
@@ -114,7 +114,7 @@ class TestGeneralOrbitsMLT:
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
         info = {'index':'mlt'}
-        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+        self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
 
     def teardown(self):
@@ -244,7 +244,7 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
         info = {'index':'longitude', 'kind':'longitude'}
-        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+        self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
 
 class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT): 
@@ -252,7 +252,7 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
         info = {'index':'orbit_num', 'kind':'orbit'}
-        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
+        self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
 
 #def filter_data(inst):

@@ -115,7 +115,7 @@ class Files(object):
                                                  sat_id=self._sat.sat_id)
             #self.sub_dir_path = os.path.join(self._sat.platform, 
             #                                 self._sat.name, self._sat.tag)
-
+        # make sure path always ends with directory seperator
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         if self.data_path[-2] == os.path.sep:
             self.data_path = self.data_path[:-1]

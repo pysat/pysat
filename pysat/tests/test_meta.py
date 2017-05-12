@@ -155,7 +155,7 @@ class TestBasics:
             (self.meta['new2'].units == 'yeppers') & (self.meta['new2'].long_name == 'boo2'))
     
     def test_meta_repr_functions(self):
-        print (self.testInst)
+        print (self.testInst.meta)
         # if it doesn't produce an error, we presume it works
         # how do you test a print??
         assert True
