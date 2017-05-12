@@ -136,104 +136,6 @@ class TestBasics:
         del test.load
         testIn = pysat.Instrument(inst_module=test, tag='', clean_level='clean')
         testIn.load(2009,1)
-
-    def test_data_padding(self):
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(2009,1, verifyPad=True)
-        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
-                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
-                                        pds.DateOffset(minutes=5)) )
-
-    def test_fid_data_padding(self):
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(fid=1, verifyPad=True)
-        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
-                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
-                                        pds.DateOffset(minutes=5)) )
-
-    def test_fid_data_padding_next(self):
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(fid=1, verifyPad=True)
-        te.next(verifyPad=True)
-        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
-                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
-                                        pds.DateOffset(minutes=5)) )
-
-    def test_fid_data_padding_multi_next(self):
-        """This also tests that _prev_data and _next_data cacheing"""
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(fid=1)
-        te.next()
-        te.next(verifyPad=True)
-        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
-                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
-                                        pds.DateOffset(minutes=5)) )
-
-
-    def test_fid_data_padding_prev(self):
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(fid=2, verifyPad=True)
-        te.prev(verifyPad=True)
-        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
-                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
-                                        pds.DateOffset(minutes=5)) )
-
-    def test_fid_data_padding_multi_prev(self):
-        """This also tests that _prev_data and _next_data cacheing"""
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(fid=10)
-        te.prev()
-        te.prev(verifyPad=True)
-        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
-                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
-                                        pds.DateOffset(minutes=5)) )
-
-    def test_fid_data_padding_jump(self):
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(fid=1, verifyPad=True)
-        te.load(fid=10, verifyPad=True)
-        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
-                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
-                                        pds.DateOffset(minutes=5)) )
-
-                        
-    def test_data_padding_uniqueness(self):
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(2009,1, verifyPad=True)
-        assert (te.data.index.is_unique)
-
-    def test_data_padding_all_samples_present(self):
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(2009,1, verifyPad=True)
-        test_index = pds.date_range(te.data.index[0], te.data.index[-1], freq='S')
-        assert (np.all(te.data.index == test_index))
-
-
-    def test_data_padding_removal(self):
-        reload(pysat.instruments.pysat_testing)
-        reload(pysat.instruments)
-        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
-        te.load(2009,1)
-        assert (te.data.index[0] == te.date ) & \
-                (te.data.index[-1] == te.date + pds.DateOffset(hour=23, minutes=59,seconds=59) )
         
     def test_basic_data_access_by_name(self):
         self.testInst.load(2009,1)
@@ -414,7 +316,219 @@ class TestBasics:
         Dummy.name = 'help'
         
         temp = pysat.Instrument(inst_module=Dummy)
+
+
+class TestDataPaddingbyFile():
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        '''Runs before every method to create a clean testing setup.'''
+        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+                                         clean_level='clean',
+                                         pad={'minutes':5},
+                                         update_files=True)
+        self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
         
-        
+        self.rawInst = pysat.Instrument('pysat', 'testing', '', 
+                                    clean_level='clean',
+                                    update_files=True)
+        self.rawInst.bounds = self.testInst.bounds
+
+
+    def test_fid_data_padding(self):
+        self.testInst.load(fid=1, verifyPad=True)
+        self.rawInst.load(fid=1)
+        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+
+    def test_fid_data_padding_next(self):
+        self.testInst.load(fid=1, verifyPad=True)
+        self.testInst.next(verifyPad=True)
+        self.rawInst.load(fid=2)
+        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+
+    def test_fid_data_padding_multi_next(self):
+        """This also tests that _prev_data and _next_data cacheing"""
+        self.testInst.load(fid=1)
+        self.testInst.next()
+        self.testInst.next(verifyPad=True)
+        self.rawInst.load(fid=3)
+        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+
+    def test_fid_data_padding_prev(self):
+        self.testInst.load(fid=2, verifyPad=True)
+        self.testInst.prev(verifyPad=True)
+        #print(self.testInst.data.index)
+        self.rawInst.load(fid=1)
+        #print(self.rawInst.data.index)
+        #print(self.testInst.data.index[0], self.rawInst.data.index[0] - pds.DateOffset(minutes=5),
+        #   self.testInst.data.index[-1],  self.rawInst.data.index[-1] + pds.DateOffset(minutes=5))
+        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+
+    def test_fid_data_padding_multi_prev(self):
+        """This also tests that _prev_data and _next_data cacheing"""
+        self.testInst.load(fid=10)
+        self.testInst.prev()
+        self.testInst.prev(verifyPad=True)
+        self.rawInst.load(fid=8)
+        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+
+    def test_fid_data_padding_jump(self):
+        self.testInst.load(fid=1, verifyPad=True)
+        self.testInst.load(fid=10, verifyPad=True)
+        self.rawInst.load(fid=10)
+        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+    def test_fid_data_padding_uniqueness(self):
+        self.testInst.load(fid=1, verifyPad=True)
+        assert (self.testInst.data.index.is_unique)
+
+    def test_fid_data_padding_all_samples_present(self):
+        self.testInst.load(fid=1, verifyPad=True)
+        test_index = pds.date_range(self.testInst.data.index[0], self.testInst.data.index[-1], freq='S')
+        #print (test_index[0], test_index[-1], len(test_index))
+        #print(self.testInst.data.index[0], self.testInst.data.index[-1], len(self.testInst.data))
+        assert (np.all(self.testInst.data.index == test_index))
+
+
+    def test_fid_data_padding_removal(self):
+        self.testInst.load(fid=1)
+        self.rawInst.load(fid=1)
+        #print(self.testInst.data.index)
+        #print(new_inst.data.index)
+        assert (self.testInst.data.index[0] == self.rawInst.data.index[0] ) & \
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1]) & \
+                (len(self.rawInst.data) == len(self.testInst.data))
+
+
+class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        '''Runs before every method to create a clean testing setup.'''
+        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_right=True,
+                                         pad={'minutes':5})
+        self.rawInst = pysat.Instrument('pysat', 'testing', '', 
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_right=True)
+        self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
+        self.rawInst.bounds = self.testInst.bounds
+
+class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        '''Runs before every method to create a clean testing setup.'''
+        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_left=True,
+                                         pad={'minutes':5})
+        self.rawInst = pysat.Instrument('pysat', 'testing', '', 
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_left=True)
+        self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
+        self.rawInst.bounds = self.testInst.bounds
+
+class TestDataPadding():
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        '''Runs before every method to create a clean testing setup.'''
+        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+                                         clean_level='clean',
+                                         pad={'minutes':5},
+                                         update_files=True)
+
+    def test_data_padding(self):
+        self.testInst.load(2009,2, verifyPad=True)
+        assert ( (self.testInst.data.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
+
+    def test_data_padding_next(self):
+        self.testInst.load(2009,2, verifyPad=True)
+        self.testInst.next(verifyPad=True)
+        assert ( (self.testInst.data.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
+
+    def test_data_padding_multi_next(self):
+        """This also tests that _prev_data and _next_data cacheing"""
+        self.testInst.load(2009,2)
+        self.testInst.next()
+        self.testInst.next(verifyPad=True)
+        assert ( (self.testInst.data.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
+
+    def test_data_padding_prev(self):
+        self.testInst.load(2009, 2, verifyPad=True)
+        self.testInst.prev(verifyPad=True)
+        print(self.testInst.data.index)
+        assert ( (self.testInst.data.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
+
+    def test_data_padding_multi_prev(self):
+        """This also tests that _prev_data and _next_data cacheing"""
+        self.testInst.load(2009, 10)
+        self.testInst.prev()
+        self.testInst.prev(verifyPad=True)
+        assert ( (self.testInst.data.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
+
+    def test_data_padding_jump(self):
+        self.testInst.load(2009, 2, verifyPad=True)
+        self.testInst.load(2009, 11, verifyPad=True)
+        assert ( (self.testInst.data.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
+                     
+    def test_data_padding_uniqueness(self):
+        self.testInst.load(2009,1, verifyPad=True)
+        assert (self.testInst.data.index.is_unique)
+
+    def test_data_padding_all_samples_present(self):
+        self.testInst.load(2009,1, verifyPad=True)
+        test_index = pds.date_range(self.testInst.data.index[0], self.testInst.data.index[-1], freq='S')
+        #print (test_index[0], test_index[-1], len(test_index))
+        #print(self.testInst.data.index[0], self.testInst.data.index[-1], len(self.testInst.data))
+        assert (np.all(self.testInst.data.index == test_index))
+
+    def test_data_padding_removal(self):
+        self.testInst.load(2009,1)
+        #print(self.testInst.data.index)
+        assert (self.testInst.data.index[0] == self.testInst.date ) & \
+                (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hour=23, minutes=59,seconds=59) )
+                
+                                
+class TestMultiFileRightDataPaddingBasics(TestDataPadding):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        '''Runs before every method to create a clean testing setup.'''
+        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_right=True,
+                                         pad={'minutes':5},
+                                         multi_file_day=True)
+       
+class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        '''Runs before every method to create a clean testing setup.'''
+        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+                                         clean_level='clean',
+                                         update_files=True,
+                                         sim_multi_file_left=True,
+                                         pad={'minutes':5},
+                                         multi_file_day=True)
         
 

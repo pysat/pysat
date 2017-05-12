@@ -19,7 +19,8 @@ meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
 def init(self):
     self.new_thing=True        
                 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
+        sim_multi_file_left=False):
     # create an artifical satellite data set
     parts = fnames[0].split('/')
     yr = int('20'+parts[-1][0:2])
@@ -27,6 +28,15 @@ def load(fnames, tag=None, sat_id=None):
     day = int(parts[-2])
 
     date = pysat.datetime(yr, month, day)
+    if sim_multi_file_right:
+        root_date = pysat.datetime(2009,1,1,12)
+        data_date = date+pds.DateOffset(hours=12)
+    elif sim_multi_file_left:
+        root_date = pysat.datetime(2008,12,31,12)
+        data_date = date-pds.DateOffset(hours=12)
+    else:
+        root_date = pysat.datetime(2009,1,1)
+        data_date = date
     num = 86400 if tag is '' else int(tag)
     num_array = np.arange(num)
     uts = num_array
@@ -35,7 +45,7 @@ def load(fnames, tag=None, sat_id=None):
 
     # need to create simple orbits here. Have start of first orbit 
     # at 2009,1, 0 UT. 14.84 orbits per day	
-    time_delta = date  - pysat.datetime(2009,1,1) 
+    time_delta = date  - root_date
     uts_root = np.mod(time_delta.total_seconds(), 5820)
     mlt = np.mod(uts_root+num_array, 5820)*(24./5820.)
     data['mlt'] = mlt
@@ -71,7 +81,7 @@ def load(fnames, tag=None, sat_id=None):
     data['dummy4'] = num_array
     
         
-    index = pds.date_range(date, date+pds.DateOffset(seconds=num-1), freq='S')
+    index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), freq='S')
     data.index=index[0:num]
     data.index.name = 'time'
     return data, meta.copy()

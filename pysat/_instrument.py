@@ -612,33 +612,62 @@ class Instrument(object):
             # specific date if loading by day
             # set up times for the possible data padding coming up
             if self.multi_file_day and self._load_by_date:
-                self.data = self.data.ix[self.date : self.date + pds.DateOffset(days=1)]
-                # want exclusive end slicing behavior from above
-                if self.data.index[-1] == self.date + pds.DateOffset(days=1):
-                    self.data = self.data.ix[:-1, :]
-                first_time = self.data.index[0]
+                #print ('double trouble')
+                #self.data = self.data.ix[self.date : self.date + pds.DateOffset(days=1)]
+                ## want exclusive end slicing behavior from above
+                #if self.data.index[-1] == self.date + pds.DateOffset(days=1):
+                #    self.data = self.data.ix[:-1, :]
+                #first_time = self.data.index[0]
+                #first_pad = self.date - loop_pad
+                #last_time = self.data.index[-1]
+                #last_pad = self.date + pds.DateOffset(days=1) + loop_pad
+                first_time = self.date #self.data.index[0]
                 first_pad = self.date - loop_pad
-                last_time = self.data.index[-1]
+                last_time = self.date + pds.DateOffset(days=1) #self.data.index[-1]
                 last_pad = self.date + pds.DateOffset(days=1) + loop_pad
+                want_last_pad = False
+
             else:
+                #print ('single trouble')
                 first_time = self._curr_data.index[0]
                 first_pad = first_time - loop_pad
                 last_time = self._curr_data.index[-1]
                 last_pad = last_time + loop_pad
+                want_last_pad = True
+            #print (first_pad, first_time, last_time, last_pad)
 
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty):
-                padLeft = self._prev_data.ix[first_pad : first_time]
-                if padLeft.index[-1] == first_time:
-                    padLeft = padLeft.ix[:-1, :]
-                self.data = pds.concat([padLeft, self.data])
+                #padLeft = self._prev_data.loc[first_pad : first_time]
+                #if len(padLeft) > 0:
+                #    if (padLeft.index[-1] == first_time) &  (self.data.index[0] == first_time):
+                #        padLeft = padLeft.iloc[:-1, :]
+                #    self.data = pds.concat([padLeft, self.data])
+                padLeft = self._prev_data.loc[first_pad : self.data.index[0]]
+                if len(padLeft) > 0:
+                    if (padLeft.index[-1] == self.data.index[0]) :
+                        padLeft = padLeft.iloc[:-1, :]
+                    self.data = pds.concat([padLeft, self.data])
 
             if (not self._next_data.empty) & (not self.data.empty):
-                padRight = self._next_data.ix[last_time : last_pad]
-                if self.multi_file_day and self._load_by_date and (padRight.index[-1] == last_pad):
-                    padRight = padRight.ix[:-1, :]
-                self.data = pds.concat([self.data, padRight])
-                
+                padRight = self._next_data.loc[self.data.index[-1] : last_pad]
+                #if self.multi_file_day and self._load_by_date:
+                if len(padRight) > 0:
+                    if (padRight.index[0] == self.data.index[-1]) :# & (self.data.index[-1] == last_pad):
+                        padRight = padRight.iloc[1:, :]
+                    self.data = pds.concat([self.data, padRight])
+                    
+            self.data = self.data.ix[first_pad : last_pad]
+            # want exclusive end slicing behavior from above
+            if (self.data.index[-1] == last_pad) & (not want_last_pad):
+                self.data = self.data.iloc[:-1, :]
+                    
+            #if self.multi_file_day or self._load_by_date:
+            #    self.data = self.data.ix[self.date : self.date + pds.DateOffset(days=1)]
+            #    # want exclusive end slicing behavior from above
+            #    if self.data.index[-1] == self.date + pds.DateOffset(days=1):
+            #        self.data = self.data.ix[:-1, :]
+   
             ## drop any possible duplicate index times
             ##self.data.drop_duplicates(inplace=True)
             #self.data = self.data[~self.data.index.duplicated()]
@@ -670,9 +699,23 @@ class Instrument(object):
         # apply custom functions
         if not self.data.empty:
             self.custom._apply_all(self)
+            
         # remove the excess padding, if any applied
         if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
             self.data = self.data[first_time : last_time]
+            if (self.data.index[-1] == last_time) & (not want_last_pad):
+                self.data = self.data.iloc[:-1, :]
+#            if self.multi_file_day or self._load_by_date:
+#                print('yo yo')
+#                self.data = self.data[self.date : self.date + pds.DateOffset(days=1)]
+#                if self.data.index[-1] == self.date + pds.DateOffset(days=1):
+#                    self.data = self.data.iloc[:-1, :]
+#
+#            else:
+#                print ('hey hey')
+#                self.data = self.data[first_time : last_time]
+#                if self.data.index[-1] == last_time:
+#                    self.data = self.data.iloc[:-1, :]
 
         sys.stdout.flush()
         return
