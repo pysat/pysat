@@ -11,7 +11,7 @@ platform = 'pysat'
 name = 'testing'
 
 meta = pysat.Meta()
-meta['uts'] = {'units':'s', 'long_name':'Universal Time'}
+meta['uts'] = {'units':'s', 'long_name':'Universal Time', 'custom':False}
 meta['mlt'] = {'units':'hours', 'long_name':'Magnetic Local Time'}
 meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
 
