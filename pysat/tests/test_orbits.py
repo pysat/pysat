@@ -263,41 +263,53 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
 
-#def filter_data(inst):
-#    """Remove data from instrument, simulating gaps"""
-#    
-#    times = [ [pysat.datetime(2009,1,1,10), pysat.datetime(2009,1,1,12)],
-#              [pysat.datetime(2009,1,1,4), pysat.datetime(2009,1,2,5,37)],
-#              [pysat.datetime(2009,1,1,1,37), pysat.datetime(2009,1,1,3,14)],
-#              [pysat.datetime(2009,1,1,15), pysat.datetime(2009,1,1,16)],
-#              [pysat.datetime(2009,1,1,22), pysat.datetime(2009,1,2,2)],
-#              [pysat.datetime(2009,1,13), pysat.datetime(2009,1,15)]              
-#            ]
-#    for time in times:
-#        idx, = np.where( (inst.data.index > time[1]) | (inst.data.index < time[0]) ) 
-#        inst.data = inst.data.ix[idx, :]
-#    
-#class TestOrbitsGappyData(TestGeneralOrbitsMLT):
-#    def setup(self):
-#        '''Runs before every method to create a clean testing setup.'''
-#        info = {'index':'mlt'}
-#        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
-#                                        orbit_info=info)
-#        self.testInst.custom.add(filter_data, 'modify')
-#
-#class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
-#    def setup(self):
-#        '''Runs before every method to create a clean testing setup.'''
-#        info = {'index':'longitude', 'kind':'longitude'}
-#        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
-#                                        orbit_info=info)
-#        self.testInst.custom.add(filter_data, 'modify')
-#
-#class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
-#    def setup(self):
-#        '''Runs before every method to create a clean testing setup.'''
-#        info = {'index':'orbit_num', 'kind':'orbit'}
-#        self.testInst = pysat.Instrument('pysat','testing', '86400', 'clean',
-#                                        orbit_info=info)
-#        self.testInst.custom.add(filter_data, 'modify')
+def filter_data(inst):
+    """Remove data from instrument, simulating gaps"""
+    
+    times = [ [pysat.datetime(2009,1,1,10), pysat.datetime(2009,1,1,12)],
+              [pysat.datetime(2009,1,1,4), pysat.datetime(2009,1,2,5,37)],
+              [pysat.datetime(2009,1,1,1,37), pysat.datetime(2009,1,1,3,14)],
+              [pysat.datetime(2009,1,1,15), pysat.datetime(2009,1,1,16)],
+              [pysat.datetime(2009,1,1,22), pysat.datetime(2009,1,2,2)],
+              [pysat.datetime(2009,1,13), pysat.datetime(2009,1,15)]              
+            ]
+    for time in times:
+        idx, = np.where( (inst.data.index > time[1]) | (inst.data.index < time[0]) ) 
+        inst.data = inst.data.ix[idx, :]
+    
+class TestOrbitsGappyData(TestGeneralOrbitsMLT):
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        info = {'index':'mlt'}
+        self.testInst = pysat.Instrument('pysat','testing', '86400', 
+                                        clean_level='clean',
+                                        orbit_info=info)
+        self.testInst.custom.add(filter_data, 'modify')
+
+class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        info = {'index':'longitude', 'kind':'longitude'}
+        self.testInst = pysat.Instrument('pysat','testing', '86400', 
+                                        clean_level='clean',
+                                        orbit_info=info)
+        self.testInst.custom.add(filter_data, 'modify')
+
+class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        info = {'index':'orbit_num', 'kind':'orbit'}
+        self.testInst = pysat.Instrument('pysat','testing', '86400', 
+                                        clean_level='clean',
+                                        orbit_info=info)
+        self.testInst.custom.add(filter_data, 'modify')
+
+class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        info = {'index':'latitude', 'kind':'polar'}
+        self.testInst = pysat.Instrument('pysat','testing', '86400', 
+                                        clean_level='clean',
+                                        orbit_info=info)
+        self.testInst.custom.add(filter_data, 'modify')
     

@@ -619,58 +619,96 @@ class Orbits(object):
             if (self.current > 2) & (self.current <= self.num):
                 # load orbit and put it into self.sat.data
                 self._getBasicOrbit(orbit=self.current - 1)
+                print('Loaded Orbit:%i' % (self.current - 1))
 
             # if current orbit near the first, must be careful
             elif self.current == 2:
                 # first, load prev orbit data
                 self._getBasicOrbit(orbit=self.current - 1)
-                # need to save this current orbit and load the next day
-                temp_orbit_data = self.sat.data[self.sat.date:]
-                # load previous day, which clears orbit breaks info
+	
+                load_prev = True
+                if self.sat._iter_type == 'date':
+                    delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1])
+                    if delta >= self.orbit_period:
+                        # don't need to load the prev day because this orbit ends more than a orbital
+                        # period from start of today's date
+                        load_prev = False
 
-                try:
-                    self.sat.prev()
-                    # combine this next day orbit with previous last orbit
-                    if len(self.sat.data) > 0:
-                        self.sat.data = pds.concat([self.sat.data, temp_orbit_data])
-                        # select first orbit of combined data
-                        self._getBasicOrbit(orbit=-1)
-                    else:
-                        self.sat.next()
-                        self._getBasicOrbit(orbit=1)
-                except StopIteration:
-                    # if loading the first orbit, of first day of data, you'll
-                    # end up here as the attempt to make a full orbit will
-                    # move the date backwards, and StopIteration is made.
-                    # everything is already ok, just move along
-                    pass
-
-                del temp_orbit_data
+                if load_prev:
+                    # need to save this current orbit and load the prev day
+                    temp_orbit_data = self.sat.data[self.sat.date:]
+                    # load previous day, which clears orbit breaks info
+    
+                    try:
+                        self.sat.prev()
+                        # combine this next day orbit with previous last orbit
+                        if len(self.sat.data) > 0:
+                            self.sat.data = pds.concat([self.sat.data, temp_orbit_data])
+                            # select first orbit of combined data
+                            self._getBasicOrbit(orbit=-1)
+                        else:
+                            self.sat.next()
+                            self._getBasicOrbit(orbit=1)
+                    except StopIteration:
+                        # if loading the first orbit, of first day of data, you'll
+                        # end up here as the attempt to make a full orbit will
+                        # move the date backwards, and StopIteration is made.
+                        # everything is already ok, just move along
+                        pass
+    
+                    del temp_orbit_data
+                    
+                print('Loaded Orbit:%i' % (self.current - 1))
                 
             elif self.current == 0:
                 self.load(orbit=-1)
                 return
                 
             elif self.current < 2:
-                # first, load next orbit data
+                # first, load prev orbit data
                 self._getBasicOrbit(orbit=1)
-                # need to save this current orbit and load the next day
+                # need to save this current orbit and load the prev day
                 temp_orbit_data = self.sat.data[self.sat.date:]
                 # load previous day, which clears orbit breaks info
                 self.sat.prev()
                 # combine this next day orbit with previous last orbit
-                if len(self.sat.data) > 0:
-                    self.sat.data = pds.concat([self.sat.data, temp_orbit_data])
-                    # select first orbit of combined data
-                    self._getBasicOrbit(orbit=-2)
 
+                
+                if len(self.sat.data) > 0:
+
+                    load_prev = True
+                    if self.sat._iter_type == 'date':
+                        delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1])
+                        if delta >= self.orbit_period:
+                            # don't need to load the prev day because this orbit ends more than a orbital
+                            # period from start of today's date
+                            load_prev = False
+                    
+                    if load_prev:
+                        self.sat.data = pds.concat([self.sat.data, temp_orbit_data])
+                        # select second to last orbit of combined data
+                        self._getBasicOrbit(orbit=-2)
+                    else:
+                        # padding from the previous wasn't needed
+                        self._getBasicOrbit(orbit=-1)
+                        if self.sat._iter_type == 'date':
+                            delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1])
+                            if delta >= self.orbit_period:
+                                self.current = self.num
+                                self.prev()
+                else:
+                    while len(self.sat.data) == 0:
+                        self.sat.prev()
+                    self.getBasicOrbit(orbit=-1)
+                        
                 del temp_orbit_data
+                print('Loaded Orbit:%i' % (self.current - 1))
 
             else:
                 raise Exception(
                     'You ended up where noone should ever be. Talk to someone about this fundamental failure.')
             # includes hack to appear to be zero indexed
-            print('Loaded Orbit:%i' % (self.current - 1))
+            #print('Loaded Orbit:%i' % (self.current - 1))
         else:
             # no data
             while len(self.sat.data) == 0:
