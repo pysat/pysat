@@ -162,10 +162,10 @@ class TestBasics:
         
     def test_meta_csv_load(self):
         import os
-    	name =os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
+        name = os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
         mdata = pysat.Meta.from_csv(name=name,  na_values=[ ], #index_col=2, 
-                                keep_default_na=False,
-                                col_names=['name','long_name','idx','units','description'])
+                                    keep_default_na=False,
+                                    col_names=['name','long_name','idx','units','description'])
         check = []
         check.append(mdata['yrdoy'].long_name == 'Date')
         check.append(mdata['unit_mer_z'].long_name == 'Unit Vector - Meridional Dir - S/C z')
