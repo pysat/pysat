@@ -226,14 +226,14 @@ class TestGeneralOrbitsMLT:
         self.testInst.load(2009,12)
         self.testInst.orbits.next()
         control = self.testInst.copy()
-        for j in range(200):
+        for j in range(20):
             self.testInst.orbits.next()
-        for j in range(200):
+        for j in range(20):
             self.testInst.orbits.prev()
         assert all(control.data == self.testInst.data)
 
     def test_repeated_orbit_calls_antisymmetric_multi_multi_day_0_UT_really_long_time_gap(self):
-        self.testInst.load(2009,12)
+        self.testInst.load(2009,1)
         self.testInst.orbits.next()
         control = self.testInst.copy()
         for j in range(400):
@@ -252,16 +252,16 @@ class TestGeneralOrbitsMLT:
         for j in range(40):
             n_time.append(self.testInst.data.index[0])
             self.testInst.orbits.next()
-            print(self.testInst.data.index[0], self.testInst.data.index[-1])
+            #print(self.testInst.data.index[0], self.testInst.data.index[-1])
 
         for j in range(40):
             self.testInst.orbits.prev()
-            print(self.testInst.data.index[0], self.testInst.data.index[-1])
+            #print(self.testInst.data.index[0], self.testInst.data.index[-1])
             p_time.append(self.testInst.data.index[0])
         #for j in range(200):
         #    self.testInst.orbits.next()
-
-        assert all(control.data == self.testInst.data)
+        check = np.all(p_time == n_time[::-1])
+        assert all(control.data == self.testInst.data) & check
 
                 
 class TestGeneralOrbitsLong(TestGeneralOrbitsMLT): 
@@ -305,13 +305,9 @@ def filter_data(inst):
         idx, = np.where( (inst.data.index > time[1]) | (inst.data.index < time[0]) ) 
         inst.data = inst.data.ix[idx, :]
 
-def filter_data2(inst):
+def filter_data2(inst, times=None):
     """Remove data from instrument, simulating gaps"""
-    
-    times = [ [pysat.datetime(2009,1,1), pysat.datetime(2009,1,1,1,37)],
-              [pysat.datetime(2008,12,31,4), pysat.datetime(2008,12,31,5,37)],
-              [pysat.datetime(2009,1,1,3,14), pysat.datetime(2009,1,1,4,51)],                           
-            ]
+
     for time in times:
         idx, = np.where( (inst.data.index > time[1]) | (inst.data.index < time[0]) ) 
         inst.data = inst.data.ix[idx, :]
@@ -333,7 +329,14 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat','testing', '86400', 
                                         clean_level='clean',
                                         orbit_info=info)
-        self.testInst.custom.add(filter_data2, 'modify')
+        times = [ [pysat.datetime(2008,12,31,4), pysat.datetime(2008,12,31,5,37)],              
+                [pysat.datetime(2009,1,1), pysat.datetime(2009,1,1,1,37)]
+                ]
+        for seconds in np.arange(350):
+            day = pysat.datetime(2009,1,2)+pds.DateOffset(days=seconds)
+            times.append([day, day+pds.DateOffset(hours=1, minutes=37, seconds=seconds)-pds.DateOffset(seconds=180)])
+
+        self.testInst.custom.add(filter_data2, 'modify', times=times)
 
 
 class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
