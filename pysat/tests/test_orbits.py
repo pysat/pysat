@@ -120,7 +120,19 @@ class TestGeneralOrbitsMLT:
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''
         del self.testInst 
-    
+
+    def test_repeated_orbit_calls_symmetric_single_day_starting_with_last(self):
+        self.testInst.load(2009,1)
+        # start on last orbit of last day
+        self.testInst.orbits.prev()
+        control = self.testInst.copy()
+        for j in range(10):
+            self.testInst.orbits.next()
+        for j in range(10):
+            self.testInst.orbits.prev()
+        assert all(control.data == self.testInst.data)
+
+        
     def test_repeated_orbit_calls_symmetric_single_day_0_UT(self):
         self.testInst.load(2009,1)
         self.testInst.orbits.next()
@@ -207,10 +219,6 @@ class TestGeneralOrbitsMLT:
             self.testInst.orbits.prev()
         for j in range(20):
             self.testInst.orbits.next()
-        #print(control.data)
-        #print(self.testInst.data)
-        #print (control.data.columns)
-        #print (self.testInst.data.columns)
         assert all(control.data == self.testInst.data)
         
     #def test_repeated_orbit_calls_antisymmetric_multi_multi_day_0_UT_long(self):
