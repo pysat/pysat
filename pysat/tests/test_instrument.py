@@ -165,11 +165,36 @@ class TestBasics:
                 (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
                                         pds.DateOffset(minutes=5)) )
 
+    def test_fid_data_padding_multi_next(self):
+        """This also tests that _prev_data and _next_data cacheing"""
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
+        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
+        te.load(fid=1)
+        te.next()
+        te.next(verifyPad=True)
+        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
+                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
+
+
     def test_fid_data_padding_prev(self):
         reload(pysat.instruments.pysat_testing)
         reload(pysat.instruments)
         te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
         te.load(fid=2, verifyPad=True)
+        te.prev(verifyPad=True)
+        assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
+                (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+                                        pds.DateOffset(minutes=5)) )
+
+    def test_fid_data_padding_multi_prev(self):
+        """This also tests that _prev_data and _next_data cacheing"""
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
+        te = pysat.Instrument('pysat','testing', '', pad={'minutes':5})
+        te.load(fid=10)
+        te.prev()
         te.prev(verifyPad=True)
         assert ( (te.data.index[0] == te.date - pds.DateOffset(minutes=5)) & 
                 (te.data.index[-1] == te.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
