@@ -120,8 +120,8 @@ class Files(object):
         
         self.write_to_disk = write_to_disk
         if write_to_disk is False:
-            self._previous_file_list = pds.Series([])
-            self._current_file_list = pds.Series([])
+            self._previous_file_list = pds.Series([], dtype='a')
+            self._current_file_list = pds.Series([], dtype='a')
             
         if self._sat.platform != '':
             # load stored file info
@@ -229,7 +229,7 @@ class Files(object):
                 else:
                     return self._current_file_list
         else:
-            return pds.Series([])
+            return pds.Series([], dtype='a')
 
 
     def refresh(self):
@@ -286,12 +286,7 @@ class Files(object):
         new_info = self._load()
         # previous set of files
         old_info = self._load(prev_version=True)
-        print (old_info)
-        print (new_info)
-        print (new_info.isin(old_info))
-        print (new_info.isin(old_info) == False)
-
-        new_files = new_info[np.logical_not(new_info.isin(old_info))]
+        new_files = new_info[-new_info.isin(old_info)]
         return new_files
 
     # def mark_as_new(self, files):
@@ -311,7 +306,7 @@ class Files(object):
         #     return new_files
         # else:
         #     print('No previously stored files that we may compare to.')
-        #     return pds.Series([]) #False
+        #     return pds.Series([], dtype='a') #False
 
     def get_index(self, fname):
         """Return index for a given filename. 
@@ -360,7 +355,7 @@ class Files(object):
                         return out
                 elif len(out) == 1:
                     if out.index[0] >= key.stop:
-                        return pds.Series([])
+                        return pds.Series([], dtype='a')
                     else:
                         return out
                 else:
