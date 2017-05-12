@@ -218,9 +218,9 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch')
                     if time_index_flag:
                         # create datetime index from data
                         if format == 'NETCDF4':
-                            time_var = pds.to_pydatetime(1E3*time_var)
+                            time_var = pds.to_datetime(1E3*time_var)
                         else:
-                            time_var = pds.to_pydatetime(1E6*time_var)
+                            time_var = pds.to_datetime(1E6*time_var)
                     new_index = time_var
                     new_index_name = index_name
                 else:
@@ -247,10 +247,10 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch')
             # convert from GPS seconds to seconds used in pandas (unix time, no leap)
             #time_var = convert_gps_to_unix_seconds(time_var)
             if format == 'NETCDF4':
-                loadedVars[time_name] = pds.to_pydatetime((1E3*time_var).astype(int))
+                loadedVars[time_name] = pds.to_datetime((1E3*time_var).astype(int))
             else:
-                loadedVars[time_name] = pds.to_pydatetime((time_var*1E6).astype(int))
-            #loadedVars[time_name] = pds.to_pydatetime((time_var*1E6).astype(int))
+                loadedVars[time_name] = pds.to_datetime((time_var*1E6).astype(int))
+            #loadedVars[time_name] = pds.to_datetime((time_var*1E6).astype(int))
             
             running_store.append(loadedVars)
             running_idx += len(loadedVars[time_name])
@@ -375,4 +375,4 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     uts_del += (datetime(year[0],month[0],1)-datetime(1970,1,1) ).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
-    return pds.to_pydatetime(uts_del)
+    return pds.to_datetime(uts_del)
