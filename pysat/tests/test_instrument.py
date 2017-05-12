@@ -42,7 +42,24 @@ class TestBasics:
         '''Test if last day is loaded by default when first invoking .prev.'''
         self.testInst.prev()
         assert self.testInst.date == pds.datetime(2010,12,31)
-    
+        
+    def test_basic_fid_instrument_load(self):
+        '''Test if the correct day is being loaded (checking object date).'''
+        self.testInst.load(fid=0)
+        assert self.testInst.date == pds.datetime(2008,1,1)	
+
+    def test_next_fid_load_default(self):
+        '''Test if first day is loaded by default when first invoking .next.'''
+        self.testInst.load(fid=0)
+        self.testInst.next()
+        assert self.testInst.date == pds.datetime(2008,1,2)
+
+    def test_prev_fid_load_default(self):
+        '''Test if last day is loaded by default when first invoking .prev.'''
+        self.testInst.load(fid=3)
+        self.testInst.prev()
+        assert self.testInst.date == pds.datetime(2008,1,3)   
+         
     def test_filename_load(self):
         '''Test if file is loadable by filename, relative to top_data_dir/platform/name/tag'''
         self.testInst.load(fname='12/31/10.nofile')
