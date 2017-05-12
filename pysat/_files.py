@@ -286,6 +286,8 @@ class Files(object):
         new_info = self._load()
         # previous set of files
         old_info = self._load(prev_version=True)
+        print (old_info)
+        print (new_info)
         print (new_info.isin(old_info))
         print (new_info.isin(old_info) == False)
 
