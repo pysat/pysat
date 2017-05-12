@@ -174,10 +174,10 @@ class TestBasics:
     
     def test_meta_csv_load_and_operations(self):
         import os
-    	name =os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
+        name = os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
         mdata = pysat.Meta.from_csv(name=name,  na_values=[ ], #index_col=2, 
-                                keep_default_na=False,
-                                col_names=['name','long_name','idx','units','description'])
+                                    keep_default_na=False,
+                                    col_names=['name','long_name','idx','units','description'])
         #names aren't provided for all data in file, filling in gaps                  
         #print mdata.data  
         mdata.data.loc[:,'name'] = mdata.data.index       
