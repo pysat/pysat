@@ -149,8 +149,8 @@ class TestBasics:
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
         self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
         self.meta['new2','new'] = {'units':['yeppers','yep']}
-        print self.meta['new']
-        print self.meta['new2']
+        #print self.meta['new']
+        #print self.meta['new2']
         assert ((self.meta['new'].units == 'yep') & (self.meta['new'].long_name == 'boo') &
             (self.meta['new2'].units == 'yeppers') & (self.meta['new2'].long_name == 'boo2'))
     
