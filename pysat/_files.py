@@ -286,8 +286,10 @@ class Files(object):
         new_info = self._load()
         # previous set of files
         old_info = self._load(prev_version=True)
+        print (new_info.isin(old_info))
+        print (new_info.isin(old_info) == False)
 
-        new_files = new_info[new_info.isin(old_info) == False]
+        new_files = new_info[np.logical_not(new_info.isin(old_info))]
         return new_files
 
     # def mark_as_new(self, files):
