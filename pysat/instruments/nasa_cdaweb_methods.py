@@ -232,6 +232,7 @@ def download(supported_tags, date_array, tag, sat_id,
             else:
                 os.remove(saved_local_fname)
                 print('File not available for '+ date.strftime('%D'))
+    ftp.close()
                
                     
                     
