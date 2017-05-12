@@ -255,6 +255,14 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
 
+class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT): 
+    
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        info = {'index':'latitude', 'kind':'polar'}
+        self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
+                                        orbit_info=info)
+
 #def filter_data(inst):
 #    """Remove data from instrument, simulating gaps"""
 #    
