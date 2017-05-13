@@ -42,7 +42,6 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
 
-
     # need to create simple orbits here. Have start of first orbit 
     # at 2009,1, 0 UT. 14.84 orbits per day	
     time_delta = date  - root_date
@@ -62,7 +61,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     long_uts_root = np.mod(time_delta.total_seconds(), 6240)
     longitude = np.mod(long_uts_root+num_array, 6240)*(360./6240.)
     data['longitude'] = longitude
-    
+
+    # create latitude area for testing polar orbits
     latitude = 90.*np.cos(np.mod(uts_root+num_array, 5820)*(2.*np.pi/5820.)) 
     data['latitude'] = latitude
     
@@ -70,8 +70,6 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     uts_root = np.mod(time_delta.total_seconds()+20, 5820)
     data['slt'] = np.mod(uts_root+num_array, 5820)*(24./5820.)
     
-    # create latitude area for testing polar orbits
-
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude']/15.).astype(int)
@@ -80,7 +78,6 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['dummy3'] = mlt_int + long_int*1000.
     data['dummy4'] = num_array
     
-        
     index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), freq='S')
     data.index=index[0:num]
     data.index.name = 'time'
