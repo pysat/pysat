@@ -224,7 +224,7 @@ def download(supported_tags, date_array, tag, sat_id,
         try:
             print('Attempting to download file for '+date.strftime('%D'))
             sys.stdout.flush()
-            ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'w').write)
+            ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'wb').write)
             print('Finished.')
         except ftplib.error_perm as exception:
             if exception[0][0:3] != '550':
