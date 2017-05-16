@@ -1,5 +1,5 @@
 """
-tests the pysat meta object and code
+tests the pysat utils area
 """
 import pysat
 import pandas as pds
@@ -41,39 +41,7 @@ def remove_files(inst):
         if (the_file[0:13] == 'pysat_testing') & (the_file[-19:] == '.pysat_testing_file'):
             file_path = os.path.join(dir, the_file)
             if os.path.isfile(file_path):
-                #print(file_path)
                 os.unlink(file_path)
-                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
-
-
-# create year doy file set
-#def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
-#                 root_fname=None):
-#
-#    # create a bunch of files
-#    if start is None:
-#        start = pysat.datetime(2009, 1, 1)
-#    if stop is None:
-#        stop = pysat.datetime(2013, 12, 31)
-#    dates = pysat.utils.season_date_range(start, stop, freq=freq)
-#    
-#    if root_fname is None:
-#        root_fname = 'pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file'
-#        
-#    for date in dates:
-#        yr, doy = pysat.utils.getyrdoy(date)
-#        if use_doy:
-#            doy = doy
-#        else:
-#            doy = date.day        
-#            
-#        fname = os.path.join(inst.files.data_path, root_fname.format(year=yr, 
-#                             day=doy, month=date.month, hour=date.hour, min=date.minute, sec=date.second))
-#        f = open(fname, 'w')
-#        f.close()
-
-
-
 
 class TestBasics:
     def setup(self):
