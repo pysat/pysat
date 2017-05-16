@@ -4,6 +4,13 @@ python:
   - "3.3"
   - "3.4"
 sudo: false
+
+addons:
+  apt:
+    packages:
+    - gfortran
+    - libncurses5-dev
+
 # Setup anaconda
 before_install:
   #- apt-get update
@@ -29,6 +36,7 @@ install:
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
   - pip install coveralls
+  - pip install pysatCDF
   - "python setup.py install"
 # command to run tests
 script: 
