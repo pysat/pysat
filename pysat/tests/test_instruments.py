@@ -181,7 +181,7 @@ class TestInstrumentQualifier:
         # print (start)
         try:
             inst.download(start, start)
-        except:
+        except Exception as e:
             # couldn't run download, try to find test data instead
             print("Couldn't download data, trying to find test data.")
             saved_path = safe_data_dir()
@@ -201,7 +201,7 @@ class TestInstrumentQualifier:
                 raise SkipTest
             else:
                 print("No test data found.")
-                assert False
+                raise e
         assert True
 
     def check_load(self, inst):
