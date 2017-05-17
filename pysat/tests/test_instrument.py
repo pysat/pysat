@@ -459,7 +459,7 @@ class TestDataPadding():
                                         pds.DateOffset(minutes=5)) )
 
     def test_data_padding_multi_next(self):
-        """This also tests that _prev_data and _next_data cacheing"""
+        #"""This also tests that _prev_data and _next_data cacheing"""
         self.testInst.load(2009,2)
         self.testInst.next()
         self.testInst.next(verifyPad=True)
@@ -476,7 +476,7 @@ class TestDataPadding():
                                         pds.DateOffset(minutes=5)) )
 
     def test_data_padding_multi_prev(self):
-        """This also tests that _prev_data and _next_data cacheing"""
+        #"""This also tests that _prev_data and _next_data cacheing"""
         self.testInst.load(2009, 10)
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)

@@ -7,8 +7,14 @@ import pandas as pds
 import numpy as np
 import pysat
 
+# pysat required parameters
 platform = 'pysat'
 name = 'testing'
+# dictionary of data 'tags' and corresponding description
+tags = {'':'Regular testing data set'}
+# dictionary of satellite IDs, list of corresponding tags
+sat_ids = {'':['']}
+test_dates = {'':{'':pysat.datetime(2009,1,1)}}
 
 meta = pysat.Meta()
 meta['uts'] = {'units':'s', 'long_name':'Universal Time', 'custom':False}

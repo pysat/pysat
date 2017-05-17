@@ -41,6 +41,15 @@ import numpy as np
 
 import pysat
 
+platform = 'superdarn'
+name = 'grdex'
+tags = {'north':'',
+        'south':''}
+sat_ids = {'':['north', 'south']}
+test_dates = {'':{'north':pysat.datetime(2009,1,1),
+                    'south':pysat.datetime(2009,1,1)}}
+
+
 def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 

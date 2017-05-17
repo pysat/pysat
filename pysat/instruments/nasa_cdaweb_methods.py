@@ -227,7 +227,8 @@ def download(supported_tags, date_array, tag, sat_id,
             ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'wb').write)
             print('Finished.')
         except ftplib.error_perm as exception:
-            if exception[0][0:3] != '550':
+            # if exception[0][0:3] != '550':
+            if str(exception.args[0]).split(" ", 1)[0] != '550':
                 raise
             else:
                 os.remove(saved_local_fname)

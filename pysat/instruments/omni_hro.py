@@ -46,6 +46,14 @@ import numpy as np
 
 import pysat
 
+platform = 'omni'
+name = 'hro'
+tags = {'1min':'1-minute time averaged data',
+        '5min':'5-minute time averaged data'}
+sat_ids = {'':['1min', '5min']}
+test_dates = {'':{'1min':pysat.datetime(2009,1,1),
+                  '5min':pysat.datetime(2009,1,1)}}
+
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -139,13 +147,15 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
             try:
                 print('Downloading file for '+date.strftime('%D'))
                 sys.stdout.flush()
-                ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
+                ftp.retrbinary('RETR '+fname, open(saved_fname,'wb').write)
             except ftplib.error_perm as exception:
-                if exception[0][0:3] != '550':
+                # if exception[0][0:3] != '550':
+                if str(exception.args[0]).split(" ", 1)[0] != '550':
                     raise
                 else:
                     os.remove(saved_fname)
                     print('File not available for '+ date.strftime('%D'))
-    ftp.quit()
+    ftp.close()
+    # ftp.quit()
     return
 

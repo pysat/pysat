@@ -35,6 +35,12 @@ import functools
 
 from . import nasa_cdaweb_methods as cdw
 
+platform = 'cnofs'
+name = 'vefi'
+tags = {'dc_b':'DC Magnetometer data - 1 second'}
+sat_ids = {'':['dc_b']}
+test_dates = {'':{'dc_b':pysat.datetime(2009,1,1)}}
+
 # support list files routine
 # use the default CDAWeb method
 fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
