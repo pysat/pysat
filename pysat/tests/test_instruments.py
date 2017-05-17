@@ -22,7 +22,7 @@ exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps']
 
 def safe_data_dir():
     saved_path = pysat.data_dir
-    if saved_path is None:
+    if saved_path is '':
         saved_path = '.'
     return saved_path
 
