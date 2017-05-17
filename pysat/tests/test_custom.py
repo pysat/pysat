@@ -7,7 +7,7 @@ import nose.tools
 class TestBasics:
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
-        self.testInst = pysat.Instrument('pysat','testing', '10', 'clean')
+        self.testInst = pysat.Instrument('pysat','testing', tag='10', clean_level='clean')
 
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''

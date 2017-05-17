@@ -87,18 +87,20 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
 
     # determine if normal number objects are being used or if there
     # are more complicated objects
-    objArray = np.zeros(len(zarr))
     objArray = [False]*len(zarr)
     for i,thing in enumerate(dataType):
          if thing == pds.core.series.Series:
-            objArray[i] = 'Series'
-         if thing == pds.core.frame.DataFrame:
-            objArray[i] = 'Frame'
+            objArray[i] = 'S'
+         elif thing == pds.core.frame.DataFrame:
+            objArray[i] = 'F'
+         else:
+             # other, simple scalaRs
+            objArray[i] = 'R'
 
     objArray = np.array(objArray)
 
     # if some pandas data series are returned in average, return a list
-    objidx, = np.where(objArray == 'Series')
+    objidx, = np.where(objArray == 'S')
     if len(objidx) > 0:
         for zk in zarr[objidx]:
             for yj in yarr:
@@ -110,7 +112,7 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
                         devAns[zk][yj][xi] = pds.DataFrame([abs(temp - medianAns[zk][yj][xi]) for temp in ans[zk][yj][xi] ] ).median(axis=0)
                                                                     
     # if some pandas DataFrames are returned in average, return a list
-    objidx, = np.where(objArray == 'Frame')
+    objidx, = np.where(objArray == 'F')
     if len(objidx) > 0:
         for zk in zarr[objidx]:
             for yj in yarr:
@@ -122,7 +124,7 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
                         medianAns[zk][yj][xi] = test.median(axis=0)
                         devAns[zk][yj][xi] = (test.subtract(medianAns[zk][yj][xi], axis=0)).abs().median(axis=0, skipna=True)
                                                                                                       
-    objidx, = np.where((objArray == False) | (objArray == 'False'))
+    objidx, = np.where(objArray == 'R')
     if len(objidx) > 0:
         for zk in zarr[objidx]:
             medianAns[zk] = np.zeros((numy, numx))*np.nan

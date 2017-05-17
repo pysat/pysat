@@ -32,6 +32,13 @@ import numpy as np
 
 import pysat
 
+platform = 'sw'
+name = 'dst'
+tags = {'':''}
+sat_ids = {'':['']}
+test_dates = {'':{'':pysat.datetime(2007,1,1)}}
+
+
 def load(fnames, tag=None, sat_id=None):
     """Load Kp index files
 
@@ -203,14 +210,15 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         try:
             print('Downloading file for '+date.strftime('%D'))
             sys.stdout.flush()
-            ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
+            ftp.retrbinary('RETR '+fname, open(saved_fname,'wb').write)
         except ftplib.error_perm as exception:
-            if exception[0][0:3] != '550':
+            # if exception[0][0:3] != '550':
+            if str(exception.args[0]).split(" ", 1)[0] != '550':
                 raise
             else:
                 os.remove(saved_fname)
                 print('File not available for '+date.strftime('%D'))
     
-    ftp.quit()
+    ftp.close()
     return        
 

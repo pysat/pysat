@@ -3,7 +3,15 @@ python:
   - "2.7"
   - "3.3"
   - "3.4"
+  - "3.5"
 sudo: false
+
+addons:
+  apt:
+    packages:
+    - gfortran
+    - libncurses5-dev
+
 # Setup anaconda
 before_install:
   #- apt-get update
@@ -21,7 +29,7 @@ before_install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage netCDF4
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4
 
 # command to install dependencies
 install:
@@ -29,6 +37,7 @@ install:
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
   - pip install coveralls
+  - pip install pysatCDF
   - "python setup.py install"
 # command to run tests
 script: 

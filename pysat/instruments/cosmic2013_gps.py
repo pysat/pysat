@@ -42,6 +42,17 @@ import pandas as pds
 import numpy as np
 import pysat
 
+platform = 'cosmic2013'
+name = 'gps'
+tags = {'ionprf':'', 
+        'sonprf':'', 
+        'wetprf':'',
+        'atmprf':''}
+sat_ids = {'':['ionprf', 'sonprf', 'wetprf', 'atmprf']}
+test_dates = {'':{'ionprf':pysat.datetime(2008,1,1),
+                    'sonprf':pysat.datetime(2008,1,1),
+                    'wetprf':pysat.datetime(2008,1,1),
+                    'atmprf':pysat.datetime(2008,1,1)}}
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -261,7 +272,12 @@ def clean(self):
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     import ftplib
-    import urllib2
+    try:
+        import urllib2
+        ulib = urllib2
+    except:
+        import urllib
+        ulib = urllib.request
     import base64
     import os
     import tarfile
@@ -288,12 +304,13 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
         dwnld="http://cdaac-www.cosmic.ucar.edu/cdaac/rest/tarservice/data/cosmic2013/"
         dwnld = dwnld+sub_dir+'/{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        req=urllib2.Request(dwnld)
-        base64str=base64.encodestring('%s:%s' % (user, password)).replace('\n', '')
+        req = ulib.Request(dwnld)
+        temp = '%s:%s' % (user, password)
+        base64str = base64.encodestring(temp.encode()).replace('\n'.encode(), ''.encode())
         req.add_header("Authorization", "Basic %s" % base64str)   
-        result=urllib2.urlopen(req)
+        result = ulib.urlopen(req)
         fname=os.path.join(data_path,'cosmic_'+sub_dir+'_'+ yrdoystr+'.tar' )
-        with open(fname, "wb") as local_file:
+        with open(fname, "w") as local_file:
             local_file.write(result.read())
             local_file.close()
             # uncompress files

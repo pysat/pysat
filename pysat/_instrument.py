@@ -611,34 +611,46 @@ class Instrument(object):
             # multi file days can extend past a single day, only want data from 
             # specific date if loading by day
             # set up times for the possible data padding coming up
-            if self.multi_file_day and self._load_by_date:
-                self.data = self.data.ix[self.date : self.date + pds.DateOffset(days=1)]
-                # want exclusive end slicing behavior from above
-                if self.data.index[-1] == self.date + pds.DateOffset(days=1):
-                    self.data = self.data.ix[:-1, :]
-                first_time = self.data.index[0]
+            if self._load_by_date:
+                #print ('double trouble')
+                first_time = self.date 
                 first_pad = self.date - loop_pad
-                last_time = self.data.index[-1]
+                last_time = self.date + pds.DateOffset(days=1) 
                 last_pad = self.date + pds.DateOffset(days=1) + loop_pad
-            else:
+                want_last_pad = False
+            # loading by file, can't be a multi_file-day flag situation
+            elif (not self._load_by_date) and (not self.multi_file_day):
+                #print ('single trouble')
                 first_time = self._curr_data.index[0]
                 first_pad = first_time - loop_pad
                 last_time = self._curr_data.index[-1]
                 last_pad = last_time + loop_pad
+                want_last_pad = True
+            else:
+                raise ValueError("multi_file_day and loading by date are effectively equivalent."+ 
+                                "Can't have multi_file_day and load by file.")
+            #print (first_pad, first_time, last_time, last_pad)
 
             # pad data based upon passed parameter
             if (not self._prev_data.empty) & (not self.data.empty):
-                padLeft = self._prev_data.ix[first_pad : first_time]
-                if padLeft.index[-1] == first_time:
-                    padLeft = padLeft.ix[:-1, :]
-                self.data = pds.concat([padLeft, self.data])
+                padLeft = self._prev_data.loc[first_pad : self.data.index[0]]
+                if len(padLeft) > 0:
+                    if (padLeft.index[-1] == self.data.index[0]) :
+                        padLeft = padLeft.iloc[:-1, :]
+                    self.data = pds.concat([padLeft, self.data])
 
             if (not self._next_data.empty) & (not self.data.empty):
-                padRight = self._next_data.ix[last_time : last_pad]
-                if self.multi_file_day and self._load_by_date and (padRight.index[-1] == last_pad):
-                    padRight = padRight.ix[:-1, :]
-                self.data = pds.concat([self.data, padRight])
-                
+                padRight = self._next_data.loc[self.data.index[-1] : last_pad]
+                if len(padRight) > 0:
+                    if (padRight.index[0] == self.data.index[-1]) :
+                        padRight = padRight.iloc[1:, :]
+                    self.data = pds.concat([self.data, padRight])
+                    
+            self.data = self.data.ix[first_pad : last_pad]
+            # want exclusive end slicing behavior from above
+            if (self.data.index[-1] == last_pad) & (not want_last_pad):
+                self.data = self.data.iloc[:-1, :]
+   
             ## drop any possible duplicate index times
             ##self.data.drop_duplicates(inplace=True)
             #self.data = self.data[~self.data.index.duplicated()]
@@ -655,7 +667,10 @@ class Instrument(object):
                                             'units': ['']*len(self.data.columns)}
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
-            temp = self.data.index[0]
+            if self.pad is not None:
+                temp = first_time
+            else:
+                temp = self.data.index[0]
             self.date = pds.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.getyrdoy(self.date)
 
@@ -667,9 +682,12 @@ class Instrument(object):
         # apply custom functions
         if not self.data.empty:
             self.custom._apply_all(self)
+            
         # remove the excess padding, if any applied
         if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
             self.data = self.data[first_time : last_time]
+            if (self.data.index[-1] == last_time) & (not want_last_pad):
+                self.data = self.data.iloc[:-1, :]
 
         sys.stdout.flush()
         return
@@ -875,7 +893,7 @@ class Instrument(object):
                 self.load(date=date)
                 yield self            
                 
-    def next(self):
+    def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
         
         Bounds of iteration and iteration type (day/file) are set by 
@@ -895,9 +913,9 @@ class Instrument(object):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx += 1
-                    self.load(date=self._iter_list[idx[0]])
+                    self.load(date=self._iter_list[idx[0]], verifyPad=verifyPad)
             else:
-                self.load(date=self._iter_list[0])
+                self.load(date=self._iter_list[0], verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             if self._fid is not None:
@@ -906,11 +924,11 @@ class Instrument(object):
                 if (self._fid < first) | (self._fid+1 > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    self.load(fname=self._iter_list[self._fid+1-first])
+                    self.load(fname=self._iter_list[self._fid+1-first], verifyPad=verifyPad)
             else:
-                self.load(fname=self._iter_list[0])
+                self.load(fname=self._iter_list[0], verifyPad=verifyPad)
 
-    def prev(self):
+    def prev(self, verifyPad=False):
         """Manually iterate backwards through the data in Instrument object.
         
         Bounds of iteration and iteration type (day/file) 
@@ -930,9 +948,9 @@ class Instrument(object):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx -= 1
-                    self.load(date=self._iter_list[idx[0]])
+                    self.load(date=self._iter_list[idx[0]], verifyPad=verifyPad)
             else:
-                self.load(date=self._iter_list[-1])
+                self.load(date=self._iter_list[-1], verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             if self._fid is not None:
@@ -941,9 +959,9 @@ class Instrument(object):
                 if (self._fid-1 < first) | (self._fid > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    self.load(fname=self._iter_list[self._fid-1-first])
+                    self.load(fname=self._iter_list[self._fid-1-first], verifyPad=verifyPad)
             else:
-                self.load(fname=self._iter_list[-1])
+                self.load(fname=self._iter_list[-1], verifyPad=verifyPad)
 
 
     def to_netcdf4(self, fname=None, format=None, base_instrument=None):

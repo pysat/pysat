@@ -30,6 +30,12 @@ import numpy as np
 
 import pysat
 
+platform = 'champ'
+name = 'star'
+tags = {'':''}
+sat_ids = {'':['']}
+test_dates = {'':{'':pysat.datetime(2007,1,1)}}
+
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
@@ -207,7 +213,7 @@ def clean(inst):
 
     return None
 
-def download(inst):
+def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """Routine to download CHAMP STAR data
 
     Parameters

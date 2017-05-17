@@ -12,7 +12,7 @@ class TestBasics:
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.meta = pysat.Meta()
-        self.testInst = pysat.Instrument('pysat', 'testing', '', 'clean')
+        self.testInst = pysat.Instrument('pysat', 'testing', tag='', clean_level='clean')
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -145,14 +145,55 @@ class TestBasics:
         
 
 
-    #def test_replace_meta_units_list(self):
-    #    self.meta['new'] = {'units':'hey', 'long_name':'boo'}
-    #    self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
-    #    self.meta['new2','new'] = {'units':['yeppers','yep']}
-    #    print self.meta['new']
-    #    print self.meta['new2']
-    #    assert ((self.meta['new'].units == 'yep') & (self.meta['new'].long_name == 'boo') &
-    #        (self.meta['new2'].units == 'yeppers') & (self.meta['new2'].long_name == 'boo2'))
+    def test_replace_meta_units_list(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
+        self.meta['new2','new'] = {'units':['yeppers','yep']}
+        #print self.meta['new']
+        #print self.meta['new2']
+        assert ((self.meta['new'].units == 'yep') & (self.meta['new'].long_name == 'boo') &
+            (self.meta['new2'].units == 'yeppers') & (self.meta['new2'].long_name == 'boo2'))
+    
+    def test_meta_repr_functions(self):
+        print (self.testInst.meta)
+        # if it doesn't produce an error, we presume it works
+        # how do you test a print??
+        assert True
+        
+    def test_meta_csv_load(self):
+        import os
+        name = os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
+        mdata = pysat.Meta.from_csv(name=name,  na_values=[ ], #index_col=2, 
+                                    keep_default_na=False,
+                                    col_names=['name','long_name','idx','units','description'])
+        check = []
+        check.append(mdata['yrdoy'].long_name == 'Date')
+        check.append(mdata['unit_mer_z'].long_name == 'Unit Vector - Meridional Dir - S/C z')
+        check.append(mdata['iv_mer'].description == 'Constructed using IGRF mag field.') 
+        assert np.all(check)
+    
+    def test_meta_csv_load_and_operations(self):
+        import os
+        name = os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
+        mdata = pysat.Meta.from_csv(name=name,  na_values=[ ], #index_col=2, 
+                                    keep_default_na=False,
+                                    col_names=['name','long_name','idx','units','description'])
+        #names aren't provided for all data in file, filling in gaps                  
+        #print mdata.data  
+        mdata.data.loc[:,'name'] = mdata.data.index       
+        mdata.data.index = mdata.data['idx']
+        new = mdata.data.reindex(index = np.arange(mdata.data['idx'].iloc[-1]+1))
+        idx, = np.where(new['name'].isnull())
+        new.ix[idx, 'name'] = idx.astype(str)
+        new.ix[idx,'units']=''
+        new.ix[idx,'long_name'] =''
+        new.ix[idx,'description']=''
+        new['idx'] = new.index.values
+        new.index = new['name']
+        
+        #update metadata object with new info
+        mdata.replace(metadata=new)
+        assert len(mdata.data == mdata[-1, 'idx'])
 
 
 
