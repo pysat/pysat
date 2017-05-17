@@ -1,10 +1,8 @@
 language: python
 python:
   - "2.7"
-  - "3.3"
   - "3.4"
   - "3.5"
-  - "3.6"
 sudo: false
 
 addons:
@@ -30,7 +28,7 @@ before_install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels coverage netCDF4
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4
 
 # command to install dependencies
 install:
