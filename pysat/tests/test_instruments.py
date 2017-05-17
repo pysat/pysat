@@ -20,6 +20,12 @@ import importlib
 
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps']
 
+def safe_data_dir():
+    saved_path = pysat.data_dir
+    if saved_path is None:
+        saved_path = '.'
+    return saved_path
+
 class TestInstrumentQualifier:
     
     def __init__(self):
@@ -37,7 +43,7 @@ class TestInstrumentQualifier:
 
         # create temporary directory  
         dir_name = tempfile.gettempdir()
-        saved_path = pysat.data_dir
+        saved_path = safe_data_dir()
         pysat.utils.set_data_dir(dir_name, store=False)    
             
         for name in instrument_names:
@@ -178,7 +184,7 @@ class TestInstrumentQualifier:
         except:
             # couldn't run download, try to find test data instead
             print("Couldn't download data, trying to find test data.")
-            saved_path = pysat.data_dir
+            saved_path = safe_data_dir()
 
             new_path = os.path.join(pysat.__path__[0],'tests', 'test_data')
             pysat.utils.set_data_dir(new_path, store=False)
