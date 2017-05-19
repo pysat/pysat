@@ -60,6 +60,15 @@ class Meta(object):
             output_str += self.ho_data[item_name].data.__repr__()
         return output_str
 
+    def concat(self, other):
+        """Concats two metadata objects together"""
+        # concat data frames
+        self.data = pds.concat([self.data, other.data])
+        # add together higher order data
+        for key in other.ho_data.keys():
+            if not (key in self.ho_data):
+                self.ho_data[key] = other.ho_data[key]
+                 
     def copy(self):
         from copy import deepcopy as deepcopy
         """Deep copy of the meta object."""
