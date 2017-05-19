@@ -625,7 +625,7 @@ class Orbits(object):
             elif self.current == 2:
                 # first, load prev orbit data
                 self._getBasicOrbit(orbit=self.current - 1)
-	
+
                 load_prev = True
                 if self.sat._iter_type == 'date':
                     delta = pds.to_timedelta(self.sat.data.index[-1] - self.sat.date)
@@ -668,7 +668,7 @@ class Orbits(object):
                 # first, load prev orbit data
                 self._getBasicOrbit(orbit=1)
                 # need to save this current orbit and load the prev day
-                temp_orbit_data = self.sat.data[self.sat.date:]
+                temp_orbit_data = self.sat[self.sat.date:]
                 # load previous day, which clears orbit breaks info
                 self.sat.prev()
                 # combine this next day orbit with previous last orbit
