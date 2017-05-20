@@ -14,7 +14,8 @@ import os
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'description.txt'), encoding='utf-8') as f:
     long_description = f.read()
-with open(os.path.join(here, 'pysat', 'version.txt')) as version_file:
+version_filename = os.path.join('pysat', 'version.txt')
+with open(os.path.join(here, version_filename)) as version_file:
     version = version_file.read().strip()
 
 setup(
@@ -33,6 +34,10 @@ setup(
     author='Russell Stoneback',
     author_email='rstoneba@utdallas.edu',
 
+    
+    package_data = {'pysat': ['pysat/version*.txt']},
+    include_package_data=True,
+    
     # Choose your license
     license='BSD',
 
