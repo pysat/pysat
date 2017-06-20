@@ -12,9 +12,9 @@ tag : string
 
 Note
 ----
-Requires davitpy and pydarn to load SuperDARN files.
+Requires davitpy and davitpy to load SuperDARN files.
 Uses environment variables set by davitpy to download files
-from Virginia Tech SuperDARN data servers. Pydarn routines
+from Virginia Tech SuperDARN data servers. davitpy routines
 are used to load SuperDARN data.
 
 This material is based upon work supported by the 
@@ -89,16 +89,17 @@ def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
            
 
 def load(fnames, tag=None, sat_id=None):
-    import pydarn
-    if len(fnames) <= 0 :
+    import davitpy
+    if len(fnames) <= 0:
         return pysat.DataFrame(None), pysat.Meta(None)
-    elif len(fnames)==1:
+    elif len(fnames) == 1:
         
-        myPtr = pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980,1,1),
-                          eTime=pysat.datetime(2250,1,1),
-                          hemi=tag)  
-        myPtr.fType, myPtr.dType = 'grdex', 'dmap'                 
-        myPtr.ptr = open(fnames[0],'r')
+        myPtr = davitpy.pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980, 1, 1),
+                                              fileType='grdex',
+                                              eTime=pysat.datetime(2250, 1, 1),
+                                              hemi=tag,
+                                              fileName=fnames[0])
+        myPtr.open()
                                                                                             
         in_list = []
         in_dict = {'stid':[],
@@ -118,11 +119,10 @@ def load(fnames, tag=None, sat_id=None):
             'wmin':[],
             'freq':[]}
         
-        #for info in data_list:
         while True:
-            info = pydarn.dmapio.readDmapRec(myPtr.ptr)   
-            info = pydarn.sdio.sdDataTypes.gridData(dataDict=info)
-            if info.channel is None:
+            info = myPtr.readRec()
+            if info is None:
+                myPtr.close()
                 break 
                    
             drift_frame = pds.DataFrame.from_records(info.vector.__dict__, 
@@ -157,7 +157,7 @@ def load(fnames, tag=None, sat_id=None):
         output['vector'] = in_list
         output.index = output.start_time
         output.drop('start_time', axis=1, inplace=True)
-        myPtr.ptr.close()
+
         return output, pysat.Meta()
     else:
         raise ValueError('Only one filename currently supported.')
@@ -184,7 +184,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     import sys
     import os
     import pysftp
-    import pydarn
+    import davitpy
     
     if user is None:
         user = os.environ['DBREADUSER']
@@ -211,104 +211,4 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             except IOError:
                 print('File not available for '+date.strftime('%D'))
 
-
- 
-         
-def load_orig(fnames, tag=None):
-    import pydarn
-    if len(fnames) <= 0 :
-        return pysat.DataFrame(None), pysat.Meta(None)
-    elif len(fnames)==1:
-        b = pydarn.sdio.sdDataOpen(pysat.datetime(1980,1,1), 
-                                    src='local', 
-                                    eTime=pysat.datetime(2050,1,1),
-                                    fileName=fnames[0])
-                                    
-        data_list = pydarn.sdio.sdDataReadAll(b)
-        sys.stdout.flush()
-        in_dict = []
-        for info in data_list:
-            arr = np.arange(len(info.stid))
-            drift_frame = pds.DataFrame(info.vector.__dict__, 
-                                    #index=[info.vector.mlon, info.vector.mlat])
-                                    index=info.vector.index)
-            drift_frame.index.name = 'index'
-            drift_frame.sort(inplace=True)
-            #drift_frame.index.names=['mlon', 'mlat']
-            for i in arr:
-                nvec = info.nvec[i]
-                in_frame = drift_frame.iloc[0:nvec]
-                drift_frame = drift_frame.iloc[nvec:]
-                in_dict.append({'stid':info.stid[i],
-                            'channel':info.channel[i],
-                            'noisemean':info.noisemean[i],
-                            'noisesd':info.noisesd[i],
-                            'gsct':info.gsct[i],
-                            'nvec':info.nvec[i],
-                            'pmax':info.pmax[i],
-                            'vector':in_frame,
-                            'start_time':info.sTime,
-                            'end_time':info.eTime,
-                            'vemax':info.vemax[i],
-                            'vemin':info.vemin[i],
-                            'pmin':info.pmin[i],
-                            'programid':info.programid[i],
-                            'wmax':info.wmax[i],
-                            'wmin':info.wmin[i],
-                            'freq':info.freq[i]})
-        output = pds.DataFrame(in_dict)
-        output.index = output.start_time
-        output.drop('start_time', axis=1, inplace=True)
-        return output, pysat.Meta()
-    else:
-        raise ValueError('Only one filename currently supported.')
-                 
-                                 
-#
-#
-#def test3():
-#    b = pydarn.sdio.sdDataOpen(pysat.datetime(1980,1,1), 
-#                                src='local', 
-#                                eTime=pysat.datetime(2050,1,1),
-#                                fileName=fnames[0])
-#                                
-#    data_list = pydarn.sdio.sdDataReadAll(b)
-#    print 'building dataframe'
-#    sys.stdout.flush()
-#    in_frame=[]
-#    names=['stid','channel','noisemean','noisesd','gsct','nvec','pmax','vector',
-#            'start_time','end_time','vemax','vemin','pmin','programid',
-#            'wmax','wmin','freq']
-#    
-#    in_dict={}    
-#    for name in names:
-#        in_dict[name]=[]
-#
-#    for info in data_list:
-#
-#        drift_frame = pds.DataFrame(info.vector.__dict__, 
-#                                index=[info.vector.mlon, info.vector.mlat])
-#        drift_frame.index.names=['mlon', 'mlat']
-#        in_dict['stid'].extend(info.stid)
-#        in_dict['channel'].extend(info.channel)
-#        in_dict['noisemean'].extend(info.noisemean)
-#        in_dict['noisesd'].extend(info.noisesd)
-#        in_dict['gsct'].extend(info.gsct)
-#        in_dict['nvec'].extend(info.nvec)
-#        in_dict['pmax'].extend(info.pmax)
-#        in_dict['start_time'].extend([info.sTime]*len(info.stid))
-#        in_dict['end_time'].extend([info.eTime]*len(info.stid))
-#        in_dict['vemax'].extend(info.vemax)
-#        in_dict['vemin'].extend(info.vemin)
-#        in_dict['pmin'].extend(info.pmin)
-#        in_dict['programid'].extend(info.programid)
-#        in_dict['wmax'].extend(info.wmax)
-#        in_dict['wmin'].extend(info.wmin)
-#        in_dict['freq'].extend(info.freq)
-#        for nvec in info.nvec:
-#            in_frame.append(drift_frame.iloc[0:nvec])
-#            drift_frame = drift_frame.iloc[nvec:]
-#    in_dict['vector'] = in_frame
-#    output = pds.DataFrame(in_dict)
-#    output.index = output.start_time
-#    output.drop('start_time', axis=1, inplace=True) 
+    return
