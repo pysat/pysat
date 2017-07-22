@@ -113,8 +113,7 @@ class Files(object):
                                                  platform=self._sat.platform,
                                                  tag=self._sat.tag,
                                                  sat_id=self._sat.sat_id)
-            #self.sub_dir_path = os.path.join(self._sat.platform, 
-            #                                 self._sat.name, self._sat.tag)
+
         # make sure path always ends with directory seperator
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         if self.data_path[-2] == os.path.sep:
@@ -169,13 +168,11 @@ class Files(object):
 
     def _store(self):
         """Store currently loaded filelist for instrument onto filesystem"""
-        #name = ''.join((self._sat.platform,'_',self._sat.name,'_',
-        #                self._sat.tag, '_', self._sat.sat_id,
-        #                '_stored_file_info.txt'))
+
         name = self.stored_file_name
         # check if current file data is different than stored file list
         # if so, move file list to previous file list, store current to file
-        # list if not, do nothing
+        # if not, do nothing
         stored_files = self._load()
         if len(stored_files) != len(self.files):
             # # of items is different, things are new
@@ -215,8 +212,6 @@ class Files(object):
             Series is empty if there is no file list to load
         """
 
-        #fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
-                        #self._sat.tag, '_', self._sat.sat_id, '_stored_file_info.txt'))
         fname = self.stored_file_name
         if prev_version:
             fname = os.path.join(self.home_path, 'previous_'+fname)
@@ -336,7 +331,7 @@ class Files(object):
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
-                raise ValueError('Could not find file in available file list.')
+                raise ValueError('Could not find "'+fname+ '" in available file list. Valid Example: '+self.files.iloc[0])
         # return a scalar rather than array - otherwise introduces array to index warnings.
         return idx[0]
 
