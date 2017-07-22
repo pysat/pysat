@@ -333,8 +333,15 @@ class Instrument(object):
                 for ke in key:
                     self.meta[ke] = {}
             else:
-                raise ValueError("No support for supplied input key")           
-    
+                raise ValueError("No support for supplied input key")
+
+    @property
+    def empty(self):
+        """Boolean flag reflecting lack of data.
+        
+        True if there is no Instrument data."""
+        return self.data.empty
+
     def copy(self):
         """Deep copy of the entire Instrument object."""
         return copy.deepcopy(self)
@@ -404,6 +411,71 @@ class Instrument(object):
             pass
 
         return
+
+    def __repr__(self):
+
+        output_str = '\npysat Instrument object\n'
+        output_str += '-----------------------\n'
+        output_str += 'Platform: '+self.platform+'\n'
+        output_str += 'Name: '+self.name+'\n'
+        output_str += 'Tag: '+self.tag+'\n'
+        output_str += 'Satellite id: '+self.sat_id+'\n'
+
+        output_str += '\nData Processing\n'
+        output_str += '---------------\n'
+        output_str += 'Cleaning Level: ' + self.clean_level + '\n'
+        output_str += 'Data Padding: ' + self.pad.__repr__() + '\n'
+        output_str += 'Keyword Arguments Passed to load(): ' + self.kwargs.__repr__() +'\n'
+        output_str += 'Custom Functions : \n'
+        if len(self.custom._functions) > 0:
+            for func in self.custom._functions:
+                output_str += '    ' + func.__repr__()
+        else:
+            output_str += '    ' + 'No functions applied.\n'
+
+        output_str += '\nOrbit Settings' + '\n'
+        output_str += '--------------' + '\n'
+        if self.orbit_info is None:
+            output_str += 'Orbit properties not set.\n'
+        else:
+            output_str += 'Orbit Kind: ' + self.orbit_info['kind'] + '\n'
+            output_str += 'Orbit Index: ' + self.orbit_info['index'] + '\n'
+            output_str += 'Orbit Period: ' + self.orbit_info['period'].__str__() + '\n'
+            output_str += 'Number of Orbits: {:d}'.format(self.orbits.num) + '\n'
+            output_str += 'Loaded Orbit Number: {:d}'.format(self.orbits.current) + '\n'
+
+        output_str += '\nLocal File Statistics' + '\n'
+        output_str += '---------------------' + '\n'
+        output_str += 'Number of files: ' + str(len(self.files.files)) + '\n'
+        output_str += 'Date Range: '+self.files.files.index[0].strftime('%m/%d/%Y')
+        output_str += ' --- ' + self.files.files.index[-1].strftime('%m/%d/%Y') + '\n'
+
+        output_str += '\nLoaded Data Statistics'+'\n'
+        output_str += '----------------------'+'\n'
+        if not self.empty:
+            # if self._fid is not None:
+            #     output_str += 'Filename: ' +
+            output_str += 'Date: ' + self.date.strftime('%m/%d/%Y') + '\n'
+            output_str += 'DOY: {:03d}'.format(self.doy) + '\n'
+            output_str += 'Time range: ' + self.data.index[0].strftime('%m/%d/%Y %H:%M:%S') + ' --- '
+            output_str += self.data.index[-1].strftime('%m/%d/%Y %H:%M:%S')+'\n'
+            output_str += 'Number of Times: ' + str(len(self.data.index)) + '\n'
+            output_str += 'Number of variables: ' + str(len(self.data.columns)) + '\n'
+
+            output_str += '\nVariable Names:'+'\n'
+            num = len(self.data.columns)//3
+            for i in np.arange(num):
+                output_str += self.data.columns[3 * i].ljust(30)
+                output_str += self.data.columns[3 * i + 1].ljust(30)
+                output_str += self.data.columns[3 * i + 2].ljust(30)+'\n'
+            for i in np.arange(len(self.data.columns) - 3 * num):
+                output_str += self.data.columns[i].ljust(30)
+            output_str += '\n'
+        else:
+            output_str += 'No loaded data.'+'\n'
+        output_str += '\n'
+
+        return output_str
 
     def _load_data(self, date=None, fid=None):
         """
