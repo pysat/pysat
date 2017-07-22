@@ -27,83 +27,146 @@ class TestBasics:
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''
         del self.testInst
-    
+
+###########################
+    # basic loading tests, by date, filename, file id 
+    # and checks for .next and .prev data loading   
     def test_basic_instrument_load(self):
-        '''Test if the correct day is being loaded (checking object date).'''
+        '''Test if the correct day is being loaded (checking object date and data).'''
         self.testInst.load(2009,1)
-        assert self.testInst.date == pds.datetime(2009,1,1)	
-
-    def test_next_load_default(self):
-        '''Test if first day is loaded by default when first invoking .next.'''
-        self.testInst.next()
-        assert self.testInst.date == pds.datetime(2008,1,1)
-
-    def test_prev_load_default(self):
-        '''Test if last day is loaded by default when first invoking .prev.'''
-        self.testInst.prev()
-        assert self.testInst.date == pds.datetime(2010,12,31)
-        
-    def test_basic_fid_instrument_load(self):
-        '''Test if the correct day is being loaded (checking object date).'''
-        self.testInst.load(fid=0)
-        assert self.testInst.date == pds.datetime(2008,1,1)	
-
-    def test_next_fid_load_default(self):
-        '''Test if first day is loaded by default when first invoking .next.'''
-        self.testInst.load(fid=0)
-        self.testInst.next()
-        assert self.testInst.date == pds.datetime(2008,1,2)
-
-    def test_prev_fid_load_default(self):
-        '''Test if last day is loaded by default when first invoking .prev.'''
-        self.testInst.load(fid=3)
-        self.testInst.prev()
-        assert self.testInst.date == pds.datetime(2008,1,3)   
-         
-    def test_filename_load(self):
-        '''Test if file is loadable by filename, relative to top_data_dir/platform/name/tag'''
-        self.testInst.load(fname='12/31/10.nofile')
-        assert self.testInst.data.index[0] == pds.datetime(2010,12,31)
-        
-    def test_instrument_init(self):
-        """Test if init function supplied by instrument can modify object"""
-        assert self.testInst.new_thing==True
-
-    @raises(StopIteration)
-    def test_left_bounds_with_prev(self):
-        '''Test if passing bounds raises StopIteration.'''
-        self.testInst.next()
-        self.testInst.prev()
-        self.testInst.prev()        
-        
-    @raises(StopIteration)
-    def test_right_bounds_with_next(self):
-        '''Test if passing bounds raises StopIteration.'''
-        self.testInst.prev()
-        self.testInst.next()
-        self.testInst.next()        
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2009,1,1)) & (test_date == self.testInst.date)
 
     def test_basic_instrument_load_data(self):
-        '''Test if the correct day is being loaded (checking data).'''
+        '''Test if the correct day is being loaded (checking data down to the second).'''
         self.testInst.load(2009,1)
         assert self.testInst.data.index[0] == pds.datetime(2009,1,1,0,0,0)
 
     def test_basic_instrument_load_leap_year(self):
         '''Test if the correct day is being loaded (Leap-Year).'''
         self.testInst.load(2008,366)
-        assert self.testInst.date == pds.datetime(2008,12,31)	
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2008,12,31))  & (test_date == self.testInst.date)
 
-    def test_getyrdoy_1(self):
-        '''Test the date to year, day of year code functionality'''
-        date = pds.datetime(2009,1,1)
-        yr, doy = pysat.utils.getyrdoy(date)
-        assert ((yr == 2009) & (doy == 1))
+    def test_next_load_default(self):
+        '''Test if first day is loaded by default when first invoking .next.'''
+        self.testInst.next()
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert test_date == pds.datetime(2008,1,1)
 
-    def test_getyrdoy_leap_year(self):
-        '''Test the date to year, day of year code functionality (leap_year)'''
-        date = pds.datetime(2008,12,31)
-        yr, doy = pysat.utils.getyrdoy(date)
-        assert ((yr == 2008) & (doy == 366)) 
+    def test_prev_load_default(self):
+        '''Test if last day is loaded by default when first invoking .prev.'''
+        self.testInst.prev()
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert test_date == pds.datetime(2010,12,31)
+        
+    def test_basic_fid_instrument_load(self):
+        '''Test if first day is loaded by default when first invoking .next.'''
+        self.testInst.load(fid=0)
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2008,1,1)) & (test_date == self.testInst.date)
+
+    def test_next_fid_load_default(self):
+        '''Test next day is being loaded (checking object date).'''
+        self.testInst.load(fid=0)
+        self.testInst.next()
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2008,1,2)) & (test_date == self.testInst.date)
+
+    def test_prev_fid_load_default(self):
+        '''Test prev day is loaded when invoking .prev.'''
+        self.testInst.load(fid=3)
+        self.testInst.prev()
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2008,1,3))  & (test_date == self.testInst.date)
+         
+    def test_filename_load(self):
+        '''Test if file is loadable by filename, relative to top_data_dir/platform/name/tag'''
+        self.testInst.load(fname='12/31/10.nofile')
+        assert self.testInst.data.index[0] == pds.datetime(2010,12,31)
+
+    def test_next_filename_load_default(self):
+        '''Test next day is being loaded (checking object date).'''
+        self.testInst.load(fname='12/30/10.nofile')
+        self.testInst.next()
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2010,12,31)) & (test_date == self.testInst.date)
+
+    def test_prev_filename_load_default(self):
+        '''Test prev day is loaded when invoking .prev.'''
+        self.testInst.load(fname='01/04/09.nofile')
+        # print(self.testInst.date)
+        self.testInst.prev()
+        test_date = self.testInst.data.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2009,1,3))  & (test_date == self.testInst.date)
+
+    ###########################
+    # test flags
+    def test_empty_flag_data_empty(self):
+        assert self.testInst.empty
+
+    def test_empty_flag_data_not_empty(self):
+        self.testInst.load(2009, 1)
+        assert not self.testInst.empty
+
+    ############################
+    # test the textual representation
+    def test_basic_repr(self):
+        print(self.testInst)
+        assert True
+
+    def test_repr_w_orbit(self):
+        self.testInst.orbit_info = {'index': 'mlt', 'kind': 'local time', 'period': np.timedelta64(97, 'm')}
+        self.testInst.orbits.num = 10
+        print(self.testInst)
+        assert True
+
+    def test_repr_w_padding(self):
+        self.testInst.pad = pds.DateOffset(minutes=5)
+        print(self.testInst)
+        assert True
+
+    def test_repr_w_custom_func(self):
+        def testfunc(self):
+            pass
+        self.testInst.custom.add(testfunc, 'modify')
+        print(self.testInst)
+        assert True
+
+    def test_repr_w_load_data(self):
+        self.testInst.load(2009,1)
+        print(self.testInst)
+        assert True
+
+### testing init functions
+
+###### need to check with default1!!!!!                        
+    def test_instrument_init(self):
+        """Test if init function supplied by instrument can modify object"""
+        assert self.testInst.new_thing==True
+
+
+
+#     def test_getyrdoy_1(self):
+#         '''Test the date to year, day of year code functionality'''
+#         date = pds.datetime(2009,1,1)
+#         yr, doy = pysat.utils.getyrdoy(date)
+#         assert ((yr == 2009) & (doy == 1))
+# 
+#     def test_getyrdoy_leap_year(self):
+#         '''Test the date to year, day of year code functionality (leap_year)'''
+#         date = pds.datetime(2008,12,31)
+#         yr, doy = pysat.utils.getyrdoy(date)
+#         assert ((yr == 2008) & (doy == 366)) 
 
     def test_custom_instrument_load(self):
         '''
@@ -136,7 +199,9 @@ class TestBasics:
         del test.load
         testIn = pysat.Instrument(inst_module=test, tag='', clean_level='clean')
         testIn.load(2009,1)
-        
+
+###################3
+        # test data access features        
     def test_basic_data_access_by_name(self):
         self.testInst.load(2009,1)
         assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
@@ -184,7 +249,28 @@ class TestBasics:
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         self.testInst[0:10,'doubleMLT'] = 0
         assert np.all(self.testInst[10:,'doubleMLT'] == 2.*self.testInst[10:,'mlt']) & np.all(self.testInst[0:10,'doubleMLT'] == 0)
-                        
+
+#######################
+######
+#### check iteration behavior                        
+    @raises(StopIteration)
+    def test_left_bounds_with_prev(self):
+        '''Test if passing bounds raises StopIteration.'''
+        # load first data
+        self.testInst.next()
+        # go back to no data
+        self.testInst.prev()
+        # self.testInst.prev()        
+        
+    @raises(StopIteration)
+    def test_right_bounds_with_next(self):
+        '''Test if passing bounds raises StopIteration.'''
+        # load last data
+        self.testInst.prev()
+        # move on to future data that doesn't exist
+        self.testInst.next()
+        # self.testInst.next()        
+                                                                                                                                         
     def test_set_bounds_by_date(self):
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,15)

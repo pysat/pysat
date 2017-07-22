@@ -21,6 +21,25 @@ if sys.version_info[0] >= 3:
 else:
     re_load = reload
 
+
+
+#########
+## basic yrdoy tests
+def test_getyrdoy_1():
+    '''Test the date to year, day of year code functionality'''
+    date = pds.datetime(2009,1,1)
+    yr, doy = pysat.utils.getyrdoy(date)
+    assert ((yr == 2009) & (doy == 1))
+
+def test_getyrdoy_leap_year():
+    '''Test the date to year, day of year code functionality (leap_year)'''
+    date = pds.datetime(2008,12,31)
+    yr, doy = pysat.utils.getyrdoy(date)
+    assert ((yr == 2008) & (doy == 366)) 
+
+####################3
+# test netCDF fexport ile support
+
 def prep_dir(inst=None):
     import os
     import shutil
@@ -131,7 +150,8 @@ class TestBasics:
             check.append(np.all(self.testInst.data == loaded_inst))
         assert(np.all(check))
 
-
+#######################
+### test pysat data dir options
     def test_set_data_dir(self):
         saved_dir = self.data_path
         # update data_dir
