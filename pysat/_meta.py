@@ -21,6 +21,11 @@ class Meta(object):
         DataFrame should be indexed by variable name that contains at minimum the 
         standard_name (name), units, and long_name for the data stored in the associated 
         pysat Instrument object.
+    units_label : str
+        String used to label units in storage. Defaults to 'units'. 
+    name_label : str
+        String used to label long_name in storage. Defaults to 'long_name'. 
+        
         
     Attributes
     ----------
@@ -29,7 +34,9 @@ class Meta(object):
         with additional user provided labels.
         
     """
-    def __init__(self, metadata=None):
+    def __init__(self, metadata=None, units_label='units', name_label='long_name'):
+        self._units_label = units_label
+        self._name_label = name_label
         self.replace(metadata=metadata)
         self.ho_data = {}
 
@@ -40,6 +47,7 @@ class Meta(object):
             return False
 
     def __contains__(self, other):
+
         if other in self.data.index:
             return True
         if other in self.ho_data.keys():
@@ -51,17 +59,18 @@ class Meta(object):
         output_str = 'Metadata for 1D parameters\n'
         # print('Metadata for 1D parameters')
         # print(self.data)
-        output_str += self.data.__repr__()
+        output_str += self.data.__str__()
         output_str += '\n'
         for item_name in self.ho_data.keys():
             output_str += '\n\n'
             output_str += 'Metadata for '+item_name+'\n'
             # print(self.ho_data[item_name].data)
-            output_str += self.ho_data[item_name].data.__repr__()
+            output_str += self.ho_data[item_name].data.__str__()
         return output_str
 
     def concat(self, other):
-        """Concats two metadata objects together"""
+        """Concats two metadata objects together."""
+
         # concat data frames
         mdata = self.copy()
         mdata.data = pds.concat([self.data, other.data])
@@ -96,14 +105,34 @@ class Meta(object):
         
         """
         
-        if isinstance(value,dict):
+        if isinstance(value, dict):
             # check if dict empty
             if value.keys() == []:
-                if name in self:
-                    # variable already exists and we don't have anything
-                    # new to add, just leave
-                    return
-                # otherwise, continue on and set defaults
+                # null input, everything should be set to default
+                if isinstance(name, basestring):
+                    if name in self:
+                        # variable already exists and we don't have anything
+                        # new to add, just leave
+                        return
+                    # otherwise, continue on and set defaults
+                else:
+                    new_name = []
+                    for n in name:
+                        if n not in self:
+                            new_name.append(n)
+                    name = new_name
+                    if len(name) == 0:
+                        # all variables exist, can leave
+                        return
+                    else:
+                        # otherwise, continue on and set defaults
+                        # create empty input for all remaining names
+                        value = {}
+                        value[self._units_label] = ['']*len(name)
+                        value[self._name_label] = name
+                        # for na in name:
+                        #     value[na] = [[]]
+
 
             # if not passed an iterable, make it one
             if isinstance(name, basestring):
@@ -152,23 +181,24 @@ class Meta(object):
                     for key in value.keys():
                         _ = value[key].pop(loc)
 
-            if 'units' not in value.keys():
+            lower_keys = [k.lower() for k in value.keys()]
+            if 'units' not in lower_keys:
                 # provide default value, or copy existing
-                value['units'] = []
+                value[self._units_label] = []
                 for item_name in name:
                     if item_name not in self:
-                        value['units'].append('')
+                        value[self._units_label].append('')
                     else:
-                        value['units'].append(self.data.ix[item_name,'units'])
+                        value[self._units_label].append(self[item_name, 'units'])
 
-            if 'long_name' not in value.keys():
+            if 'long_name' not in lower_keys:
                 # provide default value, or copy existing
-                value['long_name'] = []
+                value[self._name_label] = []
                 for item_name in name:
                     if item_name not in self:
-                        value['long_name'].append(item_name)
+                        value[self._name_label].append(item_name)
                     else:
-                        value['long_name'].append(self.data.ix[item_name,'long_name'])
+                        value[self._name_label].append(self[item_name,'long_name'])
             if len(name) > 0:
                 # make sure there is still something to add
                 new = DataFrame(value, index=name)
@@ -178,31 +208,77 @@ class Meta(object):
                     else:
                         # info already exists, update with new info
                         for item_key in item.keys():
-                            self.data.ix[item_name,item_key] = item[item_key]
+                            self.data.loc[item_name, item_key] = item[item_key]
 
         elif isinstance(value, Series):
-            self.data.ix[name] = value
+            self.data.loc[name] = value
 
         elif isinstance(value, Meta):
             # dealing with higher order data set
             self.ho_data[name] = value
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         """Convenience method for obtaining metadata.
         
-        Maps to pandas DataFrame.ix method.
+        Maps to pandas DataFrame.loc method.
         
         Examples
         --------
         ::
         
-            print(meta['name'])
+            meta['name']
+            
+            meta[ 'name1', 'units' ]
         
         """
+
+        # if key is a tuple, looking at index, column access pattern
+        if isinstance(key, tuple):
+            index = key[0]
+            column = key[1]
+            # column name needs to be checked against lower case form
+            # ignores but preserves case for column access
+            avail_cols = self.data.columns
+            lower_cols = [col.lower() for col in avail_cols]
+            if column in lower_cols:
+                for col, true_col in zip(lower_cols, avail_cols):
+                    if column == col:
+                        return self.data.loc[index, true_col]
+            # didn't find the column
+            # hail mary call below
+            return self.data.loc[index, column]
+
+        # single variable request
         if key in self.ho_data.keys():
             return self.ho_data[key]
         else:
-            return self.data.ix[key]
+            return self.data.loc[key]
+
+        # # if key is a string, get lower case
+        # # otherwise iterate and get lower case
+        # if isinstance(key, basestring):
+        #     key = key.lower()
+        # else:
+        #     try:
+        #         key = [k.lower() for k in key]
+        #     except:
+        #         # key = key
+        #         pass
+        #
+        # if key in lower_ho:
+        #     for low_key, true_key in zip(lower_ho, self.ho_data.keys()):
+        #         if key == low_key:
+        #             return self.ho_data[true_key]
+        # elif key in lower_index:
+        #     for low_key, true_key in zip(lower_index, self.data.index):
+        #         if key == low_key:
+        #             return self.data.loc[true_key]
+        # else:
+        #     # shouldn't be here - fail safe option
+        #     try:
+        #         return self.data.loc[key]
+        #     except:
+        #         raise ValueError(' '.join([key, 'is not in the MetaData object.']))
         
     def replace(self, metadata=None):
         """Replace stored metadata with input data.
@@ -218,18 +294,16 @@ class Meta(object):
         if metadata is not None:
             if isinstance(metadata, DataFrame):
                 self.data = metadata
-                self.data.columns = [name.lower() for name in self.data.columns]
-                if 'long_name' not in self.data.columns:
-                    self.data['long_name'] = self.data.index
-                if 'units' not in self.data.columns:
-                    self.data['units'] = ''
+                lower_columns = [name.lower() for name in self.data.columns]
+                if 'long_name' not in lower_columns:
+                    self.data[self._name_label] = self.data.index
+                if 'units' not in lower_columns:
+                    self.data[self._units_label] = ''
             else:
                 raise ValueError("Input must be a pandas DataFrame type. "+
                             "See other constructors for alternate inputs.")
-            
         else:
-            self.data = DataFrame(None, columns=['long_name', 'units'])
-        #self._orig_data = self.data.copy()
+            self.data = DataFrame(None, columns=[self._name_label, self._units_label])
         
     @classmethod
     def from_csv(cls, name=None, col_names=None, sep=None, **kwargs):
