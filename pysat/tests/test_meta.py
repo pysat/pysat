@@ -135,15 +135,12 @@ class TestBasics:
         meta = pysat.Meta()
         meta['dm'] = {'units':'hey', 'long_name':'boo'}
         meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
-        self.meta[['higher', 'lower', 'lower2']] = {'meta':[meta, None, meta],
-                                          'units':[None, 'boo', None],
-                                          'long_name':[None, 'boohoo', None]}
+        self.meta[['higher', 'lower', 'lower2']] = {'meta': [meta, None, meta],
+                                          'units': [None, 'boo', None],
+                                          'long_name': [None, 'boohoo', None]}
         meta2 = pysat.Meta(metadata=self.meta.data)
         check1 = np.all(meta2['lower'] == self.meta['lower'])
         assert check1
-
-        
-
 
     def test_replace_meta_units_list(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
@@ -155,11 +152,14 @@ class TestBasics:
             (self.meta['new2'].units == 'yeppers') & (self.meta['new2'].long_name == 'boo2'))
     
     def test_meta_repr_functions(self):
+        self.testInst.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        self.testInst.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
         print (self.testInst.meta)
         # if it doesn't produce an error, we presume it works
         # how do you test a print??
         assert True
-        
+
+
     def test_meta_csv_load(self):
         import os
         name = os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
@@ -178,8 +178,8 @@ class TestBasics:
         mdata = pysat.Meta.from_csv(name=name,  na_values=[ ], #index_col=2, 
                                     keep_default_na=False,
                                     col_names=['name','long_name','idx','units','description'])
-        #names aren't provided for all data in file, filling in gaps                  
-        #print mdata.data  
+        # names aren't provided for all data in file, filling in gaps
+        # print mdata.data
         mdata.data.loc[:,'name'] = mdata.data.index       
         mdata.data.index = mdata.data['idx']
         new = mdata.data.reindex(index = np.arange(mdata.data['idx'].iloc[-1]+1))
@@ -191,9 +191,51 @@ class TestBasics:
         new['idx'] = new.index.values
         new.index = new['name']
         
-        #update metadata object with new info
+        # update metadata object with new info
         mdata.replace(metadata=new)
-        assert len(mdata.data == mdata[-1, 'idx'])
+
+        assert np.all(mdata.data == new)
+
+    # assign multiple values to default
+    def test_multiple_input_names_null_value(self):
+        self.meta[['test1', 'test2']] = {}
+        check1 = self.meta['test1', 'units'] == ''
+        check2 = self.meta['test2', 'long_name'] == 'test2'
+        assert check1 & check2
+
+    def test_multiple_input_names_null_value_preexisting_values(self):
+        self.meta[['test1', 'test2']] = {'units' : ['degrees', 'hams'],
+                                         'long_name' : ['testing', 'further']}
+        # print (self.meta)
+        self.meta[['test1', 'test2']] = {}
+        check1 = self.meta['test1', 'units'] == 'degrees'
+        check2 = self.meta['test2', 'long_name'] == 'further'
+        assert check1 & check2
 
 
+    # test behaviors related to case changes, 'units' vs 'Units'
+    def test_assign_Units(self):
+        self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
+        self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
+        self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
+
+        assert ((self.meta['new'].Units == 'hey') & (self.meta['new'].Long_Name == 'boo') &
+            (self.meta['new2'].Units == 'hey2') & (self.meta['new2'].Long_Name == 'boo2'))
+
+    @raises(AttributeError)
+    def test_assign_Units_no_units(self):
+        self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
+        self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
+        self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
+        # print ( self.meta['new'])
+        # print (self.meta['new2', 'units'])
+        self.meta['new'].units
+
+    def test_get_Units(self):
+        self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
+        self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
+        self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
+
+        assert ((self.meta['new', 'units'] == 'hey') & (self.meta['new', 'long_name'] == 'boo') &
+            (self.meta['new2', 'units'] == 'hey2') & (self.meta['new2', 'long_name'] == 'boo2'))
 
