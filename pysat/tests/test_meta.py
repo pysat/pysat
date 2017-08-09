@@ -231,7 +231,7 @@ class TestBasics:
         # print (self.meta['new2', 'units'])
         self.meta['new'].units
 
-    def test_get_Units(self):
+    def test_get_Units_wrong_case(self):
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
