@@ -239,3 +239,56 @@ class TestBasics:
         assert ((self.meta['new', 'units'] == 'hey') & (self.meta['new', 'long_name'] == 'boo') &
             (self.meta['new2', 'units'] == 'hey2') & (self.meta['new2', 'long_name'] == 'boo2'))
 
+
+
+    # Test the attribute transfer function
+    def test_transfer_attributes_to_instrument(self):
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.date = None
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+        check1 = self.testInst.new_attribute == 'hello'
+        assert check1
+
+    # ensure leading hyphens are dropped
+    @raises(AttributeError)
+    def test_transfer_attributes_to_instrument_leading_(self):
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.date = None
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+        self.testInst._yo_yo == 'yo yo'
+        assert True
+
+    # ensure leading hyphens are dropped
+    @raises(AttributeError)
+    def test_transfer_attributes_to_instrument_leading__(self):
+        self.meta.new_attribute = 'hello'
+        self.meta.__yo_yo = 'yo yo'
+        self.meta.date = None
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+        self.testInst.__yo_yo == 'yo yo'
+        assert True
+
+    # ensure meta attributes aren't transfered
+    @raises(AttributeError)
+    def test_transfer_attributes_to_instrument_no_meta_attr(self):
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.date = None
+        self.meta.transfer_attributes_to_instrument(self.testInst)
+        self.testInst.ho_data
+        assert True
+
+    @raises(RuntimeError)
+    def test_transfer_attributes_to_instrument_strict_names(self):
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.jojo_beans = 'yep!'
+        self.meta.name = 'Failure!'
+        self.meta.date = 'yo yo2'
+        self.testInst.load(2009,1)
+        self.testInst.jojo_beans = 'nope!'
+        self.meta.transfer_attributes_to_instrument(self.testInst, strict_names=True)
+
+        assert True

@@ -40,6 +40,8 @@ class Meta(object):
         self.replace(metadata=metadata)
         self.ho_data = {}
 
+        self._base_attr = dir(self)
+
     def __eq__(self, other):
         if type(other) is type(self):
             return self.__dict__ == other.__dict__
@@ -190,6 +192,8 @@ class Meta(object):
                         value[self._units_label].append('')
                     else:
                         value[self._units_label].append(self[item_name, 'units'])
+            # need to ensure that the units string is consistent with the rest
+            # probably, that is
 
             if 'long_name' not in lower_keys:
                 # provide default value, or copy existing
@@ -254,32 +258,64 @@ class Meta(object):
         else:
             return self.data.loc[key]
 
-        # # if key is a string, get lower case
-        # # otherwise iterate and get lower case
-        # if isinstance(key, basestring):
-        #     key = key.lower()
-        # else:
-        #     try:
-        #         key = [k.lower() for k in key]
-        #     except:
-        #         # key = key
-        #         pass
-        #
-        # if key in lower_ho:
-        #     for low_key, true_key in zip(lower_ho, self.ho_data.keys()):
-        #         if key == low_key:
-        #             return self.ho_data[true_key]
-        # elif key in lower_index:
-        #     for low_key, true_key in zip(lower_index, self.data.index):
-        #         if key == low_key:
-        #             return self.data.loc[true_key]
-        # else:
-        #     # shouldn't be here - fail safe option
-        #     try:
-        #         return self.data.loc[key]
-        #     except:
-        #         raise ValueError(' '.join([key, 'is not in the MetaData object.']))
+    def transfer_attributes_to_instrument(self, inst, strict_names=False):
+        """Transfer non-standard attributes in Meta to Instrument object.
         
+        Pysat's load_netCDF and similar routines are only able to attach
+        netCDF4 attributes to a Meta object. This routine identifies these
+        attributes and removes them from the Meta object. Intent is to 
+        support simple transfers to the pysat.Instrument object.
+        
+        Will not transfer names that conflict with pysat default attributes.
+        
+        Parameters
+        ----------
+        inst : pysat.Instrument
+            Instrument object to transfer attributes to
+        strict_names : boolean (False)
+            If True, produces an error if the Instrument object already
+            has an attribute with the same name to be copied.
+            
+        Returns
+        -------
+        None
+            pysat.Instrument object modified in place with new attributes
+            
+        """
+
+        # base Instrument attributes
+        banned = inst._base_attr
+        # get base attribute set, and attributes attached to instance
+        base_attrb = self._base_attr
+        this_attrb = dir(self)
+        # collect these attributes into a dict
+        adict = {}
+        transfer_key = []
+        for key in this_attrb:
+            if key not in banned:
+                if key not in base_attrb:
+                    # don't store _ leading attributes
+                    if key[0] != '_':
+                        adict[key] = self.__getattribute__(key)
+                        transfer_key.append(key)
+
+        # store any non-standard attributes in Instrument
+        # get list of instrument objects attributes first
+        # to check if a duplicate
+        inst_attr = dir(inst)
+        for key in transfer_key:
+            if key not in banned:
+                if key not in inst_attr:
+                    inst.__setattr__(key, adict[key])
+                else:
+                    if not strict_names:
+                        # new_name = 'pysat_attr_'+key
+                        inst.__setattr__(key, adict[key])
+                    else:
+                        raise RuntimeError('Attribute ' + key +  'attached to Meta object '+
+                                             'can not be transferred as it already exists in the Instrument object.')
+        # return inst
+
     def replace(self, metadata=None):
         """Replace stored metadata with input data.
         

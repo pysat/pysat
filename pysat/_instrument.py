@@ -264,6 +264,9 @@ class Instrument(object):
         # if user doesn't supply the init function
         self._init_rtn(self)
 
+        # store base attributes, used in particular by Meta class
+        self._base_attr = dir(self)
+
     def __getitem__(self, key): 
         """
         Convenience notation for accessing data; inst['name'] is inst.data.name
@@ -761,6 +764,8 @@ class Instrument(object):
             if (self.data.index[-1] == last_time) & (not want_last_pad):
                 self.data = self.data.iloc[:-1, :]
 
+        # transfer any extra attributes in meta to the Instrument object
+        self.meta.transfer_attributes_to_instrument(self)
         sys.stdout.flush()
         return
 
@@ -1071,7 +1076,8 @@ class Instrument(object):
         """
         
         import netCDF4
-        
+        import pysat
+
         if format is None:
             format = 'NETCDF4'
         else:
@@ -1231,7 +1237,7 @@ class Instrument(object):
                 if key not in base_attrb:
                     if key[0] != '_':
                         adict[key] = self.meta.__getattribute__(key)
-            adict['pysat_version'] = 1.0
+            adict['pysat_version'] = pysat.__version__
             adict['Conventions'] = 'CF-1.6'
 
             # check for binary types
