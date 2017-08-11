@@ -1105,88 +1105,15 @@ class Instrument(object):
                             
             # store all of the data in dataframe columns
             for key in self.data.columns:
+                # print ('key', key)
+                # print (self[key])
                 if self[key].dtype != np.dtype('O'):
                     # not an object, simple column of data, write it out
                     if ((self[key].dtype == np.int64) & (format[:7] == 'NETCDF3')):
                         self[key] = self[key].astype(np.int32)
-                    cdfkey = out_data.createVariable(key, 
-                                                     self[key].dtype,
-                                                     dimensions=('epoch'), )
-                    # attach any meta data
-                    try:
-                        new_dict = self.meta[key].to_dict()
-                        if u'_FillValue' in new_dict.keys():
-                            # make sure _FillValue is the same type as the data
-                            new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(self[key].dtype)
-                        if u'FillVal' in new_dict.keys():
-                            # make sure _FillValue is the same type as the data
-                            new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(self[key].dtype)
-                        # really attach metadata now
-                        cdfkey.setncatts(new_dict)
-                    except:
-                        print(', '.join(('Unable to find MetaData for',key)) )
-
-
-                    # attach the data
-                    cdfkey[:] = self[key].values
-                else:
-                    # we are dealing with a more complicated object
-                    # presuming a series with a dataframe in each location
-                    dims = np.shape(self[key].iloc[0])
-                    obj_dim_names = []
-
-                    for i, dim in enumerate(dims[:-1]):
-                        # don't need to go over last dimension value, 
-                        # it covers number of columns
-                        obj_dim_names.append(key+'_dim_%i' % (i+1))
-                        out_data.createDimension(obj_dim_names[-1], dim)
-                    # total dimensions stored for object are epoch plus ones just above
-                    var_dim = tuple(['epoch']+obj_dim_names)
-                    #print (key, var_dim)
-                    # iterate over columns and store
-                    try:
-                        iterable = self[key].iloc[0].columns
-                        is_frame = True
-                    except AttributeError:
-                        # looking at a series, which doesn't have columns
-                        iterable = self[key].iloc[0].name
-                        is_frame = False
-                        
-                    for col in iterable:
-                        if is_frame:
-                            coltype = self[key].iloc[0][col].dtype
-                        else:
-                            coltype = self[key].iloc[0].dtype
-                        if ((coltype == np.int64) & (format[:7] == 'NETCDF3')):
-                            coltype = np.int32
-                        #elif coltype == np.dtype('O'):
-                        #    if isinstance(self[key].iloc[0][col][0], basestring):
-                        #        coltype = 'S1'
-                        #print (key+'_' +col, var_dim, coltype)
-                        cdfkey = out_data.createVariable(key + '_' +col, 
-                                                         coltype,
-                                                         dimensions=var_dim)
-                        #cdfkey.long_name = col
-                        #cdfkey.units = ''
-                        if is_frame:
-                            # attach any meta data
-                            try:
-                                cdfkey.setncatts(self.meta[key][col].to_dict())
-                            except:
-                                print(', '.join(('Unable to find MetaData for',key,col)) )
-                            # attach data
-                            for i in range(num):
-                                cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
-                        else:
-                            # attach any meta data
-                            cdfkey.setncatts(self.meta[key].to_dict())
-                            # attach data
-                            for i in range(num):
-                                cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
-                            
-                    # store the dataframe index for each time of main dataframe
+                    # check if it is a datetime column
                     datetime_flag = False
-                    coltype = self[key].iloc[0].index.dtype
+                    coltype = self[key].dtype
                     # check for datetime index
                     if coltype == np.dtype('<M8[ns]'):
                         if format == 'NETCDF4':
@@ -1194,32 +1121,164 @@ class Instrument(object):
                         else:
                             coltype = np.float
                         datetime_flag = True
-                        
-                    #if coltype == np.int64:
-                    #    coltype = np.int32
-                    #print (key+'_' + '_ample', var_dim, coltype)
-                    cdfkey = out_data.createVariable(key+'_dim_1',
-                                                     coltype, dimensions=var_dim)
-                    if datetime_flag:
-                        #print('datetime flag')
-                        if format == 'NETCDF4':
-                            cdfkey.units = 'Microseconds since 1970-1-1 00:00:00'
-                            for i in range(num):
-                                cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-3).astype(coltype)
-                        else:
-                            cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
-                            for i in range(num):
-                                cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
 
-                        cdfkey.long_name = 'UNIX time'
+                    # print ('gonna create variable')
+                    cdfkey = out_data.createVariable(key, 
+                                                     coltype,
+                                                     dimensions=('epoch'), )
+                    # print ('created')
+
+                    # attach any meta data
+                    try:
+                        new_dict = self.meta[key].to_dict()
+
+                        if u'_FillValue' in new_dict.keys():
+                            # make sure _FillValue is the same type as the data
+                            new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(self[key].dtype)
+                        if u'FillVal' in new_dict.keys():
+                            # make sure _FillValue is the same type as the data
+                            new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(self[key].dtype)
+                        # really attach metadata now
+
+                        cdfkey.setncatts(new_dict)
+                    except:
+                        print(', '.join(('Unable to find MetaData for',key)) )
+
+
+                    if datetime_flag:
+                        if format == 'NETCDF4':
+                            # cdfkey.units = 'Microseconds since 1970-1-1 00:00:00'
+                            cdfkey[:] = (self[key].values.astype(coltype)*1.E-3).astype(coltype)
+                        else:
+                            # cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
+                            cdfkey[:] = (self[key].values.astype(coltype)*1.E-6).astype(coltype)
+
+                        # cdfkey.long_name = 'UNIX time'
                     else:
-                        #cdfkey.units = ''
-                        if self[key].iloc[0].index.name is not None:
-                            cdfkey.long_name = self[key].iloc[0].index.name
-                        else:    
-                            cdfkey.long_name = key
-                        for i in range(num):
-                            cdfkey[i, :] = self[key].iloc[i].index.to_native_types()
+                        # #cdfkey.units = ''
+                        # if self[key].iloc[0].index.name is not None:
+                        #     cdfkey.long_name = self[key].iloc[0].index.name
+                        # else:
+                        #     cdfkey.long_name = key
+
+                        cdfkey[:] = self[key].values #.to_native_types()
+
+
+                    # attach the data
+                    # cdfkey[:] = self[key].values
+                else:
+                    if not isinstance(self[0, key], pysat.DataFrame):
+                        # dealing with a string
+                        cdfkey = out_data.createVariable(key,
+                                                         'S30',
+                                                         dimensions=('epoch'), )
+                        # attach any meta data
+                        try:
+                            new_dict = self.meta[key].to_dict()
+                            if u'_FillValue' in new_dict.keys():
+                                # make sure _FillValue is the same type as the data
+                                new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(self[key].dtype)
+                            if u'FillVal' in new_dict.keys():
+                                # make sure _FillValue is the same type as the data
+                                new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(self[key].dtype)
+                            # really attach metadata now
+                            cdfkey.setncatts(new_dict)
+                        except:
+                            print(', '.join(('Unable to find MetaData for',key)) )
+
+
+                    else:
+
+                        # we are dealing with a more complicated object
+                        # presuming a series with a dataframe in each location
+                        dims = np.shape(self[key].iloc[0])
+                        obj_dim_names = []
+
+                        for i, dim in enumerate(dims[:-1]):
+                            # don't need to go over last dimension value,
+                            # it covers number of columns
+                            obj_dim_names.append(key+'_dim_%i' % (i+1))
+                            out_data.createDimension(obj_dim_names[-1], dim)
+                        # total dimensions stored for object are epoch plus ones just above
+                        var_dim = tuple(['epoch']+obj_dim_names)
+                        #print (key, var_dim)
+                        # iterate over columns and store
+                        try:
+                            iterable = self[key].iloc[0].columns
+                            is_frame = True
+                        except AttributeError:
+                            # looking at a series, which doesn't have columns
+                            iterable = self[key].iloc[0].name
+                            is_frame = False
+
+                        for col in iterable:
+                            if is_frame:
+                                coltype = self[key].iloc[0][col].dtype
+                            else:
+                                coltype = self[key].iloc[0].dtype
+                            if ((coltype == np.int64) & (format[:7] == 'NETCDF3')):
+                                coltype = np.int32
+                            #elif coltype == np.dtype('O'):
+                            #    if isinstance(self[key].iloc[0][col][0], basestring):
+                            #        coltype = 'S1'
+                            #print (key+'_' +col, var_dim, coltype)
+                            cdfkey = out_data.createVariable(key + '_' +col,
+                                                             coltype,
+                                                             dimensions=var_dim)
+                            #cdfkey.long_name = col
+                            #cdfkey.units = ''
+                            if is_frame:
+                                # attach any meta data
+                                try:
+                                    cdfkey.setncatts(self.meta[key][col].to_dict())
+                                except:
+                                    print(', '.join(('Unable to find MetaData for',key,col)) )
+                                # attach data
+                                for i in range(num):
+                                    cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
+                            else:
+                                # attach any meta data
+                                cdfkey.setncatts(self.meta[key].to_dict())
+                                # attach data
+                                for i in range(num):
+                                    cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
+
+                        # store the dataframe index for each time of main dataframe
+                        datetime_flag = False
+                        coltype = self[key].iloc[0].index.dtype
+                        # check for datetime index
+                        if coltype == np.dtype('<M8[ns]'):
+                            if format == 'NETCDF4':
+                                coltype = np.int64
+                            else:
+                                coltype = np.float
+                            datetime_flag = True
+
+                        #if coltype == np.int64:
+                        #    coltype = np.int32
+                        #print (key+'_' + '_ample', var_dim, coltype)
+                        cdfkey = out_data.createVariable(key+'_dim_1',
+                                                         coltype, dimensions=var_dim)
+                        if datetime_flag:
+                            #print('datetime flag')
+                            if format == 'NETCDF4':
+                                cdfkey.units = 'Microseconds since 1970-1-1 00:00:00'
+                                for i in range(num):
+                                    cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-3).astype(coltype)
+                            else:
+                                cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
+                                for i in range(num):
+                                    cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
+
+                            cdfkey.long_name = 'UNIX time'
+                        else:
+                            #cdfkey.units = ''
+                            if self[key].iloc[0].index.name is not None:
+                                cdfkey.long_name = self[key].iloc[0].index.name
+                            else:
+                                cdfkey.long_name = key
+                            for i in range(num):
+                                cdfkey[i, :] = self[key].iloc[i].index.to_native_types()
 
             # store any non standard attributes
             base_attrb = dir(base_instrument)
