@@ -508,7 +508,7 @@ class Instrument(object):
                                        sat_id=self.sat_id)
         if not data.empty: 
             if not isinstance(data, DataFrame):
-                raise TypeError(string.join(('Data returned by instrument load',
+                raise TypeError(' '.join(('Data returned by instrument load',
                                 'routine must be a pandas.DataFrame')))
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
