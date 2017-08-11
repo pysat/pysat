@@ -4,6 +4,23 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
 
+## [0.6.0] - 2017-08-11
+ - Many changes since the last note here.
+ - Unit tests have been expanded significantly, bug fixes as appropriate.
+ - Coverage is over 80%
+ - There are new requirements on loading routines to support testing.
+ - Instrument object prints out nice information to command line
+ - Attributes in netCDF and similar files are transferred to the Instrument object as part of loading
+ - Added attribute 'empty', True if there is no data
+ - Orbit support significantly improved, multiple orbit types are supported
+ - Added concat to Meta
+ - Python 3 compatible
+ - Corrected intersection of data_padding and multi_file_day
+ - Added support for higher order MetaData objects, needed for DataFrame within DataFrames
+ - Windows compatibility
+ - Additional scientific instrument support
+
+
 ### Changed
  - Initial support for sat_id in Instrument
  - Files class will now remove duplicate file times rather than simply raise an exception
