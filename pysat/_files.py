@@ -83,7 +83,7 @@ class Files(object):
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
         # location of .pysat file
-        self.home_path = os.path.join(os.getenv('HOME'), '.pysat')
+        self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None)

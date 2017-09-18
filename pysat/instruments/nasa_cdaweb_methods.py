@@ -222,7 +222,7 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download                  
         try:
-            print('Attempting to download file for '+date.strftime('%D'))
+            print('Attempting to download file for '+date.strftime('%x'))
             sys.stdout.flush()
             ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'wb').write)
             print('Finished.')
@@ -232,7 +232,7 @@ def download(supported_tags, date_array, tag, sat_id,
                 raise
             else:
                 os.remove(saved_local_fname)
-                print('File not available for '+ date.strftime('%D'))
+                print('File not available for '+ date.strftime('%x'))
     ftp.close()
                
                     
