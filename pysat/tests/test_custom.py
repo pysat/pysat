@@ -7,7 +7,7 @@ import nose.tools
 class TestBasics:
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
-        self.testInst = pysat.Instrument('pysat','testing', '10', 'clean')
+        self.testInst = pysat.Instrument('pysat','testing', tag='10', clean_level='clean')
 
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''
@@ -218,4 +218,56 @@ class TestBasics:
                     'units':'hours1'}
         self.testInst.custom.add(custom1, 'add')
         self.testInst.load(2009,1)
+        
+    def test_clear_functions(self):
+        def custom1(inst):
+            out = (inst.data.mlt*2).values
+            return {'data':out, 'long_name':'doubleMLTlong',
+                    'units':'hours1', 'name':'doubleMLT'}
+        self.testInst.custom.add(custom1, 'add')
+        self.testInst.custom.clear()
+        check1 = self.testInst.custom._functions == []
+        check2 = self.testInst.custom._kind == []
+        assert check1 & check2
+        
+    def test_pass_functions(self):
+        def custom1(inst):
+            out = (inst.data.mlt*2).values
+            return 
+        self.testInst.custom.add(custom1, 'pass')
+        self.testInst.load(2009, 1)
+
+        assert True
+    @raises(ValueError)    
+    def test_pass_functions_no_return_allowed(self):
+        def custom1(inst):
+            out = (inst.data.mlt*2).values
+            return {'data':out, 'long_name':'doubleMLTlong',
+                    'units':'hours1', 'name':'doubleMLT'}
+        self.testInst.custom.add(custom1, 'pass')
+        self.testInst.load(2009, 1)
+
+        assert True
     
+    @raises(AttributeError)
+    def test_add_multiple_functions_one_not_at_end(self):
+        def custom1(inst):
+            out = (inst.data.mlt*2).values
+            return {'data':out, 'long_name':'doubleMLTlong',
+                    'units':'hours1', 'name':'doubleMLT'}
+        def custom2(inst):
+            out = (inst.data.mlt*3).values
+            return {'data':out, 'long_name':'tripleMLTlong',
+                    'units':'hours1', 'name':'tripleMLT'}
+        def custom3(inst):
+            out = (inst.data.tripleMLT*2).values
+            return {'data':out, 'long_name':'quadMLTlong',
+                    'units':'hours1', 'name':'quadMLT'}
+        self.testInst.custom.add(custom1, 'add')
+        self.testInst.custom.add(custom2, 'add')
+        # if this runs correctly, an error will be thrown
+        # since the data required by custom3 won't be present yet
+        self.testInst.custom.add(custom3, 'add', at_pos=1)
+        self.testInst.load(2009,1)
+        
+        

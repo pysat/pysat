@@ -14,7 +14,9 @@ meta = pysat.Meta()
 meta['uts'] = {'units':'s', 'long_name':'Universal Time'}
 meta['mlt'] = {'units':'hours', 'long_name':'Magnetic Local Time'}
 meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
-meta['profiles'] = {'units':'', 'long_name':'profiles'}
+profile_meta = pysat.Meta()
+profile_meta['density'] = {'units':'', 'long_name':'profiles'}
+meta['profiles'] = profile_meta
         
 def init(self):
     self.new_thing=True        
@@ -44,12 +46,14 @@ def load(fnames, tag=None, sat_id=None):
 
     index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq='100S')
     data.index=index
-    data.index.name = 'time'
+    data.index.name = 'epoch'
     
     profiles = []
     for time in data.index:
-        profiles.append(pds.DataFrame(data.ix[0:50,'mlt'].copy(), index = data.index[0:50]))
-    data['profiles'] = pds.DataFrame({'density':profiles}, index=data.index)
+        profiles.append(pds.DataFrame(data.ix[0:50,'mlt'].values.copy(), 
+                                      index=data.index[0:50], 
+                                      columns=['density']))
+    data['profiles'] = pds.Series(profiles, index=data.index)
     
     return data, meta.copy()
 

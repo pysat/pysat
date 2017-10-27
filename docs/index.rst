@@ -5,63 +5,14 @@
 
 Welcome to pysat's documentation!
 =================================
+
 .. toctree::
-   :maxdepth: 2
-.. automodule:: pysat
+   :maxdepth: 2        
 
-Introduction
-^^^^^^^^^^^^
-
-API
-^^^
-Instrument
-----------
-.. autoclass:: pysat.Instrument
-   :members:
-
-Custom
-------
-.. autoclass:: pysat.Custom
-   :members:
-
-Files
------
-.. autoclass:: pysat.Files
-   :members:
-
-Meta
-----
-.. autoclass:: pysat.Meta
-   :members:
-
-Orbits
-------
-.. autoclass:: pysat.Orbits
-   :members:
-
-Utilities
----------
-.. automodule:: pysat.utils
-   :members:
-
-Supported Instruments
----------------------
-C/NOFS VEFI
-```````````
-.. automodule:: pysat.instruments.cnofs_vefi
-   :members: __doc__
-
-C/NOFS IVM
-``````````
-.. automodule:: pysat.instruments.cnofs_ivm
-   :members: __doc__
-
-COSMIC 2013 GPS
-```````````````
-.. automodule:: pysat.instruments.cosmic2013_gps
-   :members: __doc__
-
-COSMIC GPS
-``````````
-.. automodule:: pysat.instruments.cosmic_gps
-   :members: __doc__
+   introduction.rst
+   installation.rst
+   tutorial.rst
+   examples.rst
+   supported_instruments.rst
+   new_instrument.rst
+   api.rst

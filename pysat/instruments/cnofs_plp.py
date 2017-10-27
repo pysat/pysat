@@ -30,6 +30,13 @@ import functools
 
 from . import nasa_cdaweb_methods as cdw
 
+platform = 'cnofs'
+name = 'plp'
+tags = {'':''}
+sat_ids = {'':['']}
+test_dates = {'':{'':pysat.datetime(2009,1,1)}}
+
+
 # support list files routine
 # use the default CDAWeb method
 fname = 'cnofs_plp_plasma_1sec_{year:04d}{month:02d}{day:02d}_v01.cdf'

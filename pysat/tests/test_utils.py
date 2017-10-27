@@ -1,5 +1,5 @@
 """
-tests the pysat meta object and code
+tests the pysat utils area
 """
 import pysat
 import pandas as pds
@@ -8,6 +8,7 @@ import nose.tools
 import pysat.instruments.pysat_testing
 import numpy as np
 import os
+import tempfile
 
 import sys
 if sys.version_info[0] >= 3:
@@ -19,6 +20,25 @@ if sys.version_info[0] >= 3:
         re_load = importlib.reload
 else:
     re_load = reload
+
+
+
+#########
+## basic yrdoy tests
+def test_getyrdoy_1():
+    '''Test the date to year, day of year code functionality'''
+    date = pds.datetime(2009,1,1)
+    yr, doy = pysat.utils.getyrdoy(date)
+    assert ((yr == 2009) & (doy == 1))
+
+def test_getyrdoy_leap_year():
+    '''Test the date to year, day of year code functionality (leap_year)'''
+    date = pds.datetime(2008,12,31)
+    yr, doy = pysat.utils.getyrdoy(date)
+    assert ((yr == 2008) & (doy == 366)) 
+
+####################3
+# test netCDF fexport ile support
 
 def prep_dir(inst=None):
     import os
@@ -32,61 +52,38 @@ def prep_dir(inst=None):
         #print ('Made Directory')
     except OSError:
         pass
-    #dir = os.path.join(pysat.data_dir, inst.platform)
-    #if not os.path.isdir(dir):
-    #    os.mkdir(dir)
-    #dir = os.path.join(pysat.data_dir, inst.platform, inst.name)
-    #if not os.path.isdir(dir):
-    #    os.mkdir(dir)
 
+def remove_files(inst):
     # remove any files
     dir = inst.files.data_path
     for the_file in os.listdir(dir):
         if (the_file[0:13] == 'pysat_testing') & (the_file[-19:] == '.pysat_testing_file'):
             file_path = os.path.join(dir, the_file)
             if os.path.isfile(file_path):
-                #print(file_path)
                 os.unlink(file_path)
-                #elif os.path.isdir(file_path): shutil.rmtree(file_path)
-
-
-# create year doy file set
-def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
-                 root_fname=None):
-
-    # create a bunch of files
-    if start is None:
-        start = pysat.datetime(2009, 1, 1)
-    if stop is None:
-        stop = pysat.datetime(2013, 12, 31)
-    dates = pysat.utils.season_date_range(start, stop, freq=freq)
-    
-    if root_fname is None:
-        root_fname = 'pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file'
-        
-    for date in dates:
-        yr, doy = pysat.utils.getyrdoy(date)
-        if use_doy:
-            doy = doy
-        else:
-            doy = date.day        
-            
-        fname = os.path.join(inst.files.data_path, root_fname.format(year=yr, 
-                             day=doy, month=date.month, hour=date.hour, min=date.minute, sec=date.second))
-        f = open(fname, 'w')
-        f.close()
-
-
-
 
 class TestBasics:
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, clean_level='clean')
+        # store current pysat directory
+        self.data_path = pysat.data_dir
+        
+        # create temporary directory  
+        dir_name = tempfile.gettempdir()
+        pysat.utils.set_data_dir(dir_name, store=False)
+
+        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
+                                        clean_level='clean')
+        # create testing directory
+        prep_dir(self.testInst)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        prep_dir()
+        remove_files(self.testInst)
+        try:
+            pysat.utils.set_data_dir(self.data_path, store=False)
+        except:
+            pass
         del self.testInst
     
     def test_basic_writing_and_reading_netcdf4_default_format(self):
@@ -96,10 +93,12 @@ class TestBasics:
             import netCDF4
         except ImportError:
             raise SkipTest
-            
+  
+        prep_dir(self.testInst)            
         outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
         self.testInst.load(2009,1)
         self.testInst.to_netcdf4(outfile)
+
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
         self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
@@ -151,9 +150,10 @@ class TestBasics:
             check.append(np.all(self.testInst.data == loaded_inst))
         assert(np.all(check))
 
-
+#######################
+### test pysat data dir options
     def test_set_data_dir(self):
-        saved_dir = pysat.data_dir
+        saved_dir = self.data_path
         # update data_dir
         pysat.utils.set_data_dir('.')
         check1 = (pysat.data_dir == '.')
@@ -176,16 +176,17 @@ class TestBasics:
         else:
             re_load = reload
 
-        saved_dir = pysat.data_dir
+        saved_dir = self.data_path #pysat.data_dir
         # update data_dir
         pysat.utils.set_data_dir('.', store=False)
         check1 = (pysat.data_dir == '.')
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
+        re_load(pysat)
 
         check2 = (pysat.data_dir == saved_dir)
         if saved_dir is not '':
-            pysat.utils.set_data_dir(saved_dir)
+            pysat.utils.set_data_dir(saved_dir, store=False)
             check3 = (pysat.data_dir == saved_dir)
         else:
             check3 = True

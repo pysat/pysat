@@ -2,20 +2,23 @@
         <img height="0" width="0px">
         <img width="20%" src="/logo.png" alt="pysat" title="pysat"</img>
 </div>
-#pysat: Python Satellite Data Analysis Toolkit
-[![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
 
-#What is it
+# pysat: Python Satellite Data Analysis Toolkit
+[![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
+[![Documentation Status](https://readthedocs.org/projects/pysat/badge/?version=latest)](http://pysat.readthedocs.io/en/latest/?badge=latest)
+[![Coverage Status](https://coveralls.io/repos/github/rstoneback/pysat/badge.svg?branch=master)](https://coveralls.io/github/rstoneback/pysat?branch=master)
+
+
 The Python Satellite Data Analysis Toolkit (pysat) is a package providing a simple and flexible interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific 
 measurements. Though pysat was initially designed for in-situ
 satellite based measurements it aims to support all instruments in space science.
 
-Full [Documenation](http://rstoneback.github.io/pysat/)
+Full [Documenation](http://pysat.readthedocs.io/en/latest/index.html)
 
-#Main Features
+# Main Features
 * Instrument object providing an interface for downloading and analyzing a wide variety of science data sets.
-  * Uses pandas for the underlying underlying data structure;
+  * Uses pandas for the underlying data structure;
   capable of handling the many forms scientific measurements take in a consistent manner.
   * Science data pipeline tasks of identifying files, loading, cleaning, and modifying
   data sets are built into the instrument object.
@@ -29,8 +32,8 @@ Full [Documenation](http://rstoneback.github.io/pysat/)
 * Includes helper functions to reduce the barrier in adding new science instruments to pysat
 * Instrument independent analysis routines.
 
-#Installation
-##Starting from scratch
+# Installation
+## Starting from scratch
 * One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
 * at command line type
 ```
@@ -56,8 +59,3 @@ pip install pysat
   cd pysatCDF
   python setup.py build install
   ```
-  
-* To get the forked pandas, needed for full support of mixed data types.
-```
-pip install git+https://github.com/rstoneback/pandas.git
-```

@@ -92,11 +92,15 @@ def list_year_doy_files(tag=None, data_path=None, format_str=None):
         raise ValueError ('A directory must be passed to the loading routine.')
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data"""        
+    """Return a Pandas Series of every file for chosen satellite data"""  
+    
+    if format_str is None:
+        format_str = 'pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}_{min:02d}_{sec:02d}.pysat_testing_file'
+
     if tag is not None:
         if tag == '':
             return pysat.Files.from_os(data_path=data_path, 
-                format_str='pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff_{month:02d}_{hour:02d}_{min:02d}_{sec:02d}.pysat_testing_file')
+                                       format_str=format_str)
         else:
             raise ValueError('Unrecognized tag name')                  
     else:
@@ -489,6 +493,48 @@ class TestInstrumentWithFiles:
         #print('new_files ', new_files.index)
         assert (np.all(self.testInst.files.files.index == dates) & 
                 np.all(new_files.index == dates) )
+
+    def test_files_non_standard_file_format_template(self):
+        # create new files and make sure that new files are captured
+        start = pysat.datetime(2008,1,11)
+        stop = pysat.datetime(2008,1,15)
+        dates = pysat.utils.season_date_range(start, stop, freq='1D')
+        
+        # clear out old files, create new ones
+        # create_dir(self.testInst)
+        remove_files(self.testInst)
+        create_files(self.testInst, start, stop, freq='1D',  
+                     use_doy=False, 
+                     root_fname='pysat_testing_unique_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file')
+                     
+        pysat.instruments.pysat_testing.list_files = list_files
+        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
+                                         clean_level='clean',
+                                         file_format='pysat_testing_unique_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file',
+                                         update_files=True,
+                                         temporary_file_list=self.temporary_file_list)
+                       
+        assert (np.all(self.testInst.files.files.index == dates))
+        
+    @raises(ValueError)
+    def test_files_non_standard_file_format_template_misformatted(self):
+
+        pysat.instruments.pysat_testing.list_files = list_files
+        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
+                                         clean_level='clean',
+                                         file_format='pysat_testing_unique_junk_stuff.pysat_testing_file',
+                                         update_files=True,
+                                         temporary_file_list=self.temporary_file_list)
+
+    @raises(ValueError)
+    def test_files_non_standard_file_format_template_misformatted_2(self):
+
+        pysat.instruments.pysat_testing.list_files = list_files
+        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
+                                         clean_level='clean',
+                                         file_format=15,
+                                         update_files=True,
+                                         temporary_file_list=self.temporary_file_list)
 
 class TestInstrumentWithFilesNoFileListStorage(TestInstrumentWithFiles):
     def __init__(self, temporary_file_list=True):

@@ -37,6 +37,18 @@ import pandas as pds
 import numpy as np
 import pysat
 
+platform = 'cosmic'
+name = 'gps'
+tags = {'ionprf':'', 
+        'sonprf':'', 
+        'wetprf':'',
+        'atmprf':''}
+sat_ids = {'':['ionprf', 'sonprf', 'wetprf', 'atmprf']}
+test_dates = {'':{'ionprf':pysat.datetime(2008,1,1),
+                    'sonprf':pysat.datetime(2008,1,1),
+                    'wetprf':pysat.datetime(2008,1,1),
+                    'atmprf':pysat.datetime(2008,1,1)}}
+
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -254,7 +266,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
         sub_dir = 'atmPrf'
     else:
         raise ValueError('Unknown cosmic_gps tag')
-        
+   
     for date in date_array:
         print('Downloading COSMIC data for '+date.strftime('%D'))
         yr,doy = pysat.utils.getyrdoy(date)

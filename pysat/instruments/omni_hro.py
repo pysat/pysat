@@ -46,6 +46,14 @@ import numpy as np
 
 import pysat
 
+platform = 'omni'
+name = 'hro'
+tags = {'1min':'1-minute time averaged data',
+        '5min':'5-minute time averaged data'}
+sat_ids = {'':['1min', '5min']}
+test_dates = {'':{'1min':pysat.datetime(2009,1,1),
+                  '5min':pysat.datetime(2009,1,1)}}
+
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -117,6 +125,42 @@ def clean(omni):
           omni.data.ix[idx, key] = np.nan
 
 
+def time_shift_to_magnetic_poles(inst):
+    """
+    OMNI data is time-shifted to bow shock. Time shifted again
+    to intersections with magnetic pole.
+    
+    Time shift calculated using distance to bow shock nose (BSN)
+    and velocity of solar wind along x-direction.
+    
+    """
+    
+    # need to fill in Vx to get an estimate of what is going on
+    inst['Vx'] = inst['Vx'].interpolate('nearest')
+    inst['Vx'] = inst['Vx'].fillna(method='backfill')
+    inst['Vx'] = inst['Vx'].fillna(method='pad')
+
+    inst['BSN_x'] = inst['BSN_x'].interpolate('nearest')
+    inst['BSN_x'] = inst['BSN_x'].fillna(method='backfill')
+    inst['BSN_x'] = inst['BSN_x'].fillna(method='pad')
+
+    # make sure there are no gaps larger than a minute
+    inst.data = inst.data.resample('1T').interpolate('time')
+
+    time_x = inst['BSN_x']*6371.2/-inst['Vx']
+    idx, = np.where(np.isnan(time_x))
+    if len(idx) > 0:
+        print (time_x[idx])
+        print (time_x)
+    time_x_offset = [pds.DateOffset(seconds = time) for time in time_x.astype(int)]
+    new_index=[]
+    for i, time in enumerate(time_x_offset):
+        new_index.append(inst.data.index[i] + time)
+    inst.data.index = new_index
+    inst.data = inst.data.sort_index()    
+    
+    return
+
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     """
     download OMNI data, layout consistent with pysat
@@ -139,13 +183,15 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
             try:
                 print('Downloading file for '+date.strftime('%D'))
                 sys.stdout.flush()
-                ftp.retrbinary('RETR '+fname, open(saved_fname,'w').write)
+                ftp.retrbinary('RETR '+fname, open(saved_fname,'wb').write)
             except ftplib.error_perm as exception:
-                if exception[0][0:3] != '550':
+                # if exception[0][0:3] != '550':
+                if str(exception.args[0]).split(" ", 1)[0] != '550':
                     raise
                 else:
                     os.remove(saved_fname)
                     print('File not available for '+ date.strftime('%D'))
-    ftp.quit()
+    ftp.close()
+    # ftp.quit()
     return
 

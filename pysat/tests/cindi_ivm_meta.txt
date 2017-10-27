@@ -1,0 +1,74 @@
+yrdoy,Date,0,yrdoy,
+uts,Universal Time,1,s,
+glat,Geographic Latitude,2,deg,
+glong,Geographic Longitude,3,deg,
+alt,Altitude,4,km,
+pos_eci_x,Position in ECI - x,5,km,
+pos_eci_y,Position in ECI - y,6,km,
+pos_eci_z,Position in ECI - z,7,km,
+vel_eci_x,Velocity in ECI - x,8,km/s,
+vel_eci_y,Velocity in ECI - y,9,km/s,
+vel_eci_z,Velocity in ECI - z,10,km/s,
+sza,Solar Zenith Angle,11,deg,
+slt,Solar Local Time,12,hrs,
+apex_alt,Apex Altitude,13,km,
+apex_lat,Apex Latitude,14,deg,
+apex_long,Apex Longitude,15,deg,
+inv_lat,Invariant Latitude,16,deg,
+mag_incl,Magnetic Inclination,17,deg,
+mlat,Magnetic Latitude,18,deg,Corrected
+mlt,Magnetic Local Time,19,hrs,
+bg_n,Magnetic Field - Northward,20,G,AFRL Supplied Mag Field
+bg_e,Magnetic Field - Eastward,21,G,AFRL Supplied Mag Field
+bg_d,Magnetic Field - Downward,22,G,AFRL Supplied Mag Field
+rpa_flag,RPA Quality Flag,59,,2 or less is good - 3 is use with caution
+dm_flag,Drift Meter Quality Flag,60,,
+iv_x,Ion Drift - x,61,m/s,S/C-offset and photoemission corrected. 
+iv_x_var,Ion Drift Variance - x,62,,
+iv_y,Ion Drift - y,63,m/s,S/C-offset and photoemission corrected. 
+iv_y_var,Ion Drift Variance - y,64,,
+iv_z,Ion Drift - z,65,m/s,S/C-offset and photoemission corrected. 
+iv_z_var,Ion Drift Variance - z,66,,
+ion_dens,Ion Density,67,N/cc,RPA Ion Density
+ion_dens_var,Ion Density Variance,68,,
+ion_temp,Ion Temperature,69,K,Fitted from RPA Analysis
+ion_temp_var,Ion Temperature Variance,70,,
+frac_dens_o,Fractional O+ Density,72,,
+frac_dens_o_var,Fractional O+ Variance,73,,
+frac_dens_h,Fractional H+ Density,75,,
+frac_dens_h_var,Fractional H+ Density Variance,76,,
+sens_pot,Sensor Plane Potential,86,V,Fitted from RPA Analysis
+sens_pot_var,Sensor Plane Potential Variance,87,,
+dm_a_flag,Drift Meter A Quality Flag,88,,
+dm_a_dens,Drift Meter A Density,89,N/cc,
+dm_a_dens_var,Drift Meter A Density Variance,90,,
+dm_b_flag,Drift Meter B Quality Flag,91,,
+dm_b_dens,Drift Meter B Density,92,N/cc,
+dm_b_dens_var,Drift Meter B Density Variance,93,,
+bg_x,Magnetic Field - x,95,G,S/C Frame - IGRF AFRL Supplied
+bg_y,Magnetic Field - y,96,G,S/C Frame - IGRF AFRL Supplied
+bg_z,Magnetic Field - z,97,G,S/C Frame - IGRF AFRL Supplied
+sra,Solar Ram Angle,98,deg,
+ion_dens_zni,Ion Density at RPA 0V,99,N/cc,
+vel_sc_x,S/C Velocity - x,100,km/s,
+vel_sc_y,S/C Velocity - y,101,km/s,
+vel_sc_z,S/C Velocity - z,102,km/s,
+velr_sc_x,S/C Velocity (Rel Corotation) - x,103,km/s,
+velr_sc_y,S/C Velocity (Rel Corotation) - y,104,km/s,
+velr_sc_z,S/C Velocity (Rel Corotation) - z,105,km/s,
+offset_flag,Offset Ion Drift Correction Flag,106,,Indicates wether DM offsets applied
+iv_zon,Ion Drift Zonal ,113,m/s,
+iv_zon_var,Ion Drift Variance - Zonal,114,,
+iv_par,Ion Drift Parallel,115,m/s,
+iv_par_var,Ion Drift Variance - Parallel,116,,
+iv_mer,Ion Drift Meridional,117,m/s,Constructed using IGRF mag field.
+iv_mer_var,Ion Drift Variance - Meridional,118,,
+unit_zon_x,Unit Vector - Zonal Dir - S/C x ,119,,
+unit_zon_y,Unit Vector - Zonal Dir - S/C y,120,,
+unit_zon_z,Unit Vector - Zonal Dir - S/C z,121,,
+unit_par_x,Unit Vector - Parallel Dir - S/C x,122,,
+unit_par_y,Unit Vector - Parallel Dir - S/C y,123,,
+unit_par_z,Unit Vector - Parallel Dir - S/C z,124,,
+unit_mer_x,Unit Vector - Meridional Dir - S/C x,125,,
+unit_mer_y,Unit Vector - Meridional Dir - S/C y,126,,
+unit_mer_z,Unit Vector - Meridional Dir - S/C z,127,,

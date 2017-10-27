@@ -83,7 +83,7 @@ class Files(object):
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
         # location of .pysat file
-        self.home_path = os.path.join(os.getenv('HOME'), '.pysat')
+        self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
         self.start_date = None
         self.stop_date = None
         self.files = pds.Series(None)
@@ -113,15 +113,18 @@ class Files(object):
                                                  platform=self._sat.platform,
                                                  tag=self._sat.tag,
                                                  sat_id=self._sat.sat_id)
-            #self.sub_dir_path = os.path.join(self._sat.platform, 
-            #                                 self._sat.name, self._sat.tag)
 
+        # make sure path always ends with directory seperator
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
+        if self.data_path[-2] == os.path.sep:
+            self.data_path = self.data_path[:-1]
+        elif self.data_path[-1] != os.path.sep:
+            self.data_path = os.path.join(self.data_path, '')
         
         self.write_to_disk = write_to_disk
         if write_to_disk is False:
-            self._previous_file_list = pds.Series([])
-            self._current_file_list = pds.Series([])
+            self._previous_file_list = pds.Series([], dtype='a')
+            self._current_file_list = pds.Series([], dtype='a')
             
         if self._sat.platform != '':
             # load stored file info
@@ -165,13 +168,11 @@ class Files(object):
 
     def _store(self):
         """Store currently loaded filelist for instrument onto filesystem"""
-        #name = ''.join((self._sat.platform,'_',self._sat.name,'_',
-        #                self._sat.tag, '_', self._sat.sat_id,
-        #                '_stored_file_info.txt'))
+
         name = self.stored_file_name
         # check if current file data is different than stored file list
         # if so, move file list to previous file list, store current to file
-        # list if not, do nothing
+        # if not, do nothing
         stored_files = self._load()
         if len(stored_files) != len(self.files):
             # # of items is different, things are new
@@ -211,8 +212,6 @@ class Files(object):
             Series is empty if there is no file list to load
         """
 
-        #fname = ''.join((self._sat.platform,'_',self._sat.name,'_',
-                        #self._sat.tag, '_', self._sat.sat_id, '_stored_file_info.txt'))
         fname = self.stored_file_name
         if prev_version:
             fname = os.path.join(self.home_path, 'previous_'+fname)
@@ -229,7 +228,7 @@ class Files(object):
                 else:
                     return self._current_file_list
         else:
-            return pds.Series([])
+            return pds.Series([], dtype='a')
 
 
     def refresh(self):
@@ -258,7 +257,7 @@ class Files(object):
         if not info.empty:
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
-            estr = "Unable to find any files. If you have the necessary files "
+            estr = "Unable to find any files that match the supplied template. If you have the necessary files "
             estr = "{:s}please check pysat settings and file ".format(estr)
             print("{:s}locations.".format(estr))
         info = self._remove_data_dir_path(info)
@@ -286,8 +285,7 @@ class Files(object):
         new_info = self._load()
         # previous set of files
         old_info = self._load(prev_version=True)
-
-        new_files = new_info[~new_info.isin(old_info) ]
+        new_files = new_info[-new_info.isin(old_info)]
         return new_files
 
     # def mark_as_new(self, files):
@@ -307,7 +305,7 @@ class Files(object):
         #     return new_files
         # else:
         #     print('No previously stored files that we may compare to.')
-        #     return pds.Series([]) #False
+        #     return pds.Series([], dtype='a') #False
 
     def get_index(self, fname):
         """Return index for a given filename. 
@@ -333,7 +331,7 @@ class Files(object):
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
-                raise ValueError('Could not find file in available file list.')
+                raise ValueError('Could not find "'+fname+ '" in available file list. Valid Example: '+self.files.iloc[0])
         # return a scalar rather than array - otherwise introduces array to index warnings.
         return idx[0]
 
@@ -356,7 +354,7 @@ class Files(object):
                         return out
                 elif len(out) == 1:
                     if out.index[0] >= key.stop:
-                        return pds.Series([])
+                        return pds.Series([], dtype='a')
                     else:
                         return out
                 else:

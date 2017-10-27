@@ -65,7 +65,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                 except KeyError:
                     raise ValueError('Unknown tag')
         out = pysat.Files.from_os(data_path=data_path, 
-                                      format_str=format_str)
+                                  format_str=format_str)
 
         if (not out.empty) and fake_daily_files_from_monthly:
             out.ix[out.index[-1] + pds.DateOffset(months=1) -
@@ -222,16 +222,18 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download                  
         try:
-            print('Attempting to download file for '+date.strftime('%D'))
+            print('Attempting to download file for '+date.strftime('%x'))
             sys.stdout.flush()
-            ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'w').write)
+            ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'wb').write)
             print('Finished.')
         except ftplib.error_perm as exception:
-            if exception[0][0:3] != '550':
+            # if exception[0][0:3] != '550':
+            if str(exception.args[0]).split(" ", 1)[0] != '550':
                 raise
             else:
                 os.remove(saved_local_fname)
-                print('File not available for '+ date.strftime('%D'))
+                print('File not available for '+ date.strftime('%x'))
+    ftp.close()
                
                     
                     
