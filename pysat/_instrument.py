@@ -472,7 +472,7 @@ class Instrument(object):
                 output_str += self.data.columns[3 * i + 1].ljust(30)
                 output_str += self.data.columns[3 * i + 2].ljust(30)+'\n'
             for i in np.arange(len(self.data.columns) - 3 * num):
-                output_str += self.data.columns[i].ljust(30)
+                output_str += self.data.columns[i+3*num].ljust(30)
             output_str += '\n'
         else:
             output_str += 'No loaded data.'+'\n'
@@ -1040,6 +1040,38 @@ class Instrument(object):
             else:
                 self.load(fname=self._iter_list[-1], verifyPad=verifyPad)
 
+
+    def _get_data_info(self, data, format):
+        # get type of data
+        data_type = data.dtype
+        # check if older format
+        if format[:7] == 'NETCDF3':
+            old_format = True
+        else:
+            old_format = False
+        # check for object type
+        if data_type != np.dtype('O'):
+            # simple data, not an object
+            
+            # no 64bit ints in netCDF3
+            if (data_type == np.int64) & old_format:
+                data = data.astype(np.int32)
+                   
+            if data_type == np.dtype('<M8[ns]'):
+                if not old_format:
+                    data_type = np.int64
+                else:
+                    data_type = np.float
+                datetime_flag = True
+            else:
+                datetime_flag = False
+        else:
+            # dealing with a more complicated object
+            sub_d = data.loc[0]
+            
+                
+        
+        return data, data_type, datetime_flag
 
     def to_netcdf4(self, fname=None, format=None, base_instrument=None):
         """Stores loaded data into a netCDF3/4 file.
