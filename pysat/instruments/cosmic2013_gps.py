@@ -137,7 +137,7 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
                 month=output.month, day=output.day, 
                 uts=output.hour*3600.+output.minute*60.+output.second)
         # make sure UTS strictly increasing
-        output.sort(inplace=True)
+        output.sort_index(inplace=True)
         # use the first available file to pick out meta information
         profile_meta = pysat.Meta()
         meta = pysat.Meta()
