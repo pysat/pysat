@@ -96,10 +96,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         minutes=[None]*num; microseconds=[None]*num;
         for i,f in enumerate(cosmicFiles):
             f2 = f.split('.')
-            year[i]=f2[2]
-            days[i]=f2[3]
-            hours[i]=f2[4]
-            minutes[i]=f2[5]
+            year[i]=f2[-6]
+            days[i]=f2[-5]
+            hours[i]=f2[-4]
+            minutes[i]=f2[-3]
             microseconds[i]=i
     
         year=np.array(year).astype(int)
