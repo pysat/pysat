@@ -77,5 +77,5 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pandas<=0.19.2', 'numpy<=1.12'] #'matplotlib'
+    install_requires=['pandas<=0.19.2', 'numpy<1.12'] #'matplotlib'
 )
