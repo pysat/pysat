@@ -49,10 +49,12 @@ def load(fnames, tag=None, sat_id=None):
     data.index.name = 'epoch'
     
     profiles = []
+    frame = pds.DataFrame({'density':data.ix[0:50,'mlt'].values.copy(), 'dummy_str':['test']*50,
+                                        'dummy_ustr':[u'test']*50},
+                                      index=data.index[0:50],
+                                      columns=['density', 'dummy_str', 'dummy_ustr'])
     for time in data.index:
-        profiles.append(pds.DataFrame(data.ix[0:50,'mlt'].values.copy(), 
-                                      index=data.index[0:50], 
-                                      columns=['density']))
+        profiles.append(frame)
     data['profiles'] = pds.Series(profiles, index=data.index)
     
     return data, meta.copy()

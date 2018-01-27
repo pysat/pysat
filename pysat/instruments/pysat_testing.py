@@ -83,6 +83,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['dummy2'] = long_int
     data['dummy3'] = mlt_int + long_int*1000.
     data['dummy4'] = num_array
+    data['string_dummy'] = ['test']*len(data)
+    data['unicode_dummy'] = [u'test'] * len(data)
+    data['int8_dummy'] = np.array([1] * len(data), dtype=np.int8)
+    data['int16_dummy'] = np.array([1] * len(data), dtype=np.int16)
+    data['int32_dummy'] = np.array([1] * len(data), dtype=np.int32)
+    data['int64_dummy'] = np.array([1] * len(data), dtype=np.int64)
+    # print (data['string_dummy'])
     
     index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), freq='S')
     data.index=index[0:num]
