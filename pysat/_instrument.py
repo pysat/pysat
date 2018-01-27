@@ -723,8 +723,9 @@ class Instrument(object):
                     
             self.data = self.data.ix[first_pad : last_pad]
             # want exclusive end slicing behavior from above
-            if (self.data.index[-1] == last_pad) & (not want_last_pad):
-                self.data = self.data.iloc[:-1, :]
+            if not self.empty:
+                if (self.data.index[-1] == last_pad) & (not want_last_pad):
+                    self.data = self.data.iloc[:-1, :]
    
             ## drop any possible duplicate index times
             ##self.data.drop_duplicates(inplace=True)
