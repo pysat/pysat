@@ -1085,7 +1085,7 @@ class Instrument(object):
             # dealing with a more complicated object
             # iterate over elements until we hit something that is something, and not NaN
             data_type = type(data.iloc[0])
-            for i in xrange(len(data)):
+            for i in np.arange(len(data)):
                 if len(data.iloc[i]) > 0:
                     data_type = type(data.iloc[i])
                     if not isinstance(data_type, np.float):
@@ -1242,7 +1242,7 @@ class Instrument(object):
 
                         # find location that has data
                         data_loc = 0
-                        for jjj in xrange(len(self.data)):
+                        for jjj in np.arange(len(self.data)):
                             if len(self.data[key].iloc[0]) > 0:
                                 data_loc = jjj
                                 break
