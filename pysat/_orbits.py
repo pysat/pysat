@@ -219,7 +219,7 @@ class Orbits(object):
         # now, assemble some orbit breaks that are not triggered by changes in the orbit index
 
         # check if there is a UT break that is larger than orbital period, aka a time gap
-        ut_change_vs_period = ut_diff > self.orbit_period
+        ut_change_vs_period = ( ut_diff > self.orbit_period )
         # characterize ut change using orbital period
         norm_ut = ut_diff / self.orbit_period
         # now, look for breaks because the length of time between samples is too large,
@@ -285,7 +285,7 @@ class Orbits(object):
                 raise ValueError('Provided orbit index does not appear to exist in loaded data')
 
         # determine where orbit index goes from positive to negative
-        pos = self.sat[self.orbit_index] >= 0
+        pos = (self.sat[self.orbit_index] >= 0)
         npos = -pos
         change = (pos.values[:-1] & npos.values[1:]) | (npos.values[:-1] & pos.values[1:])
 
