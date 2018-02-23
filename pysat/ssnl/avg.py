@@ -11,12 +11,13 @@ import numpy as np
 import pandas as pds
 import collections
 
-def median2D(inst, bin1, label1, bin2, label2, data_label, 
+def median2D(const, bin1, label1, bin2, label2, data_label, 
              returnData=False):
     """Return a 2D average of data_label over a season and label1, label2.
 
     Parameters
     ----------
+        const: Constellation or Instrument
         bin#: [min, max, number of bins]
         label#: string 
             identifies data product for bin#
@@ -34,6 +35,14 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
     """
 
     # FIXME make sure that this actually works for constellations
+
+    # const is either an Instrument or a Constellation, and we want to 
+    #  iterate over it. 
+    # If it's a Constellation, then we can do that as is, but if it's
+    #  an Instrument, we just have to put that Instrument into something
+    #  that will yeild that Instrument, like a list.
+    if isinstance(const, Instrument):
+        cost = [const]
 
     # create bins
     binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
@@ -54,21 +63,22 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
     countAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]
     devAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]    
 
-    # do loop to iterate over instrument season
-    for inst in inst:
-        # collect data in bins for averaging
-        if len(inst.data) != 0:
-            xind = np.digitize(inst.data[label1], binx)-1
-            for xi in xarr:
-                xindex, = np.where(xind==xi)
-                if len(xindex) > 0:
-                    yData = inst.data.iloc[xindex]
-                    yind = np.digitize(yData[label2], biny)-1
-                    for yj in yarr:
-                        yindex, = np.where(yind==yj)
-                        if len(yindex) > 0:
-                            for zk in zarr:
-                                ans[zk][yj][xi].extend( yData.ix[yindex,data_label[zk]].tolist() )
+    for inst in const:
+        # do loop to iterate over instrument season
+        for inst in inst:
+            # collect data in bins for averaging
+            if len(inst.data) != 0:
+                xind = np.digitize(inst.data[label1], binx)-1
+                for xi in xarr:
+                    xindex, = np.where(xind==xi)
+                    if len(xindex) > 0:
+                        yData = inst.data.iloc[xindex]
+                        yind = np.digitize(yData[label2], biny)-1
+                        for yj in yarr:
+                            yindex, = np.where(yind==yj)
+                            if len(yindex) > 0:
+                                for zk in zarr:
+                                    ans[zk][yj][xi].extend( yData.ix[yindex,data_label[zk]].tolist() )
 
     # all of the loading and storing data is done
     # determine what kind of data is stored
