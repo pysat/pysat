@@ -41,7 +41,7 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
     # If it's a Constellation, then we can do that as is, but if it's
     #  an Instrument, we just have to put that Instrument into something
     #  that will yeild that Instrument, like a list.
-    if isinstance(const, Instrument):
+    if isinstance(const, pysat.Instrument):
         cost = [const]
 
     # create bins
