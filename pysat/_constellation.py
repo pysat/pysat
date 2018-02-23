@@ -1,5 +1,5 @@
 
-class Instrument(object):
+class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
 
     FIXME document this.
