@@ -11,9 +11,13 @@ name = "pypi"
 
 [packages]
 
+pandas = "==0.19.2"
+numpy = "<1.12"
 matplotlib = "*"
-pysat = "*"
 "netcdf4" = "*"
 pysatcdf = "*"
-nose = "*"
 scipy = "*"
+atlas = "*"
+statsmodels = "*"
+nose = "*"
+coverage = "*"
