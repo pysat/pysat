@@ -16,5 +16,8 @@ class Constellation(object):
         # FIXME
         pass
 
-    def __getitem__(self, index):
-        return self.data[index]
+    def __getitem__(self, key):
+        if isinstance(key, tuple):
+            return self.data.ix[key[0], key[1]]
+        else:
+            return self.data[key]
