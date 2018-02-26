@@ -16,5 +16,5 @@ class Constellation(object):
         # FIXME
         pass
 
-    def __getitem__(instruments, index):
-        return self.instruments[index]
+    def __getitem__(self, index):
+        return self.data[index]
