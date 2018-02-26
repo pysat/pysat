@@ -27,7 +27,7 @@ def create_dir(inst=None, temporary_file_list=False):
     import tempfile
 
     ## create temporary directory  
-    #dir_name = tempfile.gettempdir()
+    #dir_name = tempfile.mkdtemp()
     #pysat.utils.set_data_dir(dir_name, store=False)
     
     if inst is None:
@@ -119,7 +119,7 @@ class TestBasics:
         self.data_path = pysat.data_dir
         
         # create temporary directory  
-        dir_name = tempfile.gettempdir()
+        dir_name = tempfile.mkdtemp()
         pysat.utils.set_data_dir(dir_name, store=False)
 
         t_module = pysat.instruments.pysat_testing
@@ -309,7 +309,7 @@ class TestInstrumentWithFiles:
         # store current pysat directory
         self.data_path = pysat.data_dir
         # create temporary directory  
-        dir_name = tempfile.gettempdir()
+        dir_name = tempfile.mkdtemp()
         pysat.utils.set_data_dir(dir_name, store=False)
         # create testing directory
         create_dir(temporary_file_list=self.temporary_file_list)
