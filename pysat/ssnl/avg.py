@@ -33,6 +33,8 @@ def median2D(inst, bin1, label1, bin2, label2, data_label,
     
     """
 
+    # FIXME make sure that this actually works for constellations
+
     # create bins
     binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
     biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)

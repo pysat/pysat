@@ -16,8 +16,25 @@ class Constellation(object):
         # FIXME
         pass
 
-    def __getitem__(self, key):
-        if isinstance(key, tuple):
-            return self.data.ix[key[0], key[1]]
-        else:
-            return self.data[key]
+    def __getitem__(self, **argv):
+        return self.instruments.__getitem__(**argv)
+    
+    def __str__(self):
+        # FIXME
+        raise NotImplementedError()
+
+    def __repr__(self):
+        # FIXME
+        raise NotImplementedError()
+    
+    def add(self, bounds1, label1, bounds2, label2, bin3, label3, 
+            data_label):
+        # FIXME
+        raise NotImplementedError()
+
+    def difference(self, instrument1, instrumet2, data_labels):
+        # FIXME
+        raise NotImplementedError()
+
+
+
