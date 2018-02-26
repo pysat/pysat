@@ -15,4 +15,6 @@ class Constellation(object):
 
         # FIXME
         pass
-    
+
+    def __getitem__(instruments, index):
+        return self.instruments[index]
