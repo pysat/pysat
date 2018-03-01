@@ -75,4 +75,7 @@ def clean(inst):
     No cleaning currently available for FPMU
     """
 
+    inst.data.replace(-999., np.nan, inplace=True) # Te
+    inst.data.replace(-9.9999998e+30, np.nan, inplace=True) #Ni
+
     return None
