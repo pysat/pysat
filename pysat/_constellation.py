@@ -6,12 +6,13 @@ class Constellation(object):
     """
     def __init__(self, instruments=None, name=None):
         if instruments and name:
-            raise ValueError('When creating a constellation, please specify a '
-                             'list of instruments or a name, not both.')
+            raise ValueError('When creating a constellation, please specify '
+                             'a list of instruments or a name, not both.')
         elif instruments and not hasattr(instruments, '__getitem__'):
             raise ValueError('Constellation: Instruments must be list-like.')
         elif not (name or instruments):
-            raise ValueError('Constellation: Cannot create empty constellation.')
+            raise ValueError('Constellation: Cannot create empty '
+                             'constellation.')
 
         if instruments:
             self.instruments = instruments
