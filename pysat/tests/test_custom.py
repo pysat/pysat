@@ -19,7 +19,7 @@ class TestBasics:
         Modify function returns an object which will produce an Error."""
         def custom1(inst):
             inst.data['doubleMLT'] = 2.*inst.data.mlt
-            return 5.*inst.data
+            return 5.*inst.data['mlt']
 
         self.testInst.custom.add(custom1, 'modify')
         self.testInst.load(2009,1)

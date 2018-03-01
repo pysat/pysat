@@ -149,7 +149,7 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch')
                 # get the name of the final data column
                 # dimension naming follows name_dim_number, 
                 # pull out name by finding last _ and tracking back
-                obj_key_name = dim[1][ : -dim[1][::-1].find('_')-5] #[ : -str.find(dim[1][::-1], '_')-5]
+                obj_key_name = dim[1][ : -dim[1][::-1].find('_')-11] #[ : -str.find(dim[1][::-1], '_')-5]
                 # collect variable names associated with object
                 obj_var_keys = []
                 # place to collect clean names without redundant naming scheme scheme
@@ -165,19 +165,19 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch')
                 # figure out how to index this data, it could provide its own
                 # index - or we may have to create simple integer based DataFrame access
                 # if the dimension is stored as its own variable then use that info for index
-                if (obj_key_name+'_dim_1') in obj_var_keys:
+                if (obj_key_name+'_dimension_1') in obj_var_keys:
                     # string used to indentify variable in data.variables, will be used as an index 
                     # the obj_key_name part has been stripped off
-                    index_key_name = 'dim_1' #'samples'
+                    index_key_name = 'dimension_1' #'samples'
                     # if the object index uses UNIX time, process into datetime index  
-                    if data.variables[obj_key_name+'_dim_1'].long_name == 'UNIX time':
+                    if data.variables[obj_key_name+'_dimension_1'].long_name == 'UNIX time':
                         # name to be used in DataFrame index
                         index_name = 'epoch'
                         time_index_flag = True
                     else:
                         time_index_flag = False
                         # label to be used in DataFrame index
-                        index_name = data.variables[obj_key_name+'_dim_1'].long_name
+                        index_name = data.variables[obj_key_name+'_dimension_1'].long_name
                 else:
                     # dimension is not itself a variable
                     index_key_name  = None                
@@ -229,7 +229,8 @@ def load_netcdf4(fnames=None, strict_meta=False, format=None, time_name='epoch')
                     new_index_name = 'index'
                 # load all data into frame
                 loop_frame = pds.DataFrame(loop_dict, columns=clean_var_keys)
-                del loop_frame['dim_1']
+                # print (loop_frame.columns)
+                del loop_frame['dimension_1']
                 # break massive frame into bunch of smaller frames
                 for i in np.arange(loop_lim):
                     loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])

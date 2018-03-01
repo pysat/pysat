@@ -584,15 +584,13 @@ class TestDataPadding():
     def test_data_padding_all_samples_present(self):
         self.testInst.load(2009,1, verifyPad=True)
         test_index = pds.date_range(self.testInst.data.index[0], self.testInst.data.index[-1], freq='S')
-        #print (test_index[0], test_index[-1], len(test_index))
-        #print(self.testInst.data.index[0], self.testInst.data.index[-1], len(self.testInst.data))
         assert (np.all(self.testInst.data.index == test_index))
 
     def test_data_padding_removal(self):
         self.testInst.load(2009,1)
         #print(self.testInst.data.index)
-        assert (self.testInst.data.index[0] == self.testInst.date ) & \
-                (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hour=23, minutes=59,seconds=59) )
+        assert (self.testInst.data.index[0] == self.testInst.date) & \
+               (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hour=23, minutes=59,seconds=59))
                 
                                 
 class TestMultiFileRightDataPaddingBasics(TestDataPadding):
