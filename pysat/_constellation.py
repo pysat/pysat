@@ -31,7 +31,11 @@ class Constellation(object):
         # TODO Implement __repr__
         raise NotImplementedError()
 
-    def add(self, bounds1, label1, bounds2, label2, bin3, label3,
+    def data_mod(self, function):
+        for instrument in self.instruments:
+            instrument.custom.add(function)
+
+    def add(self, bounds1, label1, bounds2, label2, bin3, label3, 
             data_label):
         # TODO Implement signal addition.
         raise NotImplementedError()
