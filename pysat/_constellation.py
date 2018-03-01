@@ -4,7 +4,7 @@ class Constellation(object):
 
     FIXME document this.
     """
-    def __init__(self, instruments = None, name = None):
+    def __init__(self, instruments=None, name=None):
         if instruments and name:
             raise ValueError('When creating a constellation, please specify a '
                              'list of instruments or a name, not both.')
@@ -13,28 +13,28 @@ class Constellation(object):
         elif not (name or instruments):
             raise ValueError('Constellation: Cannot create empty constellation.')
 
-        # FIXME
-        pass
+        if instruments:
+            self.instruments = instruments
+        else:
+            # TODO Implement constellation lookup by name.
+            raise NotImplementedError()
 
-    def __getitem__(self, **argv):
-        return self.instruments.__getitem__(**argv)
-    
+    def __getitem__(self, *args, **kwargs):
+        return self.instruments.__getitem__(*args, **kwargs)
+
     def __str__(self):
-        # FIXME
+        # TODO Implement conversion to string.
         raise NotImplementedError()
 
     def __repr__(self):
-        # FIXME
+        # TODO Implement __repr__
         raise NotImplementedError()
-    
-    def add(self, bounds1, label1, bounds2, label2, bin3, label3, 
+
+    def add(self, bounds1, label1, bounds2, label2, bin3, label3,
             data_label):
-        # FIXME
+        # TODO Implement signal addition.
         raise NotImplementedError()
 
     def difference(self, instrument1, instrumet2, data_labels):
-        # FIXME
+        # TODO Implement signal difference.
         raise NotImplementedError()
-
-
-
