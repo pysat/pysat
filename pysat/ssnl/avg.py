@@ -34,8 +34,6 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
     
     """
 
-    # FIXME make sure that this actually works for constellations
-
     # const is either an Instrument or a Constellation, and we want to 
     #  iterate over it. 
     # If it's a Constellation, then we can do that as is, but if it's
@@ -43,6 +41,8 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
     #  that will yeild that Instrument, like a list.
     if isinstance(const, pysat.Instrument):
         const = [const]
+    elif not isinstance(const, pysat.Constellation):
+        raise ValueError("Parameter must be an Instrument or a Constellation.")
 
     # create bins
     binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
