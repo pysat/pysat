@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Supports the FPMU instrument
-onboard the International Space Station (ISS).
-Downloads data from the NASA Coordinated Data
-Analysis Web (CDAWeb).
+"""Supports the Floating Potential Measurement Unit
+(FPMU) instrument onboard the International Space
+Station (ISS). Downloads data from the NASA
+Coordinated Data Analysis Web (CDAWeb).
 
 Parameters
 ----------
