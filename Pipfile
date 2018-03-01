@@ -7,6 +7,9 @@ name = "pypi"
 
 [dev-packages]
 
+pyflakes = "*"
+pylint = "*"
+pycodestyle = "*"
 
 
 [packages]
@@ -14,10 +17,11 @@ name = "pypi"
 pandas = "==0.19.2"
 numpy = "<1.12"
 matplotlib = "*"
-"netcdf4" = "*"
-pysatcdf = "*"
+"netCDF4" = "*"
+pysatCDF = "*"
 scipy = "*"
 atlas = "*"
 statsmodels = "*"
 nose = "*"
 coverage = "*"
+"flake8" = "*"
