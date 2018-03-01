@@ -90,14 +90,14 @@ class TestConstellation:
     def setup(self):
         insts = []
         for i in range(5):
-            insts += pysat.Instrument('pysat','testing', clean_level='clean')
+            insts.append(pysat.Instrument('pysat','testing', clean_level='clean'))
         self.testC = pysat.Constellation(instruments=insts)
 
     def teardown(self):
         del self.testC
 
     def test_constellation_average(self):
-        for i in testC.instruments:
+        for i in self.testC.instruments:
             i.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'longitude',
                                           [0., 24, 24], 'mlt', ['dummy1', 'dummy2', 'dummy3'])
