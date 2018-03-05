@@ -220,7 +220,7 @@ class Files(object):
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
-                return pds.Series.from_csv(fname, index_col=0)
+                return pds.read_csv(fname, index_col=0, parse_dates=True, squeeze=True, header=None)
             else:
                 # grab files from memory
                 if prev_version:
