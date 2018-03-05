@@ -29,7 +29,7 @@ before_install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas=0.19.2 statsmodels coverage netCDF4
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4
 
 # command to install dependencies
 install:
