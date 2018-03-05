@@ -26,7 +26,7 @@ def init(self):
     self.new_thing=True        
                 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-        sim_multi_file_left=False):
+        sim_multi_file_left=False, root_date = None):
     # create an artifical satellite data set
     parts = fnames[0].split('/')
     yr = int('20'+parts[-1][0:2])
@@ -35,13 +35,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     date = pysat.datetime(yr, month, day)
     if sim_multi_file_right:
-        root_date = pysat.datetime(2009,1,1,12)
+        root_date = root_date or pysat.datetime(2009,1,1,12)
         data_date = date+pds.DateOffset(hours=12)
     elif sim_multi_file_left:
-        root_date = pysat.datetime(2008,12,31,12)
+        root_date = root_date or pysat.datetime(2008,12,31,12)
         data_date = date-pds.DateOffset(hours=12)
     else:
-        root_date = pysat.datetime(2009,1,1)
+        root_date = root_date or pysat.datetime(2009,1,1)
         data_date = date
     num = 86400 if tag is '' else int(tag)
     num_array = np.arange(num)

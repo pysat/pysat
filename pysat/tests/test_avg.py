@@ -130,3 +130,11 @@ class TestConstellation:
                             
         assert np.all(check)
 
+
+class TestHeterogenousConstellation(TestConstellation):
+    def setup(self):
+        insts = []
+        for i in range(2):
+            insts.append(pysat.Instrument('pysat','testing', clean_level='clean', root_date = pysat.datetime(2009,1,i+1)))
+        self.testC = pysat.Constellation(instruments=insts)
+
