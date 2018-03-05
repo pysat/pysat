@@ -7,6 +7,12 @@ name = "pypi"
 
 [dev-packages]
 
+pyflakes = "*"
+pylint = "*"
+pycodestyle = "*"
+"flake8" = "*"
+coverage = "*"
+nose = "*"
 
 
 [packages]
@@ -19,5 +25,3 @@ pysatcdf = "*"
 scipy = "*"
 atlas = "*"
 statsmodels = "*"
-nose = "*"
-coverage = "*"
