@@ -32,7 +32,6 @@ Warnings
 - Currently no cleaning routine. Though the CDAWEB description indicates that
   these level-2 products are expected to be ok.
 - Module not written by OMNI team.
-
 """
 
 from __future__ import print_function
@@ -84,8 +83,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                '{year:4d}{month:02d}{day:02d}_v01.cdf'])
             files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
             # files are by month, just add date to monthly filename for
-            # each day of the month. load routine will use date to select out appropriate
-            # data
+            # each day of the month. load routine will use date to select out
+            # appropriate data
             if not files.empty:
                 files.ix[files.index[-1] + pds.DateOffset(months=1) -
                          pds.DateOffset(days=1)] = files.iloc[-1]
@@ -96,7 +95,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         else:
             raise ValueError('Unknown tag')
     elif format_str is None:
-        estr = 'A directory must be passed to the loading routine for VEFI'
+        estr = 'A directory must be passed to the loading routine for OMNI HRO'
         raise ValueError (estr)
     else:
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
@@ -114,7 +113,8 @@ def load(fnames, tag=None, sat_id=None):
         with pysatCDF.CDF(fname) as cdf:
             data, meta = cdf.to_pysat()
             # pick out data for date
-            data = data.ix[date:date+pds.DateOffset(days=1) - pds.DateOffset(microseconds=1)] 
+            data = data.ix[date:date+pds.DateOffset(days=1) -
+                           pds.DateOffset(microseconds=1)] 
             return data, meta
             #return cdf.to_pysat()
 
@@ -126,13 +126,18 @@ def clean(omni):
 
 
 def time_shift_to_magnetic_poles(inst):
-    """
-    OMNI data is time-shifted to bow shock. Time shifted again
+    """ OMNI data is time-shifted to bow shock. Time shifted again
     to intersections with magnetic pole.
-    
+
+    Parameters
+    -----------
+    inst : Instrument class object
+        Instrument with OMNI HRO data
+
+    Notes
+    ---------
     Time shift calculated using distance to bow shock nose (BSN)
     and velocity of solar wind along x-direction.
-    
     """
     
     # need to fill in Vx to get an estimate of what is going on
@@ -152,7 +157,8 @@ def time_shift_to_magnetic_poles(inst):
     if len(idx) > 0:
         print (time_x[idx])
         print (time_x)
-    time_x_offset = [pds.DateOffset(seconds = time) for time in time_x.astype(int)]
+    time_x_offset = [pds.DateOffset(seconds = time)
+                     for time in time_x.astype(int)]
     new_index=[]
     for i, time in enumerate(time_x_offset):
         new_index.append(inst.data.index[i] + time)
@@ -161,9 +167,24 @@ def time_shift_to_magnetic_poles(inst):
     
     return
 
-def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
-    """
-    download OMNI data, layout consistent with pysat
+def download(date_array, tag, sat_id='', data_path=None, user=None,
+             password=None):
+    """ download OMNI data, layout consistent with pysat
+
+    Parameters
+    -----------
+    data_array : np.array
+    tag : string
+        String denoting the type of file to load, accepted values are '1min' and
+       '5min'
+    sat_id : string
+        Not used (default='')
+    data_path : string or NoneType
+        Data path to save downloaded files to (default=None)
+    user : string or NoneType
+        Not used, CDAWeb allows anonymous users (default=None)
+    password : string or NoneType
+        Not used, CDAWeb provides password (default=None)
     """
     import os
     import ftplib
@@ -175,10 +196,13 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
         ftp.cwd('/pub/data/omni/omni_cdaweb/hro_'+tag)
     
         for date in date_array:
-            fname = '{year1:4d}/omni_hro_'+tag+'_{year2:4d}{month:02d}{day:02d}_v01.cdf'
-            fname = fname.format(year1=date.year, year2=date.year, month=date.month, day=date.day)
-            local_fname = ''.join(['omni_hro_',tag,'_{year:4d}{month:02d}{day:02d}_v01.cdf']).format(
-                    year=date.year, month=date.month, day=date.day)
+            fname = '{year1:4d}/omni_hro_' + tag + \
+                    '_{year2:4d}{month:02d}{day:02d}_v01.cdf'
+            fname = fname.format(year1=date.year, year2=date.year,
+                                 month=date.month, day=date.day)
+            local_fname = ''.join(['omni_hro_', tag, \
+            '_{year:4d}{month:02d}{day:02d}_v01.cdf']).format(year=date.year, \
+                                                month=date.month, day=date.day)
             saved_fname = os.path.join(data_path,local_fname) 
             try:
                 print('Downloading file for '+date.strftime('%D'))
