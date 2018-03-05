@@ -270,4 +270,13 @@ class TestBasics:
         self.testInst.custom.add(custom3, 'add', at_pos=1)
         self.testInst.load(2009,1)
         
-        
+class ConstellationTestBasics:
+    def setup(self):
+        insts = []
+        for i in range(5):
+            insts.append(pysat.Instrument('pysat','testing', tag='10', clean_level='clean')
+
+        self.testConst = pysat.Constellation(insts)
+
+
+
