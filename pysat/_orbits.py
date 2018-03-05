@@ -88,7 +88,7 @@ class Orbits(object):
 
         if period is None:
             period = np.timedelta64(97, 'm')
-        self.orbit_period = period
+        self.orbit_period = pds.Timedelta(period)
 
         if (kind == 'local time') or (kind == 'lt'):
             self._detBreaks = functools.partial(self._equaBreaks, orbit_index_period=24.)
