@@ -29,7 +29,7 @@ class Constellation(object):
 
     def __repr__(self):
         # TODO Implement __repr__
-        return "Constellation({})".format(repr(self.instruments))
+        raise NotImplementedError()
 
     def add(self, bounds1, label1, bounds2, label2, bin3, label3,
             data_label):
