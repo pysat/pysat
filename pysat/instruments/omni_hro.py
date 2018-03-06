@@ -123,9 +123,17 @@ def load(fnames, tag=None, sat_id=None):
 def clean(omni):
     for key in omni.data.columns:
         if key != 'Epoch':
-          idx, = np.where(omni[key] == omni.meta[key].FILLVAL)
-          omni.data.ix[idx, key] = np.nan
+            fill_attr = "fillval"
+            if not hasattr(omni.meta[key], fill_attr):
+                if hasattr(omni.meta[key], fill_attr.upper()):
+                    fill_attr = fill_attr.upper()
+                else:
+                    raise "unknown attribute {:s} or {:s}".format(fill_attr, \
+                                                            fill_attr.upper())
 
+            idx, = np.where(omni[key] == getattr(omni.meta[key], fill_attr))
+            omni.data.ix[idx, key] = np.nan
+    return
 
 def time_shift_to_magnetic_poles(inst):
     """ OMNI data is time-shifted to bow shock. Time shifted again
