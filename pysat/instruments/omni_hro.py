@@ -110,18 +110,20 @@ def load(fnames, tag=None, sat_id=None):
         # pull out date appended to filename
         fname = fnames[0][0:-11]
         date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
-        with pysatCDF.CDF(fname) as cdf:
+        try:
+            cdf = pysatCDF.CDF(fname)
             data, meta = cdf.to_pysat()
             # pick out data for date
             data = data.ix[date:date+pds.DateOffset(days=1) -
                            pds.DateOffset(microseconds=1)] 
             return data, meta
-            #return cdf.to_pysat()
+        except e:
+            raise e
 
 def clean(omni):
     for key in omni.data.columns:
         if key != 'Epoch':
-          idx, = np.where(omni[key] == omni.meta[key].fillval)
+          idx, = np.where(omni[key] == omni.meta[key].FILLVAL)
           omni.data.ix[idx, key] = np.nan
 
 
@@ -219,3 +221,181 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     # ftp.quit()
     return
 
+def calculate_clock_angle(inst):
+    """ Calculate IMF clock angle and magnitude of IMF in GSM Y-Z plane
+
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument with OMNI HRO data
+    """
+    
+    # Calculate clock angle in degrees
+    clock_angle = np.degrees(np.arctan2(inst['BY_GSM'], inst['BZ_GSM']))
+    clock_angle[clock_angle < 0.0] += 360.0
+    inst.data['clock_angle'] = pds.Series(clock_angle, index=inst.data.index)
+
+    # Calculate magnitude of IMF in Y-Z plane
+    inst.data['BYZ_GSM'] = pds.Series(np.sqrt(inst['BY_GSM']**2 +
+                                              inst['BZ_GSM']**2),
+                                      index=inst.data.index)
+
+    return
+
+def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
+                             max_clock_angle_std=90.0/np.pi, max_bmag_cv=0.5):
+    """ Calculate IMF steadiness using clock angle standard deviation and
+    the coefficient of variation of the IMF magnitude in the GSM Y-Z plane
+
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument with OMNI HRO data
+    steady_window : int
+        Window for calculating running statistical moments in min (default=15)
+    min_window_frac : float
+        Minimum fraction of points in a window for steadiness to be calculated
+        (default=0.75)
+    max_clock_angle_std : float
+        Maximum standard deviation of the clock angle in degrees (default=22.5)
+    max_bmag_cv : float
+        Maximum coefficient of variation of the IMF magnitude in the GSM
+        Y-Z plane (default=0.5)
+    """
+
+    # We are not going to interpolate through missing values
+    sample_rate = int(inst.tag[0])
+    freq = inst.tag[0] + "T"
+    max_wnum = np.floor(steady_window / sample_rate)
+    if max_wnum != steady_window / sample_rate:
+        steady_window = max_wnum * sample_rate
+        print("WARNING: sample rate is not a factor of the statistical window")
+        print("new statistical window is {:.1f}".format(steady_window))
+
+    min_wnum = int(np.ceil(max_wnum * min_window_frac))
+
+    # Calculate the running coefficient of variation of the BYZ magnitude
+    byz_mean = inst['BYZ_GSM'].rolling(min_periods=min_wnum, freq=freq,
+                                       window=steady_window, center=True).mean()
+    byz_std = inst['BYZ_GSM'].rolling(min_periods=min_wnum, freq=freq,
+                                      window=steady_window, center=True).std()
+    inst.data['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
+
+    # Calculate the running circular standard deviation of the clock angle
+    circ_kwargs = {'high':360.0, 'low':0.0}
+    ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
+    ca_std = inst['clock_angle'].rolling(min_periods=min_wnum, freq=freq,
+                                         window=steady_window,
+                                         center=True).apply(nan_circstd,
+                                                            kwargs=circ_kwargs)
+    inst.data['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
+
+    # Determine how long the clock angle and IMF magnitude are steady
+    imf_steady = np.zeros(shape=inst.data.index.shape)
+
+    steady = False
+    for i,cv in enumerate(inst.data['BYZ_CV']):
+        if steady:
+            del_min = int((inst.data.index[i] -
+                           inst.data.index[i-1]).total_seconds() / 60.0)
+            if np.isnan(cv) or np.isnan(ca_std[i]) or del_min > sample_rate:
+                # Reset the steadiness flag if fill values are encountered, or
+                # if an entry is missing
+                steady = False
+
+        if cv <= max_bmag_cv and ca_std[i] <= max_clock_angle_std:
+            # Steadiness conditions have been met
+            if steady:
+                imf_steady[i] = imf_steady[i-1]
+
+            imf_steady[i] += sample_rate
+            steady = True
+
+    inst.data['IMF_Steady'] = pds.Series(imf_steady, index=inst.data.index)
+    return
+
+def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
+    """NaN insensitive version of scipy's circular standard deviation routine
+
+    Parameters
+    -----------
+    samples : array_like
+        Input array
+    low : float or int
+        Lower boundary for circular standard deviation range (default=0)
+    high: float or int
+        Upper boundary for circular standard deviation range (default=2 pi)
+    axis : int or NoneType
+        Axis along which standard deviations are computed.  The default is to
+        compute the standard deviation of the flattened array
+
+    Returns
+    --------
+    circstd : float
+        Circular standard deviation
+    """
+
+    samples = np.asarray(samples)
+    samples = samples[~np.isnan(samples)]
+    if samples.size == 0:
+        return np.nan
+
+    # Ensure the samples are in radians
+    ang = (samples - low) * 2.0 * np.pi / (high - low)
+
+    # Calculate the means of the sine and cosine, as well as the length
+    # of their unit vector
+    smean = np.sin(ang).mean(axis=axis)
+    cmean = np.cos(ang).mean(axis=axis)
+    rmean = np.sqrt(smean**2 + cmean**2)
+
+    # Calculate the circular standard deviation
+    circstd = (high - low) * np.sqrt(-2.0 * np.log(rmean)) / (2.0 * np.pi)
+    return circstd
+
+def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
+    """NaN insensitive version of scipy's circular mean routine
+
+    Parameters
+    -----------
+    samples : array_like
+        Input array
+    low : float or int
+        Lower boundary for circular standard deviation range (default=0)
+    high: float or int
+        Upper boundary for circular standard deviation range (default=2 pi)
+    axis : int or NoneType
+        Axis along which standard deviations are computed.  The default is to
+        compute the standard deviation of the flattened array
+
+    Returns
+    --------
+    circmean : float
+        Circular mean
+    """
+
+    samples = np.asarray(samples)
+    samples = samples[~np.isnan(samples)]
+    if samples.size == 0:
+        return np.nan
+
+    # Ensure the samples are in radians
+    ang = (samples - low) * 2.0 * np.pi / (high - low)
+
+    # Calculate the means of the sine and cosine, as well as the length
+    # of their unit vector
+    ssum = np.sin(ang).sum(axis=axis)
+    csum = np.cos(ang).sum(axis=axis)
+    res = np.arctan2(ssum, csum)
+
+    # Bring the range of the result between 0 and 2 pi
+    mask = res < 0.0
+
+    if mask.ndim > 0:
+        res[mask] += 2.0 * np.pi
+    elif mask:
+        res += 2.0 * np.pi
+
+    # Calculate the circular standard deviation
+    circmean = res * (high - low) / (2.0 * np.pi) + low
+    return circmean
