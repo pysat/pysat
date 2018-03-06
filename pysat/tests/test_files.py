@@ -150,9 +150,9 @@ class TestBasics:
         # check overall length
         check1 = len(files) == (365+366)  
         # check specific dates
-        check2 = files.index[0].to_datetime() == pysat.datetime(2008,1,1)
-        check3 = files.index[365].to_datetime() == pysat.datetime(2008,12,31)
-        check4 = files.index[-1].to_datetime() == pysat.datetime(2009,12,31)
+        check2 = pds.to_datetime(files.index[0]) == pysat.datetime(2008,1,1)
+        check3 = pds.to_datetime(files.index[365]) == pysat.datetime(2008,12,31)
+        check4 = pds.to_datetime(files.index[-1]) == pysat.datetime(2009,12,31)
 
         assert(check1 & check2 & check3 & check4)
 
@@ -168,9 +168,9 @@ class TestBasics:
         # check overall length
         check1 = len(files) == (365+366)  
         # check specific dates
-        check2 = files.index[0].to_datetime() == pysat.datetime(2008,1,1)
-        check3 = files.index[365].to_datetime() == pysat.datetime(2008,12,31)
-        check4 = files.index[-1].to_datetime() == pysat.datetime(2009,12,31)
+        check2 = pds.to_datetime(files.index[0]) == pysat.datetime(2008,1,1)
+        check3 = pds.to_datetime(files.index[365]) == pysat.datetime(2008,12,31)
+        check4 = pds.to_datetime(files.index[-1]) == pysat.datetime(2009,12,31)
 
         assert(check1 & check2 & check3 & check4)
 
@@ -186,9 +186,9 @@ class TestBasics:
         # check overall length
         check1 = len(files) == (365+366)  
         # check specific dates
-        check2 = files.index[0].to_datetime() == pysat.datetime(2008,1,1)
-        check3 = files.index[365].to_datetime() == pysat.datetime(2008,12,31)
-        check4 = files.index[-1].to_datetime() == pysat.datetime(2009,12,31)
+        check2 = pds.to_datetime(files.index[0]) == pysat.datetime(2008,1,1)
+        check3 = pds.to_datetime(files.index[365]) == pysat.datetime(2008,12,31)
+        check4 = pds.to_datetime(files.index[-1]) == pysat.datetime(2009,12,31)
 
         assert(check1 & check2 & check3 & check4)
 
@@ -205,9 +205,9 @@ class TestBasics:
         # check overall length
         check1 = len(files) == (365+366)*4-3 
         # check specific dates
-        check2 = files.index[0].to_datetime() == pysat.datetime(2008,1,1)
-        check3 = files.index[1460].to_datetime() == pysat.datetime(2008,12,31)
-        check4 = files.index[-1].to_datetime() == pysat.datetime(2009,12,31)
+        check2 = pds.to_datetime(files.index[0]) == pysat.datetime(2008,1,1)
+        check3 = pds.to_datetime(files.index[1460]) == pysat.datetime(2008,12,31)
+        check4 = pds.to_datetime(files.index[-1]) == pysat.datetime(2009,12,31)
         assert(check1 & check2 & check3 & check4)
 
     def test_year_month_day_hour_minute_files_direct_call_to_from_os(self):
@@ -224,10 +224,10 @@ class TestBasics:
         # check overall length
         check1 = len(files) == 145 
         # check specific dates
-        check2 = files.index[0].to_datetime() == pysat.datetime(2008,1,1)
-        check3 = files.index[1].to_datetime() == pysat.datetime(2008,1,1,0,30)
-        check4 = files.index[10].to_datetime() == pysat.datetime(2008,1,1,5,0)
-        check5 = files.index[-1].to_datetime() == pysat.datetime(2008,1,4)
+        check2 = pds.to_datetime(files.index[0]) == pysat.datetime(2008,1,1)
+        check3 = pds.to_datetime(files.index[1]) == pysat.datetime(2008,1,1,0,30)
+        check4 = pds.to_datetime(files.index[10]) == pysat.datetime(2008,1,1,5,0)
+        check5 = pds.to_datetime(files.index[-1]) == pysat.datetime(2008,1,4)
 
         assert(check1 & check2 & check3 & check4 & check5)
 
@@ -245,9 +245,9 @@ class TestBasics:
         # check overall length
         check1 = len(files) == 5761 
         # check specific dates
-        check2 = files.index[0].to_datetime() == pysat.datetime(2008,1,1)
-        check3 = files.index[1].to_datetime() == pysat.datetime(2008,1,1,0,0,30)
-        check4 = files.index[-1].to_datetime() == pysat.datetime(2008,1,3)
+        check2 = pds.to_datetime(files.index[0]) == pysat.datetime(2008,1,1)
+        check3 = pds.to_datetime(files.index[1]) == pysat.datetime(2008,1,1,0,0,30)
+        check4 = pds.to_datetime(files.index[-1]) == pysat.datetime(2008,1,3)
 
         assert(check1 & check2 & check3 & check4)
 
@@ -263,9 +263,9 @@ class TestBasics:
         # check overall length
         check1 = len(files) == 24
         # check specific dates
-        check2 = files.index[0].to_datetime() == pysat.datetime(2008,1,1)
-        check3 = files.index[11].to_datetime() == pysat.datetime(2008,12,1)
-        check4 = files.index[-1].to_datetime() == pysat.datetime(2009,12,1)
+        check2 = pds.to_datetime(files.index[0]) == pysat.datetime(2008,1,1)
+        check3 = pds.to_datetime(files.index[11]) == pysat.datetime(2008,12,1)
+        check4 = pds.to_datetime(files.index[-1]) == pysat.datetime(2009,12,1)
         assert(check1 & check2 & check3 & check4)
 
     def test_instrument_has_no_files(self):

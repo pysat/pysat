@@ -87,8 +87,8 @@ class Orbits(object):
             kind = kind.lower()
 
         if period is None:
-            period = np.timedelta64(97, 'm')
-        self.orbit_period = period
+            period = pds.Timedelta(np.timedelta64(97, 'm'))
+        self.orbit_period = pds.Timedelta(period)
 
         if (kind == 'local time') or (kind == 'lt'):
             self._detBreaks = functools.partial(self._equaBreaks, orbit_index_period=24.)
@@ -438,10 +438,9 @@ class Orbits(object):
                             self.sat.next()
                             self._getBasicOrbit(orbit=1)
                         # check that this orbit should end on the current day
-                        delta = pds.to_timedelta(true_date - self.sat.data.index[0])
+                        delta = true_date - self.sat.data.index[0]
                         # print 'checking if first orbit should land on requested day'
                         # print self.sat.date, self.sat.data.index[0], delta, delta >= self.orbit_period
-                        # print delta - self.orbit_period
                         if delta >= self.orbit_period:
                             # the orbit loaded isn't close enough to date
                             # to be the first orbit of the day, move forward
@@ -500,7 +499,7 @@ class Orbits(object):
                 # End of orbit may occur on the next day
                 load_next = True
                 if self.sat._iter_type == 'date':
-                    delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1]) + np.timedelta64(1, 'D')
+                    delta = self.sat.date - self.sat.data.index[-1] + pds.Timedelta('1 day')
                     if delta >= self.orbit_period:
                         # don't need to load the next day because this orbit ends more than a orbital
                         # period from the next date
@@ -540,7 +539,7 @@ class Orbits(object):
                     pad_next = True
                     # check if data padding is really needed, only works when loading by date
                     if self.sat._iter_type == 'date':
-                        delta = pds.to_timedelta(self.sat.date - temp_orbit_data.index[-1])
+                        delta = self.sat.date - temp_orbit_data.index[-1]
                         if delta >= self.orbit_period:
                             # the end of the previous orbit is more than an orbit away from today
                             # we don't have to worry about it
@@ -555,7 +554,7 @@ class Orbits(object):
                         # padding from the previous orbit wasn't needed, can just grab the first orbit of loaded data
                         self._getBasicOrbit(orbit=1)
                         if self.sat._iter_type == 'date':
-                            delta = pds.to_timedelta(self.sat.date + pds.DateOffset(days=1) - self.sat.data.index[0])
+                            delta = self.sat.date + pds.DateOffset(days=1) - self.sat.data.index[0]                           
                             if delta < self.orbit_period:
                                 # this orbits end occurs on the next day
                                 # though we grabbed the first orbit, missing data means the first available
@@ -628,7 +627,7 @@ class Orbits(object):
 
                 load_prev = True
                 if self.sat._iter_type == 'date':
-                    delta = pds.to_timedelta(self.sat.data.index[-1] - self.sat.date)
+                    delta = self.sat.data.index[-1] - self.sat.date
                     if delta >= self.orbit_period:
                         # don't need to load the prev day because this orbit ends more than a orbital
                         # period from start of today's date
@@ -676,7 +675,7 @@ class Orbits(object):
                 if not self.sat.empty:
                     load_prev = True
                     if self.sat._iter_type == 'date':
-                        delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1]) + np.timedelta64(1, 'D')
+                        delta = self.sat.date - self.sat.data.index[-1] + pds.Timedelta('1 day')
                         if delta >= self.orbit_period:
                             # don't need to load the prev day because this orbit ends more than a orbital
                             # period from start of today's date
@@ -690,7 +689,7 @@ class Orbits(object):
                         # padding from the previous is needed
                         self._getBasicOrbit(orbit=-1)
                         if self.sat._iter_type == 'date':
-                            delta = pds.to_timedelta(self.sat.date - self.sat.data.index[-1]) + np.timedelta64(1, 'D')
+                            delta = self.sat.date - self.sat.data.index[-1] + pds.Timedelta('1 day')
                             if delta < self.orbit_period:
                                 self.current = self.num
                                 self.prev()
