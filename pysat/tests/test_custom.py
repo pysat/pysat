@@ -397,6 +397,8 @@ class TestOMNICustom:
         test_diff = list(set([mm for mm in (test_mag - self.testInst['BYZ_GSM'])
                               if not np.isnan(mm)]))
 
+        print(len(test_diff), self.testInst.data.index.shape)
+
         ans1 = test_diff[0] == 0.0
         ans2 = len(test_diff) == 1
 
@@ -435,7 +437,7 @@ class TestOMNICustom:
         # Ensure the BYZ coefficient of variation is calculated correctly
         ca_std = self.testInst['clock_angle'].rolling(min_periods=12, window=15,
                                                       center=True).apply( \
-                pysat.instrument.omni_hro.nan_circstd, kwargs=self.circ_kwargs)
+                pysat.instruments.omni_hro.nan_circstd, kwargs=self.circ_kwargs)
 
         # Test the difference
         test_diff = list(set([aa for aa in (ca_std -
