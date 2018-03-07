@@ -396,12 +396,10 @@ class TestOMNICustom:
         pysat.instruments.omni_hro.calculate_imf_steadiness(self.testInst)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
-        byz_mean = self.testInst['BYZ_GSM'].rolling(min_periods=min_wnum,
-                                                    center=True,
-                                                    window=steady_window).mean()
-        byz_std = self.testInst['BYZ_GSM'].rolling(min_periods=min_wnum,
-                                                   center=True,
-                                                   window=steady_window).std()
+        byz_mean = self.testInst['BYZ_GSM'].rolling(min_periods=12, center=True,
+                                                    window=15).mean()
+        byz_std = self.testInst['BYZ_GSM'].rolling(min_periods=12, center=True,
+                                                   window=15).std()
         byz_cv = byz_std / byz_mean
 
         # Test the difference
@@ -421,8 +419,7 @@ class TestOMNICustom:
         pysat.instruments.omni_hro.calculate_imf_steadiness(self.testInst)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
-        ca_std = self.testInst['clock_angle'].rolling(min_periods=min_wnum,
-                                                      window=steady_window,
+        ca_std = self.testInst['clock_angle'].rolling(min_periods=12, window=15,
                                                       center=True).apply( \
                 pysat.instrument.omni_hro.nan_circstd, kwargs=self.circ_kwargs)
 
