@@ -273,7 +273,6 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 
     # We are not going to interpolate through missing values
     sample_rate = int(inst.tag[0])
-    freq = inst.tag[0] + "T"
     max_wnum = np.floor(steady_window / sample_rate)
     if max_wnum != steady_window / sample_rate:
         steady_window = max_wnum * sample_rate
@@ -283,16 +282,16 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     min_wnum = int(np.ceil(max_wnum * min_window_frac))
 
     # Calculate the running coefficient of variation of the BYZ magnitude
-    byz_mean = inst['BYZ_GSM'].rolling(min_periods=min_wnum, freq=freq,
-                                       window=steady_window, center=True).mean()
-    byz_std = inst['BYZ_GSM'].rolling(min_periods=min_wnum, freq=freq,
-                                      window=steady_window, center=True).std()
+    byz_mean = inst['BYZ_GSM'].rolling(min_periods=min_wnum, center=True,
+                                       window=steady_window).mean()
+    byz_std = inst['BYZ_GSM'].rolling(min_periods=min_wnum, center=True,
+                                      window=steady_window).std()
     inst.data['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
 
     # Calculate the running circular standard deviation of the clock angle
     circ_kwargs = {'high':360.0, 'low':0.0}
     ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
-    ca_std = inst['clock_angle'].rolling(min_periods=min_wnum, freq=freq,
+    ca_std = inst['clock_angle'].rolling(min_periods=min_wnum,
                                          window=steady_window,
                                          center=True).apply(nan_circstd,
                                                             kwargs=circ_kwargs)
