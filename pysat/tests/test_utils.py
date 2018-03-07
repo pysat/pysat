@@ -100,8 +100,8 @@ class TestBasics:
         self.testInst.to_netcdf4(outfile)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        self.testInst.data = self.testInst.data.reindex(sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
+        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
@@ -121,8 +121,8 @@ class TestBasics:
         test_inst.load(2009,1)
         test_inst.to_netcdf4(outfile)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        test_inst.data = test_inst.data.reindex(sorted(test_inst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+        test_inst.data = test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
+        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
         prep_dir(test_inst)
         
         # test Series of DataFrames
@@ -149,8 +149,8 @@ class TestBasics:
     #     for format in ['NETCDF3_CLASSIC','NETCDF3_64BIT', 'NETCDF4_CLASSIC', 'NETCDF4']:
     #         self.testInst.to_netcdf4(outfile, format=format)
     #         loaded_inst, meta = pysat.utils.load_netcdf4(outfile, format=format)
-    #         self.testInst.data = self.testInst.data.reindex(sorted(self.testInst.data.columns), axis=1)
-    #         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+    #         self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
+    #         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
     #         check.append(np.all(self.testInst.data == loaded_inst))
     #         print(loaded_inst['string_dummy'])
     #
