@@ -323,14 +323,21 @@ class TestOMNICustom:
                                                             self.circ_kwargs)
         ans1 = ref_mean == test_mean
 
+        assert ans1
+
+    def test_circstd_nan(self):
+        """ Test custom circular mean with NaN."""
+        from scipy import stats
+
+        ref_mean = stats.circmean(self.test_angles, self.circ_kwargs)
         ref_nan = stats.circmean(self.test_nan, self.circ_kwargs)
         test_nan = pysat.instruments.omni_hro.nan_circmean(self.test_nan,
                                                            self.circ_kwargs)
 
-        ans2 = np.isnan(ref_nan)
-        ans3 = test_mean == test_nan
+        ans1 = np.isnan(ref_nan)
+        ans2 = ref_mean == test_nan
 
-        assert ans1 & ans2 & ans3
+        assert ans1 & ans2
 
     def test_circstd(self):
         """ Test custom circular std."""
@@ -341,14 +348,21 @@ class TestOMNICustom:
                                                           self.circ_kwargs)
         ans1 = ref_std == test_std
 
+        assert ans1
+
+    def test_circstd_nan(self):
+        """ Test custom circular std with NaN."""
+        from scipy import stats
+
+        ref_std = stats.circstd(self.test_angles, self.circ_kwargs)
         ref_nan = stats.circstd(self.test_nan, self.circ_kwargs)
         test_nan = pysat.instruments.omni_hro.nan_circstd(self.test_nan,
                                                           self.circ_kwargs)
 
-        ans2 = np.isnan(ref_nan)
-        ans3 = test_std == test_nan
+        ans1 = np.isnan(ref_nan)
+        ans2 = ref_std == test_nan
 
-        assert ans1 & ans2 & ans3
+        assert ans1 & ans2
 
     def test_clock_angle(self):
         """ Test clock angle."""
