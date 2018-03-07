@@ -22,10 +22,10 @@ class TestBasics:
         """
         def custom1(inst):
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
-            return 5.*inst.data['mlt']
+            return 5.0 * inst.data['mlt']
 
         self.testInst.custom.add(custom1, 'modify')
-        self.testInst.load(2009,1)
+        self.testInst.load(2009, 1)
 
     def test_single_adding_custom_function(self):
         """Test if custom function works correctly. Add function that returns
@@ -122,8 +122,8 @@ class TestBasics:
                                                         
     def test_add_dataframe(self):
         def custom1(inst):
-            out = pysat.DataFrame({'doubleMLT':inst.data.mlt*2, 
-                                'tripleMLT':inst.data.mlt*3}, 
+            out = pysat.DataFrame({'doubleMLT':inst.data.mlt * 2, 
+                                'tripleMLT':inst.data.mlt * 3}, 
                                 index=inst.data.index)
             return out
         self.testInst.custom.add(custom1, 'add')
@@ -136,8 +136,8 @@ class TestBasics:
 
     def test_add_dataframe_w_meta(self):
         def custom1(inst):
-            out = pysat.DataFrame({'doubleMLT':inst.data.mlt*2, 
-                                'tripleMLT':inst.data.mlt*3}, 
+            out = pysat.DataFrame({'doubleMLT':inst.data.mlt * 2, 
+                                'tripleMLT':inst.data.mlt * 3}, 
                                 index=inst.data.index)
             return {'data':out, 'long_name':['doubleMLTlong', 'tripleMLTlong'],
                     'units':['hours1', 'hours2']}
@@ -302,14 +302,20 @@ class TestOMNICustom:
         """Runs before every method to create a clean testing setup."""
         self.test_angles = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87]
         self.test_nan = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87, np.nan]
-        self.circ_kwargs = ["high":360.0, "low":0.0]
+        self.circ_kwargs = {"high":360.0, "low":0.0}
+        self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
+                                         clean_level='clean')
+        self.testInst.data['BY_GSM'] = pds.Series(6.0 * \
+                    np.random.sample(size=self.testInst.data.index.shape[0]))
+        self.testInst.data['BZ_GSM'] = pds.Series(6.0 * \
+                    np.random.sample(size=self.testInst.data.index.shape[0]))
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.test_angles, self.test_nan, self.circ_kwargs
+        del self.test_angles, self.test_nan, self.circ_kwargs, self.testInst
 
     def test_circmean(self):
-        """ Test custum circular mean."""
+        """ Test custom circular mean."""
         from scipy import stats
 
         ref_mean = stats.circmean(self.test_angles, self.circ_kwargs)
@@ -327,7 +333,7 @@ class TestOMNICustom:
         assert ans1 & ans2 & ans3
 
     def test_circstd(self):
-        """ Test custum circular std."""
+        """ Test custom circular std."""
         from scipy import stats
 
         ref_std = stats.circstd(self.test_angles, self.circ_kwargs)
@@ -343,4 +349,82 @@ class TestOMNICustom:
         ans3 = test_std == test_nan
 
         assert ans1 & ans2 & ans3
-        
+
+    def test_clock_angle(self):
+        """ Test clock angle."""
+
+        # Run the clock angle routine
+        pysat.instruments.omni_hro.calculate_clock_angle(inst)
+
+        # Calculate clock angle
+        test_angle = np.degrees(np.arctan2(inst['BY_GSM'], inst['BZ_GSM']))
+
+        # Test the difference.  There may be a 2 pi integer ambiguity
+        test_diff = set([aa for aa in (test_angle - inst['clock_angle'])
+                         if not np.isnan(aa)])
+
+        ans1 = np.all([aa in [0.0, 360.0, -360.0] for aa in test_diff])
+
+        assert ans1
+
+    def test_yz_plane_mag(self):
+        """ Test the Byz plane magnitude calculation."""
+
+        # Run the clock angle routine
+        pysat.instruments.omni_hro.calculate_clock_angle(inst)
+
+        # Calculate plane magnitude
+        test_mag = np.sqrt(inst['BY_GSM']**2 + inst['BZ_GSM']**2)
+
+        # Test the difference
+        test_diff = list(set([mm for mm in (test_mag - inst['BYZ_GSM'])
+                              if not np.isnan(mm)]))
+
+        ans1 = test_diff[0] == 0.0
+        ans2 = len(test_diff) == 1
+
+        assert ans1 & ans2
+
+    def test_yz_plane_cv(self):
+        """ Test the IMF steadiness calculation."""
+
+        # Run the clock angle and steadiness routines
+        pysat.instruments.omni_hro.calculate_clock_angle(inst)
+        pysat.instruments.omni_hro.calculate_imf_steadiness(inst)
+
+        # Ensure the BYZ coefficient of variation is calculated correctly
+        byz_mean = inst['BYZ_GSM'].rolling(min_periods=min_wnum, center=True,
+                                           window=steady_window).mean()
+        byz_std = inst['BYZ_GSM'].rolling(min_periods=min_wnum, center=True,
+                                          window=steady_window).std()
+        byz_cv = byz_std / byz_mean
+
+        # Test the difference
+        test_diff = list(set([mm for mm in (byz_cv - inst['BYZ_CV'])
+                              if not np.isnan(mm)]))
+
+        ans1 = test_diff[0] == 0.0
+        ans2 = len(test_diff) == 1
+
+        assert ans1 & ans2
+
+    def test_clock_angle_std(self):
+        """ Test the IMF steadiness calculation."""
+
+        # Run the clock angle and steadiness routines
+        pysat.instruments.omni_hro.calculate_clock_angle(inst)
+        pysat.instruments.omni_hro.calculate_imf_steadiness(inst)
+
+        # Ensure the BYZ coefficient of variation is calculated correctly
+        ca_std = inst['clock_angle'].rolling(min_periods=min_wnum, center=True,
+                                             window=steady_window).apply( \
+                pysat.instrument.omni_hro.nan_circstd, kwargs=self.circ_kwargs)
+
+        # Test the difference
+        test_diff = list(set([aa for aa in (ca_std - inst['clock_angle_std'])
+                              if not np.isnan(aa)]))
+
+        ans1 = test_diff[0] == 0.0
+        ans2 = len(test_diff) == 1
+
+        assert ans1 & ans2
