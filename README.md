@@ -43,7 +43,6 @@ pip install pysat
   * Nominal organization of data is top_dir/platform/name/tag/*/files
 * netCDF support
   * netCDF3 is supported by SciPy, no other libraries needed
-  * Download and install netCDF-4 C [library](http://www.unidata.ucar.edu/downloads/netcdf/index.jsp)
   * Download and install python interface to netCDF using
   ```
   pip install netCDF4
