@@ -318,9 +318,9 @@ class TestOMNICustom:
         """ Test custom circular mean."""
         from scipy import stats
 
-        ref_mean = stats.circmean(self.test_angles, self.circ_kwargs)
+        ref_mean = stats.circmean(self.test_angles, **self.circ_kwargs)
         test_mean = pysat.instruments.omni_hro.nan_circmean(self.test_angles,
-                                                            self.circ_kwargs)
+                                                            **self.circ_kwargs)
         ans1 = ref_mean == test_mean
 
         assert ans1
@@ -329,10 +329,10 @@ class TestOMNICustom:
         """ Test custom circular mean with NaN."""
         from scipy import stats
 
-        ref_mean = stats.circmean(self.test_angles, self.circ_kwargs)
-        ref_nan = stats.circmean(self.test_nan, self.circ_kwargs)
+        ref_mean = stats.circmean(self.test_angles, **self.circ_kwargs)
+        ref_nan = stats.circmean(self.test_nan, **self.circ_kwargs)
         test_nan = pysat.instruments.omni_hro.nan_circmean(self.test_nan,
-                                                           self.circ_kwargs)
+                                                           **self.circ_kwargs)
 
         ans1 = np.isnan(ref_nan)
         ans2 = ref_mean == test_nan
@@ -343,9 +343,9 @@ class TestOMNICustom:
         """ Test custom circular std."""
         from scipy import stats
 
-        ref_std = stats.circstd(self.test_angles, self.circ_kwargs)
+        ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
         test_std = pysat.instruments.omni_hro.nan_circstd(self.test_angles,
-                                                          self.circ_kwargs)
+                                                          **self.circ_kwargs)
         ans1 = ref_std == test_std
 
         assert ans1
@@ -354,10 +354,10 @@ class TestOMNICustom:
         """ Test custom circular std with NaN."""
         from scipy import stats
 
-        ref_std = stats.circstd(self.test_angles, self.circ_kwargs)
-        ref_nan = stats.circstd(self.test_nan, self.circ_kwargs)
+        ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
+        ref_nan = stats.circstd(self.test_nan, **self.circ_kwargs)
         test_nan = pysat.instruments.omni_hro.nan_circstd(self.test_nan,
-                                                          self.circ_kwargs)
+                                                          **self.circ_kwargs)
 
         ans1 = np.isnan(ref_nan)
         ans2 = ref_std == test_nan
