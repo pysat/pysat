@@ -354,13 +354,15 @@ class TestOMNICustom:
         """ Test clock angle."""
 
         # Run the clock angle routine
-        pysat.instruments.omni_hro.calculate_clock_angle(inst)
+        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
 
         # Calculate clock angle
-        test_angle = np.degrees(np.arctan2(inst['BY_GSM'], inst['BZ_GSM']))
+        test_angle = np.degrees(np.arctan2(self.testInst['BY_GSM'],
+                                           self.testInst['BZ_GSM']))
 
         # Test the difference.  There may be a 2 pi integer ambiguity
-        test_diff = set([aa for aa in (test_angle - inst['clock_angle'])
+        test_diff = set([aa for aa in (test_angle -
+                                       self.testInst['clock_angle'])
                          if not np.isnan(aa)])
 
         ans1 = np.all([aa in [0.0, 360.0, -360.0] for aa in test_diff])
@@ -371,13 +373,14 @@ class TestOMNICustom:
         """ Test the Byz plane magnitude calculation."""
 
         # Run the clock angle routine
-        pysat.instruments.omni_hro.calculate_clock_angle(inst)
+        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
 
         # Calculate plane magnitude
-        test_mag = np.sqrt(inst['BY_GSM']**2 + inst['BZ_GSM']**2)
+        test_mag = np.sqrt(self.testInst['BY_GSM']**2 +
+                           self.testInst['BZ_GSM']**2)
 
         # Test the difference
-        test_diff = list(set([mm for mm in (test_mag - inst['BYZ_GSM'])
+        test_diff = list(set([mm for mm in (test_mag - self.testInst['BYZ_GSM'])
                               if not np.isnan(mm)]))
 
         ans1 = test_diff[0] == 0.0
@@ -389,18 +392,20 @@ class TestOMNICustom:
         """ Test the IMF steadiness calculation."""
 
         # Run the clock angle and steadiness routines
-        pysat.instruments.omni_hro.calculate_clock_angle(inst)
-        pysat.instruments.omni_hro.calculate_imf_steadiness(inst)
+        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
+        pysat.instruments.omni_hro.calculate_imf_steadiness(self.testInst)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
-        byz_mean = inst['BYZ_GSM'].rolling(min_periods=min_wnum, center=True,
-                                           window=steady_window).mean()
-        byz_std = inst['BYZ_GSM'].rolling(min_periods=min_wnum, center=True,
-                                          window=steady_window).std()
+        byz_mean = self.testInst['BYZ_GSM'].rolling(min_periods=min_wnum,
+                                                    center=True,
+                                                    window=steady_window).mean()
+        byz_std = self.testInst['BYZ_GSM'].rolling(min_periods=min_wnum,
+                                                   center=True,
+                                                   window=steady_window).std()
         byz_cv = byz_std / byz_mean
 
         # Test the difference
-        test_diff = list(set([mm for mm in (byz_cv - inst['BYZ_CV'])
+        test_diff = list(set([mm for mm in (byz_cv - self.testInst['BYZ_CV'])
                               if not np.isnan(mm)]))
 
         ans1 = test_diff[0] == 0.0
@@ -412,16 +417,18 @@ class TestOMNICustom:
         """ Test the IMF steadiness calculation."""
 
         # Run the clock angle and steadiness routines
-        pysat.instruments.omni_hro.calculate_clock_angle(inst)
-        pysat.instruments.omni_hro.calculate_imf_steadiness(inst)
+        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
+        pysat.instruments.omni_hro.calculate_imf_steadiness(self.testInst)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
-        ca_std = inst['clock_angle'].rolling(min_periods=min_wnum, center=True,
-                                             window=steady_window).apply( \
+        ca_std = self.testInst['clock_angle'].rolling(min_periods=min_wnum,
+                                                      window=steady_window,
+                                                      center=True).apply( \
                 pysat.instrument.omni_hro.nan_circstd, kwargs=self.circ_kwargs)
 
         # Test the difference
-        test_diff = list(set([aa for aa in (ca_std - inst['clock_angle_std'])
+        test_diff = list(set([aa for aa in (ca_std -
+                                            self.testInst['clock_angle_std'])
                               if not np.isnan(aa)]))
 
         ans1 = test_diff[0] == 0.0
