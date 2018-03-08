@@ -54,6 +54,7 @@ class TestConstellation:
         assert self.const[0] == self.instruments[0]
         assert self.const[1] == self.instruments[1]
         assert self.const[:] == self.instruments[:]
+        assert self.const[1::-1] == self.instruments[1::-1]
 
     def test_str(self):
         """Test Constellation:__str__."""
