@@ -13,6 +13,7 @@ pycodestyle = "*"
 "flake8" = "*"
 coverage = "*"
 nose = "*"
+ipython = "*"
 
 
 [packages]
