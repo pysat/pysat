@@ -35,6 +35,10 @@ class Constellation(object):
         for instrument in self.instruments:
             instrument.custom.add(function, kind, at_pos, *args, **kwargs)
 
+    def load(self, *args, **kwargs):
+        for instrument in self.instruments:
+            instrument.load(*args, **kwargs)
+
     def add(self, bounds1, label1, bounds2, label2, bin3, label3, 
             data_label):
         # TODO Implement signal addition.
