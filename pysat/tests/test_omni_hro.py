@@ -7,8 +7,17 @@ import nose.tools
 class TestOMNICustom:
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
+        # Load a test instrument
+        self.testInst = pysat.Instrument('pysat', 'testing', tag='12',
                                          clean_level='clean')
+        self.testInst.load(2009,1)
+
+        # Recast time in minutes rather than seconds
+        testInst.data.index = pds.Series([t + dt.timedelta(seconds=60-i) +
+                                          dt.timedelta(minutes=i) \
+                                for i,t in enumerate(testInst.data.index)])
+
+        # Add IMF data
         self.testInst.data['BX_GSM'] = pds.Series([3.17384966, 5.98685138,
                                                    1.78749668, 0.38628409,
                                                    2.73080263, 1.58814078,
@@ -40,14 +49,14 @@ class TestOMNICustom:
         pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
 
         # Set test clock angle
-        test_angle = pds.Series([44.93710732, 24.04132437, 13.90673288,
-                                 11.08167359, 43.65882745, 84.71666707,
-                                 21.96325222, 32.29174675,  2.15855047,
-                                 40.43151704, 59.17741091, 80.80882619])
+        test_angle = np.array([44.93710732, 24.04132437, 13.90673288,
+                               11.08167359, 43.65882745, 84.71666707,
+                               21.96325222, 32.29174675,  2.15855047,
+                               40.43151704, 59.17741091, 80.80882619])
 
         # Test the difference.  There may be a 2 pi integer ambiguity
-        test_diff = test_angle - self.testInst['clock_angle']
-        ans1 = np.all(test_diff == 0.0)
+        test_diff = abs(test_angle - self.testInst['clock_angle'])
+        ans1 = np.all(test_diff < 1.0e-8)
 
         assert ans1
 
@@ -58,13 +67,13 @@ class TestOMNICustom:
         pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
 
         # Calculate plane magnitude
-        test_mag = pds.Series([5.57149172, 6.14467489, 4.15098040, 5.57747612,
-                               7.87633407, 5.12807787, 1.59323538, 4.10707742,
-                               4.12873986, 5.78891590, 5.61652942, 3.66489971])
+        test_mag = np.array([5.57149172, 6.14467489, 4.15098040, 5.57747612,
+                             7.87633407, 5.12807787, 1.59323538, 4.10707742,
+                             4.12873986, 5.78891590, 5.61652942, 3.66489971])
 
         # Test the difference
-        test_diff = test_mag - self.testInst['BYZ_GSM']
-        ans1 = np.all(test_diff == 0.0)
+        test_diff = abs(test_mag - self.testInst['BYZ_GSM'])
+        ans1 = np.all(test_diff < 1.0e-8)
 
         assert ans1
 
@@ -78,15 +87,15 @@ class TestOMNICustom:
                                                             min_window_frac=0.8)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
-        byz_cv = pds.Series([np.nan, 0.158620, 0.229267, 0.239404, 0.469371,
-                             0.470944, 0.495892, 0.384522, 0.396275, 0.208209,
-                             0.221267, np.nan])
+        byz_cv = np.array([np.nan, 0.158620, 0.229267, 0.239404, 0.469371,
+                           0.470944, 0.495892, 0.384522, 0.396275, 0.208209,
+                           0.221267, np.nan])
 
         # Test the difference
-        test_diff = byz_cv - self.testInst['BYZ_CV']
+        test_diff = abs(byz_cv - self.testInst['BYZ_CV'])
 
         ans1 = test_diff[np.isnan(test_diff)].shape[0] == 2
-        ans2 = np.all(test_diff[~np.isnan(test_diff)] == 0.0)
+        ans2 = np.all(test_diff[~np.isnan(test_diff)] < 1.0e-6)
         ans3 = np.all(np.isnan(self.testInst['BYZ_CV']) == np.isnan(byz_cv))
 
         assert ans1 & ans2 & ans3
@@ -101,15 +110,15 @@ class TestOMNICustom:
                                                             min_window_frac=0.8)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
-        ca_std = pds.Series([np.nan, 13.317200, 14.429278, 27.278579,
-                             27.468469, 25.500730, 27.673033, 27.512069,
-                             19.043833, 26.616713, 29.250390, np.nan])
+        ca_std = np.array([np.nan, 13.317200, 14.429278, 27.278579,
+                           27.468469, 25.500730, 27.673033, 27.512069,
+                           19.043833, 26.616713, 29.250390, np.nan])
 
         # Test the difference
-        test_diff = ca_std - self.testInst['clock_angle_std']
+        test_diff = abs(ca_std - self.testInst['clock_angle_std'])
 
         ans1 = test_diff[np.isnan(test_diff)].shape[0] == 2
-        ans2 = np.all(test_diff[~np.isnan(test_diff)] == 0.0)
+        ans2 = np.all(test_diff[~np.isnan(test_diff)] < 1.0e-6)
         ans3 = np.all(np.isnan(self.testInst['clock_angle_std']) ==
                       np.isnan(ca_std))
 
