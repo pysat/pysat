@@ -138,3 +138,29 @@ class TestHeterogenousConstellation(TestConstellation):
             insts.append(pysat.Instrument('pysat','testing', clean_level='clean', root_date = pysat.datetime(2009,1,i+1)))
         self.testC = pysat.Constellation(instruments=insts)
 
+class Test2DConstellation:
+    def setup(self):
+        insts = []
+        insts.append(pysat.Instrument('pysat','testing2d', clean_level='clean'))
+        self.testC = pysat.Constellation(insts)
+
+    def teardown(self):
+        del self.testC
+
+    def test_2D_avg(self):
+        for i in self.testC.instruments:
+            i.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'mlt',
+                                          [0., 24, 24], 'slt', ['uts'])
+        dummy_val = results['uts']['median']
+        dummy_dev = results['uts']['avg_abs_dev']
+
+        dummy_x = results['uts']['bin_x']
+        dummy_y = results['uts']['bin_y']
+
+        # iterate over all y rows, value should be equal to integer value of mlt
+        # no variation in the median, all values should be the same
+        check = []
+        for i, y in enumerate(dummy_y[:-1]):
+            check.append(np.all(dummy_val[i, :] == y.astype(int)))
+            check.append(np.all(dummy_dev[i, :] == 0))
