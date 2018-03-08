@@ -26,13 +26,13 @@ else:
 #########
 ## basic yrdoy tests
 def test_getyrdoy_1():
-    '''Test the date to year, day of year code functionality'''
-    date = pds.datetime(2009,1,1)
+    """Test the date to year, day of year code functionality"""
+    date = pds.datetime(2009, 1, 1)
     yr, doy = pysat.utils.getyrdoy(date)
     assert ((yr == 2009) & (doy == 1))
 
 def test_getyrdoy_leap_year():
-    '''Test the date to year, day of year code functionality (leap_year)'''
+    """Test the date to year, day of year code functionality (leap_year)"""
     date = pds.datetime(2008,12,31)
     yr, doy = pysat.utils.getyrdoy(date)
     assert ((yr == 2008) & (doy == 366)) 
@@ -57,14 +57,15 @@ def remove_files(inst):
     # remove any files
     dir = inst.files.data_path
     for the_file in os.listdir(dir):
-        if (the_file[0:13] == 'pysat_testing') & (the_file[-19:] == '.pysat_testing_file'):
+        if (the_file[0:13] == 'pysat_testing') & (the_file[-19:] ==
+                                                  '.pysat_testing_file'):
             file_path = os.path.join(dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
 class TestBasics:
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Runs before every method to create a clean testing setup."""        
         # store current pysat directory
         self.data_path = pysat.data_dir
         
@@ -77,6 +78,11 @@ class TestBasics:
         # create testing directory
         prep_dir(self.testInst)
 
+        # Add testing data for circular statistics
+        self.test_angles = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87]
+        self.test_nan = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87, np.nan]
+        self.circ_kwargs = {"high":360.0, "low":0.0}
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
@@ -84,7 +90,7 @@ class TestBasics:
             pysat.utils.set_data_dir(self.data_path, store=False)
         except:
             pass
-        del self.testInst
+        del self.testInst, self.test_angles, self.test_nan, self.circ_kwargs
     
     def test_basic_writing_and_reading_netcdf4_default_format(self):
         # create a bunch of files by year and doy
@@ -128,7 +134,8 @@ class TestBasics:
         # test Series of DataFrames
         test_list = []
         #print (loaded_inst.columns)
-        for frame1, frame2 in zip(test_inst.data['profiles'], loaded_inst['profiles']):
+        for frame1, frame2 in zip(test_inst.data['profiles'],
+                                  loaded_inst['profiles']):
             test_list.append((frame1 == frame2).all())
         loaded_inst.drop('profiles', inplace=True, axis=1) 
         test_inst.data.drop('profiles', inplace=True, axis=1)    
@@ -156,8 +163,8 @@ class TestBasics:
     #
     #     assert(np.all(check))
 
-#######################
-### test pysat data dir options
+    #######################
+    ### test pysat data dir options
     def test_set_data_dir(self):
         saved_dir = self.data_path
         # update data_dir
@@ -222,3 +229,53 @@ class TestBasics:
             pass
 
         assert True
+    
+    def test_circmean(self):
+        """ Test custom circular mean."""
+        from scipy import stats
+
+        ref_mean = stats.circmean(self.test_angles, **self.circ_kwargs)
+        test_mean = pysat.instruments.omni_hro.nan_circmean(self.test_angles,
+                                                            **self.circ_kwargs)
+        ans1 = ref_mean == test_mean
+
+        assert ans1
+
+    def test_circstd_nan(self):
+        """ Test custom circular mean with NaN."""
+        from scipy import stats
+
+        ref_mean = stats.circmean(self.test_angles, **self.circ_kwargs)
+        ref_nan = stats.circmean(self.test_nan, **self.circ_kwargs)
+        test_nan = pysat.instruments.omni_hro.nan_circmean(self.test_nan,
+                                                           **self.circ_kwargs)
+
+        ans1 = np.isnan(ref_nan)
+        ans2 = ref_mean == test_nan
+
+        assert ans1 & ans2
+
+    def test_circstd(self):
+        """ Test custom circular std."""
+        from scipy import stats
+
+        ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
+        test_std = pysat.instruments.omni_hro.nan_circstd(self.test_angles,
+                                                          **self.circ_kwargs)
+        ans1 = ref_std == test_std
+
+        assert ans1
+
+    def test_circstd_nan(self):
+        """ Test custom circular std with NaN."""
+        from scipy import stats
+
+        ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
+        ref_nan = stats.circstd(self.test_nan, **self.circ_kwargs)
+        test_nan = pysat.instruments.omni_hro.nan_circstd(self.test_nan,
+                                                          **self.circ_kwargs)
+
+        ans1 = np.isnan(ref_nan)
+        ans2 = ref_std == test_nan
+
+        assert ans1 & ans2

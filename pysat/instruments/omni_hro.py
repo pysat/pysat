@@ -32,6 +32,14 @@ Warnings
 - Currently no cleaning routine. Though the CDAWEB description indicates that
   these level-2 products are expected to be ok.
 - Module not written by OMNI team.
+
+Custom Functions
+-----------------
+time_shift_to_magnetic_poles : Shift time from bowshock to intersection with
+                               one of the magnetic poles
+calculate_clock_angle : Calculate the clock angle and IMF mag in the YZ plane
+calculate_imf_steadiness : Calculate the IMF steadiness using clock angle and
+                           magnitude in the YZ plane
 """
 
 from __future__ import print_function
@@ -292,9 +300,8 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     circ_kwargs = {'high':360.0, 'low':0.0}
     ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
     ca_std = inst['clock_angle'].rolling(min_periods=min_wnum,
-                                         window=steady_window,
-                                         center=True).apply(nan_circstd,
-                                                            kwargs=circ_kwargs)
+                                         window=steady_window, \
+                center=True).apply(pysat.utils.nan_circstd, kwargs=circ_kwargs)
     inst.data['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
 
     # Determine how long the clock angle and IMF magnitude are steady
@@ -320,89 +327,3 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 
     inst.data['IMF_Steady'] = pds.Series(imf_steady, index=inst.data.index)
     return
-
-def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
-    """NaN insensitive version of scipy's circular standard deviation routine
-
-    Parameters
-    -----------
-    samples : array_like
-        Input array
-    low : float or int
-        Lower boundary for circular standard deviation range (default=0)
-    high: float or int
-        Upper boundary for circular standard deviation range (default=2 pi)
-    axis : int or NoneType
-        Axis along which standard deviations are computed.  The default is to
-        compute the standard deviation of the flattened array
-
-    Returns
-    --------
-    circstd : float
-        Circular standard deviation
-    """
-
-    samples = np.asarray(samples)
-    samples = samples[~np.isnan(samples)]
-    if samples.size == 0:
-        return np.nan
-
-    # Ensure the samples are in radians
-    ang = (samples - low) * 2.0 * np.pi / (high - low)
-
-    # Calculate the means of the sine and cosine, as well as the length
-    # of their unit vector
-    smean = np.sin(ang).mean(axis=axis)
-    cmean = np.cos(ang).mean(axis=axis)
-    rmean = np.sqrt(smean**2 + cmean**2)
-
-    # Calculate the circular standard deviation
-    circstd = (high - low) * np.sqrt(-2.0 * np.log(rmean)) / (2.0 * np.pi)
-    return circstd
-
-def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
-    """NaN insensitive version of scipy's circular mean routine
-
-    Parameters
-    -----------
-    samples : array_like
-        Input array
-    low : float or int
-        Lower boundary for circular standard deviation range (default=0)
-    high: float or int
-        Upper boundary for circular standard deviation range (default=2 pi)
-    axis : int or NoneType
-        Axis along which standard deviations are computed.  The default is to
-        compute the standard deviation of the flattened array
-
-    Returns
-    --------
-    circmean : float
-        Circular mean
-    """
-
-    samples = np.asarray(samples)
-    samples = samples[~np.isnan(samples)]
-    if samples.size == 0:
-        return np.nan
-
-    # Ensure the samples are in radians
-    ang = (samples - low) * 2.0 * np.pi / (high - low)
-
-    # Calculate the means of the sine and cosine, as well as the length
-    # of their unit vector
-    ssum = np.sin(ang).sum(axis=axis)
-    csum = np.cos(ang).sum(axis=axis)
-    res = np.arctan2(ssum, csum)
-
-    # Bring the range of the result between 0 and 2 pi
-    mask = res < 0.0
-
-    if mask.ndim > 0:
-        res[mask] += 2.0 * np.pi
-    elif mask:
-        res += 2.0 * np.pi
-
-    # Calculate the circular standard deviation
-    circmean = res * (high - low) / (2.0 * np.pi) + low
-    return circmean

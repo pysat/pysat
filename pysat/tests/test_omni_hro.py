@@ -7,9 +7,6 @@ import nose.tools
 class TestOMNICustom:
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.test_angles = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87]
-        self.test_nan = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87, np.nan]
-        self.circ_kwargs = {"high":360.0, "low":0.0}
         self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
                                          clean_level='clean')
         self.testInst.data['BX_GSM'] = pds.Series([3.17384966, 5.98685138,
@@ -33,57 +30,8 @@ class TestOMNICustom:
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.test_angles, self.test_nan, self.circ_kwargs, self.testInst
+        del self.testInst
 
-    def test_circmean(self):
-        """ Test custom circular mean."""
-        from scipy import stats
-
-        ref_mean = stats.circmean(self.test_angles, **self.circ_kwargs)
-        test_mean = pysat.instruments.omni_hro.nan_circmean(self.test_angles,
-                                                            **self.circ_kwargs)
-        ans1 = ref_mean == test_mean
-
-        assert ans1
-
-    def test_circstd_nan(self):
-        """ Test custom circular mean with NaN."""
-        from scipy import stats
-
-        ref_mean = stats.circmean(self.test_angles, **self.circ_kwargs)
-        ref_nan = stats.circmean(self.test_nan, **self.circ_kwargs)
-        test_nan = pysat.instruments.omni_hro.nan_circmean(self.test_nan,
-                                                           **self.circ_kwargs)
-
-        ans1 = np.isnan(ref_nan)
-        ans2 = ref_mean == test_nan
-
-        assert ans1 & ans2
-
-    def test_circstd(self):
-        """ Test custom circular std."""
-        from scipy import stats
-
-        ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
-        test_std = pysat.instruments.omni_hro.nan_circstd(self.test_angles,
-                                                          **self.circ_kwargs)
-        ans1 = ref_std == test_std
-
-        assert ans1
-
-    def test_circstd_nan(self):
-        """ Test custom circular std with NaN."""
-        from scipy import stats
-
-        ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
-        ref_nan = stats.circstd(self.test_nan, **self.circ_kwargs)
-        test_nan = pysat.instruments.omni_hro.nan_circstd(self.test_nan,
-                                                          **self.circ_kwargs)
-
-        ans1 = np.isnan(ref_nan)
-        ans2 = ref_std == test_nan
-
-        assert ans1 & ans2
 
     def test_clock_angle(self):
         """ Test clock angle."""
@@ -126,8 +74,8 @@ class TestOMNICustom:
         # Run the clock angle and steadiness routines
         pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
         pysat.instruments.omni_hro.calculate_imf_steadiness(self.testInst,
-                                                            min_periods=4,
-                                                            window=5)
+                                                            steady_window=5,
+                                                            min_window_frac=0.8)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
         byz_cv = pds.Series([np.nan, 0.158620, 0.229267, 0.239404, 0.469371,
@@ -149,8 +97,8 @@ class TestOMNICustom:
         # Run the clock angle and steadiness routines
         pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
         pysat.instruments.omni_hro.calculate_imf_steadiness(self.testInst,
-                                                            min_periods=4,
-                                                            window=5)
+                                                            steady_window=5,
+                                                            min_window_frac=0.8)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
         ca_std = pds.Series([np.nan, 13.317200, 14.429278, 27.278579,
