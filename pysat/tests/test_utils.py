@@ -235,8 +235,8 @@ class TestBasics:
         from scipy import stats
 
         ref_mean = stats.circmean(self.test_angles, **self.circ_kwargs)
-        test_mean = pysat.instruments.omni_hro.nan_circmean(self.test_angles,
-                                                            **self.circ_kwargs)
+        test_mean = pysat.utils.nan_circmean(self.test_angles,
+                                             **self.circ_kwargs)
         ans1 = ref_mean == test_mean
 
         assert ans1
@@ -247,8 +247,7 @@ class TestBasics:
 
         ref_mean = stats.circmean(self.test_angles, **self.circ_kwargs)
         ref_nan = stats.circmean(self.test_nan, **self.circ_kwargs)
-        test_nan = pysat.instruments.omni_hro.nan_circmean(self.test_nan,
-                                                           **self.circ_kwargs)
+        test_nan = pysat.utils.nan_circmean(self.test_nan, **self.circ_kwargs)
 
         ans1 = np.isnan(ref_nan)
         ans2 = ref_mean == test_nan
@@ -260,8 +259,7 @@ class TestBasics:
         from scipy import stats
 
         ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
-        test_std = pysat.instruments.omni_hro.nan_circstd(self.test_angles,
-                                                          **self.circ_kwargs)
+        test_std = pysat.utils.nan_circstd(self.test_angles, **self.circ_kwargs)
         ans1 = ref_std == test_std
 
         assert ans1
@@ -272,8 +270,7 @@ class TestBasics:
 
         ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
         ref_nan = stats.circstd(self.test_nan, **self.circ_kwargs)
-        test_nan = pysat.instruments.omni_hro.nan_circstd(self.test_nan,
-                                                          **self.circ_kwargs)
+        test_nan = pysat.utils.nan_circstd(self.test_nan, **self.circ_kwargs)
 
         ans1 = np.isnan(ref_nan)
         ans2 = ref_std == test_nan
