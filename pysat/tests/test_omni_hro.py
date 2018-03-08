@@ -15,7 +15,7 @@ class TestOMNICustom:
         # Recast time in minutes rather than seconds
         self.testInst.data.index = pds.Series([t + dt.timedelta(seconds=60-i) +
                                                dt.timedelta(minutes=i) \
-                                for i,t in enumerate(testInst.data.index)])
+                                for i,t in enumerate(self.testInst.data.index)])
 
         # Add IMF data
         self.testInst.data['BX_GSM'] = pds.Series([3.17384966, 5.98685138,
