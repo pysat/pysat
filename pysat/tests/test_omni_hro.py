@@ -62,7 +62,6 @@ class TestOMNICustom:
         test_diff = abs(test_angle - self.testInst['clock_angle'])
         ans1 = np.all(test_diff < 1.0e-8)
 
-        print(self.testInst['clock_angle'], test_diff, ans1)
         assert ans1
 
     def test_yz_plane_mag(self):
@@ -80,7 +79,6 @@ class TestOMNICustom:
         test_diff = abs(test_mag - self.testInst['BYZ_GSM'])
         ans1 = np.all(test_diff < 1.0e-8)
 
-        print(self.testInst['BYZ_GSM'], test_diff, ans1)
         assert ans1
 
     def test_yz_plane_cv(self):
@@ -104,7 +102,6 @@ class TestOMNICustom:
         ans2 = np.all(test_diff[~np.isnan(test_diff)] < 1.0e-6)
         ans3 = np.all(np.isnan(self.testInst['BYZ_CV']) == np.isnan(byz_cv))
 
-        print(self.testInst['BYZ_CV'], test_diff, ans1, ans2, ans3)
         assert ans1 & ans2 & ans3
 
     def test_clock_angle_std(self):
@@ -129,5 +126,4 @@ class TestOMNICustom:
         ans3 = np.all(np.isnan(self.testInst['clock_angle_std']) ==
                       np.isnan(ca_std))
 
-        print(self.testInst['clock_angle_std'], test_diff, ans1, ans2, ans3)
         assert ans1 & ans2 & ans3
