@@ -13,8 +13,8 @@ class TestOMNICustom:
         self.testInst.load(2009,1)
 
         # Recast time in minutes rather than seconds
-        testInst.data.index = pds.Series([t + dt.timedelta(seconds=60-i) +
-                                          dt.timedelta(minutes=i) \
+        self.testInst.data.index = pds.Series([t + dt.timedelta(seconds=60-i) +
+                                               dt.timedelta(minutes=i) \
                                 for i,t in enumerate(testInst.data.index)])
 
         # Add IMF data
