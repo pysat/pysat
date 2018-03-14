@@ -184,25 +184,25 @@ class Meta(object):
                         _ = value[key].pop(loc)
 
             lower_keys = [k.lower() for k in value.keys()]
-            if 'units' not in lower_keys:
+            if self._units_label.lower() not in lower_keys:
                 # provide default value, or copy existing
                 value[self._units_label] = []
                 for item_name in name:
                     if item_name not in self:
                         value[self._units_label].append('')
                     else:
-                        value[self._units_label].append(self[item_name, 'units'])
+                        value[self._units_label].append(self[item_name, self._units_label])
             # need to ensure that the units string is consistent with the rest
             # probably, that is
 
-            if 'long_name' not in lower_keys:
+            if self._name_label.lower() not in lower_keys:
                 # provide default value, or copy existing
                 value[self._name_label] = []
                 for item_name in name:
                     if item_name not in self:
                         value[self._name_label].append(item_name)
                     else:
-                        value[self._name_label].append(self[item_name,'long_name'])
+                        value[self._name_label].append(self[item_name, self._name_label])
             if len(name) > 0:
                 # make sure there is still something to add
                 new = DataFrame(value, index=name)
@@ -331,9 +331,9 @@ class Meta(object):
             if isinstance(metadata, DataFrame):
                 self.data = metadata
                 lower_columns = [name.lower() for name in self.data.columns]
-                if 'long_name' not in lower_columns:
+                if self._name_label.lower() not in lower_columns:
                     self.data[self._name_label] = self.data.index
-                if 'units' not in lower_columns:
+                if self._units_label.lower() not in lower_columns:
                     self.data[self._units_label] = ''
             else:
                 raise ValueError("Input must be a pandas DataFrame type. "+
