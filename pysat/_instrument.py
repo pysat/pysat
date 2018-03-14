@@ -1149,8 +1149,8 @@ class Instrument(object):
             # write out the datetime index
             if format == 'NETCDF4':
                 cdfkey = out_data.createVariable('epoch', 'i8', dimensions=('epoch'),)
-                cdfkey.units = 'Microseconds since 1970-1-1 00:00:00'
-                cdfkey[:] = (self.data.index.values.astype(np.int64)*1E-3).astype(np.int64)
+                cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
+                cdfkey[:] = (self.data.index.values.astype(np.int64)*1.E-6).astype(np.int64)
             else:
                 # can't store full time resolution
                 cdfkey = out_data.createVariable('epoch', 'f8', dimensions=('epoch'),)
@@ -1182,16 +1182,16 @@ class Instrument(object):
                             new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(coltype)
                         # really attach metadata now
                         cdfkey.setncatts(new_dict)
-                    except:
+                    except KeyError:
                         print(', '.join(('Unable to find MetaData for', key)))
                     # assign data
                     if datetime_flag:
                         if format == 'NETCDF4':
-                            cdfkey[:] = (data * 1.E-3).astype(coltype)
+                            cdfkey[:] = (data.values.astype(coltype) * 1.E-6).astype(coltype)
                         else:
-                            cdfkey[:] = (data * 1.E-6).astype(coltype)
+                            cdfkey[:] = (data.values.astype(coltype) * 1.E-6).astype(coltype)
                     else:
-                        cdfkey[:] = data.values
+                        cdfkey[:] = data.values.astype(coltype)
                 else:
                     # it is an object
                     # use info in coltype to get real datatype
@@ -1199,7 +1199,7 @@ class Instrument(object):
                         # dealing with a string
                         cdfkey = out_data.createVariable(key,
                                                          coltype,
-                                                         dimensions=('epoch'), )
+                                                         dimensions=('epoch'),)
                         # attach any meta data
                         try:
                             new_dict = self.meta[key].to_dict()
@@ -1214,8 +1214,8 @@ class Instrument(object):
                                 new_dict.pop(u'FillVal')
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
-                        except:
-                            print(', '.join(('Unable to find MetaData for', key)) )
+                        except KeyError:
+                            print(', '.join(('Unable to find MetaData for', key)))
                         cdfkey[:] = data.values
 
                     else:
@@ -1259,9 +1259,10 @@ class Instrument(object):
                             if is_frame:
                                 # attach any meta data
                                 try:
+                                    # print('Frame Writing ', key, col, self.meta[key][col])
                                     cdfkey.setncatts(self.meta[key][col].to_dict())
-                                except:
-                                    print(', '.join(('Unable to find MetaData for',key,col)) )
+                                except KeyError:
+                                    print(', '.join(('Unable to find MetaData for', key, col)) )
                                 # attach data
                                 for i in range(num):
                                     cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
@@ -1279,9 +1280,9 @@ class Instrument(object):
                         if datetime_flag:
                             #print('datetime flag')
                             if format == 'NETCDF4':
-                                cdfkey.units = 'Microseconds since 1970-1-1 00:00:00'
+                                cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                                 for i in range(num):
-                                    cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-3).astype(coltype)
+                                    cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
                             else:
                                 cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                                 for i in range(num):
@@ -1320,6 +1321,7 @@ class Instrument(object):
             for key in adict.keys():
                 if isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
+            # print('adict', adict)
 
             out_data.setncatts(adict)
         return
