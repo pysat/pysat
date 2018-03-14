@@ -62,6 +62,12 @@ class Instrument(object):
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be 
         expressed as '{platform}/{name}/{tag}'
+    units_label : str
+        label to use for units. Defaults to 'units' but some implementations
+        will use mixed case 'Units'
+    name_label : str
+        label to use for long name. Defaults to 'long_name' but some implementations
+        will use 'Long_Name'
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and sat_id will be filled in as needed using python string
@@ -139,7 +145,7 @@ class Instrument(object):
                  clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
-                 temporary_file_list=False,
+                 temporary_file_list=False, units_label='units', name_label='long_name',  
                  *arg, **kwargs):
 
         if inst_module is None:
@@ -201,7 +207,9 @@ class Instrument(object):
 
         # set up empty data and metadata
         self.data = DataFrame(None)
-        self.meta = _meta.Meta()
+        self.units_label = units_label
+        self.name_label = name_label
+        self.meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label)
         
         # function processing class, processes data on load
         self.custom = _custom.Custom()
@@ -500,7 +508,7 @@ class Instrument(object):
                                          sat_id=self.sat_id, **self.kwargs)
         else:
             data = DataFrame(None)
-            mdata = _meta.Meta()
+            mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label)
 
         output_str = '{platform} {name} {tag} {sat_id}'
         output_str = output_str.format(platform=self.platform,
@@ -739,8 +747,8 @@ class Instrument(object):
                
         # check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.data.columns] = {'long_name': self.data.columns,
-                                            'units': ['']*len(self.data.columns)}
+            self.meta[self.data.columns] = {self.name_label: self.data.columns,
+                                            self.units_label: ['']*len(self.data.columns)}
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
             if self.pad is not None:
