@@ -198,7 +198,7 @@ class Meta(object):
             elif self._units_label not in value.keys():
                 # case of 'units' provided doesn't match up with _units_label
                 # make it match
-                for lower_key, unit_key in zip(value.keys(), lower_keys):
+                for unit_key, lower_key in zip(value.keys(), lower_keys):
                     if lower_key == self._units_label.lower():
                         value[self._units_label] = value.pop(unit_key)
                         break
@@ -215,7 +215,7 @@ class Meta(object):
             elif self._name_label not in value.keys():
                 # case of 'units' provided doesn't match up with _name_label
                 # make it match
-                for lower_key, label_key in zip(value.keys(), lower_keys):
+                for label_key, lower_key in zip(value.keys(), lower_keys):
                     if lower_key == self._name_label.lower():
                         value[self._name_label] = value.pop(label_key)
                         break
@@ -224,7 +224,7 @@ class Meta(object):
             if len(name) > 0:
                 # make sure there is still something to add
                 new = DataFrame(value, index=name)
-                for item_name,item in new.iterrows():
+                for item_name, item in new.iterrows():
                     if item_name not in self:
                         self.data = self.data.append(item)
                     else:
