@@ -200,10 +200,12 @@ class Meta(object):
                 # make it match
                 for unit_key, lower_key in zip(value.keys(), lower_keys):
                     if lower_key == self._units_label.lower():
+                        # print('popping units_key ', unit_key)
                         value[self._units_label] = value.pop(unit_key)
                         break
             # check if 'long_name' has been provided
             # check against name_label, case insensitive
+            lower_keys = [k.lower() for k in value.keys()]
             if self._name_label.lower() not in lower_keys:
                 # provide default value, or copy existing
                 value[self._name_label] = []
@@ -217,6 +219,7 @@ class Meta(object):
                 # make it match
                 for label_key, lower_key in zip(value.keys(), lower_keys):
                     if lower_key == self._name_label.lower():
+                        # print('popping label_key ', label_key)
                         value[self._name_label] = value.pop(label_key)
                         break
 
