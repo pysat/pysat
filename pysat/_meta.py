@@ -135,15 +135,12 @@ class Meta(object):
                         # for na in name:
                         #     value[na] = [[]]
 
-
+            # perform some checks on the data
             # if not passed an iterable, make it one
             if isinstance(name, basestring):
                 name = [name]
                 for key in value.keys():
                     value[key] = [value[key]]
-
-            # if len(name) != len(value):
-            #     raise ValueError('Length of names and all inputs must be equal.')
 
             for key in value.keys():
                 if len(name) != len(value[key]):
@@ -183,18 +180,30 @@ class Meta(object):
                     for key in value.keys():
                         _ = value[key].pop(loc)
 
+            # check if 'units' have been provided
+            # check against units_label, case insensitive
             lower_keys = [k.lower() for k in value.keys()]
             if self._units_label.lower() not in lower_keys:
+                # 'units' not provided
                 # provide default value, or copy existing
                 value[self._units_label] = []
                 for item_name in name:
                     if item_name not in self:
+                        # overall variable not in Meta, can use default
+                        # 'default'
                         value[self._units_label].append('')
                     else:
+                        # copy existing
                         value[self._units_label].append(self[item_name, self._units_label])
-            # need to ensure that the units string is consistent with the rest
-            # probably, that is
-
+            elif self._units_label not in value.keys():
+                # case of 'units' provided doesn't match up with _units_label
+                # make it match
+                for lower_key, unit_key in zip(value.keys(), lower_keys):
+                    if lower_key == self._units_label.lower():
+                        value[self._units_label] = value.pop(unit_key)
+                        break
+            # check if 'long_name' has been provided
+            # check against name_label, case insensitive
             if self._name_label.lower() not in lower_keys:
                 # provide default value, or copy existing
                 value[self._name_label] = []
@@ -203,6 +212,15 @@ class Meta(object):
                         value[self._name_label].append(item_name)
                     else:
                         value[self._name_label].append(self[item_name, self._name_label])
+            elif self._name_label not in value.keys():
+                # case of 'units' provided doesn't match up with _name_label
+                # make it match
+                for lower_key, label_key in zip(value.keys(), lower_keys):
+                    if lower_key == self._name_label.lower():
+                        value[self._name_label] = value.pop(label_key)
+                        break
+
+            # time to actually add the metadata
             if len(name) > 0:
                 # make sure there is still something to add
                 new = DataFrame(value, index=name)

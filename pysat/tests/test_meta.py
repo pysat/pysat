@@ -239,6 +239,13 @@ class TestBasics:
         assert ((self.meta['new', 'units'] == 'hey') & (self.meta['new', 'long_name'] == 'boo') &
             (self.meta['new2', 'units'] == 'hey2') & (self.meta['new2', 'long_name'] == 'boo2'))
 
+    def test_set_Units_wrong_case(self):
+        self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
+        print(self.meta['new'])
+        assert ((self.meta['new'].Units == 'hey') & (self.meta['new'].Long_Name == 'boo') &
+            (self.meta['new2'].Units == 'hey2') & (self.meta['new2'].Long_Name == 'boo2'))
 
 
     # Test the attribute transfer function
