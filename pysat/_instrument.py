@@ -1104,23 +1104,21 @@ class Instrument(object):
         
         return data, data_type, datetime_flag
 
-    def to_netcdf4(self, fname=None, format=None, base_instrument=None):
+    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch'):
         """Stores loaded data into a netCDF3/4 file.
         
         Parameters
         ----------
         fname : string
             full path to save instrument object to
-        format : string
-            format keyword passed to netCDF4 routine
-            NETCDF3_CLASSIC, NETCDF3_64BIT, NETCDF4_CLASSIC, and NETCDF4
         base_instrument : pysat.Instrument
             used as a comparison, only attributes that are present with
             self and not on base_instrument are written to netCDF
+        epoch_name : str
+            Label in file for datetime index of Instrument object
         
         Note
         ----
-        Not all features supported by netCDF3 formats.
 
         Stores 1-D data along dimension 'epoch' - the date time index.
         
@@ -1143,25 +1141,24 @@ class Instrument(object):
         import netCDF4
         import pysat
 
-        if format is None:
-            format = 'NETCDF4'
-        else:
-            format = format.upper()
+        file_format = 'NETCDF4'
 
         base_instrument = Instrument() if base_instrument is None else base_instrument
-        with netCDF4.Dataset(fname, mode='w', format=format) as out_data:
+        with netCDF4.Dataset(fname, mode='w', format=file_format) as out_data:
 
             num = len(self.data.index)
-            out_data.createDimension('epoch', num)
+            out_data.createDimension(epoch_name, num)
             
             # write out the datetime index
-            if format == 'NETCDF4':
-                cdfkey = out_data.createVariable('epoch', 'i8', dimensions=('epoch'),)
+            if file_format == 'NETCDF4':
+                cdfkey = out_data.createVariable(epoch_name, 'i8', dimensions=(epoch_name),
+                                                 zlib=True) #, chunksizes=1)
                 cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                 cdfkey[:] = (self.data.index.values.astype(np.int64)*1.E-6).astype(np.int64)
             else:
                 # can't store full time resolution
-                cdfkey = out_data.createVariable('epoch', 'f8', dimensions=('epoch'),)
+                cdfkey = out_data.createVariable(epoch_name, 'f8', dimensions=(epoch_name),
+                                                 zlib=True) #, chunksizes=1)
                 cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                 cdfkey[:] = (self.data.index.values.astype(int)*1.E-6).astype(np.float)
     
@@ -1171,14 +1168,15 @@ class Instrument(object):
             # store all of the data in dataframe columns
             for key in self.data.columns:
                 # get information on data
-                data, coltype, datetime_flag = self._get_data_info(self[key], format)
+                data, coltype, datetime_flag = self._get_data_info(self[key], file_format)
 
                 if self[key].dtype != np.dtype('O'):
                     # not an object, normal basic data
-                    # print(key, coltype, format)
+                    # print(key, coltype, file_format)
                     cdfkey = out_data.createVariable(key,
                                                      coltype,
-                                                     dimensions=('epoch'), )
+                                                     dimensions=(epoch_name),
+                                                     zlib=True) #, chunksizes=1)
                     # attach any meta data
                     try:
                         new_dict = self.meta[key].to_dict()
@@ -1194,7 +1192,7 @@ class Instrument(object):
                         print(', '.join(('Unable to find MetaData for', key)))
                     # assign data
                     if datetime_flag:
-                        if format == 'NETCDF4':
+                        if file_format == 'NETCDF4':
                             cdfkey[:] = (data.values.astype(coltype) * 1.E-6).astype(coltype)
                         else:
                             cdfkey[:] = (data.values.astype(coltype) * 1.E-6).astype(coltype)
@@ -1207,7 +1205,8 @@ class Instrument(object):
                         # dealing with a string
                         cdfkey = out_data.createVariable(key,
                                                          coltype,
-                                                         dimensions=('epoch'),)
+                                                         dimensions=(epoch_name),
+                                                         zlib=True) #, chunksizes=1)
                         # attach any meta data
                         try:
                             new_dict = self.meta[key].to_dict()
@@ -1238,7 +1237,7 @@ class Instrument(object):
                             obj_dim_names.append(key+'_dimension_%i' % (i+1))
                             out_data.createDimension(obj_dim_names[-1], dim)
                         # total dimensions stored for object are epoch plus ones just above
-                        var_dim = tuple(['epoch']+obj_dim_names)
+                        var_dim = tuple([epoch_name]+obj_dim_names)
                         # iterate over columns and store
                         try:
                             iterable = self[key].iloc[0].columns
@@ -1257,12 +1256,13 @@ class Instrument(object):
 
                         for col in iterable:
                             if is_frame:
-                                data, coltype, _ = self._get_data_info(self[key].iloc[data_loc][col], format)
+                                data, coltype, _ = self._get_data_info(self[key].iloc[data_loc][col], file_format)
                             else:
-                                data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], format)
+                                data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], file_format)
                             cdfkey = out_data.createVariable(key + '_' + col,
                                                              coltype,
-                                                             dimensions=var_dim)
+                                                             dimensions=var_dim,
+                                                             zlib=True) #, chunksizes=1)
 
                             if is_frame:
                                 # attach any meta data
@@ -1282,12 +1282,13 @@ class Instrument(object):
                                     cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
 
                         # store the dataframe index for each time of main dataframe
-                        data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, format)
+                        data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, file_format)
                         cdfkey = out_data.createVariable(key+'_dimension_1',
-                                                         coltype, dimensions=var_dim)
+                                                         coltype, dimensions=var_dim,
+                                                         zlib=True) #, chunksizes=1)
                         if datetime_flag:
                             #print('datetime flag')
-                            if format == 'NETCDF4':
+                            if file_format == 'NETCDF4':
                                 cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                                 for i in range(num):
                                     cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
