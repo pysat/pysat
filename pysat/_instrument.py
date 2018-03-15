@@ -1104,7 +1104,7 @@ class Instrument(object):
         
         return data, data_type, datetime_flag
 
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch'):
+    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch', zlib=False):
         """Stores loaded data into a netCDF3/4 file.
         
         Parameters
@@ -1116,6 +1116,8 @@ class Instrument(object):
             self and not on base_instrument are written to netCDF
         epoch_name : str
             Label in file for datetime index of Instrument object
+        zlib : boolean
+            Flag for engaging zlib compression (True - compression on)
         
         Note
         ----
@@ -1152,13 +1154,13 @@ class Instrument(object):
             # write out the datetime index
             if file_format == 'NETCDF4':
                 cdfkey = out_data.createVariable(epoch_name, 'i8', dimensions=(epoch_name),
-                                                 zlib=True) #, chunksizes=1)
+                                                 zlib=zlib) #, chunksizes=1)
                 cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                 cdfkey[:] = (self.data.index.values.astype(np.int64)*1.E-6).astype(np.int64)
             else:
                 # can't store full time resolution
                 cdfkey = out_data.createVariable(epoch_name, 'f8', dimensions=(epoch_name),
-                                                 zlib=True) #, chunksizes=1)
+                                                 zlib=zlib) #, chunksizes=1)
                 cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
                 cdfkey[:] = (self.data.index.values.astype(int)*1.E-6).astype(np.float)
     
@@ -1176,7 +1178,7 @@ class Instrument(object):
                     cdfkey = out_data.createVariable(key,
                                                      coltype,
                                                      dimensions=(epoch_name),
-                                                     zlib=True) #, chunksizes=1)
+                                                     zlib=zlib) #, chunksizes=1)
                     # attach any meta data
                     try:
                         new_dict = self.meta[key].to_dict()
@@ -1206,7 +1208,7 @@ class Instrument(object):
                         cdfkey = out_data.createVariable(key,
                                                          coltype,
                                                          dimensions=(epoch_name),
-                                                         zlib=True) #, chunksizes=1)
+                                                         zlib=zlib) #, chunksizes=1)
                         # attach any meta data
                         try:
                             new_dict = self.meta[key].to_dict()
@@ -1262,7 +1264,7 @@ class Instrument(object):
                             cdfkey = out_data.createVariable(key + '_' + col,
                                                              coltype,
                                                              dimensions=var_dim,
-                                                             zlib=True) #, chunksizes=1)
+                                                             zlib=zlib) #, chunksizes=1)
 
                             if is_frame:
                                 # attach any meta data
@@ -1285,7 +1287,7 @@ class Instrument(object):
                         data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, file_format)
                         cdfkey = out_data.createVariable(key+'_dimension_1',
                                                          coltype, dimensions=var_dim,
-                                                         zlib=True) #, chunksizes=1)
+                                                         zlib=zlib) #, chunksizes=1)
                         if datetime_flag:
                             #print('datetime flag')
                             if file_format == 'NETCDF4':
