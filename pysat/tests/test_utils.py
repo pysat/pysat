@@ -114,6 +114,49 @@ class TestBasics:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
         # assert(np.all(self.testInst.data == loaded_inst))
 
+    def test_basic_writing_and_reading_netcdf4_default_format_w_compression(self):
+        # create a bunch of files by year and doy
+        from unittest.case import SkipTest
+        try:
+            import netCDF4
+        except ImportError:
+            raise SkipTest
+
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.to_netcdf4(outfile, zlib=True)
+
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
+        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
+
+        for key in self.testInst.data.columns:
+            print('Testing Data Equality to filesystem and back ', key)
+            assert (np.all(self.testInst[key] == loaded_inst[key]))
+            # assert(np.all(self.testInst.data == loaded_inst))
+
+    def test_basic_writing_and_reading_netcdf4_default_format_w_weird_epoch_name(self):
+        # create a bunch of files by year and doy
+        from unittest.case import SkipTest
+        try:
+            import netCDF4
+        except ImportError:
+            raise SkipTest
+
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.to_netcdf4(outfile, epoch_name='Santa')
+
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile, epoch_name='Santa')
+        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
+        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
+
+        for key in self.testInst.data.columns:
+            print('Testing Data Equality to filesystem and back ', key)
+            assert (np.all(self.testInst[key] == loaded_inst[key]))
+
     def test_basic_writing_and_reading_netcdf4_default_format_higher_order(self):
         # create a bunch of files by year and doy
         from unittest.case import SkipTest
@@ -141,6 +184,32 @@ class TestBasics:
         test_inst.data.drop('profiles', inplace=True, axis=1)    
         assert(np.all((test_inst.data == loaded_inst).all()))
 
+    def test_basic_writing_and_reading_netcdf4_default_format_higher_order_w_Compression(self):
+        # create a bunch of files by year and doy
+        from unittest.case import SkipTest
+        try:
+            import netCDF4
+        except ImportError:
+            raise SkipTest
+        test_inst = pysat.Instrument('pysat', 'testing2d')
+        prep_dir(test_inst)
+        outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
+        test_inst.load(2009, 1)
+        test_inst.to_netcdf4(outfile, zlib=True)
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        test_inst.data = test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
+        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
+        prep_dir(test_inst)
+
+        # test Series of DataFrames
+        test_list = []
+        # print (loaded_inst.columns)
+        for frame1, frame2 in zip(test_inst.data['profiles'],
+                                  loaded_inst['profiles']):
+            test_list.append((frame1 == frame2).all())
+        loaded_inst.drop('profiles', inplace=True, axis=1)
+        test_inst.data.drop('profiles', inplace=True, axis=1)
+        assert (np.all((test_inst.data == loaded_inst).all()))
 
     # def test_basic_writing_and_reading_netcdf4_multiple_formats(self):
     #     # create a bunch of files by year and doy

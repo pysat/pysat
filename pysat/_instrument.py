@@ -1049,15 +1049,14 @@ class Instrument(object):
             else:
                 self.load(fname=self._iter_list[-1], verifyPad=verifyPad)
 
-
-    def _get_data_info(self, data, format):
+    def _get_data_info(self, data, file_format):
         """Support file writing by determiniing data type and other options
 
         Parameters
         ----------
         data : pandas object
             Data to be written
-        format : basestring
+        file_format : basestring
             String indicating netCDF3 or netCDF4
 
         Returns
@@ -1066,9 +1065,9 @@ class Instrument(object):
         """
         # get type of data
         data_type = data.dtype
-        # check if older format
-        # if format[:7] == 'NETCDF3':
-        if format != 'NETCDF4':
+        # check if older file_format
+        # if file_format[:7] == 'NETCDF3':
+        if file_format != 'NETCDF4':
             old_format = True
         else:
             old_format = False
@@ -1171,7 +1170,7 @@ class Instrument(object):
             for key in self.data.columns:
                 # get information on data
                 data, coltype, datetime_flag = self._get_data_info(self[key], file_format)
-
+                # operate on data based upon type
                 if self[key].dtype != np.dtype('O'):
                     # not an object, normal basic data
                     # print(key, coltype, file_format)
@@ -1212,14 +1211,10 @@ class Instrument(object):
                         # attach any meta data
                         try:
                             new_dict = self.meta[key].to_dict()
-                            # no FillValue allowed
+                            # no FillValue or FillVal allowed for strings
                             if u'_FillValue' in new_dict.keys():
                                 new_dict.pop(u'_FillValue')
-                                # make sure _FillValue is the same type as the data
-                                # new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(self[key].dtype)
                             if u'FillVal' in new_dict.keys():
-                                # make sure _FillValue is the same type as the data
-                                # new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(self[key].dtype)
                                 new_dict.pop(u'FillVal')
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
@@ -1265,24 +1260,54 @@ class Instrument(object):
                                                              coltype,
                                                              dimensions=var_dim,
                                                              zlib=zlib) #, chunksizes=1)
-
                             if is_frame:
                                 # attach any meta data
                                 try:
                                     # print('Frame Writing ', key, col, self.meta[key][col])
-                                    cdfkey.setncatts(self.meta[key][col].to_dict())
+                                    new_dict = self.meta[key][col].to_dict()
+                                    if u'_FillValue' in new_dict.keys():
+                                        # make sure _FillValue is the same type as the data
+                                        new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(coltype)
+                                    if u'FillVal' in new_dict.keys():
+                                        # make sure _FillValue is the same type as the data
+                                        new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(coltype)
+                                    cdfkey.setncatts(new_dict)
+
                                 except KeyError:
                                     print(', '.join(('Unable to find MetaData for', key, col)) )
                                 # attach data
+                                # it may be slow to repeatedly call the store method as well astype method below
+                                # collect data into a numpy array, then write the full array in one go
+                                # print(coltype, dims)
+                                temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
                                 for i in range(num):
-                                    cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
+                                    temp_cdf_data[i, :] = self[key].iloc[i][col].values
+                                cdfkey[:, :] = temp_cdf_data.astype(coltype)
+                                # for i in range(num):
+                                #     cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
                             else:
                                 # attach any meta data
-                                cdfkey.setncatts(self.meta[key].to_dict())
-                                # attach data
-                                for i in range(num):
-                                    cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
+                                try:
+                                    new_dict = self.meta[key].to_dict()
+                                    if u'_FillValue' in new_dict.keys():
+                                        # make sure _FillValue is the same type as the data
+                                        new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(coltype)
+                                    if u'FillVal' in new_dict.keys():
+                                        # make sure _FillValue is the same type as the data
+                                        new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(coltype)
+                                    # really attach metadata now
+                                    cdfkey.setncatts(new_dict)
+                                except KeyError:
+                                    print(', '.join(('Unable to find MetaData for', key)))
+                                # cdfkey.setncatts(self.meta[key].to_dict())
 
+                                # # attach data
+                                # for i in range(num):
+                                #     cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
+                                temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
+                                for i in range(num):
+                                    temp_cdf_data[i, :] = self[key].iloc[i].values#.astype(coltype)
+                                cdfkey[:, :] = temp_cdf_data.astype(coltype)
                         # store the dataframe index for each time of main dataframe
                         data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, file_format)
                         cdfkey = out_data.createVariable(key+'_dimension_1',
