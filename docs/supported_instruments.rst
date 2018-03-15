@@ -44,6 +44,12 @@ Kp
 .. automodule:: pysat.instruments.sw_kp
    :members: __doc__, filter_geoquiet
 
+ISS-FPMU
+--------
+
+.. automodule:: pysat.instruments.iss_fpmu
+   :members: __doc__
+
 OMNI
 ----
 
