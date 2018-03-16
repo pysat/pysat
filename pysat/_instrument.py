@@ -1102,7 +1102,40 @@ class Instrument(object):
                 
         
         return data, data_type, datetime_flag
+        
+    def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False):
+        """Filter metadata properties to be consistent with netCDF4.
+        
+        Parameters
+        ----------
+        mdata_dict : dict
+            Dictionary equivalent to Meta object info
+        coltype : type
+            Type provided by _get_data_info
+        remove : boolean (False)
+            Removes FillValue and associated parameters disallowed for strings
+            
+        Returns
+        -------
+        dict
+            Modified as needed for netCDf4
+        
+        """
 
+        if u'_FillValue' in mdata_dict.keys():
+            # make sure _FillValue is the same type as the data
+            if remove:
+                mdata_dict.pop('_FillValue')
+            else:
+                mdata_dict['_FillValue'] = np.array(mdata_dict['_FillValue']).astype(coltype)
+        if u'FillVal' in mdata_dict.keys():
+            # make sure _FillValue is the same type as the data
+            if remove:
+                mdata_dict.pop('FillVal')
+            else:
+                mdata_dict['FillVal'] = np.array(mdata_dict['FillVal']).astype(coltype)
+        return mdata_dict
+        
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch', zlib=False):
         """Stores loaded data into a netCDF3/4 file.
         
@@ -1143,28 +1176,22 @@ class Instrument(object):
         import pysat
 
         file_format = 'NETCDF4'
-
         base_instrument = Instrument() if base_instrument is None else base_instrument
+        
         with netCDF4.Dataset(fname, mode='w', format=file_format) as out_data:
 
             num = len(self.data.index)
             out_data.createDimension(epoch_name, num)
             
             # write out the datetime index
-            if file_format == 'NETCDF4':
-                cdfkey = out_data.createVariable(epoch_name, 'i8', dimensions=(epoch_name),
-                                                 zlib=zlib) #, chunksizes=1)
-                cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
-                cdfkey[:] = (self.data.index.values.astype(np.int64)*1.E-6).astype(np.int64)
-            else:
-                # can't store full time resolution
-                cdfkey = out_data.createVariable(epoch_name, 'f8', dimensions=(epoch_name),
-                                                 zlib=zlib) #, chunksizes=1)
-                cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
-                cdfkey[:] = (self.data.index.values.astype(int)*1.E-6).astype(np.float)
-    
-            cdfkey.long_name = 'UNIX time'
-            cdfkey.calendar = 'standard'
+            cdfkey = out_data.createVariable(epoch_name, 'i8', dimensions=(epoch_name),
+                                                zlib=zlib) #, chunksizes=1)
+            new_dict = {}
+            new_dict[self.meta._name_label] = 'UNIX'
+            new_dict[self.meta._units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+            new_dict['calendar'] = 'standard'
+            cdfkey.setncatts(new_dict)
+            cdfkey[:] = (self.data.index.values.astype(np.int64)*1.E-6).astype(np.int64)
                             
             # store all of the data in dataframe columns
             for key in self.data.columns:
@@ -1178,25 +1205,16 @@ class Instrument(object):
                                                      coltype,
                                                      dimensions=(epoch_name),
                                                      zlib=zlib) #, chunksizes=1)
-                    # attach any meta data
+                    # attach any meta data, after filtering for standards
                     try:
                         new_dict = self.meta[key].to_dict()
-                        if u'_FillValue' in new_dict.keys():
-                            # make sure _FillValue is the same type as the data
-                            new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(coltype)
-                        if u'FillVal' in new_dict.keys():
-                            # make sure _FillValue is the same type as the data
-                            new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(coltype)
-                        # really attach metadata now
+                        new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                         cdfkey.setncatts(new_dict)
                     except KeyError:
                         print(', '.join(('Unable to find MetaData for', key)))
                     # assign data
                     if datetime_flag:
-                        if file_format == 'NETCDF4':
-                            cdfkey[:] = (data.values.astype(coltype) * 1.E-6).astype(coltype)
-                        else:
-                            cdfkey[:] = (data.values.astype(coltype) * 1.E-6).astype(coltype)
+                        cdfkey[:] = (data.values.astype(coltype) * 1.E-6).astype(coltype)
                     else:
                         cdfkey[:] = data.values.astype(coltype)
                 else:
@@ -1212,10 +1230,8 @@ class Instrument(object):
                         try:
                             new_dict = self.meta[key].to_dict()
                             # no FillValue or FillVal allowed for strings
-                            if u'_FillValue' in new_dict.keys():
-                                new_dict.pop(u'_FillValue')
-                            if u'FillVal' in new_dict.keys():
-                                new_dict.pop(u'FillVal')
+                            new_dict = self._filter_netcdf4_metadata(new_dict, 
+                                                            coltype, remove=True)
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
@@ -1265,14 +1281,8 @@ class Instrument(object):
                                 try:
                                     # print('Frame Writing ', key, col, self.meta[key][col])
                                     new_dict = self.meta[key][col].to_dict()
-                                    if u'_FillValue' in new_dict.keys():
-                                        # make sure _FillValue is the same type as the data
-                                        new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(coltype)
-                                    if u'FillVal' in new_dict.keys():
-                                        # make sure _FillValue is the same type as the data
-                                        new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(coltype)
+                                    new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     cdfkey.setncatts(new_dict)
-
                                 except KeyError:
                                     print(', '.join(('Unable to find MetaData for', key, col)) )
                                 # attach data
@@ -1289,51 +1299,50 @@ class Instrument(object):
                                 # attach any meta data
                                 try:
                                     new_dict = self.meta[key].to_dict()
-                                    if u'_FillValue' in new_dict.keys():
-                                        # make sure _FillValue is the same type as the data
-                                        new_dict['_FillValue'] = np.array(new_dict['_FillValue']).astype(coltype)
-                                    if u'FillVal' in new_dict.keys():
-                                        # make sure _FillValue is the same type as the data
-                                        new_dict['FillVal'] = np.array(new_dict['FillVal']).astype(coltype)
+                                    new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # really attach metadata now
                                     cdfkey.setncatts(new_dict)
                                 except KeyError:
                                     print(', '.join(('Unable to find MetaData for', key)))
-                                # cdfkey.setncatts(self.meta[key].to_dict())
-
-                                # # attach data
-                                # for i in range(num):
-                                #     cdfkey[i, :] = self[key].iloc[i].values.astype(coltype)
+                                # attach data
                                 temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
                                 for i in range(num):
-                                    temp_cdf_data[i, :] = self[key].iloc[i].values#.astype(coltype)
+                                    temp_cdf_data[i, :] = self[i, key].values#.astype(coltype)
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
+                                
                         # store the dataframe index for each time of main dataframe
                         data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, file_format)
                         cdfkey = out_data.createVariable(key+'_dimension_1',
                                                          coltype, dimensions=var_dim,
                                                          zlib=zlib) #, chunksizes=1)
                         if datetime_flag:
-                            #print('datetime flag')
-                            if file_format == 'NETCDF4':
-                                cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
-                                for i in range(num):
-                                    cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
-                            else:
-                                cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
-                                for i in range(num):
-                                    cdfkey[i, :] = (self[key].iloc[i].index.values.astype(coltype)*1.E-6).astype(coltype)
-
-                            cdfkey.long_name = 'UNIX time'
+                            #print('datetime flag')                            
+                            new_dict = {}
+                            new_dict[self.meta._name_label] = 'UNIX'
+                            new_dict[self.meta._units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+                            # cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
+                            cdfkey.setncatts(new_dict)
+                            # set data
+                            temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
+                            for i in range(num):
+                                temp_cdf_data[i, :] = self[i, key].index.values
+                            cdfkey[:, :] = (temp_cdf_data.astype(coltype)*1.E-6).astype(coltype)
+ 
                         else:
                             #cdfkey.units = ''
+                            new_dict = {}
+                            # get name of data for metadata
                             if self[key].iloc[data_loc].index.name is not None:
-                                cdfkey.long_name = self[key].iloc[data_loc].index.name
+                                new_dict[self.meta._name_label] = self[key].iloc[data_loc].index.name
                             else:
-                                cdfkey.long_name = key
+                                new_dict[self.meta._name_label] = key
+                            cdfkey.setncatts(new_dict)
+                            # set data
+                            temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
                             for i in range(num):
-                                cdfkey[i, :] = self[key].iloc[i].index.to_native_types()
-
+                                temp_cdf_data[i, :] = self[key].iloc[i].index.to_native_types()
+                            cdfkey[:, :] = temp_cdf_data.astype(coltype)
+                            
             # store any non standard attributes
             base_attrb = dir(base_instrument)
             this_attrb = dir(self)

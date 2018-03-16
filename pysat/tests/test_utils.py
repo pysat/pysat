@@ -181,7 +181,7 @@ class TestBasics:
                                   loaded_inst['profiles']):
             test_list.append((frame1 == frame2).all())
         loaded_inst.drop('profiles', inplace=True, axis=1) 
-        test_inst.data.drop('profiles', inplace=True, axis=1)    
+        test_inst.data.drop('profiles', inplace=True, axis=1)   
         assert(np.all((test_inst.data == loaded_inst).all()))
 
     def test_basic_writing_and_reading_netcdf4_default_format_higher_order_w_Compression(self):

@@ -171,14 +171,14 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                     # the obj_key_name part has been stripped off
                     index_key_name = 'dimension_1' #'samples'
                     # if the object index uses UNIX time, process into datetime index  
-                    if data.variables[obj_key_name+'_dimension_1'].long_name == 'UNIX time':
+                    if data.variables[obj_key_name+'_dimension_1'].getncattr(name_label) == 'UNIX':
                         # name to be used in DataFrame index
-                        index_name = 'epoch'
+                        index_name = epoch_name
                         time_index_flag = True
                     else:
                         time_index_flag = False
                         # label to be used in DataFrame index
-                        index_name = data.variables[obj_key_name+'_dimension_1'].long_name
+                        index_name = data.variables[obj_key_name+'_dimension_1'].getncattr(name_label)
                 else:
                     # dimension is not itself a variable
                     index_key_name  = None                
