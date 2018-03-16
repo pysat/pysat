@@ -37,6 +37,12 @@ COSMIC GPS
 
 .. automodule:: pysat.instruments.cosmic_gps
    :members: __doc__
+   
+Dst
+---
+
+.. automodule:: pysat.instruments.sw_dst
+   :members: __doc__
 
 Kp
 --
