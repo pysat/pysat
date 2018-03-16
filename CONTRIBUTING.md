@@ -58,6 +58,8 @@ To set up `pysat` for local development:
     
 4. When you're done making changes, run all the checks to ensure that nothing
    is broken on your local system.
+   
+    nosetests -vs pysat
 
 5. Update/add documentation (in ``docs``), if relevant
 
