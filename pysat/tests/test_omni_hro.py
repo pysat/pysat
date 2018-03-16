@@ -19,27 +19,27 @@ class TestOMNICustom:
                                 for i,t in enumerate(self.testInst.data.index)])
 
         # Add IMF data
-        self.testInst.data['BX_GSM'] = pds.Series([3.17384966, 5.98685138,
-                                                   1.78749668, 0.38628409,
-                                                   2.73080263, 1.58814078,
-                                                   5.24880448, 3.92347300,
-                                                   5.59494670, 0.93246592,
-                                                   5.23676319, 1.14214992], \
-                                                index=self.testInst.data.index)
-        self.testInst.data['BY_GSM'] = pds.Series([3.93531272, 2.50331246,
-                                                   0.99765539, 1.07203600,
-                                                   5.43752734, 5.10629137,
-                                                   0.59588891, 2.19412638,
-                                                   0.15550858, 3.75433603,
-                                                   4.82323932, 3.61784563], \
-                                                index=self.testInst.data.index)
-        self.testInst.data['BZ_GSM'] = pds.Series([3.94396168, 5.61163579,
-                                                   4.02930788, 5.47347958,
-                                                   5.69823962, 0.47219819,
-                                                   1.47760461, 3.47187188,
-                                                   4.12581021, 4.40641671,
-                                                   2.87780562, 0.58539121], \
-                                                index=self.testInst.data.index)
+        self.testInst['BX_GSM'] = pds.Series([3.17384966, 5.98685138,
+                                              1.78749668, 0.38628409,
+                                              2.73080263, 1.58814078,
+                                              5.24880448, 3.92347300,
+                                              5.59494670, 0.93246592,
+                                              5.23676319, 1.14214992], \
+                                           index=self.testInst.data.index)
+        self.testInst['BY_GSM'] = pds.Series([3.93531272, 2.50331246,
+                                              0.99765539, 1.07203600,
+                                              5.43752734, 5.10629137,
+                                              0.59588891, 2.19412638,
+                                              0.15550858, 3.75433603,
+                                              4.82323932, 3.61784563], \
+                                           index=self.testInst.data.index)
+        self.testInst['BZ_GSM'] = pds.Series([3.94396168, 5.61163579,
+                                              4.02930788, 5.47347958,
+                                              5.69823962, 0.47219819,
+                                              1.47760461, 3.47187188,
+                                              4.12581021, 4.40641671,
+                                              2.87780562, 0.58539121], \
+                                           index=self.testInst.data.index)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
