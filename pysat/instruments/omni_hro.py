@@ -118,15 +118,12 @@ def load(fnames, tag=None, sat_id=None):
         # pull out date appended to filename
         fname = fnames[0][0:-11]
         date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
-        try:
-            cdf = pysatCDF.CDF(fname)
+        with pysatCDF.CDF(fname) as cdf:
             data, meta = cdf.to_pysat()
             # pick out data for date
             data = data.ix[date:date+pds.DateOffset(days=1) -
                            pds.DateOffset(microseconds=1)] 
             return data, meta
-        except e:
-            raise e
 
 def clean(omni):
     for key in omni.data.columns:
@@ -140,7 +137,7 @@ def clean(omni):
                                                             fill_attr.upper())
 
             idx, = np.where(omni[key] == getattr(omni.meta[key], fill_attr))
-            omni.data.ix[idx, key] = np.nan
+            omni[idx, key] = np.nan
     return
 
 def time_shift_to_magnetic_poles(inst):
@@ -249,12 +246,12 @@ def calculate_clock_angle(inst):
     # Calculate clock angle in degrees
     clock_angle = np.degrees(np.arctan2(inst['BY_GSM'], inst['BZ_GSM']))
     clock_angle[clock_angle < 0.0] += 360.0
-    inst.data['clock_angle'] = pds.Series(clock_angle, index=inst.data.index)
+    inst['clock_angle'] = pds.Series(clock_angle, index=inst.data.index)
 
     # Calculate magnitude of IMF in Y-Z plane
-    inst.data['BYZ_GSM'] = pds.Series(np.sqrt(inst['BY_GSM']**2 +
-                                              inst['BZ_GSM']**2),
-                                      index=inst.data.index)
+    inst['BYZ_GSM'] = pds.Series(np.sqrt(inst['BY_GSM']**2 +
+                                         inst['BZ_GSM']**2),
+                                       index=inst.data.index)
 
     return
 
@@ -294,7 +291,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
                                        window=steady_window).mean()
     byz_std = inst['BYZ_GSM'].rolling(min_periods=min_wnum, center=True,
                                       window=steady_window).std()
-    inst.data['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
+    inst['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
 
     # Calculate the running circular standard deviation of the clock angle
     circ_kwargs = {'high':360.0, 'low':0.0}
@@ -302,7 +299,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     ca_std = inst['clock_angle'].rolling(min_periods=min_wnum,
                                          window=steady_window, \
                 center=True).apply(pysat.utils.nan_circstd, kwargs=circ_kwargs)
-    inst.data['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
+    inst['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
 
     # Determine how long the clock angle and IMF magnitude are steady
     imf_steady = np.zeros(shape=inst.data.index.shape)
@@ -325,5 +322,5 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
             imf_steady[i] += sample_rate
             steady = True
 
-    inst.data['IMF_Steady'] = pds.Series(imf_steady, index=inst.data.index)
+    inst['IMF_Steady'] = pds.Series(imf_steady, index=inst.data.index)
     return
