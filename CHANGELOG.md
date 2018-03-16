@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
+ - Added initial support for ICON IVM
+ - Added support for version/revision numbers in filenames within Files class constructor from_os
+
 
 ## [0.6.0] - 2017-08-11
  - Many changes since the last note here.
