@@ -60,7 +60,7 @@ OMNI
 ----
 
 .. automodule:: pysat.instruments.omni_hro
-   :members: __doc__, calculate_clock_angle, calculate_imf_steadiness
+   :members: __doc__, calculate_clock_angle, calculate_imf_steadiness, time_shift_to_magnetic_poles
 
 ROCSAT-1 IVM
 ------------
