@@ -16,3 +16,4 @@ Welcome to pysat's documentation!
    supported_instruments.rst
    new_instrument.rst
    api.rst
+   contributing.rst
