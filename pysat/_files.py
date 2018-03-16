@@ -425,6 +425,8 @@ class Files(object):
                 two_digit_year_break=None):
         """
         Produces a list of files and and formats it for Files class.
+
+        Requires fixed_width filename
         
         Parameters
         ----------
@@ -435,6 +437,9 @@ class Files(object):
         format_str : string with python format codes
             Provides the naming pattern of the instrument files and the 
             locations of date information so an ordered list may be produced.
+            Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
+            and 'revision'
+            Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
         two_digit_year_break : int
             If filenames only store two digits for the year, then
             '1900' will be added for years >= two_digit_year_break
@@ -443,8 +448,13 @@ class Files(object):
         Note
         ----
         Does not produce a Files instance, but the proper output
-        from instrument_module.list_files method.        
+        from instrument_module.list_files method.
+
+        The '?' may be used to indicate a set number of spaces for a variable
+        part of the name that need not be extracted.
+        'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
         """
+
         import collections
         
         from pysat.utils import create_datetime_index
@@ -458,13 +468,20 @@ class Files(object):
         # to identify files in the filesystem
         search_str = ''
         form = string.Formatter()
+        # stores the keywords extracted from format_string
         keys = []
+        #, and length of string
         snips = []
         length = []
         stored = collections.OrderedDict()
         stored['year'] = []; stored['month'] = []; stored['day'] = [];
         stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
+        stored['version'] = []; stored['revision'] = [];
         for snip in form.parse(format_str):
+            # collect all of the format keywords
+            # replace them in the string with the '*' wildcard
+            # then try and get width from format keywords so we know
+            # later on where to parse information out from
             search_str += snip[0]
             snips.append(snip[0])
             if snip[1] is not None:
@@ -542,12 +559,33 @@ class Files(object):
                 stored['sec'] += 3600 * stored['hour']
             if stored['min'] is not None:
                 stored['sec'] += 60 * stored['min']
-            
+            # if stored['version'] is None:
+            #     stored['version'] = np.zeros(len(files))
+            if stored['revision'] is None:
+                stored['revision'] = np.zeros(len(files))
+
             index = create_datetime_index(year=stored['year'],
                                           month=stored['month'], 
                                           day=stored['day'], uts=stored['sec'])
 
-            return pds.Series(files, index=index)
+            # if version and revision are supplied
+            # use these parameters to weed out files that have been replaced
+            # with updated versions
+            # first, check for duplicate index times
+            dups = index.get_duplicates()
+            if (len(dups) > 0) and (stored['version'] is not None):
+                # we have duplicates
+                # keep the highest version/revision combo
+                version = pds.Series(stored['version'], index=index)
+                revision = pds.Series(stored['revision'], index=index)
+                revive = version*100000. + revision
+                frame = pds.DataFrame({'files':files, 'revive':revive, 'time':index}, index=index)
+                frame = frame.sort_values(by=['time', 'revive'], ascending=[True, False])
+                frame = frame.drop_duplicates(subset='time', keep='first')
+
+                return frame['files']
+            else:
+                return pds.Series(files, index=index)
         else:
             return pds.Series(None) 
 
