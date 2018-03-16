@@ -40,6 +40,7 @@ time_shift_to_magnetic_poles : Shift time from bowshock to intersection with
 calculate_clock_angle : Calculate the clock angle and IMF mag in the YZ plane
 calculate_imf_steadiness : Calculate the IMF steadiness using clock angle and
                            magnitude in the YZ plane
+                           
 """
 
 from __future__ import print_function
@@ -153,6 +154,11 @@ def time_shift_to_magnetic_poles(inst):
     ---------
     Time shift calculated using distance to bow shock nose (BSN)
     and velocity of solar wind along x-direction.
+    
+    Warnings
+    --------
+    Use at own risk.
+    
     """
     
     # need to fill in Vx to get an estimate of what is going on
