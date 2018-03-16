@@ -54,7 +54,7 @@ ICON IVM
 --------
 
 .. automodule:: pysat.instruments.icon_ivm
-   :members: __doc__
+   :members: __doc__, remove_icon_names
 
 
 ISS-FPMU

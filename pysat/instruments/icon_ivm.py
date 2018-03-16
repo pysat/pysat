@@ -18,7 +18,9 @@ Warnings
 --------
 - No download routine as ICON has not yet been launched
 - Data not yet publicly available
-       
+
+R. A. Stoneback
+
 """
 
 from __future__ import print_function
@@ -99,13 +101,26 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 def download(inst, start, stop, user=None, password=None):
     """ICON has not yet been launched."""
     
-    
-    
     return
         
 
 def remove_icon_names(inst, target=None):
     """Removes leading text on ICON project variable names
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        ICON associated pysat.Instrument object
+    target : str
+        Leading string to remove. If none supplied,
+        ICON project standards are used to identify and remove
+        leading text
+
+    Returns
+    -------
+    None
+        Modifies Instrument object in place
+
 
     """
   
