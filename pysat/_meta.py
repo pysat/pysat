@@ -56,18 +56,30 @@ class Meta(object):
             return True
         return False
 
-    def __repr__(self):
+    def __repr__(self, recurse=True):
         # cover 1D parameters
-        output_str = 'Metadata for 1D parameters\n'
+        if recurse:
+            output_str = 'Metadata for 1D variables\n'
+        else:
+            output_str = ''
         # print('Metadata for 1D parameters')
         # print(self.data)
-        output_str += self.data.__str__()
+        for ind in self.data.index:
+            output_str += ind.ljust(30)
+        output_str += '\n\n'
+        output_str += 'Tracking the following:\n'
+        for col in self.data.columns:
+            output_str += col.ljust(30)
+        
+        # output_str += self.data.__str__()
         output_str += '\n'
-        for item_name in self.ho_data.keys():
-            output_str += '\n\n'
-            output_str += 'Metadata for '+item_name+'\n'
-            # print(self.ho_data[item_name].data)
-            output_str += self.ho_data[item_name].data.__str__()
+        if recurse:
+            for item_name in self.ho_data.keys():
+                output_str += '\n\n'
+                output_str += 'Metadata for '+item_name+'\n'
+                # print(self.ho_data[item_name].data)
+                output_str += self.ho_data[item_name].__repr__(False)
+
         return output_str
 
     def concat(self, other):
