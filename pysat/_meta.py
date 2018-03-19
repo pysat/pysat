@@ -62,22 +62,19 @@ class Meta(object):
             output_str = 'Metadata for 1D variables\n'
         else:
             output_str = ''
-        # print('Metadata for 1D parameters')
-        # print(self.data)
+
         for ind in self.data.index:
             output_str += ind.ljust(30)
         output_str += '\n\n'
         output_str += 'Tracking the following:\n'
         for col in self.data.columns:
             output_str += col.ljust(30)
-        
-        # output_str += self.data.__str__()
+
         output_str += '\n'
         if recurse:
             for item_name in self.ho_data.keys():
                 output_str += '\n\n'
                 output_str += 'Metadata for '+item_name+'\n'
-                # print(self.ho_data[item_name].data)
                 output_str += self.ho_data[item_name].__repr__(False)
 
         return output_str
@@ -252,6 +249,8 @@ class Meta(object):
 
         elif isinstance(value, Meta):
             # dealing with higher order data set
+            # check in units_label and name_label are the same
+            # don't want inconsistencies!!
             self.ho_data[name] = value
 
     def __getitem__(self, key):
