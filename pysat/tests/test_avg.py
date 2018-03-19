@@ -62,6 +62,11 @@ class TestBasics:
             check.append(np.all(dummy3_val[:, i] == x/15.*1000. + dummy_y[:-1]) )
             check.append(np.all(dummy3_dev[:, i] == 0))
                             
+        import code
+        code.interact(local=dict(globals(), **locals())) # FIXME
+        assert self.testInst.data.size == sum([ sum(i) for i in results['dummy1']['count'] ])
+
+        assert False
         assert np.all(check)
 
     def test_basic_daily_mean(self):        
