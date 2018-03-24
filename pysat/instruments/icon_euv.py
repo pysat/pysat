@@ -15,6 +15,7 @@ tag : string
 Warnings
 --------
 - The cleaning parameters for the instrument are still under development.
+- Only supports level-2 data.
 
 Authors
 ---------
@@ -140,16 +141,16 @@ def load(fnames, tag=None, sat_id=None):
     df['model'] = loop_list
     meta['model'] = meta2
     
-    # # model covariance
-    # df2 = pysat.DataFrame()
-    # df2[np.arange(step_size)] = a['ICON_L2_EUV_Daytime_OP_Model_Covfit'].data.flatten(order='C')
-    # loop_list = []
-    # new_index = np.arange(step_size)
-    # for i in np.arange(num):
-    #     loop_list.append(df2.iloc[step_size*i:step_size*(i+1), :])
-    #     loop_list[-1].index = new_index
-    #     loop_list[-1].index.name = 'index'
-    # df['model_covfit'] = loop_list
+    # model covariance
+    df2 = pysat.DataFrame()
+    temp = a['ICON_L2_EUV_Daytime_OP_Model_Covfit'].data
+    loop_list = []
+    for i in np.arange(num):
+        loop_list.append(pysat.DataFrame(temp[i, :, :]))
+        # loop_list[-1].index = new_index
+        loop_list[-1].index.name = 'index'
+    df['model_covfit'] = loop_list
+    meta['model_covfit'] = a['ICON_L2_EUV_Daytime_OP_Model_Covfit'].attrs
 
     # Input Data vs altitude
     df2 = pysat.DataFrame()
