@@ -79,7 +79,7 @@ def load(fnames, tag=None, sat_id=None):
                               index=ii,
                               columns=['density', 'fraction'])
 
-    series_alt = pds.Series(dd, index=ii)
+    series_alt = pds.Series(dd, index=ii, name='series_profiles')
 
     for time in data.index:
         frame.index = high_rate_template + (time - data.index[0])
