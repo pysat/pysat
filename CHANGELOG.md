@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
- - Added more unit test for seasonal averages
+ - Added more unit tests for seasonal averages
+ - Added initial support for ICON EUV
  - Added initial support for ICON IVM
  - Added support for version/revision numbers in filenames within Files class constructor from_os
 
