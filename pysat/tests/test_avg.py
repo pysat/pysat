@@ -23,11 +23,11 @@ else:
 
 class TestBasics:
     def setup(self):
-        '''Runs before every method to create a clean testing setup.'''
+        """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat','testing', clean_level='clean')
 
     def teardown(self):
-        '''Runs after every method to clean up previous testing.'''
+        """Runs after every method to clean up previous testing."""
         del self.testInst
 
     def test_basic_seasonal_average(self):
@@ -51,19 +51,17 @@ class TestBasics:
         # no variation in the median, all values should be the same
         check = []
         for i, y in enumerate(dummy_y[:-1]):
-            check.append(np.all(dummy_val[i, :] == y.astype(int)))
-            check.append(np.all(dummy_dev[i, :] == 0))
+            assert np.all(dummy_val[i, :] == y.astype(int))
+            assert np.all(dummy_dev[i, :] == 0)
 
         for i, x in enumerate(dummy_x[:-1]):
-            check.append(np.all(dummy2_val[:, i] == x/15.) )
-            check.append(np.all(dummy2_dev[:, i] == 0))
+            assert np.all(dummy2_val[:, i] == x/15.)
+            assert np.all(dummy2_dev[:, i] == 0)
 
         for i, x in enumerate(dummy_x[:-1]):
-            check.append(np.all(dummy3_val[:, i] == x/15.*1000. + dummy_y[:-1]) )
-            check.append(np.all(dummy3_dev[:, i] == 0))
-                            
-        assert np.all(check)
-        
+            assert np.all(dummy3_val[:, i] == x/15.*1000. + dummy_y[:-1])
+            assert np.all(dummy3_dev[:, i] == 0)
+
     def test_basic_daily_mean(self):        
         self.testInst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         ans = pysat.ssnl.avg.mean_by_day(self.testInst, 'dummy4')
@@ -80,9 +78,71 @@ class TestBasics:
     def test_basic_file_mean(self):
         index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1)) 
         names = [ date.strftime('%D')+'.nofile' for date in index]
-        #print (self.testInst.files.files)
-        #print(names)
         self.testInst.bounds = (names[0], names[-1])
         ans = pysat.ssnl.avg.mean_by_file(self.testInst, 'dummy4')
         assert np.all(ans == 86399/2.)
+
+
+class TestFrameProfileAverages:
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing2D', clean_level='clean')
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+    def test_basic_seasonal_average(self):
+
+        self.testInst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        results = pysat.ssnl.avg.median2D(self.testInst, [0., 360., 24.], 'longitude',
+                                          [0., 24, 24], 'mlt', ['alt_profiles'])
+                                          
+        dummy_val = results['alt_profiles']['median']
+        dummy_dev = results['alt_profiles']['avg_abs_dev']
         
+        # iterate over all 
+        # no variation in the median, all values should be the same
+        test_vals = np.arange(50)*1.2
+        test_fracs = np.arange(50)/50.
+        for i, row in enumerate(dummy_val):
+            for j, item in enumerate(row):
+                assert np.all(item['density'] == test_vals)
+                assert np.all(item['fraction'] == test_fracs)
+                
+        for i, row in enumerate(dummy_dev):
+            for j, item in enumerate(row):
+                assert np.all(item['density'] == 0)
+                assert np.all(item['fraction'] == 0)
+
+
+class TestSeriesProfileAverages:
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing2D', clean_level='clean')
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+    def test_basic_seasonal_average(self):
+
+        self.testInst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        results = pysat.ssnl.avg.median2D(self.testInst, [0., 360., 24.], 'longitude',
+                                          [0., 24, 24], 'mlt', ['series_profiles'])
+                                          
+        dummy_val = results['series_profiles']['median']
+        dummy_dev = results['series_profiles']['avg_abs_dev']
+        
+        # iterate over all 
+        # no variation in the median, all values should be the same
+        test_vals = np.arange(50)*1.2
+        for i, row in enumerate(dummy_val):
+            for j, item in enumerate(row):
+                assert np.all(item == test_vals)
+                
+        for i, row in enumerate(dummy_dev):
+            for j, item in enumerate(row):
+                assert np.all(item == 0)
+
+
