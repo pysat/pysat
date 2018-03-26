@@ -521,7 +521,7 @@ class Instrument(object):
             if not isinstance(mdata, _meta.Meta):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
-                output_str = ' '.join(('Returning', output_str, 'data for', date.strftime('%D')))
+                output_str = ' '.join(('Returning', output_str, 'data for', date.strftime('%m/%d/%y')))
             else:
                 if len(fname) == 1:
                     # this check was zero
@@ -530,7 +530,7 @@ class Instrument(object):
                     output_str = ' '.join(('Returning', output_str, 'data from', fname[0], '::', fname[-1]))
         else:
             # no data signal
-            output_str = ' '.join(('No', output_str, 'data for', date.strftime('%D')))
+            output_str = ' '.join(('No', output_str, 'data for', date.strftime('%m/%d/%y')))
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         print (output_str)                
