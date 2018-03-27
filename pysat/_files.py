@@ -80,6 +80,7 @@ class Files(object):
     def __init__(self, sat, manual_org=False, directory_format=None,
                        update_files=False, file_format=None,
                        write_to_disk=True):
+        
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
         # location of .pysat file
@@ -100,7 +101,7 @@ class Files(object):
         if directory_format is None:
             directory_format = os.path.join('{platform}','{name}','{tag}')
         self.directory_format = directory_format
-        
+
         # user-specified file format
         self.file_format = file_format
 
@@ -120,12 +121,12 @@ class Files(object):
             self.data_path = self.data_path[:-1]
         elif self.data_path[-1] != os.path.sep:
             self.data_path = os.path.join(self.data_path, '')
-        
+
         self.write_to_disk = write_to_disk
         if write_to_disk is False:
             self._previous_file_list = pds.Series([], dtype='a')
             self._current_file_list = pds.Series([], dtype='a')
-            
+
         if self._sat.platform != '':
             # load stored file info
             info = self._load()
@@ -188,7 +189,8 @@ class Files(object):
         if new_flag:
             # print('New files')
             if self.write_to_disk:
-                stored_files.to_csv(os.path.join(self.home_path, 'previous_'+name),
+                stored_files.to_csv(os.path.join(self.home_path,
+                                                 'previous_'+name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f')
                 self.files.to_csv(os.path.join(self.home_path, name),
                                 date_format='%Y-%m-%d %H:%M:%S.%f')
@@ -220,7 +222,8 @@ class Files(object):
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
-                return pds.read_csv(fname, index_col=0, parse_dates=True, squeeze=True, header=None)
+                return pds.read_csv(fname, index_col=0, parse_dates=True,
+                                    squeeze=True, header=None)
             else:
                 # grab files from memory
                 if prev_version:
@@ -257,9 +260,10 @@ class Files(object):
         if not info.empty:
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
-            estr = "Unable to find any files that match the supplied template. If you have the necessary files "
-            estr = "{:s}please check pysat settings and file ".format(estr)
-            print("{:s}locations.".format(estr))
+            estr = "Unable to find any files that match the supplied template."
+            estr += " If you have the necessary files please check pysat "
+            estr += "settings and file locations."
+            print(estr)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
         self._store()
@@ -331,8 +335,11 @@ class Files(object):
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
-                raise ValueError('Could not find "'+fname+ '" in available file list. Valid Example: '+self.files.iloc[0])
-        # return a scalar rather than array - otherwise introduces array to index warnings.
+                raise ValueError('Could not find "' + fname +
+                                 '" in available file list. Valid Example: ' +
+                                 self.files.iloc[0])
+        # return a scalar rather than array - otherwise introduces array to
+        # index warnings.
         return idx[0]
 
     # convert this to a normal get so files[in:in2] gives the same as requested
@@ -579,8 +586,10 @@ class Files(object):
                 version = pds.Series(stored['version'], index=index)
                 revision = pds.Series(stored['revision'], index=index)
                 revive = version*100000. + revision
-                frame = pds.DataFrame({'files':files, 'revive':revive, 'time':index}, index=index)
-                frame = frame.sort_values(by=['time', 'revive'], ascending=[True, False])
+                frame = pds.DataFrame({'files':files, 'revive':revive,
+                                       'time':index}, index=index)
+                frame = frame.sort_values(by=['time', 'revive'],
+                                          ascending=[True, False])
                 frame = frame.drop_duplicates(subset='time', keep='first')
 
                 return frame['files']
