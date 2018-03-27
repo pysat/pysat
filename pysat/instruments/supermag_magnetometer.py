@@ -292,7 +292,7 @@ def load_ascii_data(fnames, tag):
                             else:
                                 ddict[kk].append(float(lsplit[i]))
 
-                    if snum == 0 and len(ddict.keys()) >= 2 > :
+                    if snum == 0 and len(ddict.keys()) >= 2:
                         # The previous value was the last value, prepare for
                         # next block
                         if 'datetime' not in ddict.keys():
