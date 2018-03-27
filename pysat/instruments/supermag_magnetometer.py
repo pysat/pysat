@@ -39,14 +39,10 @@ Custom Functions
                            
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-import os
-import sys
-import functools
-
+from __future__ import print_function, absolute_import
 import pandas as pds
 import numpy as np
+from os import path
 
 import pysat
 
@@ -58,6 +54,11 @@ tags = {'indices':'SMU and SML indices',
 sat_ids = {'':tags.keys()}
 test_dates = {'':{kk:pysat.datetime(2009,1,1) for kk in tags.keys()}}
 
+def init(self):
+    """
+    """
+
+    return
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen SuperMAG data
@@ -83,21 +84,25 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         A class containing the verified available files
     """
     if format_str is None and data_path is not None:
-        if (tag == 'indices') | (tag is None) | (tag == 'all'):
-            min_fmt = ''.join(['????????-??-??-supermag.txt'])
-            files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
-            # files are by month, just add date to monthly filename for
-            # each day of the month. load routine will use date to select out
-            # appropriate data
-            if not files.empty:
-                files.ix[files.index[-1] + pds.DateOffset(months=1) -
-                         pds.DateOffset(days=1)] = files.iloc[-1]
-                files = files.asfreq('D', 'pad')
-                # add the date to the filename
-                files = files + '_' + files.index.strftime('%Y-%m-%d')
-            return files
-        else:
-            raise ValueError('Unknown tag')
+        file_base = 'supermag_magnetometer'
+        if tag == "indices" or tag == "all":
+            file_base += '_all' # Can't just download indices
+
+            if tag == "indices":
+                psplit = path.split(data_path[:-1])
+                data_path = path.join(psplit[0], "all", "")
+
+        min_fmt = '_'.join([file_base, '{year:4d}{month:02d}{day:02d}.???'])
+        files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
+        # files may consist of an arbitraty amount of time, specify the starting
+        # date for now.  Currently assumes 1 month of data.
+        if not files.empty:
+            files.ix[files.index[-1] + pds.DateOffset(months=1) -
+                     pds.DateOffset(days=1)] = files.iloc[-1]
+            files = files.asfreq('D', 'pad')
+            # add the date to the filename
+            files = files + '_' + files.index.strftime('%Y-%m-%d')
+        return files
     elif format_str is None:
         estr = 'A directory must be passed to the loading routine for SuperMAG'
         raise ValueError (estr)
@@ -105,7 +110,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
             
 
-def load(fnames, tag=None, sat_id=None, file_type="ascii"):
+def load(fnames, tag=None, sat_id=None):
     """ Load the SuperMAG files
 
     Parameters
@@ -117,8 +122,6 @@ def load(fnames, tag=None, sat_id=None, file_type="ascii"):
         and None (for just magnetometer measurements). (default=None)
     sat_id : (str or NoneType)
         Satellite ID for constellations, not used. (default=None)
-    file_type : (str)
-        Specifies if file is ascii or csv (default='ascii')
 
     Returns
     --------
@@ -127,20 +130,37 @@ def load(fnames, tag=None, sat_id=None, file_type="ascii"):
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
     """
-    baseline = list()
-
     # Ensure that there are files to load
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
 
-    # Open and load the files for each file type
-    if file_type.lower() == "csv":
-        if tag == "indices":
-            return pysat.DataFrame(None), pysat.Meta(None)
+    # Ensure that the files are in a list
+    if isinstance(fnames, basestring):
+        fnames = [fnames]
+
+    # Initialise the output data
+    data = pds.DataFrame()
+    baseline = list()
+
+    # Cycle through the files
+    for fname in fnames:
+        fname = fname[:-11] # Remove date index from end of filename
+        file_type = path.splitext(fname)[1].lower()
+
+        # Open and load the files for each file type
+        if file_type == ".csv":
+            if tag != "indices":
+                temp = load_csv_data(fname)
         else:
-            data = load_csv_data(fnames)
-    else:
-        data, baseline = load_ascii_data(fnames, tags)
+            temp, bline = load_ascii_data(fname, tag)
+
+            if bline is not None:
+                baseline.append(bline)
+
+        # Save the loaded data in the output data structure
+        if len(temp.columns) > 0:
+            data = pds.concat([data, temp], axis=0)
+        del temp
 
     # If data was loaded, update the meta data
     if len(data.columns) > 0:
@@ -148,19 +168,19 @@ def load(fnames, tag=None, sat_id=None, file_type="ascii"):
         for cc in data.columns:
             meta[cc] = update_smag_metadata(cc)
 
-        meta['baseline'] = format_baseline_list(baseline)
+        meta.info = {'baseline':format_baseline_list(baseline)}
     else:
         meta = pysat.Meta(None)
 
     return data, meta
 
-def load_csv_data(fnames):
-    """Load data from comma separated SuperMAG files
+def load_csv_data(fname):
+    """Load data from a comma separated SuperMAG file
 
     Parameters
     ------------
-    fnames : (list)
-        List of CSV SuperMAG files
+    fname : (str)
+        CSV SuperMAG file name
 
     Returns
     --------
@@ -169,28 +189,21 @@ def load_csv_data(fnames):
     """
     # Define the date parser
     def parse_smag_date(dd):                                               
-        return dt.datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
-
-    # Ensure that the files are in a list
-    if isinstance(fnames, basestring):
-        fnames = [fnames]
+        return pysat.datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
 
     # Cycle through the files and load them into a data frame
-    data = pds.DataFrame()
-    for fname in fnames:
-        temp = pds.read_csv(fname, parse_dates={'datetime':[0]},
-                            date_parser=parse_smag_date, index_col='datetime')
-        data = pds.concat([data, temp], axis=0)
+    data = pds.read_csv(fname, parse_dates={'datetime':[0]},
+                        date_parser=parse_smag_date, index_col='datetime')
 
     return data
             
-def load_ascii_data(fnames, tag):
-    """Load data from comma separated SuperMAG files
+def load_ascii_data(fname, tag):
+    """Load data from a self-documenting ASCII SuperMAG file
 
     Parameters
     ------------
-    fnames : (list)
-        List of CSV SuperMAG files
+    fname : (str)
+        ASCII SuperMAG filename
     tag : (str)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         and None (for just magnetometer measurements). (default=None)
@@ -203,86 +216,91 @@ def load_ascii_data(fnames, tag):
         List of strings denoting the presence of a standard and file-specific
         baselines for each file
     """
-    ndata = {"indices":2, None:4, 'date':7}
+    ndata = {"indices":2, None:4, 'date':7, "all":4}
     dkeys = [ 'IAGA', 'N', 'E', 'Z']
+    data = pds.DataFrame(None)
+    baseline = None
 
     # Ensure that the tag indicates a type of data we know how to load
     if not tag in ndata.keys():
-        return pysat.DataFrame(None)
+        return data, baseline
 
-    # Ensure that the files are in a list
-    if isinstance(fnames, basestring):
-        fnames = [fnames]
+    # Read in the text data, processing the header, indices, and
+    # magnetometer data (as desired)
+    with open(fname, "r") as fopen:
+        # Set the processing flags
+        hflag = True  # header lines
+        pflag = False # parameter line
+        dflag = True  # date line
+        snum = 0      # number of magnetometer stations
+        ddict = dict()
+        date_list = list()
 
-    # Initialise the output data
-    data = pds.DataFrame()
-    baseline = list()
+        for fline in fopen.readlines():
+            # Cycle past the header
+            line_len = len(fline)
 
-    # Cycle through the files and load them
-    for fname in fnames:
-        # Read in the text data, processing the header, indices, and
-        # magnetometer data (as desired)
-        try:
-            fopen = open(fname, "r")
+            if hflag:
+                if pflag:
+                    pflag = False # Unset the flag
+                    if fline.find("-mlt") > 0:
+                        ndata[None] += 2
+                        dkeys.extend(['MLT', 'MLAT'])
+                    if fline.find("-sza") > 0:
+                        ndata[None] += 1
+                        dkeys.append('SZA')
+                    if fline.find("-decl") > 0:
+                        ndata[None] += 1
+                        dkeys.append('IGRF_DECL')
+                    if tag == "indices" and fline.find("-envelope") < 0:
+                        # Indices not included in this file
+                        break
 
-            # Set the processing flags
-            hflag = True  # header lines
-            pflag = False # parameter line
-            dflag = True  # date line
-            snum = 0      # number of magnetometer stations
-            ddict = dict()
-
-            for fline in fopen.readlines():
-                # Cycle past the header
-                line_len = len(fline)
-                if hflag:
-                    if pflag:
-                        pflag = False # Unset the flag
-                        if fline.find("-mlt") > 0:
-                            ndata[None] += 2
-                            dkeys.extend(['MLT', 'MLAT'])
-                        if fline.find("-sza") > 0:
-                            ndata[None] += 1
-                            dkeys.append('SZA')
-                        if fline.find("-decl") > 0:
-                            ndata[None] += 1
-                            dkeys.append('IGRF_DECL')
-                        if tag == "indices" and fline.find("-envelope") < 0:
-                            # Indices not included in this file
-                            break
-
-                        # Save the baseline information
-                        lsplit = fline.split()
-                        idelta = lsplit.index('-delta') + 1
-                        ibase = lsplit.index('-baseline') + 1
-                        isd = lsplit.index('-sd') + 1
-                        ist = lsplit.index('-st') + 1
-                        iex = lsplit.index('-ex') + 1
-                        bline = " ".join([lsplit[ibase], lsplit[idelta],
-                                          lsplit[isd], lsplit[ist],
-                                          lsplit[iex]])
-                        baseline.append(bline)
-                    if fline.find("Selected parameters:") >= 0:
-                        pflag = True
-                    if fline.count("=") == line_len - 1 and line_len > 2:
-                        hflag = False
-                else:
-                    # Load the desired data
+                    # Save the baseline information
                     lsplit = fline.split()
+                    idelta = lsplit.index('-delta') + 1
+                    ibase = lsplit.index('-baseline') + 1
+                    isd = lsplit.index('-sd') + 1
+                    ist = lsplit.index('-st') + 1
+                    iex = lsplit.index('-ex') + 1
+                    baseline = " ".join([lsplit[ibase], lsplit[idelta],
+                                         lsplit[isd], lsplit[ist], lsplit[iex]])
 
-                    if dflag:
-                        dflag = False # Unset the date flag
-                        dstring = " ".join(lsplit[:6])
-                        dtime = dt.datetime.strptime(dstring,
-                                                     "%Y %m %d %H %M %S")
-                        snum = int(lsplit[6])
-                    elif lsplit == ndata['indices']:
-                        if tag is not None:
-                            if lsplit[0] not in ddict.keys():
-                                ddict[lsplit[0]] = list()
+                if fline.find("Selected parameters:") >= 0:
+                    pflag = True
+                if fline.count("=") == line_len - 1 and line_len > 2:
+                    hflag = False
+            else:
+                # Load the desired data
+                lsplit = fline.split()
+
+                if dflag:
+                    dflag = False # Unset the date flag
+                    dstring = " ".join(lsplit[:6])
+                    dtime = pysat.datetime.strptime(dstring,
+                                                    "%Y %m %d %H %M %S")
+                    snum = int(lsplit[6])
+
+                    # Load the times
+                    if tag == "indices":
+                        date_list.append(dtime)
+                    else:
+                        date_list.extend([dtime for i in range(snum)])
+                elif len(lsplit) == ndata['indices']:
+                    if tag is not None:
+                        if lsplit[0] not in ddict.keys():
+                            ddict[lsplit[0]] = list()
+
+                        if tag == "indices":
                             ddict[lsplit[0]].append(int(lsplit[1]))
-                    elif lsplit == ndata[None]:
-                        snum -= 1
+                        else:
+                            # This works because indices occur before
+                            # magnetometer measurements
+                            ddict[lsplit[0]].extend([int(lsplit[1])
+                                                     for i in range(snum)])
+                elif len(lsplit) == ndata[None]:
+                    snum -= 1
+                    if tag != "indices":
                         if len(ddict.keys()) < 4:
                             for kk in dkeys:
                                 ddict[kk] = list()
@@ -292,27 +310,16 @@ def load_ascii_data(fnames, tag):
                             else:
                                 ddict[kk].append(float(lsplit[i]))
 
-                    if snum == 0 and len(ddict.keys()) >= 2:
-                        # The previous value was the last value, prepare for
-                        # next block
-                        if 'datetime' not in ddict.keys():
-                            ddict['datetime'] = list()
-                        ddict['datetime'].extend([dtime
-                                                  for i in ddict.values()[0]])
-                        dflag = True
+                if snum == 0 and len(ddict.keys()) >= 2:
+                    # The previous value was the last value, prepare for
+                    # next block
+                    dflag = True
 
-            # Close the file
-            fopen.close()
+        # Create a data frame for this file
+        data = pds.DataFrame(ddict, index=date_list,
+                             columns=ddict.keys())
 
-            # Create a data frame for this file
-            temp = pds.DataFrame(ddict, index=ddict['datetime'],
-                                 columns=ddict.keys())
-
-            # Save the data in a DataFrame for all files
-            data = pds.concat([data, temp], axis=0)
-            del temp, ddict
-        except:
-            print("Unable to load file [{:s}]".format(fname))
+        fopen.close()
 
     return data, baseline
 
@@ -332,7 +339,7 @@ def update_smag_metadata(col_name):
 
     smag_units = {'IAGA':'none', 'N':'nT', 'E':'nT', 'Z':'nT', 'MLT':'hours',
                   'MLAT':'degrees', 'SZA':'degrees', 'IGRF_DECL':'degrees',
-                  'SMU':'none', 'SML':'none'}
+                  'SMU':'none', 'SML':'none', 'datetime':'YYYY-MM-DD HH:MM:SS'}
     smag_name = {'IAGA':'Station Code', 'N':'B along local magnetic North',
                  'E':'B along local magnetic East', 'Z':'B vertically downward',
                  'MLT':'Magnetic Local Time', 'MLAT':'Magnetic Latitude',
@@ -343,7 +350,7 @@ def update_smag_metadata(col_name):
                  '80 degrees magnetic north.',
                  'SML':'Maximum westward auroral electrojets strength.\n'
                  'Lower envelope of N-component for stations between 40 and 80'
-                 ' degrees magnetic north.'}
+                 ' degrees magnetic north.', 'datetime':'UT date and time'}
 
     col_dict = {'units':smag_units[col_name], 'long_name':smag_name[col_name]}
 
@@ -377,7 +384,7 @@ def format_baseline_list(baseline_list):
             uniq_delta[bsplit[1]] = ""
 
         uniq_base[bsplit[0]] += "{:s}, ".format(bdate)
-        uniq_base[bsplit[1]] += "{:s}, ".format(bdate)
+        uniq_delta[bsplit[1]] += "{:s}, ".format(bdate)
 
     if len(uniq_base.keys()) == 1:
         base_string = "Baseline {:s}".format(uniq_base.keys()[0])
@@ -390,6 +397,8 @@ def format_baseline_list(baseline_list):
             else:
                 base_string += "         {:s}: {:s}".format(kk,
                                                             uniq_base[kk][:-2])
+        else:
+            base_string += "unknown"
 
     if len(uniq_delta.keys()) == 1:
         base_string += "\nDelta    {:s}".format(uniq_delta.keys()[0])
@@ -402,22 +411,14 @@ def format_baseline_list(baseline_list):
             else:
                 base_string += "         {:s}: {:s}".format(kk,
                                                             uniq_delta[kk][:-2])
+        else:
+            base_string += "unknown"
+
     return base_string
 
 def clean(supermag):
-    for key in supermag.data.columns:
-        if key != 'Epoch':
-            fill_attr = "fillval"
-            if not hasattr(supermag.meta[key], fill_attr):
-                if hasattr(supermag.meta[key], fill_attr.upper()):
-                    fill_attr = fill_attr.upper()
-                else:
-                    raise "unknown attribute {:s} or {:s}".format(fill_attr, \
-                                                            fill_attr.upper())
-
-            idx, = np.where(supermag[key] == getattr(supermag.meta[key],
-                                                     fill_attr))
-            supermag[idx, key] = np.nan
+    """ Data is not supplied when it isn't clean
+    """
     return
 
 def download(date_array, tag, sat_id='', data_path=None, user=None,
