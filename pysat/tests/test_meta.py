@@ -145,7 +145,7 @@ class TestBasics:
     def test_replace_meta_units_list(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
         self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
-        self.meta['new2','new'] = {'units':['yeppers','yep']}
+        self.meta[['new2','new']] = {'units':['yeppers','yep']}
         #print self.meta['new']
         #print self.meta['new2']
         assert ((self.meta['new'].units == 'yep') & (self.meta['new'].long_name == 'boo') &
@@ -154,7 +154,7 @@ class TestBasics:
     def test_meta_repr_functions(self):
         self.testInst.meta['new'] = {'units':'hey', 'long_name':'boo'}
         self.testInst.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
-        print (self.testInst.meta)
+        # print (self.testInst.meta)
         # if it doesn't produce an error, we presume it works
         # how do you test a print??
         assert True
@@ -167,6 +167,7 @@ class TestBasics:
                                     keep_default_na=False,
                                     col_names=['name','long_name','idx','units','description'])
         check = []
+        # print(mdata['yrdoy'])
         check.append(mdata['yrdoy'].long_name == 'Date')
         check.append(mdata['unit_mer_z'].long_name == 'Unit Vector - Meridional Dir - S/C z')
         check.append(mdata['iv_mer'].description == 'Constructed using IGRF mag field.') 
@@ -243,10 +244,161 @@ class TestBasics:
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        print(self.meta['new'])
+        # print(self.meta['new'])
         assert ((self.meta['new'].Units == 'hey') & (self.meta['new'].Long_Name == 'boo') &
             (self.meta['new2'].Units == 'hey2') & (self.meta['new2'].Long_Name == 'boo2'))
 
+    def test_change_Units_and_Name_case(self):
+        self.meta = pysat.Meta(units_label='units', name_label='long_name')
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
+        self.meta.units_label = 'Units'
+        self.meta.name_label = 'Long_Name'
+        # print(self.meta['new'])
+        assert ((self.meta['new'].Units == 'hey') & (self.meta['new'].Long_Name == 'boo') &
+            (self.meta['new2'].Units == 'hey2') & (self.meta['new2'].Long_Name == 'boo2'))
+
+    def test_change_Units_and_Name_case_w_ho(self):
+        self.meta = pysat.Meta(units_label='units', name_label='long_Name')
+        meta2 = pysat.Meta(units_label='units', name_label='long_Name')
+        meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['new2'] = meta2
+        self.meta.units_label = 'Units'
+        self.meta.name_label = 'Long_Name'
+        # print(self.meta['new'])
+        assert ((self.meta['new'].Units == 'hey') & (self.meta['new'].Long_Name == 'boo') &
+            (self.meta['new2']['new21'].Units == 'hey2') & (self.meta['new2']['new21'].Long_Name == 'boo2'))
+
+    @raises(AttributeError)    
+    def test_change_Units_and_Name_case_w_ho_wrong_case(self):
+        self.meta = pysat.Meta(units_label='units', name_label='long_Name')
+        meta2 = pysat.Meta(units_label='units', name_label='long_Name')
+        meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['new2'] = meta2
+        self.meta.units_label = 'Units'
+        self.meta.name_label = 'Long_Name'
+        # print(self.meta['new'])
+        assert ((self.meta['new'].units == 'hey') & (self.meta['new'].long_name == 'boo') &
+            (self.meta['new2']['new21'].units == 'hey2') & (self.meta['new2']['new21'].long_name == 'boo2'))
+
+    def test_contains_case_insensitive(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
+        assert ('new2' in self.meta)
+        assert ('NEW2' in self.meta)
+
+    def test_contains_case_insensitive_w_ho(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        meta2 = pysat.Meta()
+        meta2['new21'] = {'units':'hey2', 'long_name':'boo2'}
+        self.meta['new2'] = meta2
+        assert ('new2' in self.meta)
+        assert ('NEW2' in self.meta)
+        assert not ('new21' in self.meta)
+        assert not ('NEW21' in self.meta)
+
+
+    def test_get_variable_name_case_preservation(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        self.meta['NEW2'] = {'units':'hey2', 'long_name':'boo2'}
+        
+        assert ('NEW2' == self.meta.var_case_name('new2'))
+        assert ('NEW2' == self.meta.var_case_name('nEw2'))
+        assert ('NEW2' == self.meta.var_case_name('neW2'))
+        assert ('NEW2' == self.meta.var_case_name('NEW2'))
+
+    def test_get_attribute_name_case_preservation(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        self.meta['NEW2'] = {'units':'hey2', 'long_name':'boo2', 
+                            'YoYoYO':'yolo'}
+        self.meta['new'] = {'yoyoyo':'YOLO'}
+
+        assert (self.meta['new', 'yoyoyo'] == 'YOLO')
+        assert (self.meta['new', 'YoYoYO'] == 'YOLO')
+        assert (self.meta['new2', 'yoyoyo'] == 'yolo')
+        assert (self.meta['new2', 'YoYoYO'] == 'yolo')
+
+    def test_get_attribute_name_case_preservation_w_higher_order(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        meta2 = pysat.Meta()
+        meta2['NEW21'] = {'units':'hey2', 'long_name':'boo2', 
+                            'YoYoYO':'yolo'}
+        self.meta['NEW2'] = meta2
+        self.meta['new'] = {'yoyoyo':'YOLO'}
+
+        assert (self.meta.attr_case_name('YoYoYo') == 'YoYoYO')
+        assert (self.meta['new', 'yoyoyo'] == 'YOLO')
+        assert (self.meta['new', 'YoYoYO'] == 'YOLO')
+        assert (self.meta['new2']['new21', 'yoyoyo'] == 'yolo')
+        assert (self.meta['new2']['new21', 'YoYoYO'] == 'yolo')
+        assert (self.meta['new2'].attr_case_name('YoYoYo') == 'YoYoYO')
+
+    def test_get_attribute_name_case_preservation_w_higher_order_2(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        meta2 = pysat.Meta()
+        meta2['NEW21'] = {'units':'hey2', 'long_name':'boo2', 
+                            'YoYoYO':'yolo'}
+        self.meta['NEW2'] = meta2
+        self.meta['NEW'] = {'yoyoyo':'YOLO'}
+
+        assert (self.meta.attr_case_name('YoYoYo') == 'YoYoYO')
+        assert (self.meta['new', 'yoyoyo'] == 'YOLO')
+        assert (self.meta['NEW', 'YoYoYO'] == 'YOLO')
+        assert (self.meta['new2']['new21', 'yoyoyo'] == 'yolo')
+        assert (self.meta['new2']['new21', 'YoYoYO'] == 'yolo')
+        assert (self.meta['new2'].attr_case_name('YoYoYo') == 'YoYoYO')
+
+
+    def test_get_attribute_name_case_preservation_w_higher_order_reverse_order(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        meta2 = pysat.Meta()
+        meta2['NEW21'] = {'units':'hey2', 'long_name':'boo2', 
+                            'YoYoYO':'yolo'}
+        self.meta['new'] = {'yoyoyo':'YOLO'}
+        self.meta['NEW2'] = meta2
+
+        assert (self.meta.attr_case_name('YoYoYo') == 'yoyoyo')
+        assert (self.meta['new', 'yoyoyo'] == 'YOLO')
+        assert (self.meta['new', 'YoYoYO'] == 'YOLO')
+        assert (self.meta['new2']['new21', 'yoyoyo'] == 'yolo')
+        assert (self.meta['new2']['new21', 'YoYoYO'] == 'yolo')
+        assert (self.meta['new2'].attr_case_name('YoYoYo') == 'yoyoyo')
+
+
+    def test_has_attr_name_case_preservation_w_higher_order_reverse_order(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        meta2 = pysat.Meta()
+        meta2['NEW21'] = {'units':'hey2', 'long_name':'boo2', 
+                            'YoYoYO':'yolo'}
+        self.meta['new'] = {'yoyoyo':'YOLO'}
+        self.meta['NEW2'] = meta2
+
+        assert (self.meta.has_attr('YoYoYo') )
+        assert (self.meta.has_attr('yoyoyo') )
+        assert not (self.meta.has_attr('YoYoYyo') )
+                        
+    def test_has_attr_name_case_preservation_w_higher_order(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        meta2 = pysat.Meta()
+        meta2['NEW21'] = {'units':'hey2', 'long_name':'boo2', 
+                            'YoYoYO':'yolo'}
+        self.meta['NEW2'] = meta2
+
+        assert not (self.meta.has_attr('YoYoYo') )
+        assert not (self.meta.has_attr('yoyoyo') )
+        assert not (self.meta.has_attr('YoYoYyo') )
+                                                                        
+    # check support on case preservation, but case insensitive
+    def test_replace_meta_units_list_weird_case(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'boo'}
+        self.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
+        self.meta[['NEW2','new']] = {'units':['yeppers','yep']}
+        assert (self.meta['new'].units == 'yep')
+        assert (self.meta['new'].long_name == 'boo')
+        assert (self.meta['new2'].units == 'yeppers')
+        assert (self.meta['new2'].long_name == 'boo2')
 
     # Test the attribute transfer function
     def test_transfer_attributes_to_instrument(self):

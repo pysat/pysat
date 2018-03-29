@@ -506,6 +506,9 @@ class Instrument(object):
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                          sat_id=self.sat_id, **self.kwargs)
+            # ensure units and name are named consistently
+            mdata.units_label = self.units_label
+            mdata.name_label = self.name_label
         else:
             data = DataFrame(None)
             mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label)
