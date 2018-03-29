@@ -66,7 +66,6 @@ class TestBasics:
         # each day holds same amount of data
         assert self.testInst.data['dummy1'].size*32 == sum([ sum(i) for i in results['dummy1']['count'] ])
 
-        assert False
         assert np.all(check)
 
     def test_basic_daily_mean(self):        
