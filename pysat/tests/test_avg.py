@@ -62,7 +62,6 @@ class TestBasics:
             check.append(np.all(dummy3_val[:, i] == x/15.*1000. + dummy_y[:-1]) )
             check.append(np.all(dummy3_dev[:, i] == 0))
                             
-        import code
         # holds here because there are 32 days, no data is discarded, 
         # each day holds same amount of data
         assert self.testInst.data['dummy1'].size*32 == sum([ sum(i) for i in results['dummy1']['count'] ])
