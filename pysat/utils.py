@@ -158,8 +158,10 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                 idx_bool = [dim == i for i in two_d_dims]
                 idx, = np.where(np.array(idx_bool))
                 obj_var_keys = []
+                clean_var_keys = []
                 for i in idx:
                     obj_var_keys.append(two_d_keys[i])
+                    clean_var_keys.append(two_d_keys[i].split(obj_key_name+'_')[-1])
 
                 # figure out how to index this data, it could provide its own
                 # index - or we may have to create simple integer based DataFrame access
@@ -167,7 +169,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                 if obj_key_name in obj_var_keys:
                     # string used to indentify dimension also in data.variables 
                     # will be used as an index 
-                    index_key_name = 'dimension_1' 
+                    index_key_name = obj_key_name 
                     # if the object index uses UNIX time, process into datetime index  
                     if data.variables[obj_key_name].getncattr(name_label) == 'UNIX':
                         # name to be used in DataFrame index
@@ -183,12 +185,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                 
                 # iterate over the variables and grab metadata
                 dim_meta_data = pysat.Meta()
-                for key in obj_var_keys:
+                for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     # store attributes in metadata
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
                         meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
-                    dim_meta_data[key] = meta_dict
+                    dim_meta_data[clean_key] = meta_dict
                 # print (dim_meta_data)
                 mdata[obj_key_name] = dim_meta_data 
                 
@@ -197,9 +199,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                 loop_dict = {}
                 # list holds a series of slices, parsed from dict above
                 loop_list = []
-                for key in obj_var_keys:
+                for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     # data
-                    loop_dict[key] = data.variables[key][:,:].flatten(order='C')                
+                    loop_dict[clean_key] = data.variables[key][:,:].flatten(order='C')                
                 # number of values in time
                 loop_lim = data.variables[obj_var_keys[0]].shape[0]
                 # number of values per time
@@ -222,15 +224,16 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                     new_index_name = 'index'
                 # load all data into frame
                 if len(loop_dict.keys()) > 1:
-                    loop_frame = pds.DataFrame(loop_dict, columns=obj_var_keys)
-                    # del loop_frame['dimension_1']
+                    loop_frame = pds.DataFrame(loop_dict, columns=clean_var_keys)
+                    if obj_key_name in loop_frame:
+                        del loop_frame[obj_key_name]
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim):
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name             
                 else:
-                    loop_frame = pds.Series(loop_dict[obj_var_keys[0]], name=obj_var_keys[0])
+                    loop_frame = pds.Series(loop_dict[clean_var_keys[0]], name=obj_var_keys[0])
                     # break massive series into bunch of smaller series
                     for i in np.arange(loop_lim):
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1)])

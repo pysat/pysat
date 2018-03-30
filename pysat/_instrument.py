@@ -1190,8 +1190,8 @@ class Instrument(object):
             cdfkey = out_data.createVariable(epoch_name, 'i8', dimensions=(epoch_name),
                                                 zlib=zlib) #, chunksizes=1)
             new_dict = {}
-            new_dict[self.meta._name_label] = 'UNIX'
-            new_dict[self.meta._units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+            new_dict[self.meta.name_label] = 'UNIX'
+            new_dict[self.meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
             new_dict['calendar'] = 'standard'
             cdfkey.setncatts(new_dict)
             cdfkey[:] = (self.data.index.values.astype(np.int64)*1.E-6).astype(np.int64)
@@ -1254,7 +1254,7 @@ class Instrument(object):
                         for i, dim in enumerate(dims[:-1]):
                             # don't need to go over last dimension value,
                             # it covers number of columns (if a frame)
-                            obj_dim_names.append(key+'_dimension_%i' % (i+1))
+                            obj_dim_names.append(key)
                             out_data.createDimension(obj_dim_names[-1], dim)
                         # total dimensions stored for object are epoch plus ones just above
                         var_dim = tuple([epoch_name]+obj_dim_names)
@@ -1284,7 +1284,7 @@ class Instrument(object):
 
                             else:
                                 data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], file_format)
-                                cdfkey = out_data.createVariable(key,
+                                cdfkey = out_data.createVariable(key + '_data',
                                                                 coltype,
                                                                 dimensions=var_dim,
                                                                 zlib=zlib) #, chunksizes=1)
@@ -1306,8 +1306,7 @@ class Instrument(object):
                                 for i in range(num):
                                     temp_cdf_data[i, :] = self[key].iloc[i][col].values
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
-                                # for i in range(num):
-                                #     cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
+
                             else:
                                 # attach any meta data
                                 try:
@@ -1325,15 +1324,14 @@ class Instrument(object):
                                 
                         # store the dataframe index for each time of main dataframe
                         data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, file_format)
-                        cdfkey = out_data.createVariable(key+'_dimension_1',
+                        cdfkey = out_data.createVariable(key,
                                                          coltype, dimensions=var_dim,
                                                          zlib=zlib) #, chunksizes=1)
                         if datetime_flag:
                             #print('datetime flag')                            
                             new_dict = {}
-                            new_dict[self.meta._name_label] = 'UNIX'
-                            new_dict[self.meta._units_label] = 'Milliseconds since 1970-1-1 00:00:00'
-                            # cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
+                            new_dict[self.meta.name_label] = 'UNIX'
+                            new_dict[self.meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
@@ -1342,13 +1340,12 @@ class Instrument(object):
                             cdfkey[:, :] = (temp_cdf_data.astype(coltype)*1.E-6).astype(coltype)
  
                         else:
-                            #cdfkey.units = ''
                             new_dict = {}
                             # get name of data for metadata
                             if self[key].iloc[data_loc].index.name is not None:
-                                new_dict[self.meta._name_label] = self[key].iloc[data_loc].index.name
+                                new_dict[self.meta.name_label] = self[key].iloc[data_loc].index.name
                             else:
-                                new_dict[self.meta._name_label] = key
+                                new_dict[self.meta.name_label] = key
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
