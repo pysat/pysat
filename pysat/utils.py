@@ -228,14 +228,14 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                     if obj_key_name in loop_frame:
                         del loop_frame[obj_key_name]
                     # break massive frame into bunch of smaller frames
-                    for i in np.arange(loop_lim):
+                    for i in np.arange(loop_lim, dtype=int):
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name             
                 else:
                     loop_frame = pds.Series(loop_dict[clean_var_keys[0]], name=obj_var_keys[0])
                     # break massive series into bunch of smaller series
-                    for i in np.arange(loop_lim):
+                    for i in np.arange(loop_lim, dtype=int):
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1)])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
@@ -298,7 +298,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                     loop_frame = pds.DataFrame(loop_dict[obj_key_name])
                     # del loop_frame['dimension_1']
                     # break massive frame into bunch of smaller frames
-                    for i in np.arange(loop_lim):
+                    for i in np.arange(loop_lim, dtype=int):
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name                                 
