@@ -18,6 +18,33 @@ class TestBasics:
         """Runs after every method to clean up previous testing."""
         del self.testInst
     
+    def test_repr_call_runs(self):
+        print(self.testInst.meta)
+        assert True
+        
+    def test_basic_concat(self):
+        self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
+        self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new3'] = {'units':'hey3', 'long_name':'crew_brew'}
+        self.meta = self.meta.concat(meta2)
+        
+        assert (self.meta['new3'].units == 'hey3')
+
+    def test_basic_concat_w_ho(self):
+        self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
+        self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new3'] = {'units':'hey3', 'long_name':'crew_brew'}
+        meta3 = pysat.Meta()
+        meta3['new41'] = {'units':'hey4', 'long_name':'crew_brew', 'bob_level':'max'}
+        meta2['new4'] = meta3
+        self.meta = self.meta.concat(meta2)
+        
+        assert (self.meta['new3'].units == 'hey3')
+        assert (self.meta['new4']['new41'].units == 'hey4')
+        
+                        
     def test_basic_meta_assignment(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
         assert (self.meta['new'].units == 'hey') & (self.meta['new'].long_name == 'boo')

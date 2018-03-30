@@ -217,16 +217,45 @@ class Meta(object):
         # pass name back, free to be whatever
         return name
             
-    def concat(self, other):
-        """Concats two metadata objects together."""
+    def concat(self, other, strict=False):
+        """Concats two metadata objects together.
+        
+        Parameters
+        ----------
+        other : Meta
+            Meta object to be concatenated
+        strict : bool
+            if True, ensure there are no duplicate variable names
+            
+        Notes
+        -----
+        Uses units and name label of self if other is different
+        
+        Returns
+        -------
+        Meta
+            Concatenated object
+            
+        """
 
-        # concat data frames
         mdata = self.copy()
-        mdata.data = pds.concat([self.data, other.data])
+        # checks
+        if strict:
+            for key in other.keys():
+                if key in mdata:
+                    raise RuntimeError('Duplicated keys (variable names) across '
+                                        'Meta objects in keys().')
+        for key in other.keys_nD():
+            if key in mdata:
+                raise RuntimeError('Duplicated keys (variable names) across '
+                                    'Meta objects in keys_nD().')
+        # concat 1D metadata in data frames to copy of
+        # current metadata
+        for key in other.keys():
+            mdata[key] = other[key]
         # add together higher order data
         for key in other.keys_nD():
-            if not (key in mdata.ho_data):
-                mdata.ho_data[key] = other.ho_data[key]
+            mdata[key] = other[key]
         return mdata
                  
     def copy(self):
