@@ -97,7 +97,7 @@ def load(fnames, tag=None, sat_id=None):
     df2['Sigma_Oplus'] = a['ICON_L2_EUV_Daytime_OP_Retrieval_Sigma_Oplus'].data.flatten(order='C')
     meta2['Sigma_Oplus'] = a['ICON_L2_EUV_Daytime_OP_Retrieval_Sigma_Oplus'].attrs
     num = len(a['Epoch'].data)
-    step_size = len(df2)/num
+    step_size = len(df2)//num
     loop_list = []
     for i in np.arange(num):
         loop_list.append(df2.iloc[step_size*i:step_size*(i+1), :])
@@ -131,7 +131,7 @@ def load(fnames, tag=None, sat_id=None):
     df2['upper_limit'] = a['ICON_L2_EUV_Daytime_OP_Model_Upper_Limit'].data.flatten(order='C')
     meta2['upper_limit'] = a['ICON_L2_EUV_Daytime_OP_Model_Upper_Limit'].attrs
     num = len(a['Epoch'].data)
-    step_size = len(df2)/num
+    step_size = len(df2)//num
     loop_list = []
     new_index = np.arange(step_size)
     for i in np.arange(num):
@@ -169,7 +169,7 @@ def load(fnames, tag=None, sat_id=None):
     df2['Din_617'] = a['ICON_L2_EUV_Daytime_OP_Input_Data_Din_617'].data.flatten(order='C')
     meta2['Din_617'] = a['ICON_L2_EUV_Daytime_OP_Input_Data_Din_617'].attrs
     num = len(a['Epoch'].data)
-    step_size = len(df2)/num
+    step_size = len(df2)//num
     loop_list = []
     for i in np.arange(num):
         loop_list.append(df2.iloc[step_size*i:step_size*(i+1), :])
