@@ -35,6 +35,10 @@ class Meta(object):
     ho_data : dict
         dictionary of Meta objects corresponding to nD variables associated with
         a pysat.Instrument object
+    units_label : str
+        string used to identify units
+    name_label : str
+        string used to idensity variable names
         
     Notes
     -----
@@ -44,6 +48,50 @@ class Meta(object):
     is case insensitive. In practice, use is case insensitive but the original
     case is preserved. Case preseveration is built in to support writing
     files with a desired case to meet standards.
+
+    Metadata for higher order data objects, those that have
+    multiple products under a single variable name in a pysat.Instrument
+    object, are stored by providing a Meta object under the single name.
+        
+    Examples
+    --------
+    ::
+        
+        meta = pysat.Meta()
+        meta['name'] = {'long_name':string, 'units':string}
+        # update 'units' to new value
+        meta['name'] = {'units':string}
+        # update 'long_name' to new value
+        meta['name'] = {'long_name':string}
+        # attach new info with partial information, 'long_name' set to 'name2'
+        meta['name2'] = {'units':string}
+        # units are set to '' by default
+        meta['name3'] = {'long_name':string}
+        
+        # assign multiple variables at once
+        meta[['name1', 'name2']] = {'long_name':[string1, string2], 
+                                    'units':[string1, string2]}
+        
+        # assiging metadata for n-Dimensional variables
+        meta2 = pysat.Meta()
+        meta2['name41'] = {'long_name':string, 'units':string}
+        meta2['name42'] = {'long_name':string, 'units':string}
+        meta['name4'] = {'meta':meta2}
+        # or
+        meta['name4'] = meta2
+        meta['name4']['name41']
+        
+        # mixture of 1D and higher dimensional data
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        meta2 = pysat.Meta()
+        meta2[['higher', 'lower']] = {'meta':[meta, None],
+                                      'units':[None, 'boo'],
+                                      'long_name':[None, 'boohoo']}
+                                          
+        # assign from another Meta object
+        meta[key1] = meta2[key2]
         
     """
     def __init__(self, metadata=None, units_label='units', name_label='long_name'):
@@ -187,10 +235,22 @@ class Meta(object):
     def has_attr(self, name):
         """Returns boolean indicating presence of given attribute name
         
-        Does not check higher order meta objects
-        
         Case-insensitive check
         
+        Notes
+        -----
+        Does not check higher order meta objects
+        
+        Parameters
+        ----------
+        name : str
+            name of variable to get stored case form
+            
+        Returns
+        -------
+        bool
+            True if case-insesitive check for attribute name is True
+
         """
         
         if name.lower() in [i.lower() for i in self.data.columns]:
@@ -201,7 +261,18 @@ class Meta(object):
         """Returns preserved case name for case insensitive value of name.
         
         Checks first within standard attributes. If not found there, checks
-        attributes for higher order data structures.
+        attributes for higher order data structures. IF not found, returns supplied 
+        name. It is available for use.
+        
+        Parameters
+        ----------
+        name : str
+            name of variable to get stored case form
+            
+        Returns
+        -------
+        str
+            name in proper case
         
         """
         
@@ -264,42 +335,7 @@ class Meta(object):
         return deepcopy(self) 
                
     def __setitem__(self, name, value):
-        """Convenience method for adding metadata.
-        
-        Metadata for higher order data objects, those that have
-        multiple products under a single variable name in a pysat.Instrument
-        object, are stored by providing a Meta object under the single name,
-        passed vis the string 'meta'.
-        
-        Examples
-        --------
-        ::
-        
-            meta = pysat.Meta()
-            meta['name'] = {'long_name':string, 'units':string}
-            # update 'units' to new value
-            meta['name'] = {'units':string}
-            # update 'long_name' to new value
-            meta['name'] = {'long_name':string}
-            # attach new info with partial information, 'long_name' set to 'name2'
-            meta['name2'] = {'units':string}
-            # units are set to '' by default
-            meta['name3'] = {'long_name':string}
-            
-            # assign multiple variables at once
-            meta[['name1', 'name2']] = {'long_name':[string1, string2], 
-                                        'units':[string1, string2]}
-            
-            # assiging metadata for n-Dimensional variables
-            meta2 = pysat.Meta()
-            meta2['name41'] = {'long_name':string, 'units':string}
-            meta2['name42'] = {'long_name':string, 'units':string}
-            meta['name4'] = {'meta':meta2}
-            or
-            meta['name4'] = meta2
-            meta['name4']['name41']
-        
-        """
+        """Convenience method for adding metadata."""
         
         if isinstance(value, dict):
             # check if dict empty
