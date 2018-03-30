@@ -30,7 +30,7 @@ def load(fnames, tag=None, sat_id=None):
     month = int(parts[-3])
     day = int(parts[-2])
     date = pysat.datetime(yr,month,day)
-    scalar = 10
+    scalar = 50
     num = 86400/scalar #int(tag)
     uts = np.arange(num)*scalar
     num_array = np.arange(num)*scalar
