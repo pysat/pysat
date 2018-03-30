@@ -171,7 +171,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                     # will be used as an index 
                     index_key_name = obj_key_name 
                     # if the object index uses UNIX time, process into datetime index  
-                    if data.variables[obj_key_name].getncattr(name_label) == 'UNIX':
+                    if data.variables[obj_key_name].getncattr(name_label) == epoch_name:
                         # name to be used in DataFrame index
                         index_name = epoch_name
                         time_index_flag = True

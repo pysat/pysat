@@ -1190,7 +1190,7 @@ class Instrument(object):
             cdfkey = out_data.createVariable(epoch_name, 'i8', dimensions=(epoch_name),
                                                 zlib=zlib) #, chunksizes=1)
             new_dict = {}
-            new_dict[self.meta.name_label] = 'UNIX'
+            new_dict[self.meta.name_label] = epoch_name
             new_dict[self.meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
             new_dict['calendar'] = 'standard'
             cdfkey.setncatts(new_dict)
@@ -1330,7 +1330,7 @@ class Instrument(object):
                         if datetime_flag:
                             #print('datetime flag')                            
                             new_dict = {}
-                            new_dict[self.meta.name_label] = 'UNIX'
+                            new_dict[self.meta.name_label] = epoch_name
                             new_dict[self.meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
                             cdfkey.setncatts(new_dict)
                             # set data
