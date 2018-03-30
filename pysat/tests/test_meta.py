@@ -21,6 +21,19 @@ class TestBasics:
     def test_repr_call_runs(self):
         print(self.testInst.meta)
         assert True
+
+    def test_basic_pops(self):
+        self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
+        self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new31'] = {'units':'hey3', 'long_name':'crew_brew'}
+        self.meta['new3'] = meta2
+        
+        aa = self.meta.pop('new3')
+        assert (aa == meta2)
+        cc = self.meta['new2']
+        bb = self.meta.pop('new2')
+        assert np.all(bb == cc)
         
     def test_basic_concat(self):
         self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}

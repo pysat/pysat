@@ -32,9 +32,6 @@ class Meta(object):
     data : pandas.DataFrame
         index is variable standard name, 'units' and 'long_name' are also stored along
         with additional user provided labels.
-    ho_data : dict
-        dictionary of Meta objects corresponding to nD variables associated with
-        a pysat.Instrument object
     units_label : str
         string used to identify units
     name_label : str
@@ -99,7 +96,7 @@ class Meta(object):
         self._units_label = units_label
         self._name_label = name_label
         # init higher order (nD) data structure container, a dict
-        self.ho_data = {}
+        self._ho_data = {}
         # use any user provided data to instantiate object with data
         # attirube unit and name labels are called within
         self.replace(metadata=metadata)
@@ -112,45 +109,6 @@ class Meta(object):
             return self.__dict__ == other.__dict__
         else:
             return False
-        
-    @property
-    def units_label(self):
-        return self._units_label
-
-    @units_label.setter        
-    def units_label(self, value=None):
-        """Update units_label employed by Metaobject and update attributes"""
-        if value not in self.attrs():
-            # update existing units label, if present
-            if self.units_label in self.attrs():
-                self.data.loc[:, value] = self.data.loc[:, self.units_label]
-                self.data.drop(self.units_label, axis=1, inplace=True)
-            # check higher order structures as well
-            for key in self.keys_nD():
-                if self.units_label in self[key].attrs():
-                    self[key].data.loc[:, value] = self[key].data.loc[:, self.units_label]
-                    self[key].data.drop(self.units_label, axis=1, inplace=True)
-            
-        self._units_label = value
-                                       
-    @property
-    def name_label(self):
-        return self._name_label
-        
-    @name_label.setter        
-    def name_label(self, value=None):
-        """Update name_label employed by Metaobject and update attributes"""
-        if value not in self.attrs():
-            if self.name_label in self.attrs():
-                self.data.loc[:, value] = self.data.loc[:, self.name_label]
-                self.data.drop(self.name_label, axis=1, inplace=True)
-            # check higher order structures as well
-            for key in self.keys_nD():
-                if self.name_label in self[key].attrs():
-                    self[key].data.loc[:, value] = self[key].data.loc[:, self.name_label]
-                    self[key].data.drop(self.name_label, axis=1, inplace=True)
-
-        self._name_label = value
     
     def __contains__(self, other):
         """case insensitive check for variable name"""
@@ -160,30 +118,6 @@ class Meta(object):
         if other.lower() in [i.lower() for i in self.keys_nD()]:
             return True
         return False
-        
-    def var_case_name(self, name):
-        """Provides stored name (case preserved) for case insensitive input
-        
-        Parameters
-        ----------
-        name : str
-            variable name in any case
-            
-        Returns
-        -------
-        str
-            string with case preserved as in metaobject
-            
-        """
-        
-        if name in self:
-            for i in self.keys():
-                if name.lower() == i.lower():
-                    return i
-            for i in self.keys_nD():
-                if name.lower() == i.lower():
-                    return i
-        return name
 
     def __repr__(self, recurse=True):
         # cover 1D parameters
@@ -204,136 +138,10 @@ class Meta(object):
             for item_name in self.keys_nD():
                 output_str += '\n\n'
                 output_str += 'Metadata for '+item_name+'\n'
-                output_str += self.ho_data[item_name].__repr__(False)
+                output_str += self._ho_data[item_name].__repr__(False)
 
         return output_str
 
-    def keys(self):
-        """Yields variable names stored for 1D variables"""
-        
-        for i in self.data.index:
-            yield i
-    
-    def keys_nD(self):
-        """Yields keys for higher order metadata"""
-        
-        for i in self.ho_data.keys():
-            yield i
-
-    def keypairs_ho(self):
-        """Yields keypairs for higher order metadata, (key1, attribute1) """
-        
-        for i in self.ho_data.keys():
-            for j in self[i].keys:
-                yield (i, j)
-
-    def attrs(self):
-        """Yields metadata products stored for each variable name"""
-        for i in self.data.columns:
-            yield i
-
-    def has_attr(self, name):
-        """Returns boolean indicating presence of given attribute name
-        
-        Case-insensitive check
-        
-        Notes
-        -----
-        Does not check higher order meta objects
-        
-        Parameters
-        ----------
-        name : str
-            name of variable to get stored case form
-            
-        Returns
-        -------
-        bool
-            True if case-insesitive check for attribute name is True
-
-        """
-        
-        if name.lower() in [i.lower() for i in self.data.columns]:
-            return True
-        return False
-        
-    def attr_case_name(self, name):
-        """Returns preserved case name for case insensitive value of name.
-        
-        Checks first within standard attributes. If not found there, checks
-        attributes for higher order data structures. IF not found, returns supplied 
-        name. It is available for use.
-        
-        Parameters
-        ----------
-        name : str
-            name of variable to get stored case form
-            
-        Returns
-        -------
-        str
-            name in proper case
-        
-        """
-        
-        for i in self.attrs():
-            if name.lower() == i.lower():
-                return i
-        # check if attribute present in higher order structures
-        for key in self.keys_nD():
-            for i in self[key].attrs():
-                if name.lower() == i.lower():
-                    return i
-        # nothing was found if still here
-        # pass name back, free to be whatever
-        return name
-            
-    def concat(self, other, strict=False):
-        """Concats two metadata objects together.
-        
-        Parameters
-        ----------
-        other : Meta
-            Meta object to be concatenated
-        strict : bool
-            if True, ensure there are no duplicate variable names
-            
-        Notes
-        -----
-        Uses units and name label of self if other is different
-        
-        Returns
-        -------
-        Meta
-            Concatenated object
-            
-        """
-
-        mdata = self.copy()
-        # checks
-        if strict:
-            for key in other.keys():
-                if key in mdata:
-                    raise RuntimeError('Duplicated keys (variable names) across '
-                                        'Meta objects in keys().')
-        for key in other.keys_nD():
-            if key in mdata:
-                raise RuntimeError('Duplicated keys (variable names) across '
-                                    'Meta objects in keys_nD().')
-        # concat 1D metadata in data frames to copy of
-        # current metadata
-        for key in other.keys():
-            mdata[key] = other[key]
-        # add together higher order data
-        for key in other.keys_nD():
-            mdata[key] = other[key]
-        return mdata
-                 
-    def copy(self):
-        from copy import deepcopy as deepcopy
-        """Deep copy of the meta object."""
-        return deepcopy(self) 
-               
     def __setitem__(self, name, value):
         """Convenience method for adding metadata."""
         
@@ -510,7 +318,7 @@ class Meta(object):
                 new_names.append(self.var_case_name(name))
             value.data.index = new_names
 
-            self.ho_data[new_item_name] = value
+            self._ho_data[new_item_name] = value
 
     def __getitem__(self, key):
         """Convenience method for obtaining metadata.
@@ -540,13 +348,233 @@ class Meta(object):
                 # single variable request
                 if new_key in self.keys_nD():
                     # higher order data
-                    return self.ho_data[new_key]
+                    return self._ho_data[new_key]
                 elif new_key in self.keys():
                     # plain old variable request
                     return self.data.loc[new_key]
             else:
                 raise KeyError('Key not found in MetaData')
+        
+    @property
+    def units_label(self):
+        return self._units_label
 
+    @units_label.setter        
+    def units_label(self, value=None):
+        """Update units_label employed by Metaobject and update attributes"""
+        if value not in self.attrs():
+            # update existing units label, if present
+            if self.units_label in self.attrs():
+                self.data.loc[:, value] = self.data.loc[:, self.units_label]
+                self.data.drop(self.units_label, axis=1, inplace=True)
+            # check higher order structures as well
+            for key in self.keys_nD():
+                if self.units_label in self[key].attrs():
+                    self[key].data.loc[:, value] = self[key].data.loc[:, self.units_label]
+                    self[key].data.drop(self.units_label, axis=1, inplace=True)
+            
+        self._units_label = value
+                                       
+    @property
+    def name_label(self):
+        return self._name_label
+        
+    @name_label.setter        
+    def name_label(self, value=None):
+        """Update name_label employed by Metaobject and update attributes"""
+        if value not in self.attrs():
+            if self.name_label in self.attrs():
+                self.data.loc[:, value] = self.data.loc[:, self.name_label]
+                self.data.drop(self.name_label, axis=1, inplace=True)
+            # check higher order structures as well
+            for key in self.keys_nD():
+                if self.name_label in self[key].attrs():
+                    self[key].data.loc[:, value] = self[key].data.loc[:, self.name_label]
+                    self[key].data.drop(self.name_label, axis=1, inplace=True)
+
+        self._name_label = value
+        
+    def var_case_name(self, name):
+        """Provides stored name (case preserved) for case insensitive input
+        
+        Parameters
+        ----------
+        name : str
+            variable name in any case
+            
+        Returns
+        -------
+        str
+            string with case preserved as in metaobject
+            
+        """
+        
+        if name in self:
+            for i in self.keys():
+                if name.lower() == i.lower():
+                    return i
+            for i in self.keys_nD():
+                if name.lower() == i.lower():
+                    return i
+        return name
+
+    def keys(self):
+        """Yields variable names stored for 1D variables"""
+        
+        for i in self.data.index:
+            yield i
+    
+    def keys_nD(self):
+        """Yields keys for higher order metadata"""
+        
+        for i in self._ho_data.keys():
+            yield i
+
+    def keypairs_ho(self):
+        """Yields keypairs for higher order metadata, (key1, attribute1) """
+        
+        for i in self._ho_data.keys():
+            for j in self[i].keys:
+                yield (i, j)
+
+    def attrs(self):
+        """Yields metadata products stored for each variable name"""
+        
+        for i in self.data.columns:
+            yield i
+
+    def has_attr(self, name):
+        """Returns boolean indicating presence of given attribute name
+        
+        Case-insensitive check
+        
+        Notes
+        -----
+        Does not check higher order meta objects
+        
+        Parameters
+        ----------
+        name : str
+            name of variable to get stored case form
+            
+        Returns
+        -------
+        bool
+            True if case-insesitive check for attribute name is True
+
+        """
+        
+        if name.lower() in [i.lower() for i in self.data.columns]:
+            return True
+        return False
+        
+    def attr_case_name(self, name):
+        """Returns preserved case name for case insensitive value of name.
+        
+        Checks first within standard attributes. If not found there, checks
+        attributes for higher order data structures. IF not found, returns supplied 
+        name. It is available for use.
+        
+        Parameters
+        ----------
+        name : str
+            name of variable to get stored case form
+            
+        Returns
+        -------
+        str
+            name in proper case
+        
+        """
+        
+        for i in self.attrs():
+            if name.lower() == i.lower():
+                return i
+        # check if attribute present in higher order structures
+        for key in self.keys_nD():
+            for i in self[key].attrs():
+                if name.lower() == i.lower():
+                    return i
+        # nothing was found if still here
+        # pass name back, free to be whatever
+        return name
+            
+    def concat(self, other, strict=False):
+        """Concats two metadata objects together.
+        
+        Parameters
+        ----------
+        other : Meta
+            Meta object to be concatenated
+        strict : bool
+            if True, ensure there are no duplicate variable names
+            
+        Notes
+        -----
+        Uses units and name label of self if other is different
+        
+        Returns
+        -------
+        Meta
+            Concatenated object
+            
+        """
+
+        mdata = self.copy()
+        # checks
+        if strict:
+            for key in other.keys():
+                if key in mdata:
+                    raise RuntimeError('Duplicated keys (variable names) across '
+                                        'Meta objects in keys().')
+        for key in other.keys_nD():
+            if key in mdata:
+                raise RuntimeError('Duplicated keys (variable names) across '
+                                    'Meta objects in keys_nD().')
+        # concat 1D metadata in data frames to copy of
+        # current metadata
+        for key in other.keys():
+            mdata[key] = other[key]
+        # add together higher order data
+        for key in other.keys_nD():
+            mdata[key] = other[key]
+        return mdata
+                 
+    def copy(self):
+        from copy import deepcopy as deepcopy
+        """Deep copy of the meta object."""
+        return deepcopy(self) 
+               
+    def pop(self, name):
+        """Remove and return metadata about variable
+        
+        Parameters
+        ----------
+        name : str
+            variable name
+            
+        Returns
+        -------
+        pandas.Series
+            Series of metadata for variable
+            
+        """
+        
+        if name in self:
+            # get case preserved name for variable
+            new_name = self.var_case_name(name)
+            # check if 1D or nD
+            if new_name in self.keys():
+                output = self[new_name]
+                self.data.drop(new_name, inplace=True, axis=0)
+            else:
+                output = self._ho_data.pop(new_name)
+                
+            return output
+        else:
+            raise KeyError('Key not present in metadata variables')
+            
+        
     def transfer_attributes_to_instrument(self, inst, strict_names=False):
         """Transfer non-standard attributes in Meta to Instrument object.
         

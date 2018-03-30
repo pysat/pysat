@@ -426,6 +426,20 @@ class TestDataPaddingbyFile():
         assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
                 (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
 
+    def test_fid_data_padding_missing_day(self):
+        self.testInst.files[0:2]
+        self.testInst.load(fid=1, verifyPad=True)
+        self.rawInst.load(fid=1)
+        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] ) )
+
+    def test_yrdoy_data_padding_missing_day(self):
+        self.testInst.load(2008,1)
+        self.rawInst.load(2008,1)
+        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0]) & 
+                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+
+
     def test_fid_data_padding_next(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.next(verifyPad=True)
@@ -468,6 +482,7 @@ class TestDataPaddingbyFile():
         self.rawInst.load(fid=10)
         assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
                 (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+                
     def test_fid_data_padding_uniqueness(self):
         self.testInst.load(fid=1, verifyPad=True)
         assert (self.testInst.data.index.is_unique)
@@ -478,7 +493,6 @@ class TestDataPaddingbyFile():
         #print (test_index[0], test_index[-1], len(test_index))
         #print(self.testInst.data.index[0], self.testInst.data.index[-1], len(self.testInst.data))
         assert (np.all(self.testInst.data.index == test_index))
-
 
     def test_fid_data_padding_removal(self):
         self.testInst.load(fid=1)
