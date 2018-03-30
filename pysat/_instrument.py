@@ -1210,6 +1210,12 @@ class Instrument(object):
                                                      zlib=zlib) #, chunksizes=1)
                     # attach any meta data, after filtering for standards
                     try:
+                        # attach dimension metadata
+                        self.meta[key]= {'Depend_0':epoch_name ,  
+                                        'Display_Type':'Time Series',
+                                        'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
+                                        'Time_Scale':'UTC', 
+                                        'MonoTon': int(data.is_monotonic)}   
                         new_dict = self.meta[key].to_dict()
                         new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                         cdfkey.setncatts(new_dict)
@@ -1231,6 +1237,13 @@ class Instrument(object):
                                                          zlib=zlib) #, chunksizes=1)
                         # attach any meta data
                         try:
+                            # attach dimension metadata
+                        # attach dimension metadata
+                            self.meta[key]= {'Depend_0':epoch_name ,  
+                                            'Display_Type':'Time Series',
+                                            'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
+                                            'Time_Scale':'UTC', 
+                                            'MonoTon': int(data.is_monotonic)}   
                             new_dict = self.meta[key].to_dict()
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, 
@@ -1292,6 +1305,9 @@ class Instrument(object):
                             if is_frame:
                                 # attach any meta data
                                 try:
+                                    self.meta[key][col] = {'Depend_0':epoch_name,
+                                                           'Depend_1': obj_dim_names[-1],  
+                                                           'Display_Type':'Time Series'}   
                                     # print('Frame Writing ', key, col, self.meta[key][col])
                                     new_dict = self.meta[key][col].to_dict()
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
@@ -1310,6 +1326,9 @@ class Instrument(object):
                             else:
                                 # attach any meta data
                                 try:
+                                    self.meta[key] = {'Depend_0':epoch_name,
+                                                    'Depend_1': obj_dim_names[-1],  
+                                                    'Display_Type':'Time Series'}   
                                     new_dict = self.meta[key].to_dict()
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # really attach metadata now
@@ -1330,6 +1349,9 @@ class Instrument(object):
                         if datetime_flag:
                             #print('datetime flag')                            
                             new_dict = {}
+                            new_dict['Depend_0'] = epoch_name
+                            new_dict['Depend_1'] =  obj_dim_names[-1]  
+                            new_dict['Display_Type'] = 'Time Series'  
                             new_dict[self.meta.name_label] = epoch_name
                             new_dict[self.meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
                             cdfkey.setncatts(new_dict)
@@ -1342,6 +1364,9 @@ class Instrument(object):
                         else:
                             new_dict = {}
                             # get name of data for metadata
+                            new_dict['Depend_0'] = epoch_name
+                            new_dict['Depend_1'] =  obj_dim_names[-1]  
+                            new_dict['Display_Type'] = 'Time Series'  
                             if self[key].iloc[data_loc].index.name is not None:
                                 new_dict[self.meta.name_label] = self[key].iloc[data_loc].index.name
                             else:
