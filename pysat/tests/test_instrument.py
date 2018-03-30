@@ -426,20 +426,6 @@ class TestDataPaddingbyFile():
         assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
                 (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
 
-    def test_fid_data_padding_missing_day(self):
-        self.testInst.files[0:2]
-        self.testInst.load(fid=1, verifyPad=True)
-        self.rawInst.load(fid=1)
-        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
-                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] ) )
-
-    def test_yrdoy_data_padding_missing_day(self):
-        self.testInst.load(2008,1)
-        self.rawInst.load(2008,1)
-        assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0]) & 
-                (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
-
-
     def test_fid_data_padding_next(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.next(verifyPad=True)
@@ -550,6 +536,28 @@ class TestDataPadding():
         assert ( (self.testInst.data.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
                 (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
                                         pds.DateOffset(minutes=5)) )
+
+    def test_yrdoy_data_padding_missing_days(self):
+        self.testInst.load(2008,1)
+        # test load
+        self.testInst.load(2008,0)
+        # reset buffer data
+        self.testInst.load(2008,-5)
+        # test load, prev day empty, current and next has data
+        self.testInst.load(2008,1)
+        # reset
+        self.testInst.load(2008,-4)
+        # etc
+        self.testInst.load(2008,2)
+        self.testInst.load(2008,-3)
+        self.testInst.load(2008,3)
+        # switch to missing data on the right
+        self.testInst.load(2010,365)
+        self.testInst.load(2010,360)
+        self.testInst.load(2010,366)
+        self.testInst.load(2010,360)
+        self.testInst.load(2010,367)
+        assert True
 
     def test_data_padding_next(self):
         self.testInst.load(2009,2, verifyPad=True)
