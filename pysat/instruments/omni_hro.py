@@ -127,18 +127,15 @@ def load(fnames, tag=None, sat_id=None):
             return data, meta
 
 def clean(omni):
-    for key in omni.data.columns:
-        if key != 'Epoch':
-            fill_attr = "fillval"
-            if not hasattr(omni.meta[key], fill_attr):
-                if hasattr(omni.meta[key], fill_attr.upper()):
-                    fill_attr = fill_attr.upper()
-                else:
-                    raise "unknown attribute {:s} or {:s}".format(fill_attr, \
-                                                            fill_attr.upper())
-
-            idx, = np.where(omni[key] == getattr(omni.meta[key], fill_attr))
-            omni[idx, key] = np.nan
+    fill_attr = "fillval"
+    # case insensitive check for attribute name
+    if omni.meta.has_attr(fill_attr):
+        # get real name
+        fill_attr = omni.meta.attr_case_name(fill_attr)
+        for key in omni.data.columns:
+            if key != 'Epoch':    
+                idx, = np.where(omni[key] == getattr(omni.meta[key], fill_attr))
+                omni[idx, key] = np.nan
     return
 
 def time_shift_to_magnetic_poles(inst):
