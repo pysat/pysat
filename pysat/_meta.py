@@ -114,7 +114,7 @@ class Meta(object):
         self._name_label = name_label
         self._fill_label = fill_label
         # init higher order (nD) data structure container, a dict
-        self._ho_data = {}
+        self.ho_data = {}
         # use any user provided data to instantiate object with data
         # attirube unit and name labels are called within
         self.replace(metadata=metadata)
@@ -179,7 +179,7 @@ class Meta(object):
             for item_name in self.keys_nD():
                 output_str += '\n\n'
                 output_str += 'Metadata for '+item_name+'\n'
-                output_str += self._ho_data[item_name].__repr__(False)
+                output_str += self.ho_data[item_name].__repr__(False)
 
         return output_str
 
@@ -344,7 +344,7 @@ class Meta(object):
                 new_names.append(self.var_case_name(name))
             value.data.index = new_names
 
-            self._ho_data[new_item_name] = value
+            self.ho_data[new_item_name] = value
 
     def __getitem__(self, key):
         """Convenience method for obtaining metadata.
@@ -374,7 +374,7 @@ class Meta(object):
                 # single variable request
                 if new_key in self.keys_nD():
                     # higher order data
-                    return self._ho_data[new_key]
+                    return self.ho_data[new_key]
                 elif new_key in self.keys():
                     # plain old variable request
                     return self.data.loc[new_key]
@@ -409,15 +409,18 @@ class Meta(object):
         
     @units_label.setter   
     def units_label(self, value):
-        self._label_setter(value, self.units_label, self._units_label)     
+        self._label_setter(value, self.units_label, self._units_label) 
+        self._units_label = value    
 
     @name_label.setter   
     def name_label(self, value):
         self._label_setter(value, self.name_label, self._name_label)     
+        self._name_label = value    
 
     @fill_label.setter   
     def fill_label(self, value):
         self._label_setter(value, self.fill_label, self._fill_label)
+        self._fill_label = value    
         
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
@@ -452,13 +455,13 @@ class Meta(object):
     def keys_nD(self):
         """Yields keys for higher order metadata"""
         
-        for i in self._ho_data.keys():
+        for i in self.ho_data.keys():
             yield i
 
     def keypairs_ho(self):
         """Yields keypairs for higher order metadata, (key1, attribute1) """
         
-        for i in self._ho_data.keys():
+        for i in self.ho_data.keys():
             for j in self[i].keys:
                 yield (i, j)
 
@@ -593,7 +596,7 @@ class Meta(object):
                 output = self[new_name]
                 self.data.drop(new_name, inplace=True, axis=0)
             else:
-                output = self._ho_data.pop(new_name)
+                output = self.ho_data.pop(new_name)
                 
             return output
         else:
