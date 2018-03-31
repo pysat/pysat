@@ -37,6 +37,9 @@ class Meta(object):
         string used to identify units
     name_label : str
         string used to idensity variable names
+    fill_label : str
+        string used to identify fill values
+        
         
     Notes
     -----
@@ -65,6 +68,11 @@ class Meta(object):
         meta['name2'] = {'units':string}
         # units are set to '' by default
         meta['name3'] = {'long_name':string}
+        
+        # assigning custom meta parameters
+        meta['name4'] = {'units':string, 'long_name':string
+                         'custom1':string, 'custom2':value}
+        meta['name5'] = {'custom1':string, 'custom3':value}
         
         # assign multiple variables at once
         meta[['name1', 'name2']] = {'long_name':[string1, string2], 
