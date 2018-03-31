@@ -1176,7 +1176,7 @@ class Instrument(object):
 
         
                         
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch', zlib=False):
+    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch', zlib=False):
         """Stores loaded data into a netCDF3/4 file.
         
         Parameters

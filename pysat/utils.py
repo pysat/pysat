@@ -77,7 +77,7 @@ def set_data_dir(path=None, store=None):
         raise ValueError('Path does not lead to a valid directory.')
         
 
-def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='epoch',
+def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='Epoch',
                  units_label='units', name_label='long_name'):
                     # unix_time=False, **kwargs):
     """Load netCDF-3/4 file produced by pysat.
