@@ -26,6 +26,9 @@ class Meta(object):
         String used to label units in storage. Defaults to 'units'. 
     name_label : str
         String used to label long_name in storage. Defaults to 'long_name'. 
+    fill_label : str
+        String used to label fill value in storage. Defaults to '_FillValue' per
+        netCDF4 standard
         
         
     Attributes
@@ -53,6 +56,9 @@ class Meta(object):
     Metadata for higher order data objects, those that have
     multiple products under a single variable name in a pysat.Instrument
     object, are stored by providing a Meta object under the single name.
+    
+    Supports any custom metadata values in addition to the expected metadata
+    attributes (units, long_name, _FillValue).
         
     Examples
     --------
@@ -76,7 +82,8 @@ class Meta(object):
         
         # assign multiple variables at once
         meta[['name1', 'name2']] = {'long_name':[string1, string2], 
-                                    'units':[string1, string2]}
+                                    'units':[string1, string2],
+                                    'custom10':[string1, string2]}
         
         # assiging metadata for n-Dimensional variables
         meta2 = pysat.Meta()
