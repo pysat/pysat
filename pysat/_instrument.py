@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import absolute_import
+# python 2/3 compatibility
+try:
+    basestring
+except NameError:
+    basestring = str
 
 import string
 import os
@@ -1109,6 +1114,10 @@ class Instrument(object):
     def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False):
         """Filter metadata properties to be consistent with netCDF4.
         
+        Notes
+        -----
+        removed forced to True if coltype consistent with a string type
+        
         Parameters
         ----------
         mdata_dict : dict
@@ -1124,7 +1133,10 @@ class Instrument(object):
             Modified as needed for netCDf4
         
         """
-
+        
+        if (coltype == type(' ')) or (coltype == type(u' ')):
+            remove = True
+        # print ('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
@@ -1138,7 +1150,32 @@ class Instrument(object):
             else:
                 mdata_dict['FillVal'] = np.array(mdata_dict['FillVal']).astype(coltype)
         return mdata_dict
+
+    def _ensure_metadata_standards(self):
+        """Copies existing metadata to fill in redundant portions of wider standard.
+    
+        This standard ensures compatibility with multiple standards. As such, there
+        is overlap between some of the formative standards. Copies CatDesc, Units, and Long_Name
+        and FillVal appropriately.
+    
+        """
+    
+        meta_obj = [self.meta]
+        for obj_key in self.meta.ho_data.keys():
+            meta_obj.append(self.meta[obj_key])
+    
+        for obj in meta_obj:
+            for item in obj.data.index:
+                # print ('MetaData for ', item)
+                # print (obj[item])
+                # print (obj)
+                obj[item] = {'FieldNam': obj[item, self.name_label]}
+                obj[item] = {'Lablxis': obj[item, 'CatDesc']}
+                obj[item] = {'Labl_Ptr_#': obj[item, 'CatDesc']}
+                obj[item] = {'_FillValue':  obj[item, 'FillVal']}
+
         
+                        
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch', zlib=False):
         """Stores loaded data into a netCDF3/4 file.
         
@@ -1198,6 +1235,7 @@ class Instrument(object):
                             
             # store all of the data in dataframe columns
             for key in self.data.columns:
+                # print (key)
                 # get information on data
                 data, coltype, datetime_flag = self._get_data_info(self[key], file_format)
                 # operate on data based upon type
@@ -1214,10 +1252,11 @@ class Instrument(object):
                         self.meta[key]= {'Depend_0':epoch_name ,  
                                         'Display_Type':'Time Series',
                                         'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
-                                        'Time_Scale':'UTC', 
-                                        'MonoTon': int(data.is_monotonic)}   
+                                        'Time_Scale':'UTC'} 
+                                        # 'MonoTon': int(data.is_monotonic)}   
                         new_dict = self.meta[key].to_dict()
                         new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                        # print ('top ', new_dict)
                         cdfkey.setncatts(new_dict)
                     except KeyError:
                         print(', '.join(('Unable to find MetaData for', key)))
@@ -1242,13 +1281,14 @@ class Instrument(object):
                             self.meta[key]= {'Depend_0':epoch_name ,  
                                             'Display_Type':'Time Series',
                                             'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
-                                            'Time_Scale':'UTC', 
-                                            'MonoTon': int(data.is_monotonic)}   
+                                            'Time_Scale':'UTC'} 
+                                            # 'MonoTon': int(data.is_monotonic)}   
                             new_dict = self.meta[key].to_dict()
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, 
                                                             coltype, remove=True)
                             # really attach metadata now
+                            # print ('mid ', new_dict)
                             cdfkey.setncatts(new_dict)
                         except KeyError:
                             print(', '.join(('Unable to find MetaData for', key)))
@@ -1295,14 +1335,6 @@ class Instrument(object):
                                                                 dimensions=var_dim,
                                                                 zlib=zlib) #, chunksizes=1)
 
-                            else:
-                                data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], file_format)
-                                cdfkey = out_data.createVariable(key + '_data',
-                                                                coltype,
-                                                                dimensions=var_dim,
-                                                                zlib=zlib) #, chunksizes=1)
-
-                            if is_frame:
                                 # attach any meta data
                                 try:
                                     self.meta[key][col] = {'Depend_0':epoch_name,
@@ -1311,6 +1343,7 @@ class Instrument(object):
                                     # print('Frame Writing ', key, col, self.meta[key][col])
                                     new_dict = self.meta[key][col].to_dict()
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                                    # print ('mid2 ', new_dict)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError:
                                     print(', '.join(('Unable to find MetaData for', key, col)) )
@@ -1324,14 +1357,20 @@ class Instrument(object):
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
 
                             else:
+                                data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], file_format)
+                                cdfkey = out_data.createVariable(key + '_data',
+                                                                coltype,
+                                                                dimensions=var_dim,
+                                                                zlib=zlib) #, chunksizes=1)
                                 # attach any meta data
                                 try:
                                     self.meta[key] = {'Depend_0':epoch_name,
-                                                    'Depend_1': obj_dim_names[-1],  
-                                                    'Display_Type':'Time Series'}   
+                                                      'Depend_1': obj_dim_names[-1],  
+                                                      'Display_Type':'Time Series'}   
                                     new_dict = self.meta[key].to_dict()
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # really attach metadata now
+                                    # print ('mid3 ', new_dict)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError:
                                     print(', '.join(('Unable to find MetaData for', key)))
@@ -1340,7 +1379,10 @@ class Instrument(object):
                                 for i in range(num):
                                     temp_cdf_data[i, :] = self[i, key].values#.astype(coltype)
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
-                                
+ 
+                            # if is_frame:
+                            # else:
+                               
                         # store the dataframe index for each time of main dataframe
                         data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, file_format)
                         cdfkey = out_data.createVariable(key,
@@ -1354,6 +1396,8 @@ class Instrument(object):
                             new_dict['Display_Type'] = 'Time Series'  
                             new_dict[self.meta.name_label] = epoch_name
                             new_dict[self.meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+                            new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                            # print ('mid4 ', new_dict)
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
@@ -1371,6 +1415,8 @@ class Instrument(object):
                                 new_dict[self.meta.name_label] = self[key].iloc[data_loc].index.name
                             else:
                                 new_dict[self.meta.name_label] = key
+                            new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                            # print ('mid5 ', new_dict)
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)

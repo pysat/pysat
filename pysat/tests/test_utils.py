@@ -224,7 +224,7 @@ class TestBasics:
         # test Series of DataFrames
         test_list = []
         # print (loaded_inst.columns)
-        print (loaded_inst)
+        # print (loaded_inst)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
             test_list.append(np.all((frame1 == frame2).all()))

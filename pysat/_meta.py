@@ -92,10 +92,12 @@ class Meta(object):
         meta[key1] = meta2[key2]
         
     """
-    def __init__(self, metadata=None, units_label='units', name_label='long_name'):
+    def __init__(self, metadata=None, units_label='units', name_label='long_name',
+                        fill_label = '_FillValue'):
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label
+        self._fill_label = fill_label
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
         # use any user provided data to instantiate object with data
@@ -106,8 +108,31 @@ class Meta(object):
         self._base_attr = dir(self)
 
     def __eq__(self, other):
-        if type(other) is type(self):
-            return self.__dict__ == other.__dict__
+        if isinstance(other, Meta):
+            # if np.all(self.keys() == other.keys()) and np.all(self.attrs() == other.attrs()):
+            for key in self.keys():
+                for attr in self.attrs():
+                    if self[key, attr] != other[key, attr]:
+                        if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
+                            # print ('hi', key, attr, self[key, attr])
+                            # print ('hi', key, attr, other[key, attr])
+                            return False
+            # check through higher order products
+            for key in self.keys_nD():
+                for key2 in self[key].keys():
+                    for attr in self[key].attrs():
+                        if self[key][key2, attr] != other[key][key2, attr]:
+                            if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
+                                # print ('bye', key, key2, attr, self[key][key2, attr])
+                                # print ('bye', key, key2, attr, other[key][key2, attr])
+                                return False
+
+            # else:
+            #     print ('keys', self.keys(), other.keys())
+            #     return False
+                
+            return True
+            # return self.__dict__ == other.__dict__
         else:
             return False
     
@@ -223,8 +248,8 @@ class Meta(object):
             # defaults are filled in so that the actions invoked against
             # pandas object later work out as expected 
             lower_keys = [k.lower() for k in value.keys()]
-            attrs = [self.units_label, self.name_label] #, self.fill_label]
-            default_attrs = [['']*len(name), name] #, np.Nan]
+            attrs = [self.units_label, self.name_label, self.fill_label]
+            default_attrs = [['']*len(name), name, [np.NaN]*len(name)]
             for attr, defaults in zip(attrs, default_attrs):
                 if attr.lower() not in lower_keys:
                     # base parameter not provided
@@ -340,45 +365,44 @@ class Meta(object):
                     return self.data.loc[new_key]
             else:
                 raise KeyError('Key not found in MetaData')
-        
+
+    def _label_setter(self, value, label, actual):
+        if value not in self.attrs():
+            # update existing units label, if present
+            if label in self.attrs():
+                self.data.loc[:, value] = self.data.loc[:, label]
+                self.data.drop(label, axis=1, inplace=True)
+            # check higher order structures as well
+            for key in self.keys_nD():
+                if label in self[key].attrs():
+                    self[key].data.loc[:, value] = self[key].data.loc[:, label]
+                    self[key].data.drop(label, axis=1, inplace=True)
+        # now update 'hidden' attribute value
+        actual = value
+                
     @property
     def units_label(self):
         return self._units_label
 
-    @units_label.setter        
-    def units_label(self, value=None):
-        """Update units_label employed by Metaobject and update attributes"""
-        if value not in self.attrs():
-            # update existing units label, if present
-            if self.units_label in self.attrs():
-                self.data.loc[:, value] = self.data.loc[:, self.units_label]
-                self.data.drop(self.units_label, axis=1, inplace=True)
-            # check higher order structures as well
-            for key in self.keys_nD():
-                if self.units_label in self[key].attrs():
-                    self[key].data.loc[:, value] = self[key].data.loc[:, self.units_label]
-                    self[key].data.drop(self.units_label, axis=1, inplace=True)
-            
-        self._units_label = value
-                                       
     @property
     def name_label(self):
         return self._name_label
-        
-    @name_label.setter        
-    def name_label(self, value=None):
-        """Update name_label employed by Metaobject and update attributes"""
-        if value not in self.attrs():
-            if self.name_label in self.attrs():
-                self.data.loc[:, value] = self.data.loc[:, self.name_label]
-                self.data.drop(self.name_label, axis=1, inplace=True)
-            # check higher order structures as well
-            for key in self.keys_nD():
-                if self.name_label in self[key].attrs():
-                    self[key].data.loc[:, value] = self[key].data.loc[:, self.name_label]
-                    self[key].data.drop(self.name_label, axis=1, inplace=True)
 
-        self._name_label = value
+    @property
+    def fill_label(self):
+        return self._fill_label
+        
+    @units_label.setter   
+    def units_label(self, value):
+        self._label_setter(value, self.units_label, self._units_label)     
+
+    @name_label.setter   
+    def name_label(self, value):
+        self._label_setter(value, self.name_label, self._name_label)     
+
+    @fill_label.setter   
+    def fill_label(self, value):
+        self._label_setter(value, self.fill_label, self._fill_label)
         
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
