@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+import numpy as np
 import pandas as pds
 # python 2/3 compatibility
 try:
@@ -217,49 +218,34 @@ class Meta(object):
                     for key in value.keys():
                         _ = value[key].pop(loc)
 
-            # check if 'units' has been provided
-            # check against units_label, case insensitive
+            # check if 'units' or other base parameters have been provided
+            # check against provided labels, case insensitive
+            # defaults are filled in so that the actions invoked against
+            # pandas object later work out as expected 
             lower_keys = [k.lower() for k in value.keys()]
-            if self.units_label.lower() not in lower_keys:
-                # 'units' not provided
-                # provide default value, or copy existing
-                value[self.units_label] = []
-                for item_name in name:
-                    if item_name not in self:
-                        # overall variable not in Meta, can use default
-                        # 'default'
-                        value[self.units_label].append('')
-                    else:
-                        # copy existing
-                        value[self.units_label].append(self[item_name, self.units_label])
-            elif self.units_label not in value.keys():
-                # 'units' was provided, however the case 
-                # provided doesn't match up with _units_label
-                # make it match
-                for unit_key, lower_key in zip(value.keys(), lower_keys):
-                    if lower_key == self.units_label.lower():
-                        # print('popping units_key ', unit_key)
-                        value[self.units_label] = value.pop(unit_key)
-                        break
-            # check if 'long_name' has been provided
-            # check against name_label, case insensitive
-            lower_keys = [k.lower() for k in value.keys()]
-            if self.name_label.lower() not in lower_keys:
-                # provide default value, or copy existing
-                value[self.name_label] = []
-                for item_name in name:
-                    if item_name not in self:
-                        value[self.name_label].append(item_name)
-                    else:
-                        value[self.name_label].append(self[item_name, self.name_label])
-            elif self.name_label not in value.keys():
-                # case of 'units' provided doesn't match up with _name_label
-                # make it match
-                for label_key, lower_key in zip(value.keys(), lower_keys):
-                    if lower_key == self.name_label.lower():
-                        # print('popping label_key ', label_key)
-                        value[self.name_label] = value.pop(label_key)
-                        break
+            attrs = [self.units_label, self.name_label] #, self.fill_label]
+            default_attrs = [['']*len(name), name] #, np.Nan]
+            for attr, defaults in zip(attrs, default_attrs):
+                if attr.lower() not in lower_keys:
+                    # base parameter not provided
+                    # provide default value, or copy existing
+                    value[attr] = []
+                    for item_name, default in zip(name, defaults):
+                        if item_name not in self:
+                            # overall variable not in Meta, can use default
+                            value[attr].append(default)
+                        else:
+                            # copy existing
+                            value[attr].append(self[item_name, attr])
+                elif attr not in value.keys():
+                    # base parameter was provided, however the case 
+                    # provided doesn't match up with existing labels
+                    # make it match
+                    for unit_key, lower_key in zip(value.keys(), lower_keys):
+                        if lower_key == attr.lower():
+                            # print('popping units_key ', unit_key)
+                            value[attr] = value.pop(unit_key)
+                            break
 
             # check name of attributes against existing attribute names
             # if attribute name exists somewhere, then case will be matched

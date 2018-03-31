@@ -101,7 +101,18 @@ class TestBasics:
         assert ((self.meta['new'].units == 'hey') & 
                 (self.meta['new'].long_name == 'boo') &
                 (self.meta['new'].description == 'boohoo'))
-            
+
+    def test_add_meta_with_custom_then_add_additional_metadata_types(self):
+        self.meta['new'] = {'units':'hey', 'long_name':'crew', 'description':'boohoo'}
+        self.meta['new'] = {'units':'hey2', 'long_name':'boo'}
+        self.meta['new2'] = {'units':'heyy', 'long_name':'hoo'}
+        self.meta['new3'] = {'units':'hey3', 'long_name':'crew3', 'description':'boohoo3'}
+        assert self.meta['new'].units == 'hey2'
+        assert self.meta['new'].long_name == 'boo'
+        assert self.meta['new'].description == 'boohoo'
+        assert self.meta['new3'].description == 'boohoo3'
+        assert self.meta['new2'].long_name == 'hoo'
+                        
     def test_add_meta_then_add_different_additional_metadata_types(self):
         self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
         self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
