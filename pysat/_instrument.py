@@ -151,7 +151,7 @@ class Instrument(object):
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, units_label='units', name_label='long_name',  
-                 *arg, **kwargs):
+                 fill_label='_FillValue', *arg, **kwargs):
 
         if inst_module is None:
             # use strings to look up module name
@@ -214,7 +214,9 @@ class Instrument(object):
         self.data = DataFrame(None)
         self.units_label = units_label
         self.name_label = name_label
-        self.meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label)
+        self.fill_label = fill_label
+        self.meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
+                               fill_label=self.fill_label)
         
         # function processing class, processes data on load
         self.custom = _custom.Custom()
@@ -514,9 +516,11 @@ class Instrument(object):
             # ensure units and name are named consistently
             mdata.units_label = self.units_label
             mdata.name_label = self.name_label
+            mdata.fill_label = self.fill_label
         else:
             data = DataFrame(None)
-            mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label)
+            mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
+                               fill_label=self.fill_label)
 
         output_str = '{platform} {name} {tag} {sat_id}'
         output_str = output_str.format(platform=self.platform,

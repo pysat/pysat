@@ -683,6 +683,7 @@ class Meta(object):
                 # trigger a name check and corrections
                 self.units_label = self.units_label
                 self.name_label = self.name_label
+                self.fill_label = self.fill_label
             else:
                 raise ValueError("Input must be a pandas DataFrame type. "+
                             "See other constructors for alternate inputs.")
