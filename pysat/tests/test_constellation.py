@@ -174,6 +174,6 @@ class TestAdditionSimilarInstruments:
         diff = med - refmed
         for i in diff:
             for j in i:
-                assert j <= 10 && j >= 0
+                assert j <= 10 and j >= 0
 
 
