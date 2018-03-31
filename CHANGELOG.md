@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
+ - Updated load_netCDF4 routine to support ICON EUV files natively
+ - to_netCDF4 function updated to be consistent with load_netCDF4
+ - Meta object upgraded to handle more attributes by default
  - Meta object has been upgraded to preserve case of variable and attribute names
  - Metadata access is case insensitive for ease of use
  - Changes to units_label or name_label are automatically applied to underlying metadata

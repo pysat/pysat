@@ -1165,14 +1165,14 @@ class Instrument(object):
             meta_obj.append(self.meta[obj_key])
     
         for obj in meta_obj:
-            for item in obj.data.index:
+            for item in obj.keys():
                 # print ('MetaData for ', item)
                 # print (obj[item])
                 # print (obj)
                 obj[item] = {'FieldNam': obj[item, self.name_label]}
                 obj[item] = {'Lablxis': obj[item, 'CatDesc']}
                 obj[item] = {'Labl_Ptr_#': obj[item, 'CatDesc']}
-                obj[item] = {'_FillValue':  obj[item, 'FillVal']}
+                obj[item] = {'_FillValue':  obj[item, self.fill_label]}
 
         
                         
@@ -1250,10 +1250,10 @@ class Instrument(object):
                     try:
                         # attach dimension metadata
                         self.meta[key]= {'Depend_0':epoch_name ,  
-                                        'Display_Type':'Time Series',
-                                        'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
-                                        'Time_Scale':'UTC'} 
-                                        # 'MonoTon': int(data.is_monotonic)}   
+                                         'Display_Type':'Time Series',
+                                         'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
+                                         'Time_Scale':'UTC', 
+                                         'MonoTon': int(data.is_monotonic)}   
                         new_dict = self.meta[key].to_dict()
                         new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                         # print ('top ', new_dict)
@@ -1279,9 +1279,9 @@ class Instrument(object):
                             # attach dimension metadata
                         # attach dimension metadata
                             self.meta[key]= {'Depend_0':epoch_name ,  
-                                            'Display_Type':'Time Series',
-                                            'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
-                                            'Time_Scale':'UTC'} 
+                                             'Display_Type':'Time Series',
+                                             'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
+                                             'Time_Scale':'UTC'} 
                                             # 'MonoTon': int(data.is_monotonic)}   
                             new_dict = self.meta[key].to_dict()
                             # no FillValue or FillVal allowed for strings
@@ -1339,7 +1339,7 @@ class Instrument(object):
                                 try:
                                     self.meta[key][col] = {'Depend_0':epoch_name,
                                                            'Depend_1': obj_dim_names[-1],  
-                                                           'Display_Type':'Time Series'}   
+                                                           'Display_Type':'Spectogram'}   
                                     # print('Frame Writing ', key, col, self.meta[key][col])
                                     new_dict = self.meta[key][col].to_dict()
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
@@ -1366,7 +1366,7 @@ class Instrument(object):
                                 try:
                                     self.meta[key] = {'Depend_0':epoch_name,
                                                       'Depend_1': obj_dim_names[-1],  
-                                                      'Display_Type':'Time Series'}   
+                                                      'Display_Type':'Profile'}   
                                     new_dict = self.meta[key].to_dict()
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # really attach metadata now
