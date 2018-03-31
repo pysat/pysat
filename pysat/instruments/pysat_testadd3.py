@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Produces fake instrument data for testing.
+Adapted from existing pysat testing instrument, but changes the data in 
+dummy1 to ascending integers from 10 and deletes dummy2-4
 """
 
 import pandas as pds
