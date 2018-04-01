@@ -273,7 +273,8 @@ class Meta(object):
                     # base parameter was provided, however the case 
                     # provided doesn't match up with existing labels
                     # make it match
-                    for unit_key, lower_key in zip(value.keys(), lower_keys):
+                    keys = [i for i in value.keys()]
+                    for unit_key, lower_key in zip(keys, lower_keys):
                         if lower_key == attr.lower():
                             # print('popping units_key ', unit_key)
                             value[attr] = value.pop(unit_key)
@@ -282,7 +283,7 @@ class Meta(object):
             # check name of attributes against existing attribute names
             # if attribute name exists somewhere, then case will be matched
             # by default for consistency
-            keys = value.keys()
+            keys = [i for i in value.keys()]
             for key in keys:
                 new_key = self.attr_case_name(key)
                 value[new_key] = value.pop(key)
