@@ -382,16 +382,39 @@ class Meta(object):
                 raise KeyError('Key not found in MetaData')
 
     def _label_setter(self, value, label, actual):
+        
         if value not in self.attrs():
-            # update existing units label, if present
+            # new label not in metadata, including case
+            # update existing label, if present
             if label in self.attrs():
+                # old label exists and has expected case
                 self.data.loc[:, value] = self.data.loc[:, label]
                 self.data.drop(label, axis=1, inplace=True)
+            else:
+                if self.has_attr(label):
+                    # there is something like label, wrong case though
+                    label = self.attr_case_name(label)
+                    self.data.loc[:, value] = self.data.loc[:, label]
+                    self.data.drop(label, axis=1, inplace=True)
+                else:
+                    # there is no existing label
+                    # setting for the first time
+                    self.data[value] = np.NaN
             # check higher order structures as well
             for key in self.keys_nD():
                 if label in self[key].attrs():
                     self[key].data.loc[:, value] = self[key].data.loc[:, label]
                     self[key].data.drop(label, axis=1, inplace=True)
+                else:
+                    if self[key].has_attr(label):
+                        # there is something like label, wrong case though
+                        label = self[key].attr_case_name(label)
+                        self[key].data.loc[:, value] = self[key].data.loc[:, label]
+                        self[key].data.drop(label, axis=1, inplace=True)
+                    else:
+                        # there is no existing label
+                        # setting for the first time
+                        self[key].data[value] = np.NaN
         # now update 'hidden' attribute value
         actual = value
                 
@@ -675,15 +698,8 @@ class Meta(object):
         if metadata is not None:
             if isinstance(metadata, DataFrame):
                 self.data = metadata
-                lower_columns = [name.lower() for name in self.data.columns]
-                if self.name_label.lower() not in lower_columns:
-                    self.data[self.name_label] = self.data.index                    
-                if self.units_label.lower() not in lower_columns:
-                    self.data[self.units_label] = ''
-                # make sure case of name and units labels are correct
-                # if they were provided by user
-                # going to reset labels to current values, this will 
-                # trigger a name check and corrections
+                # make sure defaults are taken care of for required
+                # metadata
                 self.units_label = self.units_label
                 self.name_label = self.name_label
                 self.fill_label = self.fill_label
