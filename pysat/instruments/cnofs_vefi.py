@@ -81,7 +81,7 @@ def clean(inst):
     
     if (inst.clean_level == 'dusty') | (inst.clean_level == 'clean'):
         idx, = np.where(inst['B_flag']==0)
-        inst.data = inst.data.iloc[idx]
+        inst.data = inst[idx]
 
     return None
                     
