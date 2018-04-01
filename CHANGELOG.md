@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Improved handling of custom units and name labels at Instrument level
  - Additional functions added to Meta object, attrs, keys, keys_nD, has_attr, routines that return preserved case
  - Additional unit tests for Meta added
+ - Reduced resources required for unit tests
  - Improved windows compatibility
  - Added more unit tests for seasonal averages
  - Added more simulated data types to pysat_testing2D

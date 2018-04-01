@@ -347,11 +347,31 @@ class TestBasics():
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        print(self.meta['new'])
+
         assert self.meta['new'].Units == 'hey'
         assert self.meta['new'].Long_Name == 'boo'
         assert self.meta['new2'].Units == 'hey2'
         assert self.meta['new2'].Long_Name == 'boo2'
+
+    def test_repeated_set_Units_wrong_case(self):
+        self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
+        for i in np.arange(1000):
+            self.meta['new'] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
+            self.meta['new_%d' % i] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
+
+        for i in np.arange(1000):
+            self.meta['new_500'] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
+            self.meta['new_%d' % i] = {'units': 'heyhey%d' % i, 
+                                        'long_name': 'booboo%d' % i}
+
+        print (self.meta['new'])
+        assert self.meta['new'].Units == 'hey999'
+        assert self.meta['new'].Long_Name == 'boo999'
+        assert self.meta['new_999'].Units == 'heyhey999'
+        assert self.meta['new_999'].Long_Name == 'booboo999'
+        print (self.meta['new_500'])
+        assert self.meta['new_500'].Units == 'hey999'
+        assert self.meta['new_500'].Long_Name == 'boo999'
 
     def test_change_Units_and_Name_case(self):
         self.meta = pysat.Meta(units_label='units', name_label='long_name')

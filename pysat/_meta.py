@@ -262,6 +262,8 @@ class Meta(object):
                     # base parameter not provided
                     # provide default value, or copy existing
                     value[attr] = []
+                    # keys changed, update lower keys for consistency
+                    lower_keys = [k.lower() for k in value.keys()]
                     for item_name, default in zip(name, defaults):
                         if item_name not in self:
                             # overall variable not in Meta, can use default
@@ -274,6 +276,8 @@ class Meta(object):
                     # provided doesn't match up with existing labels
                     # make it match
                     keys = [i for i in value.keys()]
+                    # update lower keys for consistency
+                    lower_keys = [k.lower() for k in value.keys()]
                     for unit_key, lower_key in zip(keys, lower_keys):
                         if lower_key == attr.lower():
                             # print('popping units_key ', unit_key)
