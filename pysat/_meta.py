@@ -302,18 +302,8 @@ class Meta(object):
                             self.data.loc[new_item_name, item_key] = item[item_key]
 
         elif isinstance(value, Series):
-            # check 
-            if name in self:
-                new_item_name = self.var_case_name(name)
-            else:
-                new_item_name = name
-                            
-            # check attribute names against existing entries
-            new_index = [self.attr_case_name(ind) for ind in value.index]
-            value.index = new_index
-            # pandas handles missing data during assignment
-            self.data.loc[new_item_name] = value
-            # need to do a check here on units and name labels
+            # set data usind standard assignment via a dict
+            self[name] = value.to_dict()
 
         elif isinstance(value, Meta):
             # dealing with higher order data set
@@ -324,9 +314,10 @@ class Meta(object):
             # ensure that units and name labels are always consistent
             value.units_label = self.units_label
             value.name_label = self.name_label
+            value.fill_label = self.fill_label
             # go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
-            names = value.data.columns
+            names = value.attrs()
             new_names = []
             for name in names:
                 new_names.append(self.attr_case_name(name))
@@ -700,7 +691,7 @@ class Meta(object):
                 raise ValueError("Input must be a pandas DataFrame type. "+
                             "See other constructors for alternate inputs.")
         else:
-            self.data = DataFrame(None, columns=[self.name_label, self.units_label])
+            self.data = DataFrame(None, columns=[self.name_label, self.units_label, self.fill_label])
         
     @classmethod
     def from_csv(cls, name=None, col_names=None, sep=None, **kwargs):
