@@ -103,7 +103,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         raise ValueError ('A tag name must be passed ')
 
 
-class TestBasics:
+class TestBasics():
     
     def __init__(self, temporary_file_list=False):
         self.temporary_file_list = temporary_file_list
@@ -288,7 +288,7 @@ class TestBasicsNoFileListStorage(TestBasics):
         self.temporary_file_list = temporary_file_list
 
 
-class TestInstrumentWithFiles:
+class TestInstrumentWithFiles():
 
     def __init__(self, temporary_file_list=False):
         self.temporary_file_list = temporary_file_list
@@ -568,7 +568,7 @@ def list_versioned_files(tag=None, sat_id=None, data_path=None, format_str=None)
         raise ValueError('A tag name must be passed ')
 
 
-class TestInstrumentWithVersionedFiles:
+class TestInstrumentWithVersionedFiles():
     def __init__(self, temporary_file_list=False):
         self.temporary_file_list = temporary_file_list
 

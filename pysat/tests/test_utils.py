@@ -63,7 +63,7 @@ def remove_files(inst):
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""        
         # store current pysat directory

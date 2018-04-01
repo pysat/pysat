@@ -6,7 +6,7 @@ import nose.tools
 import datetime as dt
 import pysat.instruments.icon_ivm as icivm
 
-class TestICONIVMCustom:
+class TestICONIVMCustom():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument

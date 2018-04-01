@@ -663,6 +663,7 @@ class Instrument(object):
             else:
                 # moving forward in time
                 if self._next_data_track == curr:
+                    del self._prev_data
                     self._prev_data = self._curr_data
                     self._prev_meta = self._curr_meta
                     self._curr_data = self._next_data
@@ -670,6 +671,7 @@ class Instrument(object):
                     self._next_data, self._next_meta = self._load_next()
                 # moving backward in time
                 elif self._prev_data_track == curr:
+                    del self._next_data
                     self._next_data = self._curr_data
                     self._next_meta = self._curr_meta
                     self._curr_data = self._prev_data
@@ -677,6 +679,9 @@ class Instrument(object):
                     self._prev_data, self._prev_meta = self._load_prev()
                 # jumped in time/or switched from filebased to date based access
                 else:
+                    del self._prev_data
+                    del self._curr_data
+                    del self._next_data
                     self._prev_data, self._prev_meta = self._load_prev()
                     self._curr_data, self._curr_meta = \
                                 self._load_data(date=self.date, fid=self._fid)

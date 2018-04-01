@@ -8,7 +8,7 @@ import nose.tools
 import pysat.instruments.pysat_testing
 import numpy as np
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.meta = pysat.Meta()

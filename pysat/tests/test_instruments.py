@@ -27,7 +27,7 @@ def safe_data_dir():
         saved_path = '.'
     return saved_path
 
-class TestInstrumentQualifier:
+class TestInstrumentQualifier():
     
     def __init__(self):
         """Iterate through and create all of the test Instruments needed"""
