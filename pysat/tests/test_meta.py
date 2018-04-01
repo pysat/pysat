@@ -347,9 +347,11 @@ class TestBasics():
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        # print(self.meta['new'])
-        assert ((self.meta['new'].Units == 'hey') & (self.meta['new'].Long_Name == 'boo') &
-            (self.meta['new2'].Units == 'hey2') & (self.meta['new2'].Long_Name == 'boo2'))
+        print(self.meta['new'])
+        assert self.meta['new'].Units == 'hey'
+        assert self.meta['new'].Long_Name == 'boo'
+        assert self.meta['new2'].Units == 'hey2'
+        assert self.meta['new2'].Long_Name == 'boo2'
 
     def test_change_Units_and_Name_case(self):
         self.meta = pysat.Meta(units_label='units', name_label='long_name')
