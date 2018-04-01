@@ -124,7 +124,6 @@ class Meta(object):
 
     def __eq__(self, other):
         if isinstance(other, Meta):
-            # if np.all(self.keys() == other.keys()) and np.all(self.attrs() == other.attrs()):
             for key in self.keys():
                 for attr in self.attrs():
                     if self[key, attr] != other[key, attr]:
@@ -138,16 +137,9 @@ class Meta(object):
                     for attr in self[key].attrs():
                         if self[key][key2, attr] != other[key][key2, attr]:
                             if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
-                                # print ('bye', key, key2, attr, self[key][key2, attr])
-                                # print ('bye', key, key2, attr, other[key][key2, attr])
                                 return False
-
-            # else:
-            #     print ('keys', self.keys(), other.keys())
-            #     return False
-                
+            # if we made it this far, things are good                
             return True
-            # return self.__dict__ == other.__dict__
         else:
             return False
     
