@@ -180,7 +180,7 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        testInst = pysat.Instrument('pysat', 'testadd', clean_level='clean'))
+        testInst = pysat.Instrument('pysat', 'testadd', clean_level='clean')
         insts.append(testInst)
         self.testConst = pysat,Constellation(insts)
 
