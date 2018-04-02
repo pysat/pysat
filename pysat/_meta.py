@@ -230,7 +230,7 @@ class Meta(object):
                         pop_loc.append(j)
                         
                 # remove 'meta' objects from input
-                if len(value.keys()) > 1:
+                if len(value) > 1:
                     _ = value.pop('meta')
                 else:
                     value = {}
@@ -257,7 +257,8 @@ class Meta(object):
             attrs = [self.units_label, self.name_label, self.fill_label]
             default_attrs = [['']*len(name), name, [np.NaN]*len(name)]
             for attr, defaults in zip(attrs, default_attrs):
-                if attr.lower() not in lower_keys:
+                lower_attr = attr.lower()
+                if lower_attr not in lower_keys:
                     # base parameter not provided
                     # provide default value, or copy existing
                     value[attr] = []
@@ -270,15 +271,15 @@ class Meta(object):
                         else:
                             # copy existing
                             value[attr].append(self[item_name, attr])
-                elif attr not in value.keys():
+                elif attr not in value:
                     # base parameter was provided, however the case 
                     # provided doesn't match up with existing labels
                     # make it match
-                    keys = [i for i in value.keys()]
+                    keys = [i for i in value]
                     # update lower keys for consistency
                     lower_keys = [k.lower() for k in value.keys()]
                     for unit_key, lower_key in zip(keys, lower_keys):
-                        if lower_key == attr.lower():
+                        if lower_key == lower_attr:
                             # print('popping units_key ', unit_key)
                             value[attr] = value.pop(unit_key)
                             break
@@ -286,7 +287,9 @@ class Meta(object):
             # check name of attributes against existing attribute names
             # if attribute name exists somewhere, then case will be matched
             # by default for consistency
-            keys = [i for i in value.keys()]
+            # keys are pulled out since dicitonary will be modified
+            # only want to iterate over current keys
+            keys = [i for i in value]
             for key in keys:
                 new_key = self.attr_case_name(key)
                 value[new_key] = value.pop(key)
@@ -330,7 +333,8 @@ class Meta(object):
             for name in names:
                 new_names.append(self.var_case_name(name))
             value.data.index = new_names
-
+            # assign Meta object now that things are consistent with Meta
+            # object settings
             self.ho_data[new_item_name] = value
 
     def __getitem__(self, key):
@@ -685,6 +689,8 @@ class Meta(object):
                 self.data = metadata
                 # make sure defaults are taken care of for required
                 # metadata
+                # TODO, units_label and name_label are not handled here 
+                # the same as in other places. Default is np.NaN for all missing
                 self.units_label = self.units_label
                 self.name_label = self.name_label
                 self.fill_label = self.fill_label
