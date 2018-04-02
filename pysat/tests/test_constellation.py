@@ -68,10 +68,6 @@ class TestConstellation:
         assert repr(self.const) == "Constellation([..."
 
     # TODO write tests for add, difference
-    def test_addition(self):
-        """Test Constellation:addition."""
-        #FIXME
-        raise NotImplementedError()
 
 class TestAdditionIdenticalInstruments:
     def setup(self):
@@ -170,10 +166,43 @@ class TestAdditionSimilarInstruments:
         refresults = self.refC.add(bounds1, label1, bounds2, label2, bins3, label3, 
                 data_label)
         med = results['dummy1']['median']
-        refmed = results['dummy1']['median']
+        refmed = refresults['dummy1']['median']
         diff = med - refmed
         for i in diff:
             for j in i:
                 assert j <= 10 and j >= 0
+
+class TestAdditionSingleInstrument:
+    def setup(self):
+        """
+        The constellation consists of a single instrument, so performing 
+        addition on it should just return the instrument's data within
+        the bounds
+        """
+        insts = []
+        testInst = pysat.Instrument('pysat', 'testadd', clean_level='clean'))
+        insts.append(testInst)
+        self.testConst = pysat,Constellation(insts)
+
+    def teardown(self):
+        del self.testConst
+
+    def test_addition_single_instrument(self):
+        for inst in self.testConst:
+            inst.bounds = (pysat.datatime(2008, 1, 1), pysat.datetime(2008, 2 ,1))
+        bounds1 = [0, 360]
+        label1 = 'longitude'
+        bounds2 = [-90, 90]
+        label2 = 'latitude'
+        bins3 = [0, 24, 24]
+        label3 = 'mlt'
+        data_label = 'dummy1'
+        results = self.testConst.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        refresults = pysat.ssnl.avg.median2d(self.testInst, [0, 360, 1], label1, [-90, 90, 1], label2, bins3, label3)
+
+        med = results['dummy1']['median']
+        refmed = refresults['dummy1']['median']
+        assert array_equal(med, refmed)
 
 
