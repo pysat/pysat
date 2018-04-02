@@ -102,7 +102,7 @@ class Constellation(object):
                 min2, max2 = bounds2
                 data1 = inst.data[label1]
                 data2 = inst.data[label2]
-                in_bounds, = np.where(data1 <= min1 and min2 < data1 and
+                in_bounds, = np.where(data1 <= min1 and min1 < data1 and
                                       data2 <= min2 and min2 < data2)
                 # Grab the data in bounds on data1, data2.
                 data_considered, = inst.data.iloc[inbounds]
