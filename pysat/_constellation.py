@@ -1,5 +1,6 @@
 import collections
 import numpy as np
+from pysat.ssnl.avg import _calc_2d_median
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
@@ -91,7 +92,7 @@ class Constellation(object):
         yarr, zarr = map(np.arange, (numy, numz))
 
         # Store data here.
-        ans = [ [collections.deque() for j in yarr] or k in zarr]
+        ans = [[[collections.deque()] for j in yarr] for k in zarr]
 
         # Filter data by bounds and bin it.
         # Idiom for loading all of the data in an instrument's bounds.
@@ -105,10 +106,10 @@ class Constellation(object):
                     min2, max2 = bounds2
                     data1 = inst.data[label1]
                     data2 = inst.data[label2]
-                    in_bounds, = np.where(data1 <= min1 and min1 < data1 and
-                                          data2 <= min2 and min2 < data2)
+                    in_bounds, = np.where((data1 <= min1) & (min1 < data1) &
+                                          (data2 <= min2) & (min2 < data2))
                     # Grab the data in bounds on data1, data2.
-                    data_considered, = inst.data.iloc[inbounds]
+                    data_considered = inst.data.iloc[in_bounds]
 
                     y_indexes = np.digitize(data_considered[label3], biny)
 
@@ -122,8 +123,7 @@ class Constellation(object):
 
                             # For each data label, add the points.
                             for zk in zarr:
-                                # XXX what is .ix
-                                ans[yj][zk].extend( data_considered.ix[yindex,data_label[zk]].tolist())
+                                ans[zk][yj][0].extend( data_considered[yindex,data_label[zk]].tolist())
 
         # Now for the averaging.
         # Let's, try .. packing the answers for the 2d function.
