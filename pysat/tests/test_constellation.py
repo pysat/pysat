@@ -87,11 +87,11 @@ class TestAdditionIdenticalInstruments:
         for inst in self.const2:
             inst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
 
-        bounds1 = [0,360+1]
+        bounds1 = [0,360]
         label1 = 'longitude'
-        bounds2 = [-90,90+1]
+        bounds2 = [-90,90]
         label2 = 'latitude'
-        bins3 = [0,24+1,24]
+        bins3 = [0,24,24]
         label3 = 'mlt'
         data_label = ['dummy1']
         results1 = self.const1.add(bounds1, label1, bounds2, label2, bins3, label3,
@@ -102,7 +102,9 @@ class TestAdditionIdenticalInstruments:
         med2 = results2['dummy1']['median']
         print(repr(med1)) #FIXME
         print(repr(med2)) #FIXME
-        assert np.array_equal(med1, med2)
+        for (left, right) in zip(med1, med2):
+            assert left == right or \
+                   ( np.isnan(left) and np.isnan(right) )
 
 class TestAdditionOppositeInstruments:
     def setup(self):
