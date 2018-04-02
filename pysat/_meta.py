@@ -447,13 +447,13 @@ class Meta(object):
             string with case preserved as in metaobject
             
         """
-        
+        lower_name = name.lower()
         if name in self:
             for i in self.keys():
-                if name.lower() == i.lower():
+                if lower_name == i.lower():
                     return i
             for i in self.keys_nD():
-                if name.lower() == i.lower():
+                if lower_name == i.lower():
                     return i
         return name
 
