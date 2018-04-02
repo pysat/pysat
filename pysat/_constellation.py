@@ -34,9 +34,9 @@ class Constellation(object):
         # TODO Implement __repr__
         raise NotImplementedError()
 
-    def data_mod(self, function, kind='add', at_pos='end', *args, **kwargs):
+    def data_mod(self, function, *args, kind='add', at_pos='end', **kwargs):
         for instrument in self.instruments:
-            instrument.custom.add(function, kind, at_pos, *args, **kwargs)
+            instrument.custom.add(function, *args, kind, at_pos, **kwargs)
 
     def load(self, *args, **kwargs):
         for instrument in self.instruments:
@@ -109,8 +109,8 @@ class Constellation(object):
                     min2, max2 = bounds2
                     data1 = inst.data[label1]
                     data2 = inst.data[label2]
-                    in_bounds, = np.where((data1 <= min1) & (min1 < data1) &
-                                          (data2 <= min2) & (min2 < data2))
+                    in_bounds, = np.where((min1 <= data1) & (data1 < max1) &
+                                          (min2 <= data2) & (data2 < max2))
                     # Grab the data in bounds on data1, data2.
                     data_considered = inst.data.iloc[in_bounds]
 
@@ -119,14 +119,15 @@ class Constellation(object):
                     # Iterate over the bins along y
                     for yj in yarr:
                         # Indicies of data in this bin
-                        yindex, = np.where(y_indexes==yj)
+                        yindex, = np.where(y_indexes == yj)
 
                         # If there's data in this bin
                         if len(yindex) > 0:
 
                             # For each data label, add the points.
                             for zk in zarr:
-                                ans[zk][yj][0].extend( data_considered[yindex,data_label[zk]].tolist())
+                                ans[zk][yj][0].extend(
+                                    data_considered.ix[yindex, data_label[zk]].tolist())
 
         # Now for the averaging.
         # Let's, try .. packing the answers for the 2d function.
