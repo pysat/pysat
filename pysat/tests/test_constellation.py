@@ -74,8 +74,8 @@ class TestAdditionIdenticalInstruments:
         insts = []
         for i in range(3):
             insts.append(pysat.Instrument('pysat', 'testing', clean_level='clean'))
-        self.const1 = Constellation(insts)
-        self.const2 = Constellation([pysat.Instrment('pysat', 'testing', clean_level='clean')])
+        self.const1 = pysat.Constellation(insts)
+        self.const2 = pysat.Constellation([pysat.Instrment('pysat', 'testing', clean_level='clean')])
 
     def teardown(self):
         del self.const1
