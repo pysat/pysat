@@ -68,7 +68,7 @@ class TestConstellation:
         assert repr(self.const) == "Constellation([..."
 
     # TODO write tests for add, difference
-    def test_addition(self, (min1, max1), label1, (min2, max2), label2, (min3, max3, numBins), label3, data_label):
+    def test_addition(self):
         """Test Constellation:addition."""
         #FIXME
         raise NotImplementedError()
