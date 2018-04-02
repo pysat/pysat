@@ -72,3 +72,108 @@ class TestConstellation:
         """Test Constellation:addition."""
         #FIXME
         raise NotImplementedError()
+
+class TestAdditionIdenticalInstruments:
+    def setup(self):
+        insts = []
+        for i in range(3):
+            insts.append(pysat.Instrument('pysat', 'testing', clean_level='clean'))
+        self.const1 = Constellation(insts)
+        self.const2 = Constellation([pysat.Instrment('pysat', 'testing', clean_level='clean')])
+
+    def teardown(self):
+        del self.const1
+        del self.const2
+
+    def test_addition_identical(self):
+        for inst in self.const1:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        for inst in self.const2:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        
+        bounds1 = [0,360]
+        label1 = 'longitude'
+        bounds2 = [-90,90]
+        label2 = 'latitude'
+        bins3 = [0,24,24]
+        label3 = 'mlt'
+        data_label = 'dummy1'
+        results1 = self.const1.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        results2 = self.const2.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        med1 = results1['dummy1']['median']
+        med2 = results2['dummy1']['median']
+        assert array_equal(med1, med2)
+
+class TestAdditionOppositeInstruments:
+    def setup(self):
+        """
+        The data in testadd1['dummy1'] is just ascending integers 0 to the 
+        length of the other data, testadd2 has the same data but negative.
+        The addition of these two signals should be zero everywhere.
+        """
+        insts = []
+        insts.append(pysat.Instrument('pysat', 'testadd1', clean_level='clean'))
+        insts.append(pysat.Instrument('pysat', 'testadd2', clean_level='clean'))
+        self.testC = pysat.Constellation(insts)
+
+    def teardown(self):
+        del self.testC
+
+    def test_addition_opposite_instruments(self):
+        for inst in self.testC:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        bounds1 = [0,360]
+        label1 = 'longitude'
+        bounds2 = [-90,90]
+        label2 = 'latitude'
+        bins3 = [0,24,24]
+        label3 = 'mlt'
+        data_label = 'dummy1'
+        results = self.testC.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        med = results['dummy1']['median']
+        for i in med:
+            for j in i:
+                assert j == 0
+
+class TestAdditionSimilarInstruments:
+    def setup(self):
+        """
+        All the data in dummy1 of testadd3 is the data in testadd1 + 10
+        So the addition of testadd1 and testadd3 should be no more than 10 off from 
+        the addition of just testadd1
+        TODO: actually check the math on this
+        """
+        insts = []
+        insts.append(pysat.Instrument('pysat', 'testadd1', clean_level='clean'))
+        insts.append(pysat.Instrument('pysat', 'testadd3', clean_level='clean'))
+        self.testC = pysat.Constellation(insts)
+        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd1', clean_level='clean')])
+
+    def teardown(self):
+        del self.testC
+
+    def test_addition_similar_instruments(self):
+        for inst in self.testC:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        bounds1 = [0,360]
+        label1 = 'longitude'
+        bounds2 = [-90,90]
+        label2 = 'latitude'
+        bins3 = [0,24,24]
+        label3 = 'mlt'
+        data_label = 'dummy1'
+        results = self.testC.add(bounds1, label1, bounds2, label2, bins3, label3, 
+                data_label)
+        refresults = self.refC.add(bounds1, label1, bounds2, label2, bins3, label3, 
+                data_label)
+        med = results['dummy1']['median']
+        refmed = results['dummy1']['median']
+        diff = med - refmed
+        for i in diff:
+            for j in i:
+                assert j <= 10 and j >= 0
+
+
