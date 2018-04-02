@@ -41,6 +41,34 @@ class Constellation(object):
 
     def add(self, bounds1, label1, bounds2, label2, bin3, label3, 
             data_label):
+        """
+        Combines signals from multiple instruments within 
+        given bounds.
+
+        Parameters
+        ----------
+        bounds1 : (min, max)
+            Bounds for selecting data on the axis of label1
+        label1 : string
+            Data label for bounds1 to act on.
+        bounds2 : (min, max)
+            Bounds for selecting data on the axis of label2
+        label2 : string
+            Data label for bounds2 to act on.
+        bin3 : (min, max, #bins)
+            Min and max bounds and number of bins for third axis.
+        label3 : string
+            Data label for third axis.
+        data_label : string
+            Data label for data product to be averaged.
+
+        Returns
+        -------
+        median : dictionary
+            
+        """
+        # XXX double check that we like that name
+
         # TODO Implement signal addition.
         raise NotImplementedError()
 
