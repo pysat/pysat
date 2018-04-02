@@ -525,14 +525,14 @@ class Meta(object):
             name in proper case
         
         """
-        
+        lower_name = name.lower()
         for i in self.attrs():
-            if name.lower() == i.lower():
+            if lower_name == i.lower():
                 return i
         # check if attribute present in higher order structures
         for key in self.keys_nD():
             for i in self[key].attrs():
-                if name.lower() == i.lower():
+                if lower_name == i.lower():
                     return i
         # nothing was found if still here
         # pass name back, free to be whatever
