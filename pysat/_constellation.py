@@ -1,3 +1,4 @@
+import collections
 import numpy as np
 
 class Constellation(object):
@@ -40,10 +41,10 @@ class Constellation(object):
         for instrument in self.instruments:
             instrument.load(*args, **kwargs)
 
-    def add(self, bounds1, label1, bounds2, label2, bin3, label3, 
+    def add(self, bounds1, label1, bounds2, label2, bin3, label3,
             data_label):
         """
-        Combines signals from multiple instruments within 
+        Combines signals from multiple instruments within
         given bounds.
 
         Parameters
@@ -68,7 +69,7 @@ class Constellation(object):
         Returns
         -------
         median : dictionary
-            
+
         """
         # XXX double check that we like that name
         # TODO document return more
@@ -80,7 +81,7 @@ class Constellation(object):
 
         # Make bin boundaries.
         # y: values at label3
-        # z: *data_labels 
+        # z: *data_labels
         biny = np.linspace(bin3[0], bin3[1], bin3[2]+1)
 
         numy = len(biny)-1
@@ -94,34 +95,35 @@ class Constellation(object):
 
         # Filter data by bounds and bin it.
         # Idiom for loading all of the data in an instrument's bounds.
-        for inst in inst: 
-            if len(inst.data) != 0:
-                # Select indicies for each piece of data we're interest in.
-                # Not all of this data is in bounds on label3 but we'll 
-                #  sort this later.
-                min1, max1 = bounds1
-                min2, max2 = bounds2
-                data1 = inst.data[label1]
-                data2 = inst.data[label2]
-                in_bounds, = np.where(data1 <= min1 and min1 < data1 and
-                                      data2 <= min2 and min2 < data2)
-                # Grab the data in bounds on data1, data2.
-                data_considered, = inst.data.iloc[inbounds]
+        for inst in self:
+            for inst in inst:
+                if len(inst.data) != 0:
+                    # Select indicies for each piece of data we're interest in.
+                    # Not all of this data is in bounds on label3 but we'll
+                    #  sort this later.
+                    min1, max1 = bounds1
+                    min2, max2 = bounds2
+                    data1 = inst.data[label1]
+                    data2 = inst.data[label2]
+                    in_bounds, = np.where(data1 <= min1 and min1 < data1 and
+                                          data2 <= min2 and min2 < data2)
+                    # Grab the data in bounds on data1, data2.
+                    data_considered, = inst.data.iloc[inbounds]
 
-                y_indexes = np.digitize(data_considered[label3], biny)
+                    y_indexes = np.digitize(data_considered[label3], biny)
 
-                # Iterate over the bins along y
-                for yj in yarr:
-                    # Indicies of data in this bin
-                    yindex, = np.where(y_indexes==yj)
+                    # Iterate over the bins along y
+                    for yj in yarr:
+                        # Indicies of data in this bin
+                        yindex, = np.where(y_indexes==yj)
 
-                    # If there's data in this bin
-                    if len(yindex) > 0:
+                        # If there's data in this bin
+                        if len(yindex) > 0:
 
-                        # For each data label, add the points.
-                        for zk in zarr:
-                            # XXX what is .ix
-                            ans[yj][zk].extend( data_considered.ix[yindex,data_label[zk]].tolist())
+                            # For each data label, add the points.
+                            for zk in zarr:
+                                # XXX what is .ix
+                                ans[yj][zk].extend( data_considered.ix[yindex,data_label[zk]].tolist())
 
         # Now for the averaging.
         # Let's, try .. packing the answers for the 2d function.
@@ -132,9 +134,6 @@ class Constellation(object):
 
         # TODO modify output
         return _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz)
-
-        # TODO Implement signal addition.
-        raise NotImplementedError()
 
     def difference(self, instrument1, instrumet2, data_labels):
         # TODO Implement signal difference.
