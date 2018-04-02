@@ -95,9 +95,9 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
                                     #// select the data product, put it in a list, and extend the deque
                                     ans[zk][yj][xi].extend( yData.ix[yindex,data_label[zk]].tolist() )
 
-    return _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz)
+    return _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz, returnData)
 
-def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz):
+def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz, returnData = False):
     # set up output arrays
     medianAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]
     countAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]
