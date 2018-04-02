@@ -146,7 +146,7 @@ class TestAdditionSimilarInstruments:
         insts.append(pysat.Instrument('pysat', 'testadd1', clean_level='clean'))
         insts.append(pysat.Instrument('pysat', 'testadd3', clean_level='clean'))
         self.testC = pysat.Constellation(insts)
-        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd1', clean_level='clean')])
+        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'test_add1', clean_level='clean')])
 
     def teardown(self):
         del self.testC
@@ -180,7 +180,7 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        testInst = pysat.Instrument('pysat', 'testadd', clean_level='clean')
+        testInst = pysat.Instrument('pysat', 'test_add1', clean_level='clean')
         insts.append(testInst)
         self.testConst = pysat,Constellation(insts)
 
