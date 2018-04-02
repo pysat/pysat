@@ -20,8 +20,8 @@ class Meta(object):
     ----------
     metadata : pandas.DataFrame 
         DataFrame should be indexed by variable name that contains at minimum the 
-        standard_name (name), units, and long_name for the data stored in the associated 
-        pysat Instrument object.
+        standard_name (name), units, long_name, and fillvalue for the data stored 
+        in the associated pysat Instrument object.
     units_label : str
         String used to label units in storage. Defaults to 'units'. 
     name_label : str
@@ -128,8 +128,6 @@ class Meta(object):
                 for attr in self.attrs():
                     if self[key, attr] != other[key, attr]:
                         if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
-                            # print ('hi', key, attr, self[key, attr])
-                            # print ('hi', key, attr, other[key, attr])
                             return False
             # check through higher order products
             for key in self.keys_nD():
@@ -180,43 +178,44 @@ class Meta(object):
         
         if isinstance(value, dict):
             # check if dict empty
-            if value.keys() == []:
-                # null input, variable name provided but no metadata is actually
-                # included. Everything should be set to default.
-                if isinstance(name, basestring):
-                    if name in self:
-                        # variable already exists and we don't have anything
-                        # new to add, just leave
-                        return
-                    # otherwise, continue on and set defaults
-                else:
-                    new_name = []
-                    for n in name:
-                        if n not in self:
-                            new_name.append(n)
-                    name = new_name
-                    if len(name) == 0:
-                        # all variables already exist, can simply leave
-                        return
-                    else:
-                        # otherwise, continue on and set defaults
-                        # create empty input for all remaining names
-                        value = {}
-                        value[self.units_label] = ['']*len(name)
-                        value[self.name_label] = name
+            # if value.keys() == []:
+            #     # null input, variable name provided but no metadata is actually
+            #     # included. Everything should be set to default.
+            #     if isinstance(name, basestring):
+            #         if name in self:
+            #             # variable already exists and we don't have anything
+            #             # new to add, just leave
+            #             return
+            #         # otherwise, continue on and set defaults
+            #     else:
+            #         new_name = []
+            #         for n in name:
+            #             if n not in self:
+            #                 new_name.append(n)
+            #         name = new_name
+            #         if len(name) == 0:
+            #             # all variables already exist, can simply leave
+            #             return
+            #         else:
+            #             # otherwise, continue on and set defaults
+            #             # create empty input for all remaining names
+            #             value = {}
+            #             value[self.units_label] = ['']*len(name)
+            #             value[self.name_label] = name
+            #             value[self.fill_label] = np.NaN
             
             # perform some checks on the data
             # if not passed an iterable, make it one
             if isinstance(name, basestring):
                 name = [name]
-                for key in value.keys():
+                for key in value:
                     value[key] = [value[key]]
             # make sure number of inputs matches number of metadata inputs
-            for key in value.keys():
+            for key in value:
                 if len(name) != len(value[key]):
                     raise ValueError('Length of names and inputs must be equal.')
 
-            if 'meta' in value.keys():
+            if 'meta' in value:
                 # process higher order stuff first
                 # could be part of multiple assignment
                 # so assign the Meta objects, then remove all trace
@@ -247,7 +246,7 @@ class Meta(object):
                     # remove place holder data in other values that used
                     # to have to account for presence of Meta object
                     # going through backwards so I don't mess with location references
-                    for key in value.keys():
+                    for key in value:
                         _ = value[key].pop(loc)
 
             # check if 'units' or other base parameters have been provided
@@ -387,6 +386,7 @@ class Meta(object):
                 else:
                     # there is no existing label
                     # setting for the first time
+                    # this doesn't always capture the correct default
                     self.data[value] = np.NaN
             # check higher order structures as well
             for key in self.keys_nD():
@@ -421,17 +421,14 @@ class Meta(object):
     @units_label.setter   
     def units_label(self, value):
         self._label_setter(value, self.units_label, self._units_label) 
-        self._units_label = value    
 
     @name_label.setter   
     def name_label(self, value):
         self._label_setter(value, self.name_label, self._name_label)     
-        self._name_label = value    
 
     @fill_label.setter   
     def fill_label(self, value):
         self._label_setter(value, self.fill_label, self._fill_label)
-        self._fill_label = value    
         
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
@@ -466,7 +463,7 @@ class Meta(object):
     def keys_nD(self):
         """Yields keys for higher order metadata"""
         
-        for i in self.ho_data.keys():
+        for i in self.ho_data:
             yield i
 
     def keypairs_ho(self):
