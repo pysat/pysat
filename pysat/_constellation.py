@@ -64,19 +64,22 @@ class Constellation(object):
             Min and max bounds and number of bins for third axis.
         label3 : string
             Data label for third axis.
-        data_label : string
-            Data label for data product to be averaged.
+        data_label : array of strings
+            Data label(s) for data product(s) to be averaged.
 
         Returns
         -------
         median : dictionary
 
         """
-        # XXX double check that we like that name
         # TODO document return more
-        # TODO check that Dr Stoneback is ok with bounds [,)
-
         # TODO insert type checks
+
+        if isinstance(data_label, str):
+            data_label = [data_label,]
+        elif not isinstance(data_label, collections.Sequence):
+            raise ValueError("Please pass data_label as a string or "
+                             "collection of strings.")
 
         # Modeled after pysat.ssnl.median2D
 
@@ -127,7 +130,6 @@ class Constellation(object):
 
         # Now for the averaging.
         # Let's, try .. packing the answers for the 2d function.
-        ans = [ans,]
         numx = 1
         xarr = np.arange(numx)
         binx = None

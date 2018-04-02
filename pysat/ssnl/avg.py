@@ -77,10 +77,10 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
                 xind = np.digitize(inst.data[label1], binx)-1
                 #// for each possible x index
                 for xi in xarr:
-                    #// get the indecies of those pieces of data in that bin
+                    #// get the indicies of those pieces of data in that bin
                     xindex, = np.where(xind==xi)
                     if len(xindex) > 0:
-                        #// look up the data along y (label2) at that set of indecies (a given x)
+                        #// look up the data along y (label2) at that set of indicies (a given x)
                         yData = inst.data.iloc[xindex]
                         #// digitize that, to sort data into bins along y (label2) (get bin indexes)
                         yind = np.digitize(yData[label2], biny)-1
