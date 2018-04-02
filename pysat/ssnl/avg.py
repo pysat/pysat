@@ -63,11 +63,6 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
     #// 3d array:  stores the data that is sorted into each bin? - in a deque
     ans = [ [ [collections.deque() for i in xarr] for j in yarr] for k in zarr]
 
-    # set up output arrays
-    medianAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]
-    countAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]
-    devAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]    
-
     for inst in const:
         # do loop to iterate over instrument season
         #// probably iterates by date but that all depends on the
@@ -99,6 +94,15 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
                                     #// take the data (already filtered by x); filter it by y and 
                                     #// select the data product, put it in a list, and extend the deque
                                     ans[zk][yj][xi].extend( yData.ix[yindex,data_label[zk]].tolist() )
+
+    return _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz)
+
+def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz):
+    # set up output arrays
+    medianAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]
+    countAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]
+    devAns = [ [ [ None for i in xarr] for j in yarr] for k in zarr]    
+
 
     # all of the loading and storing data is done
     # determine what kind of data is stored
