@@ -1,3 +1,4 @@
+import numpy as np
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
@@ -112,7 +113,7 @@ class Constellation(object):
                 # Iterate over the bins along y
                 for yj in yarr:
                     # Indicies of data in this bin
-                    yindex, = np.where(y_indexes==yi)
+                    yindex, = np.where(y_indexes==yj)
 
                     # If there's data in this bin
                     if len(yindex) > 0:
