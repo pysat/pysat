@@ -100,7 +100,7 @@ class TestAdditionIdenticalInstruments:
                 data_label)
         med1 = results1['dummy1']['median']
         med2 = results2['dummy1']['median']
-        assert array_equal(med1, med2)
+        assert np.array_equal(med1, med2)
 
 class TestAdditionOppositeInstruments:
     def setup(self):
@@ -182,14 +182,14 @@ class TestAdditionSingleInstrument:
         insts = []
         testInst = pysat.Instrument('pysat', 'testadd1', clean_level='clean')
         insts.append(testInst)
-        self.testConst = pysat,Constellation(insts)
+        self.testConst = pysat.Constellation(insts)
 
     def teardown(self):
         del self.testConst
 
     def test_addition_single_instrument(self):
         for inst in self.testConst:
-            inst.bounds = (pysat.datatime(2008, 1, 1), pysat.datetime(2008, 2 ,1))
+            inst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2 ,1))
         bounds1 = [0, 360]
         label1 = 'longitude'
         bounds2 = [-90, 90]
@@ -203,6 +203,6 @@ class TestAdditionSingleInstrument:
 
         med = results['dummy1']['median']
         refmed = refresults['dummy1']['median']
-        assert array_equal(med, refmed)
+        assert np.array_equal(med, refmed)
 
 
