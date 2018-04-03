@@ -240,7 +240,7 @@ class TestBasics():
         meta2['dm'] = {'units':'hey', 'long_name':'boo'}
         meta2['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
         meta3 = pysat.Meta()
-        meta3['higher'] = meta
+        meta3['higher'] = meta2
         assert meta3 == self.meta
 
     def test_inequality_with_higher_order_meta(self):
@@ -253,8 +253,9 @@ class TestBasics():
         meta2['dm'] = {'units':'hey', 'long_name':'boo'}
         meta2['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
         meta3 = pysat.Meta()
-        meta3['higher'] = meta
-        assert meta3 != self.meta                
+        meta3['higher'] = meta2
+        assert not (meta3 == self.meta)                
+        assert not (self.meta == meta3)                
 
     def test_inequality_with_higher_order_meta2(self):
         self.meta = pysat.Meta()
@@ -266,8 +267,20 @@ class TestBasics():
         meta2['dm'] = {'units':'hey', 'long_name':'boo'}
         meta2['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
         meta3 = pysat.Meta()
-        meta3['higher'] = meta
-        assert meta3 != self.meta                
+        meta3['higher'] = meta2
+        print ('meta3', meta3)
+        print ('self.meta', self.meta)
+        for key in meta3.keys():
+            print ('meta3 key', meta3[key])
+            print ('self key', self.meta[key])
+        for key in meta3.keys_nD():
+            for key2 in meta3[key].keys():
+                
+                print (meta3[key][key2])
+                print (self.meta[key][key2])
+        
+        assert not (meta3 == self.meta)                
+        assert not (self.meta == meta3)                
 
     def test_inequality_with_higher_order_meta3(self):
         self.meta = pysat.Meta()
@@ -280,8 +293,21 @@ class TestBasics():
         meta2['dm'] = {'units':'hey', 'long_name':'boo'}
         meta2['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
         meta3 = pysat.Meta()
-        meta3['higher'] = meta
-        assert meta3 != self.meta                
+        meta3['higher'] = meta2
+        
+        # print ('meta3', meta3)
+        # print ('self.meta', self.meta)
+        # for key in meta3.keys():
+        #     print ('meta3 key', meta3[key])
+        #     print ('self key', self.meta[key])
+        # for key in meta3.keys_nD():
+        #     for key2 in meta3[key].keys():
+        #         
+        #         print (meta3[key][key2])
+        #         print (self.meta[key][key2])
+
+        assert not (meta3 == self.meta)
+        assert not (self.meta == meta3)              
                                                                          
     def test_assign_higher_order_meta(self):
         meta = pysat.Meta()

@@ -125,33 +125,59 @@ class Meta(object):
     def __eq__(self, other):
         if isinstance(other, Meta):
             # check first if variables and attributes are the same
+            keys1 = [i for i in self.keys()]
+            keys2 = [i for i in other.keys()]
+            if not (keys1 == keys2):
+                return False
+            
+            # check if attributes are the same
+            attrs1 = [i for i in self.attrs()]
+            attrs2 = [i for i in other.attrs()]
+            if not (attrs1 == attrs2):
+                return False
+            
             for key in self.keys():
-                if key in other:
-                    for attr in self.attrs():
-                        if other.has_attr(attr):
-                            if self[key, attr] != other[key, attr]:
-                                if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
-                                    return False
-                        else:
+                for attr in self.attrs():
+                    if not (self[key, attr] == other[key, attr]):
+                        # np.nan is not equal to anything
+                        # if both values are NaN, ok in my book
+                        try:
+                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
+                                # one or both are not NaN and they aren't equal
+                                # test failed
+                                return False
+                        except TypeError:
+                            # comparison above gets unhappy with string inputs
                             return False
-                else:
-                    return False
+
             # check through higher order products
+            keys1 = [i for i in self.keys_nD()]
+            keys2 = [i for i in other.keys_nD()]
+            if not (keys1 == keys2):
+                return False
+
             for key in self.keys_nD():
-                if key in other:
-                    for key2 in self[key].keys():
-                        if key2 in other[key]:
-                            for attr in self[key].attrs():
-                                if other[key].has_attr(attr):    
-                                    if self[key][key2, attr] != other[key][key2, attr]:
-                                        if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
-                                            return False
-                                else:
-                                    return False
-                        else:
-                            return False
-                else:
+                keys1 = [i for i in self[key].keys()]
+                keys2 = [i for i in other[key].keys()]
+                if not (keys1 == keys2):
                     return False
+
+                # check if attributes are the same
+                attrs1 = [i for i in self[key].attrs()]
+                attrs2 = [i for i in other[key].attrs()]
+                if not (attrs1 == attrs2):
+                    return False
+
+                for key2 in self[key].keys():
+                    for attr in self[key].attrs():
+                        if not (self[key][key2, attr] == other[key][key2, attr]):
+                            try:
+                                if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
+                                    return False
+                            except TypeError:
+                                # comparison above gets unhappy with string inputs
+                                return False
+
             # if we made it this far, things are good                
             return True
         else:
