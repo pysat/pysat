@@ -269,8 +269,11 @@ class Meta(object):
                             # overall variable not in Meta, can use default
                             value[attr].append(default)
                         else:
-                            # copy existing
-                            value[attr].append(self[item_name, attr])
+                            if self.has_attr(attr):
+                                # copy existing
+                                value[attr].append(self[item_name, attr])
+                            else:
+                                value[attr].append(default)
                 elif attr not in value:
                     # base parameter was provided, however the case 
                     # provided doesn't match up with existing labels
