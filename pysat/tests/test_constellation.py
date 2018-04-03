@@ -155,6 +155,8 @@ class TestAdditionSimilarInstruments:
     def test_addition_similar_instruments(self):
         for inst in self.testC:
             inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        for inst in self.refC:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         bounds1 = [0,360]
         label1 = 'longitude'
         bounds2 = [-90,90]
@@ -182,7 +184,7 @@ class TestAdditionSingleInstrument:
         """
         insts = []
         self.testInst = pysat.Instrument('pysat', 'testadd1', clean_level='clean')
-        insts.append(testInst)
+        insts.append(self.testInst)
         self.testConst = pysat.Constellation(insts)
 
     def teardown(self):
