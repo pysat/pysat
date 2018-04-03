@@ -124,18 +124,29 @@ class Meta(object):
 
     def __eq__(self, other):
         if isinstance(other, Meta):
+            # check first if variables and attributes are the same
             for key in self.keys():
                 for attr in self.attrs():
-                    if self[key, attr] != other[key, attr]:
-                        if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
-                            return False
+                    if (key in other) and other.has_attr(attr):
+                        if self[key, attr] != other[key, attr]:
+                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
+                                return False
+                    else:
+                        return False
             # check through higher order products
             for key in self.keys_nD():
                 for key2 in self[key].keys():
                     for attr in self[key].attrs():
-                        if self[key][key2, attr] != other[key][key2, attr]:
-                            if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
+                        if key in other:
+                            if key2 in other[key] and (other[key].has_attr(attr)):
+
+                                if self[key][key2, attr] != other[key][key2, attr]:
+                                    if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
+                                        return False
+                            else:
                                 return False
+                        else:
+                            return False
             # if we made it this far, things are good                
             return True
         else:
@@ -570,10 +581,10 @@ class Meta(object):
                 if key in mdata:
                     raise RuntimeError('Duplicated keys (variable names) across '
                                         'Meta objects in keys().')
-        for key in other.keys_nD():
-            if key in mdata:
-                raise RuntimeError('Duplicated keys (variable names) across '
-                                    'Meta objects in keys_nD().')
+            for key in other.keys_nD():
+                if key in mdata:
+                    raise RuntimeError('Duplicated keys (variable names) across '
+                                        'Meta objects in keys_nD().')
         # concat 1D metadata in data frames to copy of
         # current metadata
         for key in other.keys():

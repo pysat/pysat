@@ -17,8 +17,21 @@ class TestBasics():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+        del self.meta
     
     def test_repr_call_runs(self):
+        self.testInst.meta['hi'] = {'units':'yoyo', 'long_name':'hello'}
+        print(self.testInst.meta)
+        assert True
+
+    def test_repr_call_runs_with_higher_order_data(self):
+        self.meta['param1'] = {'units':'blank', 'long_name':u'parameter1', 
+                                'custom1':14, 'custom2':np.NaN, 'custom3':14.5,
+                                'custom4':u'hello'}
+        self.testInst.meta['param0'] = {'units':'basic', 'long_name':'parameter0',
+                                        self.testInst.meta.fill_label:'10',
+                                        'CUSTOM4':143}
+        self.testInst.meta['kiwi'] = self.meta
         print(self.testInst.meta)
         assert True
 
@@ -63,6 +76,15 @@ class TestBasics():
         
         assert (self.meta['new3'].units == 'hey3')
 
+    @raises(RuntimeError)
+    def test_concat_w_name_collision_strict(self):
+        self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
+        self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new2'] = {'units':'hey2', 'long_name':'crew_brew'}
+        meta2['new3'] = {'units':'hey3', 'long_name':'crew_brew'}
+        self.meta = self.meta.concat(meta2, strict=True)
+
     def test_basic_concat_w_ho(self):
         self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
         self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
@@ -75,8 +97,50 @@ class TestBasics():
         
         assert (self.meta['new3'].units == 'hey3')
         assert (self.meta['new4']['new41'].units == 'hey4')
+
+    @raises(RuntimeError)
+    def test_basic_concat_w_ho_collision_strict(self):
+        self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
+        self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new31'] = {'units':'hey3', 'long_name':'crew_brew'}
+        self.meta['new3'] = meta2
+        meta3 = pysat.Meta()
+        meta3['new31'] = {'units':'hey4', 'long_name':'crew_brew', 'bob_level':'max'}
+        meta2['new3'] = meta3
+        self.meta = self.meta.concat(meta2, strict=True)
         
-                        
+        
+    def test_basic_concat_w_ho_collision_not_strict(self):
+        self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
+        self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new3'] = {'units':'hey3', 'long_name':'crew_brew'}
+        meta3 = pysat.Meta()
+        meta3['new41'] = {'units':'hey4', 'long_name':'crew_brew', 'bob_level':'max'}
+        meta2['new3'] = meta3
+        self.meta = self.meta.concat(meta2, strict=False)
+        
+        assert self.meta['new3']['new41'].units == 'hey4'
+        assert self.meta['new3']['new41'].bob_level == 'max'
+        assert self.meta['new2'].units == 'hey'
+
+    def test_basic_concat_w_ho_collisions_not_strict(self):
+        self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
+        self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new31'] = {'units':'hey3', 'long_name':'crew_brew'}
+        self.meta['new3'] = meta2
+        meta3 = pysat.Meta()
+        meta3['new31'] = {'units':'hey4', 'long_name':'crew_brew', 'bob_level':'max'}
+        meta2['new3'] = meta3
+        self.meta = self.meta.concat(meta2, strict=False)
+        
+        assert self.meta['new3']['new31'].units == 'hey4'
+        assert self.meta['new3']['new31'].bob_level == 'max'
+        assert self.meta['new2'].units == 'hey'
+
+                                                
     def test_basic_meta_assignment(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
         assert (self.meta['new'].units == 'hey') 
@@ -89,18 +153,18 @@ class TestBasics():
 
     def test_multiple_meta_assignment(self):
         self.meta[['new','new2']] = {'units':['hey', 'hey2'], 'long_name':['boo', 'boo2']}
-        assert (self.meta['new'].units == 'hey') 
-        assert (self.meta['new'].long_name == 'boo') 
-        assert (self.meta['new2'].units == 'hey2') 
-        assert (self.meta['new2'].long_name == 'boo2')
+        assert self.meta['new'].units == 'hey' 
+        assert self.meta['new'].long_name == 'boo'
+        assert self.meta['new2'].units == 'hey2'
+        assert self.meta['new2'].long_name == 'boo2'
 
     @raises(ValueError)
     def test_multiple_meta_assignment_error(self):
         self.meta[['new','new2']] = {'units':['hey', 'hey2'], 'long_name':['boo']}
-        assert (self.meta['new'].units == 'hey') 
-        assert (self.meta['new'].long_name == 'boo') 
-        assert (self.meta['new2'].units == 'hey2') 
-        assert (self.meta['new2'].long_name == 'boo2')
+        assert self.meta['new'].units == 'hey' 
+        assert self.meta['new'].long_name == 'boo' 
+        assert self.meta['new2'].units == 'hey2' 
+        assert self.meta['new2'].long_name == 'boo2'
 
     def test_replace_meta_units(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
@@ -165,7 +229,60 @@ class TestBasics():
     def test_false_meta_equality(self):
 
         assert not (self.testInst.meta == self.testInst)
-        
+
+    def test_equality_with_higher_order_meta(self):
+        self.meta = pysat.Meta()
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta['higher'] = meta
+        meta2 = pysat.Meta()
+        meta2['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta2['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        meta3 = pysat.Meta()
+        meta3['higher'] = meta
+        assert meta3 == self.meta
+
+    def test_inequality_with_higher_order_meta(self):
+        self.meta = pysat.Meta()
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo', 'radn':'raiden'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta['higher'] = meta
+        meta2 = pysat.Meta()
+        meta2['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta2['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        meta3 = pysat.Meta()
+        meta3['higher'] = meta
+        assert meta3 != self.meta                
+
+    def test_inequality_with_higher_order_meta2(self):
+        self.meta = pysat.Meta()
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey2', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta['higher'] = meta
+        meta2 = pysat.Meta()
+        meta2['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta2['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        meta3 = pysat.Meta()
+        meta3['higher'] = meta
+        assert meta3 != self.meta                
+
+    def test_inequality_with_higher_order_meta3(self):
+        self.meta = pysat.Meta()
+        meta = pysat.Meta()
+        meta['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        self.meta['higher'] = meta
+        self.meta['lower'] = {'units': 'yoyooy'}
+        meta2 = pysat.Meta()
+        meta2['dm'] = {'units':'hey', 'long_name':'boo'}
+        meta2['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        meta3 = pysat.Meta()
+        meta3['higher'] = meta
+        assert meta3 != self.meta                
+                                                                         
     def test_assign_higher_order_meta(self):
         meta = pysat.Meta()
         meta['dm'] = {'units':'hey', 'long_name':'boo'}
@@ -364,12 +481,12 @@ class TestBasics():
             self.meta['new_%d' % i] = {'units': 'heyhey%d' % i, 
                                         'long_name': 'booboo%d' % i}
 
-        print (self.meta['new'])
+        # print (self.meta['new'])
         assert self.meta['new'].Units == 'hey999'
         assert self.meta['new'].Long_Name == 'boo999'
         assert self.meta['new_999'].Units == 'heyhey999'
         assert self.meta['new_999'].Long_Name == 'booboo999'
-        print (self.meta['new_500'])
+        # print (self.meta['new_500'])
         assert self.meta['new_500'].Units == 'hey999'
         assert self.meta['new_500'].Long_Name == 'boo999'
 
