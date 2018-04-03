@@ -347,7 +347,7 @@ class TestBasics():
     def test_meta_repr_functions(self):
         self.testInst.meta['new'] = {'units':'hey', 'long_name':'boo'}
         self.testInst.meta['new2'] = {'units':'hey2', 'long_name':'boo2'}
-        # print (self.testInst.meta)
+        print (self.testInst.meta)
         # if it doesn't produce an error, we presume it works
         # how do you test a print??
         assert True

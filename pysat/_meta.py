@@ -126,27 +126,32 @@ class Meta(object):
         if isinstance(other, Meta):
             # check first if variables and attributes are the same
             for key in self.keys():
-                for attr in self.attrs():
-                    if (key in other) and other.has_attr(attr):
-                        if self[key, attr] != other[key, attr]:
-                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
-                                return False
-                    else:
-                        return False
-            # check through higher order products
-            for key in self.keys_nD():
-                for key2 in self[key].keys():
-                    for attr in self[key].attrs():
-                        if key in other:
-                            if key2 in other[key] and (other[key].has_attr(attr)):
-
-                                if self[key][key2, attr] != other[key][key2, attr]:
-                                    if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
-                                        return False
-                            else:
-                                return False
+                if key in other:
+                    for attr in self.attrs():
+                        if other.has_attr(attr):
+                            if self[key, attr] != other[key, attr]:
+                                if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
+                                    return False
                         else:
                             return False
+                else:
+                    return False
+            # check through higher order products
+            for key in self.keys_nD():
+                if key in other:
+                    for key2 in self[key].keys():
+                        if key2 in other[key]:
+                            for attr in self[key].attrs():
+                                if other[key].has_attr(attr):    
+                                    if self[key][key2, attr] != other[key][key2, attr]:
+                                        if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
+                                            return False
+                                else:
+                                    return False
+                        else:
+                            return False
+                else:
+                    return False
             # if we made it this far, things are good                
             return True
         else:
