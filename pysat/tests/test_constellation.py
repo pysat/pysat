@@ -1,5 +1,6 @@
 from nose.tools import raises
 import pysat
+import numpy as np
 
 # TODO
 
@@ -180,7 +181,7 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        testInst = pysat.Instrument('pysat', 'testadd1', clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testadd1', clean_level='clean')
         insts.append(testInst)
         self.testConst = pysat.Constellation(insts)
 
@@ -199,7 +200,7 @@ class TestAdditionSingleInstrument:
         data_label = 'dummy1'
         results = self.testConst.add(bounds1, label1, bounds2, label2, bins3, label3,
                 data_label)
-        refresults = pysat.ssnl.avg.median2d(self.testInst, [0, 360, 1], label1, [-90, 90, 1], label2, bins3, label3)
+        refresults = pysat.ssnl.avg.median2D(self.testInst, [0, 360, 1], label1, [-90, 90, 1], label2, bins3, label3)
 
         med = results['dummy1']['median']
         refmed = refresults['dummy1']['median']
