@@ -73,6 +73,29 @@ class Instrument(object):
     name_label : str
         label to use for long name. Defaults to 'long_name' but some implementations
         will use 'Long_Name'
+    units_label : str
+        String used to label units in storage. Defaults to 'units'. 
+    name_label : str
+        String used to label long_name in storage. Defaults to 'long_name'.
+    notes_label : str
+       label to use for notes in storage. Defaults to 'notes'
+    desc_label : str
+       label to use for variable descriptions in storage. Defaults to 'desc'
+    plot_label : str
+       label to use to label variables in plots. Defaults to 'label'
+    axis_label : str
+        label to use for axis on a plot. Defaults to 'axis'
+    scale_label : str
+       label to use for plot scaling type in storage. Defaults to 'scale'
+    min_label : str
+       label to use for typical variable value min limit in storage.
+       Defaults to 'value_min'
+    max_label : str
+       label to use for typical variable value max limit in storage.
+       Defaults to 'value_max'
+    fill_label : str
+        label to use for fill values. Defaults to '_FillValue' but some implementations
+        will use 'FillVal'
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and sat_id will be filled in as needed using python string
@@ -150,8 +173,11 @@ class Instrument(object):
                  clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
-                 temporary_file_list=False, units_label='units', name_label='long_name',  
-                 fill_label='_FillValue', *arg, **kwargs):
+                 temporary_file_list=False, units_label='units', name_label='long_name',
+                 notes_label='notes', desc_label='desc', plot_label='label',
+                 axis_label='axis', scale_label='scale', min_label='value_min',
+                 max_label='value_max', fill_label = '_FillValue', 
+                 *arg, **kwargs):
 
         if inst_module is None:
             # use strings to look up module name
@@ -214,9 +240,19 @@ class Instrument(object):
         self.data = DataFrame(None)
         self.units_label = units_label
         self.name_label = name_label
+        self.notes_label = notes_label
+        self.desc_label = desc_label
+        self.plot_label = plot_label
+        self.axis_label = axis_label
+        self.scale_label = scale_label
+        self.min_label = min_label
+        self.max_label = max_label
         self.fill_label = fill_label
         self.meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
-                               fill_label=self.fill_label)
+                               notes_label=self.notes_label, desc_label=self.desc_label,
+                               plot_label=self.plot_label, axis_label=self.axis_label,
+                               scale_label=self.scale_label, min_label=self.min_label,
+                               max_label=self.max_label, fill_label=self.fill_label)
         
         # function processing class, processes data on load
         self.custom = _custom.Custom()
@@ -516,11 +552,22 @@ class Instrument(object):
             # ensure units and name are named consistently
             mdata.units_label = self.units_label
             mdata.name_label = self.name_label
+            mdata.notes_label = self.notes_label
+            mdata.desc_label = self.desc_label
+            mdata.plot_label = self.plot_label
+            mdata.axis_label = self.axis_label
+            mdata.scale_label = self.scale_label
+            mdata.min_label = self.min_label
+            mdata.max_label = self.max_label
             mdata.fill_label = self.fill_label
+
         else:
             data = DataFrame(None)
             mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
-                               fill_label=self.fill_label)
+                        notes_label = self.notes_label, desc_label = self.desc_label,
+                        plot_label = self.plot_label, axis_label = self.axis_label,
+                        scale_label = self.scale_label, min_label = self.min_label,
+                        max_label = self.max_label, fill_label=self.fill_label)
 
         output_str = '{platform} {name} {tag} {sat_id}'
         output_str = output_str.format(platform=self.platform,

@@ -25,10 +25,24 @@ class Meta(object):
     units_label : str
         String used to label units in storage. Defaults to 'units'. 
     name_label : str
-        String used to label long_name in storage. Defaults to 'long_name'. 
+        String used to label long_name in storage. Defaults to 'long_name'.
+    notes_label : str
+       String used to label 'notes' in storage. Defaults to 'notes'
+    desc_label : str
+       String used to label variable descriptions in storage. Defaults to 'desc'
+    plot_label : str
+       String used to label variables in plots. Defaults to 'label'
+    axis_label : str
+        Label used for axis on a plot. Defaults to 'axis'
+    scale_label : str
+       string used to label plot scaling type in storage. Defaults to 'scale'
+    limits_label : str
+       String used to label typical variable value limits in storage.
+       Defaults to 'limits'
     fill_label : str
         String used to label fill value in storage. Defaults to '_FillValue' per
         netCDF4 standard
+    
         
         
     Attributes
@@ -37,11 +51,28 @@ class Meta(object):
         index is variable standard name, 'units' and 'long_name' are also stored along
         with additional user provided labels.
     units_label : str
-        string used to identify units
+        String used to label units in storage. Defaults to 'units'. 
     name_label : str
-        string used to idensity variable names
+        String used to label long_name in storage. Defaults to 'long_name'.
+    notes_label : str
+       String used to label 'notes' in storage. Defaults to 'notes'
+    desc_label : str
+       String used to label variable descriptions in storage. Defaults to 'desc'
+    plot_label : str
+       String used to label variables in plots. Defaults to 'label'
+    axis_label : str
+        Label used for axis on a plot. Defaults to 'axis'
+    scale_label : str
+       string used to label plot scaling type in storage. Defaults to 'scale'
+    min_label : str
+       String used to label typical variable value min limit in storage.
+       Defaults to 'value_min'
+    max_label : str
+       String used to label typical variable value max limit in storage.
+       Defaults to 'value_max'
     fill_label : str
-        string used to identify fill values
+        String used to label fill value in storage. Defaults to '_FillValue' per
+        netCDF4 standard
         
         
     Notes
@@ -108,10 +139,19 @@ class Meta(object):
         
     """
     def __init__(self, metadata=None, units_label='units', name_label='long_name',
-                        fill_label = '_FillValue'):
+                       notes_label='notes', desc_label='desc', plot_label='label',
+                       axis_label='axis', scale_label='scale', min_label='value_min',
+                       max_label='value_max', fill_label = '_FillValue'):
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label
+        self._notes_label = notes_label
+        self._desc_label = desc_label
+        self._plot_label = plot_label
+        self._axis_label = axis_label
+        self._scale_label = scale_label
+        self._min_label = min_label
+        self._max_label = max_label
         self._fill_label = fill_label
         # init higher order (nD) data structure container, a dict
         self.ho_data = {}
@@ -127,15 +167,21 @@ class Meta(object):
             # check first if variables and attributes are the same
             keys1 = [i for i in self.keys()]
             keys2 = [i for i in other.keys()]
-            if not (keys1 == keys2):
+            if len(keys1) != len(keys2):
                 return False
-            
+            for key in keys1:
+                if key not in keys2:
+                    return False
+                    
             # check if attributes are the same
             attrs1 = [i for i in self.attrs()]
             attrs2 = [i for i in other.attrs()]
-            if not (attrs1 == attrs2):
+            if len(attrs1) != len(attrs2):
                 return False
-            
+            for attr in attrs1:
+                if attr not in attrs2:
+                    return False
+
             for key in self.keys():
                 for attr in self.attrs():
                     if not (self[key, attr] == other[key, attr]):
@@ -153,20 +199,29 @@ class Meta(object):
             # check through higher order products
             keys1 = [i for i in self.keys_nD()]
             keys2 = [i for i in other.keys_nD()]
-            if not (keys1 == keys2):
+            if len(keys1) != len(keys2):
                 return False
+            for key in keys1:
+                if key not in keys2:
+                    return False
 
             for key in self.keys_nD():
                 keys1 = [i for i in self[key].keys()]
                 keys2 = [i for i in other[key].keys()]
-                if not (keys1 == keys2):
+                if len(keys1) != len(keys2):
                     return False
+                for key_check in keys1:
+                    if key_check not in keys2:
+                        return False
 
                 # check if attributes are the same
                 attrs1 = [i for i in self[key].attrs()]
                 attrs2 = [i for i in other[key].attrs()]
-                if not (attrs1 == attrs2):
+                if len(attrs1) != len(attrs2):
                     return False
+                for attr in attrs1:
+                    if attr not in attrs2:
+                        return False
 
                 for key2 in self[key].keys():
                     for attr in self[key].attrs():
@@ -296,14 +351,21 @@ class Meta(object):
             # defaults are filled in so that the actions invoked against
             # pandas object later work out as expected 
             lower_keys = [k.lower() for k in value.keys()]
-            attrs = [self.units_label, self.name_label, self.fill_label]
-            default_attrs = [['']*len(name), name, [np.NaN]*len(name)]
+            attrs = [self.units_label, self.name_label, self.notes_label,
+                    self.desc_label, self.plot_label, self.axis_label, 
+                    self.scale_label, self.min_label, self.max_label,
+                    self.fill_label]
+            num = len(name)
+            default_attrs = [['']*num, name, ['']*num,
+                            ['']*num, name, name,
+                            ['linear'], [np.NaN]*num, [np.NaN]*num,
+                            [np.NaN]*num]
             for attr, defaults in zip(attrs, default_attrs):
                 lower_attr = attr.lower()
                 if lower_attr not in lower_keys:
                     # base parameter not provided
                     # provide default value, or copy existing
-                    value[attr] = []
+                    value[attr] = []                    
                     # keys changed, update lower keys for consistency
                     lower_keys = [k.lower() for k in value.keys()]
                     for item_name, default in zip(name, defaults):
@@ -363,9 +425,20 @@ class Meta(object):
             else:
                 new_item_name = name
             # ensure that units and name labels are always consistent
+            # value.units_label = self.units_label
+            # value.name_label = self.name_label
+            # value.fill_label = self.fill_label
             value.units_label = self.units_label
             value.name_label = self.name_label
+            value.notes_label = self.notes_label
+            value.desc_label = self.desc_label
+            value.plot_label = self.plot_label
+            value.axis_label = self.axis_label
+            value.scale_label = self.scale_label
+            value.min_label = self.min_label
+            value.max_label = self.max_label
             value.fill_label = self.fill_label
+
             # go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
             names = value.attrs()
@@ -417,7 +490,7 @@ class Meta(object):
             else:
                 raise KeyError('Key not found in MetaData')
 
-    def _label_setter(self, value, label, actual):
+    def _label_setter(self, value, label, actual, default=np.NaN, use_names_default=False):
         
         if value not in self.attrs():
             # new label not in metadata, including case
@@ -436,7 +509,10 @@ class Meta(object):
                     # there is no existing label
                     # setting for the first time
                     # this doesn't always capture the correct default
-                    self.data[value] = np.NaN
+                    if use_names_default:
+                        self.data[value] = self.data.index
+                    else:
+                        self.data[value] = default
             # check higher order structures as well
             for key in self.keys_nD():
                 if label in self[key].attrs():
@@ -451,34 +527,78 @@ class Meta(object):
                     else:
                         # there is no existing label
                         # setting for the first time
-                        self[key].data[value] = np.NaN
+                        if use_names_default:
+                            self[key].data[value] = self[key].data.index
+                        else:
+                            self[key].data[value] = default
+                        # self[key].data[value] = default
         # now update 'hidden' attribute value
         actual = value
                 
     @property
     def units_label(self):
         return self._units_label
-
     @property
     def name_label(self):
         return self._name_label
-
+    @property
+    def notes_label(self):
+        return self._notes_label
+    @property
+    def desc_label(self):
+        return self._desc_label
+    @property
+    def plot_label(self):
+        return self._plot_label
+    @property
+    def axis_label(self):
+        return self._axis_label
+    @property
+    def scale_label(self):
+        return self._scale_label
+    @property
+    def min_label(self):
+        return self._min_label
+    @property
+    def max_label(self):
+        return self._max_label
     @property
     def fill_label(self):
-        return self._fill_label
-        
+        return self._fill_label   
+             
     @units_label.setter   
     def units_label(self, value):
-        self._label_setter(value, self.units_label, self._units_label) 
-
+        self._label_setter(value, self.units_label, self._units_label, '') 
     @name_label.setter   
     def name_label(self, value):
-        self._label_setter(value, self.name_label, self._name_label)     
-
+        self._label_setter(value, self.name_label, self._name_label, use_names_default=True)     
+    @notes_label.setter   
+    def notes_label(self, value):
+        self._label_setter(value, self.notes_label, self._notes_label, '')
+    @desc_label.setter   
+    def desc_label(self, value):
+        self._label_setter(value, self.desc_label, self._desc_label, '')
+    @plot_label.setter   
+    def plot_label(self, value):
+        self._label_setter(value, self.plot_label, self._plot_label, use_names_default=True)
+    @axis_label.setter   
+    def axis_label(self, value):
+        self._label_setter(value, self.axis_label, self._axis_label, use_names_default=True)
+    @scale_label.setter   
+    def scale_label(self, value):
+        self._label_setter(value, self.scale_label, self._scale_label, 'linear')
+    @min_label.setter   
+    def min_label(self, value):
+        self._label_setter(value, self.min_label, self._min_label, np.NaN)
+    @max_label.setter   
+    def max_label(self, value):
+        self._label_setter(value, self.max_label, self._max_label, np.NaN)
     @fill_label.setter   
     def fill_label(self, value):
-        self._label_setter(value, self.fill_label, self._fill_label)
-        
+        self._label_setter(value, self.fill_label, self._fill_label, np.NaN)
+
+                        
+                                        
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
         
@@ -738,7 +858,15 @@ class Meta(object):
                 # the same as in other places. Default is np.NaN for all missing
                 self.units_label = self.units_label
                 self.name_label = self.name_label
+                self.notes_label = self.notes_label
+                self.desc_label = self.desc_label
+                self.plot_label = self.plot_label
+                self.axis_label = self.axis_label
+                self.scale_label = self.scale_label
+                self.min_label = self.min_label
+                self.max_label = self.max_label
                 self.fill_label = self.fill_label
+            
             else:
                 raise ValueError("Input must be a pandas DataFrame type. "+
                             "See other constructors for alternate inputs.")
