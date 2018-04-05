@@ -39,10 +39,10 @@ class TestBasics():
         self.meta['new1'] = {'units':'hey1', 'long_name':'crew', 
                              'value_min':0, 'value_max':1}
         self.meta['new2'] = {'units':'hey', 'long_name':'boo', 
-                            'description':'boohoo', '_FillValue':1, 
+                            'description':'boohoo', 'fill':1, 
                             'value_min':0, 'value_max':1}
         meta2 = pysat.Meta()
-        meta2['new31'] = {'units':'hey3', 'long_name':'crew_brew', '_FillValue':1,
+        meta2['new31'] = {'units':'hey3', 'long_name':'crew_brew', 'fill':1,
                           'value_min':0, 'value_max':1}
         self.meta['new3'] = meta2
         
@@ -55,7 +55,7 @@ class TestBasics():
     def test_basic_equality(self):
         self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
         self.meta['new2'] = {'units':'hey', 'long_name':'boo', 
-                            'description':'boohoo', '_FillValue':np.NaN}
+                            'description':'boohoo', 'fill':np.NaN}
         # ensure things are the same
         meta2 = self.meta.copy()
         assert (meta2 == self.meta)
@@ -67,7 +67,7 @@ class TestBasics():
         assert (meta3 == self.meta)
         
         # make sure differences matter
-        self.meta['new2'] = {'_FillValue':1}
+        self.meta['new2'] = {'fill':1}
         assert not (meta2 == self.meta)
         
     def test_basic_concat(self):
@@ -361,7 +361,7 @@ class TestBasics():
         self.meta[['higher', 'lower', 'lower2']] = {'meta': [meta, None, meta],
                                           'units': [None, 'boo', None],
                                           'long_name': [None, 'boohoo', None],
-                                          '_FillValue':[1, 1, 1],
+                                          'fill':[1, 1, 1],
                                           'value_min':[0,0,0],
                                           'value_max':[1,1,1]}
         meta2 = pysat.Meta(metadata=self.meta.data)
@@ -414,7 +414,7 @@ class TestBasics():
     #     new.ix[idx,'units']=''
     #     new.ix[idx,'long_name'] =''
     #     new.ix[idx,'description']=''
-    #     new.ix[:,'_FillValue'] = 1
+    #     new.ix[:,'fill'] = 1
     #     new.ix[:,'value_min'] = 1
     #     new.ix[:,'value_max'] = 1
     #     new['idx'] = new.index.values
@@ -440,12 +440,12 @@ class TestBasics():
         new.ix[idx,'units']=''
         new.ix[idx,'long_name'] =''
         new.ix[idx,'description']=''
-        new.ix[:,'_FillValue'] = 1
+        new.ix[:,'fill'] = 1
         new['idx'] = new.index.values
         new.index = new['name']
         
         # update metadata object with new info
-        new.ix[:,'_FillValue'] = np.NaN
+        new.ix[:,'fill'] = np.NaN
         mdata.replace(metadata=new)
         meta2 = pysat.Meta(new)
         assert mdata == meta2

@@ -40,7 +40,7 @@ class Meta(object):
        String used to label typical variable value limits in storage.
        Defaults to 'limits'
     fill_label : str
-        String used to label fill value in storage. Defaults to '_FillValue' per
+        String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
     
         
@@ -71,7 +71,7 @@ class Meta(object):
        String used to label typical variable value max limit in storage.
        Defaults to 'value_max'
     fill_label : str
-        String used to label fill value in storage. Defaults to '_FillValue' per
+        String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
         
         
@@ -89,7 +89,7 @@ class Meta(object):
     object, are stored by providing a Meta object under the single name.
     
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, long_name, _FillValue).
+    attributes (units, long_name, fill).
         
     Examples
     --------
@@ -141,7 +141,7 @@ class Meta(object):
     def __init__(self, metadata=None, units_label='units', name_label='long_name',
                        notes_label='notes', desc_label='desc', plot_label='label',
                        axis_label='axis', scale_label='scale', min_label='value_min',
-                       max_label='value_max', fill_label = '_FillValue'):
+                       max_label='value_max', fill_label = 'fill'):
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label

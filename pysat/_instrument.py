@@ -94,7 +94,7 @@ class Instrument(object):
        label to use for typical variable value max limit in storage.
        Defaults to 'value_max'
     fill_label : str
-        label to use for fill values. Defaults to '_FillValue' but some implementations
+        label to use for fill values. Defaults to 'fill' but some implementations
         will use 'FillVal'
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
@@ -176,7 +176,7 @@ class Instrument(object):
                  temporary_file_list=False, units_label='units', name_label='long_name',
                  notes_label='notes', desc_label='desc', plot_label='label',
                  axis_label='axis', scale_label='scale', min_label='value_min',
-                 max_label='value_max', fill_label = '_FillValue', 
+                 max_label='value_max', fill_label = 'fill', 
                  *arg, **kwargs):
 
         if inst_module is None:
