@@ -120,12 +120,51 @@ class TestConstellation:
         assert np.array_equal(medC2, medI2)
         assert np.array_equal(medC3, medI3)
 
-class TestHeterogenousConstellation(TestConstellation):
+class TestHeterogenousConstellation:
     def setup(self):
         insts = []
         for i in range(2):
             insts.append(pysat.Instrument('pysat','testing', clean_level='clean', root_date = pysat.datetime(2009,1,i+1)))
         self.testC = pysat.Constellation(instruments=insts)
+
+    def teardown(self):
+        del self.testC
+
+    def test_heterogenous_constellation_average(self):
+        for inst in self.testC:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'longitude',
+                                          [0., 24, 24], 'mlt', ['dummy1', 'dummy2', 'dummy3'])
+        dummy_val = results['dummy1']['median']
+        dummy_dev = results['dummy1']['avg_abs_dev']
+
+        dummy2_val = results['dummy2']['median']
+        dummy2_dev = results['dummy2']['avg_abs_dev']
+
+        dummy3_val = results['dummy3']['median']
+        dummy3_dev = results['dummy3']['avg_abs_dev']
+        
+        dummy_x = results['dummy1']['bin_x']
+        dummy_y = results['dummy1']['bin_y']
+        
+        # iterate over all y rows, value should be equal to integer value of mlt
+        # no variation in the median, all values should be the same
+        check = []
+        for i, y in enumerate(dummy_y[:-1]):
+            check.append(np.all(dummy_val[i, :] == y.astype(int)))
+            check.append(np.all(dummy_dev[i, :] == 0))
+
+        for i, x in enumerate(dummy_x[:-1]):
+            check.append(np.all(dummy2_val[:, i] == x/15.) )
+            check.append(np.all(dummy2_dev[:, i] == 0))
+
+        for i, x in enumerate(dummy_x[:-1]):
+            check.append(np.all(dummy3_val[:, i] == x/15.*1000. + dummy_y[:-1]) )
+            check.append(np.all(dummy3_dev[:, i] == 0))
+
+        assert np.all(check)
+
+
 
 class Test2DConstellation:
     def setup(self):
