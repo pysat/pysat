@@ -91,7 +91,13 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
     file_format : string
         file_format keyword passed to netCDF4 routine
         NETCDF3_CLASSIC, NETCDF3_64BIT, NETCDF4_CLASSIC, and NETCDF4
-     
+
+    Returns
+    --------
+    out : pandas.core.frame.DataFrame
+        DataFrame output
+    mdata : pysat._meta.Meta
+        Meta data
     """
                     
     import netCDF4
