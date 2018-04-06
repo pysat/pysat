@@ -31,6 +31,13 @@ class Constellation(object):
         # TODO Implement __repr__
         raise NotImplementedError()
 
+    def set_bounds(self, start, stop)
+        """
+        Sets boundaries for all instruments in constellation
+        """
+        for instrument in self.instruments:
+            instrument.bounds = (start, stop)
+
     def data_mod(self, function, kind='add', at_pos='end', *args, **kwargs):
         for instrument in self.instruments:
             instrument.custom.add(function, kind, at_pos, *args, **kwargs)
