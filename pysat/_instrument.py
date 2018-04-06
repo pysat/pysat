@@ -833,9 +833,10 @@ class Instrument(object):
             
         # remove the excess padding, if any applied
         if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
-            self.data = self.data[first_time : last_time]
-            if (self.data.index[-1] == last_time) & (not want_last_pad):
-                self.data = self.data.iloc[:-1, :]
+            self.data = self.data[first_time: last_time]
+            if not self.empty:
+                if (self.data.index[-1] == last_time) & (not want_last_pad):
+                    self.data = self.data.iloc[:-1, :]
 
         # transfer any extra attributes in meta to the Instrument object
         self.meta.transfer_attributes_to_instrument(self)
