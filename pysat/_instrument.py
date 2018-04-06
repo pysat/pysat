@@ -501,8 +501,10 @@ class Instrument(object):
         output_str += '\nLocal File Statistics' + '\n'
         output_str += '---------------------' + '\n'
         output_str += 'Number of files: ' + str(len(self.files.files)) + '\n'
-        output_str += 'Date Range: '+self.files.files.index[0].strftime('%m/%d/%Y')
-        output_str += ' --- ' + self.files.files.index[-1].strftime('%m/%d/%Y') + '\n'
+
+        if len(self.files.files) > 0:
+            output_str += 'Date Range: '+self.files.files.index[0].strftime('%m/%d/%Y')
+            output_str += ' --- ' + self.files.files.index[-1].strftime('%m/%d/%Y') + '\n'
 
         output_str += '\nLoaded Data Statistics'+'\n'
         output_str += '----------------------'+'\n'
