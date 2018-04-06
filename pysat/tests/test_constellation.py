@@ -187,7 +187,7 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        self.testInst = pysat.Instrument('pysat', 'testadd1', clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testadd4', clean_level='clean')
         insts.append(self.testInst)
         self.testConst = pysat.Constellation(insts)
 
@@ -206,10 +206,10 @@ class TestAdditionSingleInstrument:
         data_label = 'dummy1'
         results = self.testConst.add(bounds1, label1, bounds2, label2, bins3, label3,
                 data_label)
-        refresults = pysat.ssnl.avg.median2D(self.testInst, [0, 360, 1], label1, [-90, 90, 1], label2, bins3, label3)
 
         med = results['dummy1']['median']
-        refmed = refresults['dummy1']['median']
-        assert np.array_equal(med, refmed)
-
+        
+        for i in med:
+            for j in i:
+                assert  j == 5
 
