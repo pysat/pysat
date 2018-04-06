@@ -549,17 +549,9 @@ class Instrument(object):
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                          sat_id=self.sat_id, **self.kwargs)
-            # ensure units and name are named consistently
-            mdata.units_label = self.units_label
-            mdata.name_label = self.name_label
-            mdata.notes_label = self.notes_label
-            mdata.desc_label = self.desc_label
-            mdata.plot_label = self.plot_label
-            mdata.axis_label = self.axis_label
-            mdata.scale_label = self.scale_label
-            mdata.min_label = self.min_label
-            mdata.max_label = self.max_label
-            mdata.fill_label = self.fill_label
+            # ensure units and name are named consistently in new Meta
+            # object as specified by user upon Instrument instantiation
+            mdata.accept_default_labels(self)
 
         else:
             data = DataFrame(None)
