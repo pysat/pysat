@@ -101,11 +101,12 @@ class TestAdditionIdenticalInstruments:
                 data_label)
         med1 = results1['dummy1']['median']
         med2 = results2['dummy1']['median']
-        print(repr(med1)) #FIXME
-        print(repr(med2)) #FIXME
         for (left, right) in zip(med1, med2):
             assert left == right or \
                    ( np.isnan(left) and np.isnan(right) )
+
+        #for i in range(len(med1)):
+        #    assert med1[i] == med2[i]
 
 class TestAdditionOppositeInstruments:
     def setup(self):
