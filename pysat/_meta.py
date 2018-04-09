@@ -679,8 +679,7 @@ class Meta(object):
     def fill_label(self, value):
         self._label_setter(value, self.fill_label, self._fill_label, np.NaN)
 
-                        
-                                        
+                                
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
         
