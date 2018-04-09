@@ -24,12 +24,15 @@ class Constellation(object):
         return self.instruments.__getitem__(*args, **kwargs)
 
     def __str__(self):
-        # TODO Implement conversion to string.
-        raise NotImplementedError()
+        """
+        Print names of instruments within constellation
+        """
+        output_str = '\npysat Constellation object:\n'
 
-    def __repr__(self):
-        # TODO Implement __repr__
-        raise NotImplementedError()
+        for instr in self.instruments:
+            output_str += instr.name + '\n'
+
+        return output_str
 
     def set_bounds(self, start, stop)
         """
