@@ -229,14 +229,23 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='e
                     new_index = np.arange(loop_lim*step_size) % step_size
                     new_index_name = 'index'
                 # load all data into frame
-                loop_frame = pds.DataFrame(loop_dict, columns=clean_var_keys)
+                if len(loop_dict.keys()) > 1:
+                    loop_frame = pds.DataFrame(loop_dict, columns=clean_var_keys)
+                    del loop_frame['dimension_1']
+                    # break massive frame into bunch of smaller frames
+                    for i in np.arange(loop_lim):
+                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
+                        loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                        loop_list[-1].index.name = new_index_name             
+                else:
+                    loop_frame = pds.Series(loop_dict[clean_var_keys[0]], name=clean_var_keys[0])
+                    # break massive series into bunch of smaller series
+                    for i in np.arange(loop_lim):
+                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1)])
+                        loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                        loop_list[-1].index.name = new_index_name
                 # print (loop_frame.columns)
-                del loop_frame['dimension_1']
-                # break massive frame into bunch of smaller frames
-                for i in np.arange(loop_lim):
-                    loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
-                    loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
-                    loop_list[-1].index.name = new_index_name
+                
                         
                 # add 2D object data, all based on a unique dimension within netCDF,
                 # to loaded data dictionary

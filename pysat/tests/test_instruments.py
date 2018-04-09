@@ -18,7 +18,8 @@ import numpy as np
 import sys
 import importlib
 
-exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps']
+exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps', 
+                'icon_euv', 'icon_ivm']
 
 def safe_data_dir():
     saved_path = pysat.data_dir

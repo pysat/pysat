@@ -506,6 +506,9 @@ class Instrument(object):
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                          sat_id=self.sat_id, **self.kwargs)
+            # ensure units and name are named consistently
+            mdata.units_label = self.units_label
+            mdata.name_label = self.name_label
         else:
             data = DataFrame(None)
             mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label)
@@ -1258,10 +1261,14 @@ class Instrument(object):
                         # presuming a series with a dataframe in each location
                         dims = np.shape(self[key].iloc[0])
                         obj_dim_names = []
+                        
+                        if len(dims) == 1:
+                            # pad dimensions so rest of code works for Series or Frame
+                            dims = (dims[0], 0)
 
                         for i, dim in enumerate(dims[:-1]):
                             # don't need to go over last dimension value,
-                            # it covers number of columns
+                            # it covers number of columns (if a frame)
                             obj_dim_names.append(key+'_dimension_%i' % (i+1))
                             out_data.createDimension(obj_dim_names[-1], dim)
                         # total dimensions stored for object are epoch plus ones just above
@@ -1272,7 +1279,7 @@ class Instrument(object):
                             is_frame = True
                         except AttributeError:
                             # looking at a series, which doesn't have columns
-                            iterable = self[key].iloc[0].name
+                            iterable = [self[key].iloc[0].name]
                             is_frame = False
 
                         # find location that has data
@@ -1285,14 +1292,18 @@ class Instrument(object):
                         for col in iterable:
                             if is_frame:
                                 data, coltype, _ = self._get_data_info(self[key].iloc[data_loc][col], file_format)
+                                cdfkey = out_data.createVariable(key + '_' + col,
+                                                                coltype,
+                                                                dimensions=var_dim,
+                                                                zlib=zlib) #, chunksizes=1)
+
                             else:
                                 data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], file_format)
-                            cdfkey = out_data.createVariable(key + '_' + col,
-                                                             coltype,
-                                                             dimensions=var_dim,
-                                                             zlib=zlib,
-                                                             complevel=complevel,
-                                                             shuffle=shuffle) #, chunksizes=1)
+                                cdfkey = out_data.createVariable(key,
+                                                                coltype,
+                                                                dimensions=var_dim,
+                                                                zlib=zlib) #, chunksizes=1)
+
                             if is_frame:
                                 # attach any meta data
                                 try:

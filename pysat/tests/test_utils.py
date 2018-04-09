@@ -179,10 +179,30 @@ class TestBasics:
         #print (loaded_inst.columns)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
-            test_list.append((frame1 == frame2).all())
+            test_list.append(np.all((frame1 == frame2).all()))
         loaded_inst.drop('profiles', inplace=True, axis=1) 
         test_inst.data.drop('profiles', inplace=True, axis=1)   
+
+        # second series of frames
+        for frame1, frame2 in zip(test_inst.data['alt_profiles'],
+                                  loaded_inst['alt_profiles']):
+            test_list.append(np.all((frame1 == frame2).all()))
+        loaded_inst.drop('alt_profiles', inplace=True, axis=1)
+        test_inst.data.drop('alt_profiles', inplace=True, axis=1)
+
+        # check series of series
+        for frame1, frame2 in zip(test_inst.data['series_profiles'],
+                                  loaded_inst['series_profiles']):
+            test_list.append(np.all((frame1 == frame2).all()))
+
+        # print (test_inst['series_profiles'][0], loaded_inst['series_profiles'][0])
+        # print (type(test_inst['series_profiles'][0]), type(loaded_inst['series_profiles'][0]))
+        # print ( (test_inst['series_profiles'][0]) == (loaded_inst['series_profiles'][0]) )
+        loaded_inst.drop('series_profiles', inplace=True, axis=1)
+        test_inst.data.drop('series_profiles', inplace=True, axis=1)
+        
         assert(np.all((test_inst.data == loaded_inst).all()))
+        assert np.all(test_list)
 
     def test_basic_writing_and_reading_netcdf4_default_format_higher_order_w_Compression(self):
         # create a bunch of files by year and doy
@@ -206,11 +226,29 @@ class TestBasics:
         # print (loaded_inst.columns)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
-            test_list.append((frame1 == frame2).all())
+            test_list.append(np.all((frame1 == frame2).all()))
         loaded_inst.drop('profiles', inplace=True, axis=1)
         test_inst.data.drop('profiles', inplace=True, axis=1)
-        assert (np.all((test_inst.data == loaded_inst).all()))
+        
+        # second series of frames
+        for frame1, frame2 in zip(test_inst.data['alt_profiles'],
+                                  loaded_inst['alt_profiles']):
+            test_list.append(np.all((frame1 == frame2).all()))
+        loaded_inst.drop('alt_profiles', inplace=True, axis=1)
+        test_inst.data.drop('alt_profiles', inplace=True, axis=1)
 
+        # check series of series
+        for frame1, frame2 in zip(test_inst.data['series_profiles'],
+                                  loaded_inst['series_profiles']):
+            test_list.append(np.all((frame1 == frame2).all()))
+            # print frame1, frame2
+        loaded_inst.drop('series_profiles', inplace=True, axis=1)
+        test_inst.data.drop('series_profiles', inplace=True, axis=1)
+        
+        assert (np.all((test_inst.data == loaded_inst).all()))
+        # print (test_list)
+        assert np.all(test_list)
+        
     # def test_basic_writing_and_reading_netcdf4_multiple_formats(self):
     #     # create a bunch of files by year and doy
     #     from unittest.case import SkipTest

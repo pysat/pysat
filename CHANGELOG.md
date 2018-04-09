@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Pending][]
+ - Meta object has been upgraded to preserve case of variable and attribute names
+ - Metadata access is case insensitive for ease of use
+ - Changes to units_label or name_label are automatically applied to underlying metadata
+ - Improved handling of custom units and name labels at Instrument level
+ - Additional functions added to Meta object, attrs, keys, keys_nD, has_attr, routines that return preserved case
+ - Additional unit tests for Meta added
+ - Improved windows compatibility
+ - Added more unit tests for seasonal averages
+ - Added more simulated data types to pysat_testing2D
+ - Added initial support for ICON EUV
+ - Added initial support for ICON IVM
+ - Added support for version/revision numbers in filenames within Files class constructor from_os
+
 
 ## [0.6.0] - 2017-08-11
  - Many changes since the last note here.
