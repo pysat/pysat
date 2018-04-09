@@ -1,4 +1,5 @@
 import collections
+import importlib
 import numpy as np
 from pysat.ssnl.avg import _calc_2d_median
 
@@ -20,19 +21,29 @@ class Constellation(object):
         if instruments:
             self.instruments = instruments
         else:
-            # TODO Implement constellation lookup by name.
-            raise NotImplementedError()
+            const = importlib.import_module('pysat.constellations.'+name)
+            self.instruments = const.instruments
 
     def __getitem__(self, *args, **kwargs):
         return self.instruments.__getitem__(*args, **kwargs)
 
     def __str__(self):
-        # TODO Implement conversion to string.
-        raise NotImplementedError()
+        """
+        Print names of instruments within constellation
+        """
+        output_str = '\npysat Constellation object:\n'
 
-    def __repr__(self):
-        # TODO Implement __repr__
-        raise NotImplementedError()
+        for instr in self.instruments:
+            output_str += instr.name + '\n'
+
+        return output_str
+
+    def set_bounds(self, start, stop)
+        """
+        Sets boundaries for all instruments in constellation
+        """
+        for instrument in self.instruments:
+            instrument.bounds = (start, stop)
 
     def data_mod(self, function, *args, kind='add', at_pos='end', **kwargs):
         for instrument in self.instruments:
