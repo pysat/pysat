@@ -501,8 +501,10 @@ class Instrument(object):
         output_str += '\nLocal File Statistics' + '\n'
         output_str += '---------------------' + '\n'
         output_str += 'Number of files: ' + str(len(self.files.files)) + '\n'
-        output_str += 'Date Range: '+self.files.files.index[0].strftime('%m/%d/%Y')
-        output_str += ' --- ' + self.files.files.index[-1].strftime('%m/%d/%Y') + '\n'
+
+        if len(self.files.files) > 0:
+            output_str += 'Date Range: '+self.files.files.index[0].strftime('%m/%d/%Y')
+            output_str += ' --- ' + self.files.files.index[-1].strftime('%m/%d/%Y') + '\n'
 
         output_str += '\nLoaded Data Statistics'+'\n'
         output_str += '----------------------'+'\n'
@@ -825,9 +827,10 @@ class Instrument(object):
             
         # remove the excess padding, if any applied
         if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
-            self.data = self.data[first_time : last_time]
-            if (self.data.index[-1] == last_time) & (not want_last_pad):
-                self.data = self.data.iloc[:-1, :]
+            self.data = self.data[first_time: last_time]
+            if not self.empty:
+                if (self.data.index[-1] == last_time) & (not want_last_pad):
+                    self.data = self.data.iloc[:-1, :]
 
         # transfer any extra attributes in meta to the Instrument object
         self.meta.transfer_attributes_to_instrument(self)
