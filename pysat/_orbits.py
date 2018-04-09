@@ -571,7 +571,7 @@ class Orbits(object):
                             pad_next = False
                     if pad_next:
                         # orbit went across day break, stick old orbit onto new
-                        # data and grab second orbit (first is old)
+                        # data and grab second orbit (first is old)
                         self.sat.data = pds.concat(
                             [temp_orbit_data[:self.sat.data.index[0] -
                                              pds.DateOffset(microseconds=1)],
