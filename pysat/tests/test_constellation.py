@@ -135,8 +135,7 @@ class TestAdditionOppositeInstruments:
         results = self.testC.add(bounds1, label1, bounds2, label2, bins3, label3,
                 data_label)
         med = results['dummy1']['median']
-        #FIXME ignores first result
-        for i in med[1:]:
+        for i in med:
             assert i == 0
 
 class TestAdditionSimilarInstruments:
@@ -175,8 +174,7 @@ class TestAdditionSimilarInstruments:
         med = results['dummy1']['median']
         refmed = refresults['dummy1']['median']
         diff = [med[i] - refmed[i] for i in range(len(med))]
-        #FIXME ignores first result
-        for i in diff[1:]:
+        for i in diff:
             assert i <= 10 and i >= 0
 
 class TestAdditionSingleInstrument:
@@ -208,7 +206,6 @@ class TestAdditionSingleInstrument:
                 data_label)
 
         med = results['dummy1']['median']
-        #FIXME ignores first result 
-        for i in med[1:]:
+        for i in med:
             assert  i == 5
 
