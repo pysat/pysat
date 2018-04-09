@@ -96,13 +96,43 @@ class TestConstellation:
         for i in range(5):
             insts.append(pysat.Instrument('pysat','testing', clean_level='clean'))
         self.testC = pysat.Constellation(instruments=insts)
+        self.testI = pysat.Instrument('pysat', 'testing', clean_level='clean')
 
     def teardown(self):
         del self.testC
+        del self.testI
 
     def test_constellation_average(self):
         for i in self.testC.instruments:
             i.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        resultsC = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'longitude',
+                            [0., 24, 24], 'mlt', ['dummy1', 'dummy2', 'dummy3'])
+        resultsI = pysat.ssnl.avg.median2D(self.testI, [0., 360., 24.], 'longitude',
+                            [0., 24, 24], 'mlt', ['dummy1', 'dummy2', 'dummy3'])
+        medC1 = resultsC['dummy1']['median']
+        medI1 = resultsI['dummy1']['median']
+        medC2 = resultsC['dummy2']['median']
+        medI2 = resultsI['dummy2']['median']
+        medC3 = resultsC['dummy3']['median']
+        medI3 = resultsI['dummy3']['median']
+        
+        assert np.array_equal(medC1, medI1)
+        assert np.array_equal(medC2, medI2)
+        assert np.array_equal(medC3, medI3)
+
+class TestHeterogenousConstellation:
+    def setup(self):
+        insts = []
+        for i in range(2):
+            insts.append(pysat.Instrument('pysat','testing', clean_level='clean', root_date = pysat.datetime(2009,1,i+1)))
+        self.testC = pysat.Constellation(instruments=insts)
+
+    def teardown(self):
+        del self.testC
+
+    def test_heterogenous_constellation_average(self):
+        for inst in self.testC:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'longitude',
                                           [0., 24, 24], 'mlt', ['dummy1', 'dummy2', 'dummy3'])
         dummy_val = results['dummy1']['median']
@@ -116,7 +146,7 @@ class TestConstellation:
         
         dummy_x = results['dummy1']['bin_x']
         dummy_y = results['dummy1']['bin_y']
-
+        
         # iterate over all y rows, value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
@@ -131,16 +161,10 @@ class TestConstellation:
         for i, x in enumerate(dummy_x[:-1]):
             check.append(np.all(dummy3_val[:, i] == x/15.*1000. + dummy_y[:-1]) )
             check.append(np.all(dummy3_dev[:, i] == 0))
-                            
+
         assert np.all(check)
 
 
-class TestHeterogenousConstellation(TestConstellation):
-    def setup(self):
-        insts = []
-        for i in range(2):
-            insts.append(pysat.Instrument('pysat','testing', clean_level='clean', root_date = pysat.datetime(2009,1,i+1)))
-        self.testC = pysat.Constellation(instruments=insts)
 
 class Test2DConstellation:
     def setup(self):

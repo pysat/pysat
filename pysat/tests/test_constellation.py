@@ -1,7 +1,7 @@
 from nose.tools import raises
+import numpy as np
 import pysat
-
-# TODO
+import numpy as np
 
 
 class TestConstellation:
@@ -67,4 +67,146 @@ class TestConstellation:
         print(repr(self.const))
         assert repr(self.const) == "Constellation([..."
 
-    # TODO write tests for add, difference.
+    # TODO write tests for add, difference
+
+class TestAdditionIdenticalInstruments:
+    def setup(self):
+        insts = []
+        for _ in range(3):
+            insts.append(pysat.Instrument('pysat', 'testing', clean_level='clean'))
+        self.const1 = pysat.Constellation(insts)
+        self.const2 = pysat.Constellation(
+                        [pysat.Instrument('pysat', 'testing', clean_level='clean')])
+
+    def teardown(self):
+        del self.const1
+        del self.const2
+
+    def test_addition_identical(self):
+        for inst in self.const1:
+            inst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        for inst in self.const2:
+            inst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+
+        bounds1 = [0,360]
+        label1 = 'longitude'
+        bounds2 = [-90,90]
+        label2 = 'latitude'
+        bins3 = [0,24,24]
+        label3 = 'mlt'
+        data_label = ['dummy1']
+        results1 = self.const1.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        results2 = self.const2.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        med1 = results1['dummy1']['median']
+        med2 = results2['dummy1']['median']
+        for (left, right) in zip(med1, med2):
+            assert left == right or \
+                   ( np.isnan(left) and np.isnan(right) )
+
+        #for i in range(len(med1)):
+        #    assert med1[i] == med2[i]
+
+class TestAdditionOppositeInstruments:
+    def setup(self):
+        """
+        The data in testadd1['dummy1'] is just ascending integers 0 to the
+        length of the other data, testadd2 has the same data but negative.
+        The addition of these two signals should be zero everywhere.
+        """
+        insts = []
+        insts.append(pysat.Instrument('pysat', 'testadd1', clean_level='clean'))
+        insts.append(pysat.Instrument('pysat', 'testadd2', clean_level='clean'))
+        self.testC = pysat.Constellation(insts)
+
+    def teardown(self):
+        del self.testC
+
+    def test_addition_opposite_instruments(self):
+        for inst in self.testC:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        bounds1 = [0,360]
+        label1 = 'longitude'
+        bounds2 = [-90,90]
+        label2 = 'latitude'
+        bins3 = [0,24,24]
+        label3 = 'mlt'
+        data_label = 'dummy1'
+        results = self.testC.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        med = results['dummy1']['median']
+        for i in med:
+            assert i == 0
+
+class TestAdditionSimilarInstruments:
+    def setup(self):
+        """
+        All the data in dummy1 of testadd3 is the data in testadd1 + 10
+        So the addition of testadd1 and testadd3 should be no more than 10 off from
+        the addition of just testadd1
+        TODO: actually check the math on this
+        """
+        insts = []
+        insts.append(pysat.Instrument('pysat', 'testadd1', clean_level='clean'))
+        insts.append(pysat.Instrument('pysat', 'testadd3', clean_level='clean'))
+        self.testC = pysat.Constellation(insts)
+        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd1', clean_level='clean')])
+
+    def teardown(self):
+        del self.testC
+
+    def test_addition_similar_instruments(self):
+        for inst in self.testC:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        for inst in self.refC:
+            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        bounds1 = [0,360]
+        label1 = 'longitude'
+        bounds2 = [-90,90]
+        label2 = 'latitude'
+        bins3 = [0,24,24]
+        label3 = 'mlt'
+        data_label = 'dummy1'
+        results = self.testC.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        refresults = self.refC.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+        med = results['dummy1']['median']
+        refmed = refresults['dummy1']['median']
+        diff = [med[i] - refmed[i] for i in range(len(med))]
+        for i in diff:
+            assert i <= 10 and i >= 0
+
+class TestAdditionSingleInstrument:
+    def setup(self):
+        """
+        The constellation consists of a single instrument, so performing
+        addition on it should just return the instrument's data within
+        the bounds
+        """
+        insts = []
+        self.testInst = pysat.Instrument('pysat', 'testadd4', clean_level='clean')
+        insts.append(self.testInst)
+        self.testConst = pysat.Constellation(insts)
+
+    def teardown(self):
+        del self.testConst
+
+    def test_addition_single_instrument(self):
+        for inst in self.testConst:
+            inst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2 ,1))
+        bounds1 = [0, 360]
+        label1 = 'longitude'
+        bounds2 = [-90, 90]
+        label2 = 'latitude'
+        bins3 = [0, 24, 24]
+        label3 = 'mlt'
+        data_label = 'dummy1'
+        results = self.testConst.add(bounds1, label1, bounds2, label2, bins3, label3,
+                data_label)
+
+        med = results['dummy1']['median']
+        for i in med:
+            assert  i == 5
+
