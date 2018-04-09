@@ -1136,7 +1136,10 @@ class Instrument(object):
                 mdata_dict['FillVal'] = np.array(mdata_dict['FillVal']).astype(coltype)
         return mdata_dict
         
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch', zlib=False):
+    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch',
+                   zlib=False,
+                   complevel=4,
+                   shuffle=True):
         """Stores loaded data into a netCDF3/4 file.
         
         Parameters
@@ -1150,7 +1153,13 @@ class Instrument(object):
             Label in file for datetime index of Instrument object
         zlib : boolean
             Flag for engaging zlib compression (True - compression on)
-        
+        complevel : int
+            an integer between 1 and 9 describing the level of compression
+            desired (default 4). Ignored if zlib=False
+        shuffle : boolean
+            the HDF5 shuffle filter will be applied before compressing the data (default True).
+            This significantly improves compression. Default is True. Ignored if zlib=False.
+
         Note
         ----
 
@@ -1185,7 +1194,9 @@ class Instrument(object):
             
             # write out the datetime index
             cdfkey = out_data.createVariable(epoch_name, 'i8', dimensions=(epoch_name),
-                                                zlib=zlib) #, chunksizes=1)
+                                             zlib=zlib,
+                                             complevel=complevel,
+                                             shuffle=shuffle) #, chunksizes=1)
             new_dict = {}
             new_dict[self.meta._name_label] = 'UNIX'
             new_dict[self.meta._units_label] = 'Milliseconds since 1970-1-1 00:00:00'
@@ -1204,7 +1215,9 @@ class Instrument(object):
                     cdfkey = out_data.createVariable(key,
                                                      coltype,
                                                      dimensions=(epoch_name),
-                                                     zlib=zlib) #, chunksizes=1)
+                                                     zlib=zlib,
+                                                     complevel=complevel,
+                                                     shuffle=shuffle) #, chunksizes=1)
                     # attach any meta data, after filtering for standards
                     try:
                         new_dict = self.meta[key].to_dict()
@@ -1225,7 +1238,9 @@ class Instrument(object):
                         cdfkey = out_data.createVariable(key,
                                                          coltype,
                                                          dimensions=(epoch_name),
-                                                         zlib=zlib) #, chunksizes=1)
+                                                         zlib=zlib,
+                                                         complevel=complevel,
+                                                         shuffle=shuffle) #, chunksizes=1)
                         # attach any meta data
                         try:
                             new_dict = self.meta[key].to_dict()
@@ -1275,7 +1290,9 @@ class Instrument(object):
                             cdfkey = out_data.createVariable(key + '_' + col,
                                                              coltype,
                                                              dimensions=var_dim,
-                                                             zlib=zlib) #, chunksizes=1)
+                                                             zlib=zlib,
+                                                             complevel=complevel,
+                                                             shuffle=shuffle) #, chunksizes=1)
                             if is_frame:
                                 # attach any meta data
                                 try:
@@ -1314,7 +1331,9 @@ class Instrument(object):
                         data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, file_format)
                         cdfkey = out_data.createVariable(key+'_dimension_1',
                                                          coltype, dimensions=var_dim,
-                                                         zlib=zlib) #, chunksizes=1)
+                                                         zlib=zlib,
+                                                         complevel=complevel,
+                                                         shuffle=shuffle) #, chunksizes=1)
                         if datetime_flag:
                             #print('datetime flag')                            
                             new_dict = {}
