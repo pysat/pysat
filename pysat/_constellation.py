@@ -19,7 +19,6 @@ class Constellation(object):
         if instruments:
             self.instruments = instruments
         else:
-            # TODO Implement constellation lookup by name.
             const = importlib.import_module('pysat.constellations.'+name)
             self.instruments = const.instruments
 
