@@ -38,9 +38,9 @@ from . import nasa_cdaweb_methods as cdw
 
 platform = 'icon'
 name = 'euv'
-tags = {'':''}
-sat_ids = {'':['']}
-test_dates = {'':{'':pysat.datetime(2017,5,27)}}
+tags = {'level_2':'Level 2 public geophysical data'}
+sat_ids = {'':['level_2']}
+test_dates = {'':{'level_2':pysat.datetime(2017,5,27)}}
 
 def init(self):
     """
@@ -77,7 +77,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """
 
     desc = None
-    level = 'level_2'
+    level = tag
     if level == 'level_1':
         code = 'L1'
         desc = None
