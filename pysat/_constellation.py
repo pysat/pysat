@@ -114,7 +114,7 @@ class Constellation(object):
                     # Grab the data in bounds on data1, data2.
                     data_considered = inst.data.iloc[in_bounds]
 
-                    y_indexes = np.digitize(data_considered[label3], biny)
+                    y_indexes = np.digitize(data_considered[label3], biny) -1
 
                     # Iterate over the bins along y
                     for yj in yarr:
@@ -143,9 +143,10 @@ class Constellation(object):
         for i, label in enumerate(data_label):
             median = [r[0] for r in out_2d[label]['median']]
             count  = [r[0] for r in out_2d[label]['count']]
+            dev     = [r[0] for r in out_2d[label]['avg_abs_dev']]
             output[label] = {'median':  median,
                              'count':   count,
-                             'avg_abs_dev': out_2d[label]['avg_abs_dev'],
+                             'avg_abs_dev': dev,
                              'bin':     out_2d[label]['bin_y']}
         return output
 
