@@ -1293,16 +1293,20 @@ class Instrument(object):
                             if is_frame:
                                 data, coltype, _ = self._get_data_info(self[key].iloc[data_loc][col], file_format)
                                 cdfkey = out_data.createVariable(key + '_' + col,
-                                                                coltype,
-                                                                dimensions=var_dim,
-                                                                zlib=zlib) #, chunksizes=1)
+                                                                 coltype,
+                                                                 dimensions=var_dim,
+                                                                 zlib=zlib,
+                                                                 complevel=complevel,
+                                                                 shuffle=shuffle) #, chunksizes=1)
 
                             else:
                                 data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], file_format)
                                 cdfkey = out_data.createVariable(key,
-                                                                coltype,
-                                                                dimensions=var_dim,
-                                                                zlib=zlib) #, chunksizes=1)
+                                                                 coltype,
+                                                                 dimensions=var_dim,
+                                                                 zlib=zlib,
+                                                                 complevel=complevel,
+                                                                 shuffle=shuffle) #, chunksizes=1)
 
                             if is_frame:
                                 # attach any meta data
