@@ -136,7 +136,18 @@ class Constellation(object):
         binx = None
 
         # TODO modify output
-        return _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz)
+        out_2d = _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz)
+
+        # Transform output
+        output = {}
+        for i, label in enumerate(data_label):
+            median = [r[0] for r in out_2d[label]['median']]
+            count  = [r[0] for r in out_2d[label]['count']]
+            output[label] = {'median':  median,
+                             'count':   count,
+                             'avg_abs_dev': out_2d[label]['avg_abs_dev'],
+                             'bin':     out_2d[label]['bin_y']}
+        return output
 
     def difference(self, instrument1, instrumet2, data_labels):
         # TODO Implement signal difference.
