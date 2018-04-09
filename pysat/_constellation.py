@@ -1,3 +1,4 @@
+import importlib
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
@@ -17,8 +18,8 @@ class Constellation(object):
         if instruments:
             self.instruments = instruments
         else:
-            # TODO Implement constellation lookup by name.
-            raise NotImplementedError()
+            const = importlib.import_module('pysat.constellations.'+name)
+            self.instruments = const.instruments
 
     def __getitem__(self, *args, **kwargs):
         return self.instruments.__getitem__(*args, **kwargs)
