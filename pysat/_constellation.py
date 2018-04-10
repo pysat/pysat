@@ -9,6 +9,25 @@ class Constellation(object):
     FIXME document this.
     """
     def __init__(self, instruments=None, name=None):
+        """
+        Constructs a Constellation given a list of instruments or the name of
+        a file with a pre-defined constellation.
+
+        Parameters
+        ----------
+        instruments : list
+            a list of pysat Instruments
+        name : string
+            Name of a file in pysat/constellations containing a list of 
+            instruments. 
+        
+        Note
+        ----
+        The name and instruments parameters should not both be set. 
+        If neither is given, (an empty constellation will be created / it will
+        throw an error)
+        """
+        
         if instruments and name:
             raise ValueError('When creating a constellation, please specify '
                              'a list of instruments or a name, not both.')
