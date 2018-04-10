@@ -5,7 +5,7 @@ from nose.tools import assert_raises, raises
 import nose.tools
 import datetime as dt
 
-class TestOMNICustom:
+class TestOMNICustom():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument

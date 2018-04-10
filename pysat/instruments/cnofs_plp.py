@@ -59,7 +59,7 @@ download = functools.partial(cdw.download, supported_tags)
 def clean(inst):
     for key in inst.data.columns:
         if key != 'Epoch':
-          idx, = np.where(inst[key] == inst.meta[key].fillval)
-          inst.data.ix[idx, key] = np.nan
+          idx, = np.where(inst[key] == inst.meta[key, inst.fill_label])
+          inst[idx, key] = np.nan
 
 

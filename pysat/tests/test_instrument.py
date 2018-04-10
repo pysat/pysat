@@ -16,7 +16,7 @@ if sys.version_info[0] >= 3:
         reload = importlib.reload
 
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         '''Runs before every method to create a clean testing setup.'''
@@ -419,6 +419,10 @@ class TestDataPaddingbyFile():
                                     update_files=True)
         self.rawInst.bounds = self.testInst.bounds
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst
+        del self.rawInst
 
     def test_fid_data_padding(self):
         self.testInst.load(fid=1, verifyPad=True)
@@ -506,6 +510,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
         self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
         self.rawInst.bounds = self.testInst.bounds
 
+
 class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
@@ -530,6 +535,10 @@ class TestDataPadding():
                                          clean_level='clean',
                                          pad={'minutes':5},
                                          update_files=True)
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst
 
     def test_data_padding(self):
         self.testInst.load(2009,2, verifyPad=True)
@@ -625,6 +634,10 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
                                          sim_multi_file_right=True,
                                          pad={'minutes':5},
                                          multi_file_day=True)
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst
        
 class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
     def setup(self):
@@ -637,4 +650,8 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
                                          pad={'minutes':5},
                                          multi_file_day=True)
         
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst
 

@@ -27,7 +27,7 @@ def safe_data_dir():
         saved_path = '.'
     return saved_path
 
-class TestInstrumentQualifier:
+class TestInstrumentQualifier():
     
     def __init__(self):
         """Iterate through and create all of the test Instruments needed"""
@@ -208,7 +208,9 @@ class TestInstrumentQualifier:
     def check_load(self, inst):
         start = inst.test_dates[inst.sat_id][inst.tag]
         inst.load(date=start)
-        assert not inst.data.empty
+        assert not inst.empty
+        # clear data
+        inst.data = pds.DataFrame(None)
 
     def test_download_and_load(self):
         for inst in self.instruments:

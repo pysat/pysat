@@ -257,9 +257,10 @@ class Files(object):
         if not info.empty:
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
-            estr = "Unable to find any files that match the supplied template. If you have the necessary files "
-            estr = "{:s}please check pysat settings and file ".format(estr)
-            print("{:s}locations.".format(estr))
+            estr = "Unable to find any files that match the supplied template. "
+            estr += "If you have the necessary files please check pysat "
+            estr += "settings and file locations (e.g. pysat.pysat_dir)."
+            print(estr)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
         self._store()
