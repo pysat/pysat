@@ -573,6 +573,36 @@ class Meta(object):
                 raise KeyError('Key not found in MetaData')
 
     def _label_setter(self, value, label, actual, default=np.NaN, use_names_default=False):
+        """Generalized setter of default meta attributes
+        
+        Parameters
+        ----------
+        value : str
+            New label to use in the Meta object
+        label : str
+            Existing attribute name of Meta object to be relabeled
+        actual : str
+            The hidden attribute to be updated that actually stores metadata
+        default : 
+            Deafult setting to use for label if there is no attribute
+            value
+        use_names_default : bool
+            if True, MetaData variable names are used as the default
+            value for the specified Meta attributes settings
+            
+        Examples
+        --------
+        :
+                @name_label.setter   
+                def name_label(self, value):
+                    self._label_setter(value, self.name_label, self._name_label, 
+                                        use_names_default=True)  
+        
+        Notes
+        -----
+        Not intended for end user
+                                  
+        """
         
         if value not in self.attrs():
             # new label not in metadata, including case
