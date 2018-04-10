@@ -746,13 +746,6 @@ class Meta(object):
         for i in self.ho_data:
             yield i
 
-    def keypairs_ho(self):
-        """Yields keypairs for higher order metadata, (key1, attribute1) """
-        
-        for i in self.ho_data.keys():
-            for j in self[i].keys:
-                yield (i, j)
-
     def attrs(self):
         """Yields metadata products stored for each variable name"""
         
