@@ -48,8 +48,8 @@ class Meta(object):
     Attributes
     ----------
     data : pandas.DataFrame
-        index is variable standard name, 'units' and 'long_name' are also stored along
-        with additional user provided labels.
+        index is variable standard name, 'units', 'long_name', and other
+        defaults are also stored along with any additional user provided labels.
     units_label : str
         String used to label units in storage. Defaults to 'units'. 
     name_label : str
@@ -89,7 +89,8 @@ class Meta(object):
     object, are stored by providing a Meta object under the single name.
     
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, long_name, fill).
+    attributes (units, long_name, notes, desc, plot_label, axis, scale, 
+                value_min, value_max, and fill).
         
     Examples
     --------
@@ -559,10 +560,11 @@ class Meta(object):
             return self.data.loc[new_index, new_name]        
       
         else:
+            # ensure variable is present somewhere
             if key in self:
-                # ensure variable is present somewhere
+                # get case preserved string for variable name
                 new_key = self.var_case_name(key)
-                # single variable request
+                # check what kind of variable, single or higher order
                 if new_key in self.keys_nD():
                     # higher order data
                     return self.ho_data[new_key]
@@ -713,6 +715,10 @@ class Meta(object):
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
         
+        If name is not found (case-insensitive check) then name is returned,
+        as input. This function is intended to be used to help ensure the
+        case of a given variable name is the same across the Meta object.
+        
         Parameters
         ----------
         name : str
@@ -781,8 +787,9 @@ class Meta(object):
         """Returns preserved case name for case insensitive value of name.
         
         Checks first within standard attributes. If not found there, checks
-        attributes for higher order data structures. IF not found, returns supplied 
-        name. It is available for use.
+        attributes for higher order data structures. If not found, returns supplied 
+        name as it is available for use. Intended to be used to help ensure
+        that the same case is applied to all repetitions of a given variable name.
         
         Parameters
         ----------
@@ -868,7 +875,7 @@ class Meta(object):
             Series of metadata for variable
             
         """
-        
+        # check if present
         if name in self:
             # get case preserved name for variable
             new_name = self.var_case_name(name)
