@@ -1412,6 +1412,11 @@ class Instrument(object):
                         dims = np.shape(self[key].iloc[0])
                         obj_dim_names = []
 
+                        if len(dims) == 1:
+                            # pad dimensions so that the rest of the code works
+                            # for either a Series or a Frame
+                            dims = (dims[0], 0)
+
                         for i, dim in enumerate(dims[:-1]):
                             # don't need to go over last dimension value,
 

@@ -852,12 +852,13 @@ class Meta(object):
         if strict:
             for key in other.keys():
                 if key in mdata:
-                    raise RuntimeError('Duplicated keys (variable names) '
+                    raise RuntimeError('Duplicated keys (variable names) ' +
                                        'across Meta objects in keys().')
         for key in other.keys_nD():
             if key in mdata:
-                raise RuntimeError('Duplicated keys (variable names) across '
-                                   'Meta objects in keys_nD().')
+                raise RuntimeError('Duplicated keys (variable names) across ' +
+                                   'Meta objects in keys_nD(). ' +
+                                   '{:s}'.format(key))
 
         # concat 1D metadata in data frames to copy of
         # current metadata

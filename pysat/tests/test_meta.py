@@ -12,7 +12,8 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.meta = pysat.Meta()
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='', clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testing', tag='',
+                                         clean_level='clean')
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -26,9 +27,10 @@ class TestBasics():
 
     def test_repr_call_runs_with_higher_order_data(self):
         self.meta['param1'] = {'units':'blank', 'long_name':u'parameter1', 
-                                'custom1':14, 'custom2':np.NaN, 'custom3':14.5,
-                                'custom4':u'hello'}
-        self.testInst.meta['param0'] = {'units':'basic', 'long_name':'parameter0',
+                               'custom1':14, 'custom2':np.NaN, 'custom3':14.5,
+                               'custom4':u'hello'}
+        self.testInst.meta['param0'] = {'units':'basic',
+                                        'long_name':'parameter0',
                                         self.testInst.meta.fill_label:'10',
                                         'CUSTOM4':143}
         self.testInst.meta['kiwi'] = self.meta
@@ -72,7 +74,8 @@ class TestBasics():
         
     def test_basic_concat(self):
         self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
-        self.meta['new2'] = {'units':'hey', 'long_name':'boo', 'description':'boohoo'}
+        self.meta['new2'] = {'units':'hey', 'long_name':'boo',
+                             'description':'boohoo'}
         meta2 = pysat.Meta()
         meta2['new3'] = {'units':'hey3', 'long_name':'crew_brew'}
         self.meta = self.meta.concat(meta2)
