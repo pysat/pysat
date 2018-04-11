@@ -598,14 +598,14 @@ class Meta(object):
             else:
                 raise KeyError('Key not found in MetaData')
 
-    def _label_setter(self, value, actual, default=np.NaN, use_names_default=False):
+    def _label_setter(self, new_label, current_label, default=np.NaN, use_names_default=False):
         """Generalized setter of default meta attributes
         
         Parameters
         ----------
-        value : str
+        new_label : str
             New label to use in the Meta object
-        actual : str
+        current_label : str
             The hidden attribute to be updated that actually stores metadata
         default : 
             Deafult setting to use for label if there is no attribute
@@ -618,8 +618,8 @@ class Meta(object):
         --------
         :
                 @name_label.setter   
-                def name_label(self, value):
-                    self._label_setter(value, self._name_label, 
+                def name_label(self, new_label):
+                    self._label_setter(new_label, self._name_label, 
                                         use_names_default=True)  
         
         Notes
@@ -628,47 +628,47 @@ class Meta(object):
                                   
         """
         
-        if value not in self.attrs():
+        if new_label not in self.attrs():
             # new label not in metadata, including case
             # update existing label, if present
-            if actual in self.attrs():
+            if current_label in self.attrs():
                 # old label exists and has expected case
-                self.data.loc[:, value] = self.data.loc[:, actual]
-                self.data.drop(actual, axis=1, inplace=True)
+                self.data.loc[:, new_label] = self.data.loc[:, current_label]
+                self.data.drop(current_label, axis=1, inplace=True)
             else:
-                if self.has_attr(actual):
+                if self.has_attr(current_label):
                     # there is something like label, wrong case though
-                    actual = self.attr_case_name(actual)
-                    self.data.loc[:, value] = self.data.loc[:, actual]
-                    self.data.drop(actual, axis=1, inplace=True)
+                    current_label = self.attr_case_name(current_label)
+                    self.data.loc[:, new_label] = self.data.loc[:, current_label]
+                    self.data.drop(current_label, axis=1, inplace=True)
                 else:
                     # there is no existing label
                     # setting for the first time
                     if use_names_default:
-                        self.data[value] = self.data.index
+                        self.data[new_label] = self.data.index
                     else:
-                        self.data[value] = default
+                        self.data[new_label] = default
             # check higher order structures as well
             for key in self.keys_nD():
-                if actual in self[key].attrs():
-                    self[key].data.loc[:, value] = self[key].data.loc[:, actual]
-                    self[key].data.drop(actual, axis=1, inplace=True)
+                if current_label in self[key].attrs():
+                    self[key].data.loc[:, new_label] = self[key].data.loc[:, current_label]
+                    self[key].data.drop(current_label, axis=1, inplace=True)
                 else:
-                    if self[key].has_attr(actual):
+                    if self[key].has_attr(current_label):
                         # there is something like label, wrong case though
-                        actual = self[key].attr_case_name(actual)
-                        self[key].data.loc[:, value] = self[key].data.loc[:, actual]
-                        self[key].data.drop(actual, axis=1, inplace=True)
+                        current_label = self[key].attr_case_name(current_label)
+                        self[key].data.loc[:, new_label] = self[key].data.loc[:, current_label]
+                        self[key].data.drop(current_label, axis=1, inplace=True)
                     else:
                         # there is no existing label
                         # setting for the first time
                         if use_names_default:
-                            self[key].data[value] = self[key].data.index
+                            self[key].data[new_label] = self[key].data.index
                         else:
-                            self[key].data[value] = default
-                        # self[key].data[value] = default
+                            self[key].data[new_label] = default
+                        # self[key].data[new_label] = default
         # now update 'hidden' attribute value
-        actual = value
+        current_label = new_label
                 
     @property
     def units_label(self):
@@ -702,35 +702,35 @@ class Meta(object):
         return self._fill_label   
              
     @units_label.setter   
-    def units_label(self, value):
-        self._label_setter(value, self._units_label, '') 
+    def units_label(self, new_label):
+        self._label_setter(new_label, self._units_label, '') 
     @name_label.setter   
-    def name_label(self, value):
-        self._label_setter(value, self._name_label, use_names_default=True)     
+    def name_label(self, new_label):
+        self._label_setter(new_label, self._name_label, use_names_default=True)     
     @notes_label.setter   
-    def notes_label(self, value):
-        self._label_setter(value, self._notes_label, '')
+    def notes_label(self, new_label):
+        self._label_setter(new_label, self._notes_label, '')
     @desc_label.setter   
-    def desc_label(self, value):
-        self._label_setter(value, self._desc_label, '')
+    def desc_label(self, new_label):
+        self._label_setter(new_label, self._desc_label, '')
     @plot_label.setter   
-    def plot_label(self, value):
-        self._label_setter(value, self._plot_label, use_names_default=True)
+    def plot_label(self, new_label):
+        self._label_setter(new_label, self._plot_label, use_names_default=True)
     @axis_label.setter   
-    def axis_label(self, value):
-        self._label_setter(value, self._axis_label, use_names_default=True)
+    def axis_label(self, new_label):
+        self._label_setter(new_label, self._axis_label, use_names_default=True)
     @scale_label.setter   
-    def scale_label(self, value):
-        self._label_setter(value, self._scale_label, 'linear')
+    def scale_label(self, new_label):
+        self._label_setter(new_label, self._scale_label, 'linear')
     @min_label.setter   
-    def min_label(self, value):
-        self._label_setter(value, self._min_label, np.NaN)
+    def min_label(self, new_label):
+        self._label_setter(new_label, self._min_label, np.NaN)
     @max_label.setter   
-    def max_label(self, value):
-        self._label_setter(value, self._max_label, np.NaN)
+    def max_label(self, new_label):
+        self._label_setter(new_label, self._max_label, np.NaN)
     @fill_label.setter   
-    def fill_label(self, value):
-        self._label_setter(value, self._fill_label, np.NaN)
+    def fill_label(self, new_label):
+        self._label_setter(new_label, self._fill_label, np.NaN)
 
                                 
     def var_case_name(self, name):
