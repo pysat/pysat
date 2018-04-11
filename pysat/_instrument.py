@@ -1217,8 +1217,13 @@ class Instrument(object):
             PySat metadata object translated into export format
         '''
         export_meta = copy.deepcopy(self.meta)
-        
-        # TODO: Metadata Translation
+        for property_name, labels in self._meta_translation_table.iteritems():
+            # Use the provided property name to rename the metadata parameter
+            setattr(export_meta, property_name, labels[0])
+            # If multiple export labels correspond to a single property, duplicate
+            for label in labels[1:]:
+                export_meta.data.loc[:, label] = export_meta.data.loc[:, labels[0]]
+
         return export_meta
 
     def _ensure_metadata_standards(self):
@@ -1527,7 +1532,10 @@ class Instrument(object):
                         adict[key] = self.__getattribute__(key)
             # store any non-standard attributes attached to meta
             base_attrb = dir(base_instrument.meta)
-            this_attrb = dir(self.meta)
+            if self._meta_translation_table is None:
+                this_attrb = dir(self.meta)
+            else:
+                this_attrb = self.generate_meta_for_export()
             for key in this_attrb:
                 if key not in base_attrb:
                     if key[0] != '_':
