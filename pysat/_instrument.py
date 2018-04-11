@@ -308,8 +308,13 @@ class Instrument(object):
                 orbit_info = self.orbit_info
         self.orbits = _orbits.Orbits(self, **orbit_info)
 
+        # Create empty placeholder for meta translation table
+        # gives information about how to label metadata for netcdf export
+        # if None, pysat metadata labels will be used
+        self._meta_translation_table = None
+
         # store kwargs, passed to load routine
-        self.kwargs = kwargs        
+        self.kwargs = kwargs
 
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
@@ -1201,6 +1206,20 @@ class Instrument(object):
             else:
                 mdata_dict['FillVal'] = np.array(mdata_dict['FillVal']).astype(coltype)
         return mdata_dict
+
+    def generate_meta_for_export(self):
+        '''Generates a copy of the instrument metadata object converted to the defined
+        export format of the instrument
+
+        Returns
+        -------
+        Meta
+            PySat metadata object translated into export format
+        '''
+        export_meta = copy.deepcopy(self.meta)
+        
+        # TODO: Metadata Translation
+        return export_meta
 
     def _ensure_metadata_standards(self):
         """Copies existing metadata to fill in redundant portions of wider standard.
