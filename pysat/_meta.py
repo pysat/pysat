@@ -9,49 +9,53 @@ try:
     basestring
 except NameError:
     basestring = str
-    
+
 from pysat import DataFrame, Series
+
 
 class Meta(object):
     """
     Stores metadata for Instrument instance, similar to CF-1.6 netCDFdata standard.
-    
+
     Parameters
     ----------
-    metadata : pandas.DataFrame 
-        DataFrame should be indexed by variable name that contains at minimum the 
-        standard_name (name), units, long_name, and fillvalue for the data stored 
+    metadata : pandas.DataFrame
+        DataFrame should be indexed by variable name that contains at minimum the
+        standard_name (name), units, long_name, and fillvalue for the data stored
         in the associated pysat Instrument object.
     units_label : str
-        String used to label units in storage. Defaults to 'units'. 
+        String used to label units in storage. Defaults to 'units'.
     name_label : str
         String used to label long_name in storage. Defaults to 'long_name'.
     notes_label : str
-       String used to label 'notes' in storage. Defaults to 'notes'
+        String used to label 'notes' in storage. Defaults to 'notes'
     desc_label : str
-       String used to label variable descriptions in storage. Defaults to 'desc'
+        String used to label variable descriptions in storage. Defaults to 'desc'
     plot_label : str
-       String used to label variables in plots. Defaults to 'label'
+        String used to label variables in plots. Defaults to 'label'
     axis_label : str
         Label used for axis on a plot. Defaults to 'axis'
     scale_label : str
-       string used to label plot scaling type in storage. Defaults to 'scale'
-    limits_label : str
-       String used to label typical variable value limits in storage.
-       Defaults to 'limits'
+        string used to label plot scaling type in storage. Defaults to 'scale'
+    min_label : str
+        String used to label typical variable value min limit in storage.
+        Defaults to 'value_min'
+    max_label : str
+        String used to label typical variable value max limit in storage.
+        Defaults to 'value_max'
     fill_label : str
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
-    
-        
-        
+
+
+
     Attributes
     ----------
     data : pandas.DataFrame
         index is variable standard name, 'units', 'long_name', and other
         defaults are also stored along with any additional user provided labels.
     units_label : str
-        String used to label units in storage. Defaults to 'units'. 
+        String used to label units in storage. Defaults to 'units'.
     name_label : str
         String used to label long_name in storage. Defaults to 'long_name'.
     notes_label : str
@@ -73,11 +77,11 @@ class Meta(object):
     fill_label : str
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
-        
-        
+
+
     Notes
     -----
-    Meta object preserves the case of variables and attributes as it first 
+    Meta object preserves the case of variables and attributes as it first
     receives the data. Subsequent calls to set new metadata with the same variable
     or attribute will use case of first call. Accessing or setting data thereafter
     is case insensitive. In practice, use is case insensitive but the original
@@ -87,15 +91,15 @@ class Meta(object):
     Metadata for higher order data objects, those that have
     multiple products under a single variable name in a pysat.Instrument
     object, are stored by providing a Meta object under the single name.
-    
+
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, long_name, notes, desc, plot_label, axis, scale, 
+    attributes (units, long_name, notes, desc, plot_label, axis, scale,
                 value_min, value_max, and fill).
-        
+
     Examples
     --------
     ::
-        
+
         meta = pysat.Meta()
         meta['name'] = {'long_name':string, 'units':string}
         # update 'units' to new value
@@ -106,17 +110,17 @@ class Meta(object):
         meta['name2'] = {'units':string}
         # units are set to '' by default
         meta['name3'] = {'long_name':string}
-        
+
         # assigning custom meta parameters
         meta['name4'] = {'units':string, 'long_name':string
                          'custom1':string, 'custom2':value}
         meta['name5'] = {'custom1':string, 'custom3':value}
-        
+
         # assign multiple variables at once
-        meta[['name1', 'name2']] = {'long_name':[string1, string2], 
+        meta[['name1', 'name2']] = {'long_name':[string1, string2],
                                     'units':[string1, string2],
                                     'custom10':[string1, string2]}
-        
+
         # assiging metadata for n-Dimensional variables
         meta2 = pysat.Meta()
         meta2['name41'] = {'long_name':string, 'units':string}
@@ -125,7 +129,7 @@ class Meta(object):
         # or
         meta['name4'] = meta2
         meta['name4']['name41']
-        
+
         # mixture of 1D and higher dimensional data
         meta = pysat.Meta()
         meta['dm'] = {'units':'hey', 'long_name':'boo'}
@@ -134,15 +138,15 @@ class Meta(object):
         meta2[['higher', 'lower']] = {'meta':[meta, None],
                                       'units':[None, 'boo'],
                                       'long_name':[None, 'boohoo']}
-                                          
+
         # assign from another Meta object
         meta[key1] = meta2[key2]
-        
+
     """
     def __init__(self, metadata=None, units_label='units', name_label='long_name',
-                       notes_label='notes', desc_label='desc', plot_label='label',
-                       axis_label='axis', scale_label='scale', min_label='value_min',
-                       max_label='value_max', fill_label = 'fill'):
+                 notes_label='notes', desc_label='desc', plot_label='label',
+                 axis_label='axis', scale_label='scale', min_label='value_min',
+                 max_label='value_max', fill_label='fill'):
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label
@@ -162,39 +166,39 @@ class Meta(object):
         # establish attributes intrinsic to object, before user could
         # add any
         self._base_attr = dir(self)
-        
+
     def default_labels_and_values(self, name):
         """Returns dictionary of default meta labels and values for name variable.
-        
+
         Metadata is automatically tracked for various properties, name,
         long_name, units, description, etc. Each of these values (labels)
         corresponds to a given string (values).
-        
+
         Parameters
         ----------
         name : list_like of str
             variable names to get default metadata parameters for
-        
+
         Returns
         -------
         dict
             keys are metadata labels used within Meta object, values are the default
-            values assigned if data is never specified by user 
-            
+            values assigned if data is never specified by user
+
         """
         num = len(name)
-        default_str = ['']*num
-        default_nan = [np.NaN]*num
+        default_str = [''] * num
+        default_nan = [np.NaN] * num
         return {self.units_label: default_str,
                 self.name_label: name,
-                self.notes_label : default_str,
-                self.desc_label : default_str,
-                self.plot_label : name,
-                self.axis_label : name,
-                self.scale_label : ['linear']*num,
-                self.min_label : default_nan,
-                self.max_label : default_nan,
-                self.fill_label : default_nan}
+                self.notes_label: default_str,
+                self.desc_label: default_str,
+                self.plot_label: name,
+                self.axis_label: name,
+                self.scale_label: ['linear'] * num,
+                self.min_label: default_nan,
+                self.max_label: default_nan,
+                self.fill_label: default_nan}
 
     def apply_default_labels(self, other):
         """Applies labels for default meta labels from self onto other.
@@ -648,70 +652,87 @@ class Meta(object):
                         # self[key].data[value] = default
         # now update 'hidden' attribute value
         actual = value
-                
+
     @property
     def units_label(self):
         return self._units_label
+
     @property
     def name_label(self):
         return self._name_label
+
     @property
     def notes_label(self):
         return self._notes_label
+
     @property
     def desc_label(self):
         return self._desc_label
+
     @property
     def plot_label(self):
         return self._plot_label
+
     @property
     def axis_label(self):
         return self._axis_label
+
     @property
     def scale_label(self):
         return self._scale_label
+
     @property
     def min_label(self):
         return self._min_label
+
     @property
     def max_label(self):
         return self._max_label
+
     @property
     def fill_label(self):
-        return self._fill_label   
-             
-    @units_label.setter   
+        return self._fill_label
+
+    @units_label.setter
     def units_label(self, value):
-        self._label_setter(value, self.units_label, self._units_label, '') 
-    @name_label.setter   
+        self._label_setter(value, self.units_label, self._units_label, '')
+
+    @name_label.setter
     def name_label(self, value):
-        self._label_setter(value, self.name_label, self._name_label, use_names_default=True)     
-    @notes_label.setter   
+        self._label_setter(value, self.name_label, self._name_label, use_names_default=True)
+
+    @notes_label.setter
     def notes_label(self, value):
         self._label_setter(value, self.notes_label, self._notes_label, '')
-    @desc_label.setter   
+
+    @desc_label.setter
     def desc_label(self, value):
         self._label_setter(value, self.desc_label, self._desc_label, '')
-    @plot_label.setter   
+
+    @plot_label.setter
     def plot_label(self, value):
         self._label_setter(value, self.plot_label, self._plot_label, use_names_default=True)
-    @axis_label.setter   
+
+    @axis_label.setter
     def axis_label(self, value):
         self._label_setter(value, self.axis_label, self._axis_label, use_names_default=True)
-    @scale_label.setter   
+
+    @scale_label.setter
     def scale_label(self, value):
         self._label_setter(value, self.scale_label, self._scale_label, 'linear')
-    @min_label.setter   
+
+    @min_label.setter
     def min_label(self, value):
         self._label_setter(value, self.min_label, self._min_label, np.NaN)
-    @max_label.setter   
+
+    @max_label.setter
     def max_label(self, value):
         self._label_setter(value, self.max_label, self._max_label, np.NaN)
-    @fill_label.setter   
+
+    @fill_label.setter
     def fill_label(self, value):
         self._label_setter(value, self.fill_label, self._fill_label, np.NaN)
 
-                                
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
         
