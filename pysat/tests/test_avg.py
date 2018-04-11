@@ -21,7 +21,7 @@ else:
     re_load = reload
 
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat','testing', clean_level='clean')
@@ -83,7 +83,7 @@ class TestBasics:
         assert np.all(ans == 86399/2.)
 
 
-class TestFrameProfileAverages:
+class TestFrameProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing2D', clean_level='clean')
@@ -116,7 +116,7 @@ class TestFrameProfileAverages:
                 assert np.all(item['fraction'] == 0)
 
 
-class TestSeriesProfileAverages:
+class TestSeriesProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing2D', clean_level='clean')

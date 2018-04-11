@@ -63,7 +63,7 @@ def remove_files(inst):
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""        
         # store current pysat directory
@@ -224,6 +224,7 @@ class TestBasics:
         # test Series of DataFrames
         test_list = []
         # print (loaded_inst.columns)
+        # print (loaded_inst)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
             test_list.append(np.all((frame1 == frame2).all()))

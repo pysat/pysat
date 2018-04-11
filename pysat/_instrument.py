@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import absolute_import
+# python 2/3 compatibility
+try:
+    basestring
+except NameError:
+    basestring = str
 
 import string
 import os
@@ -66,8 +71,31 @@ class Instrument(object):
         label to use for units. Defaults to 'units' but some implementations
         will use mixed case 'Units'
     name_label : str
-        label to use for long name. Defaults to 'long_name' but some
-        implementations will use 'Long_Name'
+        label to use for long name. Defaults to 'long_name' but some implementations
+        will use 'Long_Name'
+    units_label : str
+        String used to label units in storage. Defaults to 'units'. 
+    name_label : str
+        String used to label long_name in storage. Defaults to 'long_name'.
+    notes_label : str
+       label to use for notes in storage. Defaults to 'notes'
+    desc_label : str
+       label to use for variable descriptions in storage. Defaults to 'desc'
+    plot_label : str
+       label to use to label variables in plots. Defaults to 'label'
+    axis_label : str
+        label to use for axis on a plot. Defaults to 'axis'
+    scale_label : str
+       label to use for plot scaling type in storage. Defaults to 'scale'
+    min_label : str
+       label to use for typical variable value min limit in storage.
+       Defaults to 'value_min'
+    max_label : str
+       label to use for typical variable value max limit in storage.
+       Defaults to 'value_max'
+    fill_label : str
+        label to use for fill values. Defaults to 'fill' but some implementations
+        will use 'FillVal'
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
         month, and sat_id will be filled in as needed using python string
@@ -146,7 +174,10 @@ class Instrument(object):
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, units_label='units',
-                 name_label='long_name', *arg, **kwargs):
+                 name_label='long_name', notes_label='notes', desc_label='desc',
+                 plot_label='label', axis_label='axis', scale_label='scale',
+                 min_label='value_min', max_label='value_max',
+                 fill_label = 'fill', *arg, **kwargs):
 
         if inst_module is None:
             # use strings to look up module name
@@ -214,9 +245,20 @@ class Instrument(object):
         self.data = DataFrame(None)
         self.units_label = units_label
         self.name_label = name_label
-        self.meta = _meta.Meta(units_label=self.units_label,
-                               name_label=self.name_label)
-        
+        self.notes_label = notes_label
+        self.desc_label = desc_label
+        self.plot_label = plot_label
+        self.axis_label = axis_label
+        self.scale_label = scale_label
+        self.min_label = min_label
+        self.max_label = max_label
+        self.fill_label = fill_label
+        self.meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
+                               notes_label=self.notes_label, desc_label=self.desc_label,
+                               plot_label=self.plot_label, axis_label=self.axis_label,
+                               scale_label=self.scale_label, min_label=self.min_label,
+                               max_label=self.max_label, fill_label=self.fill_label)
+
         # function processing class, processes data on load
         self.custom = _custom.Custom()
         # create arrays to store data around loaded day
@@ -468,9 +510,11 @@ class Instrument(object):
         output_str += '\nLocal File Statistics' + '\n'
         output_str += '---------------------' + '\n'
         output_str += 'Number of files: ' + str(len(self.files.files)) + '\n'
-        output_str += 'Date Range: '
-        output_str += self.files.files.index[0].strftime('%m/%d/%Y')
-        output_str += ' --- ' + self.files.files.index[-1].strftime('%m/%d/%Y')
+
+        if len(self.files.files) > 0:
+            output_str += 'Date Range: '
+            output_str += self.files.files.index[0].strftime('%m/%d/%Y')
+            output_str += ' --- ' + self.files.files.index[-1].strftime('%m/%d/%Y')
 
         output_str += '\n\nLoaded Data Statistics'+'\n'
         output_str += '----------------------'+'\n'
@@ -533,13 +577,17 @@ class Instrument(object):
             data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                          sat_id=self.sat_id, **self.kwargs)
 
-            # ensure units and name are named consistently
-            mdata.units_label = self.units_label
-            mdata.name_label = self.name_label
+            # ensure units and name are named consistently in new Meta
+            # object as specified by user upon Instrument instantiation
+            mdata.accept_default_labels(self)
+
         else:
             data = DataFrame(None)
-            mdata = _meta.Meta(units_label=self.units_label,
-                               name_label=self.name_label)
+            mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
+                        notes_label = self.notes_label, desc_label = self.desc_label,
+                        plot_label = self.plot_label, axis_label = self.axis_label,
+                        scale_label = self.scale_label, min_label = self.min_label,
+                        max_label = self.max_label, fill_label=self.fill_label)
 
         output_str = '{platform} {name} {tag} {sat_id}'
         output_str = output_str.format(platform=self.platform,
@@ -565,7 +613,7 @@ class Instrument(object):
         else:
             # no data signal
             output_str = ' '.join(('No', output_str, 'data for',
-                                   date.strftime('%D')))
+                                   date.strftime('%m/%d/%y')))
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         print (output_str)                
@@ -688,6 +736,7 @@ class Instrument(object):
             else:
                 # moving forward in time
                 if self._next_data_track == curr:
+                    del self._prev_data
                     self._prev_data = self._curr_data
                     self._prev_meta = self._curr_meta
                     self._curr_data = self._next_data
@@ -695,6 +744,7 @@ class Instrument(object):
                     self._next_data, self._next_meta = self._load_next()
                 # moving backward in time
                 elif self._prev_data_track == curr:
+                    del self._next_data
                     self._next_data = self._curr_data
                     self._next_meta = self._curr_meta
                     self._curr_data = self._prev_data
@@ -702,6 +752,9 @@ class Instrument(object):
                     self._prev_data, self._prev_meta = self._load_prev()
                 # jumped in time/or switched from filebased to date based access
                 else:
+                    del self._prev_data
+                    del self._curr_data
+                    del self._next_data
                     self._prev_data, self._prev_meta = self._load_prev()
                     self._curr_data, self._curr_meta = \
                                 self._load_data(date=self.date, fid=self._fid)
@@ -808,9 +861,10 @@ class Instrument(object):
             
         # remove the excess padding, if any applied
         if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
-            self.data = self.data[first_time : last_time]
-            if (self.data.index[-1] == last_time) & (not want_last_pad):
-                self.data = self.data.iloc[:-1, :]
+            self.data = self.data[first_time: last_time]
+            if not self.empty:
+                if (self.data.index[-1] == last_time) & (not want_last_pad):
+                    self.data = self.data.iloc[:-1, :]
 
         # transfer any extra attributes in meta to the Instrument object
         self.meta.transfer_attributes_to_instrument(self)
@@ -1157,6 +1211,10 @@ class Instrument(object):
     def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False):
         """Filter metadata properties to be consistent with netCDF4.
         
+        Notes
+        -----
+        removed forced to True if coltype consistent with a string type
+        
         Parameters
         ----------
         mdata_dict : dict
@@ -1172,7 +1230,10 @@ class Instrument(object):
             Modified as needed for netCDf4
         
         """
-
+        
+        if (coltype == type(' ')) or (coltype == type(u' ')):
+            remove = True
+        # print ('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
@@ -1186,9 +1247,33 @@ class Instrument(object):
             else:
                 mdata_dict['FillVal'] = np.array(mdata_dict['FillVal']).astype(coltype)
         return mdata_dict
+
+    def _ensure_metadata_standards(self):
+        """Copies existing metadata to fill in redundant portions of wider standard.
+    
+        This standard ensures compatibility with multiple standards. As such, there
+        is overlap between some of the formative standards. Copies CatDesc, Units, and Long_Name
+        and FillVal appropriately.
+    
+        """
+    
+        meta_obj = [self.meta]
+        for obj_key in self.meta.ho_data.keys():
+            meta_obj.append(self.meta[obj_key])
+    
+        for obj in meta_obj:
+            for item in obj.keys():
+                # print ('MetaData for ', item)
+                # print (obj[item])
+                # print (obj)
+                obj[item] = {'FieldNam': obj[item, self.name_label]}
+                obj[item] = {'Lablxis': obj[item, 'CatDesc']}
+                obj[item] = {'Labl_Ptr_#': obj[item, 'CatDesc']}
+                obj[item] = {'_FillValue':  obj[item, self.fill_label]}
         
-    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='epoch',
-                   zlib=False):
+ 
+    def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
+                   zlib=False, complevel=4, shuffle=True):
         """Stores loaded data into a netCDF3/4 file.
         
         Parameters
@@ -1202,7 +1287,13 @@ class Instrument(object):
             Label in file for datetime index of Instrument object
         zlib : boolean
             Flag for engaging zlib compression (True - compression on)
-        
+        complevel : int
+            an integer between 1 and 9 describing the level of compression
+            desired (default 4). Ignored if zlib=False
+        shuffle : boolean
+            the HDF5 shuffle filter will be applied before compressing the data (default True).
+            This significantly improves compression. Default is True. Ignored if zlib=False.
+
         Note
         ----
 
@@ -1238,10 +1329,12 @@ class Instrument(object):
             # write out the datetime index
             cdfkey = out_data.createVariable(epoch_name, 'i8',
                                              dimensions=(epoch_name),
-                                             zlib=zlib) #, chunksizes=1)
+                                             zlib=zlib,
+                                             complevel=complevel,
+                                             shuffle=shuffle) #, chunksizes=1)
             new_dict = {}
-            new_dict[self.meta._name_label] = 'UNIX'
-            new_dict[self.meta._units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+            new_dict[self.meta.name_label] = epoch_name
+            new_dict[self.meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
             new_dict['calendar'] = 'standard'
             cdfkey.setncatts(new_dict)
             cdfkey[:] = (self.data.index.values.astype(np.int64) *
@@ -1249,6 +1342,7 @@ class Instrument(object):
                             
             # store all of the data in dataframe columns
             for key in self.data.columns:
+                # print (key)
                 # get information on data
                 data, coltype, datetime_flag = self._get_data_info(self[key],
                                                                    file_format)
@@ -1259,12 +1353,21 @@ class Instrument(object):
                     cdfkey = out_data.createVariable(key,
                                                      coltype,
                                                      dimensions=(epoch_name),
-                                                     zlib=zlib) #, chunksizes=1)
+                                                     zlib=zlib,
+                                                     complevel=complevel,
+                                                     shuffle=shuffle) #, chunksizes=1)
                     # attach any meta data, after filtering for standards
                     try:
+                        # attach dimension metadata
+                        self.meta[key]= {'Depend_0':epoch_name ,  
+                                         'Display_Type':'Time Series',
+                                         'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
+                                         'Time_Scale':'UTC', 
+                                         'MonoTon': int(data.is_monotonic)}   
                         new_dict = self.meta[key].to_dict()
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
+                        # print ('top ', new_dict)
                         cdfkey.setncatts(new_dict)
                     except KeyError:
                         print(', '.join(('Unable to find MetaData for', key)))
@@ -1280,14 +1383,23 @@ class Instrument(object):
                     if (coltype == type(' ')) or (coltype == type(u' ')):
                         # dealing with a string
                         cdfkey = out_data.createVariable(key, coltype, \
-                            dimensions=(epoch_name), zlib=zlib) #, chunksizes=1)
+                            dimensions=(epoch_name), zlib=zlib, \
+                            complevel=complevel, shuffle=shuffle) #, chunksizes=1)
                         # attach any meta data
                         try:
+                            # attach dimension metadata
+                        # attach dimension metadata
+                            self.meta[key]= {'Depend_0':epoch_name ,  
+                                             'Display_Type':'Time Series',
+                                             'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
+                                             'Time_Scale':'UTC'} 
+                                            # 'MonoTon': int(data.is_monotonic)}   
                             new_dict = self.meta[key].to_dict()
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, \
                                                         coltype, remove=True)
                             # really attach metadata now
+                            # print ('mid ', new_dict)
                             cdfkey.setncatts(new_dict)
                         except KeyError:
                             print(', '.join(('Unable to find MetaData for',
@@ -1302,8 +1414,9 @@ class Instrument(object):
 
                         for i, dim in enumerate(dims[:-1]):
                             # don't need to go over last dimension value,
-                            # it covers number of columns
-                            obj_dim_names.append(key+'_dimension_%i' % (i+1))
+
+                            # it covers number of columns (if a frame)
+                            obj_dim_names.append(key)
                             out_data.createDimension(obj_dim_names[-1], dim)
                         # total dimensions stored for object are epoch plus
                         # ones just above
@@ -1327,18 +1440,23 @@ class Instrument(object):
                         for col in iterable:
                             if is_frame:
                                 data, coltype, _ = self._get_data_info(self[key].iloc[data_loc][col], file_format)
-                            else:
-                                data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], file_format)
-                            cdfkey = out_data.createVariable(key + '_' + col,
-                                                             coltype,
-                                                             dimensions=var_dim,
-                                                             zlib=zlib) #, chunksizes=1)
-                            if is_frame:
+                                cdfkey = out_data.createVariable(key + '_' + col,
+                                                                 coltype,
+                                                                 dimensions=var_dim,
+                                                                 zlib=zlib,
+                                                                 complevel=complevel,
+                                                                 shuffle=shuffle) #, chunksizes=1)
+
+
                                 # attach any meta data
                                 try:
+                                    self.meta[key][col] = {'Depend_0':epoch_name,
+                                                           'Depend_1': obj_dim_names[-1],  
+                                                           'Display_Type':'Spectogram'}   
                                     # print('Frame Writing ', key, col, self.meta[key][col])
                                     new_dict = self.meta[key][col].to_dict()
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                                    # print ('mid2 ', new_dict)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError:
                                     print(', '.join(('Unable to find MetaData for', key, col)) )
@@ -1352,14 +1470,24 @@ class Instrument(object):
                                 for i in range(num):
                                     temp_cdf_data[i, :] = self[key].iloc[i][col].values
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
-                                # for i in range(num):
-                                #     cdfkey[i, :] = self[key].iloc[i][col].values.astype(coltype)
+
                             else:
+                                data, coltype, _ = self._get_data_info(self[key].iloc[data_loc], file_format)
+                                cdfkey = out_data.createVariable(key + '_data',
+                                                                coltype,
+                                                                dimensions=var_dim,
+                                                                zlib=zlib,
+                                                                complevel=complevel,
+                                                                shuffle=shuffle) #, chunksizes=1)
                                 # attach any meta data
                                 try:
+                                    self.meta[key] = {'Depend_0':epoch_name,
+                                                      'Depend_1': obj_dim_names[-1],  
+                                                      'Display_Type':'Profile'}   
                                     new_dict = self.meta[key].to_dict()
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # really attach metadata now
+                                    # print ('mid3 ', new_dict)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError:
                                     print(', '.join(('Unable to find MetaData for', key)))
@@ -1368,19 +1496,28 @@ class Instrument(object):
                                 for i in range(num):
                                     temp_cdf_data[i, :] = self[i, key].values#.astype(coltype)
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
-                                
+ 
+                            # if is_frame:
+                            # else:
+                               
                         # store the dataframe index for each time of main dataframe
                         data, coltype, datetime_flag = self._get_data_info(self[key].iloc[data_loc].index, file_format)
-                        cdfkey = out_data.createVariable(key+'_dimension_1',
-                                                         coltype,
-                                                         dimensions=var_dim,
-                                                         zlib=zlib) #, chunksizes=1)
+
+                        cdfkey = out_data.createVariable(key,
+                                                         coltype, dimensions=var_dim,
+                                                         zlib=zlib,
+                                                         complevel=complevel,
+                                                         shuffle=shuffle) #, chunksizes=1)
                         if datetime_flag:
                             #print('datetime flag')                            
                             new_dict = {}
-                            new_dict[self.meta._name_label] = 'UNIX'
-                            new_dict[self.meta._units_label] = 'Milliseconds since 1970-1-1 00:00:00'
-                            # cdfkey.units = 'Milliseconds since 1970-1-1 00:00:00'
+                            new_dict['Depend_0'] = epoch_name
+                            new_dict['Depend_1'] =  obj_dim_names[-1]  
+                            new_dict['Display_Type'] = 'Time Series'  
+                            new_dict[self.meta.name_label] = epoch_name
+                            new_dict[self.meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+                            new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                            # print ('mid4 ', new_dict)
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num,
@@ -1391,13 +1528,17 @@ class Instrument(object):
                                             1.E-6).astype(coltype)
  
                         else:
-                            #cdfkey.units = ''
                             new_dict = {}
                             # get name of data for metadata
+                            new_dict['Depend_0'] = epoch_name
+                            new_dict['Depend_1'] =  obj_dim_names[-1]  
+                            new_dict['Display_Type'] = 'Time Series'  
                             if self[key].iloc[data_loc].index.name is not None:
-                                new_dict[self.meta._name_label] = self[key].iloc[data_loc].index.name
+                                new_dict[self.meta.name_label] = self[key].iloc[data_loc].index.name
                             else:
-                                new_dict[self.meta._name_label] = key
+                                new_dict[self.meta.name_label] = key
+                            new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                            # print ('mid5 ', new_dict)
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)

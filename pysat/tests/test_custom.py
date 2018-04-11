@@ -4,7 +4,7 @@ import numpy as np
 from nose.tools import assert_raises, raises
 import nose.tools
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', tag='10',

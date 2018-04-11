@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+import numpy as np
 import pandas as pds
 # python 2/3 compatibility
 try:
@@ -21,21 +22,60 @@ class Meta(object):
         DataFrame should be indexed by variable name that contains at minimum
         the standard_name (name), units, and long_name for the data stored in
         the associated pysat Instrument object.
+
     units_label : str
         String used to label units in storage. Defaults to 'units'. 
     name_label : str
-        String used to label long_name in storage. Defaults to 'long_name'. 
+        String used to label long_name in storage. Defaults to 'long_name'.
+    notes_label : str
+       String used to label 'notes' in storage. Defaults to 'notes'
+    desc_label : str
+       String used to label variable descriptions in storage. Defaults to 'desc'
+    plot_label : str
+       String used to label variables in plots. Defaults to 'label'
+    axis_label : str
+        Label used for axis on a plot. Defaults to 'axis'
+    scale_label : str
+       string used to label plot scaling type in storage. Defaults to 'scale'
+    limits_label : str
+       String used to label typical variable value limits in storage.
+       Defaults to 'limits'
+    fill_label : str
+        String used to label fill value in storage. Defaults to 'fill' per
+        netCDF4 standard
+    
         
         
     Attributes
     ----------
     data : pandas.DataFrame
-        index is variable standard name, 'units' and 'long_name' are also
-        stored along with additional user provided labels.
+        index is variable standard name, 'units', 'long_name', and other
+        defaults are also stored along with additional user provided labels.
+
     units_label : str
-        string used to identify units
+        String used to label units in storage. Defaults to 'units'. 
     name_label : str
-        string used to idensity variable names
+        String used to label long_name in storage. Defaults to 'long_name'.
+    notes_label : str
+       String used to label 'notes' in storage. Defaults to 'notes'
+    desc_label : str
+       String used to label variable descriptions in storage. Defaults to 'desc'
+    plot_label : str
+       String used to label variables in plots. Defaults to 'label'
+    axis_label : str
+        Label used for axis on a plot. Defaults to 'axis'
+    scale_label : str
+       string used to label plot scaling type in storage. Defaults to 'scale'
+    min_label : str
+       String used to label typical variable value min limit in storage.
+       Defaults to 'value_min'
+    max_label : str
+       String used to label typical variable value max limit in storage.
+       Defaults to 'value_max'
+    fill_label : str
+        String used to label fill value in storage. Defaults to 'fill' per
+        netCDF4 standard
+        
         
     Notes
     -----
@@ -49,6 +89,10 @@ class Meta(object):
     Metadata for higher order data objects, those that have
     multiple products under a single variable name in a pysat.Instrument
     object, are stored by providing a Meta object under the single name.
+    
+    Supports any custom metadata values in addition to the expected metadata
+    attributes (units, long_name, notes, desc, plot_label, axis, scale, 
+                value_min, value_max, and fill).
         
     Examples
     --------
@@ -65,9 +109,15 @@ class Meta(object):
         # units are set to '' by default
         meta['name3'] = {'long_name':string}
         
+        # assigning custom meta parameters
+        meta['name4'] = {'units':string, 'long_name':string
+                         'custom1':string, 'custom2':value}
+        meta['name5'] = {'custom1':string, 'custom3':value}
+        
         # assign multiple variables at once
         meta[['name1', 'name2']] = {'long_name':[string1, string2], 
-                                    'units':[string1, string2]}
+                                    'units':[string1, string2],
+                                    'custom10':[string1, string2]}
         
         # assiging metadata for n-Dimensional variables
         meta2 = pysat.Meta()
@@ -91,26 +141,196 @@ class Meta(object):
         meta[key1] = meta2[key2]
         
     """
-    def __init__(self, metadata=None, units_label='units',
-                 name_label='long_name'):
-        """Initialize the Meta class"""
+
+    def __init__(self, metadata=None, units_label='units', name_label='long_name',
+                       notes_label='notes', desc_label='desc', plot_label='label',
+                       axis_label='axis', scale_label='scale', min_label='value_min',
+                       max_label='value_max', fill_label = 'fill'):
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label
+        self._notes_label = notes_label
+        self._desc_label = desc_label
+        self._plot_label = plot_label
+        self._axis_label = axis_label
+        self._scale_label = scale_label
+        self._min_label = min_label
+        self._max_label = max_label
+        self._fill_label = fill_label
         # init higher order (nD) data structure container, a dict
-        self._ho_data = {}
+        self.ho_data = {}
         # use any user provided data to instantiate object with data
         # attirube unit and name labels are called within
         self.replace(metadata=metadata)
         # establish attributes intrinsic to object, before user could
         # add any
         self._base_attr = dir(self)
+        
+    def default_labels_and_values(self, name):
+        """Returns dictionary of default meta labels and values for name variable.
+        
+        Metadata is automatically tracked for various properties, name,
+        long_name, units, description, etc. Each of these values (labels)
+        corresponds to a given string (values).
+        
+        Parameters
+        ----------
+        name : list_like of str
+            variable names to get default metadata parameters for
+        
+        Returns
+        -------
+        dict
+            keys are metadata labels used within Meta object, values are the default
+            values assigned if data is never specified by user 
+            
+        """
+        num = len(name)
+        default_str = ['']*num
+        default_nan = [np.NaN]*num
+        return {self.units_label: default_str,
+                self.name_label: name,
+                self.notes_label : default_str,
+                self.desc_label : default_str,
+                self.plot_label : name,
+                self.axis_label : name,
+                self.scale_label : ['linear']*num,
+                self.min_label : default_nan,
+                self.max_label : default_nan,
+                self.fill_label : default_nan}
+
+    def apply_default_labels(self, other):
+        """Applies labels for default meta labels from self onto other.
+        
+        Parameters
+        ----------
+        other : Meta
+            Meta object to have default labels applied
+        
+        Returns
+        -------
+        Meta
+        
+        """
+
+        other.units_label = self.units_label
+        other.name_label = self.name_label
+        other.notes_label = self.notes_label
+        other.desc_label = self.desc_label
+        other.plot_label = self.plot_label
+        other.axis_label = self.axis_label
+        other.scale_label = self.scale_label
+        other.min_label = self.min_label
+        other.max_label = self.max_label
+        other.fill_label = self.fill_label
+        return other
+
+    def accept_default_labels(self, other):
+        """Applies labels for default meta labels from other onto self.
+        
+        Parameters
+        ----------
+        other : Meta
+            Meta object to take default labels from
+        
+        Returns
+        -------
+        Meta
+        
+        """
+
+        self.units_label = other.units_label
+        self.name_label = other.name_label
+        self.notes_label = other.notes_label
+        self.desc_label = other.desc_label
+        self.plot_label = other.plot_label
+        self.axis_label = other.axis_label
+        self.scale_label = other.scale_label
+        self.min_label = other.min_label
+        self.max_label = other.max_label
+        self.fill_label = other.fill_label
+        return 
 
     def __eq__(self, other):
         """Determine if two Meta instances are equal"""
-        if type(other) is type(self):
-            return self.__dict__ == other.__dict__
+        if isinstance(other, Meta):
+            # check first if variables and attributes are the same
+            # quick check on length
+            keys1 = [i for i in self.keys()]
+            keys2 = [i for i in other.keys()]
+            if len(keys1) != len(keys2):
+                return False
+            # now iterate over each of the keys in the first one
+            # don't need to iterate over second one, if all of the first
+            # in the second we are good. No more or less items in second from 
+            # check earlier.
+            for key in keys1:
+                if key not in keys2:
+                    return False
+            # do same checks on attributes 
+            attrs1 = [i for i in self.attrs()]
+            attrs2 = [i for i in other.attrs()]
+            if len(attrs1) != len(attrs2):
+                return False
+            for attr in attrs1:
+                if attr not in attrs2:
+                    return False
+            # now check the values of all elements now that we know all variable
+            # and attribute names are the same
+            for key in self.keys():
+                for attr in self.attrs():
+                    if not (self[key, attr] == other[key, attr]):
+                        # np.nan is not equal to anything
+                        # if both values are NaN, ok in my book
+                        try:
+                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
+                                # one or both are not NaN and they aren't equal
+                                # test failed
+                                return False
+                        except TypeError:
+                            # comparison above gets unhappy with string inputs
+                            return False
+
+            # check through higher order products
+            # in the same manner as code above
+            keys1 = [i for i in self.keys_nD()]
+            keys2 = [i for i in other.keys_nD()]
+            if len(keys1) != len(keys2):
+                return False
+            for key in keys1:
+                if key not in keys2:
+                    return False
+            # do same check on all sub variables within each nD key
+            for key in self.keys_nD():
+                keys1 = [i for i in self[key].keys()]
+                keys2 = [i for i in other[key].keys()]
+                if len(keys1) != len(keys2):
+                    return False
+                for key_check in keys1:
+                    if key_check not in keys2:
+                        return False
+                # check if attributes are the same
+                attrs1 = [i for i in self[key].attrs()]
+                attrs2 = [i for i in other[key].attrs()]
+                if len(attrs1) != len(attrs2):
+                    return False
+                for attr in attrs1:
+                    if attr not in attrs2:
+                        return False
+                # now time to check if all elements are individually equal
+                for key2 in self[key].keys():
+                    for attr in self[key].attrs():
+                        if not (self[key][key2, attr] == other[key][key2, attr]):
+                            try:
+                                if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
+                                    return False
+                            except TypeError:
+                                # comparison above gets unhappy with string inputs
+                                return False
+            # if we made it this far, things are good                
+            return True
         else:
+            # wasn't even the correct class
             return False
     
     def __contains__(self, other):
@@ -142,7 +362,7 @@ class Meta(object):
             for item_name in self.keys_nD():
                 output_str += '\n\n'
                 output_str += 'Metadata for '+item_name+'\n'
-                output_str += self._ho_data[item_name].__repr__(False)
+                output_str += self.ho_data[item_name].__repr__(False)
 
         return output_str
 
@@ -151,47 +371,49 @@ class Meta(object):
 
         if isinstance(value, dict):
             # check if dict empty
-            if value.keys() == []:
-                # null input, variable name provided but no metadata is actually
-                # included. Everything should be set to default.
-                if isinstance(name, basestring):
-                    if name in self:
-                        # variable already exists and we don't have anything
-                        # new to add, just leave
-                        return
-                    # otherwise, continue on and set defaults
-                else:
-                    new_name = []
-                    for n in name:
-                        if n not in self:
-                            new_name.append(n)
-                    name = new_name
-                    if len(name) == 0:
-                        # all variables already exist, can simply leave
-                        return
-                    else:
-                        # otherwise, continue on and set defaults
-                        # create empty input for all remaining names
-                        value = {}
-                        value[self.units_label] = ['']*len(name)
-                        value[self.name_label] = name
 
+            # if value.keys() == []:
+            #     # null input, variable name provided but no metadata is actually
+            #     # included. Everything should be set to default.
+            #     if isinstance(name, basestring):
+            #         if name in self:
+            #             # variable already exists and we don't have anything
+            #             # new to add, just leave
+            #             return
+            #         # otherwise, continue on and set defaults
+            #     else:
+            #         new_name = []
+            #         for n in name:
+            #             if n not in self:
+            #                 new_name.append(n)
+            #         name = new_name
+            #         if len(name) == 0:
+            #             # all variables already exist, can simply leave
+            #             return
+            #         else:
+            #             # otherwise, continue on and set defaults
+            #             # create empty input for all remaining names
+            #             value = {}
+            #             value[self.units_label] = ['']*len(name)
+            #             value[self.name_label] = name
+            #             value[self.fill_label] = np.NaN
+            
             # perform some checks on the data
             # if not passed an iterable, make it one
             if isinstance(name, basestring):
                 name = [name]
-                for key in value.keys():
+                for key in value:
                     value[key] = [value[key]]
             # make sure number of inputs matches number of metadata inputs
-            for key in value.keys():
+            for key in value:
                 if len(name) != len(value[key]):
                     raise ValueError('Length of names and inputs must be equal.')
 
-            if 'meta' in value.keys():
-                # process higher order stuff first
-                # could be part of multiple assignment
-                # so assign the Meta objects, then remove all trace
-                # of names with Meta
+            if 'meta' in value:
+                # process higher order stuff first. Meta inputs could be part of 
+                # larger multiple parameter assignment
+                # so assign the Meta objects via a recursive call, then remove all trace
+                # of names with Meta and continue on with the rest of the function
                 pop_list = []
                 pop_loc = []
                 for j, (item, val) in enumerate(zip(name, value['meta'])):
@@ -201,8 +423,9 @@ class Meta(object):
                         pop_list.append(item)
                         pop_loc.append(j)
 
-                # remove 'meta' objects from input
-                if len(value.keys()) > 1:
+                # remove 'meta' objects from input so rest of code doesn't
+                # have to deal with them. Already processed.
+                if len(value) > 1:
                     _ = value.pop('meta')
                 else:
                     value = {}
@@ -215,62 +438,69 @@ class Meta(object):
                         _ = name.pop(loc)
                     else:
                         name = []
-                    # remove place holder data in other values that used to
-                    # have to account for presence of Meta object going
-                    # through backwards so I don't mess with location references
-                    for key in value.keys():
+
+                    # remove place holder data in other values that used
+                    # to have to account for presence of Meta object
+                    # going through backwards so I don't mess with location references
+                    for key in value:
                         _ = value[key].pop(loc)
 
-            # check if 'units' has been provided
-            # check against units_label, case insensitive
+            # check if 'units' or other base parameters have been provided
+            # check against provided labels, case insensitive
+            # defaults are filled in so that the actions invoked against
+            # pandas object later work out as expected 
             lower_keys = [k.lower() for k in value.keys()]
-            if self.units_label.lower() not in lower_keys:
-                # 'units' not provided
-                # provide default value, or copy existing
-                value[self.units_label] = []
-                for item_name in name:
-                    if item_name not in self:
-                        # overall variable not in Meta, can use default
-                        # 'default'
-                        value[self.units_label].append('')
-                    else:
-                        # copy existing
-                        value[self.units_label].append(self[item_name,
-                                                            self.units_label])
-            elif self.units_label not in value.keys():
-                # 'units' was provided, however the case 
-                # provided doesn't match up with _units_label
-                # make it match
-                for unit_key, lower_key in zip(value.keys(), lower_keys):
-                    if lower_key == self.units_label.lower():
-                        # print('popping units_key ', unit_key)
-                        value[self.units_label] = value.pop(unit_key)
-                        break
-            # check if 'long_name' has been provided
-            # check against name_label, case insensitive
-            lower_keys = [k.lower() for k in value.keys()]
-            if self.name_label.lower() not in lower_keys:
-                # provide default value, or copy existing
-                value[self.name_label] = []
-                for item_name in name:
-                    if item_name not in self:
-                        value[self.name_label].append(item_name)
-                    else:
-                        value[self.name_label].append(self[item_name,
-                                                           self.name_label])
-            elif self.name_label not in value.keys():
-                # case of 'units' provided doesn't match up with _name_label
-                # make it match
-                for label_key, lower_key in zip(value.keys(), lower_keys):
-                    if lower_key == self.name_label.lower():
-                        # print('popping label_key ', label_key)
-                        value[self.name_label] = value.pop(label_key)
-                        break
+            # attrs = [self.units_label, self.name_label, self.notes_label,
+            #         self.desc_label, self.plot_label, self.axis_label, 
+            #         self.scale_label, self.min_label, self.max_label,
+            #         self.fill_label]
+            # num = len(name)
+            # default_attrs = [['']*num, name, ['']*num,
+            #                 ['']*num, name, name,
+            #                 ['linear'], [np.NaN]*num, [np.NaN]*num,
+            #                 [np.NaN]*num]
+            # dictionary of labels (keys) and values (default value for attribute)
+            default_dict = self.default_labels_and_values(name)
+            # for attr, defaults in default_dict: #zip(attrs, default_attrs):
+            for attr in default_dict: #zip(attrs, default_attrs):
+                # the metadata default values for attr are in defaults
+                defaults = default_dict[attr]
+                lower_attr = attr.lower()
+                if lower_attr not in lower_keys:
+                    # base parameter not provided
+                    # provide default value, or copy existing
+                    value[attr] = []                    
+                    # keys changed, update lower keys for consistency
+                    lower_keys = [k.lower() for k in value.keys()]
+                    for item_name, default in zip(name, defaults):
+                        if item_name not in self:
+                            # overall variable not in Meta, can use default
+                            value[attr].append(default)
+                        else:
+                            if self.has_attr(attr):
+                                # copy existing
+                                value[attr].append(self[item_name, attr])
+                            else:
+                                value[attr].append(default)
+                elif attr not in value:
+                    # base parameter was provided, however the case 
+                    # provided doesn't match up with existing labels
+                    # make it match
+                    keys = [i for i in value]
+                    # update lower keys for consistency
+                    lower_keys = [k.lower() for k in value.keys()]
+                    for unit_key, lower_key in zip(keys, lower_keys):
+                        if lower_key == lower_attr:
+                            # print('popping units_key ', unit_key)
+                            value[attr] = value.pop(unit_key)
+                            break
 
             # check name of attributes against existing attribute names
-            # if attribute name exists somewhere, then case will be matched
-            # by default for consistency
-            keys = value.keys()
+            # if attribute name exists somewhere, then case of existing attribute
+            # will be enforced upon new data by default for consistency
+            # keys are pulled out below first since dictionary will be modified
+            # only want to iterate over current keys
+            keys = [i for i in value]
             for key in keys:
                 new_key = self.attr_case_name(key)
                 value[new_key] = value.pop(key)
@@ -290,18 +520,8 @@ class Meta(object):
                                           item_key] = item[item_key]
 
         elif isinstance(value, Series):
-            # check 
-            if name in self:
-                new_item_name = self.var_case_name(name)
-            else:
-                new_item_name = name
-
-            # check attribute names against existing entries
-            new_index = [self.attr_case_name(ind) for ind in value.index]
-            value.index = new_index
-            # pandas handles missing data during assignment
-            self.data.loc[new_item_name] = value
-            # need to do a check here on units and name labels
+            # set data usind standard assignment via a dict
+            self[name] = value.to_dict()
 
         elif isinstance(value, Meta):
             # dealing with higher order data set
@@ -309,12 +529,12 @@ class Meta(object):
                 new_item_name = self.var_case_name(name)
             else:
                 new_item_name = name
-            # ensure that units and name labels are always consistent
-            value.units_label = self.units_label
-            value.name_label = self.name_label
+            # ensure that labels are always consistent
+            value.accept_default_labels(self)
+
             # go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
-            names = value.data.columns
+            names = value.attrs()
             new_names = []
             for name in names:
                 new_names.append(self.attr_case_name(name))
@@ -324,8 +544,9 @@ class Meta(object):
             for name in names:
                 new_names.append(self.var_case_name(name))
             value.data.index = new_names
-
-            self._ho_data[new_item_name] = value
+            # assign Meta object now that things are consistent with Meta
+            # object settings
+            self.ho_data[new_item_name] = value
 
     def __getitem__(self, key):
         """Convenience method for obtaining metadata.
@@ -348,60 +569,165 @@ class Meta(object):
             new_name = self.attr_case_name(key[1])
             return self.data.loc[new_index, new_name]
         else:
+            # ensure variable is present somewhere
             if key in self:
-                # ensure variable is present somewhere
+                # get case preserved string for variable name
                 new_key = self.var_case_name(key)
-                # single variable request
+                # check what kind of variable, single or higher order
                 if new_key in self.keys_nD():
                     # higher order data
-                    return self._ho_data[new_key]
+                    return self.ho_data[new_key]
                 elif new_key in self.keys():
                     # plain old variable request
                     return self.data.loc[new_key]
             else:
                 raise KeyError('Key not found in MetaData')
 
+    def _label_setter(self, value, label, actual, default=np.NaN, use_names_default=False):
+        """Generalized setter of default meta attributes
+        
+        Parameters
+        ----------
+        value : str
+            New label to use in the Meta object
+        label : str
+            Existing attribute name of Meta object to be relabeled
+        actual : str
+            The hidden attribute to be updated that actually stores metadata
+        default : 
+            Deafult setting to use for label if there is no attribute
+            value
+        use_names_default : bool
+            if True, MetaData variable names are used as the default
+            value for the specified Meta attributes settings
+            
+        Examples
+        --------
+        :
+                @name_label.setter   
+                def name_label(self, value):
+                    self._label_setter(value, self.name_label, self._name_label, 
+                                        use_names_default=True)  
+        
+        Notes
+        -----
+        Not intended for end user
+                                  
+        """
+        
+        if value not in self.attrs():
+            # new label not in metadata, including case
+            # update existing label, if present
+            if label in self.attrs():
+                # old label exists and has expected case
+                self.data.loc[:, value] = self.data.loc[:, label]
+                self.data.drop(label, axis=1, inplace=True)
+            else:
+                if self.has_attr(label):
+                    # there is something like label, wrong case though
+                    label = self.attr_case_name(label)
+                    self.data.loc[:, value] = self.data.loc[:, label]
+                    self.data.drop(label, axis=1, inplace=True)
+                else:
+                    # there is no existing label
+                    # setting for the first time
+                    # this doesn't always capture the correct default
+                    if use_names_default:
+                        self.data[value] = self.data.index
+                    else:
+                        self.data[value] = default
+            # check higher order structures as well
+            for key in self.keys_nD():
+
+                if label in self[key].attrs():
+                    self[key].data.loc[:, value] = self[key].data.loc[:, label]
+                    self[key].data.drop(label, axis=1, inplace=True)
+                else:
+                    if self[key].has_attr(label):
+                        # there is something like label, wrong case though
+                        label = self[key].attr_case_name(label)
+                        self[key].data.loc[:, value] = self[key].data.loc[:, label]
+                        self[key].data.drop(label, axis=1, inplace=True)
+                    else:
+                        # there is no existing label
+                        # setting for the first time
+                        if use_names_default:
+                            self[key].data[value] = self[key].data.index
+                        else:
+                            self[key].data[value] = default
+                        # self[key].data[value] = default
+        # now update 'hidden' attribute value
+        actual = value
+                
     @property
     def units_label(self):
         return self._units_label
-
-    @units_label.setter        
-    def units_label(self, value=None):
-        """Update units_label employed by Metaobject and update attributes"""
-        if value not in self.attrs():
-            # update existing units label, if present
-            if self.units_label in self.attrs():
-                self.data.loc[:, value] = self.data.loc[:, self.units_label]
-                self.data.drop(self.units_label, axis=1, inplace=True)
-            # check higher order structures as well
-            for key in self.keys_nD():
-                if self.units_label in self[key].attrs():
-                    self[key].data.loc[:,value] = self[key].data.loc[:,self.units_label]
-                    self[key].data.drop(self.units_label, axis=1, inplace=True)
-
-        self._units_label = value
-
     @property
     def name_label(self):
         return self._name_label
+    @property
+    def notes_label(self):
+        return self._notes_label
+    @property
+    def desc_label(self):
+        return self._desc_label
+    @property
+    def plot_label(self):
+        return self._plot_label
+    @property
+    def axis_label(self):
+        return self._axis_label
+    @property
+    def scale_label(self):
+        return self._scale_label
+    @property
+    def min_label(self):
+        return self._min_label
+    @property
+    def max_label(self):
+        return self._max_label
+    @property
+    def fill_label(self):
+        return self._fill_label   
+             
+    @units_label.setter   
+    def units_label(self, value):
+        self._label_setter(value, self.units_label, self._units_label, '') 
+    @name_label.setter   
+    def name_label(self, value):
+        self._label_setter(value, self.name_label, self._name_label, use_names_default=True)     
+    @notes_label.setter   
+    def notes_label(self, value):
+        self._label_setter(value, self.notes_label, self._notes_label, '')
+    @desc_label.setter   
+    def desc_label(self, value):
+        self._label_setter(value, self.desc_label, self._desc_label, '')
+    @plot_label.setter   
+    def plot_label(self, value):
+        self._label_setter(value, self.plot_label, self._plot_label, use_names_default=True)
+    @axis_label.setter   
+    def axis_label(self, value):
+        self._label_setter(value, self.axis_label, self._axis_label, use_names_default=True)
+    @scale_label.setter   
+    def scale_label(self, value):
+        self._label_setter(value, self.scale_label, self._scale_label, 'linear')
+    @min_label.setter   
+    def min_label(self, value):
+        self._label_setter(value, self.min_label, self._min_label, np.NaN)
+    @max_label.setter   
+    def max_label(self, value):
+        self._label_setter(value, self.max_label, self._max_label, np.NaN)
+    @fill_label.setter   
+    def fill_label(self, value):
+        self._label_setter(value, self.fill_label, self._fill_label, np.NaN)
 
-    @name_label.setter        
-    def name_label(self, value=None):
-        """Update name_label employed by Metaobject and update attributes"""
-        if value not in self.attrs():
-            if self.name_label in self.attrs():
-                self.data.loc[:, value] = self.data.loc[:, self.name_label]
-                self.data.drop(self.name_label, axis=1, inplace=True)
-            # check higher order structures as well
-            for key in self.keys_nD():
-                if self.name_label in self[key].attrs():
-                    self[key].data.loc[:,value] = self[key].data.loc[:,self.name_label]
-                    self[key].data.drop(self.name_label, axis=1, inplace=True)
-
-        self._name_label = value
-
+                                
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
+        
+        If name is not found (case-insensitive check) then name is returned,
+        as input. This function is intended to be used to help ensure the
+        case of a given variable name is the same across the Meta object.
         
         Parameters
         ----------
@@ -415,12 +741,13 @@ class Meta(object):
             
         """
 
+        lower_name = name.lower()
         if name in self:
             for i in self.keys():
-                if name.lower() == i.lower():
+                if lower_name == i.lower():
                     return i
             for i in self.keys_nD():
-                if name.lower() == i.lower():
+                if lower_name == i.lower():
                     return i
         return name
 
@@ -432,16 +759,9 @@ class Meta(object):
 
     def keys_nD(self):
         """Yields keys for higher order metadata"""
-
-        for i in self._ho_data.keys():
+        
+        for i in self.ho_data:
             yield i
-
-    def keypairs_ho(self):
-        """Yields keypairs for higher order metadata, (key1, attribute1) """
-
-        for i in self._ho_data.keys():
-            for j in self[i].keys:
-                yield (i, j)
 
     def attrs(self):
         """Yields metadata products stored for each variable name"""
@@ -478,9 +798,11 @@ class Meta(object):
         """Returns preserved case name for case insensitive value of name.
         
         Checks first within standard attributes. If not found there, checks
-        attributes for higher order data structures. IF not found, returns
-        supplied name. It is available for use.
-
+        attributes for higher order data structures. If not found, returns
+        supplied name as it is available for use. Intended to be used to help
+        ensure that the same case is applied to all repetitions of a given
+        variable name.
+        
         Parameters
         ----------
         name : str
@@ -492,13 +814,14 @@ class Meta(object):
             name in proper case
         """
 
+        lower_name = name.lower()
         for i in self.attrs():
-            if name.lower() == i.lower():
+            if lower_name == i.lower():
                 return i
         # check if attribute present in higher order structures
         for key in self.keys_nD():
             for i in self[key].attrs():
-                if name.lower() == i.lower():
+                if lower_name == i.lower():
                     return i
         # nothing was found if still here
         # pass name back, free to be whatever
@@ -535,6 +858,7 @@ class Meta(object):
             if key in mdata:
                 raise RuntimeError('Duplicated keys (variable names) across '
                                    'Meta objects in keys_nD().')
+
         # concat 1D metadata in data frames to copy of
         # current metadata
         for key in other.keys():
@@ -562,7 +886,7 @@ class Meta(object):
         pandas.Series
             Series of metadata for variable
         """
-
+        # check if present
         if name in self:
             # get case preserved name for variable
             new_name = self.var_case_name(name)
@@ -571,8 +895,8 @@ class Meta(object):
                 output = self[new_name]
                 self.data.drop(new_name, inplace=True, axis=0)
             else:
-                output = self._ho_data.pop(new_name)
-
+                output = self.ho_data.pop(new_name)
+                
             return output
         else:
             raise KeyError('Key not present in metadata variables')
@@ -650,24 +974,16 @@ class Meta(object):
         if metadata is not None:
             if isinstance(metadata, DataFrame):
                 self.data = metadata
-                lower_columns = [name.lower() for name in self.data.columns]
-                if self.name_label.lower() not in lower_columns:
-                    self.data[self.name_label] = self.data.index
-                if self.units_label.lower() not in lower_columns:
-                    self.data[self.units_label] = ''
-                # make sure case of name and units labels are correct
-                # if they were provided by user
-                # going to reset labels to current values, this will 
-                # trigger a name check and corrections
-                self.units_label = self.units_label
-                self.name_label = self.name_label
+                # make sure defaults are taken care of for required metadata
+                self.accept_default_labels(self)
             else:
                 raise ValueError("Input must be a pandas DataFrame type. "+
                             "See other constructors for alternate inputs.")
         else:
             self.data = DataFrame(None, columns=[self.name_label,
-                                                 self.units_label])
-
+                                                 self.units_label,
+                                                 self.fill_label])
+        
     @classmethod
     def from_csv(cls, name=None, col_names=None, sep=None, **kwargs):
         """Create instrument metadata object from csv.

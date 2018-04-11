@@ -37,11 +37,12 @@ from . import nasa_cdaweb_methods as cdw
 
 platform = 'icon'
 name = 'ivm'
-tags = {'':''}
-sat_ids = {'a':[''], 
-           'b':['']}
-test_dates = {'a':{'':pysat.datetime(2018,1,1)},
-              'b':{'':pysat.datetime(2018,1,1)}}
+tags = {'level_2':'Level 2 public geophysical data'}
+# dictionary of sat_ids ad tags supported by each
+sat_ids = {'a':['level_2'], 
+           'b':['level_2']}
+test_dates = {'a':{'level_2':pysat.datetime(2018,1,1)},
+              'b':{'level_2':pysat.datetime(2018,1,1)}}
 
 
 def init(self):
@@ -151,12 +152,14 @@ def remove_icon_names(inst, target=None):
     else:
         prepend_str = target
 
-    inst.data.rename(columns=lambda x: x.split(prepend_str)[-1].lower(), inplace=True)
-    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1].lower(), inplace=True)
+    inst.data.rename(columns=lambda x: x.split(prepend_str)[-1], inplace=True)
+    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
     orig_keys = inst.meta.keys_nD()  
     for key in orig_keys:
-        new_key = key.split(prepend_str)[-1].lower()
-        inst.meta[new_key] = inst.meta.pop(key)
+        new_key = key.split(prepend_str)[-1]
+        new_meta = inst.meta.pop(key)
+        new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
+        inst.meta[new_key] = new_meta
         
     return    
 
