@@ -1,6 +1,7 @@
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
+        print(repr(med1)) #FIXME
 
     FIXME document this.
     Created as part of a Spring 2018 UTDesign project.
@@ -191,7 +192,24 @@ class Constellation(object):
 
         Created as part of a Spring 2018 UTDesign project.
         """
-        # TODO Implement signal difference.
-        raise NotImplementedError()
+        numPoints1 = instrument1.data[data_labels[0][0]]
+        numPoints2 = instrument2.data[data_labels[1][0]]
+        for i in range(len(numPoints)):
+            #gets instrument1 data point
+            s1_point = [instrument1.data[dl[0]][i] for dl in data_labels]
+            
+            #gets indices of points in instrument2 within the given bounds
+            #b = (min, max, label)
+            s2_near = np.arange(numPoints2)
+            for b in bounds:
+                data2 = instrument2.data[b[2]]
+                minbound = b[0]
+                maxbound = b[1]
+                indices = np.where((data2 >= minbound) & (data2 < maxbound))
+                s2_near = np.intersect1D(s2_near, indices)
+
+            
+
+
         
     
