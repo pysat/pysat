@@ -24,8 +24,7 @@ class Constellation(object):
         Note
         ----
         The name and instruments parameters should not both be set. 
-        If neither is given, (an empty constellation will be created / it will
-        throw an error)
+        If neither is given, an empty constellation will be created.
         """
         
         if instruments and name:
