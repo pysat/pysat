@@ -32,15 +32,14 @@ class Constellation(object):
                              'a list of instruments or a name, not both.')
         elif instruments and not hasattr(instruments, '__getitem__'):
             raise ValueError('Constellation: Instruments must be list-like.')
-        elif not (name or instruments):
-            raise ValueError('Constellation: Cannot create empty '
-                             'constellation.')
 
         if instruments:
             self.instruments = instruments
-        else:
+        elif name:
             const = importlib.import_module('pysat.constellations.'+name)
             self.instruments = const.instruments
+        else:
+            self.instruments = []
 
     def __getitem__(self, *args, **kwargs):
         return self.instruments.__getitem__(*args, **kwargs)
@@ -56,7 +55,7 @@ class Constellation(object):
 
         return output_str
 
-    def set_bounds(self, start, stop)
+    def set_bounds(self, start, stop):
         """
         Sets boundaries for all instruments in constellation
         """
