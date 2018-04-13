@@ -366,14 +366,14 @@ class Meta(object):
         
         if isinstance(value, dict):
             # check if dict empty
-            # if value.keys() == []:
-            #     # null input, variable name provided but no metadata is actually
-            #     # included. Everything should be set to default.
-            #     if isinstance(name, basestring):
-            #         if name in self:
-            #             # variable already exists and we don't have anything
-            #             # new to add, just leave
-            #             return
+            if value.keys() == []:
+                # null input, variable name provided but no metadata is actually
+                # included. 
+                if isinstance(name, basestring):
+                    if name in self:
+                        # variable already exists and we don't have anything
+                        # new to add, just leave
+                        return
             #         # otherwise, continue on and set defaults
             #     else:
             #         new_name = []
