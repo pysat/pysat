@@ -186,7 +186,7 @@ class Files(object):
                 new_flag = True
 
         if new_flag:
-            # print('New files')
+            
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path, 'previous_'+name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f')
