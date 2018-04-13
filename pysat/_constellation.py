@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pds
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
@@ -192,24 +194,76 @@ class Constellation(object):
 
         Created as part of a Spring 2018 UTDesign project.
         """
-        numPoints1 = instrument1.data[data_labels[0][0]]
-        numPoints2 = instrument2.data[data_labels[1][0]]
-        for i in range(len(numPoints)):
-            #gets instrument1 data point
-            s1_point = [instrument1.data[dl[0]][i] for dl in data_labels]
-            
-            #gets indices of points in instrument2 within the given bounds
-            #b = (min, max, label)
-            s2_near = np.arange(numPoints2)
-            for b in bounds:
-                data2 = instrument2.data[b[2]]
-                minbound = b[0]
-                maxbound = b[1]
-                indices = np.where((data2 >= minbound) & (data2 < maxbound))
-                s2_near = np.intersect1D(s2_near, indices)
 
-            
+        translate = {"time":"mlt", "time2":"mlt", 
+                    "long":"longitude", "long2":"longitude",
+                    "lat":"latitude", "lat2":"latitude"}
+                    #"alt":"altitude", "alt2":"altitude"}
 
-
+        bounds = [("longitude", "longitude", 10),
+                ("latitude", "latitude", 10),
+                ("mlt", "mlt", 10)]
         
+        STD_LABELS = ("time", "lat", "long")#, "alt")
+        labels = [dl1 for dl1, dl2 in data_labels] + [t for t in STD_LABELS] + [t+"2" for t in STD_LABELS]
+        data = {label:[] for label in labels}
+
+        for i, s1_point in instrument1.data.iterrows():
+            print(i)
+            #gets indices of points in instrument2 within the given bounds
+            #b = (label1, label2, max_distance)
+            
+            s2_near_ind = None
+            for b in bounds:
+                label1 = b[0]
+                label2 = b[1]
+                s1_val = s1_point[label1]
+                max_dist = b[2]
+                minbound = s1_val - max_dist
+                maxbound = s1_val + max_dist
+
+                data2 = instrument2.data[label2]
+                indices = np.where((data2 >= minbound) & (data2 < maxbound))
+                if s2_near_ind == None:
+                    s2_near_ind = indices
+                else:
+                    s2_near_ind = np.intersect1d(s2_near_ind, indices)
+             Let row be an empty dict.
+            For dl1, dl2 in data_labels:
+                Append s1_point[dl1] - s2_nearest[dl2] to data[dl1].
+        
+            For key in STD_LABELS:
+                Append s1_point[translate[key]] to data[key]
+                key = key+"2"
+                Append s2_nearest[translate[key]] to data[key]
+            #gets nearest data from indices
+            s2_near = [instrument2.data.iloc[ind] for ind in s2_near_ind]
+            
+            #finds nearest point to s1_point in s2_near
+            s2_nearest = None
+            min_dist = float('NaN')
+            for s2_point in s2_near:
+                dist = cost_function(s1_point, s2_point)
+                if dist < min_dist or min_dist != min_dist:
+                    min_dist = dist
+                    s2_nearest = s2_point
+            
+            #append difference to data dict
+            for dl1, dl2 in data_labels:
+                #import pdb; pdb.set_trace()
+                data[dl1].append(s1_point[dl1] - s2_nearest[dl2])
+        
+            #append lat/long/alt/time infor to data dict
+            for key in STD_LABELS:
+                #maybe translate the keys first?
+                data[key].append(s1_point[translate[key]])
+                key2 = key+"2"
+                data[key2].append(s2_nearest[translate[key2]])
+
+        data_df = pds.DataFrame(data=data)
+        return data_df
     
+def cost_function(point1, point2):
+    lat_diff = point1['latitude'] - point2['latitude']
+    long_diff = point1['longitude'] - point2['longitude']
+    return lat_diff*lat_diff + long_diff*long_diff
