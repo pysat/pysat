@@ -582,7 +582,6 @@ class Meta(object):
             meta[ 'name1', 'units' ]
         
         """
-
         # if key is a tuple, looking at index, column access pattern
         if isinstance(key, tuple):
             new_index = self.var_case_name(key[0])
