@@ -297,6 +297,23 @@ class Constellation(object):
                 indices = np.where((data2 >= minbound) & (data2 < maxbound))
                 s2_near = np.intersect1D(s2_near, indices)
 
+                if s2_near_ind == None:
+                    s2_near_ind = indices
+                else:
+                    s2_near_ind = np.intersect1d(s2_near_ind, indices)
+
+            #gets nearest data from indices
+            s2_near = [instrument2.data.iloc[ind] for ind in s2_near_ind]
+            
+            #finds nearest point to s1_point in s2_near
+            s2_nearest = None
+            min_dist = float('NaN')
+            for s2_point in s2_near:
+                dist = cost_function(s1_point, s2_point)
+                if dist < min_dist or min_dist != min_dist:
+                    min_dist = dist
+                    s2_nearest = s2_point
+>>>>>>> fixed accidental copy/paste of pseudocode into code
             
 
 
