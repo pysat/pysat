@@ -35,6 +35,8 @@ def geo2mag(incoord):
     Routine is generally verified as coarsely correct using 2010 values from
     http://wdc.kugi.kyoto-u.ac.jp/igrf/gggm/index.html.
     
+    Copied from https://stackoverflow.com/a/7949249
+    
     Examples
     --------
     mag =  geo2mag(np.array([[80.08],[287.789]]))
