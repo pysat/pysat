@@ -228,14 +228,7 @@ class Constellation(object):
                     s2_near_ind = indices
                 else:
                     s2_near_ind = np.intersect1d(s2_near_ind, indices)
-             Let row be an empty dict.
-            For dl1, dl2 in data_labels:
-                Append s1_point[dl1] - s2_nearest[dl2] to data[dl1].
-        
-            For key in STD_LABELS:
-                Append s1_point[translate[key]] to data[key]
-                key = key+"2"
-                Append s2_nearest[translate[key]] to data[key]
+
             #gets nearest data from indices
             s2_near = [instrument2.data.iloc[ind] for ind in s2_near_ind]
             
