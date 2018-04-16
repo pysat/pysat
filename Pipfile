@@ -14,6 +14,8 @@ pycodestyle = "*"
 coverage = "*"
 nose = "*"
 ipython = "*"
+numpydoc = "*"
+latex = "*"
 
 
 [packages]
