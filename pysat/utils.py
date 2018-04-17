@@ -78,7 +78,12 @@ def set_data_dir(path=None, store=None):
         
 
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='Epoch',
-                 units_label='units', name_label='long_name'):
+                 units_label='units', name_label='long_name', 
+                 notes_label='notes', desc_label='desc',
+                 plot_label='label', axis_label='axis', 
+                 scale_label='scale',
+                 min_label='value_min', max_label='value_max',
+                 fill_label='fill'):
                     # unix_time=False, **kwargs):
     """Load netCDF-3/4 file produced by pysat.
     
@@ -123,7 +128,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
             # build up dictionary with all global ncattrs
             # and add those attributes to a pysat meta object
             ncattrsList = data.ncattrs()
-            mdata = pysat.Meta(units_label=units_label, name_label=name_label)
+            mdata = pysat.Meta(units_label=units_label, name_label=name_label,
+                               notes_label=notes_label, desc_label=desc_label,
+                               plot_label=plot_label, axis_label=axis_label,
+                               scale_label=scale_label,
+                               min_label=min_label, max_label=max_label,
+                               fill_label=fill_label)
             for d in ncattrsList:
                 if hasattr(mdata, d):
                     mdata.__setattr__(d+'_', data.getncattr(d))
