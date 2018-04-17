@@ -603,7 +603,7 @@ class Meta(object):
             else:
                 raise KeyError('Key not found in MetaData')
 
-    def _label_setter(self, new_label, current_label, default=np.NaN, use_names_default=False):
+    def _label_setter(self, new_label, current_label, attr_label, default=np.NaN, use_names_default=False):
         """Generalized setter of default meta attributes
         
         Parameters
@@ -654,26 +654,11 @@ class Meta(object):
                     else:
                         self.data[new_label] = default
             # check higher order structures as well
+            # recursively change labels here
             for key in self.keys_nD():
-                if current_label in self[key].attrs():
-                    self[key].data.loc[:, new_label] = self[key].data.loc[:, current_label]
-                    self[key].data.drop(current_label, axis=1, inplace=True)
-                else:
-                    if self[key].has_attr(current_label):
-                        # there is something like label, wrong case though
-                        current_label = self[key].attr_case_name(current_label)
-                        self[key].data.loc[:, new_label] = self[key].data.loc[:, current_label]
-                        self[key].data.drop(current_label, axis=1, inplace=True)
-                    else:
-                        # there is no existing label
-                        # setting for the first time
-                        if use_names_default:
-                            self[key].data[new_label] = self[key].data.index
-                        else:
-                            self[key].data[new_label] = default
-                        # self[key].data[new_label] = default
-        # now update 'hidden' attribute value
+                setattr(self.ho_data[key], attr_label, new_label)
 
+        # now update 'hidden' attribute value
         current_label = new_label
 
     @property
@@ -718,34 +703,34 @@ class Meta(object):
              
     @units_label.setter   
     def units_label(self, new_label):
-        self._label_setter(new_label, self._units_label, '') 
+        self._label_setter(new_label, self._units_label, 'units_label', '') 
     @name_label.setter   
     def name_label(self, new_label):
-        self._label_setter(new_label, self._name_label, use_names_default=True)     
+        self._label_setter(new_label, self._name_label, 'name_label', use_names_default=True)     
     @notes_label.setter   
     def notes_label(self, new_label):
-        self._label_setter(new_label, self._notes_label, '')
+        self._label_setter(new_label, self._notes_label, 'notes_label', '')
     @desc_label.setter   
     def desc_label(self, new_label):
-        self._label_setter(new_label, self._desc_label, '')
+        self._label_setter(new_label, self._desc_label, 'desc_label', '')
     @plot_label.setter   
     def plot_label(self, new_label):
-        self._label_setter(new_label, self._plot_label, use_names_default=True)
+        self._label_setter(new_label, self._plot_label, 'plot_label', use_names_default=True)
     @axis_label.setter   
     def axis_label(self, new_label):
-        self._label_setter(new_label, self._axis_label, use_names_default=True)
+        self._label_setter(new_label, self._axis_label, 'axis_label', use_names_default=True)
     @scale_label.setter   
     def scale_label(self, new_label):
-        self._label_setter(new_label, self._scale_label, 'linear')
+        self._label_setter(new_label, self._scale_label, 'scale_label', 'linear')
     @min_label.setter   
     def min_label(self, new_label):
-        self._label_setter(new_label, self._min_label, np.NaN)
+        self._label_setter(new_label, self._min_label, 'min_label', np.NaN)
     @max_label.setter   
     def max_label(self, new_label):
-        self._label_setter(new_label, self._max_label, np.NaN)
+        self._label_setter(new_label, self._max_label, 'max_label', np.NaN)
     @fill_label.setter   
     def fill_label(self, new_label):
-        self._label_setter(new_label, self._fill_label, np.NaN)
+        self._label_setter(new_label, self._fill_label, 'fill_label', np.NaN)
 
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
@@ -882,6 +867,8 @@ class Meta(object):
                 if key in mdata:
                     raise RuntimeError('Duplicated keys (variable names) across '
                                         'Meta objects in keys_nD().')
+                                        
+        #TODO make sure labels between the two objects are the same
         # concat 1D metadata in data frames to copy of
         # current metadata
         for key in other.keys():
