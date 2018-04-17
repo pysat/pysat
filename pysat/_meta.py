@@ -659,7 +659,8 @@ class Meta(object):
                 setattr(self.ho_data[key], attr_label, new_label)
 
         # now update 'hidden' attribute value
-        current_label = new_label
+        # current_label = new_label
+        setattr(self, ''.join(('_',attr_label)), new_label)
 
     @property
     def units_label(self):
