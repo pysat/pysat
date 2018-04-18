@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+import warnings
 import numpy as np
 import pandas as pds
 # python 2/3 compatibility
@@ -405,14 +406,14 @@ class Meta(object):
         
         if isinstance(value, dict):
             # check if dict empty
-            # if value.keys() == []:
-            #     # null input, variable name provided but no metadata is actually
-            #     # included. Everything should be set to default.
-            #     if isinstance(name, basestring):
-            #         if name in self:
-            #             # variable already exists and we don't have anything
-            #             # new to add, just leave
-            #             return
+            if value.keys() == []:
+                # null input, variable name provided but no metadata is actually
+                # included. Everything should be set to default.
+                if isinstance(name, basestring):
+                    if name in self:
+                        # variable already exists and we don't have anything
+                        # new to add, just leave
+                        return
             #         # otherwise, continue on and set defaults
             #     else:
             #         new_name = []
@@ -532,12 +533,30 @@ class Meta(object):
                 new = DataFrame(value, index=name)
                 for item_name, item in new.iterrows():
                     if item_name not in self:
-                        self.data = self.data.append(item)
+                        # this lets data in that could break the system
+                        # when the user tries to modify metadata
+                        # self.data = self.data.append(item)
+                        # thus, instead we take a longer route
+                        # with the for loop below which adds everything one
+                        # by one
+                        new_item_name = item_name
                     else:
                         # info already exists, update with new info
                         new_item_name = self.var_case_name(item_name)
-                        for item_key in item.keys():
-                            self.data.loc[new_item_name, item_key] = item[item_key]
+                    # time to actually add the info
+                    for item_key in item.keys():
+                        # print ('new_item_name', new_item_name)
+                        # print ('item_key', item_key)
+                        # print ('item[item_key]', item[item_key])
+                        to_be_set = item[item_key]
+                        if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
+                            if isinstance(to_be_set[0], basestring):
+                                self.data.loc[new_item_name, item_key] = '\n\n'.join(to_be_set)
+                            else:
+                                warnings.warn(' '.join(('Array elements are disallowed in meta.',
+                                              'Dropping input :', item_key)))
+                        else:
+                            self.data.loc[new_item_name, item_key] = to_be_set
 
         elif isinstance(value, Series):
             # set data usind standard assignment via a dict
