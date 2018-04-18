@@ -1197,8 +1197,6 @@ class Instrument(object):
             Modified as needed for netCDf4
         
         """
-        print(coltype) #FIXME
-        print(mdata_dict['_FillValue']) #FIXME
         if (coltype == type(' ')) or (coltype == type(u' ')):
             remove = True
         # print ('coltype', coltype, remove, type(coltype), )
@@ -1373,8 +1371,6 @@ class Instrument(object):
                                          'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
                                          'Time_Scale':'UTC', 
                                          'MonoTon': int(data.is_monotonic)}   
-                        #print(key) #FIXME
-                        #print(export_meta[key]) #FIXME
                         new_dict = export_meta[key].to_dict()
                         new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                         # print ('top ', new_dict)
@@ -1406,7 +1402,6 @@ class Instrument(object):
                                              'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
                                              'Time_Scale':'UTC'} 
                                             # 'MonoTon': int(data.is_monotonic)}
-                            # print(export_meta[key]) #FIXME
                             new_dict = export_meta[key].to_dict()
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, 
@@ -1452,8 +1447,6 @@ class Instrument(object):
                                 break
 
                         for col in iterable:
-                            if(key=='ICON_L1_IVM_A_LLA'): #FIXME
-                                print('Col:', col) #FIXME
                             if is_frame:
                                 data, coltype, _ = self._get_data_info(self[key].iloc[data_loc][col], file_format)
                                 cdfkey = out_data.createVariable(key + '_' + col,
@@ -1521,7 +1514,6 @@ class Instrument(object):
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle) #, chunksizes=1)
-                        print(key) #FIXME
                         if datetime_flag:
                             #print('datetime flag')                            
                             new_dict = {}
@@ -1541,7 +1533,6 @@ class Instrument(object):
 
                         else:
                             new_dict = {}
-                            print(export_meta[key].data.to_dict()) #FIXME
                             # get name of data for metadata
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Depend_1'] =  obj_dim_names[-1]  
@@ -1583,6 +1574,5 @@ class Instrument(object):
                 if isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
             # print('adict', adict)
-            #print(export_meta) #FIXME
             out_data.setncatts(adict)
         return
