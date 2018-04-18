@@ -1203,6 +1203,10 @@ class Instrument(object):
             Modified as needed for netCDf4
         
         """
+        # Coerce boolean types to integers
+        for key in mdata_dict:
+            if type(mdata_dict[key]) == bool:
+                mdata_dict[key] = int(mdata_dict[key])
         if (coltype == type(' ')) or (coltype == type(u' ')):
             remove = True
         # print ('coltype', coltype, remove, type(coltype), )
@@ -1332,7 +1336,7 @@ class Instrument(object):
         file_format = 'NETCDF4'
         base_instrument = Instrument() if base_instrument is None else base_instrument
         if self._meta_translation_table is None:
-            export_meta = self.meta
+            export_meta = copy.deepcopy(self.meta)
         else:
             export_meta = self.generate_meta_for_export()
             print('Using Metadata Translation Table: ', self._meta_translation_table)
@@ -1378,6 +1382,7 @@ class Instrument(object):
                                          'Time_Scale':'UTC', 
                                          'MonoTon': int(data.is_monotonic)}   
                         new_dict = export_meta[key].to_dict()
+                        # print('coltype', coltype)
                         new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                         # print ('top ', new_dict)
                         cdfkey.setncatts(new_dict)
