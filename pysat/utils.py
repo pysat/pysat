@@ -17,7 +17,7 @@ def computational_form(data):
     """
     Input Series of numbers, Series, or DataFrames repackaged
     for calculation.
-    
+
     Parameters
     ----------
     data : pandas.Series
@@ -27,11 +27,11 @@ def computational_form(data):
     -------
     pandas.Series, DataFrame, or Panel
         repacked data, aligned by indices, ready for calculation
-        
     """
 
     if isinstance(data.iloc[0], DataFrame):
-        dslice = Panel.from_dict(dict([(i,data.iloc[i]) for i in xrange(len(data))]))
+        dslice = Panel.from_dict(dict([(i,data.iloc[i])
+                                       for i in xrange(len(data))]))
     elif isinstance(data.iloc[0], Series):
         dslice = DataFrame(data.tolist())
         dslice.index = data.index
@@ -42,15 +42,13 @@ def computational_form(data):
 def set_data_dir(path=None, store=None):
     """
     Set the top level directory pysat uses to look for data and reload.
-    
+
     Parameters
     ----------
     path : string
         valid path to directory pysat uses to look for data
     store : bool
         if True, store data directory for future runs
-        
-        
     """
     import sys
     import os
@@ -68,20 +66,20 @@ def set_data_dir(path=None, store=None):
         store = True    
     if os.path.isdir(path):
         if store:
-            with open(os.path.join(os.path.expanduser('~'), '.pysat', 'data_path.txt'), 'w') as f:
+            with open(os.path.join(os.path.expanduser('~'), '.pysat',
+                                   'data_path.txt'), 'w') as f:
                 f.write(path)
         pysat.data_dir = path
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
     else:
         raise ValueError('Path does not lead to a valid directory.')
-        
 
-def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='Epoch',
-                 units_label='units', name_label='long_name'):
-                    # unix_time=False, **kwargs):
+def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
+                 epoch_name='Epoch', units_label='units',
+                 name_label='long_name'): # unix_time=False, **kwargs):
     """Load netCDF-3/4 file produced by pysat.
-    
+
     Parameters
     ----------
     fnames : string or array_like of strings
@@ -99,7 +97,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
     mdata : pysat._meta.Meta
         Meta data
     """
-                    
     import netCDF4
     import string
     import pysat
@@ -129,12 +126,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                     mdata.__setattr__(d+'_', data.getncattr(d))
                 else:
                     mdata.__setattr__(d, data.getncattr(d))
-               
+
             # loadup all of the variables in the netCDF
             loadedVars = {}
             for key in data.variables.keys():
-                # load up metadata
-                # from here group unique dimensions and act accordingly, 1D, 2D, 3D  
+                # load up metadata.  From here group unique 
+                # dimensions and act accordingly, 1D, 2D, 3D  
                 if len(data.variables[key].dimensions) == 1:
                     # load 1D data variable
                     # assuming basic time dimension
@@ -149,6 +146,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                     # part of dataframe within dataframe
                     two_d_keys.append(key)
                     two_d_dims.append(data.variables[key].dimensions)
+
                 if len(data.variables[key].dimensions) == 3:
                     # part of full/dedicated dataframe within dataframe
                     three_d_keys.append(key)
@@ -197,6 +195,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                     for nc_key in data.variables[key].ncattrs():
                         meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
                     dim_meta_data[clean_key] = meta_dict
+
                 # print (dim_meta_data)
                 mdata[obj_key_name] = dim_meta_data 
                 
@@ -246,13 +245,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
                 # print (loop_frame.columns)
-                
                         
-                # add 2D object data, all based on a unique dimension within netCDF,
-                # to loaded data dictionary
+                # add 2D object data, all based on a unique dimension within
+                # netCDF, to loaded data dictionary
                 loadedVars[obj_key_name] = loop_list
                 del loop_list
-
 
             # we now have a list of keys that need to go into a dataframe,
             # could be more than one, collect unique dimensions for 2D keys
@@ -317,14 +314,16 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
             # prepare dataframe index for this netcdf file
             time_var = loadedVars.pop(epoch_name)
 
-            # convert from GPS seconds to seconds used in pandas (unix time, no leap)
+            # convert from GPS seconds to seconds used in pandas (unix time,
+            # no leap)
             #time_var = convert_gps_to_unix_seconds(time_var)
             if file_format == 'NETCDF4':
-                loadedVars[epoch_name] = pds.to_datetime((1E6*time_var).astype(int))
+                loadedVars[epoch_name] = pds.to_datetime((1E6 *
+                                                          time_var).astype(int))
             else:
-                loadedVars[epoch_name] = pds.to_datetime((time_var*1E6).astype(int))
+                loadedVars[epoch_name] = pds.to_datetime((time_var *
+                                                          1E6).astype(int))
             #loadedVars[epoch_name] = pds.to_datetime((time_var*1E6).astype(int))
-            
             running_store.append(loadedVars)
             running_idx += len(loadedVars[epoch_name])
 
@@ -332,8 +331,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                 if saved_mdata is None:
                     saved_mdata = copy.deepcopy(mdata)
                 elif (mdata != saved_mdata):
-                    raise ValueError('Metadata across filenames is not the same.')
-                    
+                    raise ValueError('Metadata across filenames is not the ' +
+                                     'same.')
+
     # combine all of the data loaded across files together
     out = []
     for item in running_store:
@@ -348,7 +348,8 @@ def getyrdoy(date):
     try:
         doy = date.toordinal()-datetime(date.year,1,1).toordinal()+1
     except AttributeError:
-        raise AttributeError("Must supply a pandas datetime object or equivalent")
+        raise AttributeError("Must supply a pandas datetime object or " +
+                             "equivalent")
     else:
         return date.year, doy
 
@@ -356,13 +357,14 @@ def getyrdoy(date):
 def season_date_range(start, stop, freq='D'):
     """
     Return array of datetime objects using input frequency from start to stop
-    
+
     Supports single datetime object or list, tuple, ndarray of start and 
     stop dates.
-    
-    freq codes correspond to pandas date_range codes, D daily, M monthly, S secondly
+
+    freq codes correspond to pandas date_range codes, D daily, M monthly,
+    S secondly
     """
-    
+
     if hasattr(start, '__iter__'):  
         # missing check for datetime
         season = pds.date_range(start[0], stop[0], freq=freq)
@@ -403,11 +405,10 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     Returns
     -------
         Pandas timeseries index.
-        
+
     Note
     ----
     Leap seconds have no meaning here.
-        
     """
     # need a timeseries index for storing satellite data in pandas but
     # creating a datetime object for everything is too slow
@@ -426,7 +427,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         month = np.ones(len(year), dtype=int)
     else:
         month = month.astype(int)
-        
+
     if uts is None:
         uts = np.zeros(len(year))
     if day is None:
@@ -441,13 +442,14 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     idx2 = np.hstack((idx,len(year)+1))   
     # computes UTC seconds offset for each unique set of year and month
     for _idx,_idx2 in zip(idx[1:],idx2[2:]):
-        temp = (datetime(year[_idx],month[_idx],1) - datetime(year[0],month[0],1))
+        temp = (datetime(year[_idx],month[_idx],1)
+                - datetime(year[0],month[0],1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
     uts_del += (day-1)*86400
     # add in seconds since unix epoch to first day
-    uts_del += (datetime(year[0],month[0],1)-datetime(1970,1,1) ).total_seconds()
+    uts_del += (datetime(year[0],month[0],1)-datetime(1970,1,1)).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)
