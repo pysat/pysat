@@ -214,12 +214,14 @@ class TestAdditionSingleInstrument:
 
 class TestDifferenceSmallInstruments:
     def setup(self):
-        self.const = pysat.Constellation(name='testdiff')
+        self.const = pysat.Constellation(name='test_diff_small')
 
     def teardown(self):
         del self.const
 
     def test_diff(self):
+        for c in self.const:
+            c.load(date=pysat.datetime(2008,1,1))
         results = self.const.difference(self.const[0], self.const[1], 
                 [('dummy1','dummy1')])
         diff = results['dummy1']

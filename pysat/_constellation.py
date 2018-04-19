@@ -1,6 +1,7 @@
 import collections
 import importlib
 import numpy as np
+import pandas as pds
 from pysat.ssnl.avg import _calc_2d_median
 
 class Constellation(object):
@@ -40,7 +41,7 @@ class Constellation(object):
 
         return output_str
 
-    def set_bounds(self, start, stop)
+    def set_bounds(self, start, stop):
         """
         Sets boundaries for all instruments in constellation
         """
@@ -281,27 +282,26 @@ class Constellation(object):
 
         Created as part of a Spring 2018 UTDesign project.
         """
-        numPoints1 = instrument1.data[data_labels[0][0]]
-        numPoints2 = instrument2.data[data_labels[1][0]]
-        for i in range(len(numPoints)):
-            #gets instrument1 data point
-            s1_point = [instrument1.data[dl[0]][i] for dl in data_labels]
-            
-            #gets indices of points in instrument2 within the given bounds
-            #b = (min, max, label)
-            s2_near = np.arange(numPoints2)
-            for b in bounds:
-                data2 = instrument2.data[b[2]]
-                minbound = b[0]
-                maxbound = b[1]
-                indices = np.where((data2 >= minbound) & (data2 < maxbound))
-                s2_near = np.intersect1D(s2_near, indices)
+        translate = {"time":"mlt", "time2":"mlt",
+                    "long":"longitude", "long2":"longitude",
+                    "lat":"latitude", "lat2":"latitude"}
+                    #"alt":"altitude", "alt2":"altitude"}
 
-                if s2_near_ind == None:
-                    s2_near_ind = indices
-                else:
-                    s2_near_ind = np.intersect1d(s2_near_ind, indices)
+        bounds = [("longitude", "longitude", 10),
+                ("latitude", "latitude", 10),
+                ("mlt", "mlt", 10)]
+
+        STD_LABELS = ("time", "lat", "long") #, "alt")
+        labels = [dl1 for dl1, dl2 in data_labels] + [t for t in STD_LABELS] + [t+"2" for t in STD_LABELS]
+        labels.append("cost")
+        data = {label:[] for label in labels}
+
+        for i, s1_point in instrument1.data.iterrows():
+            print(i)
+            #gets indices of points in instrument2 within the given bounds
+            #b = (label1, label2, max_distance)
             s2_near = instrument2.data
+           
             for b in bounds:
                 label1 = b[0]
                 label2 = b[1]
@@ -314,39 +314,29 @@ class Constellation(object):
                 indices = np.where((s2_data >= minbound) & (s2_data < maxbound))
                 s2_near = s2_near.iloc[indices]
                 
-
-            #gets nearest data from indices
-            #s2_near = [instrument2.data.iloc[ind] for ind in s2_near_ind]
-            
             #finds nearest point to s1_point in s2_near
             s2_nearest = None
             min_dist = float('NaN')
-            for s2_point in s2_near:
+            for j, s2_point in s2_near.iterrows():
+                #import pdb; pdb.set_trace()
                 dist = cost_function(s1_point, s2_point)
                 if dist < min_dist or min_dist != min_dist:
                     min_dist = dist
                     s2_nearest = s2_point
             
-<<<<<<< HEAD
-
-
-        
-    
-=======
             #append distance between points to data
             data['cost'].append(min_dist)
             
             #append difference to data dict
             for dl1, dl2 in data_labels:
                 #import pdb; pdb.set_trace()
-                if s2_nearest:
+                if s2_nearest is not None:
                     data[dl1].append(s1_point[dl1] - s2_nearest[dl2])
                 else:
                     data[dl1].append(float('Nan'))
 
             #append lat/long/alt/time infor to data dict
             for key in STD_LABELS:
-                #maybe translate the keys first?
                 data[key].append(s1_point[translate[key]])
                 key2 = key+"2"
                 data[key2].append(s2_nearest[translate[key2]])
@@ -360,4 +350,3 @@ def cost_function(point1, point2):
     lat_diff = point1['latitude'] - point2['latitude']
     long_diff = point1['longitude'] - point2['longitude']
     return lat_diff*lat_diff + long_diff*long_diff
->>>>>>> added diff test, test constellations
