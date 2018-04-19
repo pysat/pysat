@@ -301,9 +301,22 @@ class Constellation(object):
                     s2_near_ind = indices
                 else:
                     s2_near_ind = np.intersect1d(s2_near_ind, indices)
+            s2_near = instrument2.data
+            for b in bounds:
+                label1 = b[0]
+                label2 = b[1]
+                s1_val = s1_point[label1]
+                max_dist = b[2]
+                minbound = s1_val - max_dist
+                maxbound = s1_val + max_dist
+                
+                s2_data = s2_near[label2]
+                indices = np.where((s2_data >= minbound) & (s2_data < maxbound))
+                s2_near = s2_near.iloc[indices]
+                
 
             #gets nearest data from indices
-            s2_near = [instrument2.data.iloc[ind] for ind in s2_near_ind]
+            #s2_near = [instrument2.data.iloc[ind] for ind in s2_near_ind]
             
             #finds nearest point to s1_point in s2_near
             s2_nearest = None
@@ -314,7 +327,37 @@ class Constellation(object):
                     min_dist = dist
                     s2_nearest = s2_point
             
+<<<<<<< HEAD
 
 
         
     
+=======
+            #append distance between points to data
+            data['cost'].append(min_dist)
+            
+            #append difference to data dict
+            for dl1, dl2 in data_labels:
+                #import pdb; pdb.set_trace()
+                if s2_nearest:
+                    data[dl1].append(s1_point[dl1] - s2_nearest[dl2])
+                else:
+                    data[dl1].append(float('Nan'))
+
+            #append lat/long/alt/time infor to data dict
+            for key in STD_LABELS:
+                #maybe translate the keys first?
+                data[key].append(s1_point[translate[key]])
+                key2 = key+"2"
+                data[key2].append(s2_nearest[translate[key2]])
+
+        data_df = pds.DataFrame(data=data)
+        return data_df
+    
+def cost_function(point1, point2):
+    #TODO: actually do lat/long difference correctly.
+    #alternatively, let the user supply a cost function.
+    lat_diff = point1['latitude'] - point2['latitude']
+    long_diff = point1['longitude'] - point2['longitude']
+    return lat_diff*lat_diff + long_diff*long_diff
+>>>>>>> added diff test, test constellations
