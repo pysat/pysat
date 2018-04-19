@@ -1,13 +1,10 @@
-<<<<<<< HEAD
 import collections
 import importlib
 import numpy as np
 import pandas as pds
 from pysat.ssnl.avg import _calc_2d_median
-=======
 import numpy as np
 import pandas as pds
->>>>>>> ad431a51d65cb90d09702fce94df3700508fc60d
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
