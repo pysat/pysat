@@ -210,3 +210,14 @@ class TestAdditionSingleInstrument:
         for i in med:
             assert  i == 5
 
+    # TODO write tests for add, difference.
+
+class TestDifferenceSmallInst:
+    def setup(self):
+        self.const = pysat.Constellation(name='testdiff')
+
+    def teardown(self):
+        del self.const
+
+    def test_diff(self):
+        

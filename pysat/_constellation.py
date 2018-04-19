@@ -313,7 +313,6 @@ class Constellation(object):
                 if dist < min_dist or min_dist != min_dist:
                     min_dist = dist
                     s2_nearest = s2_point
->>>>>>> fixed accidental copy/paste of pseudocode into code
             
 
 
