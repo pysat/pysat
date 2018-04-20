@@ -317,6 +317,10 @@ class Instrument(object):
         # gives information about how to label metadata for netcdf export
         # if None, pysat metadata labels will be used
         self._meta_translation_table = None
+        # Create a placeholder for a post-processing function to be applied
+        # to the metadata dictionary before export. If None, no post-processing
+        # will occur
+        self._export_meta_post_processing = None
 
         # store kwargs, passed to load routine
         self.kwargs = kwargs
@@ -1172,6 +1176,50 @@ class Instrument(object):
             else:
                 self.load(fname=self._iter_list[-1], verifyPad=verifyPad)
 
+    def _get_var_type_code(self, coltype):
+        '''Determines the two-character type code for a given variable type
+
+        Parameters
+        ----------
+        coltype : type or np.dtype
+            The type of the variable
+
+        Returns
+        -------
+        str
+            The variable type code for the given type'''
+
+        if type(coltype) is np.dtype:
+            var_type = coltype.kind + str(coltype.itemsize)
+            return var_type
+        else:
+            if coltype is np.int64:
+                return 'i8'
+            elif coltype is np.int32:
+                return 'i4'
+            elif coltype is np.int16:
+                return 'i2'
+            elif coltype is np.int8:
+                return 'i1'
+            elif coltype is np.uint64:
+                return 'u8'
+            elif coltype is np.uint32:
+                return 'u4'
+            elif coltype is np.uint16:
+                return 'u2'
+            elif coltype is np.uint8:
+                return 'u1'
+            elif coltype is np.float64:
+                return 'f8'
+            elif coltype is np.float32:
+                return 'f4'
+            elif coltype in [str, unicode]:
+                return 'S1'
+            else:
+                raise TypeError('Unknown Variable Type' + str(coltype))
+
+
+
     def _get_data_info(self, data, file_format):
         """Support file writing by determiniing data type and other options
 
@@ -1271,8 +1319,64 @@ class Instrument(object):
         return mdata_dict
 
     def generic_meta_translator(self, meta_to_translate):
-        #TODO: Implement generic translation
-        return meta.to_dict()
+        '''Translates the metadate contained in an object into a dictionary
+        suitable for export.
+
+        Parameters
+        ----------
+        meta_to_translate : Meta
+            The metadata object to translate
+
+        Returns
+        -------
+        dict
+            A dictionary of the metadata for each variable of an output file
+            e.g. netcdf4'''
+        export_dict = {}
+        if self._meta_translation_table is not None:
+            # Create a translation table for the actual values of the meta labels.
+            # The instrument specific translation table only stores the names of the
+            # attributes that hold the various meta labels
+            translation_table = {}
+            for key in self._meta_translation_table:
+                translation_table[getattr(self, key)] = self._meta_translation_table[key]
+        else:
+            translation_table = None
+        #First Order Data
+        for key in meta_to_translate.data.index:
+            if translation_table is None:
+                export_dict[key] = meta_to_translate.data.loc[key].to_dict()
+            else:
+                # Translate each key if a translation is provided
+                export_dict[key] = {}
+                meta_dict = meta_to_translate.data.loc[key].to_dict()
+                for original_key in meta_dict:
+                    if original_key in translation_table:
+                        for translated_key in translation_table[original_key]:
+                            export_dict[key][translated_key] = meta_dict[original_key]
+                    else:
+                        export_dict[key][original_key] = meta_dict[original_key]
+
+
+        #Higher Order Data
+        for key in meta_to_translate.ho_data:
+            if key not in export_dict:
+                export_dict[key] = {}
+            for ho_key in meta_to_translate.ho_data[key].data.index:
+                if translation_table is None:
+                    export_dict[key+'_'+ho_key] = meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
+                else:
+                    #Translate each key if a translation is provided
+                    export_dict[key+'_'+ho_key] = {}
+                    meta_dict = meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
+                    for original_key in meta_dict:
+                        if original_key in translation_table:
+                            for translated_key in translation_table[original_key]:
+                                export_dict[key+'_'+ho_key][translated_key] = meta_dict[original_key]
+                        else:
+                            export_dict[key+'_'+ho_key][original_key] = meta_dict[original_key]
+
+        return export_dict
 
     def generate_meta_for_export(self, meta_to_translate=None):
         '''Generates a copy of the instrument metadata object converted to the defined
@@ -1335,7 +1439,7 @@ class Instrument(object):
         
  
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
-                   zlib=False, complevel=4, shuffle=True, translator=None):
+                   zlib=False, complevel=4, shuffle=True):
         """Stores loaded data into a netCDF3/4 file.
         
         Parameters
@@ -1382,11 +1486,21 @@ class Instrument(object):
 
         file_format = 'NETCDF4'
         base_instrument = Instrument() if base_instrument is None else base_instrument
-        if translator is None:
-            export_meta = self.generic_meta_translator(self.meta)
+        export_meta = self.generic_meta_translator(self.meta)
+        if self._meta_translation_table is None:
+            export_name_labels = [self.name_label]
+            export_units_labels = [self.units_label]
+            export_desc_labels = [self.desc_label]
+            export_notes_labels = [self.notes_label]
         else:
-            export_meta = translator(self.meta) 
+            export_name_labels = self._meta_translation_table['name_label']
+            export_units_labels = self._meta_translation_table['units_label']
+            export_desc_labels = self._meta_translation_table['desc_label']
+            export_notes_labels = self._meta_translation_table['notes_label']
             print('Using Metadata Translation Table: ', self._meta_translation_table)
+        # Apply instrument specific post-processing to the export_meta
+        if hasattr(self._export_meta_post_processing, '__call__'):
+                export_meta = self._export_meta_post_processing(export_meta)
 
         with netCDF4.Dataset(fname, mode='w', format=file_format) as out_data:
 
@@ -1399,11 +1513,18 @@ class Instrument(object):
                                              zlib=zlib,
                                              complevel=complevel,
                                              shuffle=shuffle) #, chunksizes=1)
-            #new_dict = {}
-            #new_dict[export_meta.name_label] = epoch_name
-            #new_dict[export_meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
-            #new_dict['calendar'] = 'standard'
-            cdfkey.setncatts(export_meta[epoch_name])
+            new_dict = {}
+            for export_name_label in export_name_labels:
+                new_dict[export_name_label] = epoch_name
+            for export_units_label in export_units_labels:
+                new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+            new_dict['calendar'] = 'standard'
+            new_dict['Var_Type'] = 'i8'
+            for export_desc_label in export_desc_labels:
+                new_dict[export_desc_label] = ''
+            for export_notes_label in export_notes_labels:
+                new_dict[export_notes_label] = ''
+            cdfkey.setncatts(new_dict)
             cdfkey[:] = (self.data.index.values.astype(np.int64) *
                          1.E-6).astype(np.int64)
                             
@@ -1426,12 +1547,13 @@ class Instrument(object):
                     # attach any meta data, after filtering for standards
                     try:
                         # attach dimension metadata
-                        # export_meta[key]= {'Depend_0':epoch_name ,  
-                        #                    'Display_Type':'Time Series',
-                        #                    'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
-                        #                    'Time_Scale':'UTC', 
-                        #                    'MonoTon': int(data.is_monotonic)}   
                         new_dict = export_meta[key]
+                        new_dict['Depend_0'] = epoch_name
+                        new_dict['Display_Type'] = 'Time Series'
+                        new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
+                        new_dict['Time_Scale'] = 'UTC'
+                        new_dict['MonoTon'] =  int(data.is_monotonic) 
+                        new_dict['Var_Type'] = self._get_var_type_code(coltype)
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
                         # print ('top ', new_dict)
@@ -1456,13 +1578,14 @@ class Instrument(object):
                         try:
                             # attach dimension metadata
                         # attach dimension metadata
-                            # export_meta[key]= {'Depend_0':epoch_name ,  
-                            #                 'Display_Type':'Time Series',
-                            #                 'Time_Base':'Milliseconds since 1970-1-1 00:00:00',
-                            #                 'Time_Scale':'UTC'} 
-                                            # 'MonoTon': int(data.is_monotonic)}
-                            
                             new_dict = export_meta[key]
+                            new_dict['Depend_0'] = epoch_name
+                            new_dict['Display_Type'] = 'Time Series'
+                            new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
+                            new_dict['Time_Scale'] = 'UTC'
+                            new_dict['MonoTon'] = int(data.is_monotonic)
+                            new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                            
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, \
                                                         coltype, remove=True)
@@ -1523,11 +1646,12 @@ class Instrument(object):
 
                                 # attach any meta data
                                 try:
-                                    # export_meta[key][col] = {'Depend_0':epoch_name,
-                                    #                          'Depend_1': obj_dim_names[-1],  
-                                    #                          'Display_Type':'Spectogram'}   
+                                    new_dict = export_meta[key+'_'+col]
+                                    new_dict['Depend_0'] = epoch_name
+                                    new_dict['Depend_1'] = obj_dim_names[-1]
+                                    new_dict['Display_Type'] = 'Spectogram'            
+                                    new_dict['Var_Type'] = self._get_var_type_code(coltype)
                                     # print('Frame Writing ', key, col, export_meta[key][col])
-                                    new_dict = export_meta[key][col]
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # print ('mid2 ', new_dict)
                                     cdfkey.setncatts(new_dict)
@@ -1554,10 +1678,11 @@ class Instrument(object):
                                                                 shuffle=shuffle) #, chunksizes=1)
                                 # attach any meta data
                                 try:
-                                    # export_meta[key] = {'Depend_0':epoch_name,
-                                    #                     'Depend_1': obj_dim_names[-1],  
-                                    #                     'Display_Type':'Profile'}   
                                     new_dict = export_meta[key]
+                                    new_dict['Depend_0'] = epoch_name
+                                    new_dict['Depend_1'] =  obj_dim_names[-1]
+                                    new_dict['Display_Type'] = 'Profile' 
+                                    new_dict['Var_Type'] = self._get_var_type_code(coltype)
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # really attach metadata now
                                     # print ('mid3 ', new_dict)
@@ -1583,13 +1708,15 @@ class Instrument(object):
                                                          shuffle=shuffle) #, chunksizes=1)
                         if datetime_flag:
                             #print('datetime flag')                            
-                            # new_dict = export_meta[key]
-                            # new_dict['Depend_0'] = epoch_name
-                            # new_dict['Depend_1'] =  obj_dim_names[-1]  
-                            # new_dict['Display_Type'] = 'Time Series'  
-                            # new_dict[export_meta.name_label] = epoch_name
-                            # new_dict[export_meta.units_label] = 'Milliseconds since 1970-1-1 00:00:00'
                             new_dict = export_meta[key]
+                            new_dict['Depend_0'] = epoch_name
+                            new_dict['Depend_1'] =  obj_dim_names[-1]  
+                            new_dict['Display_Type'] = 'Time Series'  
+                            new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                            for export_name_label in export_name_labels:
+                                new_dict[export_name_label] = epoch_name
+                            for export_units_label in export_units_labels:
+                                new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
                             new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                             # print ('mid4 ', new_dict)
                             cdfkey.setncatts(new_dict)
@@ -1605,13 +1732,16 @@ class Instrument(object):
                         else:
                             new_dict = export_meta[key]
                             # get name of data for metadata
-                            # new_dict['Depend_0'] = epoch_name
-                            # new_dict['Depend_1'] =  obj_dim_names[-1]  
-                            # new_dict['Display_Type'] = 'Time Series'  
-                            # if self[key].iloc[data_loc].index.name is not None:
-                                # new_dict[export_meta.name_label] = self[key].iloc[data_loc].index.name
-                            # else:
-                                # new_dict[export_meta.name_label] = key
+                            new_dict['Depend_0'] = epoch_name
+                            new_dict['Depend_1'] =  obj_dim_names[-1]  
+                            new_dict['Display_Type'] = 'Time Series'  
+                            new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                            if self[key].iloc[data_loc].index.name is not None:
+                                for export_name_label in export_name_labels:
+                                    new_dict[export_name_label] = self[key].iloc[data_loc].index.name
+                            else:
+                                for export_name_label in export_name_labels:
+                                    new_dict[export_name_label] = key
                             new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                             # print ('mid5 ', new_dict)
                             cdfkey.setncatts(new_dict)
@@ -1622,6 +1752,7 @@ class Instrument(object):
                             cdfkey[:, :] = temp_cdf_data.astype(coltype)
                             
             # store any non standard attributes
+
             base_attrb = dir(base_instrument)
             this_attrb = dir(self)
             
@@ -1636,9 +1767,10 @@ class Instrument(object):
             for key in this_attrb:
                 if key not in base_attrb:
                     if key[0] != '_':
-                        adict[key] = export_meta.__getattribute__(key)
+                        adict[key] = self.meta.__getattribute__(key)
             adict['pysat_version'] = pysat.__version__
             adict['Conventions'] = 'CF-1.6'
+            adict['Text_Supplement'] = ''
 
             # check for binary types
             for key in adict.keys():

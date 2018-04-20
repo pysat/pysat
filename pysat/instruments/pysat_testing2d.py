@@ -15,9 +15,18 @@ meta = pysat.Meta()
 meta['uts'] = {'units':'s', 'long_name':'Universal Time'}
 meta['mlt'] = {'units':'hours', 'long_name':'Magnetic Local Time'}
 meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
+meta['longitude'] = {'units':'degrees', 'long_name':'Longitude'}
+meta['latitude'] = {'units':'degrees', 'long_name':'Latitude'}
+meta['series_profiles'] = {'units':'', 'long_name':'series'}
 profile_meta = pysat.Meta()
 profile_meta['density'] = {'units':'', 'long_name':'profiles'}
+profile_meta['dummy_str'] = {'units':'', 'long_name':'profiles'}
+profile_meta['dummy_ustr'] = {'units':'', 'long_name':'profiles'}
 meta['profiles'] = profile_meta
+alt_profile_meta = pysat.Meta()
+alt_profile_meta['density'] = {'units':'', 'long_name':'profiles'}
+alt_profile_meta['fraction'] = {'units':'', 'long_name':'profiles'}
+meta['alt_profiles'] = alt_profile_meta
 
 
 def init(self):
