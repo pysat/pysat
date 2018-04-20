@@ -1213,7 +1213,7 @@ class Instrument(object):
                 return 'f8'
             elif coltype is np.float32:
                 return 'f4'
-            elif coltype in [str, unicode]:
+            elif issubclass(coltype, basestring):
                 return 'S1'
             else:
                 raise TypeError('Unknown Variable Type' + str(coltype))
