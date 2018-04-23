@@ -242,7 +242,7 @@ class TestDifferenceSimilarInstruments:
     def teardown(self):
         del self.const
 
-    def test_diff_similar_instruments():
+    def test_diff_similar_instruments(self):
         for c in self.const:
             c.load(date=pysat.datetime(2008,1,1))
         results = self.const.difference(self.const[0], self.const[1], 
