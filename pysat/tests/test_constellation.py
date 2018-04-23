@@ -212,9 +212,9 @@ class TestAdditionSingleInstrument:
 
     # TODO write tests for add, difference.
 
-class TestDifferenceSmallInstruments:
+class TestDifferenceSameInstrument:
     def setup(self):
-        self.const = pysat.Constellation(name='test_diff_small')
+        self.const = pysat.Constellation(name='test_diff')
 
     def teardown(self):
         del self.const
@@ -225,5 +225,32 @@ class TestDifferenceSmallInstruments:
         results = self.const.difference(self.const[0], self.const[1], 
                 [('dummy1','dummy1')])
         diff = results['dummy1']
+        dist = results['dist']
         for i in diff:
             assert i == 0
+        for i in dist:
+            assert i == 0
+
+class TestDifferenceSmallInstruments(TestDifferenceSameInstrument):
+    def setup(self):
+        self.const = pysat.Constellation(name='test_diff_small')
+
+class TestDifferenceSimilarInstruments:
+    def setup(self):
+        self.const = pysat.Constellation(name='test_diff2')
+
+    def teardown(self):
+        del self.const
+
+    def test_diff_similar_instruments():
+        for c in self.const:
+            c.load(date=pysat.datetime(2008,1,1))
+        results = self.const.difference(self.const[0], self.const[1], 
+                [('dummy1','dummy1')])
+        diff = results['dummy1']
+        dist = results['dist']
+        for i in diff:
+            assert i == 5
+
+
+

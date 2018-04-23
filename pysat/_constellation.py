@@ -467,12 +467,12 @@ class Constellation(object):
                     "lat":"latitude", "lat2":"latitude"}
                     #"alt":"altitude", "alt2":"altitude"}
 
-        bounds = [("longitude", "longitude", 10),
-                ("latitude", "latitude", 10),
-                ("mlt", "mlt", 10)]
+        bounds = [("longitude", "longitude", .5),
+                ("latitude", "latitude", .5),
+                ("mlt", "mlt", .1)]
         
         STD_LABELS = ("time", "lat", "long")#, "alt")
-        labels = [dl1 for dl1, dl2 in data_labels] + [t for t in STD_LABELS] + [t+"2" for t in STD_LABELS]
+        labels = [dl1 for dl1, dl2 in data_labels] + [t for t in STD_LABELS] + [t+"2" for t in STD_LABELS] + ['dist']
         data = {label:[] for label in labels}
 
         for i, s1_point in instrument1.data.iterrows():
@@ -480,7 +480,7 @@ class Constellation(object):
             #gets indices of points in instrument2 within the given bounds
             #b = (label1, label2, max_distance)
             
-            s2_near_ind = None
+            s2_near = instrument2.data
             for b in bounds:
                 label1 = b[0]
                 label2 = b[1]
@@ -489,36 +489,37 @@ class Constellation(object):
                 minbound = s1_val - max_dist
                 maxbound = s1_val + max_dist
 
-                data2 = instrument2.data[label2]
+                data2 = s2_near[label2]
                 indices = np.where((data2 >= minbound) & (data2 < maxbound))
-                if s2_near_ind == None:
-                    s2_near_ind = indices
-                else:
-                    s2_near_ind = np.intersect1d(s2_near_ind, indices)
+                s2_near = s2_near.iloc[indices]
 
             #gets nearest data from indices
-            s2_near = [instrument2.data.iloc[ind] for ind in s2_near_ind]
+            #s2_near = [instrument2.data.iloc[ind] for ind in s2_near_ind]
             
             #finds nearest point to s1_point in s2_near
             s2_nearest = None
             min_dist = float('NaN')
-            for s2_point in s2_near:
+            for j, s2_point in s2_near.iterrows():
                 dist = cost_function(s1_point, s2_point)
                 if dist < min_dist or min_dist != min_dist:
                     min_dist = dist
                     s2_nearest = s2_point
             
+            data['dist'].append(min_dist)
+
             #append difference to data dict
             for dl1, dl2 in data_labels:
-                #import pdb; pdb.set_trace()
-                data[dl1].append(s1_point[dl1] - s2_nearest[dl2])
-        
+                if s2_nearest is not None:
+                    data[dl1].append(s1_point[dl1] - s2_nearest[dl2])
+                else:
+                    data[dl1].append(float('NaN'))
+
             #append lat/long/alt/time infor to data dict
             for key in STD_LABELS:
-                #maybe translate the keys first?
                 data[key].append(s1_point[translate[key]])
-                key2 = key+"2"
-                data[key2].append(s2_nearest[translate[key2]])
+                if s2_nearest is not None:
+                    key2 = key+"2"
+                    data[key2].append(s2_nearest[translate[key2]])
 
         data_df = pds.DataFrame(data=data)
         return data_df

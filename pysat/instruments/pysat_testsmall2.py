@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Produces fake instrument data for testing.
+Adapted from existing pysat testing instrument, but has fewer (100) rows
 """
 
 import pandas as pds
