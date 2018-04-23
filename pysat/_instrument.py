@@ -1378,42 +1378,6 @@ class Instrument(object):
 
         return export_dict
 
-    def generate_meta_for_export(self, meta_to_translate=None):
-        '''Generates a copy of the instrument metadata object converted to the defined
-        export format of the instrument
-        
-        Parameters
-        ----------
-        meta_to_translate : Meta (optional)
-            The metadata object to translate. If none provided, used the metadata
-            object of the instrument.
-        
-        Returns
-        -------
-        Meta
-            PySat metadata object translated into export format
-        '''
-        if meta_to_translate is None:
-            export_meta = copy.deepcopy(self.meta)
-        else:
-            export_meta = copy.deepcopy(meta_to_translate)
-        for property_name, labels in self._meta_translation_table.iteritems():
-            # Use the provided property name to rename the metadata parameter
-            setattr(export_meta, property_name, labels[0])
-            # If multiple export labels correspond to a single property, duplicate
-            for label in labels[1:]:
-                export_meta.data.loc[:, label] = export_meta.data.loc[:, labels[0]]
-            # perform translation for all ho data as well
-            for ho_key in export_meta.ho_data:
-                for property_name, labels in self._meta_translation_table.iteritems():
-                    # Use the provided property name to rename the metadata parameter
-                    setattr(export_meta.ho_data[ho_key], property_name, labels[0])
-                    # If multiple export labels correspond to a single property, duplicate
-                    for label in labels[1:]:
-                        export_meta.ho_data[ho_key].data.loc[:, label] = export_meta.ho_data[ho_key].data.loc[:, labels[0]]
-
-        return export_meta
-
     def _ensure_metadata_standards(self):
         """Copies existing metadata to fill in redundant portions of wider standard.
     
