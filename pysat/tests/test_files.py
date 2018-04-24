@@ -9,6 +9,7 @@ import pysat.instruments.pysat_testing
 import numpy as np
 import os
 import tempfile
+import glob
 
 import sys
 if sys.version_info[0] >= 3:
@@ -707,7 +708,6 @@ class TestInstrumentWithVersionedFiles():
         start = pysat.datetime(2008, 1, 11)
         stop = pysat.datetime(2008, 1, 12)
         dates = pysat.utils.season_date_range(start, stop, freq='100min')
-
         # remove files, same number as will be added
         to_be_removed = len(dates)
         for the_file in os.listdir(self.testInst.files.data_path):
@@ -715,7 +715,11 @@ class TestInstrumentWithVersionedFiles():
                 file_path = os.path.join(self.testInst.files.data_path, the_file)
                 if os.path.isfile(file_path) & (to_be_removed > 0):
                     to_be_removed -= 1
-                    os.unlink(file_path)
+                    # Remove all versions of the file
+                    # otherwise, previous versions will look like new files
+                    pattern = '_'.join(file_path.split('_')[0:7])+'*.pysat_testing_file'
+                    map(os.unlink, glob.glob(pattern))
+                    #os.unlink(file_path)
         # add new files
         create_versioned_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,

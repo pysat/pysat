@@ -20,6 +20,20 @@ meta = pysat.Meta()
 meta['uts'] = {'units':'s', 'long_name':'Universal Time', 'custom':False}
 meta['mlt'] = {'units':'hours', 'long_name':'Magnetic Local Time'}
 meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
+meta['orbit_num'] = {'units':'', 'long_name':'Orbit Number'} 
+meta['longitude'] = {'units':'degrees', 'long_name':'Longitude'} 
+meta['latitude'] = {'units':'degrees', 'long_name':'Latitude'} 
+meta['dummy1'] = {'units':'', 'long_name':'dummy1'}
+meta['dummy2'] = {'units':'', 'long_name':'dummy2'}
+meta['dummy3'] = {'units':'', 'long_name':'dummy3'}
+meta['dummy4'] = {'units':'', 'long_name':'dummy4'}
+meta['string_dummy'] = {'units':'', 'long_name':'string_dummy'}
+meta['unicode_dummy'] = {'units':'', 'long_name':'unicode_dummy'}
+meta['int8_dummy'] = {'units':'', 'long_name':'int8_dummy'}
+meta['int16_dummy'] = {'units':'', 'long_name':'int16_dummy'}
+meta['int32_dummy'] = {'units':'', 'long_name':'int32_dummy'}
+meta['int64_dummy'] = {'units':'', 'long_name':'int64_dummy'}
+
 
         
 def init(self):

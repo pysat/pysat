@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import os
+import warnings
 import numpy as np
 import pandas as pds
 # python 2/3 compatibility
@@ -9,8 +10,9 @@ try:
     basestring
 except NameError:
     basestring = str
-    
+
 from pysat import DataFrame, Series
+
 
 class Meta(object):
     """ Stores metadata for Instrument instance, similar to CF-1.6 netCDFdata
@@ -24,25 +26,29 @@ class Meta(object):
         the associated pysat Instrument object.
 
     units_label : str
-        String used to label units in storage. Defaults to 'units'. 
+        String used to label units in storage. Defaults to 'units'.
     name_label : str
         String used to label long_name in storage. Defaults to 'long_name'.
     notes_label : str
-       String used to label 'notes' in storage. Defaults to 'notes'
+        String used to label 'notes' in storage. Defaults to 'notes'
     desc_label : str
-       String used to label variable descriptions in storage. Defaults to 'desc'
+        String used to label variable descriptions in storage. Defaults to 'desc'
     plot_label : str
-       String used to label variables in plots. Defaults to 'label'
+        String used to label variables in plots. Defaults to 'label'
     axis_label : str
         Label used for axis on a plot. Defaults to 'axis'
     scale_label : str
-       string used to label plot scaling type in storage. Defaults to 'scale'
-    limits_label : str
-       String used to label typical variable value limits in storage.
-       Defaults to 'limits'
+        string used to label plot scaling type in storage. Defaults to 'scale'
+    min_label : str
+        String used to label typical variable value min limit in storage.
+        Defaults to 'value_min'
+    max_label : str
+        String used to label typical variable value max limit in storage.
+        Defaults to 'value_max'
     fill_label : str
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
+
 
     Attributes
     ----------
@@ -51,7 +57,7 @@ class Meta(object):
         defaults are also stored along with additional user provided labels.
 
     units_label : str
-        String used to label units in storage. Defaults to 'units'. 
+        String used to label units in storage. Defaults to 'units'.
     name_label : str
         String used to label long_name in storage. Defaults to 'long_name'.
     notes_label : str
@@ -74,6 +80,7 @@ class Meta(object):
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
 
+
     Notes
     -----
     Meta object preserves the case of variables and attributes as it first 
@@ -86,7 +93,7 @@ class Meta(object):
     Metadata for higher order data objects, those that have
     multiple products under a single variable name in a pysat.Instrument
     object, are stored by providing a Meta object under the single name.
-    
+
     Supports any custom metadata values in addition to the expected metadata
     attributes (units, long_name, notes, desc, plot_label, axis, scale, 
     value_min, value_max, and fill). These base attributes may be used to 
@@ -115,17 +122,17 @@ class Meta(object):
         meta['name2'] = {'units':string}
         # units are set to '' by default
         meta['name3'] = {'long_name':string}
-        
+
         # assigning custom meta parameters
         meta['name4'] = {'units':string, 'long_name':string
                          'custom1':string, 'custom2':value}
         meta['name5'] = {'custom1':string, 'custom3':value}
-        
+
         # assign multiple variables at once
-        meta[['name1', 'name2']] = {'long_name':[string1, string2], 
+        meta[['name1', 'name2']] = {'long_name':[string1, string2],
                                     'units':[string1, string2],
                                     'custom10':[string1, string2]}
-        
+
         # assiging metadata for n-Dimensional variables
         meta2 = pysat.Meta()
         meta2['name41'] = {'long_name':string, 'units':string}
@@ -134,7 +141,7 @@ class Meta(object):
         # or
         meta['name4'] = meta2
         meta['name4']['name41']
-        
+
         # mixture of 1D and higher dimensional data
         meta = pysat.Meta()
         meta['dm'] = {'units':'hey', 'long_name':'boo'}
@@ -143,16 +150,16 @@ class Meta(object):
         meta2[['higher', 'lower']] = {'meta':[meta, None],
                                       'units':[None, 'boo'],
                                       'long_name':[None, 'boohoo']}
-                                          
+
         # assign from another Meta object
         meta[key1] = meta2[key2]
-        
+
         # access fill info for a variable, presuming default label
         meta[key1, 'fill']
         # access same info, even if 'fill' not used to label fill values
         meta[key1, meta.fill_label]
-        
-        
+
+
         # change a label used by Meta object
         # note that all instances of fill_label
         # within the meta object are updated
@@ -160,13 +167,13 @@ class Meta(object):
         meta.plot_label = 'Special Plot Variable'
         # this feature is useful when converting metadata within pysat
         # so that it is consistent with externally imposed file standards
-        
+
     """
 
     def __init__(self, metadata=None, units_label='units', name_label='long_name',
-                       notes_label='notes', desc_label='desc', plot_label='label',
-                       axis_label='axis', scale_label='scale', min_label='value_min',
-                       max_label='value_max', fill_label = 'fill'):
+                 notes_label='notes', desc_label='desc', plot_label='label',
+                 axis_label='axis', scale_label='scale', min_label='value_min',
+                 max_label='value_max', fill_label='fill'):
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label
@@ -186,39 +193,39 @@ class Meta(object):
         # establish attributes intrinsic to object, before user could
         # add any
         self._base_attr = dir(self)
-        
+
     def default_labels_and_values(self, name):
         """Returns dictionary of default meta labels and values for name variable.
-        
+
         Metadata is automatically tracked for various properties, name,
         long_name, units, description, etc. Each of these values (labels)
         corresponds to a given string (values).
-        
+
         Parameters
         ----------
         name : list_like of str
             variable names to get default metadata parameters for
-        
+
         Returns
         -------
         dict
             keys are metadata labels used within Meta object, values are the default
-            values assigned if data is never specified by user 
-            
+            values assigned if data is never specified by user
+
         """
         num = len(name)
-        default_str = ['']*num
-        default_nan = [np.NaN]*num
+        default_str = [''] * num
+        default_nan = [np.NaN] * num
         return {self.units_label: default_str,
                 self.name_label: name,
-                self.notes_label : default_str,
-                self.desc_label : default_str,
-                self.plot_label : name,
-                self.axis_label : name,
-                self.scale_label : ['linear']*num,
-                self.min_label : default_nan,
-                self.max_label : default_nan,
-                self.fill_label : default_nan}
+                self.notes_label: default_str,
+                self.desc_label: default_str,
+                self.plot_label: name,
+                self.axis_label: name,
+                self.scale_label: ['linear'] * num,
+                self.min_label: default_nan,
+                self.max_label: default_nan,
+                self.fill_label: default_nan}
 
     def apply_default_labels(self, other):
         """Applies labels for default meta labels from self onto other.
@@ -413,7 +420,7 @@ class Meta(object):
                         # new to add, just leave
                         return
 
-            #         # otherwise, continue on and set defaults
+            # otherwise, continue on and set defaults
             #     else:
             #         new_name = []
             #         for n in name:
@@ -535,13 +542,30 @@ class Meta(object):
                 new = DataFrame(value, index=name)
                 for item_name, item in new.iterrows():
                     if item_name not in self:
-                        self.data = self.data.append(item)
+                        # this lets data in that could break the system
+                        # when the user tries to modify metadata
+                        # self.data = self.data.append(item)
+                        # thus, instead we take a longer route
+                        # with the for loop below which adds everything one
+                        # by one
+                        new_item_name = item_name
                     else:
                         # info already exists, update with new info
                         new_item_name = self.var_case_name(item_name)
-                        for item_key in item.keys():
-                            self.data.loc[new_item_name,
-                                          item_key] = item[item_key]
+                    # time to actually add the info
+                    for item_key in item.keys():
+                        # print ('new_item_name', new_item_name)
+                        # print ('item_key', item_key)
+                        # print ('item[item_key]', item[item_key])
+                        to_be_set = item[item_key]
+                        if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
+                            if isinstance(to_be_set[0], basestring):
+                                self.data.loc[new_item_name, item_key] = '\n\n'.join(to_be_set)
+                            else:
+                                warnings.warn(' '.join(('Array elements are disallowed in meta.',
+                                              'Dropping input :', item_key)))
+                        else:
+                            self.data.loc[new_item_name, item_key] = to_be_set
 
         elif isinstance(value, Series):
             # set data usind standard assignment via a dict
@@ -586,7 +610,6 @@ class Meta(object):
             meta[ 'name1', 'units' ]
         
         """
-
         # if key is a tuple, looking at index, column access pattern
         if isinstance(key, tuple):
             new_index = self.var_case_name(key[0])
@@ -607,7 +630,7 @@ class Meta(object):
             else:
                 raise KeyError('Key not found in MetaData')
 
-    def _label_setter(self, new_label, current_label, default=np.NaN, use_names_default=False):
+    def _label_setter(self, new_label, current_label, attr_label, default=np.NaN, use_names_default=False):
         """Generalized setter of default meta attributes
         
         Parameters
@@ -658,90 +681,85 @@ class Meta(object):
                     else:
                         self.data[new_label] = default
             # check higher order structures as well
+            # recursively change labels here
             for key in self.keys_nD():
-                if current_label in self[key].attrs():
-                    self[key].data.loc[:, new_label] = self[key].data.loc[:, current_label]
-                    self[key].data.drop(current_label, axis=1, inplace=True)
-                else:
-                    if self[key].has_attr(current_label):
-                        # there is something like label, wrong case though
-                        current_label = self[key].attr_case_name(current_label)
-                        self[key].data.loc[:, new_label] = self[key].data.loc[:, current_label]
-                        self[key].data.drop(current_label, axis=1, inplace=True)
-                    else:
-                        # there is no existing label
-                        # setting for the first time
-                        if use_names_default:
-                            self[key].data[new_label] = self[key].data.index
-                        else:
-                            self[key].data[new_label] = default
-                        # self[key].data[new_label] = default
+                setattr(self.ho_data[key], attr_label, new_label)
+
         # now update 'hidden' attribute value
-        current_label = new_label
-                
+        # current_label = new_label
+        setattr(self, ''.join(('_',attr_label)), new_label)
+
     @property
     def units_label(self):
         return self._units_label
+
     @property
     def name_label(self):
         return self._name_label
+
     @property
     def notes_label(self):
         return self._notes_label
+
     @property
     def desc_label(self):
         return self._desc_label
+
     @property
     def plot_label(self):
         return self._plot_label
+
     @property
     def axis_label(self):
         return self._axis_label
+
     @property
     def scale_label(self):
         return self._scale_label
+
     @property
     def min_label(self):
         return self._min_label
+
     @property
     def max_label(self):
         return self._max_label
+
     @property
     def fill_label(self):
         return self._fill_label   
              
     @units_label.setter   
     def units_label(self, new_label):
-        self._label_setter(new_label, self._units_label, '') 
+        self._label_setter(new_label, self._units_label, 'units_label', '') 
     @name_label.setter   
     def name_label(self, new_label):
-        self._label_setter(new_label, self._name_label, use_names_default=True)     
+        self._label_setter(new_label, self._name_label, 'name_label', use_names_default=True)     
     @notes_label.setter   
     def notes_label(self, new_label):
-        self._label_setter(new_label, self._notes_label, '')
+        self._label_setter(new_label, self._notes_label, 'notes_label', '')
     @desc_label.setter   
     def desc_label(self, new_label):
-        self._label_setter(new_label, self._desc_label, '')
+        self._label_setter(new_label, self._desc_label, 'desc_label', '')
     @plot_label.setter   
     def plot_label(self, new_label):
-        self._label_setter(new_label, self._plot_label, use_names_default=True)
+        self._label_setter(new_label, self._plot_label, 'plot_label', use_names_default=True)
     @axis_label.setter   
     def axis_label(self, new_label):
-        self._label_setter(new_label, self._axis_label, use_names_default=True)
+        self._label_setter(new_label, self._axis_label, 'axis_label', use_names_default=True)
     @scale_label.setter   
     def scale_label(self, new_label):
-        self._label_setter(new_label, self._scale_label, 'linear')
+        self._label_setter(new_label, self._scale_label, 'scale_label', 'linear')
     @min_label.setter   
     def min_label(self, new_label):
-        self._label_setter(new_label, self._min_label, np.NaN)
+        self._label_setter(new_label, self._min_label, 'min_label', np.NaN)
     @max_label.setter   
     def max_label(self, new_label):
-        self._label_setter(new_label, self._max_label, np.NaN)
+        self._label_setter(new_label, self._max_label, 'max_label', np.NaN)
     @fill_label.setter   
     def fill_label(self, new_label):
-        self._label_setter(new_label, self._fill_label, np.NaN)
+        self._label_setter(new_label, self._fill_label, 'fill_label', np.NaN)
 
-                                
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
         
@@ -876,9 +894,11 @@ class Meta(object):
                                        'across Meta objects in keys().')
             for key in other.keys_nD():
                 if key in mdata:
-                    raise RuntimeError('Duplicated keys (variable names) ' +
-                                       ' acrossMeta objects in keys_nD(). ')
 
+                    raise RuntimeError('Duplicated keys (variable names) across '
+                                        'Meta objects in keys_nD().')
+                                        
+        #TODO make sure labels between the two objects are the same
         # concat 1D metadata in data frames to copy of
         # current metadata
         for key in other.keys():
