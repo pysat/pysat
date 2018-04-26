@@ -220,10 +220,12 @@ class TestDifferenceSameInstrument:
         del self.const
 
     def test_diff(self):
-        for c in self.const:
-            c.load(date=pysat.datetime(2008,1,1))
+        self.const.load(date=pysat.datetime(2008,1,1))
+        bounds = [('longitude', 'longitude', 0, 360, .5), 
+                ('latitude', 'latitude', -90, 90, .5), 
+                ('mlt', 'mlt', 0, 24, .1)]
         results = self.const.difference(self.const[0], self.const[1], 
-                [('dummy1','dummy1')])
+                bounds, [('dummy1','dummy1')])
         diff = results['dummy1']
         dist = results['dist']
         for i in diff:
@@ -243,10 +245,12 @@ class TestDifferenceSimilarInstruments:
         del self.const
 
     def test_diff_similar_instruments(self):
-        for c in self.const:
-            c.load(date=pysat.datetime(2008,1,1))
+        self.const.load(date=pysat.datetime(2008,1,1))
+        bounds = [('longitude', 'longitude', 0, 360, .5), 
+                ('latitude', 'latitude', -90, 90, .5), 
+                ('mlt', 'mlt', 0, 24, .1)]
         results = self.const.difference(self.const[0], self.const[1], 
-                [('dummy1','dummy1')])
+                bounds, [('dummy1','dummy1')])
         diff = results['dummy1']
         dist = results['dist']
         for i in diff:
