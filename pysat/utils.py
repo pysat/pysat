@@ -198,7 +198,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                     index_key_name  = None                
 
                 # iterate over the variables and grab metadata
-                dim_meta_data = pysat.Meta()
+                dim_meta_data = pysat.Meta(units_label=units_label, name_label=name_label,
+                                           notes_label=notes_label, desc_label=desc_label,
+                                           plot_label=plot_label, axis_label=axis_label,
+                                           scale_label=scale_label,
+                                           min_label=min_label, max_label=max_label,
+                                           fill_label=fill_label)
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     # store attributes in metadata, exept for dim name
                     meta_dict = {}
