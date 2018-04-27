@@ -64,7 +64,13 @@ def load(fnames, tag=None, sat_id=None):
 
     """
     
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch')
+    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch', 
+                                    units_label='Units', name_label='Long_Name', 
+                                    notes_label='Var_Notes', desc_label='CatDesc',
+                                    plot_label='FieldNam', axis_label='axis', 
+                                    scale_label='scale',
+                                    min_label='ValidMin', max_label='ValidMax',
+                                    fill_label='FillVal')
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
