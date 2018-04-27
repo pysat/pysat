@@ -213,10 +213,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
 
                 # print (dim_meta_data)
                 dim_meta_dict = {'meta':dim_meta_data}
-                # add top level meta
-                for nc_key in data.variables[obj_key_name].ncattrs():
-                    dim_meta_dict[nc_key] = data.variables[obj_key_name].getncattr(nc_key)
-                mdata[obj_key_name] = dim_meta_dict
+                if index_key_name is not None:
+                    # add top level meta
+                    for nc_key in data.variables[obj_key_name].ncattrs():
+                        dim_meta_dict[nc_key] = data.variables[obj_key_name].getncattr(nc_key)
+                    mdata[obj_key_name] = dim_meta_dict
                 
                 # iterate over all variables with this dimension and store data
                 # data storage, whole shebang
