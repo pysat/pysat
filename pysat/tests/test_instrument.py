@@ -16,7 +16,7 @@ if sys.version_info[0] >= 3:
         reload = importlib.reload
 
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         '''Runs before every method to create a clean testing setup.'''
@@ -419,6 +419,10 @@ class TestDataPaddingbyFile():
                                     update_files=True)
         self.rawInst.bounds = self.testInst.bounds
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst
+        del self.rawInst
 
     def test_fid_data_padding(self):
         self.testInst.load(fid=1, verifyPad=True)
@@ -468,6 +472,7 @@ class TestDataPaddingbyFile():
         self.rawInst.load(fid=10)
         assert ( (self.testInst.data.index[0] == self.rawInst.data.index[0] - pds.DateOffset(minutes=5)) & 
                 (self.testInst.data.index[-1] == self.rawInst.data.index[-1] + pds.DateOffset(minutes=5)) )
+                
     def test_fid_data_padding_uniqueness(self):
         self.testInst.load(fid=1, verifyPad=True)
         assert (self.testInst.data.index.is_unique)
@@ -478,7 +483,6 @@ class TestDataPaddingbyFile():
         #print (test_index[0], test_index[-1], len(test_index))
         #print(self.testInst.data.index[0], self.testInst.data.index[-1], len(self.testInst.data))
         assert (np.all(self.testInst.data.index == test_index))
-
 
     def test_fid_data_padding_removal(self):
         self.testInst.load(fid=1)
@@ -506,6 +510,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
         self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
         self.rawInst.bounds = self.testInst.bounds
 
+
 class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
@@ -531,11 +536,37 @@ class TestDataPadding():
                                          pad={'minutes':5},
                                          update_files=True)
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst
+
     def test_data_padding(self):
         self.testInst.load(2009,2, verifyPad=True)
         assert ( (self.testInst.data.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
                 (self.testInst.data.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
                                         pds.DateOffset(minutes=5)) )
+
+    def test_yrdoy_data_padding_missing_days(self):
+        self.testInst.load(2008,1)
+        # test load
+        self.testInst.load(2008,0)
+        # reset buffer data
+        self.testInst.load(2008,-5)
+        # test load, prev day empty, current and next has data
+        self.testInst.load(2008,1)
+        # reset
+        self.testInst.load(2008,-4)
+        # etc
+        self.testInst.load(2008,2)
+        self.testInst.load(2008,-3)
+        self.testInst.load(2008,3)
+        # switch to missing data on the right
+        self.testInst.load(2010,365)
+        self.testInst.load(2010,360)
+        self.testInst.load(2010,366)
+        self.testInst.load(2010,360)
+        self.testInst.load(2010,367)
+        assert True
 
     def test_data_padding_next(self):
         self.testInst.load(2009,2, verifyPad=True)
@@ -603,6 +634,10 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
                                          sim_multi_file_right=True,
                                          pad={'minutes':5},
                                          multi_file_day=True)
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst
        
 class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
     def setup(self):
@@ -615,4 +650,8 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
                                          pad={'minutes':5},
                                          multi_file_day=True)
         
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst
 

@@ -80,6 +80,7 @@ class Files(object):
     def __init__(self, sat, manual_org=False, directory_format=None,
                        update_files=False, file_format=None,
                        write_to_disk=True):
+        
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
         # location of .pysat file
@@ -100,7 +101,7 @@ class Files(object):
         if directory_format is None:
             directory_format = os.path.join('{platform}','{name}','{tag}')
         self.directory_format = directory_format
-        
+
         # user-specified file format
         self.file_format = file_format
 
@@ -120,12 +121,12 @@ class Files(object):
             self.data_path = self.data_path[:-1]
         elif self.data_path[-1] != os.path.sep:
             self.data_path = os.path.join(self.data_path, '')
-        
+
         self.write_to_disk = write_to_disk
         if write_to_disk is False:
             self._previous_file_list = pds.Series([], dtype='a')
             self._current_file_list = pds.Series([], dtype='a')
-            
+
         if self._sat.platform != '':
             # load stored file info
             info = self._load()
@@ -186,9 +187,10 @@ class Files(object):
                 new_flag = True
 
         if new_flag:
-            # print('New files')
+            
             if self.write_to_disk:
-                stored_files.to_csv(os.path.join(self.home_path, 'previous_'+name),
+                stored_files.to_csv(os.path.join(self.home_path,
+                                                 'previous_'+name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f')
                 self.files.to_csv(os.path.join(self.home_path, name),
                                 date_format='%Y-%m-%d %H:%M:%S.%f')
@@ -220,7 +222,8 @@ class Files(object):
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
-                return pds.read_csv(fname, index_col=0, parse_dates=True, squeeze=True, header=None)
+                return pds.read_csv(fname, index_col=0, parse_dates=True,
+                                    squeeze=True, header=None)
             else:
                 # grab files from memory
                 if prev_version:
@@ -257,9 +260,10 @@ class Files(object):
         if not info.empty:
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
-            estr = "Unable to find any files that match the supplied template. If you have the necessary files "
-            estr = "{:s}please check pysat settings and file ".format(estr)
-            print("{:s}locations.".format(estr))
+            estr = "Unable to find any files that match the supplied template. "
+            estr += "If you have the necessary files please check pysat "
+            estr += "settings and file locations (e.g. pysat.pysat_dir)."
+            print(estr)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
         self._store()
@@ -331,8 +335,11 @@ class Files(object):
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
-                raise ValueError('Could not find "'+fname+ '" in available file list. Valid Example: '+self.files.iloc[0])
-        # return a scalar rather than array - otherwise introduces array to index warnings.
+                raise ValueError('Could not find "' + fname +
+                                 '" in available file list. Valid Example: ' +
+                                 self.files.iloc[0])
+        # return a scalar rather than array - otherwise introduces array to
+        # index warnings.
         return idx[0]
 
     # convert this to a normal get so files[in:in2] gives the same as requested
@@ -425,6 +432,8 @@ class Files(object):
                 two_digit_year_break=None):
         """
         Produces a list of files and and formats it for Files class.
+
+        Requires fixed_width filename
         
         Parameters
         ----------
@@ -435,6 +444,9 @@ class Files(object):
         format_str : string with python format codes
             Provides the naming pattern of the instrument files and the 
             locations of date information so an ordered list may be produced.
+            Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
+            and 'revision'
+            Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
         two_digit_year_break : int
             If filenames only store two digits for the year, then
             '1900' will be added for years >= two_digit_year_break
@@ -443,8 +455,13 @@ class Files(object):
         Note
         ----
         Does not produce a Files instance, but the proper output
-        from instrument_module.list_files method.        
+        from instrument_module.list_files method.
+
+        The '?' may be used to indicate a set number of spaces for a variable
+        part of the name that need not be extracted.
+        'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
         """
+
         import collections
         
         from pysat.utils import create_datetime_index
@@ -458,13 +475,20 @@ class Files(object):
         # to identify files in the filesystem
         search_str = ''
         form = string.Formatter()
+        # stores the keywords extracted from format_string
         keys = []
+        #, and length of string
         snips = []
         length = []
         stored = collections.OrderedDict()
         stored['year'] = []; stored['month'] = []; stored['day'] = [];
         stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
+        stored['version'] = []; stored['revision'] = [];
         for snip in form.parse(format_str):
+            # collect all of the format keywords
+            # replace them in the string with the '*' wildcard
+            # then try and get width from format keywords so we know
+            # later on where to parse information out from
             search_str += snip[0]
             snips.append(snip[0])
             if snip[1] is not None:
@@ -542,12 +566,35 @@ class Files(object):
                 stored['sec'] += 3600 * stored['hour']
             if stored['min'] is not None:
                 stored['sec'] += 60 * stored['min']
-            
+            # if stored['version'] is None:
+            #     stored['version'] = np.zeros(len(files))
+            if stored['revision'] is None:
+                stored['revision'] = np.zeros(len(files))
+
             index = create_datetime_index(year=stored['year'],
                                           month=stored['month'], 
                                           day=stored['day'], uts=stored['sec'])
 
-            return pds.Series(files, index=index)
+            # if version and revision are supplied
+            # use these parameters to weed out files that have been replaced
+            # with updated versions
+            # first, check for duplicate index times
+            dups = index.get_duplicates()
+            if (len(dups) > 0) and (stored['version'] is not None):
+                # we have duplicates
+                # keep the highest version/revision combo
+                version = pds.Series(stored['version'], index=index)
+                revision = pds.Series(stored['revision'], index=index)
+                revive = version*100000. + revision
+                frame = pds.DataFrame({'files':files, 'revive':revive,
+                                       'time':index}, index=index)
+                frame = frame.sort_values(by=['time', 'revive'],
+                                          ascending=[True, False])
+                frame = frame.drop_duplicates(subset='time', keep='first')
+
+                return frame['files']
+            else:
+                return pds.Series(files, index=index)
         else:
             return pds.Series(None) 
 

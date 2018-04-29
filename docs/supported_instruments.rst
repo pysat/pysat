@@ -50,6 +50,18 @@ Kp
 .. automodule:: pysat.instruments.sw_kp
    :members: __doc__, filter_geoquiet
 
+ICON EUV
+--------
+
+.. automodule:: pysat.instruments.icon_euv
+   :members: __doc__, remove_icon_names
+
+ICON IVM
+--------
+
+.. automodule:: pysat.instruments.icon_ivm
+   :members: __doc__, remove_icon_names
+
 ISS-FPMU
 --------
 

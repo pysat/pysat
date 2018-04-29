@@ -5,7 +5,7 @@ from nose.tools import assert_raises, raises
 import nose.tools
 
 from dateutil.relativedelta import relativedelta as relativedelta
-class TestSpecificUTOrbits:
+class TestSpecificUTOrbits():
     
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
@@ -110,7 +110,7 @@ class TestSpecificUTOrbits:
         ans2 = (self.testInst.data.index[-1] == (pds.datetime(2009,1,1)-relativedelta(seconds=1) ))
         assert ans & ans2
 
-class TestGeneralOrbitsMLT:    
+class TestGeneralOrbitsMLT():    
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
         info = {'index':'mlt'}
@@ -272,6 +272,10 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
+
 class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT): 
     
     def setup(self):
@@ -280,6 +284,10 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
+
 class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT): 
     
     def setup(self):
@@ -287,6 +295,10 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
         info = {'index':'latitude', 'kind':'polar'}
         self.testInst = pysat.Instrument('pysat','testing', '86400', clean_level='clean',
                                         orbit_info=info)
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
 
 def filter_data(inst):
     """Remove data from instrument, simulating gaps"""
@@ -322,6 +334,10 @@ class TestOrbitsGappyData(TestGeneralOrbitsMLT):
                                         orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
+
 class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
@@ -338,6 +354,9 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
 
         self.testInst.custom.add(filter_data2, 'modify', times=times)
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
 
 class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
     def setup(self):
@@ -348,6 +367,10 @@ class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
                                         orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
+
 class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
@@ -357,6 +380,10 @@ class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
                                         orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
 
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
+
 class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
@@ -365,4 +392,8 @@ class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
                                         clean_level='clean',
                                         orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testInst 
     

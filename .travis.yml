@@ -38,7 +38,8 @@ install:
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
   - pip install coveralls
-  - pip install pysatCDF
+  # pysatCDF installed via setup.py requirement
+  # - pip install pysatCDF
   - "python setup.py install"
 # command to run tests
 script: 

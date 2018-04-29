@@ -20,6 +20,20 @@ meta = pysat.Meta()
 meta['uts'] = {'units':'s', 'long_name':'Universal Time', 'custom':False}
 meta['mlt'] = {'units':'hours', 'long_name':'Magnetic Local Time'}
 meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
+meta['orbit_num'] = {'units':'', 'long_name':'Orbit Number'} 
+meta['longitude'] = {'units':'degrees', 'long_name':'Longitude'} 
+meta['latitude'] = {'units':'degrees', 'long_name':'Latitude'} 
+meta['dummy1'] = {'units':'', 'long_name':'dummy1'}
+meta['dummy2'] = {'units':'', 'long_name':'dummy2'}
+meta['dummy3'] = {'units':'', 'long_name':'dummy3'}
+meta['dummy4'] = {'units':'', 'long_name':'dummy4'}
+meta['string_dummy'] = {'units':'', 'long_name':'string_dummy'}
+meta['unicode_dummy'] = {'units':'', 'long_name':'unicode_dummy'}
+meta['int8_dummy'] = {'units':'', 'long_name':'int8_dummy'}
+meta['int16_dummy'] = {'units':'', 'long_name':'int16_dummy'}
+meta['int32_dummy'] = {'units':'', 'long_name':'int32_dummy'}
+meta['int64_dummy'] = {'units':'', 'long_name':'int64_dummy'}
+
 
         
 def init(self):
@@ -96,12 +110,14 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data.index.name = 'time'
     return data, meta.copy()
 
+
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
     
     index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31)) 
     names = [ data_path+date.strftime('%D')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
-    
+
+
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     pass
