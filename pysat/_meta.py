@@ -140,7 +140,7 @@ class Meta(object):
         meta['name4'] = {'meta':meta2}
         # or
         meta['name4'] = meta2
-        meta['name4']['name41']
+        meta['name4'].children['name41']
 
         # mixture of 1D and higher dimensional data
         meta = pysat.Meta()
@@ -340,27 +340,27 @@ class Meta(object):
                     return False
             # do same check on all sub variables within each nD key
             for key in self.keys_nD():
-                keys1 = [i for i in self[key].keys()]
-                keys2 = [i for i in other[key].keys()]
+                keys1 = [i for i in self[key].children.keys()]
+                keys2 = [i for i in other[key].children.keys()]
                 if len(keys1) != len(keys2):
                     return False
                 for key_check in keys1:
                     if key_check not in keys2:
                         return False
                 # check if attributes are the same
-                attrs1 = [i for i in self[key].attrs()]
-                attrs2 = [i for i in other[key].attrs()]
+                attrs1 = [i for i in self[key].children.attrs()]
+                attrs2 = [i for i in other[key].children.attrs()]
                 if len(attrs1) != len(attrs2):
                     return False
                 for attr in attrs1:
                     if attr not in attrs2:
                         return False
                 # now time to check if all elements are individually equal
-                for key2 in self[key].keys():
-                    for attr in self[key].attrs():
-                        if not (self[key][key2, attr] == other[key][key2, attr]):
+                for key2 in self[key].children.keys():
+                    for attr in self[key].children.attrs():
+                        if not (self[key].children[key2, attr] == other[key].children[key2, attr]):
                             try:
-                                if not (np.isnan(self[key][key2, attr]) and np.isnan(other[key][key2, attr])):
+                                if not (np.isnan(self[key].children[key2, attr]) and np.isnan(other[key].children[key2, attr])):
                                     return False
                             except TypeError:
                                 # comparison above gets unhappy with string inputs
@@ -449,42 +449,6 @@ class Meta(object):
                 if len(name) != len(value[key]):
                     raise ValueError('Length of names and inputs must be equal.')
 
-            if 'meta' in value:
-                # process higher order stuff first. Meta inputs could be part of 
-                # larger multiple parameter assignment
-                # so assign the Meta objects via a recursive call, then remove all trace
-                # of names with Meta and continue on with the rest of the function
-                pop_list = []
-                pop_loc = []
-                for j, (item, val) in enumerate(zip(name, value['meta'])):
-                    if val is not None:
-                        # assign meta data, recursive call....
-                        self[item] = val
-                        pop_list.append(item)
-                        pop_loc.append(j)
-
-                # remove 'meta' objects from input so rest of code doesn't
-                # have to deal with them. Already processed.
-                if len(value) > 1:
-                    _ = value.pop('meta')
-                else:
-                    value = {}
-                    name = []
-
-                for item, loc in zip(pop_list[::-1], pop_loc[::-1]):
-                    # remove data names that had a Meta object assigned
-                    # they are not part of any future processing
-                    if len(name) > 1:
-                        _ = name.pop(loc)
-                    else:
-                        name = []
-
-                    # remove place holder data in other values that used
-                    # to have to account for presence of Meta object
-                    # going through backwards so I don't mess with location references
-                    for key in value:
-                        _ = value[key].pop(loc)
-
             # check if 'units' or other base parameters have been provided
             # check against provided labels, case insensitive
             # defaults are filled in so that the actions invoked against
@@ -554,18 +518,31 @@ class Meta(object):
                         new_item_name = self.var_case_name(item_name)
                     # time to actually add the info
                     for item_key in item.keys():
-                        # print ('new_item_name', new_item_name)
-                        # print ('item_key', item_key)
-                        # print ('item[item_key]', item[item_key])
-                        to_be_set = item[item_key]
-                        if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
-                            if isinstance(to_be_set[0], basestring):
-                                self.data.loc[new_item_name, item_key] = '\n\n'.join(to_be_set)
+                        # disallow column name children
+                        if item_key not in ['children', 'meta']:
+                            # print ('new_item_name', new_item_name)
+                            # print ('item_key', item_key)
+                            # print ('item[item_key]', item[item_key])
+                            to_be_set = item[item_key]
+                            if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
+                                if isinstance(to_be_set[0], basestring):
+                                    self.data.loc[new_item_name, item_key] = '\n\n'.join(to_be_set)
+                                else:
+                                    warnings.warn(' '.join(('Array elements are disallowed in meta.',
+                                                  'Dropping input :', item_key)))
                             else:
-                                warnings.warn(' '.join(('Array elements are disallowed in meta.',
-                                              'Dropping input :', item_key)))
-                        else:
-                            self.data.loc[new_item_name, item_key] = to_be_set
+                                self.data.loc[new_item_name, item_key] = to_be_set
+            if 'meta' in value:
+                # process higher order stuff. Meta inputs could be part of 
+                # larger multiple parameter assignment
+                pop_list = []
+                pop_loc = []
+                for j, (item, val) in enumerate(zip(name, value['meta'])):
+                    if val is not None:
+                        # assign meta data, recursive call....
+                        self[item] = val
+                        pop_list.append(item)
+                        pop_loc.append(j)
 
         elif isinstance(value, Series):
             # set data usind standard assignment via a dict
@@ -608,25 +585,40 @@ class Meta(object):
             meta['name']
             
             meta[ 'name1', 'units' ]
+
+            for higher order data
+            
+            meta[ 'name1', 'subvar', 'units' ]
         
         """
         # if key is a tuple, looking at index, column access pattern
         if isinstance(key, tuple):
-            new_index = self.var_case_name(key[0])
-            new_name = self.attr_case_name(key[1])
-            return self.data.loc[new_index, new_name]
+            # if tuple length is 2, index, column
+            if len(key) == 2:
+                new_index = self.var_case_name(key[0])
+                new_name = self.attr_case_name(key[1])
+                return self.data.loc[new_index, new_name]
+            # if tuple length is 3, index, child_index, column
+            elif len(key) == 3:
+                new_index = self.var_case_name(key[0])
+                new_child_index = self.var_case_name(key[1])
+                new_name = self.attr_case_name(key[2])
+                return self._ho_data[new_index].data.loc[new_child_index, new_name]
         else:
             # ensure variable is present somewhere
             if key in self:
                 # get case preserved string for variable name
                 new_key = self.var_case_name(key)
-                # check what kind of variable, single or higher order
-                if new_key in self.keys_nD():
-                    # higher order data
-                    return self.ho_data[new_key]
-                elif new_key in self.keys():
-                    # plain old variable request
-                    return self.data.loc[new_key]
+                if new_key in self.keys():
+                    meta_row = self.data.loc[new_key]
+                    if new_key in self.keys_nD():
+                        meta_row.at['children'] = self.ho_data[new_key]
+                    else:
+                        empty_meta = Meta()
+                        meta_row.at['children'] = empty_meta
+                    return meta_row
+                else:
+                    return pds.Series([self.ho_data[new_key]], index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
 
@@ -858,7 +850,7 @@ class Meta(object):
                 return i
         # check if attribute present in higher order structures
         for key in self.keys_nD():
-            for i in self[key].attrs():
+            for i in self[key].children.attrs():
                 if lower_name == i.lower():
                     return i
         # nothing was found if still here
@@ -902,11 +894,19 @@ class Meta(object):
         other_updated = self.apply_default_labels(other)
         # concat 1D metadata in data frames to copy of
         # current metadata
+# <<<<<<< ho_meta_fix
         for key in other_updated.keys():
-            mdata[key] = other[key]
+            mdata.data.loc[key] = other.data.loc[key]
         # add together higher order data
         for key in other_updated.keys_nD():
-            mdata[key] = other[key]
+            mdata.ho_data[key] = other.ho_data[key]
+# =======
+#         for key in other_updated.keys():
+#             mdata[key] = other_updated[key]
+#         # add together higher order data
+#         for key in other_updated.keys_nD():
+#             mdata[key] = other_updated[key]
+
         return mdata
 
     def copy(self):

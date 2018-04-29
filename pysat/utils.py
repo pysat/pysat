@@ -196,18 +196,28 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                 else:
                     # dimension is not itself a variable
                     index_key_name  = None                
-                
+
                 # iterate over the variables and grab metadata
-                dim_meta_data = pysat.Meta()
+                dim_meta_data = pysat.Meta(units_label=units_label, name_label=name_label,
+                                           notes_label=notes_label, desc_label=desc_label,
+                                           plot_label=plot_label, axis_label=axis_label,
+                                           scale_label=scale_label,
+                                           min_label=min_label, max_label=max_label,
+                                           fill_label=fill_label)
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
-                    # store attributes in metadata
+                    # store attributes in metadata, exept for dim name
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
                         meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
                     dim_meta_data[clean_key] = meta_dict
 
                 # print (dim_meta_data)
-                mdata[obj_key_name] = dim_meta_data 
+                dim_meta_dict = {'meta':dim_meta_data}
+                if index_key_name is not None:
+                    # add top level meta
+                    for nc_key in data.variables[obj_key_name].ncattrs():
+                        dim_meta_dict[nc_key] = data.variables[obj_key_name].getncattr(nc_key)
+                    mdata[obj_key_name] = dim_meta_dict
                 
                 # iterate over all variables with this dimension and store data
                 # data storage, whole shebang

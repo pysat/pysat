@@ -1592,7 +1592,7 @@ class Instrument(object):
                                     new_dict['Depend_1'] = obj_dim_names[-1]
                                     new_dict['Display_Type'] = 'Spectogram'            
                                     new_dict['Var_Type'] = self._get_var_type_code(coltype)
-                                    # print('Frame Writing ', key, col, export_meta[key][col])
+                                    # print('Frame Writing ', key, col, export_meta[key].children[col])
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # print ('mid2 ', new_dict)
                                     cdfkey.setncatts(new_dict)
@@ -1666,7 +1666,6 @@ class Instrument(object):
                                                       dims[0])).astype(coltype)
                             for i in range(num):
                                 temp_cdf_data[i, :] = self[i, key].index.values
-
                             cdfkey[:, :] = (temp_cdf_data.astype(coltype) *
                                             1.E-6).astype(coltype)
  

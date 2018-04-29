@@ -102,7 +102,7 @@ class TestBasics():
         self.meta = self.meta.concat(meta2)
         
         assert (self.meta['new3'].units == 'hey3')
-        assert (self.meta['new4']['new41'].units == 'hey4')
+        assert (self.meta['new4'].children['new41'].units == 'hey4')
 
     @raises(RuntimeError)
     def test_basic_concat_w_ho_collision_strict(self):
@@ -127,8 +127,8 @@ class TestBasics():
         meta2['new3'] = meta3
         self.meta = self.meta.concat(meta2, strict=False)
         
-        assert self.meta['new3']['new41'].units == 'hey4'
-        assert self.meta['new3']['new41'].bob_level == 'max'
+        assert self.meta['new3'].children['new41'].units == 'hey4'
+        assert self.meta['new3'].children['new41'].bob_level == 'max'
         assert self.meta['new2'].units == 'hey'
 
     def test_basic_concat_w_ho_collisions_not_strict(self):
@@ -142,8 +142,8 @@ class TestBasics():
         meta2['new3'] = meta3
         self.meta = self.meta.concat(meta2, strict=False)
         
-        assert self.meta['new3']['new31'].units == 'hey4'
-        assert self.meta['new3']['new31'].bob_level == 'max'
+        assert self.meta['new3'].children['new31'].units == 'hey4'
+        assert self.meta['new3'].children['new31'].bob_level == 'max'
         assert self.meta['new2'].units == 'hey'
 
                                                 
@@ -283,8 +283,8 @@ class TestBasics():
         # for key in meta3.keys_nD():
         #     for key2 in meta3[key].keys():
         #         
-        #         print (meta3[key][key2])
-        #         print (self.meta[key][key2])
+        #         print (meta3[key].children[key2])
+        #         print (self.meta[key].children[key2])
         
         assert not (meta3 == self.meta)                
         assert not (self.meta == meta3)                
@@ -310,8 +310,8 @@ class TestBasics():
         # for key in meta3.keys_nD():
         #     for key2 in meta3[key].keys():
         #         
-        #         print (meta3[key][key2])
-        #         print (self.meta[key][key2])
+        #         print (meta3[key].children[key2])
+        #         print (self.meta[key].children[key2])
 
         assert not (meta3 == self.meta)
         assert not (self.meta == meta3)              
@@ -333,7 +333,7 @@ class TestBasics():
         meta['dm'] = {'units':'hey', 'long_name':'boo'}
         meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
         self.meta['higher'] = {'meta':meta}
-        assert self.meta['higher'] == meta
+        assert self.meta['higher'].children == meta
 
     def test_assign_higher_order_meta_from_dict_w_multiple(self):
         meta = pysat.Meta()
@@ -344,7 +344,7 @@ class TestBasics():
                                           'long_name':[None, 'boohoo']}
         assert self.meta['lower'].units == 'boo'
         assert self.meta['lower'].long_name == 'boohoo'
-        assert self.meta['higher'] == meta
+        assert self.meta['higher'].children == meta
 
     def test_assign_higher_order_meta_from_dict_w_multiple_2(self):
         meta = pysat.Meta()
@@ -355,7 +355,7 @@ class TestBasics():
                                           'long_name':[None, 'boohoo', None]}
         assert self.meta['lower'].units == 'boo'
         assert self.meta['lower'].long_name == 'boohoo'
-        assert self.meta['higher'] == meta
+        assert self.meta['higher'].children == meta
         
     def test_create_new_metadata_from_old(self):
         meta = pysat.Meta()
@@ -509,23 +509,23 @@ class TestBasics():
 
     def test_repeated_set_Units_wrong_case(self):
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
-        for i in np.arange(1000):
+        for i in np.arange(10):
             self.meta['new'] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
             self.meta['new_%d' % i] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
 
-        for i in np.arange(1000):
-            self.meta['new_500'] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
+        for i in np.arange(10):
+            self.meta['new_5'] = {'units': 'hey%d' % i, 'long_name': 'boo%d' % i}
             self.meta['new_%d' % i] = {'units': 'heyhey%d' % i, 
                                         'long_name': 'booboo%d' % i}
 
         # print (self.meta['new'])
-        assert self.meta['new'].Units == 'hey999'
-        assert self.meta['new'].Long_Name == 'boo999'
-        assert self.meta['new_999'].Units == 'heyhey999'
-        assert self.meta['new_999'].Long_Name == 'booboo999'
+        assert self.meta['new'].Units == 'hey9'
+        assert self.meta['new'].Long_Name == 'boo9'
+        assert self.meta['new_9'].Units == 'heyhey9'
+        assert self.meta['new_9'].Long_Name == 'booboo9'
         # print (self.meta['new_500'])
-        assert self.meta['new_500'].Units == 'hey999'
-        assert self.meta['new_500'].Long_Name == 'boo999'
+        assert self.meta['new_5'].Units == 'hey9'
+        assert self.meta['new_5'].Long_Name == 'boo9'
 
     def test_change_Units_and_Name_case(self):
         self.meta = pysat.Meta(units_label='units', name_label='long_name')
@@ -547,7 +547,7 @@ class TestBasics():
         self.meta.name_label = 'Long_Name'
         # print(self.meta['new'])
         assert ((self.meta['new'].Units == 'hey') & (self.meta['new'].Long_Name == 'boo') &
-            (self.meta['new2']['new21'].Units == 'hey2') & (self.meta['new2']['new21'].Long_Name == 'boo2'))
+            (self.meta['new2'].children['new21'].Units == 'hey2') & (self.meta['new2'].children['new21'].Long_Name == 'boo2'))
 
     @raises(AttributeError)    
     def test_change_Units_and_Name_case_w_ho_wrong_case(self):
@@ -560,7 +560,7 @@ class TestBasics():
         self.meta.name_label = 'Long_Name'
         # print(self.meta['new'])
         assert ((self.meta['new'].units == 'hey') & (self.meta['new'].long_name == 'boo') &
-            (self.meta['new2']['new21'].units == 'hey2') & (self.meta['new2']['new21'].long_name == 'boo2'))
+            (self.meta['new2'].children['new21'].units == 'hey2') & (self.meta['new2'].children['new21'].long_name == 'boo2'))
 
     def test_contains_case_insensitive(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
@@ -610,9 +610,9 @@ class TestBasics():
         assert (self.meta.attr_case_name('YoYoYo') == 'YoYoYO')
         assert (self.meta['new', 'yoyoyo'] == 'YOLO')
         assert (self.meta['new', 'YoYoYO'] == 'YOLO')
-        assert (self.meta['new2']['new21', 'yoyoyo'] == 'yolo')
-        assert (self.meta['new2']['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].attr_case_name('YoYoYo') == 'YoYoYO')
+        assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
+        assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
+        assert (self.meta['new2'].children.attr_case_name('YoYoYo') == 'YoYoYO')
 
     def test_get_attribute_name_case_preservation_w_higher_order_2(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
@@ -625,9 +625,9 @@ class TestBasics():
         assert (self.meta.attr_case_name('YoYoYo') == 'YoYoYO')
         assert (self.meta['new', 'yoyoyo'] == 'YOLO')
         assert (self.meta['NEW', 'YoYoYO'] == 'YOLO')
-        assert (self.meta['new2']['new21', 'yoyoyo'] == 'yolo')
-        assert (self.meta['new2']['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].attr_case_name('YoYoYo') == 'YoYoYO')
+        assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
+        assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
+        assert (self.meta['new2'].children.attr_case_name('YoYoYo') == 'YoYoYO')
 
 
     def test_get_attribute_name_case_preservation_w_higher_order_reverse_order(self):
@@ -641,9 +641,9 @@ class TestBasics():
         assert (self.meta.attr_case_name('YoYoYo') == 'yoyoyo')
         assert (self.meta['new', 'yoyoyo'] == 'YOLO')
         assert (self.meta['new', 'YoYoYO'] == 'YOLO')
-        assert (self.meta['new2']['new21', 'yoyoyo'] == 'yolo')
-        assert (self.meta['new2']['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].attr_case_name('YoYoYo') == 'yoyoyo')
+        assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
+        assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
+        assert (self.meta['new2'].children.attr_case_name('YoYoYo') == 'yoyoyo')
 
 
     def test_has_attr_name_case_preservation_w_higher_order_reverse_order(self):
