@@ -240,17 +240,17 @@ class Meta(object):
         Meta
         
         """
-
-        other.units_label = self.units_label
-        other.name_label = self.name_label
-        other.notes_label = self.notes_label
-        other.desc_label = self.desc_label
-        other.plot_label = self.plot_label
-        other.axis_label = self.axis_label
-        other.scale_label = self.scale_label
-        other.min_label = self.min_label
-        other.max_label = self.max_label
-        other.fill_label = self.fill_label
+        other_updated = other.copy()
+        other_updated.units_label = self.units_label
+        other_updated.name_label = self.name_label
+        other_updated.notes_label = self.notes_label
+        other_updated.desc_label = self.desc_label
+        other_updated.plot_label = self.plot_label
+        other_updated.axis_label = self.axis_label
+        other_updated.scale_label = self.scale_label
+        other_updated.min_label = self.min_label
+        other_updated.max_label = self.max_label
+        other_updated.fill_label = self.fill_label
         return other
 
     def accept_default_labels(self, other):
@@ -898,13 +898,14 @@ class Meta(object):
                     raise RuntimeError('Duplicated keys (variable names) across '
                                         'Meta objects in keys_nD().')
                                         
-        #TODO make sure labels between the two objects are the same
+        # make sure labels between the two objects are the same
+        other_updated = self.apply_default_labels(other)
         # concat 1D metadata in data frames to copy of
         # current metadata
-        for key in other.keys():
+        for key in other_updated.keys():
             mdata[key] = other[key]
         # add together higher order data
-        for key in other.keys_nD():
+        for key in other_updated.keys_nD():
             mdata[key] = other[key]
         return mdata
 

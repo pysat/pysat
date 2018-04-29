@@ -1377,29 +1377,6 @@ class Instrument(object):
                             export_dict[key+'_'+ho_key][original_key] = meta_dict[original_key]
 
         return export_dict
-
-    def _ensure_metadata_standards(self):
-        """Copies existing metadata to fill in redundant portions of wider standard.
-    
-        This standard ensures compatibility with multiple standards. As such, there
-        is overlap between some of the formative standards. Copies CatDesc, Units, and Long_Name
-        and FillVal appropriately.
-    
-        """
-    
-        meta_obj = [self.meta]
-        for obj_key in self.meta.ho_data.keys():
-            meta_obj.append(self.meta[obj_key])
-    
-        for obj in meta_obj:
-            for item in obj.keys():
-                # print ('MetaData for ', item)
-                # print (obj[item])
-                # print (obj)
-                obj[item] = {'FieldNam': obj[item, self.name_label]}
-                obj[item] = {'Lablxis': obj[item, 'CatDesc']}
-                obj[item] = {'Labl_Ptr_#': obj[item, 'CatDesc']}
-                obj[item] = {'_FillValue':  obj[item, self.fill_label]}
         
  
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
