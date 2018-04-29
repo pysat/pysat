@@ -2,7 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Pending][]
+## [1.0.0] - 2018-04-29
+ - Improved consistency when handling higher order metadata
+ - Improved translation of metadata within netCDF4 files to pysat standard
+ - Added pysatCDF as package requirement
+ - PEP8 upgrades throughout
  - Updated load_netCDF4 routine to support ICON EUV files natively
  - to_netCDF4 function updated to be consistent with load_netCDF4
  - Meta object upgraded to handle more attributes by default
