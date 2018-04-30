@@ -225,7 +225,7 @@ class TestDifferenceSameInstrument:
                 ('latitude', 'latitude', -90, 90, .5), 
                 ('mlt', 'mlt', 0, 24, .1)]
         results = self.const.difference(self.const[0], self.const[1], 
-                bounds, [('dummy1','dummy1')])
+                bounds, [('dummy1','dummy1')], cost_function)
         diff = results['dummy1']
         dist = results['dist']
         for i in diff:
@@ -250,11 +250,18 @@ class TestDifferenceSimilarInstruments:
                 ('latitude', 'latitude', -90, 90, .5), 
                 ('mlt', 'mlt', 0, 24, .1)]
         results = self.const.difference(self.const[0], self.const[1], 
-                bounds, [('dummy1','dummy1')])
+                bounds, [('dummy1','dummy1')], cost_function)
         diff = results['dummy1']
         dist = results['dist']
         for i in diff:
             assert i == 5
+
+def cost_function(point1, point2):
+    #TODO: actually do lat/long difference correctly.
+    #alternatively, let the user supply a cost function.
+    lat_diff = point1['latitude'] - point2['latitude']
+    long_diff = point1['longitude'] - point2['longitude']
+    return lat_diff*lat_diff + long_diff*long_diff
 
 
 

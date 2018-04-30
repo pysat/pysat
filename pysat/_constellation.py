@@ -166,7 +166,8 @@ class Constellation(object):
                              'bin':     out_2d[label]['bin_y']}
         return output
 
-    def difference(self, instrument1, instrument2, bounds, data_labels):
+    def difference(self, instrument1, instrument2, bounds, data_labels, 
+                cost_function):
         """
         Calculates the difference in signals from multiple
         instruments within the given bounds.
@@ -189,13 +190,23 @@ class Constellation(object):
 
         bounds : list of tuples in the form (inst1_label, inst2_label,
             min, max, max_difference)
-
+            inst1_label are inst2_label are labels for the data in
+            instrument1 and instrument2
+            min and max are bounds on the data considered
+            max_difference is the maximum difference between two points
+            for the difference to be calculated
         
         translate : dict
             User provides dict translate maps
             ("time", "lat", "long", "alt", "time2", "lat2",
             "long2", "alt2") to their respective data labels
             on their respectives s1, s2. # XXX rewrite
+
+        Returns
+        -------
+        data_df: pandas DataFrame
+            Each row has a point from instrument1, with the keys
+            preceded by '1_',
         
         Pseudocode
         ----------
@@ -320,7 +331,7 @@ class Constellation(object):
             #print(i)
 
             #gets points in instrument2 within the given bounds
-            #b = (label1, label2, max_distance)
+            #b = (label1, label2, min, max, max_distance)
             s2_near = instrument2.data
             for b in bounds:
                 label1 = b[0]
@@ -352,7 +363,7 @@ class Constellation(object):
                 else:
                     data[dl1].append(float('NaN'))
 
-            #append lat/long/alt/time infor to data dict
+            #append the rest of the row
             for b in bounds:
                 label1 = b[0]
                 label2 = b[1]
@@ -363,11 +374,14 @@ class Constellation(object):
                     data['2_'+label2].append(float('NaN'))
 
         data_df = pds.DataFrame(data=data)
+        #return {'data':data_df, start: , end: }
         return data_df
-    
+
+"""
 def cost_function(point1, point2):
     #TODO: actually do lat/long difference correctly.
     #alternatively, let the user supply a cost function.
     lat_diff = point1['latitude'] - point2['latitude']
     long_diff = point1['longitude'] - point2['longitude']
     return lat_diff*lat_diff + long_diff*long_diff
+"""
