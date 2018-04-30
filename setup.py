@@ -77,5 +77,9 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pandas', 'numpy', 'pysatCDF'] #'matplotlib'
+    on_rtd = os.environ.get('READTHEDOCS') == 'True'
+    if on_rtd:
+        install_requires=['pandas', 'numpy'] 
+    else:
+        install_requires=['pandas', 'numpy', 'pysatCDF']
 )
