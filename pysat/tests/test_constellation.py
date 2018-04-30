@@ -210,3 +210,58 @@ class TestAdditionSingleInstrument:
         for i in med:
             assert  i == 5
 
+    # TODO write tests for add, difference.
+
+class TestDifferenceSameInstrument:
+    def setup(self):
+        self.const = pysat.Constellation(name='test_diff')
+
+    def teardown(self):
+        del self.const
+
+    def test_diff(self):
+        self.const.load(date=pysat.datetime(2008,1,1))
+        bounds = [('longitude', 'longitude', 0, 360, .5), 
+                ('latitude', 'latitude', -90, 90, .5), 
+                ('mlt', 'mlt', 0, 24, .1)]
+        results = self.const.difference(self.const[0], self.const[1], 
+                bounds, [('dummy1','dummy1')], cost_function)
+        diff = results['dummy1']
+        dist = results['dist']
+        for i in diff:
+            assert i == 0
+        for i in dist:
+            assert i == 0
+
+class TestDifferenceSmallInstruments(TestDifferenceSameInstrument):
+    def setup(self):
+        self.const = pysat.Constellation(name='test_diff_small')
+
+class TestDifferenceSimilarInstruments:
+    def setup(self):
+        self.const = pysat.Constellation(name='test_diff2')
+
+    def teardown(self):
+        del self.const
+
+    def test_diff_similar_instruments(self):
+        self.const.load(date=pysat.datetime(2008,1,1))
+        bounds = [('longitude', 'longitude', 0, 360, .5), 
+                ('latitude', 'latitude', -90, 90, .5), 
+                ('mlt', 'mlt', 0, 24, .1)]
+        results = self.const.difference(self.const[0], self.const[1], 
+                bounds, [('dummy1','dummy1')], cost_function)
+        diff = results['dummy1']
+        dist = results['dist']
+        for i in diff:
+            assert i == 5
+
+def cost_function(point1, point2):
+    #TODO: actually do lat/long difference correctly.
+    #alternatively, let the user supply a cost function.
+    lat_diff = point1['latitude'] - point2['latitude']
+    long_diff = point1['longitude'] - point2['longitude']
+    return lat_diff*lat_diff + long_diff*long_diff
+
+
+
