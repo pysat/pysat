@@ -193,17 +193,13 @@ class Constellation(object):
 
         Parameters
         ----------
-        s1 : Instrument
+        instrument1 : Instrument
             Information must already be loaded into the 
             instrument.
         
-        s2 : Instrument
+        instrument2 : Instrument
             Information must already be loaded into the 
             instrument.
-
-        data_labels : list of tuples of data labels
-            The first key is used to access data in s1 
-            and the second data in s2.
 
         bounds : list of tuples in the form (inst1_label, inst2_label,
             min, max, max_difference)
@@ -212,6 +208,10 @@ class Constellation(object):
             min and max are bounds on the data considered
             max_difference is the maximum difference between two points
             for the difference to be calculated
+
+        data_labels : list of tuples of data labels
+            The first key is used to access data in s1 
+            and the second data in s2.
         
         cost_function : function
             function that operates on two rows of the instrument data.
