@@ -265,17 +265,13 @@ class Constellation(object):
 
         Parameters
         ----------
-        s1 : Instrument
+        instrument1 : Instrument
             Information must already be loaded into the 
             instrument.
         
-        s2 : Instrument
+        instrument2 : Instrument
             Information must already be loaded into the 
             instrument.
-
-        data_labels : list of tuples of data labels
-            The first key is used to access data in s1 
-            and the second data in s2.
 
         bounds : list of tuples in the form (inst1_label, inst2_label,
             min, max, max_difference)
@@ -284,12 +280,15 @@ class Constellation(object):
             min and max are bounds on the data considered
             max_difference is the maximum difference between two points
             for the difference to be calculated
+
+        data_labels : list of tuples of data labels
+            The first key is used to access data in s1 
+            and the second data in s2.
         
-        translate : dict
-            User provides dict translate maps
-            ("time", "lat", "long", "alt", "time2", "lat2",
-            "long2", "alt2") to their respective data labels
-            on their respectives s1, s2. # XXX rewrite
+        cost_function : function
+            function that operates on two rows of the instrument data.
+            used to determine the distance between two points for finding 
+            closest points
 
         Returns
         -------
@@ -385,17 +384,7 @@ class Constellation(object):
 
         Created as part of a Spring 2018 UTDesign project.
         """
-
-        #translate = {"time":"mlt", "time2":"mlt", 
-        #            "long":"longitude", "long2":"longitude",
-        #            "lat":"latitude", "lat2":"latitude"}
-                    #"alt":"altitude", "alt2":"altitude"}
-
-        #bounds = [("longitude", "longitude", .5),
-        #        ("latitude", "latitude", .5),
-        #        ("mlt", "mlt", .1)]
         
-        #STD_LABELS = ("time", "lat", "long")#, "alt")
         labels = [dl1 for dl1, dl2 in data_labels] + ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + ['dist']
         data = {label:[] for label in labels}
 

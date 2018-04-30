@@ -210,8 +210,6 @@ class TestAdditionSingleInstrument:
         for i in med:
             assert  i == 5
 
-    # TODO write tests for add, difference.
-
 class TestDifferenceSameInstrument:
     def setup(self):
         self.const = pysat.Constellation(name='test_diff')
@@ -228,6 +226,8 @@ class TestDifferenceSameInstrument:
                 bounds, [('dummy1','dummy1')], cost_function)
         diff = results['dummy1']
         dist = results['dist']
+        #the instruments are identical, so the difference should be 0
+        #everywhere
         for i in diff:
             assert i == 0
         for i in dist:
@@ -256,9 +256,8 @@ class TestDifferenceSimilarInstruments:
         for i in diff:
             assert i == 5
 
+#test cost function for testing difference
 def cost_function(point1, point2):
-    #TODO: actually do lat/long difference correctly.
-    #alternatively, let the user supply a cost function.
     lat_diff = point1['latitude'] - point2['latitude']
     long_diff = point1['longitude'] - point2['longitude']
     return lat_diff*lat_diff + long_diff*long_diff
