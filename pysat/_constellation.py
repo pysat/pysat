@@ -293,8 +293,11 @@ class Constellation(object):
         -------
         data_df: pandas DataFrame
             Each row has a point from instrument1, with the keys
-            preceded by '1_',
-
+            preceded by '1_', and a point within bounds on that point
+            from instrument2 with the keys preceded by '2_', and the 
+            difference between the instruments' data for all the labels
+            in data_labels
+        
         Pseudocode
         ----------
         Check integrity of inputs.
