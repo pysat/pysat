@@ -236,7 +236,7 @@ class Constellation(object):
         // Let data be the 2D array of deques holding each piece
         //  of data, sorted into bins by lat/long/alt.
         
-        Let s1_data (resp s2_dat) be data from s1.data, s2.data
+        Let s1_data (resp s2_data) be data from s1.data, s2.data
         filtered by user-provided lat/long/alt bounds, time bounds
         calculated.
 
