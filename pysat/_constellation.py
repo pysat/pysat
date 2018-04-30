@@ -23,15 +23,15 @@ class Constellation(object):
         instruments : list
             a list of pysat Instruments
         name : string
-            Name of a file in pysat/constellations containing a list of 
-            instruments. 
-        
+            Name of a file in pysat/constellations containing a list of
+            instruments.
+
         Note
         ----
-        The name and instruments parameters should not both be set. 
+        The name and instruments parameters should not both be set.
         If neither is given, an empty constellation will be created.
         """
-        
+
         if instruments and name:
             raise ValueError('When creating a constellation, please specify '
                              'a list of instruments or a name, not both.')
@@ -73,7 +73,7 @@ class Constellation(object):
     def data_mod(self, function, *args, kind='add', at_pos='end', **kwargs):
         """
         Register a function to modify data of member Instruments.
-        
+
         (Wraps pysat.Custom.add; documentation of that function is
         reproduced here.)
 
@@ -83,7 +83,7 @@ class Constellation(object):
         it passes the call to each instrument and registers it in the instrument's pysat.Custom queue.
 
         Parameter
-        ---------        
+        ---------
             function : string or function object
                 name of function or function object to be added to queue
 
@@ -91,42 +91,42 @@ class Constellation(object):
                 add
                     Adds data returned from fuction to instrument object.
                 modify
-                    pysat instrument object supplied to routine. Any and all 
+                    pysat instrument object supplied to routine. Any and all
                     changes to object are retained.
-                pass  
-                    A copy of pysat object is passed to function. No 
+                pass
+                    A copy of pysat object is passed to function. No
                     data is accepted from return.
 
             at_pos : string or int
-                insert at position. (default, insert at end).                                                                   
+                insert at position. (default, insert at end).
             args : extra arguments                                                                                                                                   args : extra arguments
-                extra arguments are passed to the custom function (once)                    
+                extra arguments are passed to the custom function (once)
             kwargs : extra keyword arguments
                 extra keyword args are passed to the custom function (once)
-        
+
         Note
         ----
         Allowed `add` function returns:
-            
+
         - {'data' : pandas Series/DataFrame/array_like,
-          'units' : string/array_like of strings, 
+          'units' : string/array_like of strings,
           'long_name' : string/array_like of strings,
-          'name' : string/array_like of strings (iff data array_like)} 
-           
+          'name' : string/array_like of strings (iff data array_like)}
+
         - pandas DataFrame, names of columns are used
-        
-        - pandas Series, .name required 
-        
-        - (string/list of strings, numpy array/list of arrays) 
+
+        - pandas Series, .name required
+
+        - (string/list of strings, numpy array/list of arrays)
         """
-        
+
         for instrument in self.instruments:
             instrument.custom.add(function, *args, kind, at_pos, **kwargs)
 
     def load(self, *args, **kwargs):
         """
         Load instrument data into instrument object.data
-        
+
         (Wraps pysat.Instrument.load; documentation of that function is
         reproduced here.)
 
@@ -143,7 +143,7 @@ class Constellation(object):
         verifyPad : boolean
             if true, padding data not removed (debug purposes)
         """
-        
+
         for instrument in self.instruments:
             instrument.load(*args, **kwargs)
 
@@ -255,7 +255,7 @@ class Constellation(object):
                              'bin':     out_2d[label]['bin_y']}
         return output
 
-    def difference(self, instrument1, instrument2, bounds, data_labels, 
+    def difference(self, instrument1, instrument2, bounds, data_labels,
                 cost_function):
         """
         Calculates the difference in signals from multiple
@@ -266,11 +266,11 @@ class Constellation(object):
         Parameters
         ----------
         instrument1 : Instrument
-            Information must already be loaded into the 
+            Information must already be loaded into the
             instrument.
-        
+
         instrument2 : Instrument
-            Information must already be loaded into the 
+            Information must already be loaded into the
             instrument.
 
         bounds : list of tuples in the form (inst1_label, inst2_label,
@@ -282,12 +282,12 @@ class Constellation(object):
             for the difference to be calculated
 
         data_labels : list of tuples of data labels
-            The first key is used to access data in s1 
+            The first key is used to access data in s1
             and the second data in s2.
-        
+
         cost_function : function
             function that operates on two rows of the instrument data.
-            used to determine the distance between two points for finding 
+            used to determine the distance between two points for finding
             closest points
 
         Returns
@@ -295,46 +295,46 @@ class Constellation(object):
         data_df: pandas DataFrame
             Each row has a point from instrument1, with the keys
             preceded by '1_',
-        
+
         Pseudocode
         ----------
         Check integrity of inputs.
 
         Let STD_LABELS be the constant tuple:
         ("time", "lat", "long", "alt")
-        
+
         Note: modify so that user can override labels for time,
         lat, long, data for each satelite.
-        
+
         // We only care about the data currently loaded
            into each object.
-        
+
         Let start be the later of the datetime of the
          first piece of data loaded into s1, the first
          piece of data loaded into s2, and the user
          supplied start bound.
-        
+
         Let end be the later of the datetime of the first
          piece of data loaded into s1, the first piece
          of data loaded into s2, and the user supplied
          end bound.
 
         If start is after end, raise an error.
-        
+
         // Let data be the 2D array of deques holding each piece
         //  of data, sorted into bins by lat/long/alt.
-        
+
         Let s1_data (resp s2_data) be data from s1.data, s2.data
         filtered by user-provided lat/long/alt bounds, time bounds
         calculated.
 
         Let data be a dictionary of lists with the keys
         [ dl1 for dl1, dl2 in data_labels ] +
-        STD_LABELS + 
+        STD_LABELS +
         [ lb+"2" for lb in STD_LABELS ]
-        
+
         For each piece of data s1_point in s1_data:
-        
+
             # Hopefully np.where is very good, because this
             #  runs O(n) times.
             # We could try reusing selections, maybe, if needed.
@@ -343,48 +343,48 @@ class Constellation(object):
              bounds on lat/long/alt/time using 8 statements to
              numpy.where. We can probably get those defaults from
              the user or handy constants / config?
-        
-            # XXX we could always try a different closest 
+
+            # XXX we could always try a different closest
             #  pairs algo
-        
+
             Let distance be the numpy array representing the
              distance between s1_point and each point in s2_near.
-        
+
             # S: Difference for others: change this line.
-            For each of those, calculate the spatial difference 
-             from the s1 using lat/long/alt. If s2_near is 
+            For each of those, calculate the spatial difference
+             from the s1 using lat/long/alt. If s2_near is
              empty; break loop.
-        
+
             Let s2_nearest be the point in s2_near corresponding
              to the lowest distance.
-        
+
             Append to data: a point, indexed by the time from
              s1_point, containing the following data:
-        
+
             # note
             Let n be the length of data["time"].
             For each key in data:
                 Assert len(data[key]) == n
             End for.
-        
+
             # Create data row to pass to pandas.
             Let row be an empty dict.
             For dl1, dl2 in data_labels:
                 Append s1_point[dl1] - s2_nearest[dl2] to data[dl1].
-        
+
             For key in STD_LABELS:
                 Append s1_point[translate[key]] to data[key]
                 key = key+"2"
                 Append s2_nearest[translate[key]] to data[key]
-        
+
         Let data_df be a pandas dataframe created from the data
         in data.
-        
+
         return { 'data': data_df, 'start':start, 'end':end }
 
         Created as part of a Spring 2018 UTDesign project.
         """
-        
+
         labels = [dl1 for dl1, dl2 in data_labels] + ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + ['dist']
         data = {label:[] for label in labels}
 
@@ -431,7 +431,7 @@ class Constellation(object):
                 if dist < min_dist or min_dist != min_dist:
                     min_dist = dist
                     s2_nearest = s2_point
-            
+
             data['dist'].append(min_dist)
 
             #append difference to data dict
