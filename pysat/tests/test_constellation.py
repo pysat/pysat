@@ -58,16 +58,7 @@ class TestConstellation:
 
     def test_str(self):
         """Test Constellation:__str__."""
-        # FIXME define that string.
-        assert str(self.const) == "stringgoeshere"
-
-    def test_repr(self):
-        """Test Constellation:__repr__."""
-        # FIXME
-        print(repr(self.const))
-        assert repr(self.const) == "Constellation([..."
-
-    # TODO write tests for add, difference
+        assert str(self.const) == "\npysat Constellation object:\ntesting\ntesting\n"
 
 class TestAdditionIdenticalInstruments:
     def setup(self):
