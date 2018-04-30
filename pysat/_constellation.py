@@ -2,15 +2,13 @@ import collections
 import importlib
 import numpy as np
 import pandas as pds
+
 from pysat.ssnl.avg import _calc_2d_median
-import numpy as np
-import pandas as pds
+
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
-        print(repr(med1)) #FIXME
 
-    FIXME document this.
     Created as part of a Spring 2018 UTDesign project.
     """
     def __init__(self, instruments=None, name=None):
@@ -175,13 +173,14 @@ class Constellation(object):
         Returns
         -------
         median : dictionary
-
+            Dictionary indexed by data label, each value of which is a 
+            dictionary with keys 'median', 'count', 'avg_abs_dev', and 
+            'bin' (the values of the bin edges.) 
         """
-        # TODO document return more
-        # TODO insert type checks
 
+        # TODO Update for 2.7 compatability.
         if isinstance(data_label, str):
-            data_label = [data_label,]
+            data_label = [data_label, ]
         elif not isinstance(data_label, collections.Sequence):
             raise ValueError("Please pass data_label as a string or "
                              "collection of strings.")
@@ -219,7 +218,7 @@ class Constellation(object):
                     # Grab the data in bounds on data1, data2.
                     data_considered = inst.data.iloc[in_bounds]
 
-                    y_indexes = np.digitize(data_considered[label3], biny) -1
+                    y_indexes = np.digitize(data_considered[label3], biny) - 1
 
                     # Iterate over the bins along y
                     for yj in yarr:
@@ -248,7 +247,7 @@ class Constellation(object):
         for i, label in enumerate(data_label):
             median = [r[0] for r in out_2d[label]['median']]
             count  = [r[0] for r in out_2d[label]['count']]
-            dev     = [r[0] for r in out_2d[label]['avg_abs_dev']]
+            dev    = [r[0] for r in out_2d[label]['avg_abs_dev']]
             output[label] = {'median':  median,
                              'count':   count,
                              'avg_abs_dev': dev,
@@ -256,7 +255,7 @@ class Constellation(object):
         return output
 
     def difference(self, instrument1, instrument2, bounds, data_labels,
-                cost_function):
+                   cost_function):
         """
         Calculates the difference in signals from multiple
         instruments within the given bounds.
@@ -344,8 +343,8 @@ class Constellation(object):
              numpy.where. We can probably get those defaults from
              the user or handy constants / config?
 
-            # XXX we could always try a different closest
-            #  pairs algo
+            # We could try a different algorithm for closest pairs
+            # of points.
 
             Let distance be the numpy array representing the
              distance between s1_point and each point in s2_near.
@@ -386,9 +385,9 @@ class Constellation(object):
         """
 
         labels = [dl1 for dl1, dl2 in data_labels] + ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + ['dist']
-        data = {label:[] for label in labels}
+        data = {label: [] for label in labels}
 
-        #apply bounds
+        # Apply bounds
         inst1 = instrument1.data
         inst2 = instrument2.data
         for b in bounds:
@@ -406,10 +405,7 @@ class Constellation(object):
             inst2 = inst2.iloc[ind2]
 
         for i, s1_point in inst1.iterrows():
-            #print(i)
-
-            #gets points in instrument2 within the given bounds
-            #b = (label1, label2, min, max, max_distance)
+            # Gets points in instrument2 within the given bounds
             s2_near = instrument2.data
             for b in bounds:
                 label1 = b[0]
@@ -423,7 +419,7 @@ class Constellation(object):
                 indices = np.where((data2 >= minbound) & (data2 < maxbound))
                 s2_near = s2_near.iloc[indices]
 
-            #finds nearest point to s1_point in s2_near
+            # Finds nearest point to s1_point in s2_near
             s2_nearest = None
             min_dist = float('NaN')
             for j, s2_point in s2_near.iterrows():
@@ -434,14 +430,14 @@ class Constellation(object):
 
             data['dist'].append(min_dist)
 
-            #append difference to data dict
+            # Append difference to data dict
             for dl1, dl2 in data_labels:
                 if s2_nearest is not None:
                     data[dl1].append(s1_point[dl1] - s2_nearest[dl2])
                 else:
                     data[dl1].append(float('NaN'))
 
-            #append the rest of the row
+            # Append the rest of the row
             for b in bounds:
                 label1 = b[0]
                 label2 = b[1]
@@ -452,14 +448,6 @@ class Constellation(object):
                     data['2_'+label2].append(float('NaN'))
 
         data_df = pds.DataFrame(data=data)
+        # FIXME return type
         #return {'data':data_df, start: , end: }
         return data_df
-
-"""
-def cost_function(point1, point2):
-    #TODO: actually do lat/long difference correctly.
-    #alternatively, let the user supply a cost function.
-    lat_diff = point1['latitude'] - point2['latitude']
-    long_diff = point1['longitude'] - point2['longitude']
-    return lat_diff*lat_diff + long_diff*long_diff
-"""
