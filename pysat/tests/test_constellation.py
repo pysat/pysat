@@ -1,7 +1,7 @@
 from nose.tools import raises
 import numpy as np
 import pysat
-import numpy as np
+import pandas as pds
 
 
 class TestConstellation:
@@ -254,4 +254,30 @@ def cost_function(point1, point2):
     return lat_diff*lat_diff + long_diff*long_diff
 
 
+
+class TestDataMod:
+    """Test adapted from test_custom.py."""
+    def setup(self):
+        '''Runs before every method to create a clean testing setup.'''
+        self.testConst = pysat.Constellation([pysat.Instrument('pysat','testing', tag='10', clean_level='clean')])
+
+    def teardown(self):
+        '''Runs after every method to clean up previous testing.'''
+        del self.testConst
+
+    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
+        '''Adds a function to the object's custom queue'''
+        self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
+
+    def test_single_adding_custom_function(self):
+        '''Test if custom function works correctly. Add function that returns pandas object.'''
+        def custom1(inst):
+            d = 2.*inst.data.mlt
+            d.name='doubleMLT'
+            return d
+
+        self.add(custom1, 'add')  
+        self.testConst.load(2009,1)
+        ans = (self.testConst[0].data['doubleMLT'].values == 2.*self.testConst[0].data.mlt.values).all()
+        assert ans
 
