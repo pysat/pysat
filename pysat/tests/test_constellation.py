@@ -43,11 +43,11 @@ class TestConstellation:
         a bad instrument 'list.'"""
         pysat.Constellation(instruments=42)
 
-    @raises(ValueError)
     def test_construct_null(self):
         """Attempt to construct a Constellation with
         no arguments."""
-        pysat.Constellation()
+        const = pysat.Constellation()
+        assert len(const.instruments) == 0
 
     def test_getitem(self):
         """Test Constellation:__getitem__."""
@@ -62,22 +62,16 @@ class TestConstellation:
 
 class TestAdditionIdenticalInstruments:
     def setup(self):
-        insts = []
-        for _ in range(3):
-            insts.append(pysat.Instrument('pysat', 'testing', clean_level='clean'))
-        self.const1 = pysat.Constellation(insts)
-        self.const2 = pysat.Constellation(
-                        [pysat.Instrument('pysat', 'testing', clean_level='clean')])
+        self.const1 = pysat.Constellation(name='testing')
+        self.const2 = pysat.Constellation(name='single_test')
 
     def teardown(self):
         del self.const1
         del self.const2
 
     def test_addition_identical(self):
-        for inst in self.const1:
-            inst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
-        for inst in self.const2:
-            inst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.const1.set_bounds(pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.const2.set_bounds(pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
 
         bounds1 = [0,360]
         label1 = 'longitude'
@@ -106,17 +100,13 @@ class TestAdditionOppositeInstruments:
         length of the other data, testadd2 has the same data but negative.
         The addition of these two signals should be zero everywhere.
         """
-        insts = []
-        insts.append(pysat.Instrument('pysat', 'testadd1', clean_level='clean'))
-        insts.append(pysat.Instrument('pysat', 'testadd2', clean_level='clean'))
-        self.testC = pysat.Constellation(insts)
+        self.testC = pysat.Constellation(name='test_add_opposite')
 
     def teardown(self):
         del self.testC
 
     def test_addition_opposite_instruments(self):
-        for inst in self.testC:
-            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        self.testC.set_bounds(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         bounds1 = [0,360]
         label1 = 'longitude'
         bounds2 = [-90,90]
@@ -138,20 +128,16 @@ class TestAdditionSimilarInstruments:
         the addition of just testadd1
         TODO: actually check the math on this
         """
-        insts = []
-        insts.append(pysat.Instrument('pysat', 'testadd1', clean_level='clean'))
-        insts.append(pysat.Instrument('pysat', 'testadd3', clean_level='clean'))
-        self.testC = pysat.Constellation(insts)
+        self.testC = pysat.Constellation(name='test_add_similar')
         self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd1', clean_level='clean')])
 
     def teardown(self):
         del self.testC
+        del self.refC
 
     def test_addition_similar_instruments(self):
-        for inst in self.testC:
-            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
-        for inst in self.refC:
-            inst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        self.testC.set_bounds(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        self.refC.set_bounds(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         bounds1 = [0,360]
         label1 = 'longitude'
         bounds2 = [-90,90]
