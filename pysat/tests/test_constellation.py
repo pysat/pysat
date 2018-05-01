@@ -43,11 +43,11 @@ class TestConstellation:
         a bad instrument 'list.'"""
         pysat.Constellation(instruments=42)
 
-    @raises(ValueError)
     def test_construct_null(self):
         """Attempt to construct a Constellation with
         no arguments."""
-        pysat.Constellation()
+        const = pysat.Constellation()
+        assert len(const.instruments) == 0
 
     def test_getitem(self):
         """Test Constellation:__getitem__."""
@@ -129,7 +129,7 @@ class TestAdditionSimilarInstruments:
         TODO: actually check the math on this
         """
         self.testC = pysat.Constellation(name='test_add_similar')
-        self.refC = pysat.Constellation(name='single_test')
+        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd1', clean_level='clean')])
 
     def teardown(self):
         del self.testC
@@ -137,7 +137,7 @@ class TestAdditionSimilarInstruments:
 
     def test_addition_similar_instruments(self):
         self.testC.set_bounds(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
-        self.refC.set_bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        self.refC.set_bounds(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         bounds1 = [0,360]
         label1 = 'longitude'
         bounds2 = [-90,90]
