@@ -68,20 +68,20 @@ class Constellation(object):
         for instrument in self.instruments:
             instrument.bounds = (start, stop)
 
-    def data_mod(self, function, *args, kind='add', at_pos='end', **kwargs):
+    def data_mod(self, *args, **kwargs):
         """
         Register a function to modify data of member Instruments.
-
-        (Wraps pysat.Custom.add; documentation of that function is
-        reproduced here.)
 
         The function is not partially applied to modify member data.
 
         When the Constellation receives a function call to register a function for data modification,
         it passes the call to each instrument and registers it in the instrument's pysat.Custom queue.
 
-        Parameter
-        ---------
+        (Wraps pysat.Custom.add; documentation of that function is
+        reproduced here.)
+
+        Parameters
+        ----------
             function : string or function object
                 name of function or function object to be added to queue
 
@@ -97,10 +97,7 @@ class Constellation(object):
 
             at_pos : string or int
                 insert at position. (default, insert at end).
-            args : extra arguments                                                                                                                                   args : extra arguments
-                extra arguments are passed to the custom function (once)
-            kwargs : extra keyword arguments
-                extra keyword args are passed to the custom function (once)
+            args : extra arguments
 
         Note
         ----
@@ -119,7 +116,7 @@ class Constellation(object):
         """
 
         for instrument in self.instruments:
-            instrument.custom.add(function, *args, kind, at_pos, **kwargs)
+            instrument.custom.add(*args, **kwargs)
 
     def load(self, *args, **kwargs):
         """
