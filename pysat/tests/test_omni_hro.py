@@ -40,6 +40,13 @@ class TestOMNICustom():
                                               4.12581021, 4.40641671,
                                               2.87780562, 0.58539121], \
                                            index=self.testInst.data.index)
+        self.testInst['flow_speed'] = pds.Series([394.396168, 561.163579,
+                                                  402.930788, 547.347958,
+                                                  569.823962, 47.219819,
+                                                  147.760461, 347.187188,
+                                                  412.581021, 440.641671,
+                                                  287.780562, 58.539121], \
+                                           index=self.testInst.data.index)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -127,3 +134,23 @@ class TestOMNICustom():
                       np.isnan(ca_std))
 
         assert ans1 & ans2 & ans3
+
+    def test_dayside_recon(self):
+        """ Test the IMF steadiness standard deviation calculation."""
+
+        # Run the clock angle and steadiness routines
+        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
+        pysat.instruments.omni_hro.calculate_dayside_reconnection(self.testInst)
+
+        # Ensure the BYZ coefficient of variation is calculated correctly
+        rcon = np.array([698.297487, 80.233896, 3.033586, 2.216075, 1425.310083,
+                         486.460306, 2.350339, 103.843722, 0.000720, 534.586320,
+                         1464.596772, 388.974792])
+
+        # Test the difference
+        test_diff = abs(rcon - self.testInst['recon_day'])
+
+        ans1 = test_diff.shape[0] == 12
+        ans2 = np.all(test_diff < 1.0e-6)
+
+        assert ans1 & ans2
