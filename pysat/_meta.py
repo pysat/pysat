@@ -456,7 +456,6 @@ class Meta(object):
             lower_keys = [k.lower() for k in value.keys()]
             # dictionary of labels (keys) and values (default value for attribute)
             default_dict = self.default_labels_and_values(name)
-            # for attr, defaults in default_dict: #zip(attrs, default_attrs):
             for attr in default_dict: #zip(attrs, default_attrs):
                 # the metadata default values for attr are in defaults
                 defaults = default_dict[attr]
@@ -550,6 +549,10 @@ class Meta(object):
 
         elif isinstance(value, Meta):
             # dealing with higher order data set
+            
+            # if name is already used in meta object, use that one
+            # with preserved case
+            # otherwise, use name as provided
             if name in self:
                 new_item_name = self.var_case_name(name)
             else:
@@ -571,6 +574,11 @@ class Meta(object):
             value.data.index = new_names
             # assign Meta object now that things are consistent with Meta
             # object settings
+            # but first, make sure there are lower dimension metadata
+            # parameters, passing in an empty dict fills in defaults
+            # if there is no existing metadata info
+            self[new_item_name] = {}
+            # now add to higher order data
             self.ho_data[new_item_name] = value
 
     def __getitem__(self, key):
