@@ -257,8 +257,6 @@ class Constellation(object):
         Calculates the difference in signals from multiple
         instruments within the given bounds.
 
-        TODO more doc
-
         Parameters
         ----------
         instrument1 : Instrument
@@ -294,9 +292,13 @@ class Constellation(object):
             from instrument2 with the keys preceded by '2_', and the 
             difference between the instruments' data for all the labels
             in data_labels
+
+        Created as part of a Spring 2018 UTDesign project.
+        """
         
-        Pseudocode
-        ----------
+        """
+        Draft Pseudocode
+        ----------------
         Check integrity of inputs.
 
         Let STD_LABELS be the constant tuple:
@@ -380,8 +382,6 @@ class Constellation(object):
         in data.
 
         return { 'data': data_df, 'start':start, 'end':end }
-
-        Created as part of a Spring 2018 UTDesign project.
         """
 
         labels = [dl1 for dl1, dl2 in data_labels] + ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + ['dist']
@@ -448,6 +448,4 @@ class Constellation(object):
                     data['2_'+label2].append(float('NaN'))
 
         data_df = pds.DataFrame(data=data)
-        # FIXME return type
-        #return {'data':data_df, start: , end: }
         return data_df
