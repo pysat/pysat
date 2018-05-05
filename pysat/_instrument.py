@@ -67,16 +67,15 @@ class Instrument(object):
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be 
         expressed as '{platform}/{name}/{tag}'
-    units_label : str
-        label to use for units. Defaults to 'units' but some implementations
-        will use mixed case 'Units'
-    name_label : str
-        label to use for long name. Defaults to 'long_name' but some implementations
-        will use 'Long_Name'
+    file_format : str or NoneType
+        File naming structure in string format.  Variables such as year,
+        month, and sat_id will be filled in as needed using python string
+        formatting.  The default file format structure is supplied in the
+        instrument list_files routine.
     units_label : str
         String used to label units in storage. Defaults to 'units'. 
     name_label : str
-        String used to label long_name in storage. Defaults to 'long_name'.
+        String used to label long_name in storage. Defaults to 'name'.
     notes_label : str
        label to use for notes in storage. Defaults to 'notes'
     desc_label : str
@@ -96,11 +95,6 @@ class Instrument(object):
     fill_label : str
         label to use for fill values. Defaults to 'fill' but some implementations
         will use 'FillVal'
-    file_format : str or NoneType
-        File naming structure in string format.  Variables such as year,
-        month, and sat_id will be filled in as needed using python string
-        formatting.  The default file format structure is supplied in the
-        instrument list_files routine.
                
     Attributes
     ----------
@@ -392,13 +386,20 @@ class Instrument(object):
             # is presumed to be metadata
             # metadata should be included in dict
             in_data = new.pop('data')
-            if isinstance(in_data[0], pds.DataFrame):
+            if isinstance(in_data, pds.DataFrame):
+                # input is a dataframe
+                pass
+ 
+            elif isinstance(in_data[0], pds.DataFrame):
                 # input is a list_like of frames
                 # this is higher order data
-                ho_meta = _meta.Meta()
-                for ho_key in in_data[0]:
-                    ho_meta[ho_key] = {}
-                self.meta[key] = ho_meta
+                # this process ensures
+                if key not in self.meta.keys_nD():
+                    ho_meta = _meta.Meta()
+                    for ho_key in in_data[0]:
+                        ho_meta[ho_key] = {}
+                    self.meta[key] = ho_meta
+            
             # assign data and any extra metadata
             self.data[key] = in_data
             self.meta[key] = new
@@ -407,7 +408,6 @@ class Instrument(object):
             # not a dictionary, could have a mixed input
             # aka slice, and a name
             if isinstance(key, tuple):
-                
                 self.data.ix[key[0], key[1]] = new
                 self.meta[key[1]] = {}
             # If list or series of df handle ho data
@@ -426,10 +426,12 @@ class Instrument(object):
                     # input is a list_like of frames
                     # this is higher order data
                     self.data[key] = new
-                    ho_meta = _meta.Meta()
-                    for ho_key in new[0]:
-                        ho_meta[ho_key] = {}
-                    self.meta[key] = ho_meta
+                    if key not in self.meta.keys_nD():
+                        # set up default metadata structure
+                        ho_meta = _meta.Meta()
+                        for ho_key in new[0]:
+                            ho_meta[ho_key] = {}
+                        self.meta[key] = ho_meta
                 else:
                     # not one of special ones above
                     # let pandas sort it out
