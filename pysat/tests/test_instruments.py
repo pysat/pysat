@@ -66,9 +66,9 @@ class TestInstrumentQualifier():
                     for tag in info[sat_id].keys():
                         try:
                             inst = pysat.Instrument(inst_module=module, 
-                                                                    tag=tag, 
-                                                                    sat_id=sat_id,
-                                                                    temporary_file_list=True) 
+                                                    tag=tag, 
+                                                    sat_id=sat_id,
+                                                    temporary_file_list=True) 
                             inst.test_dates = module.test_dates
                             self.instruments.append(inst)
                             self.instrument_modules.append(module)
@@ -222,29 +222,37 @@ class TestInstrumentQualifier():
             f.description = ' '.join(('Checking download routine functionality for module: ', inst.platform, inst.name, inst.tag, inst.sat_id))
             yield (f,)
             
-            f = partial(self.check_load, inst)
-            f.description = ' '.join(('Checking load routine functionality for module: ', inst.platform, inst.name, inst.tag, inst.sat_id))
-            yield (f,)
-            
-            inst.clean_level = 'none'
-            f = partial(self.check_load, inst)
-            f.description = ' '.join(('Checking load routine functionality for module with clean level "none": ', inst.platform, inst.name, inst.tag, inst.sat_id))
-            yield (f,)
-
-            inst.clean_level = 'dirty'
-            f = partial(self.check_load, inst)
-            f.description = ' '.join(('Checking load routine functionality for module with clean level "dirty": ', inst.platform, inst.name, inst.tag, inst.sat_id))
-            yield (f,)
-            
-            inst.clean_level = 'dusty'
-            f = partial(self.check_load, inst)
-            f.description = ' '.join(('Checking load routine functionality for module with clean level "dusty": ', inst.platform, inst.name, inst.tag, inst.sat_id))
-            yield (f,)
-
-            inst.clean_level = 'clean'
-            f = partial(self.check_load, inst)
-            f.description = ' '.join(('Checking load routine functionality for module with clean level "clean": ', inst.platform, inst.name, inst.tag, inst.sat_id))
-            yield (f,)
+            # make sure download was successful
+            if len(inst.files.files) > 0:
+                f = partial(self.check_load, inst)
+                f.description = ' '.join(('Checking load routine functionality for module: ', inst.platform, inst.name, inst.tag, inst.sat_id))
+                yield (f,)
+                
+                inst.clean_level = 'none'
+                f = partial(self.check_load, inst)
+                f.description = ' '.join(('Checking load routine functionality for module with clean level "none": ', inst.platform, inst.name, inst.tag, inst.sat_id))
+                yield (f,)
+    
+                inst.clean_level = 'dirty'
+                f = partial(self.check_load, inst)
+                f.description = ' '.join(('Checking load routine functionality for module with clean level "dirty": ', inst.platform, inst.name, inst.tag, inst.sat_id))
+                yield (f,)
+                
+                inst.clean_level = 'dusty'
+                f = partial(self.check_load, inst)
+                f.description = ' '.join(('Checking load routine functionality for module with clean level "dusty": ', inst.platform, inst.name, inst.tag, inst.sat_id))
+                yield (f,)
+    
+                inst.clean_level = 'clean'
+                f = partial(self.check_load, inst)
+                f.description = ' '.join(('Checking load routine functionality for module with clean level "clean": ', inst.platform, inst.name, inst.tag, inst.sat_id))
+                yield (f,)
+            else:
+                print ('Unable to actually download a file.')
+                # raise RuntimeWarning(' '.join(('Download for', inst.platform, inst.name, inst.tag, inst.sat_id, 'was not successful.')))
+                import warnings
+                warnings.warn(' '.join(('Download for', inst.platform, inst.name, inst.tag, inst.sat_id, 'was not successful.')))
+                #TODO need a warning!
 
 
     # Optional support
