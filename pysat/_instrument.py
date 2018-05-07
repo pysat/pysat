@@ -1483,17 +1483,24 @@ class Instrument(object):
                                              zlib=zlib,
                                              complevel=complevel,
                                              shuffle=shuffle) #, chunksizes=1)
-            new_dict = {}
-            for export_name_label in export_name_labels:
-                new_dict[export_name_label] = epoch_name
-            for export_units_label in export_units_labels:
-                new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+            # grab existing metadata for Epoch or create suitable info
+            if epoch_name in export_meta:
+                new_dict = export_meta[epoch_name]
+            else:
+                # create suitable info
+                new_dict = {}
+                for export_name_label in export_name_labels:
+                    new_dict[export_name_label] = epoch_name
+                for export_units_label in export_units_labels:
+                    new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
             new_dict['calendar'] = 'standard'
             new_dict['Format'] = 'i8'
             for export_desc_label in export_desc_labels:
-                new_dict[export_desc_label] = ''
+                if export_desc_label not in new_dict:
+                    new_dict[export_desc_label] = ''
             for export_notes_label in export_notes_labels:
-                new_dict[export_notes_label] = ''
+                if export_notes_label not in new_dict:
+                    new_dict[export_notes_label] = ''
             cdfkey.setncatts(new_dict)
             cdfkey[:] = (self.data.index.values.astype(np.int64) *
                          1.E-6).astype(np.int64)
@@ -1524,6 +1531,7 @@ class Instrument(object):
                         new_dict['Time_Scale'] = 'UTC'
                         new_dict['MonoTon'] =  int(data.is_monotonic) 
                         new_dict['Format'] = self._get_var_type_code(coltype)
+                        new_dict['Var_Type'] = 'data'
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
                         # print ('top ', new_dict)
@@ -1547,7 +1555,6 @@ class Instrument(object):
                         # attach any meta data
                         try:
                             # attach dimension metadata
-                        # attach dimension metadata
                             new_dict = export_meta[key]
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Display_Type'] = 'Time Series'
@@ -1555,7 +1562,7 @@ class Instrument(object):
                             new_dict['Time_Scale'] = 'UTC'
                             new_dict['MonoTon'] = int(data.is_monotonic)
                             new_dict['Format'] = self._get_var_type_code(coltype)
-                            
+                            new_dict['Var_Type'] = 'data'
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, \
                                                         coltype, remove=True)
@@ -1621,6 +1628,7 @@ class Instrument(object):
                                     new_dict['Depend_1'] = obj_dim_names[-1]
                                     new_dict['Display_Type'] = 'Image'            
                                     new_dict['Format'] = self._get_var_type_code(coltype)
+                                    new_dict['Var_Type'] = 'data'
                                     # print('Frame Writing ', key, col, export_meta[key].children[col])
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # print ('mid2 ', new_dict)
@@ -1654,6 +1662,7 @@ class Instrument(object):
                                     new_dict['Display_Type'] = 'Spectrogram' 
                                     new_dict['Format'] = self._get_var_type_code(coltype)
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                                    new_dict['Var_Type'] = 'data'
                                     # really attach metadata now
                                     # print ('mid3 ', new_dict)
                                     cdfkey.setncatts(new_dict)
@@ -1683,6 +1692,7 @@ class Instrument(object):
                             new_dict['Depend_1'] =  obj_dim_names[-1]  
                             new_dict['Display_Type'] = 'Time Series'  
                             new_dict['Format'] = self._get_var_type_code(coltype)
+                            new_dict['Var_Type'] = 'data'
                             for export_name_label in export_name_labels:
                                 new_dict[export_name_label] = epoch_name
                             for export_units_label in export_units_labels:
@@ -1705,6 +1715,7 @@ class Instrument(object):
                             new_dict['Depend_1'] =  obj_dim_names[-1]  
                             new_dict['Display_Type'] = 'Time Series'  
                             new_dict['Format'] = self._get_var_type_code(coltype)
+                            new_dict['Var_Type'] = 'data'
                             if self[key].iloc[data_loc].index.name is not None:
                                 for export_name_label in export_name_labels:
                                     new_dict[export_name_label] = self[key].iloc[data_loc].index.name
