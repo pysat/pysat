@@ -20,6 +20,245 @@ class TestBasics():
         del self.testInst
         del self.meta
     
+    def test_inst_data_assign_meta_default(self):
+        self.testInst.load(2009,1)
+        self.testInst['help'] = self.testInst['mlt']
+
+        assert self.testInst.meta['help', 'long_name'] == 'help'
+        assert self.testInst.meta['help', 'axis'] == 'help'
+        assert self.testInst.meta['help', 'label'] == 'help'
+        assert self.testInst.meta['help', 'notes'] == ''
+        assert np.isnan(self.testInst.meta['help', 'fill'])
+        assert np.isnan(self.testInst.meta['help', 'value_min'])
+        assert np.isnan(self.testInst.meta['help', 'value_max'])
+        assert self.testInst.meta['help', 'units'] == ''
+        assert self.testInst.meta['help', 'desc'] == ''
+        assert self.testInst.meta['help', 'scale'] == 'linear'
+
+    def test_inst_data_assign_meta(self):
+        self.testInst.load(2009,1)
+        self.testInst['help'] = {'data':self.testInst['mlt'],
+                                 'units': 'V',
+                                 'long_name': 'The Doors'}
+        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
+        assert self.testInst.meta['help', 'axis'] == 'help'
+        assert self.testInst.meta['help', 'label'] == 'help'
+        assert self.testInst.meta['help', 'notes'] == ''
+        assert np.isnan(self.testInst.meta['help', 'fill'])
+        assert np.isnan(self.testInst.meta['help', 'value_min'])
+        assert np.isnan(self.testInst.meta['help', 'value_max'])
+        assert self.testInst.meta['help', 'units'] == 'V'
+        assert self.testInst.meta['help', 'desc'] == ''
+        assert self.testInst.meta['help', 'scale'] == 'linear'
+
+    def test_inst_data_assign_meta_then_data(self):
+        self.testInst.load(2009,1)
+        self.testInst['help'] = {'data':self.testInst['mlt'],
+                                 'units': 'V',
+                                 'long_name': 'The Doors'}
+        self.testInst['help'] = self.testInst['mlt']
+        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
+        assert self.testInst.meta['help', 'axis'] == 'help'
+        assert self.testInst.meta['help', 'label'] == 'help'
+        assert self.testInst.meta['help', 'notes'] == ''
+        assert np.isnan(self.testInst.meta['help', 'fill'])
+        assert np.isnan(self.testInst.meta['help', 'value_min'])
+        assert np.isnan(self.testInst.meta['help', 'value_max'])
+        assert self.testInst.meta['help', 'units'] == 'V'
+        assert self.testInst.meta['help', 'desc'] == ''
+        assert self.testInst.meta['help', 'scale'] == 'linear'
+
+    def test_inst_ho_data_assign_no_meta_default(self):
+        self.testInst.load(2009,1)
+        frame = pds.DataFrame({'dummy_frame1':np.arange(10),
+                               'dummy_frame2':np.arange(10)},
+                               columns=['dummy_frame1', 'dummy_frame2'])
+        self.testInst['help'] = [frame]*len(self.testInst.data.index)
+                                 
+        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame1' in self.testInst.meta['help']['children']
+        assert 'dummy_frame2' in self.testInst.meta['help']['children']
+        assert self.testInst.meta['help']['children'].has_attr('units')
+        assert self.testInst.meta['help']['children'].has_attr('desc')
+
+    def test_inst_ho_data_assign_meta_default(self):
+        self.testInst.load(2009,1)
+        frame = pds.DataFrame({'dummy_frame1':np.arange(10),
+                               'dummy_frame2':np.arange(10)},
+                               columns=['dummy_frame1', 'dummy_frame2'])
+        self.testInst['help'] = {'data':[frame]*len(self.testInst.data.index),
+                                 'units': 'V',
+                                 'long_name': 'The Doors'}
+
+        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
+        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame1' in self.testInst.meta['help']['children']
+        assert 'dummy_frame2' in self.testInst.meta['help']['children']
+        assert self.testInst.meta['help']['children'].has_attr('units')
+        assert self.testInst.meta['help']['children'].has_attr('desc')
+
+    def test_inst_ho_data_assign_meta(self):
+        self.testInst.load(2009,1)
+        frame = pds.DataFrame({'dummy_frame1':np.arange(10),
+                               'dummy_frame2':np.arange(10)},
+                               columns=['dummy_frame1', 'dummy_frame2'])
+        meta = pysat.Meta()
+        meta['dummy_frame1'] = {'units': 'A'}
+        meta['dummy_frame2'] = {'desc': 'nothing'}
+        self.testInst['help'] = {'data':[frame]*len(self.testInst.data.index),
+                                 'units': 'V',
+                                 'long_name': 'The Doors',
+                                 'meta': meta}
+
+        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
+        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame1' in self.testInst.meta['help']['children']
+        assert 'dummy_frame2' in self.testInst.meta['help']['children']
+        assert self.testInst.meta['help']['children'].has_attr('units')
+        assert self.testInst.meta['help']['children'].has_attr('desc')
+        assert self.testInst.meta['help']['children']['dummy_frame1', 'units'] == 'A'
+        assert self.testInst.meta['help']['children']['dummy_frame1', 'desc'] == ''
+        assert self.testInst.meta['help']['children']['dummy_frame2', 'desc'] == 'nothing'
+
+    def test_inst_ho_data_assign_meta_then_data(self):
+        self.testInst.load(2009,1)
+        frame = pds.DataFrame({'dummy_frame1':np.arange(10),
+                               'dummy_frame2':np.arange(10)},
+                               columns=['dummy_frame1', 'dummy_frame2'])
+        meta = pysat.Meta()
+        meta['dummy_frame1'] = {'units': 'A'}
+        meta['dummy_frame2'] = {'desc': 'nothing'}
+        print('Setting original data')
+        self.testInst['help'] = {'data':[frame]*len(self.testInst.data.index),
+                                 'units': 'V',
+                                 'long_name': 'The Doors',
+                                 'meta': meta}
+        self.testInst['help'] = [frame]*len(self.testInst.data.index)
+
+        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
+        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame1' in self.testInst.meta['help']['children']
+        assert 'dummy_frame2' in self.testInst.meta['help']['children']
+        assert self.testInst.meta['help']['children'].has_attr('units')
+        assert self.testInst.meta['help']['children'].has_attr('desc')
+        assert self.testInst.meta['help']['children']['dummy_frame1', 'units'] == 'A'
+        assert self.testInst.meta['help']['children']['dummy_frame1', 'desc'] == ''
+        assert self.testInst.meta['help']['children']['dummy_frame2', 'desc'] == 'nothing'
+
+    def test_inst_ho_data_assign_meta_different_labels(self):
+        self.testInst.load(2009,1)
+        frame = pds.DataFrame({'dummy_frame1':np.arange(10),
+                               'dummy_frame2':np.arange(10)},
+                               columns=['dummy_frame1', 'dummy_frame2'])
+        meta = pysat.Meta(units_label='blah', desc_label='whoknew')
+        meta['dummy_frame1'] = {'blah': 'A'}
+        meta['dummy_frame2'] = {'whoknew': 'nothing'}
+        self.testInst['help'] = {'data':[frame]*len(self.testInst.data.index),
+                                 'units': 'V',
+                                 'long_name': 'The Doors',
+                                 'meta': meta}
+
+        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
+        assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
+        assert 'dummy_frame1' in self.testInst.meta['help']['children']
+        assert 'dummy_frame2' in self.testInst.meta['help']['children']
+        assert self.testInst.meta['help']['children'].has_attr('units')
+        assert self.testInst.meta['help']['children'].has_attr('desc')
+        assert self.testInst.meta['help']['children']['dummy_frame1', 'units'] == 'A'
+        assert self.testInst.meta['help']['children']['dummy_frame1', 'desc'] == ''
+        assert self.testInst.meta['help']['children']['dummy_frame2', 'desc'] == 'nothing'
+        
+    def test_inst_assign_from_meta(self):
+        self.testInst.load(2009,1)
+        self.testInst['help'] = self.testInst['mlt']
+        self.testInst['help2'] = self.testInst['mlt']
+        self.testInst.meta['help2'] = self.testInst.meta['help']
+
+        assert self.testInst.meta['help2', 'long_name'] == 'help'
+        assert self.testInst.meta['help2', 'axis'] == 'help'
+        assert self.testInst.meta['help2', 'label'] == 'help'
+        assert self.testInst.meta['help2', 'notes'] == ''
+        assert np.isnan(self.testInst.meta['help2', 'fill'])
+        assert np.isnan(self.testInst.meta['help2', 'value_min'])
+        assert np.isnan(self.testInst.meta['help2', 'value_max'])
+        assert self.testInst.meta['help2', 'units'] == ''
+        assert self.testInst.meta['help2', 'desc'] == ''
+        assert self.testInst.meta['help2', 'scale'] == 'linear'
+        assert 'children' not in self.testInst.meta.data.columns
+        assert 'help2' not in self.testInst.meta.keys_nD()
+
+    def test_inst_assign_from_meta_w_ho(self):
+        self.testInst.load(2009,1)
+        frame = pds.DataFrame({'dummy_frame1':np.arange(10),
+                               'dummy_frame2':np.arange(10)},
+                               columns=['dummy_frame1', 'dummy_frame2'])
+        meta = pysat.Meta()
+        meta['dummy_frame1'] = {'units': 'A'}
+        meta['dummy_frame2'] = {'desc': 'nothing'}
+        self.testInst['help'] = {'data':[frame]*len(self.testInst.data.index),
+                                 'units': 'V',
+                                 'long_name': 'The Doors',
+                                 'meta': meta}
+        self.testInst['help2'] = self.testInst['help']
+        self.testInst.meta['help2'] = self.testInst.meta['help']
+        
+        assert self.testInst.meta['help'].children['dummy_frame1', 'units'] == 'A'
+        assert self.testInst.meta['help2', 'long_name'] == 'The Doors'
+        assert 'dummy_frame1' in self.testInst.meta.ho_data['help2']
+        assert 'dummy_frame2' in self.testInst.meta.ho_data['help2']
+        assert 'dummy_frame1' in self.testInst.meta['help2']['children']
+        assert 'dummy_frame2' in self.testInst.meta['help2']['children']
+        assert self.testInst.meta['help2']['children'].has_attr('units')
+        assert self.testInst.meta['help2']['children'].has_attr('desc')
+        assert self.testInst.meta['help2']['children']['dummy_frame1', 'desc'] == ''
+        assert self.testInst.meta['help2']['children']['dummy_frame2', 'desc'] == 'nothing'
+        assert 'children' not in self.testInst.meta.data.columns
+
+    def test_inst_assign_from_meta_w_ho_then_update(self):
+        self.testInst.load(2009,1)
+        frame = pds.DataFrame({'dummy_frame1':np.arange(10),
+                               'dummy_frame2':np.arange(10)},
+                               columns=['dummy_frame1', 'dummy_frame2'])
+        meta = pysat.Meta()
+        meta['dummy_frame1'] = {'units': 'A'}
+        meta['dummy_frame2'] = {'desc': 'nothing'}
+        self.testInst['help'] = {'data':[frame]*len(self.testInst.data.index),
+                                 'units': 'V',
+                                 'name': 'The Doors',
+                                 'meta': meta}
+        self.testInst['help2'] = self.testInst['help']
+        self.testInst.meta['help2'] = self.testInst.meta['help']
+        new_meta = self.testInst.meta['help2'].children
+        new_meta['dummy_frame1'] = {'units':'Amps',
+                                   'desc': 'something',
+                                   'label': 'John Wick',
+                                   'axis': 'Reeves',
+                                   }
+        self.testInst.meta['help2'] = new_meta
+        self.testInst.meta['help2'] = {'label': 'The Doors Return'}
+        
+        # print ('yoyo: ', self.testInst.meta['help']['children']['dummy_frame1', 'units'])
+        assert self.testInst.meta['help']['children']['dummy_frame1', 'units'] == 'A'        
+        assert self.testInst.meta['help2', 'name'] == 'The Doors'
+        assert self.testInst.meta['help2', 'label'] == 'The Doors Return'
+        assert 'dummy_frame1' in self.testInst.meta.ho_data['help2']
+        assert 'dummy_frame2' in self.testInst.meta.ho_data['help2']
+        assert 'dummy_frame1' in self.testInst.meta['help2']['children']
+        assert 'dummy_frame2' in self.testInst.meta['help2']['children']
+        assert self.testInst.meta['help2']['children'].has_attr('units')
+        assert self.testInst.meta['help2']['children'].has_attr('desc')
+        assert self.testInst.meta['help2']['children']['dummy_frame1', 'desc'] == 'something'
+        assert self.testInst.meta['help2']['children']['dummy_frame2', 'desc'] == 'nothing'
+        assert self.testInst.meta['help2']['children']['dummy_frame1', 'units'] == 'Amps'
+        assert self.testInst.meta['help2']['children']['dummy_frame1', 'label'] == 'John Wick'
+        assert self.testInst.meta['help2']['children']['dummy_frame1', 'axis'] == 'Reeves'
+        assert 'children' not in self.testInst.meta.data.columns
+
     def test_repr_call_runs(self):
         self.testInst.meta['hi'] = {'units':'yoyo', 'long_name':'hello'}
         print(self.testInst.meta)
@@ -38,18 +277,23 @@ class TestBasics():
         assert True
 
     def test_basic_pops(self):
+        
         self.meta['new1'] = {'units':'hey1', 'long_name':'crew', 
                              'value_min':0, 'value_max':1}
         self.meta['new2'] = {'units':'hey', 'long_name':'boo', 
                             'description':'boohoo', 'fill':1, 
                             'value_min':0, 'value_max':1}
-        meta2 = pysat.Meta()
+        # create then assign higher order meta data
+        meta2 = pysat.Meta(name_label='long_name')
         meta2['new31'] = {'units':'hey3', 'long_name':'crew_brew', 'fill':1,
                           'value_min':0, 'value_max':1}
         self.meta['new3'] = meta2
         
         aa = self.meta.pop('new3')
-        assert np.all(aa == meta2)
+        assert np.all(aa['children'] == meta2)
+        # ensure lower metadata created when ho data assigned
+        assert aa['units'] == ''
+        assert aa['long_name'] == 'new3'
         cc = self.meta['new2']
         bb = self.meta.pop('new2')
         assert np.all(bb == cc)

@@ -95,7 +95,7 @@ class Meta(object):
     object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, long_name, notes, desc, plot_label, axis, scale, 
+    attributes (units, name, notes, desc, plot_label, axis, scale, 
     value_min, value_max, and fill). These base attributes may be used to 
     programatically access and set types of metadata regardless of the string 
     values used for the attribute. String values for attributes may need to be 
@@ -380,7 +380,10 @@ class Meta(object):
             return True
         return False
 
-    def __repr__(self, recurse=True):
+    def __repr__(self):
+        return 'pysat.MetaData'
+
+    def __str__(self, recurse=True):
         """String describing Meta instance, variables, and attributes"""
 
         # cover 1D parameters
@@ -401,7 +404,7 @@ class Meta(object):
             for item_name in self.keys_nD():
                 output_str += '\n\n'
                 output_str += 'Metadata for '+item_name+'\n'
-                output_str += self.ho_data[item_name].__repr__(False)
+                output_str += self.ho_data[item_name].__str__(False)
 
         return output_str
 
@@ -456,7 +459,6 @@ class Meta(object):
             lower_keys = [k.lower() for k in value.keys()]
             # dictionary of labels (keys) and values (default value for attribute)
             default_dict = self.default_labels_and_values(name)
-            # for attr, defaults in default_dict: #zip(attrs, default_attrs):
             for attr in default_dict: #zip(attrs, default_attrs):
                 # the metadata default values for attr are in defaults
                 defaults = default_dict[attr]
@@ -546,10 +548,20 @@ class Meta(object):
 
         elif isinstance(value, Series):
             # set data usind standard assignment via a dict
-            self[name] = value.to_dict()
+            in_dict = value.to_dict()
+            if 'children' in in_dict:
+                child = in_dict.pop('children')
+                if not child.data.empty:
+                    self.ho_data[name] = child
+                                        
+            self[name] = in_dict
 
         elif isinstance(value, Meta):
             # dealing with higher order data set
+            
+            # if name is already used in meta object, use that one
+            # with preserved case
+            # otherwise, use name as provided
             if name in self:
                 new_item_name = self.var_case_name(name)
             else:
@@ -571,6 +583,19 @@ class Meta(object):
             value.data.index = new_names
             # assign Meta object now that things are consistent with Meta
             # object settings
+            # but first, make sure there are lower dimension metadata
+            # parameters, passing in an empty dict fills in defaults
+            # if there is no existing metadata info
+            self[new_item_name] = {}
+            # now add to higher order data
+            # need to respect existing metadata, if present
+            # if new_item_name in self.keys_nD():
+            #     for key in value.keys():
+            #         indict = value[key].to_dict()
+            #         if 'children' in indict:
+            #             _ = indict.pop('children')
+            #         self.ho_data[new_item_name][key] = indict
+            # else:
             self.ho_data[new_item_name] = value
 
     def __getitem__(self, key):
@@ -603,7 +628,7 @@ class Meta(object):
                 new_index = self.var_case_name(key[0])
                 new_child_index = self.var_case_name(key[1])
                 new_name = self.attr_case_name(key[2])
-                return self._ho_data[new_index].data.loc[new_child_index, new_name]
+                return self.ho_data[new_index].data.loc[new_child_index, new_name]
         else:
             # ensure variable is present somewhere
             if key in self:
@@ -612,13 +637,13 @@ class Meta(object):
                 if new_key in self.keys():
                     meta_row = self.data.loc[new_key]
                     if new_key in self.keys_nD():
-                        meta_row.at['children'] = self.ho_data[new_key]
+                        meta_row.at['children'] = self.ho_data[new_key].copy()
                     else:
                         empty_meta = Meta()
                         meta_row.at['children'] = empty_meta
                     return meta_row
                 else:
-                    return pds.Series([self.ho_data[new_key]], index=['children'])
+                    return pds.Series([self.ho_data[new_key].copy()], index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
 

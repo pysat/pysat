@@ -67,16 +67,15 @@ class Instrument(object):
         platform, name, and tag will be filled in as needed using python
         string formatting. The default directory structure would be 
         expressed as '{platform}/{name}/{tag}'
-    units_label : str
-        label to use for units. Defaults to 'units' but some implementations
-        will use mixed case 'Units'
-    name_label : str
-        label to use for long name. Defaults to 'long_name' but some implementations
-        will use 'Long_Name'
+    file_format : str or NoneType
+        File naming structure in string format.  Variables such as year,
+        month, and sat_id will be filled in as needed using python string
+        formatting.  The default file format structure is supplied in the
+        instrument list_files routine.
     units_label : str
         String used to label units in storage. Defaults to 'units'. 
     name_label : str
-        String used to label long_name in storage. Defaults to 'long_name'.
+        String used to label long_name in storage. Defaults to 'name'.
     notes_label : str
        label to use for notes in storage. Defaults to 'notes'
     desc_label : str
@@ -96,11 +95,6 @@ class Instrument(object):
     fill_label : str
         label to use for fill values. Defaults to 'fill' but some implementations
         will use 'FillVal'
-    file_format : str or NoneType
-        File naming structure in string format.  Variables such as year,
-        month, and sat_id will be filled in as needed using python string
-        formatting.  The default file format structure is supplied in the
-        instrument list_files routine.
                
     Attributes
     ----------
@@ -384,34 +378,69 @@ class Instrument(object):
         long_name = 'name', and units = ''.
         
         """
+        
+        # add data to main pandas.DataFrame, depending upon the input
+        
         if isinstance(new, dict):
+            # input dict must have data in 'data', the rest
+            # is presumed to be metadata
             # metadata should be included in dict
-            self.data[key] = new.pop('data')
-            # pass the rest to meta
+            in_data = new.pop('data')
+            if isinstance(in_data, pds.DataFrame):
+                # input is a dataframe
+                pass
+ 
+            elif isinstance(in_data[0], pds.DataFrame):
+                # input is a list_like of frames
+                # this is higher order data
+                # this process ensures
+                if key not in self.meta.keys_nD():
+                    ho_meta = _meta.Meta()
+                    for ho_key in in_data[0]:
+                        ho_meta[ho_key] = {}
+                    self.meta[key] = ho_meta
+            
+            # assign data and any extra metadata
+            self.data[key] = in_data
             self.meta[key] = new
+
         else:
+            # not a dictionary, could have a mixed input
+            # aka slice, and a name
             if isinstance(key, tuple):
                 self.data.ix[key[0], key[1]] = new
                 self.meta[key[1]] = {}
             # If list or series of df handle ho data
             elif hasattr(new, '__getitem__'):
-                if isinstance(new, Series):
-                    self.data[key] = new  
-                    self.meta[key] = {}
-                elif isinstance(new, DataFrame):
+                # if isinstance(new, Series):
+                #     # series input, 1D variable
+                #     self.data[key] = new  
+                #     self.meta[key] = {}
+                if isinstance(new, DataFrame):
+                    # dataframe input allows input of multiple
+                    # 1D variables at once
                     self.data[key] = new[key]
                     for ke in key:
                         self.meta[ke] = {}
                 elif isinstance(new[0], pds.DataFrame):
+                    # input is a list_like of frames
+                    # this is higher order data
                     self.data[key] = new
-                    ho_meta = _meta.Meta()
-                    for ho_key in new[0]:
-                        ho_meta[ho_key] = {}
-                    self.meta.ho_data[key] = ho_meta
+                    if key not in self.meta.keys_nD():
+                        # set up default metadata structure
+                        ho_meta = _meta.Meta()
+                        for ho_key in new[0]:
+                            ho_meta[ho_key] = {}
+                        self.meta[key] = ho_meta
                 else:
+                    # not one of special ones above
+                    # let pandas sort it out
                     self.data[key] = new  
                     self.meta[key] = {}
             elif isinstance(key, str):
+                # didn't get a list_like thing of data
+                # but we were given a name
+                # try and add it
                 self.data[key] = new  
                 self.meta[key] = {}
             else:
