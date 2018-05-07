@@ -103,22 +103,28 @@ def clean(self):
             self.data = self[idx,:]
         except AttributeError:
             pass
+        
+        if self.clean_level == 'dusty':
+            # take out all values where RPA data quality is > 1
+            # self.data = self.data[self.data.rpa_flag <= 3]
+            idx, = np.where(self.data.RPAflag <= 1)
+            self.data = self[idx,:]
+            # IDM quality flags
+            self.data = self.data[ (self.data.driftMeterflag<= 3) ]
+        else:
+            # take out all values where RPA data quality is > 0
+            idx, = np.where(self.data.RPAflag <= 0)
+            self.data = self[idx,:] 
+            # IDM quality flags
+            self.data = self.data[ (self.data.driftMeterflag<= 0) ]
+    if self.clean_level == 'dirty':
         # take out all values where RPA data quality is > 3
         # self.data = self.data[self.data.rpa_flag <= 3]
-        idx, = np.where(self.data.RPAflag <= 3)
+        idx, = np.where(self.data.RPAflag <= 4)
         self.data = self[idx,:]
-
-        # enforce minimum RPA density if RPA flag eqal to 3
-        o_dens = self.data.ionDensity*self.data.ion1fraction
-        # self.data = self.data[-((o_dens < 3.E4) & (self.data.rpa_flag==3))]
-        idx, = np.where(-((o_dens < 3.E4) & (self.data.RPAflag==3)))
-        self.data = self[idx,:]
-        
         # IDM quality flags
-        self.data = self.data[ (self.data.driftMeterflag>= 90) & (self.data.driftMeterflag % 10 < 1) ]
-        idx, = np.where((self.data.driftMeterflag>= 90) & (self.data.driftMeterflag % 10 < 1))
-        self.data = self[idx,:]
-
+        self.data = self.data[ (self.data.driftMeterflag<= 6) ]
+        
     # basic quality check on drifts and don't let UTS go above 86400.
     # self.data = self.data[ (self.data.uts <= 86400.)]
     idx, = np.where(self.data.time <= 86400.)
