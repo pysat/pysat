@@ -146,12 +146,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                     # load 1D data variable
                     # assuming basic time dimension
                     loadedVars[key] = data.variables[key][:] 
-                    if key != epoch_name:
-                        # load up metadata
-                        meta_dict = {}
-                        for nc_key in data.variables[key].ncattrs():
-                            meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
-                        mdata[key] = meta_dict
+                    # if key != epoch_name:
+                    # load up metadata
+                    meta_dict = {}
+                    for nc_key in data.variables[key].ncattrs():
+                        meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
+                    mdata[key] = meta_dict
                 if len(data.variables[key].dimensions) == 2:
                     # part of dataframe within dataframe
                     two_d_keys.append(key)
