@@ -311,17 +311,6 @@ class Instrument(object):
         # gives information about how to label metadata for netcdf export
         # if None, pysat metadata labels will be used
         self._meta_translation_table = None
-        # setting default meta translation table to be the netCDF4/ISTP combo standard
-        self._meta_translation_table = {'fill_label': ['_FillValue', 'FillVal'],
-                                        'desc_label': ['CatDesc'],
-                                        'plot_label': ['FieldNam'],
-                                        'name_label': ['Long_Name'],
-                                        'scale_label': ['ScaleTyp'],
-                                        'units_label': ['Units'],
-                                        'max_label': ['ValidMax', 'Valid_Max'],
-                                        'min_label': ['ValidMin', 'Valid_Min'],
-                                        'notes_label': ['Var_Notes'],
-                                        'axis_label': ['LablAxis']}
 
         # Create a placeholder for a post-processing function to be applied
         # to the metadata dictionary before export. If None, no post-processing

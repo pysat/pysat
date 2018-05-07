@@ -357,10 +357,8 @@ class TestBasics():
         ref_nan = stats.circmean(self.test_nan, **self.circ_kwargs)
         test_nan = pysat.utils.nan_circmean(self.test_nan, **self.circ_kwargs)
 
-        ans1 = np.isnan(ref_nan)
-        ans2 = ref_mean == test_nan
-
-        assert ans1 & ans2
+        assert np.isnan(ref_nan)
+        assert ref_mean == test_nan
 
     def test_circstd(self):
         """ Test custom circular std."""
@@ -380,7 +378,5 @@ class TestBasics():
         ref_nan = stats.circstd(self.test_nan, **self.circ_kwargs)
         test_nan = pysat.utils.nan_circstd(self.test_nan, **self.circ_kwargs)
 
-        ans1 = np.isnan(ref_nan)
-        ans2 = ref_std == test_nan
-
-        assert ans1 & ans2
+        assert np.isnan(ref_nan)
+        assert ref_std == test_nan
