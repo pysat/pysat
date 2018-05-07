@@ -1489,7 +1489,7 @@ class Instrument(object):
             for export_units_label in export_units_labels:
                 new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
             new_dict['calendar'] = 'standard'
-            new_dict['Var_Type'] = 'i8'
+            new_dict['Format'] = 'i8'
             for export_desc_label in export_desc_labels:
                 new_dict[export_desc_label] = ''
             for export_notes_label in export_notes_labels:
@@ -1523,7 +1523,7 @@ class Instrument(object):
                         new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
                         new_dict['Time_Scale'] = 'UTC'
                         new_dict['MonoTon'] =  int(data.is_monotonic) 
-                        new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                        new_dict['Format'] = self._get_var_type_code(coltype)
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
                         # print ('top ', new_dict)
@@ -1554,7 +1554,7 @@ class Instrument(object):
                             new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
                             new_dict['Time_Scale'] = 'UTC'
                             new_dict['MonoTon'] = int(data.is_monotonic)
-                            new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                            new_dict['Format'] = self._get_var_type_code(coltype)
                             
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, \
@@ -1619,8 +1619,8 @@ class Instrument(object):
                                     new_dict = export_meta[key+'_'+col]
                                     new_dict['Depend_0'] = epoch_name
                                     new_dict['Depend_1'] = obj_dim_names[-1]
-                                    new_dict['Display_Type'] = 'Spectogram'            
-                                    new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                                    new_dict['Display_Type'] = 'Image'            
+                                    new_dict['Format'] = self._get_var_type_code(coltype)
                                     # print('Frame Writing ', key, col, export_meta[key].children[col])
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # print ('mid2 ', new_dict)
@@ -1651,8 +1651,8 @@ class Instrument(object):
                                     new_dict = export_meta[key]
                                     new_dict['Depend_0'] = epoch_name
                                     new_dict['Depend_1'] =  obj_dim_names[-1]
-                                    new_dict['Display_Type'] = 'Profile' 
-                                    new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                                    new_dict['Display_Type'] = 'Spectrogram' 
+                                    new_dict['Format'] = self._get_var_type_code(coltype)
                                     new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
                                     # really attach metadata now
                                     # print ('mid3 ', new_dict)
@@ -1682,7 +1682,7 @@ class Instrument(object):
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Depend_1'] =  obj_dim_names[-1]  
                             new_dict['Display_Type'] = 'Time Series'  
-                            new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                            new_dict['Format'] = self._get_var_type_code(coltype)
                             for export_name_label in export_name_labels:
                                 new_dict[export_name_label] = epoch_name
                             for export_units_label in export_units_labels:
@@ -1704,7 +1704,7 @@ class Instrument(object):
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Depend_1'] =  obj_dim_names[-1]  
                             new_dict['Display_Type'] = 'Time Series'  
-                            new_dict['Var_Type'] = self._get_var_type_code(coltype)
+                            new_dict['Format'] = self._get_var_type_code(coltype)
                             if self[key].iloc[data_loc].index.name is not None:
                                 for export_name_label in export_name_labels:
                                     new_dict[export_name_label] = self[key].iloc[data_loc].index.name
