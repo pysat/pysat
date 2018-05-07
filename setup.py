@@ -18,6 +18,13 @@ version_filename = os.path.join('pysat', 'version.txt')
 with open(os.path.join(here, version_filename)) as version_file:
     version = version_file.read().strip()
 
+# change setup.py for readthedocs
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+if on_rtd:
+    install_requires=['pandas', 'numpy'] 
+else:
+    install_requires=['pandas', 'numpy', 'pysatCDF']
+
 setup(
     name='pysat',
     # Versions should comply with PEP440.  For a discussion on single-sourcing
@@ -77,5 +84,5 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pandas', 'numpy', 'pysatCDF'] #'matplotlib'
+    install_requires = install_requires,
 )
