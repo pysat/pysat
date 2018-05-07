@@ -67,9 +67,8 @@ class TestOMNICustom():
 
         # Test the difference.  There may be a 2 pi integer ambiguity
         test_diff = abs(test_angle - self.testInst['clock_angle'])
-        ans1 = np.all(test_diff < 1.0e-8)
-
-        assert ans1
+        assert np.all(test_diff < 1.0e-8)
+        
 
     def test_yz_plane_mag(self):
         """ Test the Byz plane magnitude calculation."""
@@ -84,9 +83,7 @@ class TestOMNICustom():
 
         # Test the difference
         test_diff = abs(test_mag - self.testInst['BYZ_GSM'])
-        ans1 = np.all(test_diff < 1.0e-8)
-
-        assert ans1
+        assert np.all(test_diff < 1.0e-8)
 
     def test_yz_plane_cv(self):
         """ Test the IMF steadiness CV calculation."""
@@ -105,11 +102,9 @@ class TestOMNICustom():
         # Test the difference
         test_diff = abs(byz_cv - self.testInst['BYZ_CV'])
 
-        ans1 = test_diff[np.isnan(test_diff)].shape[0] == 2
-        ans2 = np.all(test_diff[~np.isnan(test_diff)] < 1.0e-6)
-        ans3 = np.all(np.isnan(self.testInst['BYZ_CV']) == np.isnan(byz_cv))
-
-        assert ans1 & ans2 & ans3
+        assert test_diff[np.isnan(test_diff)].shape[0] == 2
+        assert np.all(test_diff[~np.isnan(test_diff)] < 1.0e-6)
+        assert np.all(np.isnan(self.testInst['BYZ_CV']) == np.isnan(byz_cv))
 
     def test_clock_angle_std(self):
         """ Test the IMF steadiness standard deviation calculation."""
@@ -128,12 +123,11 @@ class TestOMNICustom():
         # Test the difference
         test_diff = abs(ca_std - self.testInst['clock_angle_std'])
 
-        ans1 = test_diff[np.isnan(test_diff)].shape[0] == 2
-        ans2 = np.all(test_diff[~np.isnan(test_diff)] < 1.0e-6)
-        ans3 = np.all(np.isnan(self.testInst['clock_angle_std']) ==
+        assert test_diff[np.isnan(test_diff)].shape[0] == 2
+        assert np.all(test_diff[~np.isnan(test_diff)] < 1.0e-6)
+        assert np.all(np.isnan(self.testInst['clock_angle_std']) ==
                       np.isnan(ca_std))
 
-        assert ans1 & ans2 & ans3
 
     def test_dayside_recon(self):
         """ Test the IMF steadiness standard deviation calculation."""
@@ -150,7 +144,6 @@ class TestOMNICustom():
         # Test the difference
         test_diff = abs(rcon - self.testInst['recon_day'])
 
-        ans1 = test_diff.shape[0] == 12
-        ans2 = np.all(test_diff < 1.0e-6)
-
-        assert ans1 & ans2
+        assert test_diff.shape[0] == 12
+        assert np.all(test_diff < 1.0e-6)
+        
