@@ -226,12 +226,26 @@ class Meta(object):
         self._ho_data = new_dict
         
     def empty(self):
-        """Returned boolean True if there is no metadata"""
-        if self.data.empty and (self.ho_data == {}):
+        """Return boolean True if there is no metadata"""
+        if self.data.empty:
             return True
         else:
             return False
 
+    def merge(self, other):
+        """Adds metadata variables to self that are in other but not in self.
+        
+        Parameters
+        ----------
+        other : pysat.Meta
+        
+        """
+        
+        for key in other.keys():
+            if key not in self:
+                # copies over both lower and higher dimensional data
+                self[key] = other[key]
+                
     def default_labels_and_values(self, name):
         """Returns dictionary of default meta labels and values for name variable.
 
