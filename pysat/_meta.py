@@ -974,29 +974,6 @@ class Meta(object):
                                            + ' in the Instrument object.')
         # return inst
 
-    def replace(self, metadata=None):
-        """Replace stored metadata with input data.
-
-        Parameters
-        ----------
-        metadata : pandas.DataFrame 
-            DataFrame should be indexed by variable name that contains at
-            minimum the standard_name (name), units, and long_name for the data
-            stored in the associated pysat Instrument object.
-        """
-        if metadata is not None:
-            if isinstance(metadata, DataFrame):
-                self.data = metadata
-                # make sure defaults are taken care of for required metadata
-                self.accept_default_labels(self)
-            else:
-                raise ValueError("Input must be a pandas DataFrame type. "+
-                            "See other constructors for alternate inputs.")
-        else:
-            self.data = DataFrame(None, columns=[self.name_label,
-                                                 self.units_label,
-                                                 self.fill_label])
-
     def __eq__(self, other):
         """
         Check equality between Meta instances. Good for testing.
