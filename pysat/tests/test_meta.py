@@ -671,31 +671,31 @@ class TestBasics():
     #     mdata.replace(metadata=new)
     #     assert np.all(mdata.data == new)
         
-    def test_meta_csv_load_and_operations_meta_equality(self):
-        import os
-        name = os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
-        mdata = pysat.Meta.from_csv(name=name,  na_values=[ ], #index_col=2, 
-                                    keep_default_na=False,
-                                    col_names=['name','long_name','idx','units','description'])
-        # names aren't provided for all data in file, filling in gaps
-        # print mdata.data
-        mdata.data.loc[:,'name'] = mdata.data.index       
-        mdata.data.index = mdata.data['idx']
-        new = mdata.data.reindex(index = np.arange(mdata.data['idx'].iloc[-1]+1))
-        idx, = np.where(new['name'].isnull())
-        new.ix[idx, 'name'] = idx.astype(str)
-        new.ix[idx,'units']=''
-        new.ix[idx,'long_name'] =''
-        new.ix[idx,'description']=''
-        new.ix[:,'fill'] = 1
-        new['idx'] = new.index.values
-        new.index = new['name']
-        
-        # update metadata object with new info
-        new.ix[:,'fill'] = np.NaN
-        mdata.replace(metadata=new)
-        meta2 = pysat.Meta(new)
-        assert mdata == meta2
+    # def test_meta_csv_load_and_operations_meta_equality(self):
+    #     import os
+    #     name = os.path.join(pysat.__path__[0],'tests', 'cindi_ivm_meta.txt')
+    #     mdata = pysat.Meta.from_csv(name=name,  na_values=[ ], #index_col=2, 
+    #                                 keep_default_na=False,
+    #                                 col_names=['name','long_name','idx','units','description'])
+    #     # names aren't provided for all data in file, filling in gaps
+    #     # print mdata.data
+    #     mdata.data.loc[:,'name'] = mdata.data.index       
+    #     mdata.data.index = mdata.data['idx']
+    #     new = mdata.data.reindex(index = np.arange(mdata.data['idx'].iloc[-1]+1))
+    #     idx, = np.where(new['name'].isnull())
+    #     new.ix[idx, 'name'] = idx.astype(str)
+    #     new.ix[idx,'units']=''
+    #     new.ix[idx,'long_name'] =''
+    #     new.ix[idx,'description']=''
+    #     new.ix[:,'fill'] = 1
+    #     new['idx'] = new.index.values
+    #     new.index = new['name']
+    #     
+    #     # update metadata object with new info
+    #     new.ix[:,'fill'] = np.NaN
+    #     mdata = pysat.Meta(metadata=new)
+    #     meta2 = pysat.Meta(new)
+    #     assert mdata == meta2
 
 
     # assign multiple values to default

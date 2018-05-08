@@ -191,7 +191,7 @@ class Meta(object):
         # attirube unit and name labels are called within
         if metadata is not None:
             if isinstance(metadata, DataFrame):
-                self.data = metadata
+                self._data = metadata
                 # make sure defaults are taken care of for required metadata
                 self.accept_default_labels(self)
             else:
@@ -199,10 +199,10 @@ class Meta(object):
                             "See other constructors for alternate inputs.")
         else:
             self._data = DataFrame(None, columns=[self._units_label, self._name_label,
-                                                 self._fill_label, self._desc_label,
-                                                 self._plot_label, self._axis_label,
-                                                 self._scale_label, self._min_label,
-                                                 self._max_label, self._fill_label])
+                                                 self._fill_label]) #, self._desc_label,
+                                                 # self._plot_label, self._axis_label,
+                                                 # self._scale_label, self._min_label,
+                                                 # self._max_label, self._fill_label])
 
         # establish attributes intrinsic to object, before user can
         # add any
@@ -219,14 +219,14 @@ class Meta(object):
     @data.setter   
     def data(self, new_frame):
         self._data = new_frame
-        self.keys = self._data.columns.lower()
+        # self.keys = self._data.columns.lower()
 
     @ho_data.setter   
     def ho_data(self, new_dict):
         self._ho_data = new_dict
         
     def empty(self):
-        """Boolean if there is no metadata"""
+        """Returned boolean True if there is no metadata"""
         if self.data.empty and (self.ho_data == {}):
             return True
         else:
