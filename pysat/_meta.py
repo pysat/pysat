@@ -186,13 +186,32 @@ class Meta(object):
         self._max_label = max_label
         self._fill_label = fill_label
         # init higher order (nD) data structure container, a dict
-        self.ho_data = {}
+        self._ho_data = {}
+        # lower dimension data is a pandas DataFrame
+        self._data = DataFrame()
         # use any user provided data to instantiate object with data
         # attirube unit and name labels are called within
         self.replace(metadata=metadata)
         # establish attributes intrinsic to object, before user could
         # add any
         self._base_attr = dir(self)
+
+    @property
+    def ho_data(self):
+        return self._ho_data
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter   
+    def data(self, new_frame):
+        self._data = new_frame
+        # self.keys = self._data.columns.lower()
+
+    @ho_data.setter   
+    def ho_data(self, new_dict):
+        self._ho_data = new_dict
 
     def default_labels_and_values(self, name):
         """Returns dictionary of default meta labels and values for name variable.
@@ -279,97 +298,6 @@ class Meta(object):
         self.fill_label = other.fill_label
         return 
 
-    def __eq__(self, other):
-        """
-        Check equality between Meta instances.
-        
-        Checks if variable names, attribute names, and metadata values
-        are all equal between to Meta objects. Note that this comparison
-        treats np.NaN == np.NaN as True.
-        
-        Name comparison is case-sensitive.
-        
-        """
-        
-        if isinstance(other, Meta):
-            # check first if variables and attributes are the same
-            # quick check on length
-            keys1 = [i for i in self.keys()]
-            keys2 = [i for i in other.keys()]
-            if len(keys1) != len(keys2):
-                return False
-            # now iterate over each of the keys in the first one
-            # don't need to iterate over second one, if all of the first
-            # in the second we are good. No more or less items in second from 
-            # check earlier.
-            for key in keys1:
-                if key not in keys2:
-                    return False
-            # do same checks on attributes 
-            attrs1 = [i for i in self.attrs()]
-            attrs2 = [i for i in other.attrs()]
-            if len(attrs1) != len(attrs2):
-                return False
-            for attr in attrs1:
-                if attr not in attrs2:
-                    return False
-            # now check the values of all elements now that we know all variable
-            # and attribute names are the same
-            for key in self.keys():
-                for attr in self.attrs():
-                    if not (self[key, attr] == other[key, attr]):
-                        # np.nan is not equal to anything
-                        # if both values are NaN, ok in my book
-                        try:
-                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
-                                # one or both are not NaN and they aren't equal
-                                # test failed
-                                return False
-                        except TypeError:
-                            # comparison above gets unhappy with string inputs
-                            return False
-
-            # check through higher order products
-            # in the same manner as code above
-            keys1 = [i for i in self.keys_nD()]
-            keys2 = [i for i in other.keys_nD()]
-            if len(keys1) != len(keys2):
-                return False
-            for key in keys1:
-                if key not in keys2:
-                    return False
-            # do same check on all sub variables within each nD key
-            for key in self.keys_nD():
-                keys1 = [i for i in self[key].children.keys()]
-                keys2 = [i for i in other[key].children.keys()]
-                if len(keys1) != len(keys2):
-                    return False
-                for key_check in keys1:
-                    if key_check not in keys2:
-                        return False
-                # check if attributes are the same
-                attrs1 = [i for i in self[key].children.attrs()]
-                attrs2 = [i for i in other[key].children.attrs()]
-                if len(attrs1) != len(attrs2):
-                    return False
-                for attr in attrs1:
-                    if attr not in attrs2:
-                        return False
-                # now time to check if all elements are individually equal
-                for key2 in self[key].children.keys():
-                    for attr in self[key].children.attrs():
-                        if not (self[key].children[key2, attr] == other[key].children[key2, attr]):
-                            try:
-                                if not (np.isnan(self[key].children[key2, attr]) and np.isnan(other[key].children[key2, attr])):
-                                    return False
-                            except TypeError:
-                                # comparison above gets unhappy with string inputs
-                                return False
-            # if we made it this far, things are good                
-            return True
-        else:
-            # wasn't even the correct class
-            return False
     
     def __contains__(self, other):
         """case insensitive check for variable name"""
@@ -1049,7 +977,99 @@ class Meta(object):
             self.data = DataFrame(None, columns=[self.name_label,
                                                  self.units_label,
                                                  self.fill_label])
+
+    def __eq__(self, other):
+        """
+        Check equality between Meta instances. Good for testing.
         
+        Checks if variable names, attribute names, and metadata values
+        are all equal between to Meta objects. Note that this comparison
+        treats np.NaN == np.NaN as True.
+        
+        Name comparison is case-sensitive.
+        
+        """
+        
+        if isinstance(other, Meta):
+            # check first if variables and attributes are the same
+            # quick check on length
+            keys1 = [i for i in self.keys()]
+            keys2 = [i for i in other.keys()]
+            if len(keys1) != len(keys2):
+                return False
+            # now iterate over each of the keys in the first one
+            # don't need to iterate over second one, if all of the first
+            # in the second we are good. No more or less items in second from 
+            # check earlier.
+            for key in keys1:
+                if key not in keys2:
+                    return False
+            # do same checks on attributes 
+            attrs1 = [i for i in self.attrs()]
+            attrs2 = [i for i in other.attrs()]
+            if len(attrs1) != len(attrs2):
+                return False
+            for attr in attrs1:
+                if attr not in attrs2:
+                    return False
+            # now check the values of all elements now that we know all variable
+            # and attribute names are the same
+            for key in self.keys():
+                for attr in self.attrs():
+                    if not (self[key, attr] == other[key, attr]):
+                        # np.nan is not equal to anything
+                        # if both values are NaN, ok in my book
+                        try:
+                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
+                                # one or both are not NaN and they aren't equal
+                                # test failed
+                                return False
+                        except TypeError:
+                            # comparison above gets unhappy with string inputs
+                            return False
+
+            # check through higher order products
+            # in the same manner as code above
+            keys1 = [i for i in self.keys_nD()]
+            keys2 = [i for i in other.keys_nD()]
+            if len(keys1) != len(keys2):
+                return False
+            for key in keys1:
+                if key not in keys2:
+                    return False
+            # do same check on all sub variables within each nD key
+            for key in self.keys_nD():
+                keys1 = [i for i in self[key].children.keys()]
+                keys2 = [i for i in other[key].children.keys()]
+                if len(keys1) != len(keys2):
+                    return False
+                for key_check in keys1:
+                    if key_check not in keys2:
+                        return False
+                # check if attributes are the same
+                attrs1 = [i for i in self[key].children.attrs()]
+                attrs2 = [i for i in other[key].children.attrs()]
+                if len(attrs1) != len(attrs2):
+                    return False
+                for attr in attrs1:
+                    if attr not in attrs2:
+                        return False
+                # now time to check if all elements are individually equal
+                for key2 in self[key].children.keys():
+                    for attr in self[key].children.attrs():
+                        if not (self[key].children[key2, attr] == other[key].children[key2, attr]):
+                            try:
+                                if not (np.isnan(self[key].children[key2, attr]) and np.isnan(other[key].children[key2, attr])):
+                                    return False
+                            except TypeError:
+                                # comparison above gets unhappy with string inputs
+                                return False
+            # if we made it this far, things are good                
+            return True
+        else:
+            # wasn't even the correct class
+            return False        
+                        
     @classmethod
     def from_csv(cls, name=None, col_names=None, sep=None, **kwargs):
         """Create instrument metadata object from csv.
