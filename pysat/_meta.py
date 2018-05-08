@@ -187,12 +187,24 @@ class Meta(object):
         self._fill_label = fill_label
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
-        # lower dimension data is a pandas DataFrame
-        self._data = DataFrame()
         # use any user provided data to instantiate object with data
         # attirube unit and name labels are called within
-        self.replace(metadata=metadata)
-        # establish attributes intrinsic to object, before user could
+        if metadata is not None:
+            if isinstance(metadata, DataFrame):
+                self.data = metadata
+                # make sure defaults are taken care of for required metadata
+                self.accept_default_labels(self)
+            else:
+                raise ValueError("Input must be a pandas DataFrame type. "+
+                            "See other constructors for alternate inputs.")
+        else:
+            self._data = DataFrame(None, columns=[self._units_label, self._name_label,
+                                                 self._fill_label, self._desc_label,
+                                                 self._plot_label, self._axis_label,
+                                                 self._scale_label, self._min_label,
+                                                 self._max_label, self._fill_label])
+
+        # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
 
@@ -207,11 +219,18 @@ class Meta(object):
     @data.setter   
     def data(self, new_frame):
         self._data = new_frame
-        # self.keys = self._data.columns.lower()
+        self.keys = self._data.columns.lower()
 
     @ho_data.setter   
     def ho_data(self, new_dict):
         self._ho_data = new_dict
+        
+    def empty(self):
+        """Boolean if there is no metadata"""
+        if self.data.empty and (self.ho_data == {}):
+            return True
+        else:
+            return False
 
     def default_labels_and_values(self, name):
         """Returns dictionary of default meta labels and values for name variable.
