@@ -245,7 +245,27 @@ class Meta(object):
             if key not in self:
                 # copies over both lower and higher dimensional data
                 self[key] = other[key]
-                
+
+    def drop(self, names):
+        """Drops variables (names) from metadata."""
+        
+        # drop lower dimension data
+        self._data = self._data.drop(names, axis=0)
+        # drop higher dimension data
+        for name in names:
+            if name in self._ho_data:
+                _ = self._ho_data.pop(name)
+
+    def keep(self, keep_names):
+        """Keeps variables (names) while dropping other parameters"""
+        
+        current_names = self._data.columns
+        drop_names = []
+        for name in current_names:
+            if name not in keep_names:
+                drop_names.append(name)
+        self.drop(drop_names)
+        
     def default_labels_and_values(self, name):
         """Returns dictionary of default meta labels and values for name variable.
 
