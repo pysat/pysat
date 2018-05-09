@@ -560,6 +560,7 @@ class Meta(object):
                         meta_row.at['children'] = self.ho_data[new_key].copy()
                     else:
                         empty_meta = Meta()
+                        self.apply_default_labels(empty_meta)
                         meta_row.at['children'] = empty_meta
                     return meta_row
                 else:

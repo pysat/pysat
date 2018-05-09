@@ -292,6 +292,7 @@ class TestBasics():
         aa = self.meta.pop('new3')
         assert np.all(aa['children'] == meta2)
         # ensure lower metadata created when ho data assigned
+        print (aa['units'])
         assert aa['units'] == ''
         assert aa['long_name'] == 'new3'
         cc = self.meta['new2']
