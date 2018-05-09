@@ -225,9 +225,13 @@ class Meta(object):
     @ho_data.setter   
     def ho_data(self, new_dict):
         self._ho_data = new_dict
-        
+    
+    @property    
     def empty(self):
         """Return boolean True if there is no metadata"""
+        
+        # only need to check on lower data since lower data
+        # is set when higher metadata assigned
         if self.data.empty:
             return True
         else:
@@ -478,7 +482,12 @@ class Meta(object):
 
         elif isinstance(input_data, Meta):
             # dealing with higher order data set
-            
+            # names is only a single name here (by choice for support)
+            if (names in self._ho_data) and (input_data.empty):
+                # no actual metadata provided and there is already some
+                # higher order metadata in self
+                return
+                
             # get Meta approved variable names
             new_item_name = self.var_case_name(names)
             # ensure that Meta labels of object to be assigned 
@@ -488,6 +497,7 @@ class Meta(object):
 
             # go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
+            # this covers custom attributes not handled by default routine above
             attr_names = input_data.attrs()
             new_names = []
             for name in attr_names:
