@@ -394,7 +394,10 @@ class Instrument(object):
         # the rest of the keys are presumed to be metadata
         in_data = new.pop('data')
         if hasattr(in_data, '__iter__'):
-            if isinstance(in_data[0], pds.DataFrame):
+            if isinstance(in_data, pds.DataFrame):
+                pass
+                # filter for elif
+            elif isinstance(in_data[0], pds.DataFrame):
                 # input is a list_like of frames
                 # this is higher order data
                 # this process ensures
