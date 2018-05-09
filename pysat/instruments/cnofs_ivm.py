@@ -93,12 +93,9 @@ def clean(self):
     
     # make sure all -999999 values are NaN
     self.data.replace(-999999., np.nan, inplace=True)
-    # idx, idy, = np.where(self.data == -999999.)
-    # self.data.iloc[idx,idy] = np.nan
 
     if (self.clean_level == 'clean') | (self.clean_level == 'dusty'):
         try:
-            # self.data = self.data[(abs(self.data.iv_mer) < 10000.)]
             idx, = np.where(np.abs(self.data.ionVelmeridional) < 10000.)
             self.data = self[idx,:]
         except AttributeError:
@@ -106,7 +103,6 @@ def clean(self):
         
         if self.clean_level == 'dusty':
             # take out all values where RPA data quality is > 1
-            # self.data = self.data[self.data.rpa_flag <= 3]
             idx, = np.where(self.data.RPAflag <= 1)
             self.data = self[idx,:]
             # IDM quality flags
@@ -118,20 +114,17 @@ def clean(self):
             # IDM quality flags
             self.data = self.data[ (self.data.driftMeterflag<= 0) ]
     if self.clean_level == 'dirty':
-        # take out all values where RPA data quality is > 3
-        # self.data = self.data[self.data.rpa_flag <= 3]
+        # take out all values where RPA data quality is > 4
         idx, = np.where(self.data.RPAflag <= 4)
         self.data = self[idx,:]
         # IDM quality flags
         self.data = self.data[ (self.data.driftMeterflag<= 6) ]
         
     # basic quality check on drifts and don't let UTS go above 86400.
-    # self.data = self.data[ (self.data.uts <= 86400.)]
     idx, = np.where(self.data.time <= 86400.)
     self.data = self[idx,:]
     
     # make sure MLT is between 0 and 24
-    # self.data = self.data[(self['mlt'] >= 0.) & (self['mlt'] <= 24.)]
     idx, = np.where((self.data.mlt >= 0) & (self.data.mlt <= 24.))
     self.data = self[idx,:]
     return
