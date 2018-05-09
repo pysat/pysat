@@ -199,10 +199,11 @@ class Meta(object):
                             "See other constructors for alternate inputs.")
         else:
             self._data = DataFrame(None, columns=[self._units_label, self._name_label,
-                                                 self._fill_label]) #, self._desc_label,
-                                                 # self._plot_label, self._axis_label,
-                                                 # self._scale_label, self._min_label,
-                                                 # self._max_label, self._fill_label])
+                                                 self._desc_label,
+                                                 self._plot_label, self._axis_label,
+                                                 self._scale_label, self.notes_label,
+                                                 self._min_label, self._max_label,
+                                                 self._fill_label])
 
         # establish attributes intrinsic to object, before user can
         # add any
@@ -266,38 +267,38 @@ class Meta(object):
                 drop_names.append(name)
         self.drop(drop_names)
         
-    def default_labels_and_values(self, name):
-        """Returns dictionary of default meta labels and values for name variable.
-
-        Metadata is automatically tracked for various properties, name,
-        long_name, units, description, etc. Each of these values (labels)
-        corresponds to a given string (values).
-
-        Parameters
-        ----------
-        name : list_like of str
-            variable names to get default metadata parameters for
-
-        Returns
-        -------
-        dict
-            keys are metadata labels used within Meta object, values are the default
-            values assigned if data is never specified by user
-
-        """
-        num = len(name)
-        default_str = [''] * num
-        default_nan = [np.NaN] * num
-        return {self.units_label: default_str,
-                self.name_label: name,
-                self.notes_label: default_str,
-                self.desc_label: default_str,
-                self.plot_label: name,
-                self.axis_label: name,
-                self.scale_label: ['linear'] * num,
-                self.min_label: default_nan,
-                self.max_label: default_nan,
-                self.fill_label: default_nan}
+#     def default_labels_and_values(self, name):
+#         """Returns dictionary of default meta labels and values for name variable.
+# 
+#         Metadata is automatically tracked for various properties, name,
+#         long_name, units, description, etc. Each of these values (labels)
+#         corresponds to a given string (values).
+# 
+#         Parameters
+#         ----------
+#         name : list_like of str
+#             variable names to get default metadata parameters for
+# 
+#         Returns
+#         -------
+#         dict
+#             keys are metadata labels used within Meta object, values are the default
+#             values assigned if data is never specified by user
+# 
+#         """
+#         num = len(name)
+#         default_str = [''] * num
+#         default_nan = [np.NaN] * num
+#         return {self.units_label: default_str,
+#                 self.name_label: name,
+#                 self.notes_label: default_str,
+#                 self.desc_label: default_str,
+#                 self.plot_label: name,
+#                 self.axis_label: name,
+#                 self.scale_label: ['linear'] * num,
+#                 self.min_label: default_nan,
+#                 self.max_label: default_nan,
+#                 self.fill_label: default_nan}
 
     def apply_default_labels(self, other):
         """Applies labels for default meta labels from self onto other.
@@ -389,177 +390,113 @@ class Meta(object):
 
         return output_str
 
-    def __setitem__(self, name, input_data):
+    def _insert_default_values(self, input_name):
+                        
+        default_str = ''
+        default_nan = np.NaN
+        labels = [self.units_label, self.name_label, self.notes_label,
+                  self.desc_label, self.plot_label, self.axis_label, 
+                  self.scale_label, self.min_label, self.max_label, 
+                  self.fill_label]
+        defaults = [default_str, input_name, default_str, default_str,
+                    input_name, input_name, 'linear', default_nan, 
+                    default_nan, default_nan]
+        self._data.loc[input_name, labels] = defaults
+        
+    def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
 
-        if isinstance(input_data, dict):
-            # check if dict empty
-
-            if input_data.keys() == []:
-                # null input, variable name provided but no metadata is actually
-                # included. 
-                if isinstance(name, basestring):
-                    if name in self:
-                        # variable already exists and we don't have anything
-                        # new to add, just leave
-                        return
-
-            # otherwise, continue on and set defaults
-            #     else:
-            #         new_name = []
-            #         for n in name:
-            #             if n not in self:
-            #                 new_name.append(n)
-            #         name = new_name
-            #         if len(name) == 0:
-            #             # all variables already exist, can simply leave
-            #             return
-            #         else:
-            #             # otherwise, continue on and set defaults
-            #             # create empty input for all remaining names
-            #             input_data = {}
-            #             input_data[self.units_label] = ['']*len(name)
-            #             input_data[self.name_label] = name
-            #             input_data[self.fill_label] = np.NaN
-            
-            # perform some checks on the data
+        if isinstance(input_data, dict):           
             # if not passed an iterable, make it one
-            if isinstance(name, basestring):
-                name = [name]
+            if isinstance(names, basestring):
+                names = [names]
                 for key in input_data:
                     input_data[key] = [input_data[key]]
+            # make sure the variable names are in good shape
+            # Meta object is case insensitive but case preserving
+            # convert given names into ones Meta has already seen
+            # if new, then input names become the standard
+            names = [self.var_case_name(name) for name in names]
+            for name in names:
+                if name not in self:
+                    self._insert_default_values(name)
+            # check if input dict empty
+            if input_data.keys() == []:
+                # meta wasn't actually assigned by user, empty call
+                # we can head out - we've assigned defaults if first data
+                return
+            # perform some checks on the data
             # make sure number of inputs matches number of metadata inputs
             for key in input_data:
-                if len(name) != len(input_data[key]):
+                if len(names) != len(input_data[key]):
                     raise ValueError('Length of names and inputs must be equal.')
-
-            # check if 'units' or other base parameters have been provided
-            # check against provided labels, case insensitive
-            # defaults are filled in so that the actions invoked against
-            # pandas object later work out as expected 
-            lower_keys = [k.lower() for k in input_data.keys()]
-            # dictionary of labels (keys) and values (default value for attribute)
-            default_dict = self.default_labels_and_values(name)
-            for attr in default_dict: #zip(attrs, default_attrs):
-                # the metadata default values for attr are in defaults
-                defaults = default_dict[attr]
-                lower_attr = attr.lower()
-                if lower_attr not in lower_keys:
-                    # base parameter not provided
-                    # provide default value, or copy existing
-                    input_data[attr] = []                    
-                    # keys changed, update lower keys for consistency
-                    lower_keys = [k.lower() for k in input_data.keys()]
-                    for item_name, default in zip(name, defaults):
-                        if item_name not in self:
-                            # overall variable not in Meta, can use default
-                            input_data[attr].append(default)
-                        else:
-                            if self.has_attr(attr):
-                                # copy existing
-                                input_data[attr].append(self[item_name, attr])
-                            else:
-                                input_data[attr].append(default)
-                elif attr not in input_data:
-                    # base parameter was provided, however the case 
-                    # provided doesn't match up with existing labels
-                    # make it match
-                    keys = [i for i in input_data]
-                    # update lower keys for consistency
-                    lower_keys = [k.lower() for k in input_data.keys()]
-                    for unit_key, lower_key in zip(keys, lower_keys):
-                        if lower_key == lower_attr:
-                            # print('popping units_key ', unit_key)
-                            input_data[attr] = input_data.pop(unit_key)
-                            break
-
+            # make sure the attribute names are in good shape
             # check name of attributes against existing attribute names
             # if attribute name exists somewhere, then case of existing attribute
             # will be enforced upon new data by default for consistency
-            # keys are pulled out below first since dictionary will be modified
-            # only want to iterate over current keys
             keys = [i for i in input_data]
-            for key in keys:
-                new_key = self.attr_case_name(key)
-                input_data[new_key] = input_data.pop(key)
+            for name in keys:
+                new_name = self.attr_case_name(name)
+                if new_name != name:
+                    input_data[new_name] = input_data.pop(name)
 
-            # time to actually add the metadata
-            if len(name) > 0:
-                # make sure there is still something to add
-                new = DataFrame(input_data, index=name)
-                for item_name, item in new.iterrows():
-                    if item_name not in self:
-                        # this lets data in that could break the system
-                        # when the user tries to modify metadata
-                        # self.data = self.data.append(item)
-                        # thus, instead we take a longer route
-                        # with the for loop below which adds everything one
-                        # by one
-                        new_item_name = item_name
-                    else:
-                        # info already exists, update with new info
-                        new_item_name = self.var_case_name(item_name)
-                    # time to actually add the info
-                    for item_key in item.keys():
-                        # disallow column name children
-                        if item_key not in ['children', 'meta']:
-                            # print ('new_item_name', new_item_name)
-                            # print ('item_key', item_key)
-                            # print ('item[item_key]', item[item_key])
-                            to_be_set = item[item_key]
-                            if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
-                                if isinstance(to_be_set[0], basestring):
-                                    self.data.loc[new_item_name, item_key] = '\n\n'.join(to_be_set)
-                                else:
-                                    warnings.warn(' '.join(('Array elements are disallowed in meta.',
-                                                  'Dropping input :', item_key)))
+            # time to actually add the metadata           
+            for key in input_data:
+                if key not in ['children', 'meta']:
+                    for i, name in enumerate(names):
+                        to_be_set = input_data[key][i]
+                        if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
+                            if isinstance(to_be_set[0], basestring):
+                                self._data.loc[name, key] = '\n\n'.join(to_be_set)
                             else:
-                                self.data.loc[new_item_name, item_key] = to_be_set
-            if 'meta' in input_data:
-                # process higher order stuff. Meta inputs could be part of 
-                # larger multiple parameter assignment
-                pop_list = []
-                pop_loc = []
-                for j, (item, val) in enumerate(zip(name, input_data['meta'])):
-                    if val is not None:
-                        # assign meta data, recursive call....
-                        self[item] = val
-                        pop_list.append(item)
-                        pop_loc.append(j)
+                                warnings.warn(' '.join(('Array elements are disallowed in meta.',
+                                                'Dropping input :', key)))
+                        else:
+                            self._data.loc[name, key] = to_be_set
+                else:
+                    # key is 'meta' or 'children'
+                    # process higher order stuff. Meta inputs could be part of 
+                    # larger multiple parameter assignment
+                    # so not all names may actually have 'meta' to add
+                    for j, (item, val) in enumerate(zip(names, input_data['meta'])):
+                        if val is not None:
+                            # assign meta data, recursive call....
+                            # heads to if Meta instance call
+                            self[item] = val
 
         elif isinstance(input_data, Series):
+            # outputs from Meta object are a Series.
+            # thus this takes in input from a Meta object
             # set data usind standard assignment via a dict
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
                 child = in_dict.pop('children')
                 if not child.data.empty:
-                    self.ho_data[name] = child
-                                        
-            self[name] = in_dict
+                    self.ho_data[names] = child
+            # remaining items are simply assigned                            
+            self[names] = in_dict
 
         elif isinstance(input_data, Meta):
             # dealing with higher order data set
             
-            # if name is already used in meta object, use that one
-            # with preserved case
-            # otherwise, use name as provided
-            if name in self:
-                new_item_name = self.var_case_name(name)
-            else:
-                new_item_name = name
-            # ensure that labels are always consistent
+            # get Meta approved variable names
+            new_item_name = self.var_case_name(names)
+            # ensure that Meta labels of object to be assigned 
+            # are consistent with self
+            # input_data accepts self's labels
             input_data.accept_default_labels(self)
 
             # go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
-            names = input_data.attrs()
+            attr_names = input_data.attrs()
             new_names = []
-            for name in names:
+            for name in attr_names:
                 new_names.append(self.attr_case_name(name))
             input_data.data.columns = new_names
-            names = input_data.data.index
+            # same thing for variables
+            var_names = input_data.data.index
             new_names = []
-            for name in names:
+            for name in var_names:
                 new_names.append(self.var_case_name(name))
             input_data.data.index = new_names
             # assign Meta object now that things are consistent with Meta
@@ -569,15 +506,7 @@ class Meta(object):
             # if there is no existing metadata info
             self[new_item_name] = {}
             # now add to higher order data
-            # need to respect existing metadata, if present
-            # if new_item_name in self.keys_nD():
-            #     for key in input_data.keys():
-            #         indict = input_data[key].to_dict()
-            #         if 'children' in indict:
-            #             _ = indict.pop('children')
-            #         self.ho_data[new_item_name][key] = indict
-            # else:
-            self.ho_data[new_item_name] = input_data
+            self._ho_data[new_item_name] = input_data
 
     def __getitem__(self, key):
         """Convenience method for obtaining metadata.
@@ -795,7 +724,7 @@ class Meta(object):
 
     def keys_nD(self):
         """Yields keys for higher order metadata"""
-        
+
         for i in self.ho_data:
             yield i
 
