@@ -393,27 +393,23 @@ class Instrument(object):
         # input dict must have data in 'data', 
         # the rest of the keys are presumed to be metadata
         in_data = new.pop('data')
-        if isinstance(in_data, pds.DataFrame):
-            # input is a dataframe
-            # multiple 1D datasets, no need for more
-            # provides a good filter for the next step of if chain
-            pass
-        elif isinstance(in_data[0], pds.DataFrame):
-            # input is a list_like of frames
-            # this is higher order data
-            # this process ensures
-            if ('meta' not in new) and (key not in self.meta.keys_nD()):
-                # create an empty Meta instance but with variable names
-                # this will ensure the correct defaults for all subvariables
-                # meta can filter out empty metadata as needed, the check above reduces
-                # the need to create Meta instances
-                ho_meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
-                                     notes_label=self.notes_label, desc_label=self.desc_label,
-                                     plot_label=self.plot_label, axis_label=self.axis_label,
-                                     scale_label=self.scale_label, fill_label=self.fill_label,
-                                     min_label=self.min_label, max_label=self.max_label)
-                ho_meta[in_data[0].columns] = {}
-                self.meta[key] = ho_meta
+        if hasattr(in_data, '__iter__'):
+            if isinstance(in_data[0], pds.DataFrame):
+                # input is a list_like of frames
+                # this is higher order data
+                # this process ensures
+                if ('meta' not in new) and (key not in self.meta.keys_nD()):
+                    # create an empty Meta instance but with variable names
+                    # this will ensure the correct defaults for all subvariables
+                    # meta can filter out empty metadata as needed, the check above reduces
+                    # the need to create Meta instances
+                    ho_meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
+                                        notes_label=self.notes_label, desc_label=self.desc_label,
+                                        plot_label=self.plot_label, axis_label=self.axis_label,
+                                        scale_label=self.scale_label, fill_label=self.fill_label,
+                                        min_label=self.min_label, max_label=self.max_label)
+                    ho_meta[in_data[0].columns] = {}
+                    self.meta[key] = ho_meta
         
         # assign data and any extra metadata
         self.data[key] = in_data

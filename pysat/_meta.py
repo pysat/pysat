@@ -449,7 +449,7 @@ class Meta(object):
                 if key not in ['children', 'meta']:
                     for i, name in enumerate(names):
                         to_be_set = input_data[key][i]
-                        if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
+                        if hasattr(to_be_set, '__iter__'): # and not isinstance(to_be_set, basestring):
                             if isinstance(to_be_set[0], basestring):
                                 self._data.loc[name, key] = '\n\n'.join(to_be_set)
                             else:
