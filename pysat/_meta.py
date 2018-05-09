@@ -475,7 +475,8 @@ class Meta(object):
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
                 child = in_dict.pop('children')
-                if not child.data.empty:
+                if child is not None: 
+                    # if not child.data.empty:
                     self.ho_data[names] = child
             # remaining items are simply assigned                            
             self[names] = in_dict
@@ -554,17 +555,19 @@ class Meta(object):
             if key in self:
                 # get case preserved string for variable name
                 new_key = self.var_case_name(key)
-                if new_key in self.keys():
-                    meta_row = self.data.loc[new_key]
-                    if new_key in self.keys_nD():
-                        meta_row.at['children'] = self.ho_data[new_key].copy()
-                    else:
-                        empty_meta = Meta()
-                        self.apply_default_labels(empty_meta)
-                        meta_row.at['children'] = empty_meta
-                    return meta_row
+                # if new_key in self.keys():
+                # don't need to check if in lower, all variables
+                # are always in the lower metadata
+                meta_row = self.data.loc[new_key]
+                if new_key in self.keys_nD():
+                    meta_row.at['children'] = self.ho_data[new_key].copy()
                 else:
-                    return pds.Series([self.ho_data[new_key].copy()], index=['children'])
+                    # empty_meta = Meta()
+                    # self.apply_default_labels(empty_meta)
+                    meta_row.at['children'] = None #empty_meta
+                return meta_row
+                # else:
+                #     return pds.Series([self.ho_data[new_key].copy()], index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
 

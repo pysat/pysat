@@ -292,12 +292,20 @@ class TestBasics():
         aa = self.meta.pop('new3')
         assert np.all(aa['children'] == meta2)
         # ensure lower metadata created when ho data assigned
-        print (aa['units'])
+        # print (aa['units'])
         assert aa['units'] == ''
         assert aa['long_name'] == 'new3'
-        cc = self.meta['new2']
-        bb = self.meta.pop('new2')
-        assert np.all(bb == cc)
+        m1 = self.meta['new2']
+        m2 = self.meta.pop('new2')
+        # assert np.all(bb == cc)
+        assert m1['children'] is None
+        assert m2['children'] is None
+        for key in m1.index:
+            if key not in ['children']:
+                assert m1[key] == m2[key]
+        # make sure both have the same indexes
+        assert np.all(m1.index == m2.index)
+
 
     def test_basic_equality(self):
         self.meta['new1'] = {'units':'hey1', 'long_name':'crew'}
@@ -613,7 +621,19 @@ class TestBasics():
                                           'value_min':[0,0,0],
                                           'value_max':[1,1,1]}
         meta2 = pysat.Meta(metadata=self.meta.data)
-        assert np.all(meta2['lower'] == self.meta['lower'])
+        # print (meta2['lower'])
+        # print (self.meta['lower'])
+        m1 = meta2['lower']
+        m2 = self.meta['lower']
+        assert m1['children'] is None
+        assert m2['children'] is None
+        for key in m1.index:
+            if key not in ['children']:
+                assert m1[key] == m2[key]
+        # make sure both have the same indexes
+        assert np.all(m1.index == m2.index)
+        # command below doesn't work because 'children' is None
+        # assert np.all(meta2['lower'] == self.meta['lower'])
 
     def test_replace_meta_units_list(self):
         self.meta['new'] = {'units':'hey', 'long_name':'boo'}
