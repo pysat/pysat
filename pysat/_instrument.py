@@ -381,72 +381,45 @@ class Instrument(object):
         """
         
         # add data to main pandas.DataFrame, depending upon the input
-        
-        if isinstance(new, dict):
-            # input dict must have data in 'data', the rest
-            # is presumed to be metadata
-            # metadata should be included in dict
-            in_data = new.pop('data')
-            if isinstance(in_data, pds.DataFrame):
-                # input is a dataframe
-                pass
- 
-            elif isinstance(in_data[0], pds.DataFrame):
-                # input is a list_like of frames
-                # this is higher order data
-                # this process ensures
-                if key not in self.meta.keys_nD():
-                    ho_meta = _meta.Meta()
-                    for ho_key in in_data[0]:
-                        ho_meta[ho_key] = {}
-                    self.meta[key] = ho_meta
+        # aka slice, and a name
+        if isinstance(key, tuple):
+            self.data.ix[key[0], key[1]] = new
+            self.meta[key[1]] = {}
+            return 
+        elif not isinstance(new, dict):
+            # make it a dict to simplify downstream processing
+            new = {'data': new}
             
-            # assign data and any extra metadata
-            self.data[key] = in_data
-            self.meta[key] = new
+        # input dict must have data in 'data', 
+        # the rest of the keys are presumed to be metadata
+        in_data = new.pop('data')
+        if isinstance(in_data, pds.DataFrame):
+            # input is a dataframe
+            # multiple 1D datasets, no need for more
+            # provides a good filter for the next step of if chain
+            pass
+        elif isinstance(in_data[0], pds.DataFrame):
+            # input is a list_like of frames
+            # this is higher order data
+            # this process ensures
+            if ('meta' not in new) and (key not in self.meta.keys_nD()):
+                # create an empty Meta instance but with variable names
+                # this will ensure the correct defaults for all subvariables
+                # meta can filter out empty metadata as needed, the check above reduces
+                # the need to create Meta instances
+                ho_meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
+                                     notes_label=self.notes_label, desc_label=self.desc_label,
+                                     plot_label=self.plot_label, axis_label=self.axis_label,
+                                     scale_label=self.scale_label, fill_label=self.fill_label,
+                                     min_label=self.min_label, max_label=self.max_label)
+                ho_meta[in_data[0].columns] = {}
+                self.meta[key] = ho_meta
+        
+        # assign data and any extra metadata
+        self.data[key] = in_data
+        self.meta[key] = new
 
-        else:
-            # not a dictionary, could have a mixed input
-            # aka slice, and a name
-            if isinstance(key, tuple):
-                self.data.ix[key[0], key[1]] = new
-                self.meta[key[1]] = {}
-            # If list or series of df handle ho data
-            elif hasattr(new, '__getitem__'):
-                # if isinstance(new, Series):
-                #     # series input, 1D variable
-                #     self.data[key] = new  
-                #     self.meta[key] = {}
-                if isinstance(new, DataFrame):
-                    # dataframe input allows input of multiple
-                    # 1D variables at once
-                    self.data[key] = new[key]
-                    for ke in key:
-                        self.meta[ke] = {}
-                elif isinstance(new[0], pds.DataFrame):
-                    # input is a list_like of frames
-                    # this is higher order data
-                    self.data[key] = new
-                    if key not in self.meta.keys_nD():
-                        # set up default metadata structure
-                        ho_meta = _meta.Meta()
-                        for ho_key in new[0]:
-                            ho_meta[ho_key] = {}
-                        self.meta[key] = ho_meta
-                else:
-                    # not one of special ones above
-                    # let pandas sort it out
-                    self.data[key] = new  
-                    self.meta[key] = {}
-            elif isinstance(key, str):
-                # didn't get a list_like thing of data
-                # but we were given a name
-                # try and add it
-                self.data[key] = new  
-                self.meta[key] = {}
-            else:
-                raise ValueError("No support for supplied input key")
-
+                        
     @property
     def empty(self):
         """Boolean flag reflecting lack of data.
