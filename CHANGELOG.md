@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.1] - 2018-05-06
+ - Improved robustness of Meta object when working with high and low order data
+ - Improved Meta test coverage
+ - Added dayside reconnection calculation for OMNI-HRO data
+ - Improved test behavior when instrument data could not be downloaded
+
 ## [1.0.0] - 2018-04-29
  - Improved consistency when handling higher order metadata
  - Improved translation of metadata within netCDF4 files to pysat standard

@@ -95,7 +95,7 @@ class Meta(object):
     object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, long_name, notes, desc, plot_label, axis, scale, 
+    attributes (units, name, notes, desc, plot_label, axis, scale, 
     value_min, value_max, and fill). These base attributes may be used to 
     programatically access and set types of metadata regardless of the string 
     values used for the attribute. String values for attributes may need to be 
@@ -186,46 +186,123 @@ class Meta(object):
         self._max_label = max_label
         self._fill_label = fill_label
         # init higher order (nD) data structure container, a dict
-        self.ho_data = {}
+        self._ho_data = {}
         # use any user provided data to instantiate object with data
         # attirube unit and name labels are called within
-        self.replace(metadata=metadata)
-        # establish attributes intrinsic to object, before user could
+        if metadata is not None:
+            if isinstance(metadata, DataFrame):
+                self._data = metadata
+                # make sure defaults are taken care of for required metadata
+                self.accept_default_labels(self)
+            else:
+                raise ValueError("Input must be a pandas DataFrame type. "+
+                            "See other constructors for alternate inputs.")
+        else:
+            self._data = DataFrame(None, columns=[self._units_label, self._name_label,
+                                                 self._desc_label,
+                                                 self._plot_label, self._axis_label,
+                                                 self._scale_label, self.notes_label,
+                                                 self._min_label, self._max_label,
+                                                 self._fill_label])
+
+        # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
 
-    def default_labels_and_values(self, name):
-        """Returns dictionary of default meta labels and values for name variable.
+    @property
+    def ho_data(self):
+        return self._ho_data
 
-        Metadata is automatically tracked for various properties, name,
-        long_name, units, description, etc. Each of these values (labels)
-        corresponds to a given string (values).
+    @property
+    def data(self):
+        return self._data
 
+    @data.setter   
+    def data(self, new_frame):
+        self._data = new_frame
+        # self.keys = self._data.columns.lower()
+
+    @ho_data.setter   
+    def ho_data(self, new_dict):
+        self._ho_data = new_dict
+    
+    @property    
+    def empty(self):
+        """Return boolean True if there is no metadata"""
+        
+        # only need to check on lower data since lower data
+        # is set when higher metadata assigned
+        if self.data.empty:
+            return True
+        else:
+            return False
+
+    def merge(self, other):
+        """Adds metadata variables to self that are in other but not in self.
+        
         Parameters
         ----------
-        name : list_like of str
-            variable names to get default metadata parameters for
-
-        Returns
-        -------
-        dict
-            keys are metadata labels used within Meta object, values are the default
-            values assigned if data is never specified by user
-
+        other : pysat.Meta
+        
         """
-        num = len(name)
-        default_str = [''] * num
-        default_nan = [np.NaN] * num
-        return {self.units_label: default_str,
-                self.name_label: name,
-                self.notes_label: default_str,
-                self.desc_label: default_str,
-                self.plot_label: name,
-                self.axis_label: name,
-                self.scale_label: ['linear'] * num,
-                self.min_label: default_nan,
-                self.max_label: default_nan,
-                self.fill_label: default_nan}
+        
+        for key in other.keys():
+            if key not in self:
+                # copies over both lower and higher dimensional data
+                self[key] = other[key]
+
+    def drop(self, names):
+        """Drops variables (names) from metadata."""
+        
+        # drop lower dimension data
+        self._data = self._data.drop(names, axis=0)
+        # drop higher dimension data
+        for name in names:
+            if name in self._ho_data:
+                _ = self._ho_data.pop(name)
+
+    def keep(self, keep_names):
+        """Keeps variables (keep_names) while dropping other parameters"""
+        
+        current_names = self._data.columns
+        drop_names = []
+        for name in current_names:
+            if name not in keep_names:
+                drop_names.append(name)
+        self.drop(drop_names)
+        
+#     def default_labels_and_values(self, name):
+#         """Returns dictionary of default meta labels and values for name variable.
+# 
+#         Metadata is automatically tracked for various properties, name,
+#         long_name, units, description, etc. Each of these values (labels)
+#         corresponds to a given string (values).
+# 
+#         Parameters
+#         ----------
+#         name : list_like of str
+#             variable names to get default metadata parameters for
+# 
+#         Returns
+#         -------
+#         dict
+#             keys are metadata labels used within Meta object, values are the default
+#             values assigned if data is never specified by user
+# 
+#         """
+#         num = len(name)
+#         default_str = [''] * num
+#         default_nan = [np.NaN] * num
+#         return {self.units_label: default_str,
+#                 self.name_label: name,
+#                 self.notes_label: default_str,
+#                 self.desc_label: default_str,
+#                 self.plot_label: name,
+#                 self.axis_label: name,
+#                 self.scale_label: ['linear'] * num,
+#                 self.min_label: default_nan,
+#                 self.max_label: default_nan,
+#                 self.fill_label: default_nan}
 
     def apply_default_labels(self, other):
         """Applies labels for default meta labels from self onto other.
@@ -279,97 +356,6 @@ class Meta(object):
         self.fill_label = other.fill_label
         return 
 
-    def __eq__(self, other):
-        """
-        Check equality between Meta instances.
-        
-        Checks if variable names, attribute names, and metadata values
-        are all equal between to Meta objects. Note that this comparison
-        treats np.NaN == np.NaN as True.
-        
-        Name comparison is case-sensitive.
-        
-        """
-        
-        if isinstance(other, Meta):
-            # check first if variables and attributes are the same
-            # quick check on length
-            keys1 = [i for i in self.keys()]
-            keys2 = [i for i in other.keys()]
-            if len(keys1) != len(keys2):
-                return False
-            # now iterate over each of the keys in the first one
-            # don't need to iterate over second one, if all of the first
-            # in the second we are good. No more or less items in second from 
-            # check earlier.
-            for key in keys1:
-                if key not in keys2:
-                    return False
-            # do same checks on attributes 
-            attrs1 = [i for i in self.attrs()]
-            attrs2 = [i for i in other.attrs()]
-            if len(attrs1) != len(attrs2):
-                return False
-            for attr in attrs1:
-                if attr not in attrs2:
-                    return False
-            # now check the values of all elements now that we know all variable
-            # and attribute names are the same
-            for key in self.keys():
-                for attr in self.attrs():
-                    if not (self[key, attr] == other[key, attr]):
-                        # np.nan is not equal to anything
-                        # if both values are NaN, ok in my book
-                        try:
-                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
-                                # one or both are not NaN and they aren't equal
-                                # test failed
-                                return False
-                        except TypeError:
-                            # comparison above gets unhappy with string inputs
-                            return False
-
-            # check through higher order products
-            # in the same manner as code above
-            keys1 = [i for i in self.keys_nD()]
-            keys2 = [i for i in other.keys_nD()]
-            if len(keys1) != len(keys2):
-                return False
-            for key in keys1:
-                if key not in keys2:
-                    return False
-            # do same check on all sub variables within each nD key
-            for key in self.keys_nD():
-                keys1 = [i for i in self[key].children.keys()]
-                keys2 = [i for i in other[key].children.keys()]
-                if len(keys1) != len(keys2):
-                    return False
-                for key_check in keys1:
-                    if key_check not in keys2:
-                        return False
-                # check if attributes are the same
-                attrs1 = [i for i in self[key].children.attrs()]
-                attrs2 = [i for i in other[key].children.attrs()]
-                if len(attrs1) != len(attrs2):
-                    return False
-                for attr in attrs1:
-                    if attr not in attrs2:
-                        return False
-                # now time to check if all elements are individually equal
-                for key2 in self[key].children.keys():
-                    for attr in self[key].children.attrs():
-                        if not (self[key].children[key2, attr] == other[key].children[key2, attr]):
-                            try:
-                                if not (np.isnan(self[key].children[key2, attr]) and np.isnan(other[key].children[key2, attr])):
-                                    return False
-                            except TypeError:
-                                # comparison above gets unhappy with string inputs
-                                return False
-            # if we made it this far, things are good                
-            return True
-        else:
-            # wasn't even the correct class
-            return False
     
     def __contains__(self, other):
         """case insensitive check for variable name"""
@@ -380,7 +366,10 @@ class Meta(object):
             return True
         return False
 
-    def __repr__(self, recurse=True):
+    def __repr__(self):
+        return 'pysat.MetaData'
+
+    def __str__(self, recurse=True):
         """String describing Meta instance, variables, and attributes"""
 
         # cover 1D parameters
@@ -401,177 +390,134 @@ class Meta(object):
             for item_name in self.keys_nD():
                 output_str += '\n\n'
                 output_str += 'Metadata for '+item_name+'\n'
-                output_str += self.ho_data[item_name].__repr__(False)
+                output_str += self.ho_data[item_name].__str__(False)
 
         return output_str
 
-    def __setitem__(self, name, value):
+    def _insert_default_values(self, input_name):
+                        
+        default_str = ''
+        default_nan = np.NaN
+        labels = [self.units_label, self.name_label, self.notes_label,
+                  self.desc_label, self.plot_label, self.axis_label, 
+                  self.scale_label, self.min_label, self.max_label, 
+                  self.fill_label]
+        defaults = [default_str, input_name, default_str, default_str,
+                    input_name, input_name, 'linear', default_nan, 
+                    default_nan, default_nan]
+        self._data.loc[input_name, labels] = defaults
+        
+    def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
 
-        if isinstance(value, dict):
-            # check if dict empty
-
-            if value.keys() == []:
-                # null input, variable name provided but no metadata is actually
-                # included. 
-                if isinstance(name, basestring):
-                    if name in self:
-                        # variable already exists and we don't have anything
-                        # new to add, just leave
-                        return
-
-            # otherwise, continue on and set defaults
-            #     else:
-            #         new_name = []
-            #         for n in name:
-            #             if n not in self:
-            #                 new_name.append(n)
-            #         name = new_name
-            #         if len(name) == 0:
-            #             # all variables already exist, can simply leave
-            #             return
-            #         else:
-            #             # otherwise, continue on and set defaults
-            #             # create empty input for all remaining names
-            #             value = {}
-            #             value[self.units_label] = ['']*len(name)
-            #             value[self.name_label] = name
-            #             value[self.fill_label] = np.NaN
-            
-            # perform some checks on the data
+        if isinstance(input_data, dict):           
             # if not passed an iterable, make it one
-            if isinstance(name, basestring):
-                name = [name]
-                for key in value:
-                    value[key] = [value[key]]
+            if isinstance(names, basestring):
+                names = [names]
+                for key in input_data:
+                    input_data[key] = [input_data[key]]
+            # make sure the variable names are in good shape
+            # Meta object is case insensitive but case preserving
+            # convert given names into ones Meta has already seen
+            # if new, then input names become the standard
+            names = [self.var_case_name(name) for name in names]
+            for name in names:
+                if name not in self:
+                    self._insert_default_values(name)
+            # check if input dict empty
+            if input_data.keys() == []:
+                # meta wasn't actually assigned by user, empty call
+                # we can head out - we've assigned defaults if first data
+                return
+            # perform some checks on the data
             # make sure number of inputs matches number of metadata inputs
-            for key in value:
-                if len(name) != len(value[key]):
+            for key in input_data:
+                if len(names) != len(input_data[key]):
                     raise ValueError('Length of names and inputs must be equal.')
-
-            # check if 'units' or other base parameters have been provided
-            # check against provided labels, case insensitive
-            # defaults are filled in so that the actions invoked against
-            # pandas object later work out as expected 
-            lower_keys = [k.lower() for k in value.keys()]
-            # dictionary of labels (keys) and values (default value for attribute)
-            default_dict = self.default_labels_and_values(name)
-            # for attr, defaults in default_dict: #zip(attrs, default_attrs):
-            for attr in default_dict: #zip(attrs, default_attrs):
-                # the metadata default values for attr are in defaults
-                defaults = default_dict[attr]
-                lower_attr = attr.lower()
-                if lower_attr not in lower_keys:
-                    # base parameter not provided
-                    # provide default value, or copy existing
-                    value[attr] = []                    
-                    # keys changed, update lower keys for consistency
-                    lower_keys = [k.lower() for k in value.keys()]
-                    for item_name, default in zip(name, defaults):
-                        if item_name not in self:
-                            # overall variable not in Meta, can use default
-                            value[attr].append(default)
-                        else:
-                            if self.has_attr(attr):
-                                # copy existing
-                                value[attr].append(self[item_name, attr])
-                            else:
-                                value[attr].append(default)
-                elif attr not in value:
-                    # base parameter was provided, however the case 
-                    # provided doesn't match up with existing labels
-                    # make it match
-                    keys = [i for i in value]
-                    # update lower keys for consistency
-                    lower_keys = [k.lower() for k in value.keys()]
-                    for unit_key, lower_key in zip(keys, lower_keys):
-                        if lower_key == lower_attr:
-                            # print('popping units_key ', unit_key)
-                            value[attr] = value.pop(unit_key)
-                            break
-
+            # make sure the attribute names are in good shape
             # check name of attributes against existing attribute names
             # if attribute name exists somewhere, then case of existing attribute
             # will be enforced upon new data by default for consistency
-            # keys are pulled out below first since dictionary will be modified
-            # only want to iterate over current keys
-            keys = [i for i in value]
-            for key in keys:
-                new_key = self.attr_case_name(key)
-                value[new_key] = value.pop(key)
+            keys = [i for i in input_data]
+            for name in keys:
+                new_name = self.attr_case_name(name)
+                if new_name != name:
+                    input_data[new_name] = input_data.pop(name)
 
-            # time to actually add the metadata
-            if len(name) > 0:
-                # make sure there is still something to add
-                new = DataFrame(value, index=name)
-                for item_name, item in new.iterrows():
-                    if item_name not in self:
-                        # this lets data in that could break the system
-                        # when the user tries to modify metadata
-                        # self.data = self.data.append(item)
-                        # thus, instead we take a longer route
-                        # with the for loop below which adds everything one
-                        # by one
-                        new_item_name = item_name
-                    else:
-                        # info already exists, update with new info
-                        new_item_name = self.var_case_name(item_name)
-                    # time to actually add the info
-                    for item_key in item.keys():
-                        # disallow column name children
-                        if item_key not in ['children', 'meta']:
-                            # print ('new_item_name', new_item_name)
-                            # print ('item_key', item_key)
-                            # print ('item[item_key]', item[item_key])
-                            to_be_set = item[item_key]
-                            if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
-                                if isinstance(to_be_set[0], basestring):
-                                    self.data.loc[new_item_name, item_key] = '\n\n'.join(to_be_set)
-                                else:
-                                    warnings.warn(' '.join(('Array elements are disallowed in meta.',
-                                                  'Dropping input :', item_key)))
+            # time to actually add the metadata           
+            for key in input_data:
+                if key not in ['children', 'meta']:
+                    for i, name in enumerate(names):
+                        to_be_set = input_data[key][i]
+                        if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
+                            if isinstance(to_be_set[0], basestring):
+                                self._data.loc[name, key] = '\n\n'.join(to_be_set)
                             else:
-                                self.data.loc[new_item_name, item_key] = to_be_set
-            if 'meta' in value:
-                # process higher order stuff. Meta inputs could be part of 
-                # larger multiple parameter assignment
-                pop_list = []
-                pop_loc = []
-                for j, (item, val) in enumerate(zip(name, value['meta'])):
-                    if val is not None:
-                        # assign meta data, recursive call....
-                        self[item] = val
-                        pop_list.append(item)
-                        pop_loc.append(j)
+                                warnings.warn(' '.join(('Array elements are disallowed in meta.',
+                                                'Dropping input :', key)))
+                        else:
+                            self._data.loc[name, key] = to_be_set
+                else:
+                    # key is 'meta' or 'children'
+                    # process higher order stuff. Meta inputs could be part of 
+                    # larger multiple parameter assignment
+                    # so not all names may actually have 'meta' to add
+                    for j, (item, val) in enumerate(zip(names, input_data['meta'])):
+                        if val is not None:
+                            # assign meta data, recursive call....
+                            # heads to if Meta instance call
+                            self[item] = val
 
-        elif isinstance(value, Series):
+        elif isinstance(input_data, Series):
+            # outputs from Meta object are a Series.
+            # thus this takes in input from a Meta object
             # set data usind standard assignment via a dict
-            self[name] = value.to_dict()
+            in_dict = input_data.to_dict()
+            if 'children' in in_dict:
+                child = in_dict.pop('children')
+                if child is not None: 
+                    # if not child.data.empty:
+                    self.ho_data[names] = child
+            # remaining items are simply assigned                            
+            self[names] = in_dict
 
-        elif isinstance(value, Meta):
+        elif isinstance(input_data, Meta):
             # dealing with higher order data set
-            if name in self:
-                new_item_name = self.var_case_name(name)
-            else:
-                new_item_name = name
-            # ensure that labels are always consistent
-            value.accept_default_labels(self)
+            # names is only a single name here (by choice for support)
+            if (names in self._ho_data) and (input_data.empty):
+                # no actual metadata provided and there is already some
+                # higher order metadata in self
+                return
+                
+            # get Meta approved variable names
+            new_item_name = self.var_case_name(names)
+            # ensure that Meta labels of object to be assigned 
+            # are consistent with self
+            # input_data accepts self's labels
+            input_data.accept_default_labels(self)
 
             # go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
-            names = value.attrs()
+            # this covers custom attributes not handled by default routine above
+            attr_names = input_data.attrs()
             new_names = []
-            for name in names:
+            for name in attr_names:
                 new_names.append(self.attr_case_name(name))
-            value.data.columns = new_names
-            names = value.data.index
+            input_data.data.columns = new_names
+            # same thing for variables
+            var_names = input_data.data.index
             new_names = []
-            for name in names:
+            for name in var_names:
                 new_names.append(self.var_case_name(name))
-            value.data.index = new_names
+            input_data.data.index = new_names
             # assign Meta object now that things are consistent with Meta
             # object settings
-            self.ho_data[new_item_name] = value
+            # but first, make sure there are lower dimension metadata
+            # parameters, passing in an empty dict fills in defaults
+            # if there is no existing metadata info
+            self[new_item_name] = {}
+            # now add to higher order data
+            self._ho_data[new_item_name] = input_data
 
     def __getitem__(self, key):
         """Convenience method for obtaining metadata.
@@ -603,22 +549,25 @@ class Meta(object):
                 new_index = self.var_case_name(key[0])
                 new_child_index = self.var_case_name(key[1])
                 new_name = self.attr_case_name(key[2])
-                return self._ho_data[new_index].data.loc[new_child_index, new_name]
+                return self.ho_data[new_index].data.loc[new_child_index, new_name]
         else:
             # ensure variable is present somewhere
             if key in self:
                 # get case preserved string for variable name
                 new_key = self.var_case_name(key)
-                if new_key in self.keys():
-                    meta_row = self.data.loc[new_key]
-                    if new_key in self.keys_nD():
-                        meta_row.at['children'] = self.ho_data[new_key]
-                    else:
-                        empty_meta = Meta()
-                        meta_row.at['children'] = empty_meta
-                    return meta_row
+                # if new_key in self.keys():
+                # don't need to check if in lower, all variables
+                # are always in the lower metadata
+                meta_row = self.data.loc[new_key]
+                if new_key in self.keys_nD():
+                    meta_row.at['children'] = self.ho_data[new_key].copy()
                 else:
-                    return pds.Series([self.ho_data[new_key]], index=['children'])
+                    # empty_meta = Meta()
+                    # self.apply_default_labels(empty_meta)
+                    meta_row.at['children'] = None #empty_meta
+                return meta_row
+                # else:
+                #     return pds.Series([self.ho_data[new_key].copy()], index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
 
@@ -789,7 +738,7 @@ class Meta(object):
 
     def keys_nD(self):
         """Yields keys for higher order metadata"""
-        
+
         for i in self.ho_data:
             yield i
 
@@ -1002,29 +951,98 @@ class Meta(object):
                                            + ' in the Instrument object.')
         # return inst
 
-    def replace(self, metadata=None):
-        """Replace stored metadata with input data.
-
-        Parameters
-        ----------
-        metadata : pandas.DataFrame 
-            DataFrame should be indexed by variable name that contains at
-            minimum the standard_name (name), units, and long_name for the data
-            stored in the associated pysat Instrument object.
+    def __eq__(self, other):
         """
-        if metadata is not None:
-            if isinstance(metadata, DataFrame):
-                self.data = metadata
-                # make sure defaults are taken care of for required metadata
-                self.accept_default_labels(self)
-            else:
-                raise ValueError("Input must be a pandas DataFrame type. "+
-                            "See other constructors for alternate inputs.")
-        else:
-            self.data = DataFrame(None, columns=[self.name_label,
-                                                 self.units_label,
-                                                 self.fill_label])
+        Check equality between Meta instances. Good for testing.
         
+        Checks if variable names, attribute names, and metadata values
+        are all equal between to Meta objects. Note that this comparison
+        treats np.NaN == np.NaN as True.
+        
+        Name comparison is case-sensitive.
+        
+        """
+        
+        if isinstance(other, Meta):
+            # check first if variables and attributes are the same
+            # quick check on length
+            keys1 = [i for i in self.keys()]
+            keys2 = [i for i in other.keys()]
+            if len(keys1) != len(keys2):
+                return False
+            # now iterate over each of the keys in the first one
+            # don't need to iterate over second one, if all of the first
+            # in the second we are good. No more or less items in second from 
+            # check earlier.
+            for key in keys1:
+                if key not in keys2:
+                    return False
+            # do same checks on attributes 
+            attrs1 = [i for i in self.attrs()]
+            attrs2 = [i for i in other.attrs()]
+            if len(attrs1) != len(attrs2):
+                return False
+            for attr in attrs1:
+                if attr not in attrs2:
+                    return False
+            # now check the values of all elements now that we know all variable
+            # and attribute names are the same
+            for key in self.keys():
+                for attr in self.attrs():
+                    if not (self[key, attr] == other[key, attr]):
+                        # np.nan is not equal to anything
+                        # if both values are NaN, ok in my book
+                        try:
+                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
+                                # one or both are not NaN and they aren't equal
+                                # test failed
+                                return False
+                        except TypeError:
+                            # comparison above gets unhappy with string inputs
+                            return False
+
+            # check through higher order products
+            # in the same manner as code above
+            keys1 = [i for i in self.keys_nD()]
+            keys2 = [i for i in other.keys_nD()]
+            if len(keys1) != len(keys2):
+                return False
+            for key in keys1:
+                if key not in keys2:
+                    return False
+            # do same check on all sub variables within each nD key
+            for key in self.keys_nD():
+                keys1 = [i for i in self[key].children.keys()]
+                keys2 = [i for i in other[key].children.keys()]
+                if len(keys1) != len(keys2):
+                    return False
+                for key_check in keys1:
+                    if key_check not in keys2:
+                        return False
+                # check if attributes are the same
+                attrs1 = [i for i in self[key].children.attrs()]
+                attrs2 = [i for i in other[key].children.attrs()]
+                if len(attrs1) != len(attrs2):
+                    return False
+                for attr in attrs1:
+                    if attr not in attrs2:
+                        return False
+                # now time to check if all elements are individually equal
+                for key2 in self[key].children.keys():
+                    for attr in self[key].children.attrs():
+                        if not (self[key].children[key2, attr] == other[key].children[key2, attr]):
+                            try:
+                                if not (np.isnan(self[key].children[key2, attr]) and np.isnan(other[key].children[key2, attr])):
+                                    return False
+                            except TypeError:
+                                # comparison above gets unhappy with string inputs
+                                return False
+            # if we made it this far, things are good                
+            return True
+        else:
+            # wasn't even the correct class
+            return False        
+                        
     @classmethod
     def from_csv(cls, name=None, col_names=None, sep=None, **kwargs):
         """Create instrument metadata object from csv.
