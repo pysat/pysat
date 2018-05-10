@@ -1494,7 +1494,12 @@ class Instrument(object):
             new_dict['calendar'] = 'standard'
             new_dict['Format'] = 'i8'
             new_dict['Var_Type'] = 'data'
-            new_dict['MonoTon'] =  int(self.data.index.is_monotonic)
+            if self.data.index.is_monotonic_increasing:
+                new_dict['MonoTon'] = 'increase'
+            elif self.data.index.is_monotonic_decreasing:
+                new_dict['MonoTon'] = 'decrease' 
+            new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
+            new_dict['Time_Scale'] = 'UTC'
             new_dict = self._filter_netcdf4_metadata(new_dict, np.int64)
             # attach metadata
             cdfkey.setncatts(new_dict)
@@ -1529,14 +1534,10 @@ class Instrument(object):
                         new_dict = export_meta[key]
                         new_dict['Depend_0'] = epoch_name
                         new_dict['Display_Type'] = 'Time Series'
-                        new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
-                        new_dict['Time_Scale'] = 'UTC'
-                        new_dict['MonoTon'] =  int(data.is_monotonic) 
                         new_dict['Format'] = self._get_var_type_code(coltype)
                         new_dict['Var_Type'] = 'data'
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
-                        # print ('top ', new_dict)
                         cdfkey.setncatts(new_dict)
                     except KeyError:
                         print(', '.join(('Unable to find MetaData for', key)))
@@ -1559,24 +1560,20 @@ class Instrument(object):
                     if (coltype == type(' ')) or (coltype == type(u' ')):
                         # dealing with a string
                         cdfkey = out_data.createVariable(key, coltype, \
-                            dimensions=(epoch_name), zlib=zlib, \
-                            complevel=complevel, shuffle=shuffle) 
+                                            dimensions=(epoch_name), zlib=zlib, \
+                                            complevel=complevel, shuffle=shuffle) 
                         # attach any meta data
                         try:
                             # attach dimension metadata
                             new_dict = export_meta[key]
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Display_Type'] = 'Time Series'
-                            new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
-                            new_dict['Time_Scale'] = 'UTC'
-                            new_dict['MonoTon'] = int(data.is_monotonic)
                             new_dict['Format'] = self._get_var_type_code(coltype)
                             new_dict['Var_Type'] = 'data'
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, \
                                                         coltype, remove=True)
                             # really attach metadata now
-                            # print ('mid ', new_dict)
                             cdfkey.setncatts(new_dict)
                         except KeyError:
                             print(', '.join(('Unable to find MetaData for',
@@ -1703,7 +1700,7 @@ class Instrument(object):
                                 temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
                                 for i in range(num):
                                     temp_cdf_data[i, :] = self[i, key].values
-                                    # write data
+                                # write data
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
                                 
                         # we are done storing the actual data for the given higher
@@ -1733,7 +1730,7 @@ class Instrument(object):
                             for export_units_label in export_units_labels:
                                 new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
                             new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
-                            # print ('mid4 ', new_dict)
+                            # set metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num,
@@ -1751,7 +1748,7 @@ class Instrument(object):
                                 for export_name_label in export_name_labels:
                                     new_dict[export_name_label] = key
                             new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
-                            # print ('mid5 ', new_dict)
+                            # assign metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
@@ -1779,10 +1776,15 @@ class Instrument(object):
                         adict[key] = self.meta.__getattribute__(key)
             adict['pysat_version'] = pysat.__version__
             if 'Conventions' not in adict:
-                adict['Conventions'] = 'CF-1.6'
+                adict['Conventions'] = 'SPDF ISTP/IACG Modified for NetCDF'
             if 'Text_Supplement' not in adict:
                 adict['Text_Supplement'] = ''
 
+            adict['Date_Start'] = pysat.datetime.strftime(self.data.index[0], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['Date_End'] = pysat.datetime.strftime(self.data.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['File'] = os.path.split(fname)
+            adict['Generation_Date'] = pysat.datetime.utcnow().strftime('%Y%m%d')
+            adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
             # check for binary types
             for key in adict.keys():
                 if isinstance(adict[key], bool):
