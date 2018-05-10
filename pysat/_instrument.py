@@ -381,72 +381,44 @@ class Instrument(object):
         """
         
         # add data to main pandas.DataFrame, depending upon the input
-        
-        if isinstance(new, dict):
-            # input dict must have data in 'data', the rest
-            # is presumed to be metadata
-            # metadata should be included in dict
-            in_data = new.pop('data')
+        # aka slice, and a name
+        if isinstance(key, tuple):
+            self.data.ix[key[0], key[1]] = new
+            self.meta[key[1]] = {}
+            return 
+        elif not isinstance(new, dict):
+            # make it a dict to simplify downstream processing
+            new = {'data': new}
+            
+        # input dict must have data in 'data', 
+        # the rest of the keys are presumed to be metadata
+        in_data = new.pop('data')
+        if hasattr(in_data, '__iter__'):
             if isinstance(in_data, pds.DataFrame):
-                # input is a dataframe
                 pass
- 
+                # filter for elif
             elif isinstance(in_data[0], pds.DataFrame):
                 # input is a list_like of frames
                 # this is higher order data
                 # this process ensures
-                if key not in self.meta.keys_nD():
-                    ho_meta = _meta.Meta()
-                    for ho_key in in_data[0]:
-                        ho_meta[ho_key] = {}
+                if ('meta' not in new) and (key not in self.meta.keys_nD()):
+                    # create an empty Meta instance but with variable names
+                    # this will ensure the correct defaults for all subvariables
+                    # meta can filter out empty metadata as needed, the check above reduces
+                    # the need to create Meta instances
+                    ho_meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
+                                        notes_label=self.notes_label, desc_label=self.desc_label,
+                                        plot_label=self.plot_label, axis_label=self.axis_label,
+                                        scale_label=self.scale_label, fill_label=self.fill_label,
+                                        min_label=self.min_label, max_label=self.max_label)
+                    ho_meta[in_data[0].columns] = {}
                     self.meta[key] = ho_meta
-            
-            # assign data and any extra metadata
-            self.data[key] = in_data
-            self.meta[key] = new
+        
+        # assign data and any extra metadata
+        self.data[key] = in_data
+        self.meta[key] = new
 
-        else:
-            # not a dictionary, could have a mixed input
-            # aka slice, and a name
-            if isinstance(key, tuple):
-                self.data.ix[key[0], key[1]] = new
-                self.meta[key[1]] = {}
-            # If list or series of df handle ho data
-            elif hasattr(new, '__getitem__'):
-                # if isinstance(new, Series):
-                #     # series input, 1D variable
-                #     self.data[key] = new  
-                #     self.meta[key] = {}
-                if isinstance(new, DataFrame):
-                    # dataframe input allows input of multiple
-                    # 1D variables at once
-                    self.data[key] = new[key]
-                    for ke in key:
-                        self.meta[ke] = {}
-                elif isinstance(new[0], pds.DataFrame):
-                    # input is a list_like of frames
-                    # this is higher order data
-                    self.data[key] = new
-                    if key not in self.meta.keys_nD():
-                        # set up default metadata structure
-                        ho_meta = _meta.Meta()
-                        for ho_key in new[0]:
-                            ho_meta[ho_key] = {}
-                        self.meta[key] = ho_meta
-                else:
-                    # not one of special ones above
-                    # let pandas sort it out
-                    self.data[key] = new  
-                    self.meta[key] = {}
-            elif isinstance(key, str):
-                # didn't get a list_like thing of data
-                # but we were given a name
-                # try and add it
-                self.data[key] = new  
-                self.meta[key] = {}
-            else:
-                raise ValueError("No support for supplied input key")
-
+                        
     @property
     def empty(self):
         """Boolean flag reflecting lack of data.
@@ -1522,7 +1494,12 @@ class Instrument(object):
             new_dict['calendar'] = 'standard'
             new_dict['Format'] = 'i8'
             new_dict['Var_Type'] = 'data'
-            new_dict['MonoTon'] =  int(self.data.index.is_monotonic)
+            if self.data.index.is_monotonic_increasing:
+                new_dict['MonoTon'] = 'increase'
+            elif self.data.index.is_monotonic_decreasing:
+                new_dict['MonoTon'] = 'decrease' 
+            new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
+            new_dict['Time_Scale'] = 'UTC'
             new_dict = self._filter_netcdf4_metadata(new_dict, np.int64)
             # attach metadata
             cdfkey.setncatts(new_dict)
@@ -1557,14 +1534,10 @@ class Instrument(object):
                         new_dict = export_meta[key]
                         new_dict['Depend_0'] = epoch_name
                         new_dict['Display_Type'] = 'Time Series'
-                        new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
-                        new_dict['Time_Scale'] = 'UTC'
-                        new_dict['MonoTon'] =  int(data.is_monotonic) 
                         new_dict['Format'] = self._get_var_type_code(coltype)
                         new_dict['Var_Type'] = 'data'
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
-                        # print ('top ', new_dict)
                         cdfkey.setncatts(new_dict)
                     except KeyError:
                         print(', '.join(('Unable to find MetaData for', key)))
@@ -1587,24 +1560,20 @@ class Instrument(object):
                     if (coltype == type(' ')) or (coltype == type(u' ')):
                         # dealing with a string
                         cdfkey = out_data.createVariable(key, coltype, \
-                            dimensions=(epoch_name), zlib=zlib, \
-                            complevel=complevel, shuffle=shuffle) 
+                                            dimensions=(epoch_name), zlib=zlib, \
+                                            complevel=complevel, shuffle=shuffle) 
                         # attach any meta data
                         try:
                             # attach dimension metadata
                             new_dict = export_meta[key]
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Display_Type'] = 'Time Series'
-                            new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
-                            new_dict['Time_Scale'] = 'UTC'
-                            new_dict['MonoTon'] = int(data.is_monotonic)
                             new_dict['Format'] = self._get_var_type_code(coltype)
                             new_dict['Var_Type'] = 'data'
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict, \
                                                         coltype, remove=True)
                             # really attach metadata now
-                            # print ('mid ', new_dict)
                             cdfkey.setncatts(new_dict)
                         except KeyError:
                             print(', '.join(('Unable to find MetaData for',
@@ -1731,7 +1700,7 @@ class Instrument(object):
                                 temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
                                 for i in range(num):
                                     temp_cdf_data[i, :] = self[i, key].values
-                                    # write data
+                                # write data
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
                                 
                         # we are done storing the actual data for the given higher
@@ -1761,7 +1730,7 @@ class Instrument(object):
                             for export_units_label in export_units_labels:
                                 new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
                             new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
-                            # print ('mid4 ', new_dict)
+                            # set metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num,
@@ -1779,7 +1748,7 @@ class Instrument(object):
                                 for export_name_label in export_name_labels:
                                     new_dict[export_name_label] = key
                             new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
-                            # print ('mid5 ', new_dict)
+                            # assign metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
                             temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
@@ -1807,10 +1776,15 @@ class Instrument(object):
                         adict[key] = self.meta.__getattribute__(key)
             adict['pysat_version'] = pysat.__version__
             if 'Conventions' not in adict:
-                adict['Conventions'] = 'CF-1.6'
+                adict['Conventions'] = 'SPDF ISTP/IACG Modified for NetCDF'
             if 'Text_Supplement' not in adict:
                 adict['Text_Supplement'] = ''
 
+            adict['Date_Start'] = pysat.datetime.strftime(self.data.index[0], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['Date_End'] = pysat.datetime.strftime(self.data.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['File'] = os.path.split(fname)
+            adict['Generation_Date'] = pysat.datetime.utcnow().strftime('%Y%m%d')
+            adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
             # check for binary types
             for key in adict.keys():
                 if isinstance(adict[key], bool):
