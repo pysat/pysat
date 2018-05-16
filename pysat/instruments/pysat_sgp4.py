@@ -32,6 +32,7 @@ def init(self):
     self.custom.add(calculate_ecef_velocity, 'modify')
     self.custom.add(sc_look_vectors, 'modify')
     self.custom.add(pysat.models.add_iri_thermal_plasma, 'modify')
+    self.custom.add(pysat.models.add_hwm_winds_and_ecef_vectors, 'modify')
                 
 def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
         
@@ -46,6 +47,10 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
             '.00000023  00000-0  28098-4 0  4753')
     line2 = ('2 00005  34.2682 348.7242 1859667 '
             '331.7664  19.3264 10.82419157413667')
+            
+    line1 = ('1 25544U 98067A   18135.61844383  .00002728  00000-0  48567-4 0  9998')
+    line2 = ('2 25544  51.6402 181.0633 0004018  88.8954  22.2246 15.54059185113452')
+
 
     satellite = twoline2rv(line1, line2, wgs72)
 
@@ -129,9 +134,9 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
     data['glong'] = sublong
     data['glat'] = sublat
     data['alt'] = satelev
-    data['ecef_x'] = ecef_x
-    data['ecef_y'] = ecef_y
-    data['ecef_z'] = ecef_z
+    data['position_ecef_x'] = ecef_x
+    data['position_ecef_y'] = ecef_y
+    data['position_ecef_z'] = ecef_z
     data['obs_sat_az_angle'] = sat_az_angle
     data['obs_sat_el_angle'] = sat_el_angle
     data['obs_sat_slant_range'] = sat_slant_range
@@ -142,7 +147,7 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
     
-    index = pds.date_range(pysat.datetime(2000,1,1), pysat.datetime(2001,12,31)) 
+    index = pds.date_range(pysat.datetime(2000,1,1), pysat.datetime(2018,12,31)) 
     names = [ data_path+date.strftime('%D')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
 
@@ -163,10 +168,10 @@ def sc_look_vectors(inst):
     inst['sc_xhat_ecef_z'] = inst['velocity_ecef_z']/mag
     
     # begin with z along Nadir (towards Earth)
-    mag = np.sqrt(inst['ecef_x']**2 + inst['ecef_y']**2 + inst['ecef_z']**2)
-    inst['sc_zhat_ecef_x'] = -inst['ecef_x']/mag
-    inst['sc_zhat_ecef_y'] = -inst['ecef_y']/mag
-    inst['sc_zhat_ecef_z'] = -inst['ecef_z']/mag
+    mag = np.sqrt(inst['position_ecef_x']**2 + inst['position_ecef_y']**2 + inst['position_ecef_z']**2)
+    inst['sc_zhat_ecef_x'] = -inst['position_ecef_x']/mag
+    inst['sc_zhat_ecef_y'] = -inst['position_ecef_y']/mag
+    inst['sc_zhat_ecef_z'] = -inst['position_ecef_z']/mag
     
     
     # get y vector assuming right hand rule
@@ -203,15 +208,15 @@ def sc_look_vectors(inst):
 
 def calculate_ecef_velocity(inst):
     
-    x = inst['ecef_x']
+    x = inst['position_ecef_x']
     vel_x = x.values[2:] - x.values[0:-2]
     vel_x /= 2.
 
-    y = inst['ecef_y']
+    y = inst['position_ecef_y']
     vel_y = y.values[2:] - y.values[0:-2]
     vel_y /= 2.
 
-    z = inst['ecef_z']
+    z = inst['position_ecef_z']
     vel_z = z.values[2:] - z.values[0:-2]
     vel_z /= 2.
     

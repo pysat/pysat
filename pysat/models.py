@@ -1,5 +1,7 @@
 import pysat
+
 import pandas as pds
+import numpy as np
 
 def add_quasi_dipole_coordinates(inst, glat_label='glat', glong_label='glong', 
                                        alt_label='alt'):
@@ -40,4 +42,61 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
     iri.index = inst.data.index
     inst[['ion_temp', 'ion_dens', 'frac_dens_o', 'frac_dens_h']] = iri
 
-        
+def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong', 
+                                         alt_label='alt'):
+    """ """
+    import pyglow
+    hwm_params = []
+    for time,lat,lon,alt in zip(inst.data.index, inst[glat_label], inst[glong_label], inst[alt_label]):
+        pt = pyglow.Point(time,lat,lon,alt)
+        pt.run_hwm()
+        hwm = {}
+        hwm['zonal_wind'] = pt.u
+        hwm['meridional_wind'] = pt.v
+        hwm_params.append(hwm)        
+    # print 'Complete.'
+    hwm = pds.DataFrame(hwm_params)
+    hwm.index = inst.data.index
+    inst[['zonal_wind', 'meridional_wind']] = hwm
+    
+    # calculate zonal unit vector in ECEF
+    # zonal wind: east - west; positive east
+    # EW direction is tangent to XY location of S/C in ECEF coordinates
+    mag = np.sqrt(inst['position_ecef_x']**2 + inst['position_ecef_y']**2)
+    inst['unit_zonal_wind_ecef_x'] = -inst['position_ecef_y']/mag
+    inst['unit_zonal_wind_ecef_y'] = inst['position_ecef_x']/mag
+    inst['unit_zonal_wind_ecef_z'] = 0*inst['position_ecef_x']
+    
+    # calculate meridional unit vector in ECEF
+    # meridional wind: north - south; positive north
+    # mer direction completes RHS of position and zonal vector
+    mag = np.sqrt(inst['position_ecef_x']**2 + inst['position_ecef_y']**2 + inst['position_ecef_z']**2)
+    unit_pos_x = inst['position_ecef_x']/mag
+    unit_pos_y = inst['position_ecef_y']/mag
+    unit_pos_z = inst['position_ecef_z']/mag
+    
+    # mer = r x zonal
+    inst['unit_mer_wind_ecef_x'] = unit_pos_y*inst['unit_zonal_wind_ecef_z'] - unit_pos_z*inst['unit_zonal_wind_ecef_y']
+    inst['unit_mer_wind_ecef_y'] = -(unit_pos_x*inst['unit_zonal_wind_ecef_z'] - unit_pos_z*inst['unit_zonal_wind_ecef_x'])
+    inst['unit_mer_wind_ecef_z'] = unit_pos_x*inst['unit_zonal_wind_ecef_y'] - unit_pos_y*inst['unit_zonal_wind_ecef_x']
+    
+    inst['sim_inst_wind_x'] = (inst['meridional_wind']*(inst['sc_xhat_ecef_x']*inst['unit_mer_wind_ecef_x'] + 
+                                    inst['sc_xhat_ecef_y']*inst['unit_mer_wind_ecef_y'] + 
+                                    inst['sc_xhat_ecef_z']*inst['unit_mer_wind_ecef_z']) + 
+                              inst['zonal_wind']*(inst['sc_xhat_ecef_x']*inst['unit_zonal_wind_ecef_x'] + 
+                                    inst['sc_xhat_ecef_y']*inst['unit_zonal_wind_ecef_y'] + 
+                                    inst['sc_xhat_ecef_z']*inst['unit_zonal_wind_ecef_z']))
+
+    inst['sim_inst_wind_y'] = (inst['meridional_wind']*(inst['sc_yhat_ecef_x']*inst['unit_mer_wind_ecef_x'] + 
+                                    inst['sc_yhat_ecef_y']*inst['unit_mer_wind_ecef_y'] + 
+                                    inst['sc_yhat_ecef_z']*inst['unit_mer_wind_ecef_z']) + 
+                              inst['zonal_wind']*(inst['sc_yhat_ecef_x']*inst['unit_zonal_wind_ecef_x'] + 
+                                    inst['sc_yhat_ecef_y']*inst['unit_zonal_wind_ecef_y'] + 
+                                    inst['sc_yhat_ecef_z']*inst['unit_zonal_wind_ecef_z']))
+
+    inst['sim_inst_wind_z'] = (inst['meridional_wind']*(inst['sc_zhat_ecef_x']*inst['unit_mer_wind_ecef_x'] + 
+                                    inst['sc_zhat_ecef_y']*inst['unit_mer_wind_ecef_y'] + 
+                                    inst['sc_zhat_ecef_z']*inst['unit_mer_wind_ecef_z']) + 
+                              inst['zonal_wind']*(inst['sc_zhat_ecef_x']*inst['unit_zonal_wind_ecef_x'] + 
+                                    inst['sc_zhat_ecef_y']*inst['unit_zonal_wind_ecef_y'] + 
+                                    inst['sc_zhat_ecef_z']*inst['unit_zonal_wind_ecef_z']))
