@@ -147,7 +147,8 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
     
-    index = pds.date_range(pysat.datetime(2000,1,1), pysat.datetime(2018,12,31)) 
+    index = pds.date_range(pysat.datetime(2017,12,1), pysat.datetime(2018,12,1)) 
+    # file list is effectively just the date in string format
     names = [ data_path+date.strftime('%D')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
 
