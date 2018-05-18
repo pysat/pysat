@@ -43,7 +43,12 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
     # print 'Complete.'
     iri = pds.DataFrame(iri_params)
     iri.index = inst.data.index
-    inst[['ion_temp', 'ion_dens', 'frac_dens_o', 'frac_dens_h']] = iri
+    # inst['ion_temp'] = iri['ion_temp']
+    # inst['ion_dens'] = iri['ion_dens']
+    # inst['frac_dens_o'] = iri['frac_dens_o']
+    # inst['frac_dens_h'] = iri['frac_dens_h']
+    # line below unstable due to random ordering of dict
+    inst[iri.keys()] = iri
 
 def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong', 
                                          alt_label='alt'):
