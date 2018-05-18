@@ -9,15 +9,18 @@ def add_quasi_dipole_coordinates(inst, glat_label='glat', glong_label='glong',
     import apexpy
     ap = apexpy.Apex(date=inst.date)
     
-    qd_lat = []; qd_lon = []
-    for lat, lon, alt in zip(inst[glat_label], inst[glong_label], inst[alt_label]):
+    qd_lat = []; qd_lon = []; mlt = []
+    for lat, lon, alt, time in zip(inst[glat_label], inst[glong_label], inst[alt_label], 
+                             inst.data.index):
         # quasi-dipole latitude and longitude from geodetic coords
         tlat, tlon = ap.geo2qd(lat, lon, alt)
         qd_lat.append(tlat)
         qd_lon.append(tlon)
+        mlt.append(ap.mlon2mlt(tlon, time))
         
     inst['qd_lat'] = qd_lat
     inst['qd_long'] = qd_lon
+    inst['mlt'] = mlt
     return
     
 def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong', 
