@@ -236,7 +236,17 @@ class Instrument(object):
                 raise ValueError(estr)
 
         # set up empty data and metadata
-        self.data = DataFrame(None)
+        # check if pandas or xarray format
+        if self.pandas_format:
+            self._null_data = DataFrame(None)
+            self._data_library = DataFrame
+        else:
+            import xarray
+            self._null_data = xarray.Dataset(None)
+            self._data_library = xarray.Dataset
+            
+        self.data = self._null_data.copy()
+        # create Meta instance with appropriate labels
         self.units_label = units_label
         self.name_label = name_label
         self.notes_label = notes_label
@@ -257,11 +267,11 @@ class Instrument(object):
         self.custom = _custom.Custom()
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
-        self._next_data = DataFrame(None)
+        self._next_data = self._null_data.copy()
         self._next_data_track = []
-        self._prev_data = DataFrame(None)
+        self._prev_data = self._null_data.copy()
         self._prev_data_track = []
-        self._curr_data = DataFrame(None)
+        self._curr_data = self._null_data.copy()
 
         # multi file day, default set by assign_funcs
         if multi_file_day is not None:
@@ -349,12 +359,63 @@ class Instrument(object):
             inst[datetime1:datetime1, 'name1':'name2']
             
         """
-
-        if isinstance(key, tuple):
-            # support slicing
-            return self.data.ix[key[0], key[1]]
+        if self.pandas_format:
+            if isinstance(key, tuple):
+                # support slicing
+                return self.data.ix[key[0], key[1]]
+            else:
+                try:
+                    return self.data[key]
+                except:
+                    return self.data.iloc[key]
         else:
-            return self.data[key]
+            return self.__getitem_xarray__(key)
+
+    def __getitem_xarray__(self, key): 
+        """
+        Convenience notation for accessing data; inst['name'] is inst.data.name
+        
+        Examples
+        --------
+        ::
+        
+            # By name
+            inst['name']
+            # By position  
+            inst[row_index, 'name']  
+            # Slicing by row 
+            inst[row1:row2, 'name']            
+            # By Date  
+            inst[datetime, 'name']
+            # Slicing by date, inclusive
+            inst[datetime1:datetime2, 'name']
+            # Slicing by name and row/date  
+            inst[datetime1:datetime1, 'name1':'name2']
+            
+        """
+        if 'time' not in self.data:
+            import xarray
+            return xarray.Dataset(None)
+        if isinstance(key, tuple):
+            # support slicing time, variable name
+            try:
+                return self.data.isel(time=key[0])[key[1]]
+            except:
+                return self.data.sel(time=key[0])[key[1]]
+        else:
+            try:
+                # grab a particular variable by name
+                return self.data[key]
+            except:
+                # that didn't work
+                try:
+                    # get all data variables but for a subset of time
+                    # using integer indexing
+                    return self.data.isel(time=key)
+                except:
+                    # subset of time, using label based indexing
+                    return self.data.sel(time=key)
+
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
@@ -382,41 +443,91 @@ class Instrument(object):
         
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
-        if isinstance(key, tuple):
-            self.data.ix[key[0], key[1]] = new
-            self.meta[key[1]] = {}
-            return 
-        elif not isinstance(new, dict):
-            # make it a dict to simplify downstream processing
-            new = {'data': new}
+        if self.pandas_format:
+            if isinstance(key, tuple):
+                self.data.ix[key[0], key[1]] = new
+                self.meta[key[1]] = {}
+                return 
+            elif not isinstance(new, dict):
+                # make it a dict to simplify downstream processing
+                new = {'data': new}
+                
+            # input dict must have data in 'data', 
+            # the rest of the keys are presumed to be metadata
+            in_data = new.pop('data')
+            if hasattr(in_data, '__iter__'):
+                if isinstance(in_data, pds.DataFrame):
+                    pass
+                    # filter for elif
+                elif isinstance(next(iter(in_data), None), pds.DataFrame):
+                    # input is a list_like of frames
+                    # this is higher order data
+                    # this process ensures
+                    if ('meta' not in new) and (key not in self.meta.keys_nD()):
+                        # create an empty Meta instance but with variable names
+                        # this will ensure the correct defaults for all subvariables
+                        # meta can filter out empty metadata as needed, the check above reduces
+                        # the need to create Meta instances
+                        ho_meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
+                                            notes_label=self.notes_label, desc_label=self.desc_label,
+                                            plot_label=self.plot_label, axis_label=self.axis_label,
+                                            scale_label=self.scale_label, fill_label=self.fill_label,
+                                            min_label=self.min_label, max_label=self.max_label)
+                        ho_meta[in_data[0].columns] = {}
+                        self.meta[key] = ho_meta
             
-        # input dict must have data in 'data', 
-        # the rest of the keys are presumed to be metadata
-        in_data = new.pop('data')
-        if hasattr(in_data, '__iter__'):
-            if isinstance(in_data, pds.DataFrame):
-                pass
-                # filter for elif
-            elif isinstance(next(iter(in_data), None), pds.DataFrame):
-                # input is a list_like of frames
-                # this is higher order data
-                # this process ensures
-                if ('meta' not in new) and (key not in self.meta.keys_nD()):
-                    # create an empty Meta instance but with variable names
-                    # this will ensure the correct defaults for all subvariables
-                    # meta can filter out empty metadata as needed, the check above reduces
-                    # the need to create Meta instances
-                    ho_meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
-                                        notes_label=self.notes_label, desc_label=self.desc_label,
-                                        plot_label=self.plot_label, axis_label=self.axis_label,
-                                        scale_label=self.scale_label, fill_label=self.fill_label,
-                                        min_label=self.min_label, max_label=self.max_label)
-                    ho_meta[in_data[0].columns] = {}
-                    self.meta[key] = ho_meta
-        
-        # assign data and any extra metadata
-        self.data[key] = in_data
-        self.meta[key] = new
+            # assign data and any extra metadata
+            self.data[key] = in_data
+            self.meta[key] = new
+            
+        else:
+            # xarray format chosen for Instrument object
+            if not isinstance(new, dict):
+                new = {'data': new}
+            in_data = new.pop('data')
+            
+            if isinstance(key, tuple):
+                # user provided more than one thing in assignment location
+                # something like, index integers and a variable name
+                # self[idx, 'variable'] = stuff
+                # or, self[idx1, idx2, idx3, 'variable'] = stuff
+                # construct dictionary of dimensions and locations for
+                # xarray standards
+                indict = {}
+                for i, dim in enumerate(self[key[-1]].dims):
+                    indict[dim] = key[i]
+                    # if dim == 'time':
+                    #     indict[dim] = self.index[key[i]]
+                try:
+                    self.data[key[-1]].loc[indict] = in_data
+                except:
+                    indict['time'] = self.index[indict['time']]
+                    self.data[key[-1]].loc[indict] = in_data
+                self.meta[key[-1]] = new
+                return
+            elif isinstance(key, basestring):
+                # assigning basic variable
+                if len(np.shape(in_data)) == 1:
+                    if len(in_data) == len(self.index):
+                        self.data[key] = ('time', in_data)
+                    elif len(in_data) == 1:
+                        self.data[key] = ('time', [in_data[0]]*len(self.index))
+                    elif len(in_data) == 0:
+                        self.data[key] = ('time', [np.nan]*len(self.index))
+                elif len(np.shape(in_data)) == 0:
+                    self.data[key] = ('time', [in_data]*len(self.index))
+                else:
+                    # multidimensional input
+                    # user needs to provide what is required
+                    if isinstance(in_data, tuple):
+                        self.data[key] = in_data
+                    else:
+                        raise ValueError('Must provide dimensions for xarray multidimensional data using input tuple.')
+            elif hasattr(key, '__iter__'):
+                for keyname in key:
+                    self.data[keyname] = in_data[keyname]
+            # attach metadata            
+            self.meta[key] = new
 
                         
     @property
@@ -424,18 +535,84 @@ class Instrument(object):
         """Boolean flag reflecting lack of data.
         
         True if there is no Instrument data."""
-        return self.data.empty
 
+        if self.pandas_format:
+            return self.data.empty
+        else:
+            if 'time' in self.data.indexes:
+                return len(self.data.indexes['time']) == 0
+            else:
+                return True
+
+    def _empty(self, data=None):
+        """Boolean flag reflecting lack of data.
+        
+        True if there is no Instrument data."""
+        
+        if data is None:
+            data = self.data
+        if self.pandas_format:
+            return data.empty
+        else:
+            if 'time' in data.indexes:
+                return len(data.indexes['time']) == 0
+            else:
+                return True
+    @property
+    def index(self):
+        """Returns time index of loaded data."""
+        
+        if self.pandas_format:
+            return self.data.index
+        else:
+            if 'time' in self.data.indexes:
+                return self.data.indexes['time']
+            else:
+                return pds.Index([])
+
+    def _index(self, data=None):
+        """Returns time index of loaded data."""
+        if data is None:
+            data = self.data
+        
+        if self.pandas_format:
+            return data.index
+        else:
+            if 'time' in data.indexes:
+                return data.indexes['time']
+            else:
+                return pds.Index([])
+
+    @property
+    def variables(self):
+        """Returns list of variables within loaded data."""
+        
+        if self.pandas_format:
+            return self.data.columns
+        else:
+            return self.data.variables.keys()
+        
     def copy(self):
         """Deep copy of the entire Instrument object."""
+        
         return copy.deepcopy(self)
     
+    def concat_data(self, data, *args, **kwargs):
+        """Concats data1 and data2 for xarray or pandas as needed"""
+        
+        if self.pandas_format:
+            return pds.concat(data, *args, **kwargs)
+        else:
+            import xarray
+            return xarray.concat(data, dim='time')
+            
     def _pass_func(*args, **kwargs):
         pass     
 
     def _assign_funcs(self, by_name=False, inst_module=None):        
         """Assign all external science instrument methods to Instrument object.
         """
+        
         import importlib
         # set defaults
         self._list_rtn = self._pass_func
@@ -449,6 +626,7 @@ class Instrument(object):
         self.file_format = None
         self.multi_file_day = False
         self.orbit_info = None
+        self.pandas_format = True
                         
         if by_name: 
             # look for code with filename name, any errors passed up
@@ -493,6 +671,10 @@ class Instrument(object):
             pass
         try:
             self.orbit_info = inst.orbit_info
+        except AttributeError:
+            pass
+        try:
+            self.pandas_format = inst.pandas_format
         except AttributeError:
             pass
 
@@ -549,20 +731,20 @@ class Instrument(object):
             output_str += 'Date: ' + self.date.strftime('%m/%d/%Y') + '\n'
             output_str += 'DOY: {:03d}'.format(self.doy) + '\n'
             output_str += 'Time range: '
-            output_str += self.data.index[0].strftime('%m/%d/%Y %H:%M:%S')
+            output_str += self.index[0].strftime('%m/%d/%Y %H:%M:%S')
             output_str += ' --- '
-            output_str += self.data.index[-1].strftime('%m/%d/%Y %H:%M:%S')+'\n'
-            output_str += 'Number of Times: ' + str(len(self.data.index)) + '\n'
-            output_str += 'Number of variables: ' + str(len(self.data.columns))
+            output_str += self.index[-1].strftime('%m/%d/%Y %H:%M:%S')+'\n'
+            output_str += 'Number of Times: ' + str(len(self.index)) + '\n'
+            output_str += 'Number of variables: ' + str(len(self.variables))
 
             output_str += '\n\nVariable Names:'+'\n'
-            num = len(self.data.columns)//3
+            num = len(self.variables)//3
             for i in np.arange(num):
-                output_str += self.data.columns[3 * i].ljust(30)
-                output_str += self.data.columns[3 * i + 1].ljust(30)
-                output_str += self.data.columns[3 * i + 2].ljust(30)+'\n'
-            for i in np.arange(len(self.data.columns) - 3 * num):
-                output_str += self.data.columns[i+3*num].ljust(30)
+                output_str += self.variables[3 * i].ljust(30)
+                output_str += self.variables[3 * i + 1].ljust(30)
+                output_str += self.variables[3 * i + 2].ljust(30)+'\n'
+            for i in np.arange(len(self.variables) - 3 * num):
+                output_str += self.variables[i+3*num].ljust(30)
             output_str += '\n'
         else:
             output_str += 'No loaded data.'+'\n'
@@ -607,7 +789,7 @@ class Instrument(object):
             mdata.accept_default_labels(self)
 
         else:
-            data = DataFrame(None)
+            data = self._null_data.copy()
             mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
                         notes_label = self.notes_label, desc_label = self.desc_label,
                         plot_label = self.plot_label, axis_label = self.axis_label,
@@ -618,12 +800,15 @@ class Instrument(object):
         output_str = output_str.format(platform=self.platform,
                                        name=self.name, tag=self.tag, 
                                        sat_id=self.sat_id)
-        if not data.empty: 
-            if not isinstance(data, DataFrame):
-                raise TypeError(' '.join(('Data returned by instrument load',
-                                'routine must be a pandas.DataFrame')))
-            if not isinstance(mdata, _meta.Meta):
-                raise TypeError('Metadata returned must be a pysat.Meta object')
+        # check that data and metadata are the data types we expect
+        if not isinstance(data, self._data_library):
+            raise TypeError(' '.join(('Data returned by instrument load',
+                            'routine must be a', self._data_library)))
+        if not isinstance(mdata, _meta.Meta):
+            raise TypeError('Metadata returned must be a pysat.Meta object')
+
+        # let user know if data was returned or not
+        if len(data) > 0: 
             if date is not None:
                 output_str = ' '.join(('Returning', output_str, 'data for',
                                        date.strftime('%D')))
@@ -749,7 +934,7 @@ class Instrument(object):
         # if pad  or multi_file_day is true, need to have a three day/file load
         loop_pad = self.pad if self.pad is not None else pds.DateOffset(seconds=0)   
         if (self.pad is not None) | self.multi_file_day:
-            if self._next_data.empty & self._prev_data.empty:
+            if self._empty(self._next_data) & self._empty(self._prev_data):
                 # data has not already been loaded for previous and next days
                 # load data for all three
                 print('Initializing three day/file window')
@@ -786,22 +971,22 @@ class Instrument(object):
                     self._next_data, self._next_meta = self._load_next()
 
             # make sure datetime indices for all data is monotonic
-            if not self._prev_data.index.is_monotonic_increasing:
+            if not self._index(self._prev_data).is_monotonic_increasing:
                 self._prev_data.sort_index(inplace=True)
-            if not self._curr_data.index.is_monotonic_increasing:
+            if not self._index(self._curr_data).is_monotonic_increasing:
                 self._curr_data.sort_index(inplace=True)
-            if not self._next_data.index.is_monotonic_increasing:
+            if not self._index(self._next_data).is_monotonic_increasing:
                 self._next_data.sort_index(inplace=True)
                 
             # make tracking indexes consistent with new loads
             self._next_data_track = curr + inc
             self._prev_data_track = curr - inc
             # attach data to object
-            if not self._curr_data.empty:
+            if not self._empty(self._curr_data):
                 self.data = self._curr_data.copy()
                 self.meta = self._curr_meta.copy()
             else:
-                self.data = DataFrame(None)
+                self.data = self._null_data.copy()
                 # line below removed as it would delete previous meta, if any
                 # if you end a seasonal analysis with a day with no data, then
                 # no meta: self.meta = _meta.Meta()
@@ -819,9 +1004,9 @@ class Instrument(object):
             # loading by file, can't be a multi_file-day flag situation
             elif (not self._load_by_date) and (not self.multi_file_day):
                 #print ('single trouble')
-                first_time = self._curr_data.index[0]
+                first_time = self._index(self._curr_data)[0]
                 first_pad = first_time - loop_pad
-                last_time = self._curr_data.index[-1]
+                last_time = self._index(self._curr_data)[-1]
                 last_pad = last_time + loop_pad
                 want_last_pad = True
             else:
@@ -831,25 +1016,53 @@ class Instrument(object):
             #print (first_pad, first_time, last_time, last_pad)
 
             # pad data based upon passed parameter
-            if (not self._prev_data.empty) & (not self.data.empty):
-                padLeft = self._prev_data.loc[first_pad : self.data.index[0]]
-                if len(padLeft) > 0:
-                    if (padLeft.index[-1] == self.data.index[0]) :
-                        padLeft = padLeft.iloc[:-1, :]
-                    self.data = pds.concat([padLeft, self.data])
-
-            if (not self._next_data.empty) & (not self.data.empty):
-                padRight = self._next_data.loc[self.data.index[-1] : last_pad]
-                if len(padRight) > 0:
-                    if (padRight.index[0] == self.data.index[-1]) :
-                        padRight = padRight.iloc[1:, :]
-                    self.data = pds.concat([self.data, padRight])
+            # if (not self._empty(self._prev_data)) & (not self.empty):
+            #     padLeft = self._prev_data.loc[first_pad : self.index[0]]
+            #     if len(padLeft) > 0:
+            #         if (padLeft.index[-1] == self.index[0]) :
+            #             padLeft = padLeft.iloc[:-1, :]
+            #         # self.data = self.concat_data([padLeft, self.data])
+            #     print (padLeft)
+            if (not self._empty(self._prev_data)) & (not self.empty):
+                stored_data = self.data #.copy()
+                temp_time = copy.deepcopy(self.index[0])
+                # pad data using access mechanisms that works
+                # for both pandas and xarray
+                self.data = self._prev_data.copy()
+                self.data = self[first_pad : temp_time]
+                if not self.empty:
+                    if (self.index[-1] == temp_time) :
+                        self.data = self[:-1]                
+                    self.data = self.concat_data([self.data, stored_data])
+                else:
+                    self.data = stored_data
+            #         
+            # if (not self._empty(self._next_data)) & (not self.empty):
+            #     padRight = self._next_data.loc[self.index[-1] : last_pad]
+            #     if len(padRight) > 0:
+            #         if (padRight.index[0] == self.index[-1]) :
+            #             padRight = padRight.iloc[1:, :]
+            #         self.data = self.concat_data([self.data, padRight])
+            if (not self._empty(self._next_data)) & (not self.empty):
+                stored_data = self.data #.copy()
+                temp_time = copy.deepcopy(self.index[-1])
+                # pad data using access mechanisms that work 
+                # for both pandas and xarray
+                self.data = self._next_data.copy()
+                self.data = self[temp_time : last_pad]
+                if not self.empty:
+                    if (self.index[0] == temp_time) :
+                        self.data = self[1:]
+                    self.data = self.concat_data([stored_data, self.data])
+                else:
+                    self.data = stored_data
+                
                     
-            self.data = self.data.ix[first_pad : last_pad]
+            self.data = self[first_pad : last_pad]
             # want exclusive end slicing behavior from above
             if not self.empty:
-                if (self.data.index[-1] == last_pad) & (not want_last_pad):
-                    self.data = self.data.iloc[:-1, :]
+                if (self.index[-1] == last_pad) & (not want_last_pad):
+                    self.data = self[:-1]
    
             ## drop any possible duplicate index times
             ##self.data.drop_duplicates(inplace=True)
@@ -858,38 +1071,38 @@ class Instrument(object):
         # if self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid) 
-            if not self.data.empty:
+            if not self.empty:
                 self.meta = meta   
-               
+
         # check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.data.columns] = {self.name_label: self.data.columns,
+            self.meta[self.variables] = {self.name_label: self.variables,
                                             self.units_label: [''] *
-                                            len(self.data.columns)}
+                                            len(self.variables)}
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
             if self.pad is not None:
                 temp = first_time
             else:
-                temp = self.data.index[0]
+                temp = self.index[0]
             self.date = pds.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.getyrdoy(self.date)
 
-        if not self.data.empty:
+        if not self.empty:
             self._default_rtn(self)
         # clean
-        if (not self.data.empty) & (self.clean_level != 'none'):
+        if (not self.empty) & (self.clean_level != 'none'):
             self._clean_rtn(self)   
         # apply custom functions
-        if not self.data.empty:
+        if not self.empty:
             self.custom._apply_all(self)
             
         # remove the excess padding, if any applied
-        if (self.pad is not None) & (not self.data.empty) & (not verifyPad):
-            self.data = self.data[first_time: last_time]
+        if (self.pad is not None) & (not self.empty) & (not verifyPad):
+            self.data = self[first_time: last_time]
             if not self.empty:
-                if (self.data.index[-1] == last_time) & (not want_last_pad):
-                    self.data = self.data.iloc[:-1, :]
+                if (self.index[-1] == last_time) & (not want_last_pad):
+                    self.data = self[:-1]
 
         # transfer any extra attributes in meta to the Instrument object
         self.meta.transfer_attributes_to_instrument(self)
@@ -1463,7 +1676,7 @@ class Instrument(object):
         # can't have a fill value
         with netCDF4.Dataset(fname, mode='w', format=file_format) as out_data:
             # number of items, yeah
-            num = len(self.data.index)
+            num = len(self.index)
             # write out the datetime index
             out_data.createDimension(epoch_name, num)
             cdfkey = out_data.createVariable(epoch_name, 'i8',
@@ -1494,9 +1707,9 @@ class Instrument(object):
             new_dict['calendar'] = 'standard'
             new_dict['Format'] = 'i8'
             new_dict['Var_Type'] = 'data'
-            if self.data.index.is_monotonic_increasing:
+            if self.index.is_monotonic_increasing:
                 new_dict['MonoTon'] = 'increase'
-            elif self.data.index.is_monotonic_decreasing:
+            elif self.index.is_monotonic_decreasing:
                 new_dict['MonoTon'] = 'decrease' 
             new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
             new_dict['Time_Scale'] = 'UTC'
@@ -1504,12 +1717,12 @@ class Instrument(object):
             # attach metadata
             cdfkey.setncatts(new_dict)
             # attach data
-            cdfkey[:] = (self.data.index.values.astype(np.int64) *
+            cdfkey[:] = (self.index.values.astype(np.int64) *
                          1.E-6).astype(np.int64)
                             
             # iterate over all of the columns in the Instrument dataframe
             # check what kind of data we are dealing with, then store
-            for key in self.data.columns:
+            for key in self.variables:
                 # print (key)
                 # get information on type data we are dealing with
                 # data is data in proer type( multiformat support)
@@ -1780,8 +1993,8 @@ class Instrument(object):
             if 'Text_Supplement' not in adict:
                 adict['Text_Supplement'] = ''
 
-            adict['Date_Start'] = pysat.datetime.strftime(self.data.index[0], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
-            adict['Date_End'] = pysat.datetime.strftime(self.data.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['Date_Start'] = pysat.datetime.strftime(self.index[0], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['Date_End'] = pysat.datetime.strftime(self.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
             adict['File'] = os.path.split(fname)
             adict['Generation_Date'] = pysat.datetime.utcnow().strftime('%Y%m%d')
             adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
