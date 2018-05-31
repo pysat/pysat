@@ -34,7 +34,8 @@ def init(self):
     self.custom.add(pysat.models.add_iri_thermal_plasma, 'modify')
     self.custom.add(pysat.models.add_hwm_winds_and_ecef_vectors, 'modify')
                 
-def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
+def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0., 
+         TLE1=None, TLE2=None):
         
     import sgp4
     from sgp4.earth_gravity import wgs72
@@ -42,15 +43,15 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
     import ephem
     import pysat.coords
 
-    # lines define something
-    line1 = ('1 00005U 58002B   00179.78495062  '
-            '.00000023  00000-0  28098-4 0  4753')
-    line2 = ('2 00005  34.2682 348.7242 1859667 '
-            '331.7664  19.3264 10.82419157413667')
-            
+    # TLEs (Two Line Elements for ISS)   
+    # format of TLEs is fixed and available from wikipedia... 
     line1 = ('1 25544U 98067A   18135.61844383  .00002728  00000-0  48567-4 0  9998')
     line2 = ('2 25544  51.6402 181.0633 0004018  88.8954  22.2246 15.54059185113452')
-
+    # use ISS defaults if not provided by user
+    if TLE1 is not None:
+        line1 = TLE1
+    if TLE2 is not None:
+        line2 = TLE2
 
     satellite = twoline2rv(line1, line2, wgs72)
 
@@ -225,35 +226,6 @@ def calculate_ecef_velocity(inst):
     inst[1:-1, 'velocity_ecef_y'] = vel_y
     inst[1:-1, 'velocity_ecef_z'] = vel_z
     
-def aer2ecef(azimuthDeg, elevationDeg, slantRange, obs_lat, obs_long, obs_alt):
-
-    # site ecef in kilometers
-    sitex, sitey, sitez = pysat.coords.geodetic_to_ecef(obs_lat, obs_long, obs_alt)
-    # site ecef in meters
-    sitex *= 1000.
-    sitey *= 1000.
-    sitez *= 1000.
-
-    # some needed calculations
-    slat = np.sin(np.radians(obs_lat))
-    slon = np.sin(np.radians(obs_long))
-    clat = np.cos(np.radians(obs_lat))
-    clon = np.cos(np.radians(obs_long))
-
-    azRad = np.radians(azimuthDeg)
-    elRad = np.radians(elevationDeg)
-
-    # az,el,range to sez convertion
-    south  = -slantRange * np.cos(elRad) * np.cos(azRad)
-    east   =  slantRange * np.cos(elRad) * np.sin(azRad)
-    zenith =  slantRange * np.sin(elRad)
-
-
-    x = ( slat * clon * south) + (-slon * east) + (clat * clon * zenith) + sitex
-    y = ( slat * slon * south) + ( clon * east) + (clat * slon * zenith) + sitey
-    z = (-clat *        south) + ( slat * zenith) + sitez
-
-    return x, y, z
     
 
 meta = pysat.Meta()
