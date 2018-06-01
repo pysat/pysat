@@ -36,6 +36,7 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
         pt.run_iri()
         iri = {}
         iri['ion_temp'] = pt.Ti
+        iri['e_temp'] = pt.Te
         iri['ion_dens'] = pt.ni['O+'] + pt.ni['H+'] #pt.ne - pt.ni['NO+'] - pt.ni['O2+'] - pt.ni['HE+']
         iri['frac_dens_o'] = pt.ni['O+']/iri['ion_dens']
         iri['frac_dens_h'] = pt.ni['H+']/iri['ion_dens']
@@ -43,11 +44,6 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
     # print 'Complete.'
     iri = pds.DataFrame(iri_params)
     iri.index = inst.data.index
-    # inst['ion_temp'] = iri['ion_temp']
-    # inst['ion_dens'] = iri['ion_dens']
-    # inst['frac_dens_o'] = iri['frac_dens_o']
-    # inst['frac_dens_h'] = iri['frac_dens_h']
-    # line below unstable due to random ordering of dict
     inst[iri.keys()] = iri
 
 def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong', 
@@ -108,3 +104,27 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong',
                               inst['zonal_wind']*(inst['sc_zhat_ecef_x']*inst['unit_zonal_wind_ecef_x'] + 
                                     inst['sc_zhat_ecef_y']*inst['unit_zonal_wind_ecef_y'] + 
                                     inst['sc_zhat_ecef_z']*inst['unit_zonal_wind_ecef_z']))
+
+
+def add_igrf(inst, glat_label='glat', glong_label='glong', 
+                                       alt_label='alt'):
+    """ """
+    import pyglow
+    from pyglow.pyglow import Point
+    
+    igrf_params = []
+    # print 'IRI Simulations'
+    for time,lat,lon,alt in zip(inst.data.index, inst[glat_label], inst[glong_label], inst[alt_label]):
+        pt = Point(time,lat,lon,alt)
+        pt.run_igrf()
+        igrf = {}
+        igrf['B'] = pt.B
+        igrf['B_east'] = pt.Bx
+        igrf['B_north'] = pt.By
+        igrf['B_up'] = pt.Bz
+        igrf_params.append(igrf)        
+    # print 'Complete.'
+    igrf = pds.DataFrame(igrf_params)
+    igrf.index = inst.data.index
+    inst[igrf.keys()] = igrf
+
