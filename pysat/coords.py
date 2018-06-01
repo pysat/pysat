@@ -59,7 +59,7 @@ def geodetic_to_ecef(latitude, longitude, altitude):
 
 
 def ecef_to_geodetic(x, y, z, method=None):
-    """Convert EVEF to Geodetic WGS84 coordinates."""
+    """Convert ECEF to Geodetic WGS84 coordinates."""
     method = method or 'closed'
     # calculate satellite position in ECEF coordinates
     b = 6356.75231424518
@@ -107,3 +107,8 @@ def ecef_to_geodetic(x, y, z, method=None):
         h = p / np.cos(latitude) - r_n
 
     return np.rad2deg(latitude), np.rad2deg(longitude), h
+
+def enu_to_ecef_basis(east, north, up, glat, glong, alt):
+    """Converts from East, North, Up components to ECEF"""
+    pass
+    
