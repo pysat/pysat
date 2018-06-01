@@ -397,11 +397,19 @@ class Instrument(object):
             import xarray
             return xarray.Dataset(None)
         if isinstance(key, tuple):
-            # support slicing time, variable name
-            try:
-                return self.data.isel(time=key[0])[key[1]]
-            except:
-                return self.data.sel(time=key[0])[key[1]]
+            if len(key) == 2:
+                # support slicing time, variable name
+                try:
+                    return self.data.isel(time=key[0])[key[1]]
+                except:
+                    return self.data.sel(time=key[0])[key[1]]
+            else:
+                # multidimensional indexing
+                indict = {}
+                for i, dim in enumerate(self[key[-1]].dims):
+                    indict[dim] = key[i]
+
+                return self.data[key[-1]][indict]
         else:
             try:
                 # grab a particular variable by name
@@ -485,7 +493,7 @@ class Instrument(object):
             if not isinstance(new, dict):
                 new = {'data': new}
             in_data = new.pop('data')
-            
+
             if isinstance(key, tuple):
                 # user provided more than one thing in assignment location
                 # something like, index integers and a variable name
