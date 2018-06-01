@@ -598,7 +598,7 @@ class Instrument(object):
         if self.pandas_format:
             return self.data.columns
         else:
-            return self.data.variables.keys()
+            return list(self.data.variables.keys())
         
     def copy(self):
         """Deep copy of the entire Instrument object."""
