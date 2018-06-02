@@ -8,6 +8,12 @@ Instrument
 .. autoclass:: pysat.Instrument
    :members:
 
+Constellation
+-------------
+
+.. autoclass:: pysat.Constellation
+   :members:
+
 Custom
 ------
 

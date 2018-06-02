@@ -33,6 +33,7 @@ if data_dir == '':
           
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils
+from ._constellation import Constellation
 from ._instrument import Instrument
 from ._meta import Meta
 from ._files import Files

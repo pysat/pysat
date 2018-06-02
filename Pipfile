@@ -1,0 +1,30 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+pyflakes = "*"
+pylint = "*"
+pycodestyle = "*"
+"flake8" = "*"
+coverage = "*"
+nose = "*"
+ipython = "*"
+numpydoc = "*"
+latex = "*"
+
+
+[packages]
+
+pandas = "==0.19.2"
+numpy = "<1.12"
+matplotlib = "*"
+"netcdf4" = "*"
+pysatcdf = "*"
+scipy = "*"
+atlas = "*"
+statsmodels = "*"
