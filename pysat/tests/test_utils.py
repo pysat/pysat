@@ -70,7 +70,7 @@ class TestBasics():
         self.data_path = pysat.data_dir
         
         # create temporary directory  
-        dir_name = tempfile.gettempdir()
+        dir_name = tempfile.mkdtemp()
         pysat.utils.set_data_dir(dir_name, store=False)
 
         self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
