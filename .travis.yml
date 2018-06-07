@@ -44,7 +44,7 @@ install:
 # command to run tests
 script: 
   #- nosetests
-  - travis_wait 30 nosetests  --with-coverage --cover-package=pysat
+  - nosetests  --with-coverage --cover-package=pysat
   #coverage run --source=pysat setup.py test
 after_success:
   coveralls
