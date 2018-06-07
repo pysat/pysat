@@ -167,6 +167,7 @@ class TestConstellation:
     def test_constellation_average(self):
         for i in self.testC.instruments:
             i.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        self.testI.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         resultsC = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'longitude',
                             [0., 24, 24], 'mlt', ['dummy1', 'dummy2', 'dummy3'])
         resultsI = pysat.ssnl.avg.median2D(self.testI, [0., 360., 24.], 'longitude',
@@ -239,6 +240,7 @@ class Test2DConstellation:
     def test_2D_avg(self):
         for i in self.testC.instruments:
             i.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        
         results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'mlt',
                                           [0., 24, 24], 'slt', ['uts'])
         dummy_val = results['uts']['median']
