@@ -5,13 +5,18 @@ import numpy as np
 
 def add_quasi_dipole_coordinates(inst, glat_label='glat', glong_label='glong', 
                                        alt_label='alt'):
-    """ """
+    """ 
+    Finds the magnetic local time, quasi dipole latitude and longitude 
+    using sub latitude point, sub longitude point and elevation of satellite.
+    """
+        
     import apexpy
     ap = apexpy.Apex(date=inst.date)
     
     qd_lat = []; qd_lon = []; mlt = []
     for lat, lon, alt, time in zip(inst[glat_label], inst[glong_label], inst[alt_label], 
                              inst.data.index):
+                             
         # quasi-dipole latitude and longitude from geodetic coords
         tlat, tlon = ap.geo2qd(lat, lon, alt)
         qd_lat.append(tlat)
@@ -21,20 +26,30 @@ def add_quasi_dipole_coordinates(inst, glat_label='glat', glong_label='glong',
     inst['qd_lat'] = qd_lat
     inst['qd_long'] = qd_lon
     inst['mlt'] = mlt
+    
+    inst.meta['qd_lat'] = {'name':'qd_lat', 'units':'degrees','long_name':'Quasi dipole latitude from geodetic co ordinates'}
+    inst.meta['qd_long'] = {'name':'qd_long', 'units':'degrees','long_name':'Quasi dipole longitude from geodetic co ordinates'}
+    inst.meta['mlt'] = {'name':'mlt', 'units':'hrs','long_name':'Magnetic local time'}    
+    
     return
     
 def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong', 
                                        alt_label='alt'):
-    """ """
+    """ 
+    IRI (International Reference Ionosphere) model used for plasma modeling.
+        
+    """
     import pyglow
     from pyglow.pyglow import Point
     
     iri_params = []
     # print 'IRI Simulations'
     for time,lat,lon,alt in zip(inst.data.index, inst[glat_label], inst[glong_label], inst[alt_label]):
+        # Point class is instantiated. Its parameters are a function of time and spatial location
         pt = Point(time,lat,lon,alt)
         pt.run_iri()
         iri = {}
+        # After the model is run, its members like Ti, ni[O+], etc. can be accessed
         iri['ion_temp'] = pt.Ti
         iri['ion_dens'] = pt.ni['O+'] + pt.ni['H+'] #pt.ne - pt.ni['NO+'] - pt.ni['O2+'] - pt.ni['HE+']
         iri['frac_dens_o'] = pt.ni['O+']/iri['ion_dens']
@@ -49,13 +64,24 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
     # inst['frac_dens_h'] = iri['frac_dens_h']
     # line below unstable due to random ordering of dict
     inst[iri.keys()] = iri
+    
+    inst.meta['ion_temp'] = {'name':'ion_temp', 'units':'Kelvin','long_name':'Ion Temperature'}
+    inst.meta['ion_dens'] = {'name':'ion_dens', 'units':'N/cc','long_name':'Ion Density'}
+    inst.meta['frac_dens_o'] = {'name':'frac_dens_o', 'units':'','long_name':'Fractional O+ Density'}
+    inst.meta['frac_dens_h'] = {'name':'frac_dens_h', 'units':'','long_name':'Fractional H+ Density'}
+    
 
 def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong', 
                                          alt_label='alt'):
-    """ """
+    """ 
+    HWM (Horizontal Wind Model) model to obtain neutral wind details
+        
+    """
     import pyglow
     hwm_params = []
     for time,lat,lon,alt in zip(inst.data.index, inst[glat_label], inst[glong_label], inst[alt_label]):
+        # Point class is instantiated. 
+        # Its parameters are a function of time and spatial location
         pt = pyglow.Point(time,lat,lon,alt)
         pt.run_hwm()
         hwm = {}
@@ -108,3 +134,18 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong',
                               inst['zonal_wind']*(inst['sc_zhat_ecef_x']*inst['unit_zonal_wind_ecef_x'] + 
                                     inst['sc_zhat_ecef_y']*inst['unit_zonal_wind_ecef_y'] + 
                                     inst['sc_zhat_ecef_z']*inst['unit_zonal_wind_ecef_z']))
+                                    
+    
+    # Adding metadata information                                
+    inst.meta['zonal_wind'] = {'name':'zonal_wind','units':'m/s','long_name':'Zonal Wind', 'desc':'HWM model zonal wind'}
+    inst.meta['meridional_wind'] = {'name':'meridional_wind','units':'m/s','long_name':'Meridional Wind', 'desc':'HWM model meridional wind'}
+    inst.meta['unit_zonal_wind_ecef_x'] = {'name':'unit_zonal_wind_ecef_x','units':'km','long_name':'Zonal Wind Unit ECEF x-vector', 'desc':'x-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_zonal_wind_ecef_y'] = {'name':'unit_zonal_wind_ecef_y','units':'km','long_name':'Zonal Wind Unit ECEF y-vector', 'desc':'y-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_zonal_wind_ecef_z'] = {'name':'unit_zonal_wind_ecef_z','units':'km','long_name':'Zonal Wind Unit ECEF z-vector', 'desc':'z-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_x'] = {'name':'unit_mer_wind_ecef_x','units':'km','long_name':'Meridional Wind Unit ECEF x-vector', 'desc':'x-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_y'] = {'name':'unit_mer_wind_ecef_y','units':'km','long_name':'Meridional Wind Unit ECEF y-vector', 'desc':'y-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_z'] = {'name':'unit_mer_wind_ecef_z','units':'km','long_name':'Meridional Wind Unit ECEF z-vector', 'desc':'z-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['sim_inst_wind_x'] = {'name':'sim_inst_wind_x','units':'m/s','long_name':'Simulated x-vector instrument wind', 'desc':'Wind from model as measured by instrument in its x-direction'}
+    inst.meta['sim_inst_wind_y'] = {'name':'sim_inst_wind_y','units':'m/s','long_name':'Simulated y-vector instrument wind', 'desc':'Wind from model as measured by instrument in its y-direction'}
+    inst.meta['sim_inst_wind_z'] = {'name':'sim_inst_wind_z','units':'m/s','long_name':'Simulated z-vector instrument wind', 'desc':'Wind from model as measured by instrument in its z-direction'}
+    

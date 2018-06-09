@@ -4,6 +4,8 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+
+# basestring abstract type is removed in Python 3 and is replaced by str
 # python 2/3 compatibility
 try:
     basestring
@@ -24,10 +26,13 @@ tags = {'':'Satellite simulation data set'}
 sat_ids = {'':['']}
 test_dates = {'':{'':pysat.datetime(2009,1,1)}}
 
-
-
         
 def init(self):
+    """
+    Adds more data about the satellite.
+    
+    """
+    
     self.custom.add(pysat.models.add_quasi_dipole_coordinates, 'modify')
     self.custom.add(calculate_ecef_velocity, 'modify')
     self.custom.add(sc_look_vectors, 'modify')
@@ -35,23 +40,54 @@ def init(self):
     self.custom.add(pysat.models.add_hwm_winds_and_ecef_vectors, 'modify')
                 
 def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
+    """
+    Returns data and metadata in the format required by pysat. Finds position
+    of satellite in both ECI and ECEF co-ordinates.
+    
+    Parameters
+    ----------
+    fnames : list-like collection
+        File name that contains date in its name. 
+             
+    tag : string
+        Identifies a particular subset of satellite data
+    
+    sat_id : string
+        Satellite ID
         
+    obs_long: float
+        Longitude of the observer on the earth's surface
+    
+    obs_lat: float
+        Latitude of the observer on the earth's surface
+        
+    obs_alt: float
+        Altitude of the observer on the earth's surface
+        
+        
+    """            
     import sgp4
+    # wgs72 is the most commonly used gravity model in satellite tracking community
     from sgp4.earth_gravity import wgs72
     from sgp4.io import twoline2rv
     import ephem
     import pysat.coords
 
     # lines define something
+    '''
     line1 = ('1 00005U 58002B   00179.78495062  '
             '.00000023  00000-0  28098-4 0  4753')
     line2 = ('2 00005  34.2682 348.7242 1859667 '
             '331.7664  19.3264 10.82419157413667')
-            
+    '''
+    # lines encode list of orbital elements of an Earth-orbiting object 
+    # for a given point in time        
     line1 = ('1 25544U 98067A   18135.61844383  .00002728  00000-0  48567-4 0  9998')
     line2 = ('2 25544  51.6402 181.0633 0004018  88.8954  22.2246 15.54059185113452')
 
-
+    # Finds postition and velocity of satellite in ECI co-ordinate. 
+    # Returns satellite position in km from the center of earth
+    # and velocity in km/s
     satellite = twoline2rv(line1, line2, wgs72)
 
     # grab date from filename
@@ -61,14 +97,14 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
     day = int(parts[-2])
     date = pysat.datetime(yr, month, day)
     
-    # create timing at 1 Hz
+    # create timing at 1 Hz (for 1 day)
     times = pds.date_range(start=date, end=date+pds.DateOffset(seconds=86399), freq='1S')
     
     # create list to hold satellite position, velocity
     position = []
     velocity = []
     for time in times:
-        # orbit propagator
+        # orbit propagator - to compute x,y,z position and velocity
         pos, vel = satellite.propagate(time.year, time.month, time.day, 
                                        time.hour, time.minute, time.second)
         # print (pos)
@@ -91,11 +127,14 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.):
     # package that outputs in ECEF
     # it also supports ground station calculations
     
+    # the observer's (ground station) position on the Earth surface
     site = ephem.Observer()
     site.lon = str(obs_long)   # +E -104.77 here
     site.lat = str(obs_lat)   # +N 38.95   here
     site.elevation = obs_alt # meters    0 here
     #epoch = time.time()
+    
+    # The first parameter in readtle() is the satellite name
     sat = ephem.readtle('pysat' , line1, line2)
     sat_az_angle = [] # azimuth of satellite from ground station
     sat_el_angle = []
@@ -148,8 +187,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
     
     index = pds.date_range(pysat.datetime(2017,12,1), pysat.datetime(2018,12,1)) 
-    # file list is effectively just the date in string format
-    names = [ data_path+date.strftime('%D')+'.nofile' for date in index]
+    # file list is effectively just the date in string format - '%D' works only in Mac. '%x' workins in both Windows and Mac
+    #names = [ data_path+date.strftime('%D')+'.nofile' for date in index]
+    names = [ data_path+date.strftime('%x')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
 
 
@@ -159,7 +199,9 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
 
 def sc_look_vectors(inst):
     
-    # add look direction of S/C vectors
+    """
+     Add look direction of S/C vectors.
+    """
 
     # ram pointing is along velocity vector
     mag = np.sqrt(inst['velocity_ecef_x']**2 + inst['velocity_ecef_y']**2 + 
@@ -198,6 +240,22 @@ def sc_look_vectors(inst):
     inst['sc_zhat_ecef_y'] = -(inst['sc_xhat_ecef_x']*inst['sc_yhat_ecef_z'] - inst['sc_yhat_ecef_x']*inst['sc_xhat_ecef_z'])
     # Zz = XxYy - YxXy
     inst['sc_zhat_ecef_z'] = inst['sc_xhat_ecef_x']*inst['sc_yhat_ecef_y'] - inst['sc_yhat_ecef_x']*inst['sc_xhat_ecef_y']
+    
+    # Adding metadata
+    inst.meta['sc_xhat_ecef_x'] = {'name':'sc_xhat_ecef_x','units':'km','long_name':'Unit s/c ram x-position vector', 'desc':'Unit s/c x-position vector in ram direction in ECEF frame'}
+    inst.meta['sc_xhat_ecef_y'] = {'name':'sc_xhat_ecef_y','units':'km','long_name':'Unit s/c ram y-position vector', 'desc':'Unit s/c y-position vector in ram direction in ECEF frame'}
+    inst.meta['sc_xhat_ecef_z'] = {'name':'sc_xhat_ecef_z','units':'km','long_name':'Unit s/c ram z-position vector', 'desc':'Unit s/c z-position vector in ram direction in ECEF frame'}
+    
+    inst.meta['sc_zhat_ecef_x'] = {'name':'sc_zhat_ecef_x','units':'km','long_name':'Unit s/c nadir x-position vector', 'desc':'Unit s/c x-position vector in nadir direction in ECEF frame'}
+    inst.meta['sc_zhat_ecef_y'] = {'name':'sc_zhat_ecef_y','units':'km','long_name':'Unit s/c nadir y-position vector', 'desc':'Unit s/c y-position vector in nadir direction in ECEF frame'}
+    inst.meta['sc_zhat_ecef_z'] = {'name':'sc_zhat_ecef_z','units':'km','long_name':'Unit s/c nadir z-position vector', 'desc':'Unit s/c z-position vector in nadir direction in ECEF frame'}
+    
+    inst.meta['sc_yhat_ecef_x'] = {'name':'sc_yhat_ecef_x','units':'km','long_name':'Unit s/c x-position vector in Y-direction', 'desc':'Unit s/c x-position vector to get attitude information in ECEF frame'}
+    inst.meta['sc_yhat_ecef_y'] = {'name':'sc_yhat_ecef_y','units':'km','long_name':'Unit s/c y-position vector in Y-direction', 'desc':'Unit s/c y-position vector to get attitude information in ECEF frame'}
+    inst.meta['sc_yhat_ecef_z'] = {'name':'sc_yhat_ecef_z','units':'km','long_name':'Unit s/c z-position vector in Y-direction', 'desc':'Unit s/c z-position vector to get attitude information in ECEF frame'}
+    
+    
+    
     # normalize since Xhat and Zhat from above may not be orthogonal
     mag = np.sqrt(inst['sc_zhat_ecef_x']**2 + inst['sc_zhat_ecef_y']**2 + 
                     inst['sc_zhat_ecef_z']**2)
@@ -206,8 +264,13 @@ def sc_look_vectors(inst):
     if len(idx) > 0:
         raise RuntimeError('Unit vector generation failure')
     
+    
+    
 
 def calculate_ecef_velocity(inst):
+    """
+    Calculates spacecraft velocity in ECEF frame.
+    """
     
     x = inst['position_ecef_x']
     vel_x = x.values[2:] - x.values[0:-2]
@@ -224,6 +287,10 @@ def calculate_ecef_velocity(inst):
     inst[1:-1, 'velocity_ecef_x'] = vel_x
     inst[1:-1, 'velocity_ecef_y'] = vel_y
     inst[1:-1, 'velocity_ecef_z'] = vel_z
+    
+    inst.meta['velocity_ecef_x'] = {'name':'velocity_ecef_x','units':'km/s','long_name':'Spacecraft ECEF x-velocity', 'desc':'Spacecraft x co-ordinate velocity in ECEF frame'}
+    inst.meta['velocity_ecef_y'] = {'name':'velocity_ecef_y','units':'km/s','long_name':'Spacecraft ECEF y-velocity', 'desc':'Spacecraft y co-ordinate velocity in ECEF frame'}
+    inst.meta['velocity_ecef_z'] = {'name':'velocity_ecef_z','units':'km/s','long_name':'Spacecraft ECEF z-velocity', 'desc':'Spacecraft z co-ordinate velocity in ECEF frame'}
     
 def aer2ecef(azimuthDeg, elevationDeg, slantRange, obs_lat, obs_long, obs_alt):
 
@@ -257,14 +324,37 @@ def aer2ecef(azimuthDeg, elevationDeg, slantRange, obs_lat, obs_long, obs_alt):
     
 
 meta = pysat.Meta()
-meta['uts'] = {'units':'s', 
-               'long_name':'Universal Time', 
-               'custom':False}
+
 meta['Epoch'] = {'units':'Milliseconds since 1970-1-1',
                  'Bin_Location': 0.5,
                  'notes': 'UTC time at middle of geophysical measurement.',
                  'desc': 'UTC seconds',
+                 'long_name':'Time index in milliseconds'
                 }
+                
+
+meta['position_eci_x'] = {'name':'position_eci_x','units':'km','long_name':'ECI x-position of satellite at epoch'}
+meta['position_eci_y'] = {'name':'position_eci_y','units':'km','long_name':'ECI y-position of satellite at epoch'}
+meta['position_eci_z'] = {'name':'position_eci_z','units':'km','long_name':'ECI z-position of satellite at epoch'}
+meta['velocity_eci_x'] = {'name':'velocity_eci_x','units':'km/s','long_name':'Velocity along ECI x-co-ordinate of satellite'}
+meta['velocity_eci_y'] = {'name':'velocity_eci_y','units':'km/s','long_name':'Velocity along ECI y-co-ordinate of satellite'}
+meta['velocity_eci_z'] = {'name':'velocity_eci_z','units':'km/s','long_name':'Velocity along ECI z-co-ordinate of satellite'}
+
+meta['glong'] = {'name':'glong','units':'degrees','long_name':'Sub longitude point of satellite'}
+meta['glat'] = {'name':'glat','units':'degrees','long_name':'Sub latitude point of satellite'}
+meta['alt'] = {'name':'alt','units':'km','long_name':'Elevation of satellite'}
+meta['position_ecef_x'] = {'name':'position_ecef_x','units':'km','long_name':'ECEF x co-ordinate of satellite'}
+meta['position_ecef_y'] = {'name':'position_ecef_y','units':'km','long_name':'ECEF y co-ordinate of satellite'}
+meta['position_ecef_z'] = {'name':'position_ecef_z','units':'km','long_name':'ECEF z co-ordinate of satellite'}
+meta['obs_sat_az_angle'] = {'name':'obs_sat_az_angle','units':'degrees','long_name':'Azimuth of satellite from ground station'}
+meta['obs_sat_el_angle'] = {'name':'obs_sat_el_angle','units':'degrees','long_name':'Elevation of satellite from ground station'}
+meta['obs_sat_slant_range'] = {'name':'obs_sat_slant_range','units':'km','long_name':'Distance of satellite from ground station'}
+
+'''   
+
+meta['uts'] = {'units':'s', 
+               'long_name':'Universal Time', 
+               'custom':False}          
 meta['mlt'] = {'units':'hours', 
                'long_name':'Magnetic Local Time',
                'label': 'MLT',
@@ -314,3 +404,23 @@ meta['int8_dummy'] = {'units':'', 'long_name':'int8_dummy'}
 meta['int16_dummy'] = {'units':'', 'long_name':'int16_dummy'}
 meta['int32_dummy'] = {'units':'', 'long_name':'int32_dummy'}
 meta['int64_dummy'] = {'units':'', 'long_name':'int64_dummy'}
+'''
+
+# Testing
+'''
+datanew, metanew = load(fnames = ['NoData_01/02/12'])
+
+instObj = pysat.Instrument(platform = 'pysat', name='sgp4', tag=None, clean_level=None) 
+instObj.data = datanew
+instObj.meta = metanew
+
+calculate_ecef_velocity(instObj)
+print(len(instObj.data))
+print(instObj.meta)
+
+pysat.models.add_quasi_dipole_coordinates(instObj)
+print(len(instObj.data))
+print(instObj.meta)
+'''
+
+
