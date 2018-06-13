@@ -1022,13 +1022,6 @@ class Instrument(object):
             #print (first_pad, first_time, last_time, last_pad)
 
             # pad data based upon passed parameter
-            # if (not self._empty(self._prev_data)) & (not self.empty):
-            #     padLeft = self._prev_data.loc[first_pad : self.index[0]]
-            #     if len(padLeft) > 0:
-            #         if (padLeft.index[-1] == self.index[0]) :
-            #             padLeft = padLeft.iloc[:-1, :]
-            #         # self.data = self.concat_data([padLeft, self.data])
-            #     print (padLeft)
             if (not self._empty(self._prev_data)) & (not self.empty):
                 stored_data = self.data #.copy()
                 temp_time = copy.deepcopy(self.index[0])
@@ -1042,13 +1035,7 @@ class Instrument(object):
                     self.data = self.concat_data([self.data, stored_data])
                 else:
                     self.data = stored_data
-            #         
-            # if (not self._empty(self._next_data)) & (not self.empty):
-            #     padRight = self._next_data.loc[self.index[-1] : last_pad]
-            #     if len(padRight) > 0:
-            #         if (padRight.index[0] == self.index[-1]) :
-            #             padRight = padRight.iloc[1:, :]
-            #         self.data = self.concat_data([self.data, padRight])
+
             if (not self._empty(self._next_data)) & (not self.empty):
                 stored_data = self.data #.copy()
                 temp_time = copy.deepcopy(self.index[-1])
@@ -1062,17 +1049,12 @@ class Instrument(object):
                     self.data = self.concat_data([stored_data, self.data])
                 else:
                     self.data = stored_data
-                
-                    
+               
             self.data = self[first_pad : last_pad]
             # want exclusive end slicing behavior from above
             if not self.empty:
                 if (self.index[-1] == last_pad) & (not want_last_pad):
                     self.data = self[:-1]
-   
-            ## drop any possible duplicate index times
-            ##self.data.drop_duplicates(inplace=True)
-            #self.data = self.data[~self.data.index.duplicated()]
             
         # if self.pad is False, load single day
         else:
