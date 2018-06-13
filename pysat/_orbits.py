@@ -498,7 +498,7 @@ class Orbits(object):
 
                 else:
                     # gone too far
-                    self.sat.data = DataFrame()
+                    self.sat.data = self.sat._null_data
                     raise Exception('Requested an orbit past total orbits for day')
             else:
                 raise Exception('Must set an orbit')
