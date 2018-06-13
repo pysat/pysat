@@ -13,6 +13,7 @@ import copy
 import sys
 import pandas as pds
 import numpy as np
+import xarray as xr
 
 from . import _custom
 from . import _files
@@ -241,9 +242,8 @@ class Instrument(object):
             self._null_data = DataFrame(None)
             self._data_library = DataFrame
         else:
-            import xarray
-            self._null_data = xarray.Dataset(None)
-            self._data_library = xarray.Dataset
+            self._null_data = xr.Dataset(None)
+            self._data_library = xr.Dataset
             
         self.data = self._null_data.copy()
         # create Meta instance with appropriate labels
@@ -394,8 +394,7 @@ class Instrument(object):
             
         """
         if 'time' not in self.data:
-            import xarray
-            return xarray.Dataset(None)
+            return xr.Dataset(None)
         if isinstance(key, tuple):
             if len(key) == 2:
                 # support slicing time, variable name
@@ -611,8 +610,7 @@ class Instrument(object):
         if self.pandas_format:
             return pds.concat(data, *args, **kwargs)
         else:
-            import xarray
-            return xarray.concat(data, dim='time')
+            return xr.concat(data, dim='time')
             
     def _pass_func(*args, **kwargs):
         pass     
