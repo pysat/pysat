@@ -43,7 +43,7 @@ class TestInstrumentQualifier():
         self.instrument_modules = []
 
         # create temporary directory  
-        dir_name = tempfile.gettempdir()
+        dir_name = tempfile.mkdtemp()
         saved_path = safe_data_dir()
         pysat.utils.set_data_dir(dir_name, store=False)    
             

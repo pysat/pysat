@@ -63,3 +63,7 @@ target/
 .ipynb_checkpoints
 
 *.py#
+
+.*.swp
+typescript
+custom_lint.sh
