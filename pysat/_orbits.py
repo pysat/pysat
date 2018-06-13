@@ -391,28 +391,23 @@ class Orbits(object):
             # ensure user is requesting a particular orbit
             if orbit is not None:
                 # set up data access for both pandas and xarray
-                self.sat.data = self._fullDayData#.copy()
+                self.sat.data = self._fullDayData
                 # pull out requested orbit
                 if orbit == -1:
                     # load orbit data into data
-                    # self.sat.data = self._fullDayData[self._orbit_breaks[self.num + orbit]:]
                     self.sat.data = self.sat[self._orbit_breaks[self.num + orbit]:]
                     self.current = self.num + orbit + 1
                 elif ((orbit < 0) & (orbit >= -self.num)):
                     # load orbit data into data
-                    # self.sat.data = self._fullDayData[
-                    #                 self._orbit_breaks[self.num + orbit]:self._orbit_breaks[self.num + orbit + 1]]
                     self.sat.data = self.sat[self._orbit_breaks[self.num + orbit]:
                                             self._orbit_breaks[self.num + orbit + 1]]
 
                     self.current = self.num + orbit + 1
                 elif (orbit < self.num) & (orbit != 0):
                     # load orbit data into data
-                    # self.sat.data = self._fullDayData[self._orbit_breaks[orbit - 1]:self._orbit_breaks[orbit]]
                     self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:self._orbit_breaks[orbit]]
                     self.current = orbit
                 elif orbit == self.num:
-                    # self.sat.data = self._fullDayData[self._orbit_breaks[orbit - 1]:]
                     self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:]
                     # recent addition, wondering why it wasn't there before,
                     # could just be a bug that is now fixed.
