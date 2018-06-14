@@ -29,17 +29,17 @@ before_install:
 
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4
-
+  # install pyglow, space science models
+  - git clone https://github.com/timduly4/pyglow.git
+  - cd pyglow
+  - ./pyglow_install.sh
+  - cd ..
 # command to install dependencies
 install:
   # Coverage packages are on my binstar channel
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
   - pip install coveralls
-  - git clone https://github.com/timduly4/pyglow.git
-  - cd pyglow
-  - ./pyglow_install.sh
-  - cd ..
   - "python setup.py install"
 # command to run tests
 script: 
