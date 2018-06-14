@@ -17,64 +17,9 @@ sat_ids = {'':['']}
 test_dates = {'':{'':pysat.datetime(2009,1,1)}}
 
 meta = pysat.Meta()
-meta['uts'] = {'units':'s', 
-               'long_name':'Universal Time', 
-               'custom':False}
-meta['Epoch'] = {'units':'Milliseconds since 1970-1-1',
-                 'Bin_Location': 0.5,
-                 'notes': 'UTC time at middle of geophysical measurement.',
-                 'desc': 'UTC seconds',
-                }
-meta['mlt'] = {'units':'hours', 
-               'long_name':'Magnetic Local Time',
-               'label': 'MLT',
-               'axis': 'MLT',
-               'desc': 'Magnetic Local Time',
-               'value_min': 0.,
-               'value_max': 24.,
-               'notes': ('Magnetic Local Time is the solar local time of the field line '
-                        'at the location where the field crosses the magnetic equator. '
-                        'In this case we just simulate 0-24 with a '
-                        'consistent orbital period and an offste with SLT.'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['slt'] = {'units':'hours', 
-               'long_name':'Solar Local Time',
-               'label': 'SLT',
-               'axis': 'SLT',
-               'desc': 'Solar Local Time',
-               'value_min': 0.,
-               'value_max': 24.,
-               'notes': ('Solar Local Time is the local time (zenith angle of sun) '
-                         'of the given locaiton. Overhead noon, +/- 90 is 6, 18 SLT .'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['orbit_num'] = {'units':'', 
-                     'long_name':'Orbit Number',
-                     'label': 'Orbit Number',
-                     'axis': 'Orbit Number',
-                     'desc': 'Orbit Number',
-                     'value_min': 0.,
-                     'value_max': 25000.,
-                     'notes': ('Number of orbits since the start of the mission. '
-                               'For this simulation we use the number of 5820 second periods '
-                               'since the start, 2008-01-01.'),
-                     'fill': np.nan,
-                     'scale': 'linear'}
-
-meta['longitude'] = {'units':'degrees', 'long_name':'Longitude'} 
-meta['latitude'] = {'units':'degrees', 'long_name':'Latitude'} 
-meta['dummy1'] = {'units':'', 'long_name':'dummy1'}
-meta['dummy2'] = {'units':'', 'long_name':'dummy2'}
-meta['dummy3'] = {'units':'', 'long_name':'dummy3'}
-meta['dummy4'] = {'units':'', 'long_name':'dummy4'}
-meta['string_dummy'] = {'units':'', 'long_name':'string_dummy'}
-meta['unicode_dummy'] = {'units':'', 'long_name':'unicode_dummy'}
-meta['int8_dummy'] = {'units':'', 'long_name':'int8_dummy'}
-meta['int16_dummy'] = {'units':'', 'long_name':'int16_dummy'}
-meta['int32_dummy'] = {'units':'', 'long_name':'int32_dummy'}
-meta['int64_dummy'] = {'units':'', 'long_name':'int64_dummy'}
-
+meta['uts'] = {'units':'s', 'long_name':'Universal Time', 'custom':False}
+meta['mlt'] = {'units':'hours', 'long_name':'Magnetic Local Time'}
+meta['slt'] = {'units':'hours', 'long_name':'Solar Local Time'}
 
         
 def init(self):
@@ -98,7 +43,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     else:
         root_date = root_date or pysat.datetime(2009,1,1)
         data_date = date
-    num = 86400 if tag is '' else int(tag)
+    num = 100 if tag is '' else int(tag)
     num_array = np.arange(num)
     uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
@@ -148,9 +93,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     
     index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), freq='S')
     data.index=index[0:num]
-    data.index.name = 'Epoch'
+    data.index.name = 'time'
     return data, meta.copy()
-
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
@@ -158,7 +102,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31)) 
     names = [ data_path+date.strftime('%D')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
-
-
+    
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     pass

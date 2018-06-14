@@ -397,7 +397,7 @@ class Instrument(object):
             if isinstance(in_data, pds.DataFrame):
                 pass
                 # filter for elif
-            elif isinstance(in_data[0], pds.DataFrame):
+            elif isinstance(next(iter(in_data), None), pds.DataFrame):
                 # input is a list_like of frames
                 # this is higher order data
                 # this process ensures
