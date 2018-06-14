@@ -21,7 +21,6 @@ import os
 import pandas as pds
 import numpy as np
 import pysat
-import pysat.models
 
 # pysat required parameters
 platform = 'pysat'
