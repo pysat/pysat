@@ -1,7 +1,7 @@
 language: python
 python:
   - "2.7"
-  - "3.5"
+  #- "3.5"
   - "3.6"
 sudo: false
 
@@ -34,7 +34,7 @@ install:
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
   - pip install coveralls
-  - pip install pysatCDF
+  #- pip install pysatCDF
     # install pyglow, space science models
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       pip install ipdb --user;
