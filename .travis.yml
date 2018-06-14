@@ -30,6 +30,7 @@ before_install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4
   # install pyglow, space science models
+  - pip install ipdb --user
   - git clone https://github.com/timduly4/pyglow.git
   - cd pyglow
   - ./pyglow_install.sh
