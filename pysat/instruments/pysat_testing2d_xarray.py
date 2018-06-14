@@ -33,7 +33,7 @@ def load(fnames, tag=None, sat_id=None):
     # covered by the simulation per day. The higher the number the lower
     # the number of samples (86400/scalar)
     scalar = 1
-    num = 86400/scalar
+    num = 86400//scalar
     num_array = np.arange(num)*scalar
     # seed DataFrame with UT array
     index = pds.date_range(date, date+pds.DateOffset(seconds=num-1), freq='S')
