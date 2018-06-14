@@ -89,12 +89,12 @@ class TestBasics():
          
     def test_filename_load(self):
         """Test if file is loadable by filename, relative to top_data_dir/platform/name/tag"""
-        self.testInst.load(fname='12/31/10.nofile')
+        self.testInst.load(fname='2010-12-31.nofile')
         assert self.testInst.index[0] == pds.datetime(2010,12,31)
 
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
-        self.testInst.load(fname='12/30/10.nofile')
+        self.testInst.load(fname='2010-12-30.nofile')
         self.testInst.next()
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
@@ -102,7 +102,7 @@ class TestBasics():
 
     def test_prev_filename_load_default(self):
         """Test prev day is loaded when invoking .prev."""
-        self.testInst.load(fname='01/04/09.nofile')
+        self.testInst.load(fname='2009-01-04.nofile')
         # print(self.testInst.date)
         self.testInst.prev()
         test_date = self.testInst.index[0]
@@ -352,15 +352,15 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_set_bounds_by_fname(self):
-        start = '01/01/09.nofile'
-        stop = '01/03/09.nofile'
+        start = '2009-01-01.nofile'
+        stop = '2009-01-03.nofile'
         self.testInst.bounds = (start, stop)
         assert np.all(self.testInst._iter_list == 
-            ['01/01/09.nofile', '01/02/09.nofile', '01/03/09.nofile'])
+            ['2009-01-01.nofile', '2009-01-02.nofile', '2009-01-03.nofile'])
 
     def test_iterate_over_bounds_set_by_fname(self):
-        start = '01/01/09.nofile'
-        stop = '01/15/09.nofile'
+        start = '2009-01-01.nofile'
+        stop = '2009-01-15.nofile'
         start_d = pysat.datetime(2009,1,1)
         stop_d = pysat.datetime(2009,1,15)
         self.testInst.bounds = (start, stop)
@@ -371,8 +371,8 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_iterate_over_bounds_set_by_fname_via_next(self):
-        start = '01/01/09.nofile'
-        stop = '01/15/09.nofile'
+        start = '2009-01-01.nofile'
+        stop = '2009-01-15.nofile'
         start_d = pysat.datetime(2009,1,1)
         stop_d = pysat.datetime(2009,1,15)
         self.testInst.bounds = (start, stop)
@@ -386,8 +386,8 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_iterate_over_bounds_set_by_fname_via_prev(self):
-        start = '01/01/09.nofile'
-        stop = '01/15/09.nofile'
+        start = '2009-01-01.nofile'
+        stop = '2009-01-15.nofile'
         start_d = pysat.datetime(2009,1,1)
         stop_d = pysat.datetime(2009,1,15)
         self.testInst.bounds = (start, stop)
@@ -401,16 +401,16 @@ class TestBasics():
         assert np.all(dates == out[::-1])
 
     def test_set_bounds_by_fname_season(self):
-        start = ['01/01/09.nofile', '02/01/09.nofile']
-        stop = ['01/03/09.nofile', '02/03/09.nofile']
+        start = ['2009-01-01.nofile', '2009-02-01.nofile']
+        stop = ['2009-01-03.nofile', '2009-02-03.nofile']
         self.testInst.bounds = (start, stop)
         assert np.all(self.testInst._iter_list == 
-            ['01/01/09.nofile', '01/02/09.nofile', '01/03/09.nofile',
-            '02/01/09.nofile', '02/02/09.nofile', '02/03/09.nofile'])
+            ['2009-01-01.nofile', '2009-01-02.nofile', '2009-01-03.nofile',
+            '2009-02-01.nofile', '2009-02-02.nofile', '2009-02-03.nofile'])
 
     def test_iterate_over_bounds_set_by_fname_season(self):
-        start = ['01/01/09.nofile', '02/01/09.nofile']
-        stop = ['01/15/09.nofile', '02/15/09.nofile']
+        start = ['2009-01-01.nofile', '2009-02-01.nofile']
+        stop = ['2009-01-15.nofile', '2009-02-15.nofile']
         start_d = [pysat.datetime(2009,1,1), pysat.datetime(2009,2,1)]
         stop_d = [pysat.datetime(2009,1,15), pysat.datetime(2009,2,15)]
         self.testInst.bounds = (start, stop)
@@ -458,7 +458,7 @@ class TestDataPaddingbyFile():
                                          clean_level='clean',
                                          pad={'minutes':5},
                                          update_files=True)
-        self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
+        self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
         
         self.rawInst = pysat.Instrument('pysat', 'testing', '', 
                                     clean_level='clean',
@@ -547,7 +547,7 @@ class TestDataPaddingbyFileXarray():
                                          clean_level='clean',
                                          pad={'minutes':5},
                                          update_files=True)
-        self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
+        self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
         
         self.rawInst = pysat.Instrument('pysat', 'testing_xarray', '', 
                                     clean_level='clean',
@@ -573,7 +573,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True)
-        self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
+        self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
 
 class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
@@ -589,7 +589,7 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True)
-        self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
+        self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
 
 
@@ -606,7 +606,7 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True)
-        self.testInst.bounds = ('01/01/08.nofile','12/31/10.nofile')
+        self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
 
 class TestDataPadding():
