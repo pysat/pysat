@@ -1,8 +1,6 @@
 language: python
 python:
   - "2.7"
-  #- "3.3"
-  - "3.4"
   - "3.5"
   - "3.6"
 sudo: false
@@ -38,8 +36,10 @@ install:
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
   - pip install coveralls
-  # pysatCDF installed via setup.py requirement
-  # - pip install pysatCDF
+  - git clone https://github.com/timduly4/pyglow.git
+  - cd pyglow
+  - ./pyglow_install.sh
+  - cd ..
   - "python setup.py install"
 # command to run tests
 script: 
