@@ -1,7 +1,27 @@
+
+"""
+Supporting routines for coordinate conversions as well as vector operations and
+transformations used in Space Science.
+
+Note these routines are not formatted by direct use by pysat.Instrument custom
+function features. Given the transformations will generally be part of a larger 
+calculation, the functions are formatted more traditionally.
+
+"""
+
 import scipy
 import scipy.integrate
 import numpy as np
 
+
+# parameters used to define Earth ellipsoid
+# WGS84 parameters below
+earth_a = 6378.1370
+earth_b = 6356.75231424518
+
+# standard geoncentric Earth radius
+# average radius of Earth
+earth_geo_radius = 6371.
 
 def geocentric_to_ecef(latitude, longitude, altitude):
     """Convert geocentric coordinates into ECEF
@@ -22,8 +42,7 @@ def geocentric_to_ecef(latitude, longitude, altitude):
         
     """
 
-    r = 6371. + altitude
-    # colatitude = 90. - latitude
+    r = earth_geo_radius + altitude
     x = r * np.cos(np.deg2rad(latitude)) * np.cos(np.deg2rad(longitude))
     y = r * np.cos(np.deg2rad(latitude)) * np.sin(np.deg2rad(longitude))
     z = r * np.sin(np.deg2rad(latitude))
@@ -31,7 +50,7 @@ def geocentric_to_ecef(latitude, longitude, altitude):
     return x, y, z
 
 
-def ecef_to_geocentric(x, y, z, ref_height=6371.):
+def ecef_to_geocentric(x, y, z, ref_height=None):
     """Convert ECEF into geocentric coordinates
     
     Parameters
@@ -43,13 +62,16 @@ def ecef_to_geocentric(x, y, z, ref_height=6371.):
     z : float or array_like
         ECEF-Z in km
     ref_height : float or array_like
-        Reference radius used for calculating height
+        Reference radius used for calculating height.
+        Defaults to average radius of 6371 km
     Returns
     -------
     latitude, longitude, altitude
         numpy arrays of locations in degrees, degrees, and km
         
     """
+    if ref_height is None:
+        ref_height = earth_geo_radius
 
     r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
     colatitude = np.rad2deg(np.arccos(z / r))
@@ -78,10 +100,9 @@ def geodetic_to_ecef(latitude, longitude, altitude):
         
     """
 
-    b = 6356.75231424518
-    a = 6378.1370
-    ellip = np.sqrt(1. - b ** 2 / a ** 2)
-    r_n = a / np.sqrt(1. - ellip ** 2 * np.sin(np.deg2rad(latitude)) ** 2)
+
+    ellip = np.sqrt(1. - earth_b ** 2 / earth_a ** 2)
+    r_n = earth_a / np.sqrt(1. - ellip ** 2 * np.sin(np.deg2rad(latitude)) ** 2)
 
     # colatitude = 90. - latitude
     x = (r_n + altitude) * np.cos(np.deg2rad(latitude)) * np.cos(np.deg2rad(longitude))
@@ -113,33 +134,28 @@ def ecef_to_geodetic(x, y, z, method=None):
         numpy arrays of locations in degrees, degrees, and km
         
     """
+
+    # quick notes on ECEF to Geodetic transformations 
+    # http://danceswithcode.net/engineeringnotes/geodetic_to_ecef/geodetic_to_ecef.html
     
     method = method or 'closed'
-    # calculate satellite position in ECEF coordinates
-    b = 6356.75231424518
-    a = 6378.1370
-    ellip = np.sqrt(1. - b ** 2 / a ** 2)
 
+    # ellipticity of Earth    
+    ellip = np.sqrt(1. - earth_b ** 2 / earth_a ** 2)
     # first eccentricity squared
     e2 = ellip ** 2  # 6.6943799901377997E-3
 
     longitude = np.arctan2(y, x)
+    # cylindrical radius
     p = np.sqrt(x ** 2 + y ** 2)
-    # r = np.sqrt(x ** 2 + y ** 2 + z ** 2)
-    #    # convenient calculation parameters
-    # # http://danceswithcode.net/engineeringnotes/geodetic_to_ecef/geodetic_to_ecef.html
-
+    
     # closed form solution
-    # need to find source
     # a source, http://www.epsg.org/Portals/0/373-07-2.pdf , page 96 section 2.2.1
     if method == 'closed':
-        e_prime = np.sqrt((a**2 - b**2) / b**2)
-        theta = np.arctan2(z*a, p*b)
-        latitude = np.arctan2(z + e_prime**2*b*np.sin(theta)**3, p - e2*a*np.cos(theta)**3)
-        ## trying this out
-        # theta = np.arctan2(p*b, z*a)
-        # latitude = np.arctan2(p-ellip**2*a*np.cos(theta)**3, z+e_prime**2*b*np.sin(theta)**3)
-        r_n = a / np.sqrt(1. - e2 * np.sin(latitude) ** 2)
+        e_prime = np.sqrt((earth_a**2 - earth_b**2) / earth_b**2)
+        theta = np.arctan2(z*earth_a, p*earth_b)
+        latitude = np.arctan2(z + e_prime**2*earth_b*np.sin(theta)**3, p - e2*earth_a*np.cos(theta)**3)
+        r_n = earth_a / np.sqrt(1. - e2 * np.sin(latitude) ** 2)
         h = p / np.cos(latitude) - r_n
 
     # another possibility
@@ -149,10 +165,10 @@ def ecef_to_geodetic(x, y, z, method=None):
     # http://www.oc.nps.edu/oc2902w/coord/coordcvt.pdf
     if method == 'iterative':
         latitude = np.arctan2(p, z)
-        r_n = a / np.sqrt(1. - e2*np.sin(latitude)**2)
+        r_n = earth_a / np.sqrt(1. - e2*np.sin(latitude)**2)
         for i in np.arange(6):
             # print latitude
-            r_n = a / np.sqrt(1. - e2*np.sin(latitude)**2)
+            r_n = earth_a / np.sqrt(1. - e2*np.sin(latitude)**2)
             h = p / np.cos(latitude) - r_n
             latitude = np.arctan(z / p / (1. - e2 * (r_n / (r_n + h))))
             # print h
@@ -261,3 +277,60 @@ def project_ecef_vector_onto_basis(x, y, z, xx, xy, xz, yx, yy, yz, zx, zy, zz):
     out_z = x*zx + y*zy + z*zz
     
     return out_x, out_y, out_z
+    
+def normalize_vector(x, y, z):
+    """
+    Normalizes vector to produce a unit vector.
+    
+    Parameters
+    ----------
+    x : float or array-like
+        X component of vector
+    y : float or array-like
+        Y component of vector
+    z : float or array-like
+        Z component of vector
+        
+    Returns
+    -------
+    x, y, z
+        Unit vector x,y,z components
+        
+    """
+    
+    mag = np.sqrt(x**2 + y**2 + z**2)
+    x = x/mag
+    y = y/mag
+    z = z/mag
+    return x, y, z
+    
+def cross_product(x1, y1, z1, x2, y2, z2):
+    """
+    Cross product of two vectors, v1 x v2
+    
+    Parameters
+    ----------
+    x1 : float or array-like
+        X component of vector 1
+    y1 : float or array-like
+        Y component of vector 1
+    z1 : float or array-like
+        Z component of vector 1
+    x2 : float or array-like
+        X component of vector 2
+    y2 : float or array-like
+        Y component of vector 2
+    z2 : float or array-like
+        Z component of vector 2
+        
+    Returns
+    -------
+    x, y, z
+        Unit vector x,y,z components
+        
+    """
+    x = y1*z2 - y2*z1
+    y = z1*x2 - x1*z2
+    z = x1*y2 - y1*x2
+    return x, y, z 
+    
