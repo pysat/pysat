@@ -1028,6 +1028,10 @@ class Instrument(object):
                 # pad data using access mechanisms that works
                 # for both pandas and xarray
                 self.data = self._prev_data.copy()
+                # __getitem__ used below to get data 
+                # from instrument object. Details
+                # for handling pandas and xarray are different
+                # and handled by __getitem__
                 self.data = self[first_pad : temp_time]
                 if not self.empty:
                     if (self.index[-1] == temp_time) :
