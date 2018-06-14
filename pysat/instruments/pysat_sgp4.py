@@ -16,6 +16,7 @@ try:
     basestring
 except NameError:
     basestring = str
+import os
 
 import pandas as pds
 import numpy as np
@@ -46,6 +47,7 @@ def init(self):
     """
     
     self.custom.add(add_quasi_dipole_coordinates, 'modify')
+    self.custom.add(add_aacgm_coordinates, 'modify')
     self.custom.add(calculate_ecef_velocity, 'modify')
     self.custom.add(add_sc_attitude_vectors, 'modify')
     self.custom.add(add_iri_thermal_plasma, 'modify')
@@ -59,12 +61,12 @@ def init(self):
     # project IGRF
     self.custom.add(project_ecef_vector_onto_sc, 'modify', 'end', 'B_ecef_x', 'B_ecef_y', 'B_ecef_z',
                                                            'B_sc_x', 'B_sc_y', 'B_sc_z',
-                                                           meta=[in_meta, in_meta, in_meta])
+                                                           meta=[in_meta.copy(), in_meta.copy(), in_meta.copy()])
     # project total wind vector
     self.custom.add(project_hwm_onto_sc, 'modify')
                 
 def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0., 
-         TLE1=None, TLE2=None):
+                                        TLE1=None, TLE2=None):
     """		          
     Returns data and metadata in the format required by pysat. Finds position		
     of satellite in both ECI and ECEF co-ordinates.
@@ -123,10 +125,10 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.,
     satellite = twoline2rv(line1, line2, wgs72)
 
     # grab date from filename
-    parts = fnames[0].split('/')
-    yr = int('20'+parts[-1][0:2])
-    month = int(parts[-3])
-    day = int(parts[-2])
+    parts = os.path.split(fnames[0])[-1].split('-')
+    yr = int(parts[0])
+    month = int(parts[1])
+    day = int(parts[2][0:2])
     date = pysat.datetime(yr, month, day)
     
     # create timing at 1 Hz (for 1 day)
@@ -227,24 +229,21 @@ meta['velocity_eci_z'] = {'units':'km/s',
                           'desc':'Satellite velocity along ECI-z',
                           'long_name': 'Satellite velocity ECI-z'}
 
-meta['glong'] = {'name':'glong',
-                 'units':'degrees',
+meta['glong'] = {'units':'degrees',
                  'long_name':'Geodetic longitude',
                  'desc':'WGS84 geodetic longitude'}
-meta['glat'] = {'name':'glat',
-                'units':'degrees',
+meta['glat'] = {'units':'degrees',
                 'long_name':'Geodetic latitude',
-                 'desc':'WGS84 geodetic latitude'}
-meta['alt'] = {'name':'alt',
-               'units':'km',
+                'desc':'WGS84 geodetic latitude'}
+meta['alt'] = {'units':'km',
                'long_name':'Geodetic height',
                'desc':"WGS84 height above Earth's surface"}
-meta['position_ecef_x'] = {'name':'position_ecef_x','units':'km','long_name':'ECEF x co-ordinate of satellite'}
-meta['position_ecef_y'] = {'name':'position_ecef_y','units':'km','long_name':'ECEF y co-ordinate of satellite'}
-meta['position_ecef_z'] = {'name':'position_ecef_z','units':'km','long_name':'ECEF z co-ordinate of satellite'}
-meta['obs_sat_az_angle'] = {'name':'obs_sat_az_angle','units':'degrees','long_name':'Azimuth of satellite from ground station'}
-meta['obs_sat_el_angle'] = {'name':'obs_sat_el_angle','units':'degrees','long_name':'Elevation of satellite from ground station'}
-meta['obs_sat_slant_range'] = {'name':'obs_sat_slant_range','units':'km','long_name':'Distance of satellite from ground station'}
+meta['position_ecef_x'] = {'units':'km','desc':'ECEF x co-ordinate of satellite'}
+meta['position_ecef_y'] = {'units':'km','desc':'ECEF y co-ordinate of satellite'}
+meta['position_ecef_z'] = {'units':'km','desc':'ECEF z co-ordinate of satellite'}
+meta['obs_sat_az_angle'] = {'units':'degrees','desc':'Azimuth of satellite from ground station'}
+meta['obs_sat_el_angle'] = {'units':'degrees','desc':'Elevation of satellite from ground station'}
+meta['obs_sat_slant_range'] = {'units':'km','desc':'Distance of satellite from ground station'}
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -252,7 +251,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     
     index = pds.date_range(pysat.datetime(2017,12,1), pysat.datetime(2018,12,1)) 
     # file list is effectively just the date in string format - '%D' works only in Mac. '%x' workins in both Windows and Mac
-    names = [ data_path+date.strftime('%x')+'.nofile' for date in index]
+    names = [ data_path+date.strftime('%Y-%m-%d')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
 
 
@@ -295,84 +294,61 @@ def add_sc_attitude_vectors(inst):
     """
 
     # ram pointing is along velocity vector
-    mag = np.sqrt(inst['velocity_ecef_x']**2 + inst['velocity_ecef_y']**2 + 
-                    inst['velocity_ecef_z']**2)
-    inst['sc_xhat_ecef_x'] = inst['velocity_ecef_x']/mag
-    inst['sc_xhat_ecef_y'] = inst['velocity_ecef_y']/mag
-    inst['sc_xhat_ecef_z'] = inst['velocity_ecef_z']/mag
+    inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'] = \
+        pysat.coords.normalize_vector(inst['velocity_ecef_x'], inst['velocity_ecef_y'], inst['velocity_ecef_z'])
     
     # begin with z along Nadir (towards Earth)
     # if orbit isn't perfectly circular, then the s/c z vector won't
     # point exactly along nadir. However, nadir pointing is close enough
     # to the true z (in the orbital plane) that we can use it to get y, 
     # and use x and y to get the real z
-    mag = np.sqrt(inst['position_ecef_x']**2 + inst['position_ecef_y']**2 + inst['position_ecef_z']**2)
-    inst['sc_zhat_ecef_x'] = -inst['position_ecef_x']/mag
-    inst['sc_zhat_ecef_y'] = -inst['position_ecef_y']/mag
-    inst['sc_zhat_ecef_z'] = -inst['position_ecef_z']/mag
-    
+    inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'] = \
+        pysat.coords.normalize_vector(-inst['position_ecef_x'], -inst['position_ecef_y'], -inst['position_ecef_z'])    
     
     # get y vector assuming right hand rule
-    # X x Z = -Y
-    # Yx = ZyXz - XyZz
-    inst['sc_yhat_ecef_x'] = inst['sc_zhat_ecef_y']*inst['sc_xhat_ecef_z'] - inst['sc_xhat_ecef_y']*inst['sc_zhat_ecef_z']
-    # Yy = -(ZxXz - ZzXx)
-    inst['sc_yhat_ecef_y'] = -(inst['sc_zhat_ecef_x']*inst['sc_xhat_ecef_z'] - inst['sc_xhat_ecef_x']*inst['sc_zhat_ecef_z'])
-    # Yz = ZxXy - ZyXx
-    inst['sc_yhat_ecef_z'] = inst['sc_zhat_ecef_x']*inst['sc_xhat_ecef_y'] - inst['sc_xhat_ecef_x']*inst['sc_zhat_ecef_y']
+    # Z x X = Y
+    inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'] = \
+        pysat.coords.cross_product(inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'],
+                                   inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'])
     # normalize since Xhat and Zhat from above may not be orthogonal
-    mag = np.sqrt(inst['sc_yhat_ecef_x']**2 + inst['sc_yhat_ecef_y']**2 + 
-                    inst['sc_yhat_ecef_z']**2)
-    inst['sc_yhat_ecef_x'] = inst['sc_yhat_ecef_x']/mag
-    inst['sc_yhat_ecef_y'] = inst['sc_yhat_ecef_y']/mag
-    inst['sc_yhat_ecef_z'] = inst['sc_yhat_ecef_z']/mag
+    inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'] = \
+        pysat.coords.normalize_vector(inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'])
     
     # strictly, need to recalculate Zhat so that it is consistent with RHS
     # just created
     # Z = X x Y      
-    # Zx = XyYz - YyXz
-    inst['sc_zhat_ecef_x'] = inst['sc_xhat_ecef_y']*inst['sc_yhat_ecef_z'] - inst['sc_yhat_ecef_y']*inst['sc_xhat_ecef_z']
-    # Zy = -(XxYz - YzXx)
-    inst['sc_zhat_ecef_y'] = -(inst['sc_xhat_ecef_x']*inst['sc_yhat_ecef_z'] - inst['sc_yhat_ecef_x']*inst['sc_xhat_ecef_z'])
-    # Zz = XxYy - YxXy
-    inst['sc_zhat_ecef_z'] = inst['sc_xhat_ecef_x']*inst['sc_yhat_ecef_y'] - inst['sc_yhat_ecef_x']*inst['sc_xhat_ecef_y']
+    inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'] = \
+        pysat.coords.cross_product(inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'],
+                                   inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'])
     
     # Adding metadata
-    inst.meta['sc_xhat_ecef_x'] = {'name':'sc_xhat_ecef_x',
-                                   'units':'', 
+    inst.meta['sc_xhat_ecef_x'] = {'units':'', 
                                    'desc':'S/C attitude (x-direction, ram) unit vector, expressed in ECEF basis, x-component'}
-    inst.meta['sc_xhat_ecef_y'] = {'name':'sc_xhat_ecef_y',
-                                   'units':'',
+    inst.meta['sc_xhat_ecef_y'] = {'units':'',
                                    'desc':'S/C attitude (x-direction, ram) unit vector, expressed in ECEF basis, y-component'}
-    inst.meta['sc_xhat_ecef_z'] = {'name':'sc_xhat_ecef_z',
-                                   'units':'',
+    inst.meta['sc_xhat_ecef_z'] = {'units':'',
                                    'desc':'S/C attitude (x-direction, ram) unit vector, expressed in ECEF basis, z-component'}
     
-    inst.meta['sc_zhat_ecef_x'] = {'name':'sc_zhat_ecef_x',
-                                   'units':'',
+    inst.meta['sc_zhat_ecef_x'] = {'units':'',
                                    'desc':'S/C attitude (z-direction, generally nadir) unit vector, expressed in ECEF basis, x-component'}
-    inst.meta['sc_zhat_ecef_y'] = {'name':'sc_zhat_ecef_y',
-                                   'units':'',
+    inst.meta['sc_zhat_ecef_y'] = {'units':'',
                                    'desc':'S/C attitude (z-direction, generally nadir) unit vector, expressed in ECEF basis, y-component'}
-    inst.meta['sc_zhat_ecef_z'] = {'name':'sc_zhat_ecef_z',
-                                   'units':'',
+    inst.meta['sc_zhat_ecef_z'] = {'units':'',
                                    'desc':'S/C attitude (z-direction, generally nadir) unit vector, expressed in ECEF basis, z-component'}
     
-    inst.meta['sc_yhat_ecef_x'] = {'name':'sc_yhat_ecef_x',
-                                   'units':'',
+    inst.meta['sc_yhat_ecef_x'] = {'units':'',
                                    'desc':'S/C attitude (y-direction, generally south) unit vector, expressed in ECEF basis, x-component'}
-    inst.meta['sc_yhat_ecef_y'] = {'name':'sc_yhat_ecef_y',
-                                   'units':'',
+    inst.meta['sc_yhat_ecef_y'] = {'units':'',
                                    'desc':'S/C attitude (y-direction, generally south) unit vector, expressed in ECEF basis, y-component'}
-    inst.meta['sc_yhat_ecef_z'] = {'name':'sc_yhat_ecef_z',
-                                   'units':'',
+    inst.meta['sc_yhat_ecef_z'] = {'units':'',
                                    'desc':'S/C attitude (y-direction, generally south) unit vector, expressed in ECEF basis, z-component'}    
     
     # check what magnitudes we get
     mag = np.sqrt(inst['sc_zhat_ecef_x']**2 + inst['sc_zhat_ecef_y']**2 + 
                     inst['sc_zhat_ecef_z']**2)
-    idx, = np.where( (mag < .99999999999) | (mag > 1.00000000001))
+    idx, = np.where( (mag < .999999999) | (mag > 1.000000001))
     if len(idx) > 0:
+        print (mag[idx])
         raise RuntimeError('Unit vector generation failure. Not sufficently orthogonal.')
 
     return
@@ -401,20 +377,24 @@ def calculate_ecef_velocity(inst):
     """
     
     x = inst['position_ecef_x']
-    vel_x = x.values[2:] - x.values[0:-2]
-    vel_x /= 2.
+    vel_x = (x.values[2:] - x.values[0:-2])/2.
 
     y = inst['position_ecef_y']
-    vel_y = y.values[2:] - y.values[0:-2]
-    vel_y /= 2.
+    vel_y = (y.values[2:] - y.values[0:-2])/2.
 
     z = inst['position_ecef_z']
-    vel_z = z.values[2:] - z.values[0:-2]
-    vel_z /= 2.
+    vel_z = (z.values[2:] - z.values[0:-2])/2.
     
     inst[1:-1, 'velocity_ecef_x'] = vel_x
     inst[1:-1, 'velocity_ecef_y'] = vel_y
     inst[1:-1, 'velocity_ecef_z'] = vel_z
+    
+    inst.meta['velocity_ecef_x'] = {'units':'km/s',
+                                    'desc':'Velocity of satellite calculated with respect to ECEF frame.'}
+    inst.meta['velocity_ecef_y'] = {'units':'km/s',
+                                    'desc':'Velocity of satellite calculated with respect to ECEF frame.'}
+    inst.meta['velocity_ecef_z'] = {'units':'km/s',
+                                    'desc':'Velocity of satellite calculated with respect to ECEF frame.'}
     return
     
 def add_quasi_dipole_coordinates(inst, glat_label='glat', glong_label='glong', 
@@ -425,6 +405,8 @@ def add_quasi_dipole_coordinates(inst, glat_label='glat', glong_label='glong',
     The Quasi-Dipole coordinate system includes both the tilt and offset of the 
     geomagnetic field to calculate the latitude, longitude, and local time
     of the spacecraft with respect to the geomagnetic field.
+    
+    This system is preferred over AACGM near the equator for LEO satellites.
     
     Example
     -------
@@ -466,12 +448,66 @@ def add_quasi_dipole_coordinates(inst, glat_label='glat', glong_label='glong',
     inst['qd_long'] = qd_lon
     inst['mlt'] = mlt
     
-    inst.meta['qd_lat'] = {'name':'qd_lat', 'units':'degrees','long_name':'Quasi dipole latitude'}
-    inst.meta['qd_long'] = {'name':'qd_long', 'units':'degrees','long_name':'Quasi dipole longitude'}
-    inst.meta['mlt'] = {'name':'mlt', 'units':'hrs','long_name':'Magnetic local time'}    
+    inst.meta['qd_lat'] = {'units':'degrees','long_name':'Quasi dipole latitude'}
+    inst.meta['qd_long'] = {'units':'degrees','long_name':'Quasi dipole longitude'}
+    inst.meta['qd_mlt'] = {'units':'hrs','long_name':'Magnetic local time'}    
     
     return
+
+def add_aacgm_coordinates(inst, glat_label='glat', glong_label='glong', 
+                                       alt_label='alt'):
+    """ 
+    Uses AACGMV2 package to add AACGM coordinates to instrument object.
     
+    The Altitude Adjusted Corrected Geomagnetic Coordinates library is used
+    to calculate the latitude, longitude, and local time
+    of the spacecraft with respect to the geomagnetic field.
+    
+    Example
+    -------
+        # function added velow modifies the inst object upon every inst.load call
+        inst.custom.add(add_quasi_dipole_coordinates, 'modify', glat_label='custom_label')
+    
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        Designed with pysat_sgp4 in mind
+    glat_label : string
+        label used in inst to identify WGS84 geodetic latitude (degrees N)
+    glong_label : string
+        label used in inst to identify WGS84 geodetic longitude (degrees E)
+    alt_label : string
+        label used in inst to identify WGS84 geodetic altitude (km, height above surface)
+        
+    Returns
+    -------
+    inst
+        Input pysat.Instrument object modified to include quasi-dipole coordinates, 'aacgm_lat'
+        for magnetic latitude, 'aacgm_long' for longitude, and 'aacgm_mlt' for magnetic local time.
+        
+    """
+        
+    import aacgmv2
+
+    aalat = []; aalon = []; mlt = []
+    for lat, lon, alt, time in zip(inst[glat_label], inst[glong_label], inst[alt_label], 
+                                   inst.data.index):
+        # aacgmv2 latitude and longitude from geodetic coords
+        tlat, tlon, tmlt = aacgmv2.get_aacgm_coord(lat, lon, alt, time)
+        aalat.append(tlat)
+        aalon.append(tlon)
+        mlt.append(tmlt)
+        
+    inst['aacgm_lat'] = aalat
+    inst['aacgm_long'] = aalon
+    inst['aacgm_mlt'] = mlt
+    
+    inst.meta['aacgm_lat'] = {'units':'degrees','long_name':'AACGM latitude'}
+    inst.meta['aacgm_long'] = {'units':'degrees','long_name':'AACGM longitude'}
+    inst.meta['aacgm_mlt'] = {'units':'hrs','long_name':'AACGM Magnetic local time'}    
+    
+    return
+
     
 def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong', 
                                  alt_label='alt'):
@@ -531,11 +567,11 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
     iri.index = inst.data.index
     inst[iri.keys()] = iri
     
-    inst.meta['ion_temp'] = {'name':'ion_temp', 'units':'Kelvin','long_name':'Ion Temperature'}
-    inst.meta['ion_dens'] = {'name':'ion_dens', 'units':'N/cc','long_name':'Ion Density',
+    inst.meta['ion_temp'] = {'units':'Kelvin','long_name':'Ion Temperature'}
+    inst.meta['ion_dens'] = {'units':'N/cc','long_name':'Ion Density',
                              'desc':'Total ion density including O+ and H+ from IRI model run.'}
-    inst.meta['frac_dens_o'] = {'name':'frac_dens_o', 'units':'','long_name':'Fractional O+ Density'}
-    inst.meta['frac_dens_h'] = {'name':'frac_dens_h', 'units':'','long_name':'Fractional H+ Density'}
+    inst.meta['frac_dens_o'] = {'units':'','long_name':'Fractional O+ Density'}
+    inst.meta['frac_dens_h'] = {'units':'','long_name':'Fractional H+ Density'}
     
 
 def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong', 
@@ -601,27 +637,24 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong',
     # calculate meridional unit vector in ECEF
     # meridional wind: north - south; positive north
     # mer direction completes RHS of position and zonal vector
-    mag = np.sqrt(inst['position_ecef_x']**2 + inst['position_ecef_y']**2 + inst['position_ecef_z']**2)
-    unit_pos_x = inst['position_ecef_x']/mag
-    unit_pos_y = inst['position_ecef_y']/mag
-    unit_pos_z = inst['position_ecef_z']/mag
+    unit_pos_x, unit_pos_y, unit_pos_z = \
+        pysat.coords.normalize_vector(-inst['position_ecef_x'], -inst['position_ecef_y'], -inst['position_ecef_z'])    
     
     # mer = r x zonal
-    inst['unit_mer_wind_ecef_x'] = unit_pos_y*inst['unit_zonal_wind_ecef_z'] - unit_pos_z*inst['unit_zonal_wind_ecef_y']
-    inst['unit_mer_wind_ecef_y'] = -(unit_pos_x*inst['unit_zonal_wind_ecef_z'] - unit_pos_z*inst['unit_zonal_wind_ecef_x'])
-    inst['unit_mer_wind_ecef_z'] = unit_pos_x*inst['unit_zonal_wind_ecef_y'] - unit_pos_y*inst['unit_zonal_wind_ecef_x']
-    
+    inst['unit_mer_wind_ecef_x'], inst['unit_mer_wind_ecef_y'], inst['unit_mer_wind_ecef_z'] = \
+        pysat.coords.cross_product(unit_pos_x, unit_pos_y, unit_pos_z,
+                                   inst['unit_zonal_wind_ecef_x'], inst['unit_zonal_wind_ecef_y'], inst['unit_zonal_wind_ecef_z'])
     
     # Adding metadata information                                
-    inst.meta['zonal_wind'] = {'name':'zonal_wind','units':'m/s','long_name':'Zonal Wind', 'desc':'HWM model zonal wind'}
-    inst.meta['meridional_wind'] = {'name':'meridional_wind','units':'m/s','long_name':'Meridional Wind', 'desc':'HWM model meridional wind'}
-    inst.meta['unit_zonal_wind_ecef_x'] = {'name':'unit_zonal_wind_ecef_x','units':'km','long_name':'Zonal Wind Unit ECEF x-vector', 'desc':'x-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_zonal_wind_ecef_y'] = {'name':'unit_zonal_wind_ecef_y','units':'km','long_name':'Zonal Wind Unit ECEF y-vector', 'desc':'y-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_zonal_wind_ecef_z'] = {'name':'unit_zonal_wind_ecef_z','units':'km','long_name':'Zonal Wind Unit ECEF z-vector', 'desc':'z-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_x'] = {'name':'unit_mer_wind_ecef_x','units':'km','long_name':'Meridional Wind Unit ECEF x-vector', 'desc':'x-value of meridional wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_y'] = {'name':'unit_mer_wind_ecef_y','units':'km','long_name':'Meridional Wind Unit ECEF y-vector', 'desc':'y-value of meridional wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_z'] = {'name':'unit_mer_wind_ecef_z','units':'km','long_name':'Meridional Wind Unit ECEF z-vector', 'desc':'z-value of meridional wind unit vector in ECEF co ordinates'}
-
+    inst.meta['zonal_wind'] = {'units':'m/s','long_name':'Zonal Wind', 'desc':'HWM model zonal wind'}
+    inst.meta['meridional_wind'] = {'units':'m/s','long_name':'Meridional Wind', 'desc':'HWM model meridional wind'}
+    inst.meta['unit_zonal_wind_ecef_x'] = {'units':'km','long_name':'Zonal Wind Unit ECEF x-vector', 'desc':'x-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_zonal_wind_ecef_y'] = {'units':'km','long_name':'Zonal Wind Unit ECEF y-vector', 'desc':'y-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_zonal_wind_ecef_z'] = {'units':'km','long_name':'Zonal Wind Unit ECEF z-vector', 'desc':'z-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_x'] = {'units':'km','long_name':'Meridional Wind Unit ECEF x-vector', 'desc':'x-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_y'] = {'units':'km','long_name':'Meridional Wind Unit ECEF y-vector', 'desc':'y-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_z'] = {'units':'km','long_name':'Meridional Wind Unit ECEF z-vector', 'desc':'z-value of meridional wind unit vector in ECEF co ordinates'}
+    return
 
 
 def add_igrf(inst, glat_label='glat', glong_label='glong', 
@@ -689,15 +722,21 @@ def add_igrf(inst, glat_label='glat', glong_label='glong',
     inst['B_ecef_z'] = z
     
     # metadata
+    inst.meta['B'] = {'units':'nT',
+                      'desc':'Total geomagnetic field from IGRF.'}
+    inst.meta['B_east'] = {'units':'nT',
+                           'desc':'Geomagnetic field from IGRF expressed using the East/North/Up (ENU) basis.'}
+    inst.meta['B_north'] = {'units':'nT',
+                            'desc':'Geomagnetic field from IGRF expressed using the East/North/Up (ENU) basis.'}
+    inst.meta['B_up'] = {'units':'nT',
+                         'desc':'Geomagnetic field from IGRF expressed using the East/North/Up (ENU) basis.'}
+
     inst.meta['B_ecef_x'] = {'units':'nT',
-                             'desc':'Geomagnetic field from IGRF expressed using the Earth Centered Earth Fixed (ECEF) basis.',
-                             }
+                             'desc':'Geomagnetic field from IGRF expressed using the Earth Centered Earth Fixed (ECEF) basis.'}
     inst.meta['B_ecef_y'] = {'units':'nT',
-                             'desc':'Geomagnetic field from IGRF expressed using the Earth Centered Earth Fixed (ECEF) basis.',
-                             }
+                             'desc':'Geomagnetic field from IGRF expressed using the Earth Centered Earth Fixed (ECEF) basis.'}
     inst.meta['B_ecef_z'] = {'units':'nT',
-                             'desc':'Geomagnetic field from IGRF expressed using the Earth Centered Earth Fixed (ECEF) basis.',
-                             }
+                             'desc':'Geomagnetic field from IGRF expressed using the Earth Centered Earth Fixed (ECEF) basis.'}
     return
 
 def project_ecef_vector_onto_sc(inst, x_label, y_label, z_label, 
@@ -717,11 +756,11 @@ def project_ecef_vector_onto_sc(inst, x_label, y_label, z_label,
         Label used to get ECEF-Y component of vector to be projected
     z_label : string
         Label used to get ECEF-Z component of vector to be projected
-    x_label : string
+    new_x_label : string
         Label used to set X component of projected vector
-    y_label : string
+    new_y_label : string
         Label used to set Y component of projected vector
-    z_label : string
+    new_z_label : string
         Label used to set Z component of projected vector
     meta : array_like of dicts (None)
         Dicts contain metadata to be assigned.
@@ -757,9 +796,12 @@ def project_hwm_onto_sc(inst):
     inst['sim_wind_sc_y'] = y
     inst['sim_wind_sc_z'] = z
     
-    inst.meta['sim_wind_sc_x'] = {'name':'sim_inst_wind_x','units':'m/s','long_name':'Simulated x-vector instrument wind', 'desc':'Wind from model as measured by instrument in its x-direction'}
-    inst.meta['sim_wind_sc_y'] = {'name':'sim_inst_wind_y','units':'m/s','long_name':'Simulated y-vector instrument wind', 'desc':'Wind from model as measured by instrument in its y-direction'}
-    inst.meta['sim_wind_sc_z'] = {'name':'sim_inst_wind_z','units':'m/s','long_name':'Simulated z-vector instrument wind', 'desc':'Wind from model as measured by instrument in its z-direction'}
+    inst.meta['sim_wind_sc_x'] = {'units':'m/s','long_name':'Simulated x-vector instrument wind', 
+                                  'desc':'Wind from model as measured by instrument in its x-direction'}
+    inst.meta['sim_wind_sc_y'] = {'units':'m/s','long_name':'Simulated y-vector instrument wind', 
+                                  'desc':'Wind from model as measured by instrument in its y-direction'}
+    inst.meta['sim_wind_sc_z'] = {'units':'m/s','long_name':'Simulated z-vector instrument wind', 
+                                  'desc':'Wind from model as measured by instrument in its z-direction'}
 
     return
     
