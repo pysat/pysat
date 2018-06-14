@@ -10,6 +10,7 @@ from setuptools import setup
 from codecs import open
 from os import path
 import os
+import sys
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'description.txt'), encoding='utf-8') as f:
