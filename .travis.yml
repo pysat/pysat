@@ -35,11 +35,13 @@ install:
   - source activate test-environment
   - pip install coveralls
     # install pyglow, space science models
-  - pip install ipdb --user
-  - git clone https://github.com/timduly4/pyglow.git
-  - cd pyglow
-  - ./pyglow_install.sh
-  - cd ..
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      pip install ipdb --user;
+      git clone https://github.com/timduly4/pyglow.git;
+      cd pyglow;
+      ./pyglow_install.sh;
+      cd ..;
+    fi
   # install pysat
   - "python setup.py install"
 # command to run tests
