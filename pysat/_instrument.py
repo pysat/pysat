@@ -1122,9 +1122,9 @@ class Instrument(object):
         if self._iter_type == 'date':
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
-                if len(idx) == 0:
-                    raise StopIteration('Outside the set date boundaries.')
-                if idx[-1]+1 >= len(self._iter_list):
+                if (len(idx) == 0):
+                    raise StopIteration('File list is empty. Nothing to be done.')
+                elif idx[-1]+1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx += 1
@@ -1161,7 +1161,7 @@ class Instrument(object):
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
                 if len(idx) == 0:
-                    raise StopIteration('Outside the set date boundaries.')
+                    raise StopIteration('File list is empty. Nothing to be done.')
                 elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
