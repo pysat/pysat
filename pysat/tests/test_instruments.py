@@ -20,7 +20,10 @@ import importlib
 
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps', 
                 'icon_euv', 'icon_ivm']
-
+if sys.version_info[0] >= 3:
+    # TODO Remove when pyglow works in python 3
+    exclude_list.append('pysat_sgp4')
+    
 def safe_data_dir():
     saved_path = pysat.data_dir
     if saved_path is '':
