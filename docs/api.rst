@@ -54,3 +54,9 @@ Utilities
 ---------
 .. automodule:: pysat.utils
    :members:
+   
+Coordinate and Vector Support
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: pysat.coords
+   :members:
+
