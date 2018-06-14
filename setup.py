@@ -20,10 +20,9 @@ with open(os.path.join(here, version_filename)) as version_file:
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-if on_rtd:
-    install_requires=['pandas', 'numpy'] 
-else:
-    install_requires=['pandas', 'numpy', 'pysatCDF']
+install_requires=['pandas', 'numpy', 'apexpy', 'aacgmv2', 'pyglow'] 
+if not on_rtd:
+    install_requires.append('pysatCDF')
 
 setup(
     name='pysat',
