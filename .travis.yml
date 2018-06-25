@@ -1,11 +1,13 @@
 language: python
+fast_finish: true
+
 python:
   - "2.7"
-  #- "3.3"
   - "3.4"
   - "3.5"
   - "3.6"
-sudo: false
+
+group: travis_latest
 
 addons:
   apt:
@@ -40,11 +42,13 @@ install:
   - pip install coveralls
   # pysatCDF installed via setup.py requirement
   # - pip install pysatCDF
-  - "python setup.py install"
+  - pip install -e .
 # command to run tests
 script: 
   #- nosetests
   - nosetests  --with-coverage --cover-package=pysat
   #coverage run --source=pysat setup.py test
 after_success:
-  coveralls
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+    coveralls;
+    fi
