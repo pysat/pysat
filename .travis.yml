@@ -30,7 +30,7 @@ before_install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas 
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy
 
 install:
   - source activate test-environment
