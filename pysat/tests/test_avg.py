@@ -83,7 +83,7 @@ class TestBasics():
 
     def test_basic_file_mean(self):
         index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1)) 
-        names = [ date.strftime('%D')+'.nofile' for date in index]
+        names = [ date.strftime('%Y-%m-%d')+'.nofile' for date in index]
         self.testInst.bounds = (names[0], names[-1])
         ans = pysat.ssnl.avg.mean_by_file(self.testInst, 'dummy4')
         assert np.all(ans == 86399/2.)
