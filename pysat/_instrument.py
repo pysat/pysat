@@ -354,7 +354,10 @@ class Instrument(object):
             # support slicing
             return self.data.ix[key[0], key[1]]
         else:
-            return self.data[key]
+            try:
+                return self.data[key]
+            except:
+                return self.data.iloc[key]
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
