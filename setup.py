@@ -21,7 +21,7 @@ with open(os.path.join(here, version_filename)) as version_file:
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-install_requires=['pandas', 'numpy', 'apexpy', 'aacgmv2']
+install_requires=['pandas', 'numpy', 'apexpy', 'aacgmv2', 'sgp4', 'pyEphem']
 
 if sys.version_info[0] < 3:
     # TODO Remove when pyglow works in python 3
