@@ -40,7 +40,7 @@ install:
       pip install ipdb --user;
       git clone https://github.com/timduly4/pyglow.git;
       cd pyglow;
-      ./pyglow_install.sh >/dev/null;
+      travis_wait 20 ./pyglow_install.sh >/dev/null;
       cd ..;
     fi
   # install pysat
