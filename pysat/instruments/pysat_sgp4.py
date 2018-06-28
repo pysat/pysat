@@ -21,6 +21,7 @@ import os
 import pandas as pds
 import numpy as np
 import pysat
+import pysatMagVect
 
 # pysat required parameters
 platform = 'pysat'
@@ -105,7 +106,6 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.,
     from sgp4.earth_gravity import wgs72
     from sgp4.io import twoline2rv
     import ephem
-    import pysat.coords
 
     # TLEs (Two Line Elements for ISS)   
     # format of TLEs is fixed and available from wikipedia... 
@@ -186,7 +186,7 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.,
         # elevation of sat in m, stored as km
         lp['alt'] = sat.elevation/1000.
         # get ECEF position of satellite
-        lp['x'], lp['y'], lp['z'] = pysat.coords.geodetic_to_ecef(lp['glat'], lp['glong'], lp['alt'])
+        lp['x'], lp['y'], lp['z'] = pysatMagVect.geodetic_to_ecef(lp['glat'], lp['glong'], lp['alt'])
         output_params.append(lp)
     output = pds.DataFrame(output_params, index=times)
     # modify input object to include calculated parameters
@@ -294,7 +294,7 @@ def add_sc_attitude_vectors(inst):
 
     # ram pointing is along velocity vector
     inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'] = \
-        pysat.coords.normalize_vector(inst['velocity_ecef_x'], inst['velocity_ecef_y'], inst['velocity_ecef_z'])
+        pysatMagVect.normalize_vector(inst['velocity_ecef_x'], inst['velocity_ecef_y'], inst['velocity_ecef_z'])
     
     # begin with z along Nadir (towards Earth)
     # if orbit isn't perfectly circular, then the s/c z vector won't
@@ -302,22 +302,22 @@ def add_sc_attitude_vectors(inst):
     # to the true z (in the orbital plane) that we can use it to get y, 
     # and use x and y to get the real z
     inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'] = \
-        pysat.coords.normalize_vector(-inst['position_ecef_x'], -inst['position_ecef_y'], -inst['position_ecef_z'])    
+        pysatMagVect.normalize_vector(-inst['position_ecef_x'], -inst['position_ecef_y'], -inst['position_ecef_z'])    
     
     # get y vector assuming right hand rule
     # Z x X = Y
     inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'] = \
-        pysat.coords.cross_product(inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'],
+        pysatMagVect.cross_product(inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'],
                                    inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'])
     # normalize since Xhat and Zhat from above may not be orthogonal
     inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'] = \
-        pysat.coords.normalize_vector(inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'])
+        pysatMagVect.normalize_vector(inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'])
     
     # strictly, need to recalculate Zhat so that it is consistent with RHS
     # just created
     # Z = X x Y      
     inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'] = \
-        pysat.coords.cross_product(inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'],
+        pysatMagVect.cross_product(inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'],
                                    inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'])
     
     # Adding metadata
@@ -637,11 +637,11 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong',
     # meridional wind: north - south; positive north
     # mer direction completes RHS of position and zonal vector
     unit_pos_x, unit_pos_y, unit_pos_z = \
-        pysat.coords.normalize_vector(-inst['position_ecef_x'], -inst['position_ecef_y'], -inst['position_ecef_z'])    
+        pysatMagVect.normalize_vector(-inst['position_ecef_x'], -inst['position_ecef_y'], -inst['position_ecef_z'])    
     
     # mer = r x zonal
     inst['unit_mer_wind_ecef_x'], inst['unit_mer_wind_ecef_y'], inst['unit_mer_wind_ecef_z'] = \
-        pysat.coords.cross_product(unit_pos_x, unit_pos_y, unit_pos_z,
+        pysatMagVect.cross_product(unit_pos_x, unit_pos_y, unit_pos_z,
                                    inst['unit_zonal_wind_ecef_x'], inst['unit_zonal_wind_ecef_y'], inst['unit_zonal_wind_ecef_z'])
     
     # Adding metadata information                                
@@ -714,7 +714,7 @@ def add_igrf(inst, glat_label='glat', glong_label='glong',
     inst[igrf.keys()] = igrf
     
     # convert magnetic field in East/north/up to ECEF basis
-    x, y, z = pysat.coords.enu_to_ecef_vector(inst['B_east'], inst['B_north'], inst['B_up'],
+    x, y, z = pysatMagVect.enu_to_ecef_vector(inst['B_east'], inst['B_north'], inst['B_up'],
                                               inst[glat_label], inst[glong_label])
     inst['B_ecef_x'] = x
     inst['B_ecef_y'] = y
@@ -765,7 +765,7 @@ def project_ecef_vector_onto_sc(inst, x_label, y_label, z_label,
         Dicts contain metadata to be assigned.
     """
     
-    x, y, z = pysat.coords.project_ecef_vector_onto_basis(inst[x_label], inst[y_label], inst[z_label],
+    x, y, z = pysatMagVect.project_ecef_vector_onto_basis(inst[x_label], inst[y_label], inst[z_label],
                                                           inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'],
                                                           inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'],
                                                           inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'])
@@ -787,7 +787,7 @@ def project_hwm_onto_sc(inst):
     total_wind_y = inst['zonal_wind']*inst['unit_zonal_wind_ecef_y'] + inst['meridional_wind']*inst['unit_mer_wind_ecef_y']
     total_wind_z = inst['zonal_wind']*inst['unit_zonal_wind_ecef_z'] + inst['meridional_wind']*inst['unit_mer_wind_ecef_z']
 
-    x, y, z = pysat.coords.project_ecef_vector_onto_basis(total_wind_x, total_wind_y, total_wind_z,
+    x, y, z = pysatMagVect.project_ecef_vector_onto_basis(total_wind_x, total_wind_y, total_wind_z,
                                                           inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'],
                                                           inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'],
                                                           inst['sc_zhat_ecef_x'], inst['sc_zhat_ecef_y'], inst['sc_zhat_ecef_z'])
