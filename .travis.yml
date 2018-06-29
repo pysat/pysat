@@ -6,9 +6,6 @@ python:
 sudo: false
 
 cache: pip
-cache:
-   directories:
-      - ../pyglow
 
 addons:
   apt:
