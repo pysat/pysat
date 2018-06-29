@@ -132,7 +132,12 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.,
     
     # create timing at 1 Hz (for 1 day)
     times = pds.date_range(start=date, end=date+pds.DateOffset(seconds=86399), freq='1S')
-    
+    # reduce requirements if on testing server
+    # TODO Remove this when testing resources are higher
+    on_travis = os.environ.get('ONTRAVIS') == 'True'
+    if on_travis:
+        times = times[0:100]
+        
     # create list to hold satellite position, velocity
     position = []
     velocity = []
