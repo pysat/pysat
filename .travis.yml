@@ -5,6 +5,11 @@ python:
   - "3.6"
 sudo: false
 
+cache: 
+  - pip
+  directories:
+     - pyglow
+
 addons:
   apt:
     packages:
