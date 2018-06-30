@@ -44,9 +44,9 @@ install:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       pip install ipdb --user;
       cd ..;
-      git clone https://github.com/timduly4/pyglow.git;
+      travis_wait 20 git clone https://github.com/timduly4/pyglow.git;
       cd pyglow;
-      travis_wait 30 ./pyglow_install.sh >/dev/null;
+      travis_wait 20 ./pyglow_install.sh >/dev/null;
       cd ../pysat;
     fi
   # install pysat
