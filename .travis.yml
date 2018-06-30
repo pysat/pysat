@@ -42,11 +42,11 @@ install:
   - pip install pysatCDF >/dev/null
     # install pyglow, space science models
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      pip install ipdb --user
-      cd ..
-      travis_wait 20 git clone https://github.com/timduly4/pyglow.git
-      cd pyglow
-      travis_wait 20 ./pyglow_install.sh >/dev/null
+      travis_wait 20 pip install ipdb --user;
+      cd ..;
+      git clone https://github.com/timduly4/pyglow.git;
+      cd pyglow;
+      ./pyglow_install.sh >/dev/null;
       cd ../pysat
     fi
   # install pysat
