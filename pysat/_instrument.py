@@ -629,7 +629,7 @@ class Instrument(object):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
                 output_str = ' '.join(('Returning', output_str, 'data for',
-                                       date.strftime('%D')))
+                                       date.strftime('%x')))
             else:
                 if len(fname) == 1:
                     # this check was zero
