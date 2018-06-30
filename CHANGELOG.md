@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - 2018-07-01
+ - Initial support for Constellation objects, which allows operations and analysis on mixed groups of Instrument objects. Developed by UT Dallas senior undergraduate computer science students (UTDesign 2018).
+ - Bug fixes when iterating by file
+ - Added pysat_sgp4, a Two Line Element based satellite orbit propagator that is coupled with ionosphere, thermosphere, and geomagnetic models. Supports projecting these quantities onto the relevant spacecraft frame to create signals suitable for satellite data simulation and testing. Routine uses pyglow, pysatMagVect, sgp4, and pyEphem.
+ - Further along the road toward windows compatibility
+ 
 ## [1.0.1] - 2018-05-06
  - Improved robustness of Meta object when working with high and low order data
  - Improved Meta test coverage
