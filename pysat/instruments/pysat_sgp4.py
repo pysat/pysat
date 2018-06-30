@@ -21,7 +21,6 @@ import os
 import pandas as pds
 import numpy as np
 import pysat
-import pysatMagVect
 
 # pysat required parameters
 platform = 'pysat'
@@ -106,6 +105,7 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.,
     from sgp4.earth_gravity import wgs72
     from sgp4.io import twoline2rv
     import ephem
+    import pysatMagVect
 
     # TLEs (Two Line Elements for ISS)   
     # format of TLEs is fixed and available from wikipedia... 
@@ -296,6 +296,7 @@ def add_sc_attitude_vectors(inst):
         reported in ECEF, ECEF x-component.
 
     """
+    import pysatMagVect
 
     # ram pointing is along velocity vector
     inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'] = \
@@ -615,6 +616,8 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong',
     """
 
     import pyglow
+    import pysatMagVect
+
     hwm_params = []
     for time,lat,lon,alt in zip(inst.data.index, inst[glat_label], inst[glong_label], inst[alt_label]):
         # Point class is instantiated. 
@@ -701,6 +704,7 @@ def add_igrf(inst, glat_label='glat', glong_label='glong',
     
     import pyglow
     from pyglow.pyglow import Point
+    import pysatMagVect
     
     igrf_params = []
     # print 'IRI Simulations'
@@ -770,6 +774,8 @@ def project_ecef_vector_onto_sc(inst, x_label, y_label, z_label,
         Dicts contain metadata to be assigned.
     """
     
+    import pysatMagVect
+
     x, y, z = pysatMagVect.project_ecef_vector_onto_basis(inst[x_label], inst[y_label], inst[z_label],
                                                           inst['sc_xhat_ecef_x'], inst['sc_xhat_ecef_y'], inst['sc_xhat_ecef_z'],
                                                           inst['sc_yhat_ecef_x'], inst['sc_yhat_ecef_y'], inst['sc_yhat_ecef_z'],
@@ -788,6 +794,8 @@ def project_ecef_vector_onto_sc(inst, x_label, y_label, z_label,
 
 def project_hwm_onto_sc(inst):
     
+    import pysatMagVect
+
     total_wind_x = inst['zonal_wind']*inst['unit_zonal_wind_ecef_x'] + inst['meridional_wind']*inst['unit_mer_wind_ecef_x']
     total_wind_y = inst['zonal_wind']*inst['unit_zonal_wind_ecef_y'] + inst['meridional_wind']*inst['unit_mer_wind_ecef_y']
     total_wind_z = inst['zonal_wind']*inst['unit_zonal_wind_ecef_z'] + inst['meridional_wind']*inst['unit_mer_wind_ecef_z']
