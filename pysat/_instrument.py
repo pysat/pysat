@@ -354,7 +354,10 @@ class Instrument(object):
             # support slicing
             return self.data.ix[key[0], key[1]]
         else:
-            return self.data[key]
+            try:
+                return self.data[key]
+            except:
+                return self.data.iloc[key]
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
@@ -1122,7 +1125,9 @@ class Instrument(object):
         if self._iter_type == 'date':
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
-                if (len(idx) == 0) | (idx+1 >= len(self._iter_list)):
+                if (len(idx) == 0):
+                    raise StopIteration('File list is empty. Nothing to be done.')
+                elif idx[-1]+1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx += 1
@@ -1158,7 +1163,9 @@ class Instrument(object):
         if self._iter_type == 'date':
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
-                if (len(idx) == 0) | (idx-1 < 0):
+                if len(idx) == 0:
+                    raise StopIteration('File list is empty. Nothing to be done.')
+                elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx -= 1

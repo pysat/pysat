@@ -10,6 +10,7 @@ from setuptools import setup
 from codecs import open
 from os import path
 import os
+import sys
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'description.txt'), encoding='utf-8') as f:
@@ -20,10 +21,14 @@ with open(os.path.join(here, version_filename)) as version_file:
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-if on_rtd:
-    install_requires=['pandas', 'numpy'] 
-else:
-    install_requires=['pandas', 'numpy', 'pysatCDF']
+install_requires=['pandas', 'numpy', 'apexpy', 'aacgmv2', 'sgp4', 'pyEphem', 'pysatMagVect']
+
+if sys.version_info[0] < 3:
+    # TODO Remove when pyglow works in python 3
+    install_requires.append('pyglow')
+
+if not on_rtd:
+    install_requires.append('pysatCDF')
 
 setup(
     name='pysat',
