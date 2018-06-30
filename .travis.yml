@@ -47,7 +47,7 @@ install:
       git clone https://github.com/timduly4/pyglow.git;
       cd pyglow;
       ./pyglow_install.sh >/dev/null;
-      cd ../pysat
+      cd ../pysat;
     fi
   # install pysat
   - "python setup.py install"
