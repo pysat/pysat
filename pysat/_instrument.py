@@ -533,7 +533,10 @@ class Instrument(object):
             output_str += self.orbit_info['period'].__str__() + '\n'
             output_str += 'Number of Orbits: {:d}\n'.format(self.orbits.num)
             output_str += 'Loaded Orbit Number: '
-            output_str += '{:d}\n'.format(self.orbits.current)
+            if self.orbits.current is not None:
+                output_str += '{:d}\n'.format(self.orbits.current)
+            else:
+                output_str += 'None\n'
 
         output_str += '\nLocal File Statistics' + '\n'
         output_str += '---------------------' + '\n'
