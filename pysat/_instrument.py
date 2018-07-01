@@ -501,7 +501,7 @@ class Instrument(object):
 
         return
 
-    def __repr__(self):
+    def __str__(self):
 
         output_str = '\npysat Instrument object\n'
         output_str += '-----------------------\n'
@@ -518,7 +518,7 @@ class Instrument(object):
         output_str += self.kwargs.__repr__() +'\nCustom Functions : \n'
         if len(self.custom._functions) > 0:
             for func in self.custom._functions:
-                output_str += '    ' + func.__repr__()
+                output_str += '    ' + func.__repr__() + '\n'
         else:
             output_str += '    ' + 'No functions applied.\n'
 
@@ -562,10 +562,10 @@ class Instrument(object):
             num = len(self.data.columns)//3
             for i in np.arange(num):
                 output_str += self.data.columns[3 * i].ljust(30)
-                output_str += self.data.columns[3 * i + 1].ljust(30)
-                output_str += self.data.columns[3 * i + 2].ljust(30)+'\n'
+                output_str += '  ' + self.data.columns[3 * i + 1].ljust(30)
+                output_str += '  ' + self.data.columns[3 * i + 2].ljust(30)+'\n'
             for i in np.arange(len(self.data.columns) - 3 * num):
-                output_str += self.data.columns[i+3*num].ljust(30)
+                output_str += self.data.columns[i+3*num].ljust(30) + '  '
             output_str += '\n'
         else:
             output_str += 'No loaded data.'+'\n'
