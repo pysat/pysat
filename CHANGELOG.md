@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Bug fixes when iterating by file
  - Added pysat_sgp4, a Two Line Element based satellite orbit propagator that is coupled with ionosphere, thermosphere, and geomagnetic models. Supports projecting these quantities onto the relevant spacecraft frame to create signals suitable for satellite data simulation and testing. Routine uses pyglow, pysatMagVect, sgp4, and pyEphem.
  - Further along the road toward windows compatibility
+ - Fixed orbit number reporting in orbits.current
  
 ## [1.0.1] - 2018-05-06
  - Improved robustness of Meta object when working with high and low order data
