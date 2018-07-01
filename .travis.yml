@@ -54,7 +54,7 @@ install:
       git clone https://github.com/timduly4/pyglow.git;
       cd pyglow;
       ./pyglow_install.sh >/dev/null;
-      cd ..
+      cd ..;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd pysat;
