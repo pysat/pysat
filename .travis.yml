@@ -45,7 +45,7 @@ install:
       travis_wait 20 pip install ipdb --user;
       cd ..;
     fi
-  - if [[ -d "./pyglow"]]; then
+  - if [[ -d "$pyglow"]]; then
        cd pyglow;
        python setup.py install;
        cd ../pysat;
