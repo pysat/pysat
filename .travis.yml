@@ -48,12 +48,13 @@ install:
   - if [[ -d "$pyglow" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd pyglow;
       python setup.py install;
-      cd ../pysat;
     fi
   - if [[ ! -d "$pyglow" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       git clone https://github.com/timduly4/pyglow.git;
       cd pyglow;
       ./pyglow_install.sh >/dev/null;
+    fi
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd ../pysat;
     fi
   # install pysat
