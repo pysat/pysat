@@ -45,8 +45,11 @@ install:
       travis_wait 20 pip install ipdb --user;
       cd ..;
     fi
+  - pwd
+  - ls
   - if [[ -d "$pyglow_dir" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd pyglow;
+      ls;
       python setup.py install;
       cd ..;
     fi
