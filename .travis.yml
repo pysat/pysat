@@ -1,7 +1,6 @@
 language: python
 python:
   - "2.7"
-  #- "3.5"
   - "3.6"
 sudo: false
 
@@ -47,13 +46,12 @@ install:
     fi
   - pwd
   - ls
-  - if [[ -d "$pyglow_dir" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+  - if [[ -d "$pyglow_dir" && -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd pyglow;
-      ls;
       python setup.py install;
       cd ..;
     fi
-  - if [[ ! -d "$pyglow_dir" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+  - if [[ ! -d "$pyglow_dir" || ! -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       git clone https://github.com/timduly4/pyglow.git;
       cd pyglow;
       ./pyglow_install.sh >/dev/null;
