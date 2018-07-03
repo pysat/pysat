@@ -86,10 +86,10 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['dummy1'] = dummy1
     data['string_dummy'] = ['test']*len(data)
     data['unicode_dummy'] = [u'test'] * len(data)
-    data['int8_dummy'] = np.array([1] * len(data), dtype=np.int8)
-    data['int16_dummy'] = np.array([1] * len(data), dtype=np.int16)
-    data['int32_dummy'] = np.array([1] * len(data), dtype=np.int32)
-    data['int64_dummy'] = np.array([1] * len(data), dtype=np.int64)
+    data['int8_dummy'] = np.ones(len(data), dtype=np.int8)
+    data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
+    data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
+    data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
     # print (data['string_dummy'])
     
     index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), freq='S')
