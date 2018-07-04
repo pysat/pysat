@@ -30,7 +30,7 @@ install_requires=['pandas', 'numpy',  'sgp4', 'pyEphem']
 
 if not on_rtd:
     # read the docs doesn't do Fortran
-    install_requires.extend(['pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect'])
+    install_requires.extend(['pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 'madrigalWeb'])
 
 setup(
     name='pysat',
