@@ -101,7 +101,7 @@ def load(fnames, tag=None, sat_id=None):
     labels = []
     for item in file_meta:
         labels.append(item[0])
-        meta[item[0]] = {'long_name':item[0],
+        meta[str(item[0])] = {'long_name':item[0],
                          'units':item[3],
                          'desc':item[1]}
     # add additional metadata notes
