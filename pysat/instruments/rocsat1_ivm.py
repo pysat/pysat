@@ -44,7 +44,7 @@ test_dates = {'':{'':pysat.datetime(2002,1,1)}}
 # support list files routine
 # use the default CDAWeb method
 fname = 'rs_k0_ipei_{year:04d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'':fname}
+supported_tags = {'':{'':fname}}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags)
 # support load routine
