@@ -256,7 +256,7 @@ class TestInstrumentQualifier():
             
             # make sure download was successful
             if len(inst.files.files) > 0:
-                f = partial(self.check_load, inst)
+                f = partial(self.check_load, inst, fuzzy=True)
                 f.description = ' '.join(('Checking load routine functionality for module: ', inst.platform, inst.name, inst.tag, inst.sat_id))
                 yield (f,)
                 
