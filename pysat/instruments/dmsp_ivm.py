@@ -101,7 +101,7 @@ def load(fnames, tag=None, sat_id=None):
     meta = pysat.Meta()
     labels = []
     for item in file_meta:
-        # handle difference in ostring utput between python 2 and 3
+        # handle difference in string output between python 2 and 3
         name_string = item[0]
         unit_string = item[3]
         desc_string = item[1]
