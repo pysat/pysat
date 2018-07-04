@@ -104,6 +104,13 @@ def load(fnames, tag=None, sat_id=None):
         meta[item[0]] = {'long_name':item[0],
                          'units':item[3],
                          'desc':item[1]}
+    # add additional metadata notes
+    # custom attributes attached to meta are attached to
+    # corresponding Instrument object when pysat receives
+    # data and meta from this routine
+    for key in filed['Metadata']:
+        if key != 'Data Parameters':
+            setattr(meta, key.replace(' ', '_'), filed['Metadata'][key][:])
     # data into frame, with labels from metadata
     data = pds.DataFrame.from_records(file_data, columns=labels)
     # lowercase variable names
