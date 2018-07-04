@@ -44,6 +44,7 @@ Code development supported by NSF grant 1259508
 from __future__ import print_function
 from __future__ import absolute_import
 
+import sys
 import functools
 
 import pandas as pds
@@ -100,10 +101,18 @@ def load(fnames, tag=None, sat_id=None):
     meta = pysat.Meta()
     labels = []
     for item in file_meta:
-        labels.append(item[0])
-        meta[str(item[0])] = {'long_name':item[0],
-                         'units':item[3],
-                         'desc':item[1]}
+        # handle difference in ostring utput between python 2 and 3
+        name_string = item[0]
+        unit_string = item[3]
+        desc_string = item[1]
+        if sys.version_info[0] >= 3:
+            name_string = name_string.decode('UTF-8')
+            unit_string = unit_string.decode('UTF-8')
+            desc_string = desc_string.decode('UTF-8')
+        labels.append(name_string)
+        meta[name_string] = {'long_name':name_string,
+                             'units':unit_string,
+                             'desc':desc_string}
     # add additional metadata notes
     # custom attributes attached to meta are attached to
     # corresponding Instrument object when pysat receives
