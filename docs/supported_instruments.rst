@@ -37,7 +37,13 @@ COSMIC GPS
 
 .. automodule:: pysat.instruments.cosmic_gps
    :members: __doc__
-   
+
+DMSP IVM
+--------
+
+.. automodule:: pysat.instruments.dmsp_ivm
+   :members: __doc__
+
 Dst
 ---
 
