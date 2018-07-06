@@ -357,7 +357,13 @@ class Instrument(object):
             try:
                 return self.data[key]
             except:
-                return self.data.iloc[key]
+                try:
+                    return self.data.iloc[key]
+                except:
+                    estring = '\n'.join(("Unable to sort out data access.",
+                                         "Instrument has data : " + str(not self.empty),
+                                         "Requested key : ", key))
+                    raise ValueError(estring)
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
@@ -395,7 +401,14 @@ class Instrument(object):
             
         # input dict must have data in 'data', 
         # the rest of the keys are presumed to be metadata
-        in_data = new.pop('data')
+        try:
+            in_data = new.pop('data')
+        except:
+            raise ValueError(' '.join(("Data for the variable must be passed under key 'data'",
+                                       "when passing a dictionary.",
+                                       "If you wish to set metadata individually, please",
+                                       "use the access mechanisms under the .meta "
+                                       "attached to the pysat.Instrument object.") ))
         if hasattr(in_data, '__iter__'):
             if isinstance(in_data, pds.DataFrame):
                 pass
