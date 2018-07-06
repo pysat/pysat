@@ -285,6 +285,17 @@ class TestBasics():
         self.testInst[0:10,'doubleMLT'] = 0
         assert np.all(self.testInst[10:,'doubleMLT'] == 2.*self.testInst[10:,'mlt']) & np.all(self.testInst[0:10,'doubleMLT'] == 0)
 
+    def test_modifying_data_inplace(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst['doubleMLT'] += 100
+        assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'] + 100)
+        
+    def test_getting_all_data_by_index(self):
+        self.testInst.load(2009,1)
+        a = self.testInst[[0,1,2,3,4]]
+        assert len(a) == 5
+        
 #######################
 ######
 #### check iteration behavior                        
