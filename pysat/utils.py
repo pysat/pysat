@@ -73,7 +73,7 @@ def set_data_dir(path=None, store=None):
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
     else:
-        raise ValueError('Path does not lead to a valid directory.')
+        raise ValueError('Path %s does not lead to a valid directory.' % path)
 
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='Epoch',
                  units_label='units', name_label='long_name', 

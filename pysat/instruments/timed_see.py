@@ -52,7 +52,7 @@ test_dates = {'':{'':pysat.datetime(2009,1,1)}}
 # support list files routine
 # use the default CDAWeb method
 fname = 'timed_l3a_see_{year:04d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'': fname}
+supported_tags = {'':{'':fname}}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags,
                                fake_daily_files_from_monthly=True)

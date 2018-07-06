@@ -12,7 +12,7 @@ of the module corresponds to the combination 'platform_name' provided when initi
 
 Some data repositories have pysat templates prepared to assist in integrating a new instrument. See Supported Templates for more.
 
-Three functions are required by pysat:
+Three functions are required by pysat for operation, with supporting information for testing:
 
 List Files
 ----------
@@ -126,6 +126,40 @@ Cleans instrument for levels supplied in inst.clean_level.
        return None
 
 inst is a pysat.Instrument() instance. clean should modify inst in-place as needed; equivalent to a 'modify' custom routine.
+
+Testing Support
+---------------
+All modules defined in the __init__.py for pysat/instruments are automatically
+tested when pyast code is tested. To support testing all of the required routines,
+additional information is required by pysat.
+
+The following attributes must be defined.
+   * platform : platform name
+   * name : instrument name
+   * tags : dictionary of all tags supported by routine with a description
+   * sat_ids : dictionaary of sat_ids, with a list of tags supported by each id
+   * test_dates : dictionary of sat_ids, containing dictionary of tags, with date to download for testing
+   
+Note that platform and name must match those used to name the file, platform_name.py
+
+Example code from dmsp_ivm.py. The attributes are set at the top level simply
+by definining variable names with the proper info. The various satellites within
+DMSP, F11, F12, F13 are seperated out using the sat_id parameter. 'UTD' is used
+as a tag to delineate that the data contains the UTD developed quality flags.
+
+.. code:: python
+   platform = 'dmsp'
+   name = 'ivm'
+   tags = {'utd':'UTDallas DMSP data processing'}
+   sat_ids = {'f11':['utd'], 'f12':['utd'], 'f13':['utd'], 'f14':['utd'], 'f15':['utd']}
+   test_dates = {'f11':{'utd':pysat.datetime(1998,1,2)},
+                 'f12':{'utd':pysat.datetime(1998,1,2)},
+                 'f13':{'utd':pysat.datetime(1998,1,2)},
+                 'f14':{'utd':pysat.datetime(1998,1,2)},
+                 'f15':{'utd':pysat.datetime(2017,12,30)}}
+    # support load routine
+    def load(fnames, tag=None, sat_id=None):
+        # code normally follows, example terminates here
 
 
 Supported Data Templates
