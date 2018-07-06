@@ -61,7 +61,7 @@ Loading is a fundamental pysat activity, this routine enables the user to consid
 - If metadata is already stored with the file, creating the Meta object is   
   trivial. If this isn't the case, it can be tedious to fill out all  
   information if there are many data parameters. In this case it is easier to 
-  fill out a text file. A convenience function is provided for this  s
+  fill out a text file. A convenience function is provided for this 
   situation. See pysat.Meta.from_csv for more information.
 
 
