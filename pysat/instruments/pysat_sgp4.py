@@ -655,14 +655,28 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong',
                                    inst['unit_zonal_wind_ecef_x'], inst['unit_zonal_wind_ecef_y'], inst['unit_zonal_wind_ecef_z'])
     
     # Adding metadata information                                
-    inst.meta['zonal_wind'] = {'units':'m/s','long_name':'Zonal Wind', 'desc':'HWM model zonal wind'}
-    inst.meta['meridional_wind'] = {'units':'m/s','long_name':'Meridional Wind', 'desc':'HWM model meridional wind'}
-    inst.meta['unit_zonal_wind_ecef_x'] = {'units':'km','long_name':'Zonal Wind Unit ECEF x-vector', 'desc':'x-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_zonal_wind_ecef_y'] = {'units':'km','long_name':'Zonal Wind Unit ECEF y-vector', 'desc':'y-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_zonal_wind_ecef_z'] = {'units':'km','long_name':'Zonal Wind Unit ECEF z-vector', 'desc':'z-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_x'] = {'units':'km','long_name':'Meridional Wind Unit ECEF x-vector', 'desc':'x-value of meridional wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_y'] = {'units':'km','long_name':'Meridional Wind Unit ECEF y-vector', 'desc':'y-value of meridional wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_z'] = {'units':'km','long_name':'Meridional Wind Unit ECEF z-vector', 'desc':'z-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['zonal_wind'] = {'units':'m/s','long_name':'Zonal Wind', 
+                               'desc':'HWM model zonal wind'}
+    inst.meta['meridional_wind'] = {'units':'m/s','long_name':'Meridional Wind', 
+                                    'desc':'HWM model meridional wind'}
+    inst.meta['unit_zonal_wind_ecef_x'] = {'units':'km',
+                                           'long_name':'Zonal Wind Unit ECEF x-vector', 
+                                           'desc':'x-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_zonal_wind_ecef_y'] = {'units':'km', 
+                                           'long_name':'Zonal Wind Unit ECEF y-vector', 
+                                           'desc':'y-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_zonal_wind_ecef_z'] = {'units':'km',
+                                           'long_name':'Zonal Wind Unit ECEF z-vector', 
+                                           'desc':'z-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_x'] = {'units':'km',
+                                         'long_name':'Meridional Wind Unit ECEF x-vector', 
+                                         'desc':'x-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_y'] = {'units':'km',
+                                         'long_name':'Meridional Wind Unit ECEF y-vector', 
+                                         'desc':'y-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_z'] = {'units':'km',
+                                         'long_name':'Meridional Wind Unit ECEF z-vector', 
+                                         'desc':'z-value of meridional wind unit vector in ECEF co ordinates'}
     return
 
 
@@ -897,53 +911,37 @@ def project_hwm_onto_sc(inst):
 
     return
     
-'''   
+# '''   
+# 
+# meta['uts'] = {'units':'s', 
+#                'long_name':'Universal Time', 
+#                'custom':False}          
+# meta['mlt'] = {'units':'hours', 
+#                'long_name':'Magnetic Local Time',
+#                'label': 'MLT',
+#                'axis': 'MLT',
+#                'desc': 'Magnetic Local Time',
+#                'value_min': 0.,
+#                'value_max': 24.,
+#                'notes': ('Magnetic Local Time is the solar local time of the field line '
+#                         'at the location where the field crosses the magnetic equator. '
+#                         'In this case we just simulate 0-24 with a '
+#                         'consistent orbital period and an offste with SLT.'),
+#                'fill': np.nan,
+#                'scale': 'linear'}
+# meta['slt'] = {'units':'hours', 
+#                'long_name':'Solar Local Time',
+#                'label': 'SLT',
+#                'axis': 'SLT',
+#                'desc': 'Solar Local Time',
+#                'value_min': 0.,
+#                'value_max': 24.,
+#                'notes': ('Solar Local Time is the local time (zenith angle of sun) '
+#                          'of the given locaiton. Overhead noon, +/- 90 is 6, 18 SLT .'),
+#                'fill': np.nan,
+#                'scale': 'linear'}
+# 
+# '''
 
-meta['uts'] = {'units':'s', 
-               'long_name':'Universal Time', 
-               'custom':False}          
-meta['mlt'] = {'units':'hours', 
-               'long_name':'Magnetic Local Time',
-               'label': 'MLT',
-               'axis': 'MLT',
-               'desc': 'Magnetic Local Time',
-               'value_min': 0.,
-               'value_max': 24.,
-               'notes': ('Magnetic Local Time is the solar local time of the field line '
-                        'at the location where the field crosses the magnetic equator. '
-                        'In this case we just simulate 0-24 with a '
-                        'consistent orbital period and an offste with SLT.'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['slt'] = {'units':'hours', 
-               'long_name':'Solar Local Time',
-               'label': 'SLT',
-               'axis': 'SLT',
-               'desc': 'Solar Local Time',
-               'value_min': 0.,
-               'value_max': 24.,
-               'notes': ('Solar Local Time is the local time (zenith angle of sun) '
-                         'of the given locaiton. Overhead noon, +/- 90 is 6, 18 SLT .'),
-               'fill': np.nan,
-               'scale': 'linear'}
-
-'''
-
-# Testing
-'''
-datanew, metanew = load(fnames = ['NoData_01/02/12'])
-
-instObj = pysat.Instrument(platform = 'pysat', name='sgp4', tag=None, clean_level=None) 
-instObj.data = datanew
-instObj.meta = metanew
-
-calculate_ecef_velocity(instObj)
-print(len(instObj.data))
-print(instObj.meta)
-
-pysat.models.add_quasi_dipole_coordinates(instObj)
-print(len(instObj.data))
-print(instObj.meta)
-'''
 
 
