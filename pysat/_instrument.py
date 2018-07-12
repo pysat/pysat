@@ -355,10 +355,10 @@ class Instrument(object):
             return self.data.ix[key[0], key[1]]
         else:
             try:
-                return self.data[key]
+                return self.data.iloc[key]
             except:
                 try:
-                    return self.data.iloc[key]
+                    return self.data[key]
                 except:
                     estring = '\n'.join(("Unable to sort out data access.",
                                          "Instrument has data : " + str(not self.empty),
