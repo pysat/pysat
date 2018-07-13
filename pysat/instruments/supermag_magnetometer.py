@@ -55,12 +55,6 @@ tags = {'indices':'SMU and SML indices',
 sat_ids = {'':tags.keys()}
 test_dates = {'':{kk:pysat.datetime(2009,1,1) for kk in tags.keys()}}
 
-def init(self):
-    """
-    """
-
-    return
-
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen SuperMAG data
 
@@ -94,12 +88,18 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 psplit = path.split(data_path[:-1])
                 data_path = path.join(psplit[0], "all", "")
 
-        min_fmt = '_'.join([file_base, '{year:4d}{month:02d}{day:02d}.???'])
+        if tag == "stations":
+            min_fmt = '_'.join([file_base, '{year:4d}.???'])
+            doff = pds.DateOffset(years=1)
+        else:
+            min_fmt = '_'.join([file_base, '{year:4d}{month:02d}{day:02d}.???'])
+            doff = pds.DateOffset(days=1)
         files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
+
         # files may consist of an arbitraty amount of time, specify the starting
         # date for now.  Currently assumes 1 month of data.
         if not files.empty:
-            files.ix[files.index[-1] + pds.DateOffset(months=1) -
+            files.ix[files.index[-1] + doff -
                      pds.DateOffset(days=1)] = files.iloc[-1]
             files = files.asfreq('D', 'pad')
             # add the date to the filename
@@ -110,7 +110,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         raise ValueError (estr)
     else:
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
-            
+ 
 
 def load(fnames, tag=None, sat_id=None):
     """ Load the SuperMAG files
@@ -133,6 +133,10 @@ def load(fnames, tag=None, sat_id=None):
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
     """
+    print("When using this data please acknowledge the SuperMAG collaboration "
+          + "according to the request outlined in the metadata attribute "
+          + "'acknowledgements'")
+    
     # Ensure that there are files to load
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
@@ -193,23 +197,30 @@ def load_csv_data(fname, tag):
     data : (pandas.DataFrame)
         Pandas DataFrame
     """
+    import re
+
     if tag == "stations":
         # Because there may be multiple operators, the default pandas reader
         # cannot be used.
         ddict = dict()
         dkeys = list()
+        date_list = list()
 
         # Open and read the file
         with open(fname, "r") as fopen:
+            dtime = pds.datetime.strptime(fname.split("_")[-1].split(".")[0],
+                                          "%Y")
+
             for fline in fopen.readlines():
-                sline = fline.split(',')
+                sline = [ll for ll in re.split(r'[,\n]+', fline) if len(ll) > 0]
 
                 if len(ddict.keys()) == 0:
                     for kk in sline:
                         ddict[kk] = list()
                     dkeys = ddict.keys()
                 else:
-                    for i,ll in emunerate(sline):
+                    date_list.append(dtime)
+                    for i,ll in enumerate(sline):
                         if i >= 1 and i <= 4:
                             ddict[dkeys[i]].append(float(ll))
                         elif i == 6:
@@ -220,8 +231,7 @@ def load_csv_data(fname, tag):
                             ddict[dkeys[-1]][-1] += " {:s}".format(ll)
                             
         # Create a data frame for this file
-        data = pds.DataFrame(ddict, index=ddict['IAGA'],
-                             columns=ddict.keys())
+        data = pds.DataFrame(ddict, index=date_list, columns=ddict.keys())
     else:
         # Define the date parser
         def parse_smag_date(dd):                                               
@@ -254,11 +264,8 @@ def load_ascii_data(fname, tag):
         baselines for each file.  None of not present or not applicable.
     """
     import re
-    ndata = {"indices":2, None:4, 'date':7, "all":4, "stations":8}
-    dkeys = {'stations':['IAGA', 'GEOLON', 'GEOLAT', 'AACGMLON', 'AACGMLAT',
-                         'STATION-NAME', 'OPERATOR-NUM', 'OPERATORS'],
-             None:['IAGA', 'N', 'E', 'Z']}
-    skeys = 
+    ndata = {"indices":2, None:4, "all":4, "stations":8}
+    dkeys = {'stations':list(), None:['IAGA', 'N', 'E', 'Z']}
     data = pds.DataFrame(None)
     baseline = None
 
@@ -276,6 +283,10 @@ def load_ascii_data(fname, tag):
         snum = 0      # number of magnetometer stations
         ddict = dict()
         date_list = list()
+
+        if tag == "stations":
+            dtime = pds.datetime.strptime(fname.split("_")[-1].split(".")[0],
+                                          "%Y")
 
         for fline in fopen.readlines():
             # Cycle past the header
@@ -313,7 +324,8 @@ def load_ascii_data(fname, tag):
                     hflag = False
             else:
                 # Load the desired data
-                lsplit = re.split(r'\t+', fline)
+                lsplit = [ll for ll in re.split(r'[\t\n]+', fline)
+                          if len(ll) > 0]
 
                 if dflag:
                     dflag = False # Unset the date flag
@@ -341,20 +353,26 @@ def load_ascii_data(fname, tag):
                                                      for i in range(snum)])
                 else:
                     if tag == "stations" and len(lsplit) >= ndata[tag]:
-                        # Because stations can have multiple operators,
-                        # ndata supplies the minimum number of columns
-                        if len(ddict.keys()) < ndata[tag]:
-                            for kk in dkeys[tag]:
-                                ddict[kk] = list()
-                        for i,ll in enumerate(lsplit):
-                            if i >= 1 and i <= 4:
-                                ddict[dkeys[tag][i]].append(float(ll))
-                            elif i == 6:
-                                ddict[dkeys[tag][i]].append(int(ll))
-                            elif i < len(dkeys[tag]):
-                                ddict[dkeys[tag][i]].append(ll)
-                            else:
-                                ddict[dkeys[tag][-1]][-1] += " {:s}".format(ll)
+                        if len(dkeys[tag]) == 0:
+                            # Station files include column names and data files
+                            # do not.  Read in the column names here
+                            for ll in lsplit:
+                                dkeys[tag].append(ll)
+                                ddict[ll] = list()
+                        else:
+                            # Because stations can have multiple operators,
+                            # ndata supplies the minimum number of columns
+                            date_list.append(dtime)
+                            for i,ll in enumerate(lsplit):
+                                if i >= 1 and i <= 4:
+                                    ddict[dkeys[tag][i]].append(float(ll))
+                                elif i == 6:
+                                    ddict[dkeys[tag][i]].append(int(ll))
+                                elif i < len(dkeys[tag]):
+                                    ddict[dkeys[tag][i]].append(ll)
+                                else:
+                                    ddict[dkeys[tag][-1]][-1] += \
+                                                            " {:s}".format(ll)
                     elif len(lsplit) == ndata[None]:
                         snum -= 1 # Mark the ingestion of a station
                         if tag != "indices":
@@ -373,10 +391,7 @@ def load_ascii_data(fname, tag):
                     dflag = True
 
         # Create a data frame for this file
-        if tag == "stations":
-            date_list = ddict['IAGA']
-        data = pds.DataFrame(ddict, index=date_list,
-                             columns=ddict.keys())
+        data = pds.DataFrame(ddict, index=date_list, columns=ddict.keys())
 
         fopen.close()
 
@@ -401,7 +416,7 @@ def update_smag_metadata(col_name):
                   'SMU':'none', 'SML':'none', 'datetime':'YYYY-MM-DD HH:MM:SS',
                   'GEOLON':'degrees', 'GEOLAT':'degrees', 'AACGMLON':'degrees',
                   'AACGMLAT':'degrees', 'STATION-NAME':'none',
-                  'OPERATOR-NUM':'none', 'OPERATOR':'none'}
+                  'OPERATOR-NUM':'none', 'OPERATORS':'none'}
     smag_name = {'IAGA':'Station Code', 'N':'B along local magnetic North',
                  'E':'B along local magnetic East', 'Z':'B vertically downward',
                  'MLT':'Magnetic Local Time', 'MLAT':'Magnetic Latitude',
@@ -419,9 +434,34 @@ def update_smag_metadata(col_name):
                  'AACGMLAT':'Altitude-Adjusted Corrected Geomagnetic latitude',
                  'STATION-NAME':'Long form station name',
                  'OPERATOR-NUM':'Number of station operators',
-                 'OPERATOR':'Station operator name(s)'}
-
-    col_dict = {'units':smag_units[col_name], 'long_name':smag_name[col_name]}
+                 'OPERATORS':'Station operator name(s)',}
+    
+    ackn = "When using this data please include the following reference:\n"
+    ackn += "Gjerloev, J. W., The SuperMAG data processing technique, "
+    ackn += "Geophys. Res., 117, A09213, doi:10.1029/2012JA017683, 2012\n\n"
+    ackn += "For publications and presentations, please include the following"
+    ackn += "acknowledgement:\nFor the ground magnetometer data we gratefully "
+    ackn += "acknowledge: Intermagnet; USGS, Jeffrey J. Love; CARISMA, PI Ian "
+    ackn += "Mann; CANMOS; The S-RAMP Database, PI K. Yumoto and Dr. K. "
+    ackn += "Shiokawa; The SPIDR database; AARI, PI Oleg Troshichev; The "
+    ackn += "MACCS program, PI M. Engebretson, Geomagnetism Unit of the "
+    ackn += "Geological Survey of Canada; GIMA; MEASURE, UCLA IGPP and Florida"
+    ackn += " Institute of Technology; SAMBA, PI Eftyhia Zesta; 210 Chain, PI "
+    ackn += "K. Yumoto; SAMNET, PI Farideh Honary; The institutes who maintain"
+    ackn += " the IMAGE magnetometer array, PI Eija Tanskanen; PENGUIN; AUTUMN,"
+    ackn += " PI Martin Connors; DTU Space, PI Dr. Rico Behlke; South Pole and "
+    ackn += " McMurdo Magnetometer, PI's Louis J. Lanzarotti and Alan T. "
+    ackn += "Weatherwax; ICESTAR; RAPIDMAG; PENGUIn; British Artarctic Survey; "
+    ackn += "McMac, PI Dr. Peter Chi; BGS, PI Dr. Susan Macmillan; Pushkov "
+    ackn += "Institute of Terrestrial Magnetism, Ionosphere and Radio Wave "
+    ackn += "Propagation (IZMIRAN); GFZ, PI Dr. Juergen Matzka; MFGI, PI B. "
+    ackn += "Heilig; IGFPAS, PI J. Reda; University of L’Aquila, PI M. "
+    ackn += "Vellante; BCMT, V. Lesur and A. Chambodut; Data obtained in "
+    ackn += "cooperation with Geoscience Australia, PI Marina Costelloe; "
+    ackn += "SuperMAG, PI Jesper W. Gjerloev."
+    
+    col_dict = {'units':smag_units[col_name], 'long_name':smag_name[col_name],
+                'acknowledgements':ackn}
 
     return col_dict
 
@@ -522,9 +562,14 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
         Additional parameter options for magnetometer data.  Includes 'mlt'
         (MLat and MLT), 'decl' (IGRF declination), 'sza' (Solar Zenith Angle),
         'all', and None. (default='all')
+
+    Returns
+    --------
     """
     import sys
     import urllib2
+
+    max_stations = 470
 
     if user is None:
         raise ValueError('SuperMAG requires user registration')
@@ -532,7 +577,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     remoteaccess = {'method':'http', 'host':'supermag.jhuapl.edu',
                     'path':'mag/lib/services', 'user':'user={:s}'.format(user),
                     'service':'service=', 'options':'options='}
-    remotefmt = "{method}//{host}/{path}/??{user}&{service}&{filefmt}&{start}"
+    remotefmt = "{method}://{host}/{path}/??{user}&{service}&{filefmt}&{start}"
 
     # Set the tag information
     if tag == "indices":
@@ -550,7 +595,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
         estr = "unknown file format [{:s}], using 'ascii'".format(file_fmt)
         print("WARNING: {:s}".format(estr))
         file_fmt = 'ascii'
-    remoteaccess['filefmt'] = 'fmt={:s}'format(file_fmt)
+    remoteaccess['filefmt'] = 'fmt={:s}'.format(file_fmt)
 
     # If indices are requested, add them now.
     if not tag in [None, 'stations']:
@@ -578,23 +623,29 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
             estr = "unknown delta [{:s}], using 'none'".format(delta)
             print("WARNING: {:s}".format(estr))
             delta = 'none'
-        remoteaccess['delta'] = 'delta={:s}'format(delta)
+        remoteaccess['delta'] = 'delta={:s}'.format(delta)
 
         # Set the time information and format
-        remoteaccess['interval'] = "interval=23%35A59"
+        remoteaccess['interval'] = "interval=23:59"
         sfmt = "%Y-%m-%dT00:00:00.000"
-        ffmt = "{:s}_{:s}_%Y%j.{:s}".format(platform, name, file_fmt)
+        tag_str = "_" if tag is None else "_all_" 
+        ffmt = "{:s}_{:s}{:s}%Y%m%d.{:s}".format(platform, name, tag_str,
+                                                 "txt" if file_fmt == "ascii"
+                                                 else file_fmt)
         start_str = "start="
     else:
         # Set the time format
         sfmt = "%Y"
-        ffmt = "{:s}_{:s}_%Y.{:s}".format(platform, name, file_fmt)
+        ffmt = "{:s}_{:s}_{:s}_%Y.{:s}".format(platform, name, tag,
+                                               "txt" if file_fmt == "ascii"
+                                               else file_fmt)
         start_str = "year="
 
     # Cycle through all of the dates, formatting them to achieve a unique set
     # of times to download data
     date_fmts = list(set([dd.strftime(sfmt) for dd in date_array]))
     name_fmts = list(set([dd.strftime(ffmt) for dd in date_array]))
+    station_year = None
 
     # Cycle through all of the unique dates.  Stations lists are yearly and
     # magnetometer data is daily
@@ -602,42 +653,250 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     for i,date in enumerate(date_fmts):
         print("Downloading {:s} for {:s}".format(istr, date.split("T")[0]))
         sys.stdout.flush()
+        nreq = 1
 
         # Add the start time and download period to query
-        remoteaccess['start'] += "{:s}{:s}".format(start_str, date)
-
+        remoteaccess['start'] = "{:s}{:s}".format(start_str, date)
         if tag != "stations":
-            # Get all of the stations for this time
-            print("NEED TO LOAD STATION FILE")
+            # Station lists are for each year, see if this year is loaded
+            current_date = pds.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000")
 
-            # Format a string of the station names
-            print("NEED TO FORMAT THE STATION QUERY")
-            remoteaccess['stations'] = "stations="
+            if current_date.year != station_year:
+                # Get all of the stations for this time
+                smag_stat = pysat.Instrument(platform=platform, name=name,
+                                             tag='stations')
+                try:
+                    smag_stat.load(date=current_date)
+                except:
+                    etime = current_time + pds.DateOffset(days=1)
+                    smag_stat.download(start=current_time, stop=etime,
+                                       user=user, password=password,
+                                       file_fmt=file_fmt)
+                    try:
+                        smag_stat.load(date=current_date)
+                    except:
+                        estr = "unable to format station query for "
+                        estr += "[{:s}]".format(current_date.year)
+                        ValueError(estr)
 
-        # Format the query
-        url = remotefmt.format(**remoteaccess)
+                # Format a string of the station names
+                if smag_stat.data.IAGA.shape[0] > max_stations:
+                    nreq = int(np.ceil(smag_stat.data.IAGA.shape[0] /
+                                       float(max_stations)))
 
-        # Set up a request
-        req = urllib2.Request(url)
+        out = list()
+        for ireq in range(nreq):
+            if tag != "stations":
+                stat_str = ",".join(smag_stat.data.IAGA[ireq*max_stations:
+                                                        (ireq+1)*max_stations])
+                remoteaccess['stations'] = "stations={:s}".format(stat_str)
 
-        # Test the response
-        try:
-            # Establish a connection
-            result = urllib2.urlopen(req)
-        except:
-            raise RuntimeError("unable to connect to [{:s}]".format(url))
+            # Format the query
+            url = remotefmt.format(**remoteaccess)
+
+            # Set up a request
+            req = urllib2.Request(url)
+
+            # Test the response
+            try:
+                # Establish a connection
+                result = urllib2.urlopen(req)
+            except:
+                raise RuntimeError("unable to connect to [{:s}]".format(url))
+
+            out.append(result.read())
+            print("TEST", url)
+            # Close the open connection
+            result.close()
+
+            # Test the result
+            if "requested URL was rejected" in out[-1]:
+                estr = "Requested url was rejected:\n{:s}".format(url)
+                raise RuntimeError(estr)
 
         # Build the output file name
         if tag is None:
-            fname = path.join(data_path, platform, name, name_fmts[i])
+            fname = path.join(data_path, name_fmts[i])
         else:
-            fname = path.join(data_path, platform, name, tag, name_fmts[i])
-        
+            fname = path.join(data_path, name_fmts[i])
+
+        # If more than one data pass was needed, append the files
+        if len(out) > 1:
+            out_data = append_data(out, file_fmt, tag)
+        else:
+            out_data = out[0]
+
         # Save the file data
         with open(fname, "w") as local_file:
-            local_file.write(result.read())
+            local_file.write(out_data)
             local_file.close()
 
-        # Close the open connection
-        result.close()
     return
+
+def append_data(file_strings, file_fmt, tag):
+    """ Load the SuperMAG files
+
+    Parameters
+    -----------
+    file_strings : array-like
+        Lists or arrays of strings, where each string contains one file of data
+    file_fmt : str
+        String denoting file type (ascii or csv)
+    tag : string
+        String denoting the type of file to load, accepted values are 'indices',
+        'all', 'stations', and None (for only magnetometer data)
+
+    Returns
+    -------
+    out_string : string
+        String with all data, ready for output to a file
+    """
+    # Determine the right appending routine for the file type
+    if file_fmt.lower() == "csv":
+        return append_csv_data(file_strings)
+    else:
+        return append_ascii_data(file_strings, tag)
+
+def append_ascii_data(file_strings, tag):
+    """ Append data from multiple files for the same time period
+
+    Parameters
+    -----------
+    file_strings : array-like
+        Lists or arrays of strings, where each string contains one file of data
+    tag : string
+        String denoting the type of file to load, accepted values are 'indices',
+        'all', 'stations', and None (for only magnetometer data)
+
+    Returns
+    -------
+    out_string : string
+        String with all data, ready for output to a file
+    """
+    import re
+    
+    # Start with data from the first list element
+    out_lines = file_strings[0].split('\n')
+    iparam = -1 # Index for the parameter line
+    ihead = -1 # Index for the last header line
+    idates = list() # Indices for the date lines
+    date_list = list() # List of dates
+    num_stations = list() # Number of stations for each date line
+    ind_num = 2 if tag in ['all', 'indices'] else 0
+
+    # Find the index information for the data
+    for i,line in enumerate(out_lines):
+        if line == "Selected parameters:":
+            iparam = i + 1
+        elif line.count("=") == len(line) and len(line) > 2:
+            ihead = i
+            break
+
+    # Find the time indices and number of stations for each date line
+    i = ihead + 1
+    while i < len(out_lines) - 1:
+        idates.append(i)
+        lsplit = re.split('\t+', out_lines[i])
+        dtime = pds.datetime.strptime(" ".join(lsplit[0:-1]),
+                                      "%Y %m %d %H %M %S")
+        date_list.append(dtime)
+        num_stations.append(int(lsplit[-1]))
+        i += num_stations[-1] + 1 + ind_num
+    idates = np.array(idates)
+
+    # Initialize a list of station names
+    station_names = list()
+    
+    # Cycle through each additional set of file strings
+    for ff in range(len(file_strings)-1):
+        file_lines = file_strings[ff+1].split('\n')
+
+        # Find the index information for the data
+        head = True
+        snum = 0
+        for i,line in enumerate(file_lines):
+            if head:
+                if line.count("=") == len(line) and len(line) > 2:
+                    head = False
+            elif len(line) > 0:
+                lsplit = re.split('\t+', line)
+                if snum == 0:
+                    dtime = pds.datetime.strptime(" ".join(lsplit[0:-1]),
+                                                  "%Y %m %d %H %M %S")
+                    try:
+                        idate = date_list.index(dtime)
+                    except:
+                        # SuperMAG outputs date lines regardless of the
+                        # number of stations.  These files shouldn't be
+                        # appended together.
+                        raise ValueError("Unexpected date ", dtime)
+
+                    snum = int(lsplit[-1])
+                    onum = num_stations[idate]
+                    inum = ind_num
+                    # Adjust reference data for new number of station lines
+                    idates[idate+1:] += snum
+                    num_stations[idate] += snum
+                else:
+                    if inum > 0:
+                        inum -= 1
+                    else:
+                        # Insert the station line to the end of the date section
+                        onum += 1
+                        snum -= 1
+                        out_lines.insert(idates[idate]+onum, line)
+
+                        # Save the station name to update the parameter line
+                        if not lsplit[0] in station_names:
+                            station_names.append(lsplit[0])
+
+    # Update the parameter line
+    out_lines[iparam] += "," + ",".join(station_names)
+
+    # Join the output lines into a single string
+    out_string = "\n".join(out_lines)
+
+    return out_string
+
+def append_csv_data(file_strings):
+    """ Append data from multiple csv files for the same time period
+
+    Parameters
+    -----------
+    file_strings : array-like
+        Lists or arrays of strings, where each string contains one file of data
+
+    Returns
+    -------
+    out_string : string
+        String with all data, ready for output to a file
+    """
+    # Start with data from the first list element
+    out_lines = list()
+    head_line = None
+
+    # Cycle through the lists of file strings, creating a list of line strings
+    for fstrings in file_strings:
+        file_lines = fstrings.split('\n')
+
+        # Remove and save the header line
+        head_line = file_lines.pop(0)
+
+        # Save the data lines
+        out_lines.extend(file_lines)
+
+    # Sort the output lines by date and station (first two columns) in place
+    out_lines.sort()
+
+    # Remove all zero-length lines from front, add one to back, and add header
+    i = 0
+    while len(out_lines[i]) == 0:
+        out_lines.pop(i)
+
+    out_lines.insert(0, head_line)
+    out_lines.append('')
+
+    # Join the output lines into a single string
+    out_string = "\n".join(out_lines)
+
+    return out_string
