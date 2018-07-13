@@ -813,7 +813,8 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def download(self, start, stop, freq='D', user=None, password=None):
+    def download(self, start, stop, freq='D', user=None, password=None,
+                 **kwargs):
         """Download data for given Instrument object from start to stop.
         
         Parameters
@@ -829,6 +830,8 @@ class Instrument(object):
             username, if required by instrument data archive
         password : string
             password, if required by instrument data archive
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments
             
         Note
         ----
@@ -851,14 +854,15 @@ class Instrument(object):
             self._download_rtn(date_array,
                                tag=self.tag,
                                sat_id=self.sat_id,
-                               data_path=self.files.data_path)
+                               data_path=self.files.data_path,
+                               **kwargs)
         else:
             self._download_rtn(date_array,
                                tag=self.tag,
                                sat_id=self.sat_id,
                                data_path=self.files.data_path,
                                user=user,
-                               password=password)
+                               password=password, **kwargs)
         # get current file date range
         first_date = self.files.start_date
         last_date = self.files.stop_date
