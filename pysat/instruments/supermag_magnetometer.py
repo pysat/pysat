@@ -644,11 +644,19 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     # Cycle through all of the dates, formatting them to achieve a unique set
     # of times to download data
     date_fmts = list(set([dd.strftime(sfmt) for dd in date_array]))
-    name_fmts = list(set([dd.strftime(ffmt) for dd in date_array]))
-    station_year = None
+
+    # Now that the unique dates are known, construct the file names
+    name_fmts = [None for dd in date_fmts]
+    for dd in date_array:
+        i = date_fmts.index(dd.strftime(sfmt))
+        name_fmts[i] = dd.strftime(ffmt)
+
+    if None in name_fmts:
+        raise ValueError("unable to construct all unique file names")
 
     # Cycle through all of the unique dates.  Stations lists are yearly and
     # magnetometer data is daily
+    station_year = None
     istr = 'SuperMAG {:s}'.format(tag if tag == "stations" else "data")
     for i,date in enumerate(date_fmts):
         print("Downloading {:s} for {:s}".format(istr, date.split("T")[0]))
@@ -705,7 +713,6 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                 raise RuntimeError("unable to connect to [{:s}]".format(url))
 
             out.append(result.read())
-            print("TEST", url)
             # Close the open connection
             result.close()
 
@@ -730,6 +737,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
         with open(fname, "w") as local_file:
             local_file.write(out_data)
             local_file.close()
+            del out_data
 
     return
 
@@ -834,9 +842,16 @@ def append_ascii_data(file_strings, tag):
                     snum = int(lsplit[-1])
                     onum = num_stations[idate]
                     inum = ind_num
+
                     # Adjust reference data for new number of station lines
                     idates[idate+1:] += snum
                     num_stations[idate] += snum
+
+                    # Adjust date line for new number of station lines
+                    oline = "{:s}\t{:d}".format( \
+                                    dtime.strftime("%Y\t%m\t%d\t%H\t%M\t%S"),
+                                                 num_stations[idate])
+                    out_lines[idates[idate]] = oline
                 else:
                     if inum > 0:
                         inum -= 1
