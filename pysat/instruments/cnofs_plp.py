@@ -40,7 +40,7 @@ test_dates = {'':{'':pysat.datetime(2009,1,1)}}
 # support list files routine
 # use the default CDAWeb method
 fname = 'cnofs_plp_plasma_1sec_{year:04d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'':fname}
+supported_tags = {'':{'':fname}}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags)
 # support load routine
@@ -59,7 +59,7 @@ download = functools.partial(cdw.download, supported_tags)
 def clean(inst):
     for key in inst.data.columns:
         if key != 'Epoch':
-          idx, = np.where(inst[key] == inst.meta[key].fillval)
-          inst.data.ix[idx, key] = np.nan
+          idx, = np.where(inst[key] == inst.meta[key, inst.fill_label])
+          inst[idx, key] = np.nan
 
 

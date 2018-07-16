@@ -63,14 +63,14 @@ def remove_files(inst):
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""        
         # store current pysat directory
         self.data_path = pysat.data_dir
         
         # create temporary directory  
-        dir_name = tempfile.gettempdir()
+        dir_name = tempfile.mkdtemp()
         pysat.utils.set_data_dir(dir_name, store=False)
 
         self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
@@ -179,10 +179,30 @@ class TestBasics:
         #print (loaded_inst.columns)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
-            test_list.append((frame1 == frame2).all())
+            test_list.append(np.all((frame1 == frame2).all()))
         loaded_inst.drop('profiles', inplace=True, axis=1) 
         test_inst.data.drop('profiles', inplace=True, axis=1)   
+
+        # second series of frames
+        for frame1, frame2 in zip(test_inst.data['alt_profiles'],
+                                  loaded_inst['alt_profiles']):
+            test_list.append(np.all((frame1 == frame2).all()))
+        loaded_inst.drop('alt_profiles', inplace=True, axis=1)
+        test_inst.data.drop('alt_profiles', inplace=True, axis=1)
+
+        # check series of series
+        for frame1, frame2 in zip(test_inst.data['series_profiles'],
+                                  loaded_inst['series_profiles']):
+            test_list.append(np.all((frame1 == frame2).all()))
+
+        # print (test_inst['series_profiles'][0], loaded_inst['series_profiles'][0])
+        # print (type(test_inst['series_profiles'][0]), type(loaded_inst['series_profiles'][0]))
+        # print ( (test_inst['series_profiles'][0]) == (loaded_inst['series_profiles'][0]) )
+        loaded_inst.drop('series_profiles', inplace=True, axis=1)
+        test_inst.data.drop('series_profiles', inplace=True, axis=1)
+        
         assert(np.all((test_inst.data == loaded_inst).all()))
+        assert np.all(test_list)
 
     def test_basic_writing_and_reading_netcdf4_default_format_higher_order_w_Compression(self):
         # create a bunch of files by year and doy
@@ -204,13 +224,32 @@ class TestBasics:
         # test Series of DataFrames
         test_list = []
         # print (loaded_inst.columns)
+        # print (loaded_inst)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
-            test_list.append((frame1 == frame2).all())
+            test_list.append(np.all((frame1 == frame2).all()))
         loaded_inst.drop('profiles', inplace=True, axis=1)
         test_inst.data.drop('profiles', inplace=True, axis=1)
-        assert (np.all((test_inst.data == loaded_inst).all()))
+        
+        # second series of frames
+        for frame1, frame2 in zip(test_inst.data['alt_profiles'],
+                                  loaded_inst['alt_profiles']):
+            test_list.append(np.all((frame1 == frame2).all()))
+        loaded_inst.drop('alt_profiles', inplace=True, axis=1)
+        test_inst.data.drop('alt_profiles', inplace=True, axis=1)
 
+        # check series of series
+        for frame1, frame2 in zip(test_inst.data['series_profiles'],
+                                  loaded_inst['series_profiles']):
+            test_list.append(np.all((frame1 == frame2).all()))
+            # print frame1, frame2
+        loaded_inst.drop('series_profiles', inplace=True, axis=1)
+        test_inst.data.drop('series_profiles', inplace=True, axis=1)
+        
+        assert (np.all((test_inst.data == loaded_inst).all()))
+        # print (test_list)
+        assert np.all(test_list)
+        
     # def test_basic_writing_and_reading_netcdf4_multiple_formats(self):
     #     # create a bunch of files by year and doy
     #     from unittest.case import SkipTest
@@ -318,10 +357,8 @@ class TestBasics:
         ref_nan = stats.circmean(self.test_nan, **self.circ_kwargs)
         test_nan = pysat.utils.nan_circmean(self.test_nan, **self.circ_kwargs)
 
-        ans1 = np.isnan(ref_nan)
-        ans2 = ref_mean == test_nan
-
-        assert ans1 & ans2
+        assert np.isnan(ref_nan)
+        assert ref_mean == test_nan
 
     def test_circstd(self):
         """ Test custom circular std."""
@@ -341,7 +378,5 @@ class TestBasics:
         ref_nan = stats.circstd(self.test_nan, **self.circ_kwargs)
         test_nan = pysat.utils.nan_circstd(self.test_nan, **self.circ_kwargs)
 
-        ans1 = np.isnan(ref_nan)
-        ans2 = ref_std == test_nan
-
-        assert ans1 & ans2
+        assert np.isnan(ref_nan)
+        assert ref_std == test_nan

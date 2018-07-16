@@ -10,6 +10,7 @@ from setuptools import setup
 from codecs import open
 from os import path
 import os
+import sys
 
 here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'description.txt'), encoding='utf-8') as f:
@@ -17,6 +18,20 @@ with open(path.join(here, 'description.txt'), encoding='utf-8') as f:
 version_filename = os.path.join('pysat', 'version.txt')
 with open(os.path.join(here, version_filename)) as version_file:
     version = version_file.read().strip()
+
+# change setup.py for readthedocs
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+install_requires=['pandas', 'numpy',  'sgp4', 'pyEphem']
+
+# keep pyglow out of requirements until pip installable
+# if sys.version_info[0] < 3:
+#     # TODO Remove when pyglow works in python 3
+#     install_requires.append('pyglow')
+
+if not on_rtd:
+    # read the docs doesn't do Fortran
+    install_requires.extend(['pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 
+                             'madrigalWeb', 'h5py'])
 
 setup(
     name='pysat',
@@ -47,7 +62,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',
@@ -77,5 +92,5 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pandas', 'numpy'] #'matplotlib'
+    install_requires = install_requires,
 )

@@ -4,7 +4,7 @@ import numpy as np
 from nose.tools import assert_raises, raises
 import nose.tools
 
-class TestBasics:
+class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
@@ -13,6 +13,10 @@ class TestBasics:
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
+    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
+        '''Adds a function to the object's custom queue'''
+        self.testInst.custom.add(function, kind, at_pos, *args, **kwargs)
 
     @raises(ValueError)        
     def test_single_modifying_custom_function(self):
@@ -36,7 +40,7 @@ class TestBasics:
             d.name='doubleMLT'
             return d
 
-        self.testInst.custom.add(custom1, 'add')  
+        self.add(custom1, 'add')  
         self.testInst.load(2009,1)
         ans = (self.testInst.data['doubleMLT'].values == 2.0 *
                self.testInst.data.mlt.values).all()
@@ -52,7 +56,7 @@ class TestBasics:
             d.index += pds.DateOffset(microseconds=10)
             return d
 
-        self.testInst.custom.add(custom1, 'add')  
+        self.add(custom1, 'add')  
         self.testInst.load(2009,1)
         ans = (self.testInst.data['doubleMLT'].isnull()).all()
         assert ans
@@ -67,7 +71,7 @@ class TestBasics:
             inst.data.mlt=0.
             return inst.data.doubleMLT
 
-        self.testInst.custom.add(custom1, 'add')  
+        self.add(custom1, 'add')  
         self.testInst.load(2009,1)
         ans = (self.testInst.data['doubleMLT'] == 2.0 *
                self.testInst.data.mlt).all()
@@ -126,7 +130,7 @@ class TestBasics:
                                 'tripleMLT':inst.data.mlt * 3}, 
                                 index=inst.data.index)
             return out
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)
         ans = (((self.testInst.data['doubleMLT'] == 2.0 *
                  self.testInst.data.mlt).all()) &
@@ -141,7 +145,7 @@ class TestBasics:
                                 index=inst.data.index)
             return {'data':out, 'long_name':['doubleMLTlong', 'tripleMLTlong'],
                     'units':['hours1', 'hours2']}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)
         ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
@@ -158,7 +162,7 @@ class TestBasics:
             out.name = 'doubleMLT'
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1'}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)
         ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
@@ -172,7 +176,7 @@ class TestBasics:
             out.name = 'doubleMLT'
             return {'data':out, 
                     'units':'hours1'}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)
         ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLT'
@@ -185,7 +189,7 @@ class TestBasics:
                                index=inst.data.index)
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1', 'name':'doubleMLT'}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)
         ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
@@ -200,7 +204,7 @@ class TestBasics:
             #out.name = 'doubleMLT'
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1'}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)   
 
     def test_add_numpy_array_w_meta_name_in_dict(self):
@@ -208,7 +212,7 @@ class TestBasics:
             out = (inst.data.mlt*2).values
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1', 'name':'doubleMLT'}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)
         ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
@@ -221,7 +225,7 @@ class TestBasics:
             out = (inst.data.mlt*2).values
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1'}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)
 
 
@@ -230,7 +234,7 @@ class TestBasics:
             out = (inst.data.mlt*2).tolist()
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1', 'name':'doubleMLT'}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.load(2009,1)
         ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
@@ -251,7 +255,7 @@ class TestBasics:
             out = (inst.data.mlt*2).values
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1', 'name':'doubleMLT'}
-        self.testInst.custom.add(custom1, 'add')
+        self.add(custom1, 'add')
         self.testInst.custom.clear()
         check1 = self.testInst.custom._functions == []
         check2 = self.testInst.custom._kind == []
@@ -261,7 +265,7 @@ class TestBasics:
         def custom1(inst):
             out = (inst.data.mlt * 2).values
             return 
-        self.testInst.custom.add(custom1, 'pass')
+        self.add(custom1, 'pass')
         self.testInst.load(2009, 1)
 
         assert True
@@ -271,7 +275,7 @@ class TestBasics:
             out = (inst.data.mlt * 2).values
             return {'data':out, 'long_name':'doubleMLTlong',
                     'units':'hours1', 'name':'doubleMLT'}
-        self.testInst.custom.add(custom1, 'pass')
+        self.add(custom1, 'pass')
         self.testInst.load(2009, 1)
 
         assert True
@@ -290,9 +294,27 @@ class TestBasics:
             out = (inst.data.tripleMLT * 2).values
             return {'data':out, 'long_name':'quadMLTlong',
                     'units':'hours1', 'name':'quadMLT'}
-        self.testInst.custom.add(custom1, 'add')
-        self.testInst.custom.add(custom2, 'add')
+        self.add(custom1, 'add')
+        self.add(custom2, 'add')
         # if this runs correctly, an error will be thrown
         # since the data required by custom3 won't be present yet
-        self.testInst.custom.add(custom3, 'add', at_pos=1)
+        self.add(custom3, 'add', at_pos=1)
         self.testInst.load(2009,1)
+
+
+class ConstellationTestBasics(TestBasics):
+    def setup(self):
+        '''Runs before every method to create a clean testing setup'''
+        insts = []
+        for i in range(5):
+            insts.append(pysat.Instrument('pysat','testing', tag='10', clean_level='clean'))
+
+        self.testConst = pysat.Constellation(insts)
+
+    def teardown(self):
+        ''' Runs after every method to clean up previous testing''' 
+        del self.testConst
+
+    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
+        ''' Add a function to the object's custom queue'''
+        self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)

@@ -187,7 +187,7 @@ class Files(object):
                 new_flag = True
 
         if new_flag:
-            # print('New files')
+            
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path,
                                                  'previous_'+name),
@@ -260,9 +260,9 @@ class Files(object):
         if not info.empty:
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
-            estr = "Unable to find any files that match the supplied template."
-            estr += " If you have the necessary files please check pysat "
-            estr += "settings and file locations."
+            estr = "Unable to find any files that match the supplied template. "
+            estr += "If you have the necessary files please check pysat "
+            estr += "settings and file locations (e.g. pysat.pysat_dir)."
             print(estr)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)

@@ -37,11 +37,12 @@ from . import nasa_cdaweb_methods as cdw
 
 platform = 'icon'
 name = 'ivm'
-tags = {'':''}
-sat_ids = {'a':[''], 
-           'b':['']}
-test_dates = {'a':{'':pysat.datetime(2018,1,1)},
-              'b':{'':pysat.datetime(2018,1,1)}}
+tags = {'level_2':'Level 2 public geophysical data'}
+# dictionary of sat_ids ad tags supported by each
+sat_ids = {'a':['level_2'], 
+           'b':['level_2']}
+test_dates = {'a':{'level_2':pysat.datetime(2018,1,1)},
+              'b':{'level_2':pysat.datetime(2018,1,1)}}
 
 
 def init(self):
@@ -64,7 +65,13 @@ def load(fnames, tag=None, sat_id=None):
     """
     
     """
-    return pysat.utils.load_netcdf4(fnames, units_label='Units', name_label='Long_Name',  epoch_name='Epoch')
+    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch', 
+                                    units_label='Units', name_label='Long_Name', 
+                                    notes_label='Var_Notes', desc_label='CatDesc',
+                                    plot_label='FieldNam', axis_label='LablAxis', 
+                                    scale_label='ScaleTyp',
+                                    min_label='ValidMin', max_label='ValidMax',
+                                    fill_label='FillVal')
   
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -151,12 +158,14 @@ def remove_icon_names(inst, target=None):
     else:
         prepend_str = target
 
-    inst.data.rename(columns=lambda x: x.split(prepend_str)[-1].lower(), inplace=True)
-    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1].lower(), inplace=True)
-    orig_keys = inst.meta.ho_data.keys()  
+    inst.data.rename(columns=lambda x: x.split(prepend_str)[-1], inplace=True)
+    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
+    orig_keys = inst.meta.keys_nD()  
     for key in orig_keys:
-        new_key = key.split(prepend_str)[-1].lower()
-        inst.meta.ho_data[new_key] = inst.meta.ho_data.pop(key)
+        new_key = key.split(prepend_str)[-1]
+        new_meta = inst.meta.pop(key)
+        new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
+        inst.meta[new_key] = new_meta
         
     return    
 

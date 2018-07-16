@@ -2,7 +2,41 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Pending][]
+## [1.1.0] - 2018-07-05
+ - Initial support for Constellation objects, which allows operations and analysis on mixed groups of Instrument objects. Developed by UT Dallas senior undergraduate computer science students (UTDesign 2018).
+ - Bug fixes when iterating by file
+ - Added pysat_sgp4, a Two Line Element based satellite orbit propagator that is coupled with ionosphere, thermosphere, and geomagnetic models. Supports projecting these quantities onto the relevant spacecraft frame to create signals suitable for satellite data simulation and testing. Routine uses pyglow, pysatMagVect, sgp4, and pyEphem.
+ - Further along the road toward windows compatibility
+ - Fixed orbit number reporting in orbits.current
+ - Added support for Defense Meteorological Satellite Program (DMSP) Ion Velocity Meter (IVM) data. Downloads from the Madrigal database (https://openmadrigal.org)
+ - Added support for both sat_id and tag variations within filenames in the NASA CDAWeb template
+ - Updated docummentation covering requirements for adding new instruments to pysat
+ 
+## [1.0.1] - 2018-05-06
+ - Improved robustness of Meta object when working with high and low order data
+ - Improved Meta test coverage
+ - Added dayside reconnection calculation for OMNI-HRO data
+ - Improved test behavior when instrument data could not be downloaded
+
+## [1.0.0] - 2018-04-29
+ - Improved consistency when handling higher order metadata
+ - Improved translation of metadata within netCDF4 files to pysat standard
+ - Added pysatCDF as package requirement
+ - PEP8 upgrades throughout
+ - Updated load_netCDF4 routine to support ICON EUV files natively
+ - to_netCDF4 function updated to be consistent with load_netCDF4
+ - Meta object upgraded to handle more attributes by default
+ - Meta object has been upgraded to preserve case of variable and attribute names
+ - Metadata access is case insensitive for ease of use
+ - Changes to units_label or name_label are automatically applied to underlying metadata
+ - Improved handling of custom units and name labels at Instrument level
+ - Additional functions added to Meta object, attrs, keys, keys_nD, has_attr, routines that return preserved case
+ - Additional unit tests for Meta added
+ - Reduced resources required for unit tests
+ - Improved windows compatibility
+ - Added more unit tests for seasonal averages
+ - Added more simulated data types to pysat_testing2D
+ - Added initial support for ICON EUV
  - Added initial support for ICON IVM
  - Added support for version/revision numbers in filenames within Files class constructor from_os
 

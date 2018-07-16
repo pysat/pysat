@@ -44,7 +44,7 @@ test_dates = {'':{'':pysat.datetime(2009,1,1)}}
 # support list files routine
 # use the default CDAWeb method
 ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'':ivm_fname}
+supported_tags = {'':{'':ivm_fname}}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags)
 # support load routine
@@ -89,44 +89,43 @@ def clean(self):
         # choose areas below 550km
         # self.data = self.data[self.data.alt <= 550]
         idx, = np.where(self.data.altitude <= 550)
-        self.data = self.data.iloc[idx,:]
+        self.data = self[idx,:]
     
     # make sure all -999999 values are NaN
     self.data.replace(-999999., np.nan, inplace=True)
-    # idx, idy, = np.where(self.data == -999999.)
-    # self.data.iloc[idx,idy] = np.nan
 
     if (self.clean_level == 'clean') | (self.clean_level == 'dusty'):
         try:
-            # self.data = self.data[(abs(self.data.iv_mer) < 10000.)]
             idx, = np.where(np.abs(self.data.ionVelmeridional) < 10000.)
-            self.data = self.data.iloc[idx,:]
+            self.data = self[idx,:]
         except AttributeError:
             pass
-        # take out all values where RPA data quality is > 3
-        # self.data = self.data[self.data.rpa_flag <= 3]
-        idx, = np.where(self.data.RPAflag <= 3)
-        self.data = self.data.iloc[idx,:]
-
-        # enforce minimum RPA density if RPA flag eqal to 3
-        o_dens = self.data.ionDensity*self.data.ion1fraction
-        # self.data = self.data[-((o_dens < 3.E4) & (self.data.rpa_flag==3))]
-        idx, = np.where(-((o_dens < 3.E4) & (self.data.RPAflag==3)))
-        self.data = self.data.iloc[idx,:]
         
+        if self.clean_level == 'dusty':
+            # take out all values where RPA data quality is > 1
+            idx, = np.where(self.data.RPAflag <= 1)
+            self.data = self[idx,:]
+            # IDM quality flags
+            self.data = self.data[ (self.data.driftMeterflag<= 3) ]
+        else:
+            # take out all values where RPA data quality is > 0
+            idx, = np.where(self.data.RPAflag <= 0)
+            self.data = self[idx,:] 
+            # IDM quality flags
+            self.data = self.data[ (self.data.driftMeterflag<= 0) ]
+    if self.clean_level == 'dirty':
+        # take out all values where RPA data quality is > 4
+        idx, = np.where(self.data.RPAflag <= 4)
+        self.data = self[idx,:]
         # IDM quality flags
-        self.data = self.data[ (self.data.driftMeterflag>= 90) & (self.data.driftMeterflag % 10 < 1) ]
-        idx, = np.where((self.data.driftMeterflag>= 90) & (self.data.driftMeterflag % 10 < 1))
-        self.data = self.data.iloc[idx,:]
-
+        self.data = self.data[ (self.data.driftMeterflag<= 6) ]
+        
     # basic quality check on drifts and don't let UTS go above 86400.
-    # self.data = self.data[ (self.data.uts <= 86400.)]
     idx, = np.where(self.data.time <= 86400.)
-    self.data = self.data.iloc[idx,:]
+    self.data = self[idx,:]
     
     # make sure MLT is between 0 and 24
-    # self.data = self.data[(self['mlt'] >= 0.) & (self['mlt'] <= 24.)]
     idx, = np.where((self.data.mlt >= 0) & (self.data.mlt <= 24.))
-    self.data = self.data.iloc[idx,:]
+    self.data = self[idx,:]
     return
 

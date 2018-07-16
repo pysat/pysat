@@ -44,7 +44,7 @@ test_dates = {'':{'dc_b':pysat.datetime(2009,1,1)}}
 # support list files routine
 # use the default CDAWeb method
 fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-supported_tags = {'dc_b':fname}
+supported_tags = {'':{'dc_b':fname}}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags)
 # support load routine
@@ -80,8 +80,8 @@ def clean(inst):
     """
     
     if (inst.clean_level == 'dusty') | (inst.clean_level == 'clean'):
-        idx, = np.where(inst['B_flag']==0)
-        inst.data = inst.data.iloc[idx]
+        idx, = np.where(inst['B_flag'] == 0)
+        inst.data = inst[idx, :]
 
     return None
                     

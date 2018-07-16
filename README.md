@@ -7,6 +7,7 @@
 [![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
 [![Documentation Status](https://readthedocs.org/projects/pysat/badge/?version=latest)](http://pysat.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/rstoneback/pysat/badge.svg?branch=master)](https://coveralls.io/github/rstoneback/pysat?branch=master)
+[![DOI](https://zenodo.org/badge/33449914.svg)](https://zenodo.org/badge/latestdoi/33449914)
 
 
 The Python Satellite Data Analysis Toolkit (pysat) is a package providing a simple and flexible interface
@@ -16,7 +17,10 @@ satellite based measurements it aims to support all instruments in space science
 
 Full [Documentation](http://pysat.readthedocs.io/en/latest/index.html)
 
+JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
+
 # Main Features
+* Instrument independent analysis routines.
 * Instrument object providing an interface for downloading and analyzing a wide variety of science data sets.
   * Uses pandas for the underlying data structure;
   capable of handling the many forms scientific measurements take in a consistent manner.
@@ -30,7 +34,6 @@ Full [Documentation](http://pysat.readthedocs.io/en/latest/index.html)
   * Iterate over custom seasons
 * Supports rigorous time-series calculations that require spin up/down time across day/file breaks. 
 * Includes helper functions to reduce the barrier in adding new science instruments to pysat
-* Instrument independent analysis routines.
 
 # Installation
 ## Starting from scratch
@@ -47,14 +50,4 @@ pip install pysat
   ```
   pip install netCDF4
   ```
-* CDF Support
-  * Download and install [pysatCDF](https://github.com/rstoneback/pysatCDF) which supports a python CDF interface using
-  ```
-  pip install pysatCDF
-  ```
-  or
-  ```
-  git clone https://github.com/rstoneback/pysatCDF.git
-  cd pysatCDF
-  python setup.py build install
-  ```
+  

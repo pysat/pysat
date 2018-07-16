@@ -40,7 +40,7 @@ time_shift_to_magnetic_poles : Shift time from bowshock to intersection with
 calculate_clock_angle : Calculate the clock angle and IMF mag in the YZ plane
 calculate_imf_steadiness : Calculate the IMF steadiness using clock angle and
                            magnitude in the YZ plane
-                           
+calculate_dayside_reconnection : Calculate the dayside reconnection rate
 """
 
 from __future__ import print_function
@@ -127,18 +127,15 @@ def load(fnames, tag=None, sat_id=None):
             return data, meta
 
 def clean(omni):
-    for key in omni.data.columns:
-        if key != 'Epoch':
-            fill_attr = "fillval"
-            if not hasattr(omni.meta[key], fill_attr):
-                if hasattr(omni.meta[key], fill_attr.upper()):
-                    fill_attr = fill_attr.upper()
-                else:
-                    raise "unknown attribute {:s} or {:s}".format(fill_attr, \
-                                                            fill_attr.upper())
-
-            idx, = np.where(omni[key] == getattr(omni.meta[key], fill_attr))
-            omni[idx, key] = np.nan
+    for fill_attr in ["fillval", "fill"]:
+        # case insensitive check for attribute name
+        if omni.meta.has_attr(fill_attr):
+            # get real name
+            fill_attr = omni.meta.attr_case_name(fill_attr)
+            for key in omni.data.columns:
+                if key != 'Epoch':    
+                    idx, = np.where(omni[key] == omni.meta[key, fill_attr])
+                    omni[idx, key] = np.nan
     return
 
 def time_shift_to_magnetic_poles(inst):
@@ -330,3 +327,26 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 
     inst['IMF_Steady'] = pds.Series(imf_steady, index=inst.data.index)
     return
+
+def calculate_dayside_reconnection(inst):
+    """ Calculate the dayside reconnection rate (Milan et al. 2014)
+
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument with OMNI HRO data, requires BYZ_GSM and clock_angle
+
+    Notes
+    --------
+    recon_day = 3.8 Re (Vx / 4e5 m/s)^1/3 Vx B_yz (sin(theta/2))^9/2
+    """
+    rearth = 6371008.8
+    sin_htheta = np.power(np.sin(np.radians(0.5 * inst['clock_angle'])), 4.5)
+    byz = inst['BYZ_GSM'] * 1.0e-9
+    vx = inst['flow_speed'] * 1000.0
+    
+    recon_day = 3.8 * rearth * vx * byz * sin_htheta * np.power((vx / 4.0e5),
+                                                                1.0/3.0)
+    inst['recon_day'] = pds.Series(recon_day, index=inst.data.index)
+    return
+
