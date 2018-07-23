@@ -2,6 +2,10 @@
 """
 Produces fake instrument data for testing.
 """
+from __future__ import print_function
+from __future__ import absolute_import
+
+import os
 
 import pandas as pds
 import numpy as np
@@ -83,10 +87,10 @@ def init(self):
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         sim_multi_file_left=False, root_date = None):
     # create an artifical satellite data set
-    parts = fnames[0].split('/')
-    yr = int('20'+parts[-1][0:2])
-    month = int(parts[-3])
-    day = int(parts[-2])
+    parts = os.path.split(fnames[0])[-1].split('-')
+    yr = int(parts[0])
+    month = int(parts[1])
+    day = int(parts[2][0:2])
 
     date = pysat.datetime(yr, month, day)
     if sim_multi_file_right:
@@ -140,10 +144,10 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['dummy4'] = num_array
     data['string_dummy'] = ['test']*len(data)
     data['unicode_dummy'] = [u'test'] * len(data)
-    data['int8_dummy'] = np.array([1] * len(data), dtype=np.int8)
-    data['int16_dummy'] = np.array([1] * len(data), dtype=np.int16)
-    data['int32_dummy'] = np.array([1] * len(data), dtype=np.int32)
-    data['int64_dummy'] = np.array([1] * len(data), dtype=np.int64)
+    data['int8_dummy'] = np.ones(len(data), dtype=np.int8)
+    data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
+    data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
+    data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
     # print (data['string_dummy'])
     
     index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), freq='S')
@@ -156,7 +160,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
     
     index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31)) 
-    names = [ data_path+date.strftime('%D')+'.nofile' for date in index]
+    names = [ data_path+date.strftime('%Y-%m-%d')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
 
 

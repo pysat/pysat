@@ -354,7 +354,16 @@ class Instrument(object):
             # support slicing
             return self.data.ix[key[0], key[1]]
         else:
-            return self.data[key]
+            try:
+                return self.data[key]
+            except:
+                try:
+                    return self.data.iloc[key]
+                except:
+                    estring = '\n'.join(("Unable to sort out data access.",
+                                         "Instrument has data : " + str(not self.empty),
+                                         "Requested key : ", key))
+                    raise ValueError(estring)
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
@@ -392,7 +401,14 @@ class Instrument(object):
             
         # input dict must have data in 'data', 
         # the rest of the keys are presumed to be metadata
-        in_data = new.pop('data')
+        try:
+            in_data = new.pop('data')
+        except:
+            raise ValueError(' '.join(("Data for the variable must be passed under key 'data'",
+                                       "when passing a dictionary.",
+                                       "If you wish to set metadata individually, please",
+                                       "use the access mechanisms under the .meta "
+                                       "attached to the pysat.Instrument object.") ))
         if hasattr(in_data, '__iter__'):
             if isinstance(in_data, pds.DataFrame):
                 pass
@@ -498,7 +514,7 @@ class Instrument(object):
 
         return
 
-    def __repr__(self):
+    def __str__(self):
 
         output_str = '\npysat Instrument object\n'
         output_str += '-----------------------\n'
@@ -515,7 +531,7 @@ class Instrument(object):
         output_str += self.kwargs.__repr__() +'\nCustom Functions : \n'
         if len(self.custom._functions) > 0:
             for func in self.custom._functions:
-                output_str += '    ' + func.__repr__()
+                output_str += '    ' + func.__repr__() + '\n'
         else:
             output_str += '    ' + 'No functions applied.\n'
 
@@ -530,7 +546,10 @@ class Instrument(object):
             output_str += self.orbit_info['period'].__str__() + '\n'
             output_str += 'Number of Orbits: {:d}\n'.format(self.orbits.num)
             output_str += 'Loaded Orbit Number: '
-            output_str += '{:d}\n'.format(self.orbits.current)
+            if self.orbits.current is not None:
+                output_str += '{:d}\n'.format(self.orbits.current)
+            else:
+                output_str += 'None\n'
 
         output_str += '\nLocal File Statistics' + '\n'
         output_str += '---------------------' + '\n'
@@ -559,10 +578,10 @@ class Instrument(object):
             num = len(self.data.columns)//3
             for i in np.arange(num):
                 output_str += self.data.columns[3 * i].ljust(30)
-                output_str += self.data.columns[3 * i + 1].ljust(30)
-                output_str += self.data.columns[3 * i + 2].ljust(30)+'\n'
+                output_str += '  ' + self.data.columns[3 * i + 1].ljust(30)
+                output_str += '  ' + self.data.columns[3 * i + 2].ljust(30)+'\n'
             for i in np.arange(len(self.data.columns) - 3 * num):
-                output_str += self.data.columns[i+3*num].ljust(30)
+                output_str += self.data.columns[i+3*num].ljust(30) + '  '
             output_str += '\n'
         else:
             output_str += 'No loaded data.'+'\n'
@@ -626,7 +645,7 @@ class Instrument(object):
                 raise TypeError('Metadata returned must be a pysat.Meta object')
             if date is not None:
                 output_str = ' '.join(('Returning', output_str, 'data for',
-                                       date.strftime('%D')))
+                                       date.strftime('%x')))
             else:
                 if len(fname) == 1:
                     # this check was zero
@@ -1122,7 +1141,9 @@ class Instrument(object):
         if self._iter_type == 'date':
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
-                if (len(idx) == 0) | (idx+1 >= len(self._iter_list)):
+                if (len(idx) == 0):
+                    raise StopIteration('File list is empty. Nothing to be done.')
+                elif idx[-1]+1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx += 1
@@ -1158,7 +1179,9 @@ class Instrument(object):
         if self._iter_type == 'date':
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
-                if (len(idx) == 0) | (idx-1 < 0):
+                if len(idx) == 0:
+                    raise StopIteration('File list is empty. Nothing to be done.')
+                elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx -= 1

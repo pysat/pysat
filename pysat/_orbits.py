@@ -104,9 +104,29 @@ class Orbits(object):
 
         self._orbit_breaks = []
         self.num = 0 #[]
-        self.current = 0
+        self._current = 0
         self.orbit_index = index
 
+    @property
+    def current(self):
+        """Current orbit number. 
+        
+        Returns
+        -------
+        int or None
+            None if no orbit data. Otherwise, returns orbit number, begining
+            with zero. The first and last orbit of a day is somewhat ambiguous.
+            The first orbit for day n is generally also the last orbit
+            on day n - 1. When iterating forward, the orbit will be labeled
+            as first (0). When iterating backward, orbit labeled as the last.
+            
+        """
+        
+        if self._current > 0:
+            return self._current - 1
+        else:
+            return None
+        
     def __getitem__(self, key):
         """Enable convenience notation for loading orbit into parent object.
 
@@ -132,7 +152,7 @@ class Orbits(object):
         # create null arrays for storing orbit info
         self._orbit_breaks = []
         self.num = 0 #None
-        self.current = 0
+        self._current = 0
 
     def _calcOrbits(self):
         """Prepares data structure for breaking data into orbits. Not intended
@@ -146,7 +166,7 @@ class Orbits(object):
             # store a copy of data
             self._fullDayData = self.sat.data.copy()
             # set current orbit counter to zero (default)
-            self.current = 0
+            self._current = 0
 
     def _equaBreaks(self, orbit_index_period=24.):
         """Determine where breaks in an equatorial satellite orbit occur.
@@ -387,21 +407,21 @@ class Orbits(object):
                 if orbit == -1:
                     # load orbit data into data
                     self.sat.data = self._fullDayData[self._orbit_breaks[self.num + orbit]:]
-                    self.current = self.num + orbit + 1
+                    self._current = self.num + orbit + 1
                 elif ((orbit < 0) & (orbit >= -self.num)):
                     # load orbit data into data
                     self.sat.data = self._fullDayData[
                                     self._orbit_breaks[self.num + orbit]:self._orbit_breaks[self.num + orbit + 1]]
-                    self.current = self.num + orbit + 1
+                    self._current = self.num + orbit + 1
                 elif (orbit < self.num) & (orbit != 0):
                     # load orbit data into data
                     self.sat.data = self._fullDayData[self._orbit_breaks[orbit - 1]:self._orbit_breaks[orbit]]
-                    self.current = orbit
+                    self._current = orbit
                 elif orbit == self.num:
                     self.sat.data = self._fullDayData[self._orbit_breaks[orbit - 1]:]
                     # recent addition, wondering why it wasn't there before,
                     # could just be a bug that is now fixed.
-                    self.current = orbit
+                    self._current = orbit
                 elif orbit == 0:
                     raise ValueError('Orbits internally indexed by 1, 0 not ' +
                                      'allowed')
@@ -467,7 +487,7 @@ class Orbits(object):
                         # print 'going for basic orbit'
                         self._getBasicOrbit(orbit=1)
                         # includes hack to appear to be zero indexed
-                        print('Loaded Orbit:%i' % (self.current - 1))
+                        print('Loaded Orbit:%i' % (self._current - 1))
                         # check if the first orbit is also the last orbit
 
                 elif orbit == self.num:
@@ -484,7 +504,7 @@ class Orbits(object):
                     # load orbit data into data
                     self._getBasicOrbit(orbit)
                     # includes hack to appear to be zero indexed
-                    print('Loaded Orbit:%i' % (self.current - 1))
+                    print('Loaded Orbit:%i' % (self._current - 1))
 
                 else:
                     # gone too far
@@ -510,7 +530,7 @@ class Orbits(object):
             self._calcOrbits()
 
             # if current orbit near the last, must be careful
-            if self.current == (self.num - 1):
+            if self._current == (self.num - 1):
                 # first, load last orbit data
                 self._getBasicOrbit(orbit=-1)
                 # End of orbit may occur on the next day
@@ -548,9 +568,9 @@ class Orbits(object):
                         pass
                     del temp_orbit_data
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self.current - 1))
+                print('Loaded Orbit:%i' % (self._current - 1))
 
-            elif self.current == (self.num):
+            elif self._current == (self.num):
                 # at the last orbit, need to be careful about getting the next
                 # orbit save this current orbit and load the next day
                 temp_orbit_data = self.sat.data.copy()
@@ -594,7 +614,7 @@ class Orbits(object):
                                 # the second to last orbit and then calling
                                 # next() will get the last orbit, accounting
                                 # for tomorrow's data as well.
-                                self.current = self.num - 1
+                                self._current = self.num - 1
                                 self.next()
                 else:
                     # no data for the next day
@@ -607,20 +627,20 @@ class Orbits(object):
 
                 del temp_orbit_data
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self.current - 1))
+                print('Loaded Orbit:%i' % (self._current - 1))
 
-            elif self.current == 0:
+            elif self._current == 0:
                 # no current orbit set, grab the first one
                 # using load command to specify the first orbit, which
                 # automatically loads prev day if needed to form complete orbit
                 self.load(orbit=1)
 
-            elif self.current < (self.num - 1):
+            elif self._current < (self.num - 1):
                 # since we aren't close to the last orbit, just pull the next
                 # orbit
-                self._getBasicOrbit(orbit=self.current + 1)
+                self._getBasicOrbit(orbit=self._current + 1)
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self.current - 1))
+                print('Loaded Orbit:%i' % (self._current - 1))
 
             else:
                 raise Exception('You ended up where nobody should ever be. ' +
@@ -651,15 +671,15 @@ class Orbits(object):
             self._calcOrbits()
             # if not close to the first orbit,just pull the previous orbit
 
-            if (self.current > 2) & (self.current <= self.num):
+            if (self._current > 2) & (self._current <= self.num):
                 # load orbit and put it into self.sat.data
-                self._getBasicOrbit(orbit=self.current - 1)
-                print('Loaded Orbit:%i' % (self.current - 1))
+                self._getBasicOrbit(orbit=self._current - 1)
+                print('Loaded Orbit:%i' % (self._current - 1))
 
             # if current orbit near the first, must be careful
-            elif self.current == 2:
+            elif self._current == 2:
                 # first, load prev orbit data
-                self._getBasicOrbit(orbit=self.current - 1)
+                self._getBasicOrbit(orbit=self._current - 1)
 
                 load_prev = True
                 if self.sat._iter_type == 'date':
@@ -695,13 +715,13 @@ class Orbits(object):
     
                     del temp_orbit_data
 
-                print('Loaded Orbit:%i' % (self.current - 1))
+                print('Loaded Orbit:%i' % (self._current - 1))
 
-            elif self.current == 0:
+            elif self._current == 0:
                 self.load(orbit=-1)
                 return
 
-            elif self.current < 2:
+            elif self._current < 2:
                 # first, load prev orbit data
                 self._getBasicOrbit(orbit=1)
                 # need to save this current orbit and load the prev day
@@ -733,7 +753,7 @@ class Orbits(object):
                             delta = self.sat.date - self.sat.data.index[-1] \
                                     + pds.Timedelta('1 day')
                             if delta < self.orbit_period:
-                                self.current = self.num
+                                self._current = self.num
                                 self.prev()
                 else:
                     while self.sat.empty:
@@ -741,14 +761,14 @@ class Orbits(object):
                     self._getBasicOrbit(orbit=-1)
 
                 del temp_orbit_data
-                print('Loaded Orbit:%i' % (self.current - 1))
+                print('Loaded Orbit:%i' % (self._current - 1))
 
             else:
                 raise Exception('You ended up where noone should ever be. ' +
                                 'Talk to someone about this fundamental ' +
                                 'failure.')
             # includes hack to appear to be zero indexed
-            #print('Loaded Orbit:%i' % (self.current - 1))
+            #print('Loaded Orbit:%i' % (self._current - 1))
         else:
             # no data
             while self.sat.empty:

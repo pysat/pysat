@@ -1,12 +1,14 @@
 language: python
 python:
   - "2.7"
-  #- "3.3"
-  - "3.4"
-  - "3.5"
   - "3.6"
 sudo: false
 
+cache: pip
+cache:		
+   directories:		
+      - ../pyglow
+ 
 addons:
   apt:
     packages:
@@ -28,9 +30,7 @@ before_install:
   - conda update -q --yes conda
   # Useful for debugging any issues with conda
   - conda info -a
-
-  # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4 ipython
 
 # command to install dependencies
 install:
@@ -38,13 +38,32 @@ install:
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
   - pip install coveralls
-  # pysatCDF installed via setup.py requirement
-  - pip install pysatCDF
+  - pip install pysatCDF >/dev/null
+    # install pyglow, space science models
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      travis_wait 20 pip install ipdb --user;
+      cd ..;
+    fi
+  - pwd
+  - ls
+  - if [[ -d "$pyglow_dir" && -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      cd pyglow;
+      python setup.py install;
+      cd ..;
+    fi
+  - if [[ ! -d "$pyglow_dir" || ! -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      travis_wait 30 git clone https://github.com/timduly4/pyglow.git;
+      cd pyglow;
+      travis_wait 30 ./pyglow_install.sh >/dev/null;
+      cd ..;
+    fi
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      cd pysat;
+    fi
+  # install pysat
   - "python setup.py install"
 # command to run tests
 script: 
-  #- nosetests
-  - nosetests  --with-coverage --cover-package=pysat
-  #coverage run --source=pysat setup.py test
+  - nosetests -vs --with-coverage --cover-package=pysat
 after_success:
   coveralls
