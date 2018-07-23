@@ -573,6 +573,8 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     """
     import sys
     import urllib2
+    
+    global platform, name
 
     max_stations = 470
 
@@ -678,19 +680,20 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                 # Get all of the stations for this time
                 smag_stat = pysat.Instrument(platform=platform, name=name,
                                              tag='stations')
-                try:
-                    smag_stat.load(date=current_date)
-                except:
+                # try to load data
+                smag_stat.load(date=current_date)
+                if smag_stat.empty:
+                    # no data
                     etime = current_date + pds.DateOffset(days=1)
                     smag_stat.download(start=current_date, stop=etime,
                                        user=user, password=password,
                                        file_fmt=file_fmt)
-                    try:
-                        smag_stat.load(date=current_date)
-                    except:
+                    smag_stat.load(date=current_date)
+                    if smag_stat.empty:
+                        # no data
                         estr = "unable to format station query for "
                         estr += "[{:s}]".format(current_date.year)
-                        ValueError(estr)
+                        raise ValueError(estr)
 
                 # Format a string of the station names
                 if smag_stat.data.IAGA.shape[0] > max_stations:
