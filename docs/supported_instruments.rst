@@ -98,6 +98,12 @@ SuperDARN
 .. automodule:: pysat.instruments.superdarn_grdex
    :members: __doc__
 
+SuperMAG
+--------
+
+.. automodule:: pysat.instruments.supermag_magnetometer
+   :members: __doc__
+
 TIMED/SEE
 ---------
 
