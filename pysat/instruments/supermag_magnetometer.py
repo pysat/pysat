@@ -676,8 +676,8 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                 try:
                     smag_stat.load(date=current_date)
                 except:
-                    etime = current_time + pds.DateOffset(days=1)
-                    smag_stat.download(start=current_time, stop=etime,
+                    etime = current_date + pds.DateOffset(days=1)
+                    smag_stat.download(start=current_date, stop=etime,
                                        user=user, password=password,
                                        file_fmt=file_fmt)
                     try:
