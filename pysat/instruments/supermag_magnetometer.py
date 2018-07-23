@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Supports SuperMAG ground magnetometer measurements and SML/SMU indices.
-Downloading is not currently supported; please use the SuperMAG interface:
-    http://supermag.jhuapl.edu/mag/
-and follow their rules of the road:
+Downloading is supported; please follow their rules of the road:
     http://supermag.jhuapl.edu/info/?page=rulesoftheroad
 
 Parameters
