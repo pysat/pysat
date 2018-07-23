@@ -53,6 +53,12 @@ tags = {'indices':'SMU and SML indices',
 sat_ids = {'':tags.keys()}
 test_dates = {'':{kk:pysat.datetime(2009,1,1) for kk in tags.keys()}}
 
+def init(self):
+    print("When using this data please acknowledge the SuperMAG collaboration "
+        + "according to the request outlined in the metadata attribute "
+        + "'acknowledgements'")
+    return 
+
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen SuperMAG data
 
@@ -133,9 +139,6 @@ def load(fnames, tag=None, sat_id=None):
         Object containing metadata such as column names and units
         
     """
-    print("When using this data please acknowledge the SuperMAG collaboration "
-          + "according to the request outlined in the metadata attribute "
-          + "'acknowledgements'")
     
     # Ensure that there are files to load
     if len(fnames) <= 0 :
