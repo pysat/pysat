@@ -78,6 +78,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     --------
     pysat.Files.from_os : (pysat._files.Files)
         A class containing the verified available files
+        
     """
     if format_str is None and data_path is not None:
         file_base = 'supermag_magnetometer'
@@ -132,6 +133,7 @@ def load(fnames, tag=None, sat_id=None):
         Object containing satellite data
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
+        
     """
     print("When using this data please acknowledge the SuperMAG collaboration "
           + "according to the request outlined in the metadata attribute "
@@ -196,6 +198,7 @@ def load_csv_data(fname, tag):
     --------
     data : (pandas.DataFrame)
         Pandas DataFrame
+        
     """
     import re
 
@@ -262,6 +265,7 @@ def load_ascii_data(fname, tag):
     baseline : (list)
         List of strings denoting the presence of a standard and file-specific
         baselines for each file.  None of not present or not applicable.
+        
     """
     import re
     ndata = {"indices":2, None:4, "all":4, "stations":8}
@@ -409,6 +413,7 @@ def update_smag_metadata(col_name):
     --------
     col_dict : (dict)
        Dictionary of strings detailing the units and long-form name of the data
+       
     """
 
     smag_units = {'IAGA':'none', 'N':'nT', 'E':'nT', 'Z':'nT', 'MLT':'hours',
@@ -479,6 +484,7 @@ def format_baseline_list(baseline_list):
     ---------
     base_string : (str)
         Single string containing the relevent data
+        
     """
 
     uniq_base = dict()
@@ -564,7 +570,8 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
         'all', and None. (default='all')
 
     Returns
-    --------
+    -------
+    
     """
     import sys
     import urllib2
@@ -758,6 +765,7 @@ def append_data(file_strings, file_fmt, tag):
     -------
     out_string : string
         String with all data, ready for output to a file
+        
     """
     # Determine the right appending routine for the file type
     if file_fmt.lower() == "csv":
@@ -780,6 +788,7 @@ def append_ascii_data(file_strings, tag):
     -------
     out_string : string
         String with all data, ready for output to a file
+        
     """
     import re
     
@@ -885,6 +894,7 @@ def append_csv_data(file_strings):
     -------
     out_string : string
         String with all data, ready for output to a file
+        
     """
     # Start with data from the first list element
     out_lines = list()
