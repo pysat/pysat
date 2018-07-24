@@ -723,7 +723,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                 raise RuntimeError("unable to connect to [{:s}]".format(url))
 
             # Test the result
-            if "requested URL was rejected" in out[-1]:
+            if "requested URL was rejected".encode('ascii') in out[-1]:
                 estr = "Requested url was rejected:\n{:s}".format(url)
                 raise RuntimeError(estr)
 
