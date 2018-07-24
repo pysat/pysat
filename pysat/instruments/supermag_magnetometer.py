@@ -575,7 +575,8 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     
     """
     import sys
-    import urllib2
+    # import urllib2
+    import requests
     
     global platform, name
 
@@ -714,18 +715,12 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
             url = remotefmt.format(**remoteaccess)
 
             # Set up a request
-            req = urllib2.Request(url)
-
-            # Test the response
             try:
-                # Establish a connection
-                result = urllib2.urlopen(req)
+                # print (url)
+                result = requests.post(url)
+                out.append(result.text.encode('ascii', 'replace'))
             except:
                 raise RuntimeError("unable to connect to [{:s}]".format(url))
-
-            out.append(result.read())
-            # Close the open connection
-            result.close()
 
             # Test the result
             if "requested URL was rejected" in out[-1]:
