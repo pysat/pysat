@@ -740,7 +740,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
             out_data = out[0]
 
         # Save the file data
-        with open(fname, "w") as local_file:
+        with open(fname, "wb") as local_file:
             local_file.write(out_data)
             local_file.close()
             del out_data
