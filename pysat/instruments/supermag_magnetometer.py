@@ -10,7 +10,7 @@ platform : string
 name : string
     'magnetometer'
 tag : string
-    Select  {'indices', None, 'all', 'stations'}
+    Select  {'indices', 'None', 'all', 'stations'}
 
 Note
 ----
@@ -47,7 +47,7 @@ import pysat
 platform = 'supermag'
 name = 'magnetometer'
 tags = {'indices':'SMU and SML indices',
-        None:'magnetometer measurements',
+        'None':'magnetometer measurements',
         'all':'magnetometer measurements and indices',
         'stations':'magnetometer stations'}
 sat_ids = {'':tags.keys()}
