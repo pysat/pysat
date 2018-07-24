@@ -269,8 +269,8 @@ def load_ascii_data(fname, tag):
         
     """
     import re
-    ndata = {"indices":2, None:4, "all":4, "stations":8}
-    dkeys = {'stations':list(), None:['IAGA', 'N', 'E', 'Z']}
+    ndata = {"indices":2, "":4, "all":4, "stations":8}
+    dkeys = {'stations':list(), '':['IAGA', 'N', 'E', 'Z']}
     data = pds.DataFrame(None)
     baseline = None
 
@@ -301,14 +301,14 @@ def load_ascii_data(fname, tag):
                 if pflag:
                     pflag = False # Unset the flag
                     if fline.find("-mlt") > 0:
-                        ndata[None] += 2
-                        dkeys[None].extend(['MLT', 'MLAT'])
+                        ndata[''] += 2
+                        dkeys[''].extend(['MLT', 'MLAT'])
                     if fline.find("-sza") > 0:
-                        ndata[None] += 1
-                        dkeys[None].append('SZA')
+                        ndata[''] += 1
+                        dkeys[''].append('SZA')
                     if fline.find("-decl") > 0:
-                        ndata[None] += 1
-                        dkeys[None].append('IGRF_DECL')
+                        ndata[''] += 1
+                        dkeys[''].append('IGRF_DECL')
                     if tag == "indices" and fline.find("-envelope") < 0:
                         # Indices not included in this file
                         break
@@ -345,7 +345,7 @@ def load_ascii_data(fname, tag):
                     else:
                         date_list.extend([dtime for i in range(snum)])
                 elif len(lsplit) == ndata['indices']:
-                    if tag is not None:
+                    if tag is not '':
                         if lsplit[0] not in ddict.keys():
                             ddict[lsplit[0]] = list()
 
@@ -378,13 +378,13 @@ def load_ascii_data(fname, tag):
                                 else:
                                     ddict[dkeys[tag][-1]][-1] += \
                                                             " {:s}".format(ll)
-                    elif len(lsplit) == ndata[None]:
+                    elif len(lsplit) == ndata['']:
                         snum -= 1 # Mark the ingestion of a station
                         if tag != "indices":
-                            if len(ddict.keys()) < ndata[None]:
-                               for kk in dkeys[None]:
+                            if len(ddict.keys()) < ndata['']:
+                               for kk in dkeys['']:
                                    ddict[kk] = list()
-                            for i,kk in enumerate(dkeys[None]):
+                            for i,kk in enumerate(dkeys['']):
                                 if i == 0:
                                     ddict[kk].append(lsplit[i])
                                 else:
