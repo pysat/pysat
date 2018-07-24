@@ -798,7 +798,8 @@ def append_ascii_data(file_strings, tag):
     idates = list() # Indices for the date lines
     date_list = list() # List of dates
     num_stations = list() # Number of stations for each date line
-    ind_num = 2 if tag in ['all', 'indices'] else 0
+    ind_num = 2 if tag in ['all', 'indices', ''] else 0
+    # ind_num = 2 if tag == '' else ind_num
 
     # Find the index information for the data
     for i,line in enumerate(out_lines):
@@ -812,7 +813,7 @@ def append_ascii_data(file_strings, tag):
     i = ihead + 1
     while i < len(out_lines) - 1:
         idates.append(i)
-        lsplit = re.split('\t+', out_lines[i])
+        lsplit = re.split('\t', out_lines[i])
         dtime = pds.datetime.strptime(" ".join(lsplit[0:-1]),
                                       "%Y %m %d %H %M %S")
         date_list.append(dtime)
