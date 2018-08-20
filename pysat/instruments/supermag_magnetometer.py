@@ -145,7 +145,7 @@ def load(fnames, tag=None, sat_id=None):
         return pysat.DataFrame(None), pysat.Meta(None)
 
     # Ensure that the files are in a list
-    if isinstance(fnames, basestring):
+    if isinstance(fnames, str):
         fnames = [fnames]
 
     # Initialise the output data
@@ -218,10 +218,10 @@ def load_csv_data(fname, tag):
             for fline in fopen.readlines():
                 sline = [ll for ll in re.split(r'[,\n]+', fline) if len(ll) > 0]
 
-                if len(ddict.keys()) == 0:
+                if len(ddict.items()) == 0:
                     for kk in sline:
                         ddict[kk] = list()
-                    dkeys = ddict.keys()
+                    dkeys = list(ddict.keys())
                 else:
                     date_list.append(dtime)
                     for i,ll in enumerate(sline):
@@ -390,7 +390,7 @@ def load_ascii_data(fname, tag):
                                 else:
                                     ddict[kk].append(float(lsplit[i]))
 
-                if tag != "stations" and snum == 0 and len(ddict.keys()) >= 2:
+                if tag != "stations" and snum == 0 and len(ddict.items()) >= 2:
                     # The previous value was the last value, prepare for
                     # next block
                     dflag = True
@@ -502,8 +502,8 @@ def format_baseline_list(baseline_list):
         uniq_base[bsplit[0]] += "{:s}, ".format(bdate)
         uniq_delta[bsplit[1]] += "{:s}, ".format(bdate)
 
-    if len(uniq_base.keys()) == 1:
-        base_string = "Baseline {:s}".format(uniq_base.keys()[0])
+    if len(uniq_base.items()) == 1:
+        base_string = "Baseline {:s}".format(list(uniq_base.keys())[0])
     else:
         base_string = "Baseline "
 
@@ -516,8 +516,8 @@ def format_baseline_list(baseline_list):
         else:
             base_string += "unknown"
 
-    if len(uniq_delta.keys()) == 1:
-        base_string += "\nDelta    {:s}".format(uniq_delta.keys()[0])
+    if len(uniq_delta.items()) == 1:
+        base_string += "\nDelta    {:s}".format(list(uniq_delta.keys())[0])
     else:
         base_string += "\nDelta    "
 
@@ -718,12 +718,13 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
             try:
                 # print (url)
                 result = requests.post(url)
-                out.append(result.text.encode('ascii', 'replace'))
+                result.encoding = 'ISO-8859-1'
+                out.append(str(result.text.encode('ascii', 'replace')))
             except:
                 raise RuntimeError("unable to connect to [{:s}]".format(url))
 
             # Test the result
-            if "requested URL was rejected".encode('ascii') in out[-1]:
+            if "requested URL was rejected" in out[-1]:
                 estr = "Requested url was rejected:\n{:s}".format(url)
                 raise RuntimeError(estr)
 
@@ -740,7 +741,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
             out_data = out[0]
 
         # Save the file data
-        with open(fname, "wb") as local_file:
+        with open(fname, "w") as local_file:
             local_file.write(out_data)
             local_file.close()
             del out_data
