@@ -137,7 +137,7 @@ def load(fnames, tag='', sat_id=None):
         Object containing metadata such as column names and units
         
     """
-    
+
     # Ensure that there are files to load
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), pysat.Meta(None)
@@ -218,8 +218,9 @@ def load_csv_data(fname, tag):
 
                 if len(ddict.items()) == 0:
                     for kk in sline:
+                        kk = re.sub("-", "_", kk)
                         ddict[kk] = list()
-                    dkeys = list(ddict.keys())
+                        dkeys.append(kk)
                 else:
                     date_list.append(dtime)
                     for i,ll in enumerate(sline):
@@ -359,6 +360,7 @@ def load_ascii_data(fname, tag):
                             # Station files include column names and data files
                             # do not.  Read in the column names here
                             for ll in lsplit:
+                                ll = re.sub("-", "_", ll)
                                 dkeys[tag].append(ll)
                                 ddict[ll] = list()
                         else:
@@ -418,8 +420,8 @@ def update_smag_metadata(col_name):
                   'MLAT':'degrees', 'SZA':'degrees', 'IGRF_DECL':'degrees',
                   'SMU':'none', 'SML':'none', 'datetime':'YYYY-MM-DD HH:MM:SS',
                   'GEOLON':'degrees', 'GEOLAT':'degrees', 'AACGMLON':'degrees',
-                  'AACGMLAT':'degrees', 'STATION-NAME':'none',
-                  'OPERATOR-NUM':'none', 'OPERATORS':'none'}
+                  'AACGMLAT':'degrees', 'STATION_NAME':'none',
+                  'OPERATOR_NUM':'none', 'OPERATORS':'none'}
     smag_name = {'IAGA':'Station Code', 'N':'B along local magnetic North',
                  'E':'B along local magnetic East', 'Z':'B vertically downward',
                  'MLT':'Magnetic Local Time', 'MLAT':'Magnetic Latitude',
@@ -435,8 +437,8 @@ def update_smag_metadata(col_name):
                  'GEOLAT':'geographic latitude',
                  'AACGMLON':'Altitude-Adjusted Corrected Geomagnetic longitude',
                  'AACGMLAT':'Altitude-Adjusted Corrected Geomagnetic latitude',
-                 'STATION-NAME':'Long form station name',
-                 'OPERATOR-NUM':'Number of station operators',
+                 'STATION_NAME':'Long form station name',
+                 'OPERATOR_NUM':'Number of station operators',
                  'OPERATORS':'Station operator name(s)',}
     
     ackn = "When using this data please include the following reference:\n"
@@ -698,12 +700,16 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
 
                 # Format a string of the station names
                 if smag_stat.data.IAGA.shape[0] > max_stations:
+                    station_year = current_date.year
                     nreq = int(np.ceil(smag_stat.data.IAGA.shape[0] /
                                        float(max_stations)))
 
         out = list()
         for ireq in range(nreq):
             if tag != "stations":
+                if station_year is None:
+                    raise RuntimeError("unable to load station data")
+
                 stat_str = ",".join(smag_stat.data.IAGA[ireq*max_stations:
                                                         (ireq+1)*max_stations])
                 remoteaccess['stations'] = "stations={:s}".format(stat_str)
