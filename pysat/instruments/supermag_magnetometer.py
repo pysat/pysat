@@ -59,15 +59,14 @@ def init(self):
         + "'acknowledgements'")
     return 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen SuperMAG data
 
     Parameters
     -----------
     tag : (string or NoneType)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
-        'stations', and None (for just magnetometer measurements).
-        (default=None)
+        'stations', and '' (for just magnetometer measurements). (default='')
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
@@ -117,7 +116,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
  
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag='', sat_id=None):
     """ Load the SuperMAG files
 
     Parameters
@@ -126,8 +125,7 @@ def load(fnames, tag=None, sat_id=None):
         List of filenames
     tag : (str or NoneType)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
-        'stations', and None (for just magnetometer measurements).
-        (default=None)
+        'stations', and '' (for just magnetometer measurements). (default='')
     sat_id : (str or NoneType)
         Satellite ID for constellations, not used. (default=None)
 
@@ -193,7 +191,7 @@ def load_csv_data(fname, tag):
         CSV SuperMAG file name
     tag : (str)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
-        'stations', and None (for just magnetometer measurements).
+        'stations', and '' (for just magnetometer measurements).
 
     Returns
     --------
@@ -256,8 +254,7 @@ def load_ascii_data(fname, tag):
         ASCII SuperMAG filename
     tag : (str)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
-        'stations', and None (for just magnetometer measurements).
-        (default=None)
+        'stations', and '' (for just magnetometer measurements).
 
     Returns
     --------
@@ -548,7 +545,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
         Array of datetime objects
     tag : string
         String denoting the type of file to load, accepted values are 'indices',
-        'all', 'stations', and None (for only magnetometer data)
+        'all', 'stations', and '' (for only magnetometer data)
     sat_id : string
         Not used (default='')
     data_path : string or NoneType
@@ -729,7 +726,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                 raise RuntimeError(estr)
 
         # Build the output file name
-        if tag is None:
+        if tag is '':
             fname = path.join(data_path, name_fmts[i])
         else:
             fname = path.join(data_path, name_fmts[i])
@@ -759,7 +756,7 @@ def append_data(file_strings, file_fmt, tag):
         String denoting file type (ascii or csv)
     tag : string
         String denoting the type of file to load, accepted values are 'indices',
-        'all', 'stations', and None (for only magnetometer data)
+        'all', 'stations', and '' (for only magnetometer data)
 
     Returns
     -------
@@ -814,7 +811,7 @@ def append_ascii_data(file_strings, tag):
     i = ihead + 1
     while i < len(out_lines) - 1:
         idates.append(i)
-        lsplit = re.split('\t', out_lines[i])
+        lsplit = re.split('\t+', out_lines[i])
         dtime = pds.datetime.strptime(" ".join(lsplit[0:-1]),
                                       "%Y %m %d %H %M %S")
         date_list.append(dtime)
