@@ -107,7 +107,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
 
             if tag == "stations":
                 orig_files = files.copy()
-                print (orig_files)
+                # print (orig_files)
                 new_files = []
                 for orig in orig_files.iteritems():
                     files.ix[orig[0] + doff - pds.DateOffset(days=1)] = orig[1]
