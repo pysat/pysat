@@ -100,12 +100,24 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
             doff = pds.DateOffset(days=1)
         files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
 
-        # files may consist of an arbitraty amount of time, specify the starting
-        # date for now.  Currently assumes 1 month of data.
+        # station files are once per year but we need to
+        # create the illusion there is a file per year        
         if not files.empty:
-            files.ix[files.index[-1] + doff -
-                     pds.DateOffset(days=1)] = files.iloc[-1]
-            files = files.asfreq('D', 'pad')
+            files = files.sort_index()
+
+            if tag == "stations":
+                orig_files = files.copy()
+                print (orig_files)
+                new_files = []
+                for orig in orig_files.iteritems():
+                    files.ix[orig[0] + doff - pds.DateOffset(days=1)] = orig[1]
+                    files = files.sort_index()
+                    new_files.append(files.ix[orig[0]: orig[0] + doff -
+                                                pds.DateOffset(days=1)].asfreq('D', method='pad'))
+                files = pds.concat(new_files)
+
+                files = files.dropna()
+                files = files.sort_index()
             # add the date to the filename
             files = files + '_' + files.index.strftime('%Y-%m-%d')
         return files
