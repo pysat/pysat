@@ -187,10 +187,12 @@ def scale_units(out_unit, in_unit):
     accepted_units = {'deg':['deg', 'degree', 'degrees'],
                       'rad':['rad', 'radian', 'radians'],
                       'h':['h', 'hr', 'hrs', 'hours'],
-                      'm':['m', 'km', 'cm']}
+                      'm':['m', 'km', 'cm'],
+                      'm/s':['m/s', 'cm/s', 'km/s']}
 
     scales = {'deg':180.0, 'rad':np.pi, 'h':12.0,
-              'm':1.0, 'km':1000.0, 'cm':0.01}
+              'm':1.0, 'km':0.001, 'cm':100.0,
+              'm/s':1.0, 'cm/s':100.0, 'km/s':0.001}
 
     # Test input and determine transformation type
     out_key = None
@@ -207,8 +209,8 @@ def scale_units(out_unit, in_unit):
     if in_key is None:
         raise ValueError('Unknown input unit {:}'.format(in_unit))
 
-    if out_key == 'm':
-        if in_key != 'm':
+    if out_key == 'm' or out_key == 'm/s':
+        if in_key != out_key:
             raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
                                                                  in_unit))
         unit_scale = scales[out_unit.lower()] / scales[in_unit.lower()]
