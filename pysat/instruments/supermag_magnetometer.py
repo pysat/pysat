@@ -707,7 +707,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                     if smag_stat.empty:
                         # no data
                         estr = "unable to format station query for "
-                        estr += "[{:s}]".format(current_date.year)
+                        estr += "[{:d}]".format(current_date.year)
                         raise ValueError(estr)
 
                 # Format a string of the station names
