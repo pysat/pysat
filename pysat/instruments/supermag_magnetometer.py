@@ -107,13 +107,13 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
 
             if tag == "stations":
                 orig_files = files.copy()
-                # print (orig_files)
                 new_files = []
+                # Assigns the validity of each station file to be 1 year
                 for orig in orig_files.iteritems():
                     files.ix[orig[0] + doff - pds.DateOffset(days=1)] = orig[1]
                     files = files.sort_index()
-                    new_files.append(files.ix[orig[0]: orig[0] + doff -
-                                                pds.DateOffset(days=1)].asfreq('D', method='pad'))
+                    new_files.append(files.ix[orig[0]: orig[0] + doff - \
+                            pds.DateOffset(days=1)].asfreq('D', method='pad'))
                 files = pds.concat(new_files)
 
                 files = files.dropna()
