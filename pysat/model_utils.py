@@ -38,7 +38,7 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
 
     known_methods = ['mean_err', 'mean_abs_err', 'median_err', 'median_abs_err',
                      'moments_err', 'moments_abs_err', 'quartiles_err',
-                     'quantiles_abs_err', 'deciles_err', 'deciles_abs_err',
+                     'quartiles_abs_err', 'deciles_err', 'deciles_abs_err',
                      'percent_bias', 'mean_sq_err']
 
     if methods == 'all':
