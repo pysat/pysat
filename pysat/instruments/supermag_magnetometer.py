@@ -586,7 +586,6 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     
     """
     import sys
-    # import urllib2
     import requests
     
     global platform, name
@@ -734,7 +733,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                 # print (url)
                 result = requests.post(url)
                 result.encoding = 'ISO-8859-1'
-                out.append(str(result.text.encode('ascii', 'replace')))
+                out.append(result.text)
             except:
                 raise RuntimeError("unable to connect to [{:s}]".format(url))
 
