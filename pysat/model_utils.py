@@ -35,6 +35,7 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         Dictionary containing the units for the data
     """
     from scipy import stats
+    from pysat import utils
 
     known_methods = ['mean_err', 'mean_abs_err', 'median_err', 'median_abs_err',
                      'moments_err', 'moments_abs_err', 'quartiles_err',
@@ -65,8 +66,8 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     # Calculate differences, if needed
     diff_data = dict()
     for i,iname in enumerate(inst_name):
-        iscale = scale_units(pairs.data_vars[iname].units,
-                             pairs.data_vars[mod_name[i]].units)
+        iscale = utils.scale_units(pairs.data_vars[iname].units,
+                                   pairs.data_vars[mod_name[i]].units)
         diff_data[iname] = pairs.data_vars[mod_name[i]] * iscale - \
                 pairs.data_vars[iname]
 
@@ -204,6 +205,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
 
     """
     from os import path
+    from pysat import utils
 
     matched_inst = None
 
@@ -242,6 +244,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         raise ValueError('Need routine to clean the instrument data')
 
     # Download the instrument data, if needed
+    # Could use some improvement, for not re-downloading times that you already have
     if (stop-start).days != len(inst.files[start:stop]):
         inst.download(start=start, stop=stop)
 
@@ -260,7 +263,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         if mdata is not None:
             # Load the instrument data, if needed
             if inst.empty or inst.data.index[-1] < istart:
-                inst.custom.add(update_longitude, 'modify', low=lon_low,
+                inst.custom.add(utils.update_longitude, 'modify', low=lon_low,
                                 lon_name=inst_lon_name, high=lon_high)
                 inst.load(date=istart)
 
@@ -309,7 +312,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
             if im in matched_inst.data_vars.keys():
                 matched_inst.data_vars[im].attrs['units'] = \
                     inst.meta.data.units[im]
-                
+
     return matched_inst
 
 
@@ -391,7 +394,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     for i,ii in enumerate(inst_name):
         if not ii in list(inst.data.keys()):
             raise ValueError('Unknown instrument location index {:}'.format(ii))
-        inst_scale[i] = scale_units(mod_units[i], inst.meta.data.units[ii])
+        inst_scale[i] = utils.scale_units(mod_units[i], inst.meta.data.units[ii])
 
     # Determine which data to interpolate and initialize the interpolated output
     if sel_name is None:
@@ -458,107 +461,5 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
         inst.meta.data.units[mdat] = model.data_vars[attr_name].units
 
     return interp_data.keys()
-
-def scale_units(out_unit, in_unit):
-    """ Determine the scaling factor between two units
-
-    Parameters
-    -------------
-    out_unit : str
-        Desired unit after scaling
-    in_unit : str
-        Unit to be scaled
-
-    Returns
-    -----------
-    unit_scale : float
-        Scaling factor that will convert from in_units to out_units
-
-    Notes
-    -------
-    Accepted units include degrees ('deg', 'degree', 'degrees'),
-    radians ('rad', 'radian', 'radians'),
-    hours ('h', 'hr', 'hrs', 'hour', 'hours'), and lengths ('m', 'km', 'cm').
-    Can convert between degrees, radians, and hours or different lengths.
-
-    Example
-    -----------
-    ::
-    import numpy as np
-    two_pi = 2.0 * np.pi
-    scale = scale_units("deg", "RAD")
-    two_pi *= scale
-    two_pi # will show 360.0
-
-
-    """
-
-    if out_unit == in_unit:
-        return 1.0
-
-    accepted_units = {'deg':['deg', 'degree', 'degrees'],
-                      'rad':['rad', 'radian', 'radians'],
-                      'h':['h', 'hr', 'hrs', 'hours'],
-                      'm':['m', 'km', 'cm'],
-                      'm/s':['m/s', 'cm/s', 'km/s']}
-
-    scales = {'deg':180.0, 'rad':np.pi, 'h':12.0,
-              'm':1.0, 'km':0.001, 'cm':100.0,
-              'm/s':1.0, 'cm/s':100.0, 'km/s':0.001}
-
-    # Test input and determine transformation type
-    out_key = None
-    in_key = None
-    for kk in accepted_units.keys():
-        if out_unit.lower() in accepted_units[kk]:
-            out_key = kk
-        if in_unit.lower() in accepted_units[kk]:
-            in_key = kk
     
-    if out_key is None:
-        raise ValueError('Unknown output unit {:}'.format(out_unit))
-    
-    if in_key is None:
-        raise ValueError('Unknown input unit {:}'.format(in_unit))
 
-    if out_key == 'm' or out_key == 'm/s':
-        if in_key != out_key:
-            raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
-                                                                 in_unit))
-        unit_scale = scales[out_unit.lower()] / scales[in_unit.lower()]
-    else:
-        if in_key == 'm':
-            raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
-                                                                 in_unit))
-        unit_scale = scales[out_key] / scales[in_key]
-
-    return unit_scale
-
-    
-def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
-    """ Update longitude to the desired range
-
-    Parameters
-    ------------
-    inst : pysat.Instrument instance
-        instrument object for which modelled data will be extracted
-    lon_name : string
-        name of the longtiude data
-    high : float
-        Highest allowed longitude value (default=180.0)
-    low : float
-        Lowest allowed longitude value (default=-180.0)
-
-    Returns
-    ---------
-    updates instrument data in column 'lon_name'
-
-    """
-    from pysat.utils import adjust_cyclic_data
-
-    if not lon_name in inst.data.keys():
-        raise ValueError('uknown longitude variable name')
-    
-    inst[lon_name] = adjust_cyclic_data(inst[lon_name], high=high, low=low)
-
-    return
