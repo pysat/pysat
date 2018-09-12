@@ -20,6 +20,9 @@ import importlib
 
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps', 
                 'icon_euv', 'icon_ivm']
+# dict, keyed by pysat instrument, with a list of usernames and passwords
+user_download_dict = {'supermag_magnetometer':['rstoneback', None]}
+
 if sys.version_info[0] >= 3:
     # TODO Remove when pyglow works in python 3
     exclude_list.append('pysat_sgp4')
@@ -203,7 +206,13 @@ class TestInstrumentQualifier():
         start = inst.test_dates[inst.sat_id][inst.tag]
         # print (start)
         try:
-            inst.download(start, start)
+            # check for username
+            inst_name = '_'.join((inst.platform, inst.name))
+            if inst_name in user_download_dict:
+                inst.download(start, start, user=user_download_dict[inst_name][0],
+                                           password=user_download_dict[inst_name][1])
+            else:
+                inst.download(start, start)
         except Exception as e:
             # couldn't run download, try to find test data instead
             print("Couldn't download data, trying to find test data.")
