@@ -733,7 +733,11 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                 # print (url)
                 result = requests.post(url)
                 result.encoding = 'ISO-8859-1'
-                out.append(result.text)
+                # handle strings differently for python 2/3
+                if sys.version_info.major == 2:
+                    out.append(str(result.text.encode('ascii', 'replace')))
+                else:
+                    out.append(result.text)
             except:
                 raise RuntimeError("unable to connect to [{:s}]".format(url))
 
