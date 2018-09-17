@@ -141,12 +141,13 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
 
 
 def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
-                             model_files=None, model_load_rout=None,
-                             inst_lon_name=None, mod_lon_name=None,
-                             inst_name=[], mod_name=[], mod_datetime_name=None,
-                             mod_time_name=None, mod_units=[], sel_name=None,
-                             method='linear', model_label='model',
-                             inst_clean_rout=None, comp_clean='clean'):
+                             user=None, password=None, model_files=None,
+                             model_load_rout=None, inst_lon_name=None,
+                             mod_lon_name=None, inst_name=[], mod_name=[],
+                             mod_datetime_name=None, mod_time_name=None,
+                             mod_units=[], sel_name=None, method='linear',
+                             model_label='model', inst_clean_rout=None,
+                             comp_clean='clean'):
     """Extracts instrument-aligned data from a modelled data set
 
     Parameters
@@ -159,6 +160,10 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         Time incriment for model files
     inst : pysat.Instrument instance
         instrument object for which modelled data will be extracted
+    user : string
+        User name (needed for some data downloads)
+    password : string
+        Password (needed for some data downloads)
     model_files : string
         string format that will construct the desired model filename from a
         datetime object
@@ -246,7 +251,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
     # Download the instrument data, if needed
     # Could use some improvement, for not re-downloading times that you already have
     if (stop-start).days != len(inst.files[start:stop]):
-        inst.download(start=start, stop=stop)
+        inst.download(start=start, stop=stop, user=user, password=password)
 
     # Cycle through the times, loading the model and instrument data as needed
     istart = start
