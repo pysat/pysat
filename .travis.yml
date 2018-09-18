@@ -54,7 +54,7 @@ install:
   - if [[ ! -d "$pyglow_dir" || ! -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       travis_wait 40 git clone https://github.com/timduly4/pyglow.git;
       cd pyglow;
-      travis_wait 40 ./pyglow_install.sh;
+      travis_wait 40 ./pyglow_install.sh >/dev/null;
       cd ..;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
