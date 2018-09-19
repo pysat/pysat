@@ -92,6 +92,12 @@ ROCSAT-1 IVM
 .. automodule:: pysat.instruments.rocsat1_ivm
    :members: __doc__
 
+SPORT IVM
+---------
+
+.. automodule:: pysat.instruments.sport_ivm
+   :members: __doc__
+
 SuperDARN
 ---------
 
