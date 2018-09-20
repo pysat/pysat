@@ -563,9 +563,10 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
         # After the model is run, its members like Ti, ni[O+], etc. can be accessed
         iri['ion_temp'] = pt.Ti
         iri['e_temp'] = pt.Te
-        iri['ion_dens'] = pt.ni['O+'] + pt.ni['H+'] #pt.ne - pt.ni['NO+'] - pt.ni['O2+'] - pt.ni['HE+']
+        iri['ion_dens'] = pt.ni['O+'] + pt.ni['H+'] + pt.ni['HE+']#pt.ne - pt.ni['NO+'] - pt.ni['O2+'] - pt.ni['HE+']
         iri['frac_dens_o'] = pt.ni['O+']/iri['ion_dens']
         iri['frac_dens_h'] = pt.ni['H+']/iri['ion_dens']
+        iri['frac_dens_he'] = pt.ni['HE+']/iri['ion_dens']
         iri_params.append(iri)        
     # print 'Complete.'
     iri = pds.DataFrame(iri_params)
@@ -816,7 +817,186 @@ def project_hwm_onto_sc(inst):
                                   'desc':'Wind from model as measured by instrument in its z-direction'}
 
     return
+
+
+def plot_simulated_data(ivm, filename=None):
+
+    import matplotlib
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+    from matplotlib.collections import LineCollection
+    from mpl_toolkits.basemap import Basemap
     
+    if filename is None:
+        out_fname = './summary_orbit_simulated_data.png'
+    else:
+        out_fname = filename
+        
+
+    # make monotonically increasing longitude signal
+    diff = ivm['glong'].diff()
+
+    idx, = np.where(diff < 0.)
+    for item in idx:
+        ivm[item:, 'glong'] += 360.
+
+    idx, = np.where((ivm['fit_type'] == 0)  | (ivm['fit_type'] == 1))
+    ivm.data = ivm.data.ix[idx,:]
+
+    f = plt.figure(figsize=(8.5,7))
+    
+    time1 = ivm.data.index[0].strftime('%Y-%h-%d %H:%M:%S')
+    if ivm.data.index[0].date() == ivm.data.index[-1].date():
+        time2 = ivm.data.index[-1].strftime('%H:%M:%S')
+    else:
+        time2 = ivm.data.index[-1].strftime('%Y-%h-%d %H:%M:%S')
+    # Overall Plot Title
+    plt.suptitle(''.join(('SPORT IVM ', time1,' -- ',time2)), fontsize=18)
+    
+    # create grid for plots
+    gs = gridspec.GridSpec(5, 2, width_ratios=[12,1])
+    
+    ax = f.add_subplot(gs[0,0])
+    plt.plot(np.log10(ivm['ion_dens']), 'k', label='total')
+    plt.plot(np.log10(ivm['ion_dens']*ivm['frac_dens_o']), 'r', label='O+')
+    plt.plot(np.log10(ivm['ion_dens']*ivm['frac_dens_h']), 'b', label='H+')
+    # plt.plot(np.log10(ivm['ion_dens']*ivm['frac_dens_he']), 'g', label='He+')
+    plt.legend(loc=(01.01, 0.15))
+    ax.set_title('Log Ion Density')
+    ax.set_ylabel('Log Density (N/cc)')
+    ax.set_ylim([1., 6.])
+    ax.axes.get_xaxis().set_visible(False)
+    
+    
+    ax2 = f.add_subplot(gs[1,0], sharex=ax)
+    plt.plot(ivm['ion_temp'])
+    plt.legend(loc=(1.01, 0.15))
+    ax2.set_title('Ion Temperature')
+    ax2.set_ylabel('Temp (K)')
+    ax2.set_ylim([500., 1500.])
+    ax2.axes.get_xaxis().set_visible(False)
+
+    # determine altitudes greater than 770 km
+    # idx, = np.where(ivm['alt'] > 770.)
+
+    ax3 = f.add_subplot(gs[2,0], sharex=ax)
+    plt.plot(ivm['sim_wind_sc_x'], color='b', linestyle='--')
+    plt.plot(ivm['sim_wind_sc_y'], color='r', linestyle='--')
+    plt.plot(ivm['sim_wind_sc_z'], color='g', linestyle='--')
+    ax3.set_title('Neutral Winds in S/C X, Y, and Z')
+    ax3.set_ylabel('Velocity (m/s)')
+    ax3.set_ylim([-200., 200.])
+    ax3.axes.get_xaxis().set_visible(False)
+    plt.legend(loc=(1.01, 0.15))
+    ax3.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
+    # # xlabels = [label[0:6] for label in xlabels]
+    # plt.setp(ax3.xaxis.get_majorticklabels(), rotation=20, ha='right')
+
+    ax4 = f.add_subplot(gs[3,0], sharex=ax)
+    plt.plot(ivm['B_sc_x']*1e5, color='b', linestyle='--')
+    plt.plot(ivm['B_sc_y']*1e5, color='r', linestyle='--')
+    plt.plot(ivm['B_sc_z']*1e5, color='g', linestyle='--')
+    ax4.set_title('Magnetic Field in S/C X, Y, and Z')
+    ax4.set_ylabel('Gauss')
+    ax4.set_ylim([-3.5, 3.5])
+    # ax3.axes.get_xaxis().set_visible(False)
+    plt.legend(loc=(1.01, 0.15))
+    ax4.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%H:%M'))
+    # # xlabels = [label[0:6] for label in xlabels]
+    plt.setp(ax4.xaxis.get_majorticklabels(), rotation=20, ha='right')
+        
+    # ivm info
+    ax6 = f.add_subplot(gs[4,0])
+    
+    # do world plot if time to be plotted is less than 285 minutes, less than 3 orbits
+    time_diff = ivm.data.index[-1] - ivm.data.index[0]
+    if time_diff > pds.Timedelta(minutes=285):
+    #    # do long time plot
+        ivm['glat'].plot(label='glat')#legend=True, label='mlat')
+        ivm['mlt'].plot(label='mlt')#legend=True, label='mlt')
+        plt.title('Satellite Position')
+        plt.legend(['mlat', 'mlt'], loc=(1.01, 0.15))
+    #    ivm['glong'].plot(secondary_y = True, label='glong')#legend=True, secondary_y = True, label='glong')
+    
+    else:
+    
+        # make map the same size as the other plots
+        s1pos = plt.get(ax,'position').bounds
+        s6pos = plt.get(ax6, 'position').bounds
+        ax6.set_position( [s1pos[0], s6pos[1]+.008, s1pos[2], s1pos[3]])
+        
+        #fix longitude range for plot. Pad longitude so that first sample aligned with
+        #ivm measurement sample
+        lon0 = ivm[0,'glong']
+        lon1 = ivm[-1,'glong']
+        # print (lon0, lon1)
+
+        # enforce minimal longitude window, keep graphics from being too disturbed
+        if (lon1-lon0) < 90:
+            lon0 -= 45.
+            lon1 += 45.
+        if lon1 > 720:
+            lon0 -= 360.
+            lon1 -= 360.
+            ivm[:, 'glong'] -= 360.
+        # print (lon0, lon1)
+        
+        m=Basemap(projection='mill', llcrnrlat=-60, urcrnrlat=60., urcrnrlon=lon1.copy(), \
+        llcrnrlon=lon0.copy(), resolution='c', ax=ax6, fix_aspect=False)
+        # m is an object which manages drawing to the map
+        # it also acts as a transformation function for geo coords to plotting coords
+        
+        # coastlines
+        m.drawcoastlines(ax=ax6)
+        # get first longitude meridian to plot
+        plon=np.ceil(lon0/60.)*60.
+        m.drawmeridians(np.arange(plon, plon+360.-22.5, 60), labels=[0,0,0,1], ax=ax6)
+        m.drawparallels(np.arange(-20,20,20))
+        # time midway through ivm to plot terminator locations
+        midDate = ivm.data.index[len(ivm.data.index)//2]
+        
+        # plot day/night terminators
+        try:
+            cs=m.nightshade(midDate)
+        except ValueError:
+            pass
+                
+        x, y = m(ivm['glong'].values, ivm['glat'].values)
+        points = np.array([x,y]).T.reshape(-1,1,2)
+        segments = np.concatenate([points[:-1],points[1:]], axis=1)
+        plot_norm = plt.Normalize(300,500)
+        try:
+            plot_cmap = plt.get_cmap('viridis')
+        except:
+            plot_cmap = plt.get_cmap('jet')
+        
+        lc = LineCollection(segments, cmap=plot_cmap, norm=plot_norm, linewidths=5.0)
+        lc.set_array(ivm['alt'].values)
+        sm = plt.cm.ScalarMappable(cmap=plot_cmap, norm=plot_norm)
+        sm._A = []
+        
+        ax6.add_collection(lc)
+        
+        
+        ax6_bar = f.add_subplot(gs[4,1])
+        #plt.colorbar(sm)
+        cbar = plt.colorbar(cax=ax6_bar, ax=ax6, mappable=sm,
+                            orientation='vertical',
+                            ticks=[300., 400., 500.])
+        plt.xlabel('Altitude')
+        plt.ylabel('km')
+                    
+                            
+    f.tight_layout()
+    # buffer for overall title
+    f.subplots_adjust(bottom=0.06, top=0.91, right=.91)
+    plt.subplots_adjust(hspace = .44)
+
+    plt.savefig(out_fname)
+
+    return
+
+
 '''   
 
 meta['uts'] = {'units':'s', 
