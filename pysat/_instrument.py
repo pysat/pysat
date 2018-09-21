@@ -504,7 +504,7 @@ class Instrument(object):
         except AttributeError:
             pass
         try:
-            self.multi_file_day = inst.self.multi_file_day
+            self.multi_file_day = inst.multi_file_day
         except AttributeError:
             pass
         try:
@@ -915,7 +915,8 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def download(self, start, stop, freq='D', user=None, password=None):
+    def download(self, start, stop, freq='D', user=None, password=None,
+                 **kwargs):
         """Download data for given Instrument object from start to stop.
         
         Parameters
@@ -931,6 +932,8 @@ class Instrument(object):
             username, if required by instrument data archive
         password : string
             password, if required by instrument data archive
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments
             
         Note
         ----
@@ -953,14 +956,15 @@ class Instrument(object):
             self._download_rtn(date_array,
                                tag=self.tag,
                                sat_id=self.sat_id,
-                               data_path=self.files.data_path)
+                               data_path=self.files.data_path,
+                               **kwargs)
         else:
             self._download_rtn(date_array,
                                tag=self.tag,
                                sat_id=self.sat_id,
                                data_path=self.files.data_path,
                                user=user,
-                               password=password)
+                               password=password, **kwargs)
         # get current file date range
         first_date = self.files.start_date
         last_date = self.files.stop_date
@@ -1400,7 +1404,7 @@ class Instrument(object):
                             export_dict[key+'_'+ho_key][original_key] = meta_dict[original_key]
 
         return export_dict
-        
+
  
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
                    zlib=False, complevel=4, shuffle=True):
@@ -1526,6 +1530,7 @@ class Instrument(object):
             new_dict = self._filter_netcdf4_metadata(new_dict, np.int64)
             # attach metadata
             cdfkey.setncatts(new_dict)
+
             # attach data
             cdfkey[:] = (self.data.index.values.astype(np.int64) *
                          1.E-6).astype(np.int64)
@@ -1601,6 +1606,7 @@ class Instrument(object):
                         except KeyError:
                             print(', '.join(('Unable to find MetaData for',
                                              key)))
+
                         # time to actually write the data now
                         cdfkey[:] = data.values
                         
@@ -1725,7 +1731,7 @@ class Instrument(object):
                                     temp_cdf_data[i, :] = self[i, key].values
                                 # write data
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
-                                
+
                         # we are done storing the actual data for the given higher
                         # order variable, now we need to store the index for all
                         # of that fancy data
