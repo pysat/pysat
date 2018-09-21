@@ -266,7 +266,7 @@ class Instrument(object):
         # multi file day, default set by assign_funcs
         if multi_file_day is not None:
             self.multi_file_day = multi_file_day
-                    
+
         # arguments for padding
         if isinstance(pad, pds.DateOffset):
             self.pad = pad
@@ -504,7 +504,7 @@ class Instrument(object):
         except AttributeError:
             pass
         try:
-            self.multi_file_day = inst.self.multi_file_day
+            self.multi_file_day = inst.multi_file_day
         except AttributeError:
             pass
         try:
