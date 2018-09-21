@@ -39,7 +39,7 @@ def bytes_to_float(chunk):
     else:
         decoded = bytes.fromhex(codecs.encode(chunk, 'hex'))
 
-    return struct.unpack("!f", decoded)
+    return struct.unpack("!f", decoded)[0]
 
 def load_general_header(fhandle):
     """ Load the general header block (block 1 for each time)
@@ -219,8 +219,8 @@ def load_attitude_parameters(fhandle):
         data.append(bytes_to_float(chunk[i:i+4])) # Matrix element
 
         # Save data name and units
-        data_names("{:s}_{:d}{:d}".format("sat2geo" if i <= 32 else "geo2lgm",
-                                          j, k))
+        data_names.append("{:s}_{:d}{:d}".format("sat2geo" if i <= 32
+                                                 else "geo2lgm", j, k))
         data_units[data_names[-1]] = 'unitless'
 
         # Cycle to next chunk of data
@@ -289,7 +289,7 @@ def load_binary_file(fname, load_experiment_data):
                     elif ekey == 'data units':
                         meta[ekey].update(emeta[ekey])
                     else:
-                        data_unit[ekey] = emeta[ekey]
+                        meta[ekey] = emeta[ekey]
 
             # Combine and save the data
             gdata.extend(ldata)
@@ -305,3 +305,163 @@ def load_binary_file(fname, load_experiment_data):
         data = np.array(data)
 
     return data, meta
+
+def set_metadata(name, meta_dict):
+    """ Set metadata for each DEMETER instrument, using dict containing metadata
+
+    Parameters
+    ------------
+    name : string
+        DEMETER instrument name
+    meta_dict : dict
+        Dictionary containing metadata information and data attributes.  Data
+        attributes are available in the keys 'data names' and 'data units'
+
+    Returns
+    ----------
+    meta : pysat.Meta
+        Meta class boject
+
+    """
+
+    # Define the acknowledgements and references
+    ackn = 'Recommended acknowledgement:\nDEMETER was a CNES mission. We ' + \
+        'thank the engineers from CNES and scientific laboratories (CBK, ' + \
+        'IRAP, LPC2E, LPP, and SSD of ESTEC) who largely contributed to ' + \
+        'the success of this mission. DEMETER data are accessible from ' + \
+        'https://sipad-cdpp.cnes.fr.'
+
+    refs = {'iap':'Berthelier at al., 2006. IAP, the thermal plasma analyzer on'
+            + 'DEMETER, Planet. and Space Sci., 54(5), pp 487-501.'}
+
+    if not name in refs.keys():
+        refs[name] = 'Instrument reference information available at ' + \
+            'https://demeter.cnes.fr/en/DEMETER/A_publications.htm'
+
+    # Define the long-form names for non-instrument specific data
+    long_name = {'P_field':'P field',
+                 'epoch_time':'Number of days from 01/01/1950',
+                 'time_of_day':'Number of milliseconds in the day',
+                 'UT':'Universal Time of the first point of the data array',
+                 'orbit_number':'Orbit number',
+                 'orbit_type':'Sub-orbit type: False=downward, True=upward',
+                 'glat':'Geocentric Latitude', 'glon':'Geocentric Longitude',
+                 'altitude':'Altitude', 'LT':'Local Time',
+                 'mlat':'Geomagnetic Latitude', 'mlon':'Geomagnetic Longitude',
+                 'MLT':'Magnetic Local Time', 'ilat':'Invarient Latitude',
+                 'L':'Mc Ilwain Parameter L', 'glat_conj':'Geocentric ' +
+                 'latitude of the conjugate point at the satellite altitude',
+                 'glon_conj':'Geocentric longitude of the conjugate point at '
+                 + 'the satellite altitude', 'glat_conj_N_110km':'Geocentric ' +
+                 'latitude of North conjuage point at altitude 110 km',
+                 'glon_conj_N_110km':'Geocentric longitude of North conjugate' +
+                 ' point at altitude 110 km', 'glat_conj_S_110km':'Geocentric' +
+                 ' latitude of South conjugate point at altitude 110 km',
+                 'glon_conj_S_110km':'Geocentric longitude of South conjugate' +
+                 'point at altitude 110 km', 'mag_comp_1':'Component of the ' +
+                 'magnetic field model at the satellite point',
+                 'mag_comp_2':'Component of the magnetic field model at the ' +
+                 'satellite point', 'mag_comp_3':'Component of the magnetic ' +
+                 'field model at the satellite point',
+                 'proton_gyrofreq':'Proton gyrofrequency at satellite point',
+                 'Xs':'Solar position in geographic coordinate system',
+                 'Ys':'Solar position in geographic coordinate system',
+                 'Zs':'Solar position in geographic coordinate system',
+                 'sat2geo_11':'Conversion matrix from satellite to ' +
+                 'geographic coordinate system', 'sat2geo_12':'Conversion ' +
+                 'matrix from satellite to geographic coordinate system',
+                 'sat2geo_13':'Conversion matrix from satellite to ' +
+                 'geographic coordinate system', 'sat2geo_21':'Conversion ' +
+                 'matrix from satellite to geographic coordinate system',
+                 'sat2geo_22':'Conversion matrix from satellite to ' +
+                 'geographic coordinate system', 'sat2geo_23':'Conversion ' +
+                 'matrix from satellite to geographic coordinate system',
+                 'sat2geo_31':'Conversion matrix from satellite to ' +
+                 'geographic coordinate system', 'sat2geo_32':'Conversion ' +
+                 'matrix from satellite to geographic coordinate system',
+                 'sat2geo_33':'Conversion matrix from satellite to ' +
+                 'geographic coordinate system', 'geo2lgm_11':'Conversion ' +
+                 'matrix from geographic to geomagnetic coordinate system',
+                 'geo2lgm_12':'Conversion matrix from geographic to ' +
+                 'geomagnetic coordinate system', 'geo2lgm_13':'Conversion ' +
+                 'matrix from geographic to geomagnetic coordinate system',
+                 'geo2lgm_21':'Conversion matrix from geographic to ' +
+                 'geomagnetic coordinate system', 'geo2lgm_22':'Conversion ' +
+                 'matrix from geographic to geomagnetic coordinate system',
+                 'geo2lgm_23':'Conversion matrix from geographic to ' +
+                 'geomagnetic coordinate system', 'geo2lgm_31':'Conversion ' +
+                 'matrix from geographic to geomagnetic coordinate system',
+                 'geo2lgm_32':'Conversion matrix from geographic to ' +
+                 'geomagnetic coordinate system', 'geo2lgm_33':'Conversion ' +
+                 'matrix from geographic to geomagnetic coordinate system',
+                 'attitude_flag':'Quality index of attitude parameters',
+                 'status_flag_00':'Housekeeping and status',
+                 'status_flag_01':'Housekeeping and status',
+                 'status_flag_02':'Housekeeping and status',
+                 'status_flag_03':'Housekeeping and status',
+                 'status_flag_04':'Housekeeping and status',
+                 'status_flag_05':'Housekeeping and status',
+                 'status_flag_06':'Housekeeping and status',
+                 'status_flag_07':'Housekeeping and status',
+                 'status_flag_08':'Housekeeping and status',
+                 'status_flag_09':'Housekeeping and status',
+                 'status_flag_10':'Housekeeping and status',
+                 'status_flag_11':'Housekeeping and status',
+                 'status_flag_12':'Housekeeping and status',
+                 'status_flag_13':'Housekeeping and status',
+                 'status_flag_14':'Housekeeping and status',
+                 'status_flag_15':'Housekeeping and status',
+                 'status_flag_16':'Housekeeping and status',
+                 'status_flag_17':'Housekeeping and status',
+                 'status_flag_18':'Housekeeping and status',
+                 'status_flag_19':'Housekeeping and status',
+                 'status_flag_20':'Housekeeping and status',
+                 'status_flag_21':'Housekeeping and status',
+                 'status_flag_22':'Housekeeping and status',
+                 'status_flag_23':'Housekeeping and status',
+                 'status_flag_24':'Housekeeping and status',
+                 'status_flag_25':'Housekeeping and status',
+                 'status_flag_26':'Housekeeping and status',
+                 'status_flag_27':'Housekeeping and status',
+                 'status_flag_28':'Housekeeping and status',
+                 'status_flag_29':'Housekeeping and status',
+                 'status_flag_30':'Housekeeping and status',
+                 'status_flag_31':'Housekeeping and status',}
+    long_inst = {'iap':{'time_resolution':'Time resolution',
+                        'H+_density':'H+ density', 'He+_density':'He+ density',
+                        'O+_density':'O+ density',
+                        'Ion_temperature':'Ion temperature',
+                        'ion_vel_Oz':'Ion velocity along the satellite Oz axis',
+                        'ion_vel_-Oz_angle':'Angle between the ion velocity ' +
+                        'and -Oz axis of satellite',
+                        'ion_vel_xOy_Ox_angle':'Angle between projection of ' +
+                        'the ion velocity on the xOy plane and axis Ox of ' +
+                        'satellite',
+                        'satellite_potential':'Satellite potential'}}
+
+    if not name in long_inst.keys():
+        print('Warning, no long-form names available for {:s}'.format(name))
+
+        long_inst[name] = {nn:nn for nn in meta_dict['data names']}
+
+    # Initialise the meta data
+    meta = pysat.Meta()
+    for cc in meta_dict['data names']:
+        # Determine the long instrument name
+        if cc in long_inst[name].keys():
+            ll = long_inst[name][cc]
+        else:
+            ll = long_name[name]
+
+        # Assign the data units, long names, acknowledgements, and references
+        meta[cc] = {'units':meta_dict['data units'][cc], 'long_name':ll,
+                    'acknowledgements':ackn, 'inst_reference':refs[name]}
+
+    # Set the remaining metadata
+    mkeys = list(meta_dict.keys())
+    mkeys.pop(mkeys.index('data names'))
+    mkeys.pop(mkeys.index('data units'))
+
+    meta.info = {cc:meta_dict[cc] for cc in mkeys}
+
+    return meta

@@ -125,6 +125,7 @@ def load(fnames, tag='survey', sat_id=''):
         print('need list of filenames')
         return pysat.DataFrame(None), None
 
+    # Load the desired data and cast as a DataFrame
     data = list()
     for name in fnames:
         fdata, fmeta = demeter_methods.load_binary_file(name,
@@ -132,11 +133,14 @@ def load(fnames, tag='survey', sat_id=''):
         data.extend(fdata)
 
     data = np.vstack(data)
-    # Do something else to data
+    data = pysat.DataFrame(data, index=data[:,3], columns=fmeta['data names'])
 
     # Assign metadata
-    meta = load_metadata(tag, fmeta)
-    
+    if len(data.columns) > 0:
+        meta = demeter_methods.set_metadata(name, fmeta)
+    else:
+        meta = pysat.Meta(None)
+
     return data, meta
 
 def load_experiment_data(fhandle):
@@ -180,6 +184,7 @@ def load_experiment_data(fhandle):
     # Load the rest of the data
     i = 76
     exp_data = ['H+_density', 'He+_density', 'O+_density', 'Ion_temperature',
+                'ion_vel_Oz', 'ion_vel_-Oz_angle', 'ion_vel_xOy_Ox_angle',
                 'satellite_potential']
     while i < 108:
         data.append(demeter_methods.bytes_to_float(chunk[i:i+4]))
@@ -202,12 +207,21 @@ def load_experiment_data(fhandle):
     meta = {'data type':codecs.encode(chunk[0:10], 'hex'),
             'data names':data_names, 'data units':data_units}
 
-    
     return data, meta
 
     
-def clean(self):
+def clean(demeter):
     """ Remove data to the desired level of cleanliness
+
+    Parameters
+    -------------
+    demeter : pysat.Instrument
+        DEMETER instrument class object
+
+    Return
+    ---------
+    Updates data by removing times where data quality fails the conditions
+    for the specified cleaning level
 
     Notes
     ------
@@ -215,7 +229,6 @@ def clean(self):
             also considers house-keepings and status
     dusty : only data when at least two ions are considered and currents >= 1nA
     dirty : currents >= 1nA
-    none : All data, no cleaning performed
     """
 
     raise RuntimeError('not written yet')
