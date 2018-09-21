@@ -504,7 +504,7 @@ class Instrument(object):
         except AttributeError:
             pass
         try:
-            self.multi_file_day = inst.self.multi_file_day
+            self.multi_file_day = inst.multi_file_day
         except AttributeError:
             pass
         try:
