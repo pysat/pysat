@@ -165,8 +165,17 @@ class Files(object):
                 self.refresh()
 
     def _attach_files(self, files_info):
-        """Attaches info returned by instrument list_files routine to
-        Instrument object.
+        """Attach results of instrument list_files routine to Instrument object
+
+        Parameters
+        -----------
+        file_info :
+            Stored file information
+
+        Returns
+        ---------
+        updates the file list (files), start_date, and stop_date attributes
+        of the Files class object.
         """
 
         if not files_info.empty:
