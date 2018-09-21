@@ -52,8 +52,6 @@ apid = {'survey':1140, 'burst':1139}
 
 multi_file_day = True
 
-print('TESTY', multi_file_day)
-
 # Use default demeter download method
 download = demeter_methods.download
 
