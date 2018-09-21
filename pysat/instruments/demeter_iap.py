@@ -55,6 +55,13 @@ multi_file_day = True
 # Use default demeter download method
 download = demeter_methods.download
 
+def init(self):
+    print("When using this data please include a version of the acknoledgement"
+          + " outlined in the metadata attribute 'info.acknowledgements'.  We "
+          + "recommend that data users contact the experiment PI early in their"
+          + " study.  Experiment reference information is available in the "
+          + "metadata attribute 'info.reference'")
+
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
                index_start_time=True):
     """Return a Pandas Series of every file for DEMETER IAP satellite data
@@ -127,8 +134,8 @@ def load(fnames, tag='survey', sat_id=''):
 
     # Load the desired data and cast as a DataFrame
     data = list()
-    for name in fnames:
-        fdata, fmeta = demeter_methods.load_binary_file(name,
+    for fname in fnames:
+        fdata, fmeta = demeter_methods.load_binary_file(fname,
                                                         load_experiment_data)
         data.extend(fdata)
 
@@ -193,19 +200,19 @@ def load_experiment_data(fhandle):
 
     for dname in exp_data:
         if dname.find('density'):
-            data_units[dname] = codecs.encode(chunk[46:52], 'hex')
+            data_units[dname] = chunk[46:52]
         elif dname.find('temperature'):
-            data_units[dname] = codecs.encode(chunk[52:58], 'hex')
+            data_units[dname] = chunk[52:58]
         elif dname.find('potential'):
-            data_units[dname] = codecs.encode(chunk[64:70], 'hex')
+            data_units[dname] = chunk[64:70]
         elif dname.find('angle'):
-            data_units[dname] = codecs.encode(chunk[70:76], 'hex')
+            data_units[dname] = chunk[70:76]
         elif dname.find('velocity'):
-            data_units[dname] = codecs.encode(chunk[58:64], 'hex')
+            data_units[dname] = chunk[58:64]
 
     # Load the metadata
-    meta = {'data type':codecs.encode(chunk[0:10], 'hex'),
-            'data names':data_names, 'data units':data_units}
+    meta = {'data type':chunk[0:10], 'data names':data_names,
+            'data units':data_units}
 
     return data, meta
 
@@ -231,4 +238,29 @@ def clean(demeter):
     dirty : currents >= 1nA
     """
 
-    raise RuntimeError('not written yet')
+    if demeter.clean_level in ['clean', 'dusty']:
+        # Determine the number of ions present, using a threshold for the
+        # minimum significant density for one of the three ion species
+        oplus_thresh = 5.0e2 # From Berthelier et al. 2006
+        nions = np.zeros(shape=demeter.data.index.shape)
+        for i,oplus in enumerate(demeter.data['O+_density']):
+            if oplus >= oplus_thresh:
+                nions[i] += 1
+
+                # From Berthelier et al. 2006
+                if demeter.data['H+_density'][i] > oplus * 0.02:
+                    nions[i] += 1
+                if demeter.data['He+_density'][i] > oplus * 0.02:
+                    nions[i] += 1
+
+        if demeter.clean_level == 'clean':
+            raise RuntimeError('not written yet')
+        else:       
+            idx, = np.where(nions > 1)
+    else:
+        print("WARNING, can't select by current, not part of data set")
+        idx = []
+
+    self.data = self[idx]
+
+    return

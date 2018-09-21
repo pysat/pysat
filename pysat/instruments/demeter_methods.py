@@ -325,14 +325,45 @@ def set_metadata(name, meta_dict):
     """
 
     # Define the acknowledgements and references
-    ackn = 'Recommended acknowledgement:\nDEMETER was a CNES mission. We ' + \
-        'thank the engineers from CNES and scientific laboratories (CBK, ' + \
-        'IRAP, LPC2E, LPP, and SSD of ESTEC) who largely contributed to ' + \
-        'the success of this mission. DEMETER data are accessible from ' + \
-        'https://sipad-cdpp.cnes.fr.'
+    ackn = {'iap':"This work is based on observations with the plasma analyser "
+            + "IAP embarked on the satellite DEMETER launched by CNES (Centre "
+            + "National d'Etudes Spatiales). The author thanks J.J. Berthelier "
+            + "the PI of this instrument for the use of the data, and CDPP "
+            + "(Centre des Données de la Physique des Plasmas) for the "
+            + "provision of these data.",
+            'ice':"This work is based on observations with the electric field "
+            + "instrument ICE embarked on the satellite DEMETER launched by "
+            + "CNES (Centre National d'Etudes Spatiales). The author thanks "
+            + "J.J. Berthelier the PI of this instrument for the use of the "
+            + "data, and CDPP (Centre des Données de la Physique des Plasmas) "
+            + "for the provision of these data.",
+            'imsc':"This work is based on observations with the magnetic field"
+            + " instrument IMSC embarked on the satellite DEMETER launched by "
+            + "CNES (Centre National d'Etudes Spatiales). The author thanks M. "
+            + "Parrot the PI of this instrument for the use of the data, and "
+            + "CDPP (Centre des Données de la Physique des Plasmas) for the "
+            + "provision of these data.",
+            'rnf':"This work is based on observations with the neural network "
+            + "RNF embarked on the satellite DEMETER launched by CNES (Centre "
+            + "National d'Etudes Spatiales). The author thanks J.L. Pinçon the "
+            + "PI of this instrument for the use of the data, and CDPP (Centre "
+            + "des Données de la Physique des Plasmas) for the provision of "
+            + "these data.",
+            'idp':"This work is based on observations with the particle "
+            + "spectrometer instrument IDP embarked on the satellite DEMETER "
+            + "launched by CNES (Centre National d'Etudes Spatiales). The "
+            + "author thanks J.A. Sauvaud the PI of this instrument for the use"
+            + " of the data, and CDPP (Centre des Données de la Physique des "
+            + "Plasmas) for the provision of these data.",
+            'isl':"This work is based on observations with the Langmuir probe "
+            + "ISL embarked on the satellite DEMETER launched by CNES (Centre "
+            + "National d'Etudes Spatiales). The author thanks J.P. Lebreton "
+            + "the PI of this instrument for the use of the data, and CDPP "
+            + "(Centre des Données de la Physique des Plasmas) for the "
+            + "provision of these data."}
 
     refs = {'iap':'Berthelier at al., 2006. IAP, the thermal plasma analyzer on'
-            + 'DEMETER, Planet. and Space Sci., 54(5), pp 487-501.'}
+            + ' DEMETER, Planet. and Space Sci., 54(5), pp 487-501.'}
 
     if not name in refs.keys():
         refs[name] = 'Instrument reference information available at ' + \
@@ -451,13 +482,14 @@ def set_metadata(name, meta_dict):
         if cc in long_inst[name].keys():
             ll = long_inst[name][cc]
         else:
-            ll = long_name[name]
+            ll = long_name[cc]
 
         # Assign the data units, long names, acknowledgements, and references
-        meta[cc] = {'units':meta_dict['data units'][cc], 'long_name':ll,
-                    'acknowledgements':ackn, 'inst_reference':refs[name]}
+        meta[cc] = {'units':meta_dict['data units'][cc], 'long_name':ll}
 
     # Set the remaining metadata
+    meta_dict['acknowledgements'] = ackn[name]
+    meta_dict['reference'] = refs[name]
     mkeys = list(meta_dict.keys())
     mkeys.pop(mkeys.index('data names'))
     mkeys.pop(mkeys.index('data units'))
