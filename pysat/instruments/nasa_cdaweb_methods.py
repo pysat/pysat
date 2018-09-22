@@ -61,7 +61,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     if data_path is not None:
         if format_str is None:
                 try:
-                    format_str = supported_tags[tag]
+                    format_str = supported_tags[sat_id][tag]
                 except KeyError:
                     raise ValueError('Unknown tag')
         out = pysat.Files.from_os(data_path=data_path, 

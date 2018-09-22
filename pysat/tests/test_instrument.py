@@ -92,6 +92,7 @@ class TestBasics():
         self.testInst.load(fname='2010-12-31.nofile')
         assert self.testInst.index[0] == pds.datetime(2010,12,31)
 
+
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.testInst.load(fname='2010-12-30.nofile')
@@ -285,6 +286,17 @@ class TestBasics():
         self.testInst[0:10,'doubleMLT'] = 0
         assert np.all(self.testInst[10:,'doubleMLT'] == 2.*self.testInst[10:,'mlt']) & np.all(self.testInst[0:10,'doubleMLT'] == 0)
 
+    def test_modifying_data_inplace(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst['doubleMLT'] += 100
+        assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'] + 100)
+        
+    def test_getting_all_data_by_index(self):
+        self.testInst.load(2009,1)
+        a = self.testInst[[0,1,2,3,4]]
+        assert len(a) == 5
+        
 #######################
 ######
 #### check iteration behavior                        
@@ -744,6 +756,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
        
 class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
     def setup(self):

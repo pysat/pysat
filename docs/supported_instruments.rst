@@ -37,7 +37,13 @@ COSMIC GPS
 
 .. automodule:: pysat.instruments.cosmic_gps
    :members: __doc__
-   
+
+DMSP IVM
+--------
+
+.. automodule:: pysat.instruments.dmsp_ivm
+   :members: __doc__
+
 Dst
 ---
 
@@ -74,16 +80,34 @@ OMNI
 .. automodule:: pysat.instruments.omni_hro
    :members: __doc__, calculate_clock_angle, calculate_imf_steadiness, time_shift_to_magnetic_poles
 
+PYSAT SGP4
+----------
+
+.. automodule:: pysat.instruments.pysat_sgp4
+   :members: __doc__, load, add_sc_attitude_vectors, calculate_ecef_velocity, add_quasi_dipole_coordinates, add_aacgm_coordinates, add_iri_thermal_plasma, add_hwm_winds_and_ecef_vectors, add_igrf, project_ecef_vector_onto_sc, project_hwm_onto_sc
+
 ROCSAT-1 IVM
 ------------
 
 .. automodule:: pysat.instruments.rocsat1_ivm
    :members: __doc__
 
+SPORT IVM
+---------
+
+.. automodule:: pysat.instruments.sport_ivm
+   :members: __doc__
+
 SuperDARN
 ---------
 
 .. automodule:: pysat.instruments.superdarn_grdex
+   :members: __doc__
+
+SuperMAG
+--------
+
+.. automodule:: pysat.instruments.supermag_magnetometer
    :members: __doc__
 
 TIMED/SEE
