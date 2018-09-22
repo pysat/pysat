@@ -660,22 +660,22 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong',
                                'desc':'HWM model zonal wind'}
     inst.meta['meridional_wind'] = {'units':'m/s','long_name':'Meridional Wind', 
                                     'desc':'HWM model meridional wind'}
-    inst.meta['unit_zonal_wind_ecef_x'] = {'units':'km',
+    inst.meta['unit_zonal_wind_ecef_x'] = {'units':'',
                                            'long_name':'Zonal Wind Unit ECEF x-vector', 
                                            'desc':'x-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_zonal_wind_ecef_y'] = {'units':'km', 
+    inst.meta['unit_zonal_wind_ecef_y'] = {'units':'', 
                                            'long_name':'Zonal Wind Unit ECEF y-vector', 
                                            'desc':'y-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_zonal_wind_ecef_z'] = {'units':'km',
+    inst.meta['unit_zonal_wind_ecef_z'] = {'units':'',
                                            'long_name':'Zonal Wind Unit ECEF z-vector', 
                                            'desc':'z-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_x'] = {'units':'km',
+    inst.meta['unit_mer_wind_ecef_x'] = {'units':'',
                                          'long_name':'Meridional Wind Unit ECEF x-vector', 
                                          'desc':'x-value of meridional wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_y'] = {'units':'km',
+    inst.meta['unit_mer_wind_ecef_y'] = {'units':'',
                                          'long_name':'Meridional Wind Unit ECEF y-vector', 
                                          'desc':'y-value of meridional wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_z'] = {'units':'km',
+    inst.meta['unit_mer_wind_ecef_z'] = {'units':'',
                                          'long_name':'Meridional Wind Unit ECEF z-vector', 
                                          'desc':'z-value of meridional wind unit vector in ECEF co ordinates'}
     return
