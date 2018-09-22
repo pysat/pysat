@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.0] - 2018-09-24
+ - SuperMAG support added
+ - Increased data access robustness when using integer indexing
+ - Added template for supporting netCDF4 based instruments (pysat_netCDF4)
+ - Added support for MSIS within the pysat satellite simulation (based on sgp4)
+ - Added plotting routine to sgp4
+ - Initial support for the upcoming NASA/INPE SPORT Ion Velocity Meter (IVM)
+ - Fixed bug triggerd when invoking multi_file_day option in Instrument object
+
 ## [1.1.0] - 2018-07-05
  - Initial support for Constellation objects, which allows operations and analysis on mixed groups of Instrument objects. Developed by UT Dallas senior undergraduate computer science students (UTDesign 2018).
  - Bug fixes when iterating by file
