@@ -123,7 +123,6 @@ class Orbits(object):
         A day of data must already be loaded.
         """
         # hack included so that orbits appear to be zero indexed
-        print(key)
         if key < 0:
             self.load(key)
         else:
