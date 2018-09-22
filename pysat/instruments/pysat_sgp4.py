@@ -63,6 +63,8 @@ def init(self):
                                                            meta=[in_meta.copy(), in_meta.copy(), in_meta.copy()])
     # project total wind vector
     self.custom.add(project_hwm_onto_sc, 'modify')
+    # neutral parameters
+    self.custom.add(add_msis, 'modify')
                 
 def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0., 
                                         TLE1=None, TLE2=None):
@@ -654,14 +656,28 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat', glong_label='glong',
                                    inst['unit_zonal_wind_ecef_x'], inst['unit_zonal_wind_ecef_y'], inst['unit_zonal_wind_ecef_z'])
     
     # Adding metadata information                                
-    inst.meta['zonal_wind'] = {'units':'m/s','long_name':'Zonal Wind', 'desc':'HWM model zonal wind'}
-    inst.meta['meridional_wind'] = {'units':'m/s','long_name':'Meridional Wind', 'desc':'HWM model meridional wind'}
-    inst.meta['unit_zonal_wind_ecef_x'] = {'units':'km','long_name':'Zonal Wind Unit ECEF x-vector', 'desc':'x-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_zonal_wind_ecef_y'] = {'units':'km','long_name':'Zonal Wind Unit ECEF y-vector', 'desc':'y-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_zonal_wind_ecef_z'] = {'units':'km','long_name':'Zonal Wind Unit ECEF z-vector', 'desc':'z-value of zonal wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_x'] = {'units':'km','long_name':'Meridional Wind Unit ECEF x-vector', 'desc':'x-value of meridional wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_y'] = {'units':'km','long_name':'Meridional Wind Unit ECEF y-vector', 'desc':'y-value of meridional wind unit vector in ECEF co ordinates'}
-    inst.meta['unit_mer_wind_ecef_z'] = {'units':'km','long_name':'Meridional Wind Unit ECEF z-vector', 'desc':'z-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['zonal_wind'] = {'units':'m/s','long_name':'Zonal Wind', 
+                               'desc':'HWM model zonal wind'}
+    inst.meta['meridional_wind'] = {'units':'m/s','long_name':'Meridional Wind', 
+                                    'desc':'HWM model meridional wind'}
+    inst.meta['unit_zonal_wind_ecef_x'] = {'units':'',
+                                           'long_name':'Zonal Wind Unit ECEF x-vector', 
+                                           'desc':'x-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_zonal_wind_ecef_y'] = {'units':'', 
+                                           'long_name':'Zonal Wind Unit ECEF y-vector', 
+                                           'desc':'y-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_zonal_wind_ecef_z'] = {'units':'',
+                                           'long_name':'Zonal Wind Unit ECEF z-vector', 
+                                           'desc':'z-value of zonal wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_x'] = {'units':'',
+                                         'long_name':'Meridional Wind Unit ECEF x-vector', 
+                                         'desc':'x-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_y'] = {'units':'',
+                                         'long_name':'Meridional Wind Unit ECEF y-vector', 
+                                         'desc':'y-value of meridional wind unit vector in ECEF co ordinates'}
+    inst.meta['unit_mer_wind_ecef_z'] = {'units':'',
+                                         'long_name':'Meridional Wind Unit ECEF z-vector', 
+                                         'desc':'z-value of meridional wind unit vector in ECEF co ordinates'}
     return
 
 
@@ -746,6 +762,84 @@ def add_igrf(inst, glat_label='glat', glong_label='glong',
                              'desc':'Geomagnetic field from IGRF expressed using the Earth Centered Earth Fixed (ECEF) basis.'}
     inst.meta['B_ecef_z'] = {'units':'nT',
                              'desc':'Geomagnetic field from IGRF expressed using the Earth Centered Earth Fixed (ECEF) basis.'}
+    return
+
+
+def add_msis(inst, glat_label='glat', glong_label='glong', 
+                                       alt_label='alt'):
+    """ 
+    Uses MSIS model to obtain thermospheric values.
+    
+    Uses pyglow module to run MSIS. Configured to use actual solar parameters to run 
+    model.
+    
+    Example
+    -------
+        # function added velow modifies the inst object upon every inst.load call
+        inst.custom.add(add_msis, 'modify', glat_label='custom_label')
+    
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        Designed with pysat_sgp4 in mind
+    glat_label : string
+        label used in inst to identify WGS84 geodetic latitude (degrees)
+    glong_label : string
+        label used in inst to identify WGS84 geodetic longitude (degrees)
+    alt_label : string
+        label used in inst to identify WGS84 geodetic altitude (km, height above surface)
+        
+    Returns
+    -------
+    inst
+        Input pysat.Instrument object modified to include MSIS values winds.
+        'Nn' total neutral density particles/cm^3
+        'Nn_N' Nitrogen number density (particles/cm^3)
+        'Nn_N2' N2 number density (particles/cm^3)
+        'Nn_O' Oxygen number density (particles/cm^3)
+        'Nn_O2' O2 number density (particles/cm^3)
+        'Tn_msis' Temperature from MSIS (Kelvin)
+        
+    """
+    
+    import pyglow
+    from pyglow.pyglow import Point
+    
+    msis_params = []
+    # print 'IRI Simulations'
+    for time,lat,lon,alt in zip(inst.data.index, inst[glat_label], inst[glong_label], inst[alt_label]):
+        pt = Point(time,lat,lon,alt)
+        pt.run_msis()
+        msis = {}
+        total = 0
+        for key in pt.nn.keys():
+            total += pt.nn[key]
+        msis['Nn'] = total
+        msis['Nn_N'] = pt.nn['N']
+        msis['Nn_N2'] = pt.nn['N2']
+        msis['Nn_O'] = pt.nn['O']
+        msis['Nn_O2'] = pt.nn['O2']
+        msis['Tn_msis'] = pt.Tn_msis
+        msis_params.append(msis)        
+    # print 'Complete.'
+    msis = pds.DataFrame(msis_params)
+    msis.index = inst.data.index
+    inst[msis.keys()] = msis
+    
+    # metadata
+    inst.meta['Nn'] = {'units':'cm^-3',
+                       'desc':'Total neutral number particle density from MSIS.'}
+    inst.meta['Nn_N'] = {'units':'cm^-3',
+                         'desc':'Total nitrogen number particle density from MSIS.'}
+    inst.meta['Nn_N2'] = {'units':'cm^-3',
+                          'desc':'Total N2 number particle density from MSIS.'}
+    inst.meta['Nn_O'] = {'units':'cm^-3',
+                         'desc':'Total oxygen number particle density from MSIS.'}
+    inst.meta['Nn_O2'] = {'units':'cm^-3',
+                          'desc':'Total O2 number particle density from MSIS.'}
+    inst.meta['Tn_msis'] = {'units':'K',
+                            'desc':'Neutral temperature from MSIS.'}
+
     return
 
 def project_ecef_vector_onto_sc(inst, x_label, y_label, z_label, 
@@ -995,55 +1089,4 @@ def plot_simulated_data(ivm, filename=None):
     plt.savefig(out_fname)
 
     return
-
-
-'''   
-
-meta['uts'] = {'units':'s', 
-               'long_name':'Universal Time', 
-               'custom':False}          
-meta['mlt'] = {'units':'hours', 
-               'long_name':'Magnetic Local Time',
-               'label': 'MLT',
-               'axis': 'MLT',
-               'desc': 'Magnetic Local Time',
-               'value_min': 0.,
-               'value_max': 24.,
-               'notes': ('Magnetic Local Time is the solar local time of the field line '
-                        'at the location where the field crosses the magnetic equator. '
-                        'In this case we just simulate 0-24 with a '
-                        'consistent orbital period and an offste with SLT.'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['slt'] = {'units':'hours', 
-               'long_name':'Solar Local Time',
-               'label': 'SLT',
-               'axis': 'SLT',
-               'desc': 'Solar Local Time',
-               'value_min': 0.,
-               'value_max': 24.,
-               'notes': ('Solar Local Time is the local time (zenith angle of sun) '
-                         'of the given locaiton. Overhead noon, +/- 90 is 6, 18 SLT .'),
-               'fill': np.nan,
-               'scale': 'linear'}
-
-'''
-
-# Testing
-'''
-datanew, metanew = load(fnames = ['NoData_01/02/12'])
-
-instObj = pysat.Instrument(platform = 'pysat', name='sgp4', tag=None, clean_level=None) 
-instObj.data = datanew
-instObj.meta = metanew
-
-calculate_ecef_velocity(instObj)
-print(len(instObj.data))
-print(instObj.meta)
-
-pysat.models.add_quasi_dipole_coordinates(instObj)
-print(len(instObj.data))
-print(instObj.meta)
-'''
-
-
+  
