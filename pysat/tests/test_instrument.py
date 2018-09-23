@@ -295,7 +295,10 @@ class TestBasics():
     def test_getting_all_data_by_index(self):
         self.testInst.load(2009,1)
         a = self.testInst[[0,1,2,3,4]]
-        assert len(a) == 5
+        if self.testInst.pandas_format:
+            assert len(a) == 5
+        else:
+            assert a.sizes['time'] == 5
         
 #######################
 ######
