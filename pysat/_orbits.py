@@ -415,17 +415,17 @@ class Orbits(object):
                 if orbit == -1:
                     # load orbit data into data
                     self.sat.data = self.sat[self._orbit_breaks[self.num + orbit]:]
-                    self.current = self.num + orbit + 1
+                    self._current = self.num + orbit + 1
                 elif ((orbit < 0) & (orbit >= -self.num)):
                     # load orbit data into data
                     self.sat.data = self.sat[self._orbit_breaks[self.num + orbit]:
                                             self._orbit_breaks[self.num + orbit + 1]]
 
-                    self.current = self.num + orbit + 1
+                    self._current = self.num + orbit + 1
                 elif (orbit < self.num) & (orbit != 0):
                     # load orbit data into data
                     self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:self._orbit_breaks[orbit]]
-                    self.current = orbit
+                    self._current = orbit
                 elif orbit == self.num:
                     self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:]
                     # recent addition, wondering why it wasn't there before,
