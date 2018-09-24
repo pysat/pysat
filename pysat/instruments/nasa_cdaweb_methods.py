@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Provides default routines for integrating NASA CDAWeb instruments into pysat.
+Adding new CDAWeb datasets should only require mininal user intervention.
+ 
 """
 
 from __future__ import absolute_import, division, print_function
@@ -13,7 +15,10 @@ import sys
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
                two_digit_year_break=None):
-    """Return a Pandas Series of every file for chosen satellite data
+    """Return a Pandas Series of every file for chosen satellite data.
+    
+    This routine is intended to be used by pysat instrument modules supporting
+    a particular NASA CDAWeb dataset.
 
     Parameters
     -----------
@@ -82,7 +87,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 def load(fnames, tag=None, sat_id=None, 
          fake_daily_files_from_monthly=False,
          flatten_twod=True):
-    """Load NASA CDAWeb CDF files
+    """Load NASA CDAWeb CDF files.
+    
+    This routine is intended to be used by pysat instrument modules supporting
+    a particular NASA CDAWeb dataset.
 
     Parameters
     ------------
@@ -105,6 +113,18 @@ def load(fnames, tag=None, sat_id=None,
         Object containing satellite data
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
+        
+    Examples
+    --------
+    ::
+        # within the new instrument module, at the top level define
+        # a new variable named load, and set it equal to this load method
+        # code below taken from cnofs_ivm.py.
+        
+        # support load routine
+        # use the default CDAWeb method
+        load = cdw.load
+
         
     """
     
@@ -139,7 +159,10 @@ def download(supported_tags, date_array, tag, sat_id,
              ftp_site='cdaweb.gsfc.nasa.gov', 
              data_path=None, user=None, password=None,
              fake_daily_files_from_monthly=False):
-    """Routine to download NASA CDAWeb CDF data
+    """Routine to download NASA CDAWeb CDF data.
+    
+    This routine is intended to be used by pysat instrument modules supporting
+    a particular NASA CDAWeb dataset.
 
     Parameters
     -----------
@@ -175,7 +198,7 @@ def download(supported_tags, date_array, tag, sat_id,
     Examples
     --------
     :: 
-    
+        # download support added to cnofs_vefi.py using code below
         rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         ln = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         dc_b_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
