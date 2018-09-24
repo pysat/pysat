@@ -117,6 +117,7 @@ def load(fnames, tag=None, sat_id=None,
     Examples
     --------
     ::
+    
         # within the new instrument module, at the top level define
         # a new variable named load, and set it equal to this load method
         # code below taken from cnofs_ivm.py.
@@ -198,6 +199,7 @@ def download(supported_tags, date_array, tag, sat_id,
     Examples
     --------
     :: 
+    
         # download support added to cnofs_vefi.py using code below
         rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         ln = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'

@@ -74,10 +74,10 @@ ISS-FPMU
 .. automodule:: pysat.instruments.iss_fpmu
    :members: __doc__
 
-netCDF4 Pandas
---------------
+netCDF Pandas
+-------------
 
-.. automodule:: pysat.instruments.netcdf4_pandas
+.. automodule:: pysat.instruments.netcdf_pandas
    :members: __doc__, init, load, list_files, download
 
 NASA CDAWeb
