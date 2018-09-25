@@ -1,7 +1,13 @@
 from __future__ import print_function
 from __future__ import absolute_import
+# python 2/3 compatibility
+try:
+    basestring
+except NameError:
+    basestring = str
 
 import pandas as pds
+import xarray as xr
 
 
 class Custom(object):
@@ -130,7 +136,7 @@ class Custom(object):
 
                         # process different types of data returned by the
                         # function if a dict is returned, data in 'data'
-                        if isinstance(newData,dict):
+                        if isinstance(newData, dict):
                             # if DataFrame returned, add Frame to existing frame
                             if isinstance(newData['data'], pds.DataFrame):
                                 sat[newData['data'].columns] = newData
@@ -149,6 +155,9 @@ class Custom(object):
                                     raise ValueError('Must assign a name to ' +
                                                      'Series or return a ' +
                                                      '"name" in dictionary.')
+                            # xarray returned
+                            elif isinstance(newData['data'], xr.DataArray):
+                                sat[newData['data'].name] = newData['data']
 
                             # some kind of iterable was returned
                             elif hasattr(newData['data'], '__iter__'):
@@ -167,7 +176,11 @@ class Custom(object):
                         # Series
                         elif isinstance(newData, pds.Series):
                             sat[newData.name] = newData      
-
+                        
+                        # xarray returned
+                        elif isinstance(newData, xr.DataArray):
+                            sat[newData.name] = newData
+                            
                         # some kind of iterable returned,
                         # presuming (name, data)
                         # or ([name1,...], [data1,...])                      
@@ -179,7 +192,7 @@ class Custom(object):
                             if len(newData)>0:
                                 # doesn't really check ensure data, there could
                                 # be multiple empty arrays returned, [[],[]]
-                                if isinstance(newName, str):
+                                if isinstance(newName, basestring):
                                     # one item to add
                                     sat[newName] = newData
                                 else:    		
