@@ -393,6 +393,9 @@ class Instrument(object):
             inst[datetime1:datetime1, 'name1':'name2']
             
         """
+        
+        # TODO: Assumes that 'time' is the index, which is not the case always.
+        """
         if 'time' not in self.data:
             return xr.Dataset(None)
         if isinstance(key, tuple):
@@ -422,7 +425,8 @@ class Instrument(object):
                 except:
                     # subset of time, using label based indexing
                     return self.data.sel(time=key)
-
+        """
+        return self.data[key]
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
@@ -488,6 +492,7 @@ class Instrument(object):
             self.meta[key] = new
             
         else:
+            """
             # xarray format chosen for Instrument object
             if not isinstance(new, dict):
                 new = {'data': new}
@@ -535,6 +540,52 @@ class Instrument(object):
                     self.data[keyname] = in_data[keyname]
             # attach metadata            
             self.meta[key] = new
+            """
+            #print("key", key)
+            #print(new)
+                
+            if not isinstance(new, dict):
+                new = {'data': new}
+            '''
+                coordinates = {}
+                dimensions = {}
+                name = key
+                attributes = {'long_name': key, 'units':''}
+            else:
+                try:
+                    coordinates = new.pop('coords')
+                except KeyError:
+                    print("No coords given")
+                    coordinates = {}
+                try:
+                    dimensions = new.pop('dims')
+                except KeyError:
+                    print("No dims given")
+                    dimensions = {}
+                try:
+                    name = new.pop('name')
+                except KeyError:
+                    print("No name given")
+                    name = key
+                try:
+                    attributes = new.pop('attrs')
+                except KeyError:
+                    print("No attrs given")
+                    attributes = {'long_name': key, 'units':''}
+            '''
+                # TODO: Support for encoding and Fastpath ???
+            in_data = new.pop('data')
+            # TODO: Set a common coordinates for the DataSet ? (Not individual DataArrays)
+            # This can be time or mtime, lat, lon, ilev or Z, LBC (needed?)
+            '''
+            # TODO: Add support for methods like assign_attrs(*args, **kwargs), assign_coords(**kwargs), etc.?
+            self.data[key] = xr.DataArray(data = in_data, coords = coordinates,
+                     dims = dimensions, name = name, attrs = attributes)
+            '''
+            self.data[key] = xr.DataArray(data = in_data)
+            # Assign metadata information
+            self.meta[key] = new
+            
 
                         
     @property
@@ -546,6 +597,7 @@ class Instrument(object):
         if self.pandas_format:
             return self.data.empty
         else:
+            # TODO: What is 'time' is not one of the indexes?
             if 'time' in self.data.indexes:
                 return len(self.data.indexes['time']) == 0
             else:
@@ -561,6 +613,7 @@ class Instrument(object):
         if self.pandas_format:
             return data.empty
         else:
+            # TODO: What is 'time' is not one of the indexes?
             if 'time' in data.indexes:
                 return len(data.indexes['time']) == 0
             else:
@@ -572,6 +625,7 @@ class Instrument(object):
         if self.pandas_format:
             return self.data.index
         else:
+            # TODO: What is 'time' is not one of the indexes? can return self.data.indexes. Is that right?
             if 'time' in self.data.indexes:
                 return self.data.indexes['time']
             else:
@@ -585,6 +639,7 @@ class Instrument(object):
         if self.pandas_format:
             return data.index
         else:
+            # TODO: What is 'time' is not one of the indexes?
             if 'time' in data.indexes:
                 return data.indexes['time']
             else:
@@ -610,6 +665,7 @@ class Instrument(object):
         if self.pandas_format:
             return pds.concat(data, *args, **kwargs)
         else:
+            # TODO: What is 'time' is not one of the indexes? time should not be hard-coded I think
             return xr.concat(data, dim='time')
             
     def _pass_func(*args, **kwargs):
@@ -816,8 +872,12 @@ class Instrument(object):
         # let user know if data was returned or not
         if len(data) > 0: 
             if date is not None:
+                '''
                 output_str = ' '.join(('Returning', output_str, 'data for',
                                        date.strftime('%D')))
+                '''
+                output_str = ' '.join(('Returning', output_str, 'data for',
+                                       date.strftime('%j')))
             else:
                 if len(fname) == 1:
                     # this check was zero
