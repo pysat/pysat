@@ -46,11 +46,17 @@ install:
     fi
   - pwd
   - ls
+  # check if there is a partial download of pyglow, remove if true
+  - if [[ -d "$pyglow_dir" && ! -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      rmdir -r ./pyglow;
+    fi
+  # pyglow exists, install it  
   - if [[ -d "$pyglow_dir" && -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd pyglow;
       python setup.py install;
       cd ..;
     fi
+  # no pyglow, clone then run script
   - if [[ ! -d "$pyglow_dir" || ! -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       travis_wait 40 git clone https://github.com/timduly4/pyglow.git;
       cd pyglow;
