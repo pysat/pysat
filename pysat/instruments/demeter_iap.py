@@ -191,7 +191,7 @@ def load_experiment_data(fhandle):
     # Load the rest of the data
     i = 76
     exp_data = ['H+_density', 'He+_density', 'O+_density', 'Ion_temperature',
-                'ion_vel_Oz', 'ion_vel_-Oz_angle', 'ion_vel_xOy_Ox_angle',
+                'ion_vel_Oz', 'ion_vel_negOz_angle', 'ion_vel_xOy_Ox_angle',
                 'satellite_potential']
     while i < 108:
         data.append(demeter_methods.bytes_to_float(chunk[i:i+4]))
@@ -217,13 +217,13 @@ def load_experiment_data(fhandle):
     return data, meta
 
     
-def clean(demeter):
+def clean(iap):
     """ Remove data to the desired level of cleanliness
 
     Parameters
     -------------
-    demeter : pysat.Instrument
-        DEMETER instrument class object
+    iap : pysat.Instrument
+        DEMETER IAP instrument class object
 
     Return
     ---------
@@ -238,22 +238,22 @@ def clean(demeter):
     dirty : currents >= 1nA
     """
 
-    if demeter.clean_level in ['clean', 'dusty']:
+    if iap.clean_level in ['clean', 'dusty']:
         # Determine the number of ions present, using a threshold for the
         # minimum significant density for one of the three ion species
         oplus_thresh = 5.0e2 # From Berthelier et al. 2006
-        nions = np.zeros(shape=demeter.data.index.shape)
-        for i,oplus in enumerate(demeter.data['O+_density']):
+        nions = np.zeros(shape=iap.data.index.shape)
+        for i,oplus in enumerate(iap.data['O+_density']):
             if oplus >= oplus_thresh:
                 nions[i] += 1
 
                 # From Berthelier et al. 2006
-                if demeter.data['H+_density'][i] > oplus * 0.02:
+                if iap.data['H+_density'][i] > oplus * 0.02:
                     nions[i] += 1
-                if demeter.data['He+_density'][i] > oplus * 0.02:
+                if iap.data['He+_density'][i] > oplus * 0.02:
                     nions[i] += 1
 
-        if demeter.clean_level == 'clean':
+        if iap.clean_level == 'clean':
             raise RuntimeError('not written yet')
         else:       
             idx, = np.where(nions > 1)
@@ -264,3 +264,37 @@ def clean(demeter):
     self.data = self[idx]
 
     return
+
+def add_drift_sat_coord(iap):
+    """ Calculate the ion velocity in satellite x,y,z coordinates
+
+    Parameters
+    -------------
+    iap : pysat.Instrument
+        DEMETER IAP instrument class object
+
+    Return
+    ---------
+    Adds data values ion_vel_Ox, ion_vel_Oy
+
+    """
+
+    # Because np.radians isn't working for data coming from the DataFrame :(
+    rad = np.array([np.radians(rr) for rr in iap['ion_vel_negOz_angle']])
+    vxy = - iap['ion_vel_Oz'] * np.tan(rad)
+    rad = np.array([np.radians(rr) for rr in iap['ion_vel_xOy_Ox_angle']])
+
+    iap['ion_vel_Ox'] = vxy * np.cos(rad)
+    iap['ion_vel_Oy'] = vxy * np.sin(rad)
+
+    # Because the ADV instrument is not fully aligned with the axis of the
+    # satellite, reposition into satellite coordinates
+    # (IS THIS ALREADY CORRECTED IN FILES?)
+
+    return
+
+def add_drift_lgm_coord(iap):
+    """ Calcuate the ion velocity in local geomagneic coordinates
+
+
+    """

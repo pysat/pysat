@@ -463,8 +463,8 @@ def set_metadata(name, meta_dict):
                         'O+_density':'O+ density',
                         'Ion_temperature':'Ion temperature',
                         'ion_vel_Oz':'Ion velocity along the satellite Oz axis',
-                        'ion_vel_-Oz_angle':'Angle between the ion velocity ' +
-                        'and -Oz axis of satellite',
+                        'ion_vel_negOz_angle':'Angle between the ion velocity' +
+                        ' and -Oz axis of satellite',
                         'ion_vel_xOy_Ox_angle':'Angle between projection of ' +
                         'the ion velocity on the xOy plane and axis Ox of ' +
                         'satellite',
