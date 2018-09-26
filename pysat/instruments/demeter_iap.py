@@ -191,7 +191,7 @@ def load_experiment_data(fhandle):
     # Load the rest of the data
     i = 76
     exp_data = ['H+_density', 'He+_density', 'O+_density', 'Ion_temperature',
-                'ion_vel_Oz', 'ion_vel_negOz_angle', 'ion_vel_xOy_Ox_angle',
+                'iv_Oz', 'iv_negOz_angle', 'iv_xOy_Ox_angle',
                 'satellite_potential']
     while i < 108:
         data.append(demeter_methods.bytes_to_float(chunk[i:i+4]))
@@ -275,19 +275,19 @@ def add_drift_sat_coord(iap):
 
     Return
     ------
-    Adds data values ion_vel_Ox, ion_vel_Oy
+    Adds data values iv_Ox, iv_Oy
 
     """
 
     # Because np.radians isn't working for data coming from the DataFrame :(
-    rad = np.array([np.radians(rr) for rr in iap['ion_vel_negOz_angle']])
-    vxy = - iap['ion_vel_Oz'] * np.tan(rad)
-    rad = np.array([np.radians(rr) for rr in iap['ion_vel_xOy_Ox_angle']])
+    rad = np.array([np.radians(rr) for rr in iap['iv_negOz_angle']])
+    vxy = - iap['iv_Oz'] * np.tan(rad)
+    rad = np.array([np.radians(rr) for rr in iap['iv_xOy_Ox_angle']])
 
-    iap['ion_vel_Ox'] = vxy * np.cos(rad)
-    iap['ion_vel_Oy'] = vxy * np.sin(rad)
-    iap.meta.data.units['ion_vel_Ox'] = iap.meta.data.units['ion_vel_Oz']
-    iap.meta.data.units['ion_vel_Oy'] = iap.meta.data.units['ion_vel_Oz']
+    iap['iv_Ox'] = vxy * np.cos(rad)
+    iap['iv_Oy'] = vxy * np.sin(rad)
+    iap.meta.data.units['iv_Ox'] = iap.meta.data.units['iv_Oz']
+    iap.meta.data.units['iv_Oy'] = iap.meta.data.units['iv_Oz']
 
     # Because the ADV instrument is not fully aligned with the axis of the
     # satellite, reposition into satellite coordinates
@@ -307,14 +307,14 @@ def add_drift_lgm_coord(iap):
 
     Return
     ------
-    Adds data values ion_vel_par (parallel to B vector at satellite),
-    ion_vel_pos (perpendictular to B, in the plane of the satellite),
-    ion_vel_perp (completes the coordinate system).  If ion_vel_Ox,y
+    Adds data values iv_par (parallel to B vector at satellite),
+    iv_pos (perpendictular to B, in the plane of the satellite),
+    iv_perp (completes the coordinate system).  If iv_Ox and iv_Oy
     do not exist yet, adds them as well
 
     """
 
-    sc_keys = ['ion_vel_Ox', 'ion_vel_Oy', 'ion_vel_Oz']
+    sc_keys = ['iv_Ox', 'iv_Oy', 'iv_Oz']
 
     # Test for ion velocity in spacecraft coordinates, add if not present
     if not np.all([kk in iap.data.keys() for kk in sc_keys]):
@@ -338,7 +338,7 @@ def add_drift_lgm_coord(iap):
     lgm_vel = np.array(lgm_vel).reshape((len(lgm_vel), 3))
 
     # Save the data
-    for i,name in enumerate(['ion_vel_pos', 'ion_vel_perp', 'ion_vel_par']):
+    for i,name in enumerate(['iv_pos', 'iv_perp', 'iv_par']):
         iap[name] = pds.Series(lgm_vel[:,i], index=iap.data.index, name=name)
         iap.meta.data.units[name] = iap.meta.data.units[sc_keys[-1]]
 
@@ -354,14 +354,14 @@ def add_drift_geo_coord(iap):
 
     Return
     ------
-    Adds data values ion_vel_geo_x (towards the intersection of equator and
-    Grennwich meridian), ion_vel_geo_y (completes coordinate system),
-    ion_vel_geo_z (follows Earth's rotational axis, positive Northward).
-    If ion_vel_Ox,y do not exist yet, adds them as well
+    Adds data values iv_geo_x (towards the intersection of equator and
+    Grennwich meridian), iv_geo_y (completes coordinate system),
+    iv_geo_z (follows Earth's rotational axis, positive Northward).
+    If iv_Ox,y do not exist yet, adds them as well
 
     """
 
-    sc_keys = ['ion_vel_Ox', 'ion_vel_Oy', 'ion_vel_Oz']
+    sc_keys = ['iv_Ox', 'iv_Oy', 'iv_Oz']
 
     # Test for ion velocity in spacecraft coordinates, add if not present
     if not np.all([kk in iap.data.keys() for kk in sc_keys]):
@@ -382,8 +382,7 @@ def add_drift_geo_coord(iap):
     geo_vel = np.array(geo_vel).reshape((len(geo_vel), 3))
 
     # Save the data
-    for i,name in enumerate(['ion_vel_geo_x', 'ion_vel_geo_y',
-                             'ion_vel_geo_z']):
+    for i,name in enumerate(['iv_geo_x', 'iv_geo_y', 'iv_geo_z']):
         iap[name] = pds.Series(geo_vel[:,i], index=iap.data.index, name=name)
         iap.meta.data.units[name] = iap.meta.data.units[sc_keys[-1]]
 
