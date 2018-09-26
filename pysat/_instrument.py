@@ -365,9 +365,18 @@ class Instrument(object):
                 return self.data.ix[key[0], key[1]]
             else:
                 try:
-                    return self.data[key]
-                except:
+                    # integer based indexing
                     return self.data.iloc[key]
+                except:
+                    try:
+                        # let pandas sort it out, presumption is key is 
+                        # a variable name, or iterable of variables
+                        return self.data[key]      
+                    except:
+                        estring = '\n'.join(("Unable to sort out data access.",
+                                             "Instrument has data : " + str(not self.empty),
+                                             "Requested key : ", key))
+                        raise ValueError(estring)
         else:
             return self.__getitem_xarray__(key)
 
@@ -428,6 +437,7 @@ class Instrument(object):
         """
         return self.data[key]
 
+
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
         
@@ -486,7 +496,7 @@ class Instrument(object):
                                             min_label=self.min_label, max_label=self.max_label)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
-            
+                        
             # assign data and any extra metadata
             self.data[key] = in_data
             self.meta[key] = new
@@ -540,6 +550,7 @@ class Instrument(object):
                     self.data[keyname] = in_data[keyname]
             # attach metadata            
             self.meta[key] = new
+
             """
             #print("key", key)
             #print(new)
@@ -586,7 +597,6 @@ class Instrument(object):
             # Assign metadata information
             self.meta[key] = new
             
-
                         
     @property
     def empty(self):
@@ -728,7 +738,7 @@ class Instrument(object):
         except AttributeError:
             pass
         try:
-            self.multi_file_day = inst.self.multi_file_day
+            self.multi_file_day = inst.multi_file_day
         except AttributeError:
             pass
         try:
@@ -742,7 +752,7 @@ class Instrument(object):
 
         return
 
-    def __repr__(self):
+    def __str__(self):
 
         output_str = '\npysat Instrument object\n'
         output_str += '-----------------------\n'
@@ -759,7 +769,7 @@ class Instrument(object):
         output_str += self.kwargs.__repr__() +'\nCustom Functions : \n'
         if len(self.custom._functions) > 0:
             for func in self.custom._functions:
-                output_str += '    ' + func.__repr__()
+                output_str += '    ' + func.__repr__() + '\n'
         else:
             output_str += '    ' + 'No functions applied.\n'
 
@@ -774,7 +784,10 @@ class Instrument(object):
             output_str += self.orbit_info['period'].__str__() + '\n'
             output_str += 'Number of Orbits: {:d}\n'.format(self.orbits.num)
             output_str += 'Loaded Orbit Number: '
-            output_str += '{:d}\n'.format(self.orbits.current)
+            if self.orbits.current is not None:
+                output_str += '{:d}\n'.format(self.orbits.current)
+            else:
+                output_str += 'None\n'
 
         output_str += '\nLocal File Statistics' + '\n'
         output_str += '---------------------' + '\n'
@@ -877,7 +890,7 @@ class Instrument(object):
                                        date.strftime('%D')))
                 '''
                 output_str = ' '.join(('Returning', output_str, 'data for',
-                                       date.strftime('%j')))
+                                       date.strftime('%x')))
             else:
                 if len(fname) == 1:
                     # this check was zero
@@ -1161,7 +1174,8 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def download(self, start, stop, freq='D', user=None, password=None):
+    def download(self, start, stop, freq='D', user=None, password=None,
+                 **kwargs):
         """Download data for given Instrument object from start to stop.
         
         Parameters
@@ -1177,6 +1191,8 @@ class Instrument(object):
             username, if required by instrument data archive
         password : string
             password, if required by instrument data archive
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments
             
         Note
         ----
@@ -1199,14 +1215,15 @@ class Instrument(object):
             self._download_rtn(date_array,
                                tag=self.tag,
                                sat_id=self.sat_id,
-                               data_path=self.files.data_path)
+                               data_path=self.files.data_path,
+                               **kwargs)
         else:
             self._download_rtn(date_array,
                                tag=self.tag,
                                sat_id=self.sat_id,
                                data_path=self.files.data_path,
                                user=user,
-                               password=password)
+                               password=password, **kwargs)
         # get current file date range
         first_date = self.files.start_date
         last_date = self.files.stop_date
@@ -1387,7 +1404,9 @@ class Instrument(object):
         if self._iter_type == 'date':
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
-                if (len(idx) == 0) | (idx+1 >= len(self._iter_list)):
+                if (len(idx) == 0):
+                    raise StopIteration('File list is empty. Nothing to be done.')
+                elif idx[-1]+1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx += 1
@@ -1423,7 +1442,9 @@ class Instrument(object):
         if self._iter_type == 'date':
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
-                if (len(idx) == 0) | (idx-1 < 0):
+                if len(idx) == 0:
+                    raise StopIteration('File list is empty. Nothing to be done.')
+                elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx -= 1
@@ -1642,7 +1663,7 @@ class Instrument(object):
                             export_dict[key+'_'+ho_key][original_key] = meta_dict[original_key]
 
         return export_dict
-        
+
  
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
                    zlib=False, complevel=4, shuffle=True):
@@ -1768,6 +1789,7 @@ class Instrument(object):
             new_dict = self._filter_netcdf4_metadata(new_dict, np.int64)
             # attach metadata
             cdfkey.setncatts(new_dict)
+
             # attach data
             cdfkey[:] = (self.index.values.astype(np.int64) *
                          1.E-6).astype(np.int64)
@@ -1843,6 +1865,7 @@ class Instrument(object):
                         except KeyError:
                             print(', '.join(('Unable to find MetaData for',
                                              key)))
+
                         # time to actually write the data now
                         cdfkey[:] = data.values
                         
@@ -1967,7 +1990,7 @@ class Instrument(object):
                                     temp_cdf_data[i, :] = self[i, key].values
                                 # write data
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
-                                
+
                         # we are done storing the actual data for the given higher
                         # order variable, now we need to store the index for all
                         # of that fancy data
