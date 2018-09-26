@@ -14,7 +14,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     """
     url = 'https://cdpp-archive.cnes.fr/'
     print('Data must be downloaded by registered users at: {:s}'.format(url))
-    raise RuntimeError('not written yet')
+    return
 
 def bytes_to_float(chunk):
     """ Convert a chunk of bytes to a float
@@ -462,12 +462,11 @@ def set_metadata(name, meta_dict):
                         'H+_density':'H+ density', 'He+_density':'He+ density',
                         'O+_density':'O+ density',
                         'Ion_temperature':'Ion temperature',
-                        'ion_vel_Oz':'Ion velocity along the satellite Oz axis',
-                        'ion_vel_negOz_angle':'Angle between the ion velocity' +
-                        ' and -Oz axis of satellite',
-                        'ion_vel_xOy_Ox_angle':'Angle between projection of ' +
-                        'the ion velocity on the xOy plane and axis Ox of ' +
-                        'satellite',
+                        'iv_Oz':'Ion velocity along the satellite z axis',
+                        'iv_negOz_angle':'Angle between the ion velocity and' +
+                        ' -z axis (ram direction) of satellite',
+                        'iv_xOy_Ox_angle':'Angle between projection of the ' +
+                        'ion velocity on the x-y plane and satellite x axis',
                         'satellite_potential':'Satellite potential'}}
 
     if not name in long_inst.keys():
