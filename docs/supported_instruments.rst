@@ -74,6 +74,18 @@ ISS-FPMU
 .. automodule:: pysat.instruments.iss_fpmu
    :members: __doc__
 
+netCDF Pandas
+-------------
+
+.. automodule:: pysat.instruments.netcdf_pandas
+   :members: __doc__, init, load, list_files, download
+
+NASA CDAWeb
+-----------
+
+.. automodule:: pysat.instruments.nasa_cdaweb_methods
+   :members: __doc__, init, load, list_files, download
+
 OMNI
 ----
 
@@ -92,10 +104,22 @@ ROCSAT-1 IVM
 .. automodule:: pysat.instruments.rocsat1_ivm
    :members: __doc__
 
+SPORT IVM
+---------
+
+.. automodule:: pysat.instruments.sport_ivm
+   :members: __doc__
+
 SuperDARN
 ---------
 
 .. automodule:: pysat.instruments.superdarn_grdex
+   :members: __doc__
+
+SuperMAG
+--------
+
+.. automodule:: pysat.instruments.supermag_magnetometer
    :members: __doc__
 
 TIMED/SEE
