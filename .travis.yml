@@ -48,7 +48,7 @@ install:
   - ls
   # check if there is a partial download of pyglow, remove if true
   - if [[ -d "$pyglow_dir" && ! -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      rmdir -r ./pyglow;
+      rm -r ./pyglow;
     fi
   # pyglow exists, install it  
   - if [[ -d "$pyglow_dir" && -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
