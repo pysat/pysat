@@ -48,10 +48,10 @@ install:
   - ls
   # check if there is a partial download of pyglow, remove if true
   - if [[ -d "$pyglow_dir" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      export PYGLOW_SIZE=$(du -s $pyglow_dir)
-      echo $PYGLOW_SIZE
-      echo 'PYGLOW_SIZE'
-      export CHECK_SIZE="50000"
+      export PYGLOW_SIZE=$(du -s $pyglow_dir);
+      echo $PYGLOW_SIZE;
+      echo 'PYGLOW_SIZE';
+      export CHECK_SIZE="50000";
       if [["$PYGLOW_SIZE" -lt "$CHECK_SIZE"]]; then
         rm -r ./pyglow;
         echo 'removing pyglow directory';
