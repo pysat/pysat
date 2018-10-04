@@ -78,27 +78,27 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     # Calculate the desired statistics
     if 'mean_err' in methods:
         for iname in inst_name:
-            stat_dict[iname]['mean_err'] = diff_data[iname].mean()
+            stat_dict[iname]['mean_err'] = diff_data[iname].mean().values
     if 'mean_abs_err' in methods:
         for iname in inst_name:
-            stat_dict[iname]['mean_abs_err'] = abs(diff_data[iname]).mean()
+            stat_dict[iname]['mean_abs_err'] = abs(diff_data[iname]).mean().values
     if 'median_err' in methods:
         for iname in inst_name:
-            stat_dict[iname]['median_err'] = diff_data[iname].median()
+            stat_dict[iname]['median_err'] = diff_data[iname].median().values
     if 'median_abs_err' in methods:
         for iname in inst_name:
-            stat_dict[iname]['median_abs_err'] = abs(diff_data[iname]).median()
+            stat_dict[iname]['median_abs_err'] = abs(diff_data[iname]).median().values
     if 'moments_err' in methods:
         for iname in inst_name:
-            mmean = diff_data[iname].mean()
-            mstd = diff_data[iname].std()
+            mmean = diff_data[iname].mean().values
+            mstd = diff_data[iname].std().values
             mskew = stats.skew(diff_data[iname], nan_policy='omit')
             mkurt = stats.kurtosis(diff_data[iname], nan_policy='omit')
             stat_dict[iname]['moments_err'] = [mmean, mstd, mskew, mkurt]
     if 'moments_abs_err' in methods:
         for iname in inst_name:
-            mmean = abs(diff_data[iname]).mean()
-            mstd = abs(diff_data[iname]).std()
+            mmean = abs(diff_data[iname]).mean().values
+            mstd = abs(diff_data[iname]).std().values
             mskew = stats.skew(abs(diff_data[iname]), nan_policy='omit')
             mkurt = stats.kurtosis(abs(diff_data[iname]), nan_policy='omit')
             stat_dict[iname]['moments_abs_err'] = [mmean, mstd, mskew, mkurt]
@@ -130,12 +130,11 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
             stat_dict[iname]['deciles_abs_err'] = [q1, q3]
     if 'percent_bias' in methods:
         for iname in inst_name:
-            stat_dict[iname]['percent_bias'] = (diff_data[iname].sum() /
-                                                pairs.data_vars[iname].sum()) \
-                                                * 100.0
+            stat_dict[iname]['percent_bias'] = (diff_data[iname].sum() / \
+                                    pairs.data_vars[iname].sum()).values * 100.0
     if 'mean_sq_err' in methods:
         for iname in inst_name:
-            stat_dict[iname]['mean_sq_err'] = (diff_data[iname]**2).mean()
+            stat_dict[iname]['mean_sq_err'] = (diff_data[iname]**2).mean().values
         
     return stat_dict, data_units
 
