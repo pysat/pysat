@@ -369,6 +369,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
 
     """
     from scipy import interpolate
+    from pysat import utils
 
     # Test input
     if inst is None:
@@ -399,7 +400,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     for i,ii in enumerate(inst_name):
         if not ii in list(inst.data.keys()):
             raise ValueError('Unknown instrument location index {:}'.format(ii))
-        inst_scale[i] = utils.scale_units(mod_units[i], inst.meta.data.units[ii])
+        inst_scale[i] = utils.scale_units(mod_units[i],
+                                          inst.meta.data.units[ii])
 
     # Determine which data to interpolate and initialize the interpolated output
     if sel_name is None:
