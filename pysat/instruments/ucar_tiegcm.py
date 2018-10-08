@@ -13,6 +13,11 @@ name : string
 tag : string
     None supported
    
+Note
+----
+
+    Loads into xarray format.
+    
 """
 
 from __future__ import print_function
@@ -28,6 +33,7 @@ import pysat
 platform = 'ucar'
 name = 'tiegcm'
 
+# specify using xarray (not using pandas)
 pandas_format = False
 
 def init(self):
@@ -67,14 +73,13 @@ def load(fnames, tag=None, sat_id=None):
     Returns
     -------
     data, metadata
-        Data and Metadata are formatted for pysat. Data is a pandas 
-        DataFrame while metadata is a pysat.Meta instance.
+        Data and Metadata are formatted for pysat. Data is an xarray 
+        DataSet while metadata is a pysat.Meta instance.
         
     Note
     ----
     Any additional keyword arguments passed to pysat.Instrument
-    upon instantiation are passed along to this routine and through
-    to the load_netcdf4 call.
+    upon instantiation are passed along to this routine.
     
     Examples
     --------
@@ -86,6 +91,29 @@ def load(fnames, tag=None, sat_id=None):
 
     data = xr.open_dataset(fnames[0])
     meta = pysat.Meta()
+    # move attributes to the Meta object
+    # these attributes will be trasnferred to the Instrument object
+    # automatically by pysat
+    for attr in data.attrs:
+        setattr(meta, attr[0], attr[1])
+    data.attrs = []
+        
+    # fill Meta object with variable information
+    for key in data.variables.keys():
+        attrs = data.variables[key].attrs
+        meta[key] = attrs
+
+    # move misc parameters
+    # doing this after the meta ensures all metadata is still kept
+    # even for moved variables
+    meta.p0 = data['p0']
+    meta.p0_model = data['p0_model']
+    meta.grav = data['grav']
+    meta.mag = data['mag']
+    meta.timestep = data['timestep']
+    # remove from xarray
+    data = data.drop(['p0', 'p0_model', 'grav', 'mag', 'timestep'])
+            
     return data, meta
 
 
