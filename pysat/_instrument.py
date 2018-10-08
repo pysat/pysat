@@ -534,12 +534,15 @@ class Instrument(object):
                 elif len(np.shape(in_data)) == 0:
                     self.data[key] = ('time', [in_data]*len(self.index))
                 else:
-                    # multidimensional input
-                    # user needs to provide what is required
-                    if isinstance(in_data, tuple):
+                    try:
                         self.data[key] = in_data
-                    else:
-                        raise ValueError('Must provide dimensions for xarray multidimensional data using input tuple.')
+                    except:
+                        # multidimensional input
+                        # user needs to provide what is required
+                        if isinstance(in_data, tuple):
+                            self.data[key] = in_data
+                        else:
+                            raise ValueError('Must provide dimensions for xarray multidimensional data using input tuple.')
             elif hasattr(key, '__iter__'):
                 for keyname in key:
                     self.data[keyname] = in_data[keyname]
