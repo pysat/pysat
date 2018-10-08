@@ -127,3 +127,9 @@ TIMED/SEE
 
 .. automodule:: pysat.instruments.timed_see
    :members: __doc__
+
+UCAR TIEGCM
+-----------
+
+.. automodule:: pysat.instruments.ucar_tiegcm
+   :members: __doc__
