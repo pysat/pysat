@@ -266,13 +266,11 @@ def remove_icon_names(inst, target=None):
     inst.data.rename(columns=lambda x: x.split(prepend_str)[-1], inplace=True)
     inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
     orig_keys = inst.meta.keys_nD()  
-    print ('hello')
     for keynD in orig_keys:
         new_key = keynD.split(prepend_str)[-1]
         new_meta = inst.meta.pop(keynD)
         new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
         inst.meta[new_key] = new_meta
-        print (keynD, new_key)
         
     return    
 
