@@ -19,6 +19,15 @@ Warnings
 - No download routine as ICON has not yet been launched
 - Data not yet publicly available
 
+Example
+-------
+    import pysat
+    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2', clean_level='clean')
+    ivm.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
+    ivm.load(2017,363)
+
+Author
+------
 R. A. Stoneback
 
 """
@@ -46,25 +55,85 @@ test_dates = {'a':{'level_2':pysat.datetime(2018,1,1)},
 
 
 def init(self):
-    """
-    """
-    pass
+    """Initializes the Instrument object with instrument specific values.
+    
+    Runs once upon instantiation.
+    
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object
 
-    return
+    Returns
+    --------
+    Void : (NoneType)
+        modified in-place, as desired.
+
+    """
+    
+    print ("Mission acknowledgements and data restrictions will be printed here when available.")
+    
+    pass
 
 
 def default(inst):
-    """Default routine to be applied when loading data. Removes redundant naming
+    """Default routine to be applied when loading data. 
     
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object
+
+    Note
+    ----
+        Removes ICON preamble on variable names.
+
     """
     
     remove_icon_names(inst)
 
 
 def load(fnames, tag=None, sat_id=None):
-    """
+    """Loads ICON IVM data using pysat into pandas.
+    
+    This routine is called as needed by pysat. It is not intended
+    for direct user interaction.
+    
+    Parameters
+    ----------
+    fnames : array-like
+        iterable of filename strings, full path, to data files to be loaded.
+        This input is nominally provided by pysat itself.
+    tag : string
+        tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself.
+    sat_id : string
+        Satellite ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself.
+    **kwargs : extra keywords
+        Passthrough for additional keyword arguments specified when 
+        instantiating an Instrument object. These additional keywords
+        are passed through to this routine by pysat.
+    
+    Returns
+    -------
+    data, metadata
+        Data and Metadata are formatted for pysat. Data is a pandas 
+        DataFrame while metadata is a pysat.Meta instance.
+        
+    Note
+    ----
+    Any additional keyword arguments passed to pysat.Instrument
+    upon instantiation are passed along to this routine.
+    
+    Examples
+    --------
+    ::
+        inst = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2')
+        inst.load(2019,1)
     
     """
+
     return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch', 
                                     units_label='Units', name_label='Long_Name', 
                                     notes_label='Var_Notes', desc_label='CatDesc',
@@ -75,11 +144,47 @@ def load(fnames, tag=None, sat_id=None):
   
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of ICON IVM files for both 'a' and 'b' instruments.
+    """Produce a list of files corresponding to ICON IVM.
+
+    This routine is invoked by pysat and is not intended for direct use by the end user.
     
-    Notes
-    -----
-    Currently fixed to level-2
+    Multiple data levels may be supported via the 'tag' input string.
+    Currently defaults to level-2 data, or L2 in the filename.
+
+    Parameters
+    ----------
+    tag : string ('')
+        tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself.
+    sat_id : string ('')
+        Satellite ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself.
+    data_path : string
+        Full path to directory containing files to be loaded. This
+        is provided by pysat. The user may specify their own data path
+        at Instrument instantiation and it will appear here.
+    format_str : string (None)
+        String template used to parse the datasets filenames. If a user
+        supplies a template string at Instrument instantiation
+        then it will appear here, otherwise defaults to None.
+    
+    Returns
+    -------
+    pandas.Series
+        Series of filename strings, including the path, indexed by datetime.
+    
+    Examples
+    --------
+    ::
+        If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
+        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:04d}.NC'
+    
+    Note
+    ----
+    The returned Series should not have any duplicate datetimes. If there are
+    multiple versions of a file the most recent version should be kept and the rest
+    discarded. This routine uses the pysat.Files.from_os constructor, thus
+    the returned files are up to pysat specifications.
     
     """
     
@@ -161,11 +266,13 @@ def remove_icon_names(inst, target=None):
     inst.data.rename(columns=lambda x: x.split(prepend_str)[-1], inplace=True)
     inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
     orig_keys = inst.meta.keys_nD()  
-    for key in orig_keys:
-        new_key = key.split(prepend_str)[-1]
-        new_meta = inst.meta.pop(key)
+    print ('hello')
+    for keynD in orig_keys:
+        new_key = keynD.split(prepend_str)[-1]
+        new_meta = inst.meta.pop(keynD)
         new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
         inst.meta[new_key] = new_meta
+        print (keynD, new_key)
         
     return    
 
