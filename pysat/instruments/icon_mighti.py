@@ -11,7 +11,9 @@ platform : string
 name : string
     'mighti'
 tag : string
-    None supported
+    'level_2'
+sat_id : string
+    'Red' or 'Green'
 
 Warnings
 --------
