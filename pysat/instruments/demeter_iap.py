@@ -67,7 +67,7 @@ def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
     """Return a Pandas Series of every file for DEMETER IAP satellite data
 
     Parameters
-    -----------
+    ----------
     tag : (string)
         Denotes type of file to load.  Accepted types are 'survey'; 'burst'
         will be added in the future.  (default='survey')
@@ -85,7 +85,7 @@ def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
         (default=True)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : (pysat._files.Files)
         A class containing the verified available files
 
@@ -109,7 +109,7 @@ def load(fnames, tag='survey', sat_id=''):
     """ Load DEMETER IAP data
 
     Parameters
-    -----------
+    ----------
     fnames : (list)
         List of file names
     tag : (string)
@@ -120,7 +120,7 @@ def load(fnames, tag='survey', sat_id=''):
         (default='')
 
     Returns
-    ------------
+    -------
     data : (pds.DataFrame)
         DataFrame of DEMETER satellite data
     meta : 
@@ -154,12 +154,12 @@ def load_experiment_data(fhandle):
     """ Load survey mode binary file
 
     Parameters
-    -----------
+    ----------
     fhandle : (file)
         file handle
 
     Returns
-    ----------
+    -------
     data : np.ndarray
         Numpy array of data values containing: housekeeping and status,
         H+ density, He+ density, O+ density, Ion tempearture,
@@ -191,7 +191,7 @@ def load_experiment_data(fhandle):
     # Load the rest of the data
     i = 76
     exp_data = ['H+_density', 'He+_density', 'O+_density', 'Ion_temperature',
-                'ion_vel_Oz', 'ion_vel_-Oz_angle', 'ion_vel_xOy_Ox_angle',
+                'iv_Oz', 'iv_negOz_angle', 'iv_xOy_Ox_angle',
                 'satellite_potential']
     while i < 108:
         data.append(demeter_methods.bytes_to_float(chunk[i:i+4]))
@@ -199,15 +199,15 @@ def load_experiment_data(fhandle):
     data_names.extend(exp_data)
 
     for dname in exp_data:
-        if dname.find('density'):
+        if dname.find('density') > 0:
             data_units[dname] = chunk[46:52]
-        elif dname.find('temperature'):
+        elif dname.find('temperature') > 0:
             data_units[dname] = chunk[52:58]
-        elif dname.find('potential'):
+        elif dname.find('potential') > 0:
             data_units[dname] = chunk[64:70]
-        elif dname.find('angle'):
+        elif dname.find('angle') > 0:
             data_units[dname] = chunk[70:76]
-        elif dname.find('velocity'):
+        elif dname.find('ion_vel') == 0:
             data_units[dname] = chunk[58:64]
 
     # Load the metadata
@@ -217,43 +217,43 @@ def load_experiment_data(fhandle):
     return data, meta
 
     
-def clean(demeter):
+def clean(iap):
     """ Remove data to the desired level of cleanliness
 
     Parameters
-    -------------
-    demeter : pysat.Instrument
-        DEMETER instrument class object
+    ----------
+    iap : pysat.Instrument
+        DEMETER IAP instrument class object
 
     Return
-    ---------
+    ------
     Updates data by removing times where data quality fails the conditions
     for the specified cleaning level
 
     Notes
-    ------
+    -----
     clean : only data when at least two ions are considered and currents >= 1nA,
             also considers house-keepings and status
     dusty : only data when at least two ions are considered and currents >= 1nA
     dirty : currents >= 1nA
     """
 
-    if demeter.clean_level in ['clean', 'dusty']:
+    if iap.clean_level in ['clean', 'dusty']:
         # Determine the number of ions present, using a threshold for the
         # minimum significant density for one of the three ion species
         oplus_thresh = 5.0e2 # From Berthelier et al. 2006
-        nions = np.zeros(shape=demeter.data.index.shape)
-        for i,oplus in enumerate(demeter.data['O+_density']):
+        nions = np.zeros(shape=iap.data.index.shape)
+        for i,oplus in enumerate(iap.data['O+_density']):
             if oplus >= oplus_thresh:
                 nions[i] += 1
 
                 # From Berthelier et al. 2006
-                if demeter.data['H+_density'][i] > oplus * 0.02:
+                if iap.data['H+_density'][i] > oplus * 0.02:
                     nions[i] += 1
-                if demeter.data['He+_density'][i] > oplus * 0.02:
+                if iap.data['He+_density'][i] > oplus * 0.02:
                     nions[i] += 1
 
-        if demeter.clean_level == 'clean':
+        if iap.clean_level == 'clean':
             raise RuntimeError('not written yet')
         else:       
             idx, = np.where(nions > 1)
@@ -264,3 +264,128 @@ def clean(demeter):
     self.data = self[idx]
 
     return
+
+def add_drift_sat_coord(iap):
+    """ Calculate the ion velocity in satellite x,y,z coordinates
+
+    Parameters
+    ----------
+    iap : pysat.Instrument
+        DEMETER IAP instrument class object
+
+    Return
+    ------
+    Adds data values iv_Ox, iv_Oy
+
+    """
+
+    # Because np.radians isn't working for data coming from the DataFrame :(
+    rad = np.array([np.radians(rr) for rr in iap['iv_negOz_angle']])
+    vxy = - iap['iv_Oz'] * np.tan(rad)
+    rad = np.array([np.radians(rr) for rr in iap['iv_xOy_Ox_angle']])
+
+    iap['iv_Ox'] = vxy * np.cos(rad)
+    iap['iv_Oy'] = vxy * np.sin(rad)
+    iap.meta.data.units['iv_Ox'] = iap.meta.data.units['iv_Oz']
+    iap.meta.data.units['iv_Oy'] = iap.meta.data.units['iv_Oz']
+
+    # Because the ADV instrument is not fully aligned with the axis of the
+    # satellite, reposition into satellite coordinates
+    # (IS THIS ALREADY CORRECTED IN FILES?)
+    print("WARNING the ADV instrument is not fully aligned with the axis of the"
+          + " satellite and this may not have been corrected")
+
+    return
+
+def add_drift_lgm_coord(iap):
+    """ Calcuate the ion velocity in local geomagneic coordinates
+
+    Parameters
+    ----------
+    iap : pysat.Instrument
+        DEMETER IAP instrument class object
+
+    Return
+    ------
+    Adds data values iv_par (parallel to B vector at satellite),
+    iv_pos (perpendictular to B, in the plane of the satellite),
+    iv_perp (completes the coordinate system).  If iv_Ox and iv_Oy
+    do not exist yet, adds them as well
+
+    """
+
+    sc_keys = ['iv_Ox', 'iv_Oy', 'iv_Oz']
+
+    # Test for ion velocity in spacecraft coordinates, add if not present
+    if not np.all([kk in iap.data.keys() for kk in sc_keys]):
+        add_drift_sat_coord(iap)
+
+    # Construct a numpy array of the velocity vectors
+    sc_vel = iap.data[sc_keys].values
+
+    # Construct a numpy array of the rotational matrix that convert
+    # from satellite to local geomagnetic coordinates.  Then calculate the
+    # velocity in local geomagnetic coordinates
+    lgm_vel = list()
+    for i,ind in enumerate(iap.data.index):
+        sat2geo = np.matrix([[iap['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
+                              for k in range(3)] for j in range(3)])
+        geo2lgm = np.matrix([[iap['geo2lgm_{:d}{:d}'.format(j+1, k+1)][ind]
+                              for k in range(3)] for j in range(3)])
+        sat2lgm = np.matmul(geo2lgm, sat2geo)
+
+        lgm_vel.append(np.matmul(sat2lgm, np.array(sc_vel[i], dtype=float)))
+    lgm_vel = np.array(lgm_vel).reshape((len(lgm_vel), 3))
+
+    # Save the data
+    for i,name in enumerate(['iv_pos', 'iv_perp', 'iv_par']):
+        iap[name] = pds.Series(lgm_vel[:,i], index=iap.data.index, name=name)
+        iap.meta.data.units[name] = iap.meta.data.units[sc_keys[-1]]
+
+    return
+
+def add_drift_geo_coord(iap):
+    """ Calcuate the ion velocity in geographic coordinates
+
+    Parameters
+    ----------
+    iap : pysat.Instrument
+        DEMETER IAP instrument class object
+
+    Return
+    ------
+    Adds data values iv_geo_x (towards the intersection of equator and
+    Grennwich meridian), iv_geo_y (completes coordinate system),
+    iv_geo_z (follows Earth's rotational axis, positive Northward).
+    If iv_Ox,y do not exist yet, adds them as well
+
+    """
+
+    sc_keys = ['iv_Ox', 'iv_Oy', 'iv_Oz']
+
+    # Test for ion velocity in spacecraft coordinates, add if not present
+    if not np.all([kk in iap.data.keys() for kk in sc_keys]):
+        add_drift_sat_coord(iap)
+
+    # Construct a numpy array of the velocity vectors
+    sc_vel = iap.data[sc_keys].values
+
+    # Construct a numpy array of the rotational matrix that convert
+    # from satellite to local geomagnetic coordinates.  Then calculate the
+    # velocity in local geomagnetic coordinates
+    geo_vel = list()
+    for i,ind in enumerate(iap.data.index):
+        sat2geo = np.matrix([[iap['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
+                              for k in range(3)] for j in range(3)])
+
+        geo_vel.append(np.matmul(sat2geo, np.array(sc_vel[i], dtype=float)))
+    geo_vel = np.array(geo_vel).reshape((len(geo_vel), 3))
+
+    # Save the data
+    for i,name in enumerate(['iv_geo_x', 'iv_geo_y', 'iv_geo_z']):
+        iap[name] = pds.Series(geo_vel[:,i], index=iap.data.index, name=name)
+        iap.meta.data.units[name] = iap.meta.data.units[sc_keys[-1]]
+
+    return
+    
+    
