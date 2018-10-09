@@ -19,6 +19,11 @@ Warnings
 - No cleaning routines
 - Module not written by RBSP team.
 --------
+
+Authors
+-------
+Armando Maldonado, The University of Texas at Dallas, Tue  9 Oct 2018 17:37:14 CDT
+Russel Stoneback, The University of Texas at Dallas
        
 """
 
