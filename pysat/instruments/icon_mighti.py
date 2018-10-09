@@ -13,7 +13,7 @@ name : string
 tag : string
     'level_2'
 sat_id : string
-    'Red' or 'Green'
+    'red' or 'green'
 
 Warnings
 --------
@@ -50,10 +50,10 @@ import pysat
 platform = 'icon'
 name = 'mighti'
 tags = {'level_2':'Level 2 public geophysical data'}
-sat_ids = {'Green':['level_2 Green Line'],
-           'Red':['Level_2 Red Line']}
-test_dates = {'Green':{'level_2':pysat.datetime(2017,5,27)},
-              'Red':{'level_2':pysat.datetime(2017,5,27)}}
+sat_ids = {'green':['level_2 Green Line'],
+           'red':['Level_2 Red Line']}
+test_dates = {'green':{'level_2':pysat.datetime(2017,5,27)},
+              'red':{'level_2':pysat.datetime(2017,5,27)}}
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
@@ -231,11 +231,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         raise ValueError('Unsupported level supplied: ' + level)
 
     # deal with case of sat_id
-    if sat_id == 'green':
-        satid = 'Green'
-    elif sat_id == 'red':
-        satid = 'Red'
-        
+    satid = sat_id.captialize()
+    
     if format_str is None:
         format_str = 'ICON_'+code+'_MIGHTI_Vector-Wind-'+satid
         if desc is not None:
