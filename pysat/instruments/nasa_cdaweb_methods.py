@@ -215,6 +215,7 @@ def download(supported_tags, date_array, tag, sat_id,
 
     import os
     import ftplib
+    import fnmatch
 
     # connect to CDAWeb default port
     ftp = ftplib.FTP(ftp_site) 
@@ -228,10 +229,10 @@ def download(supported_tags, date_array, tag, sat_id,
         
     # path to relevant file on CDAWeb
     ftp.cwd(ftp_dict['dir'])
+
     
     # naming scheme for files on the CDAWeb server
     remote_fname = ftp_dict['remote_fname']
-    
     # naming scheme for local files, should be closely related
     # to CDAWeb scheme, though directory structures may be reduced
     # if desired
@@ -241,15 +242,32 @@ def download(supported_tags, date_array, tag, sat_id,
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year, 
                         month=date.month, day=date.day)
-        formatted_local_fname = local_fname.format(year=date.year, 
-                        month=date.month, day=date.day)
+
+        #split the remote name to obtain a proper list of formatted directories
+        split_formatted_remote_fname = formatted_remote_fname.split('/')
+        #navigate to the directory for a list of files
+        formatted_remote_dir = (ftp_dict['dir']+'/'+
+            '/'.join(split_formatted_remote_fname[:-1]))
+
+        ftp.cwd(formatted_remote_dir)
+
+        #File list used incase of regex, glob, or fnmatch
+        remote_file_list=[]
+        ftp.retrlines('NLST',remote_file_list.append)
+        valid_formatted_remote_fname = fnmatch.filter(remote_file_list,
+                                                      split_formatted_remote_fname[-1])
+        valid_formatted_remote_fname = valid_formatted_remote_fname[0]
+
+        # Create the local filename after it has been found.
+        # Local file names must be created after they are found in the server
+        formatted_local_fname = valid_formatted_remote_fname
         saved_local_fname = os.path.join(data_path,formatted_local_fname) 
 
         # perform download                  
         try:
             print('Attempting to download file for '+date.strftime('%x'))
             sys.stdout.flush()
-            ftp.retrbinary('RETR '+formatted_remote_fname, open(saved_local_fname,'wb').write)
+            ftp.retrbinary('RETR '+ valid_formatted_remote_fname, open(saved_local_fname,'wb').write)
             print('Finished.')
         except ftplib.error_perm as exception:
             # if exception[0][0:3] != '550':
@@ -258,12 +276,10 @@ def download(supported_tags, date_array, tag, sat_id,
             else:
                 os.remove(saved_local_fname)
                 print('File not available for '+ date.strftime('%x'))
+        #navigate back to the original directory
+        #This is incase the range spans multiple folders
+        ftp.cwd(ftp_dict['dir'])
+
     ftp.close()
-               
-                    
-                    
-                    
-                    
-                    
 
 
