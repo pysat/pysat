@@ -9,7 +9,8 @@ name : string
     'kp'
 tag : string
     '' Standard Kp data
-    'forecast' Grab forecast data from (SWPC next 3 days)
+    'forecast' Grab forecast data from SWPC (next 3 days)
+    'recent' Grab last 30 days of Kp data from SWPC 
 
 Note
 ----
@@ -17,12 +18,17 @@ Standard Kp files are stored by the first day of each month. When downloading us
 kp.download(start, stop, freq='MS') to only download days that could possibly
 have data.  'MS' gives a monthly start frequency.
 
-The forecast data is stored by day, where each file contains the forecast
+The forecast data is stored by generation date, where each file contains the forecast
 for the next three days. Forecast data downloads are only supported
 for the current day. When loading forecast data, the date specified
 with the load command is the date the forecast was generated. The data loaded
 will span three days.
 
+Recent data is also stored by the generation date from the SWPC. Each file contains
+30 days of Kp measurements. The load date issued to pysat corresponds to the generation date.
+
+The recent and forecast data should not be used with the data padding option available
+from pysat.Instrument objects.
 
 Warnings
 --------
@@ -51,7 +57,8 @@ import pysat
 platform = 'sw'
 name = 'kp'
 tags = {'':'',
-        'forecast':'SWPC Forecast data next (3 days)'}
+        'forecast':'SWPC Forecast data next (3 days)',
+        'recent':'SWPC provided Kp for past 30 days'}
 sat_ids = {'':['']}
 test_dates = {'':{'':pysat.datetime(2009,1,1), 'forecast':pysat.datetime(2009,1,1)}}
 
@@ -144,6 +151,10 @@ def load(fnames, tag=None, sat_id=None):
     elif tag == 'forecast':
         # load forecast data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
+        
+    elif tag == 'recent':
+        # load recent Kp data
+        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
            
     return result, pysat.Meta()
     
@@ -194,6 +205,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             return out
         elif tag == 'forecast':
             format_str = 'kp_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
+            return pysat.Files.from_os(data_path=data_path,
+                                       format_str=format_str)
+        elif tag == 'recent':
+            format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
             return pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
         else:
@@ -291,9 +306,43 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         for dd in [day1, day2, day3]:
             day.extend(dd)
         # put data into nicer DataFrame
-        data = pds.DataFrame(day, index=times, columns=['kp'])
+        data = pds.DataFrame(day, index=times, columns=['Kp'])
         # write out as a file
         data.to_csv(os.path.join(data_path, 'kp_forecast_'+date.strftime('%Y-%m-%d')+'.txt'))
+
+    elif tag == 'recent':
+        import requests
+        print('This routine can only download the current webpage, not archived forecasts')
+        # download webpage
+        r = requests.get('https://services.swpc.noaa.gov/text/daily-geomagnetic-indices.txt')
+        # parse text to get the date the prediction was generated
+        date = pysat.datetime.strptime(r.text.split(':Issued: ')[-1].split('\n')[0], '%H%M UT %d %b %Y')
+        # data is the forecast value for the next three days
+        raw_data = r.text.split('#  Date ')[-1]
+        # keep only the middle bits that matter
+        raw_data = raw_data.split('\n')[1:-1]
+        
+        # hold times from the file
+        kp_time = []
+        # holds Kp value for each station
+        sub_kps = [[], [], []]
+        # iterate through file lines and parse out the info we want
+        for line in raw_data:
+            # print (line)
+            kp_time.append(pysat.datetime.strptime(line[0:10], '%Y %m %d'))
+            # pick out Kp values for each of the three columns    
+            sub_lines = [line[17:33], line[40:56], line[63:]]
+            for sub_line, sub_kp in zip(sub_lines, sub_kps):
+                for i in np.arange(8):
+                    sub_kp.append(int(sub_line[i*2:(i+1)*2]))
+        # create times on 3 hour cadence
+        times = pds.date_range(kp_time[0], periods=8*30, freq='3H')
+        # put into DataFrame
+        data = pds.DataFrame({'mid_lat_Kp':sub_kps[0],
+                              'high_lat_Kp':sub_kps[1],
+                              'Kp':sub_kps[2]}, index=times)         
+        # write out as a file
+        data.to_csv(os.path.join(data_path, 'kp_recent_'+date.strftime('%Y-%m-%d')+'.txt'))
         
     return        
     
@@ -303,7 +352,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None, kp_inst=None)
     Loads Kp data for the same timeframe covered by sat and sets sat.data to
     NaN for times when Kp > maxKp and for filterTime after Kp drops below maxKp.
     
-    This routine is written for standard Kp data, not the forecast data.
+    This routine is written for standard Kp data, not the forecast or recent data.
     
     Parameters
     ----------
