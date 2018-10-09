@@ -108,11 +108,17 @@ def clean(inst, clean_level=None):
 def default(inst):
     """Default routine to be applied when loading data. 
     
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object
+
     Note
     ----
         Removes ICON preamble on variable names.
 
     """
+    
     import pysat.instruments.icon_ivm as icivm
     inst.tag = 'level_2'
     icivm.remove_icon_names(inst, target='ICON_L2_FUV_Daytime_ON2_')
