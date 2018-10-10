@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports F10.7 index values. Downloads data from SWPC.
+"""Supports F10.7 index values. Downloads data from LASP.
 
 Parameters
 ----------
@@ -8,7 +8,8 @@ platform : string
 name : string
     'f107'
 tag : string
-    '' Standard F10.7 data (Not implemented yet)
+    '' Standard F10.7 data (single day at a time)
+    'all' All F10.7
     'forecast' Grab forecast data from SWPC (next 3 days)
 
 Note
@@ -42,29 +43,19 @@ import pysat
 
 platform = 'sw'
 name = 'f107'
-tags = {'':'',
-        'forecast':'SWPC Forecast F107 data next (3 days)',
-        'recent':'SWPC provided F107 for past 30 days'}
-sat_ids = {'':['']}
+tags = {'':'Daily value of F10.7',
+        'all':'All F10.7 values',
+        'forecast':'SWPC Forecast F107 data next (3 days)'}
+# dict keyed by sat_id that lists supported tags for each sat_id
+sat_ids = {'':['', 'all', 'forecast']}
+# dict keyed by sat_id that lists supported tags and a good day of test data
 test_dates = {'':{'':pysat.datetime(2009,1,1), 
-                  'forecast':pysat.datetime(2009,1,1)},
-                  'recent':pysat.datetime(2009,1,1)}
-
-# create a basic parser to deal with date format of the Kp file
-def _parse(yr, mo, day):
-    """
-    Basic parser to deal with date format of the Kp file.
-    """
-    
-    yr = '20'+yr
-    yr = int(yr)
-    mo = int(mo)
-    day = int(day)
-    return pds.datetime(yr, mo, day)
+                  'all':pysat.datetime(2009,1,1),
+                  'forecast':pysat.datetime(2009,1,1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
-    """Load F!0.7 index files
+    """Load F10.7 index files
 
     Parameters
     ------------
@@ -90,58 +81,17 @@ def load(fnames, tag=None, sat_id=None):
 
 
     if tag == '':
-        # Kp data stored monthly, need to return data daily
+        # f107 data stored monthly, need to return data daily
         # the daily date is attached to filename
         # parse off the last date, load month of data, downselect to desired day
-        data = pds.DataFrame()
-        #set up fixed width format for these files
-        colspec = [(0,2),(2,4),(4,6),(7,10),(10,13),(13,16),(16,19),(19,23),(23,26),(26,29),(29,32),(32,50)]
-        for filename in fnames:
-            # the daily date is attached to filename
-            # parse off the last date, load month of data, downselect to desired day
-            fname = filename[0:-11]
-            date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
-    
-            temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,header=None, 
-                                parse_dates=[[0,1,2]], date_parser=_parse, 
-                                index_col='0_1_2')
-            idx, = np.where((temp.index >= date) & (temp.index < date+pds.DateOffset(days=1)))
-            temp = temp.iloc[idx,:]
-            data = pds.concat([data,temp], axis=0)
-            
-        # drop last column as it has data I don't care about
-        data = data.iloc[:,0:-1]
-        
-        # each column increments UT by three hours
-        # produce a single data series that has Kp value monotonically increasing in time
-        # with appropriate datetime indices
-        s = pds.Series()
-        for i in np.arange(8):
-            temp = pds.Series(data.iloc[:,i].values, 
-                            index=data.index+pds.DateOffset(hours=int(3*i))  )
-            #print temp
-            s = s.append(temp) 
-        s = s.sort_index()
-        s.index.name = 'time'
-        
-        # now, Kp comes in non-user friendly values
-        # 2-, 2o, and 2+ relate to 1.6, 2.0, 2.3
-        # will convert for user friendliness
-        first = np.array([float(x[0]) for x in s])
-        flag = np.array([x[1] for x in s])
-    
-        ind, = np.where(flag == '+')
-        first[ind] += 1./3.
-        ind, = np.where(flag == '-')
-        first[ind] -= 1./3.
-        
-        result = pds.DataFrame(first, columns=['kp'], index=s.index)
+        date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
+        data = pds.pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True) 
+        idx, = np.where((data.index >= date) & (data.index < date+pds.DateOffset(days=1)))
+        result = data.iloc[idx,:]      
+    elif tag == 'all':
+        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)                
     elif tag == 'forecast':
         # load forecast data
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-        
-    elif tag == 'recent':
-        # load recent Kp data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
            
     return result, pysat.Meta()
@@ -181,24 +131,37 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # each day of the month. The load routine will load a month of
             # data and use the appended date to select out appropriate data.
             if format_str is None:
-                format_str = 'kp{year:2d}{month:02d}.tab'
+                format_str = 'f107_monthly_{year:04d}-{month:02d}.txt'
             out = pysat.Files.from_os(data_path=data_path, 
-                format_str=format_str,
-                two_digit_year_break=94)
+                                      format_str=format_str)
             if not out.empty:
                 out.ix[out.index[-1]+pds.DateOffset(months=1)-
                          pds.DateOffset(days=1)] = out.iloc[-1]  
                 out = out.asfreq('D', 'pad')
                 out = out + '_' + out.index.strftime('%Y-%m-%d')  
             return out
+            
+        elif tag == 'all':
+            # files are by year
+            if format_str is None:
+                format_str = 'f107_1947_to_{year:04d}-{month:02d}-{day:02d}.txt'
+            out = pysat.Files.from_os(data_path=data_path, 
+                                    format_str=format_str)
+            # load the same data (all), regardless of which day a user selects
+            # resample file list to provide the same filename for every day
+            # of f107 data
+            if not out.empty:
+                # first day 2-13
+                out.ix[pysat.datetime(1947, 2, 13)] = out.iloc[0]
+                out = out.sort_index()                
+                out = out.asfreq('D', 'pad')
+
+            return out
+
         elif tag == 'forecast':
             format_str = 'f107_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
             return pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
-        # elif tag == 'recent':
-        #     format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
-        #     return pysat.Files.from_os(data_path=data_path,
-        #                                format_str=format_str)
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index F107')                  
     else:
@@ -207,7 +170,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
-    """Routine to download Kp index data
+    """Routine to download F107 index data
 
     Parameters
     -----------
@@ -237,36 +200,54 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """
 
 
-    # download standard Kp data
+    # download standard F107 data
     if tag == '':    
-    #     import ftplib
-    #     from ftplib import FTP
-    #     import sys
-    #     ftp = FTP('ftp.gfz-potsdam.de')   # connect to host, default port
-    #     ftp.login()               # user anonymous, passwd anonymous@
-    #     ftp.cwd('/pub/home/obs/kp-ap/tab')
-    # 
-    #     for date in date_array:
-    #         fname = 'kp{year:02d}{month:02d}.tab'
-    #         fname = fname.format(year=(date.year - date.year//100*100), month=date.month)
-    #         local_fname = fname
-    #         saved_fname = os.path.join(data_path,local_fname) 
-    #         try:
-    #             print('Downloading file for '+date.strftime('%x'))
-    #             sys.stdout.flush()
-    #             ftp.retrbinary('RETR '+fname, open(saved_fname,'wb').write)
-    #         except ftplib.error_perm as exception:
-    #             
-    #             if str(exception.args[0]).split(" ", 1)[0] != '550':
-    #                 raise
-    #             else:
-    #                 # file isn't actually there, just let people know
-    #                 # then continue on
-    #                 os.remove(saved_fname)
-    #                 print('File not available for '+date.strftime('%x'))
-    #     
-    #     ftp.close()
-        raise RuntimeError('Not implemented yet.')
+        # download from LASP, by month
+        import requests
+        import json
+                    
+        for date in date_array:
+            # modify date to be the start of the month
+            if date.day != 1:
+                raise ValueError('The Download routine must be invoked with a freq="MS" option.')
+            # download webpage
+            dstr = 'http://lasp.colorado.edu/lisird/latis/noaa_radio_flux.json?time%3E=' 
+            dstr += date.strftime('%Y-%m-%d')
+            dstr += 'T00:00:00.000Z&time%3C=' 
+            dstr += (date+pds.DateOffset(months=1)-pds.DateOffset(days=1)).strftime('%Y-%m-%d')
+            dstr += 'T00:00:00.000Z'
+            # data returned as json
+            r = requests.get(dstr)
+            # process
+            raw_dict = json.loads(r.text)['noaa_radio_flux']
+            data = pds.DataFrame.from_dict(raw_dict['samples'])
+            times = [pysat.datetime.strptime(time, '%Y %m %d') for time in data.pop('time')]
+            data.index = times
+            # create file
+            data.to_csv(os.path.join(data_path, 'f107_monthly_'+date.strftime('%Y-%m')+'.txt'))
+
+    elif tag == 'all':    
+        # download from LASP, by year
+        import requests
+        import json
+                    
+        # download webpage
+        dstr = 'http://lasp.colorado.edu/lisird/latis/noaa_radio_flux.json?time%3E=' 
+        dstr += pysat.datetime(1947, 2, 13).strftime('%Y-%m-%d')
+        dstr += 'T00:00:00.000Z&time%3C='
+        now = pysat.datetime.utcnow() 
+        dstr += now.strftime('%Y-%m-%dT%H:%M:%S.000Z')
+        # data returned as json
+        r = requests.get(dstr)
+        # process
+        raw_dict = json.loads(r.text)['noaa_radio_flux']
+        data = pds.DataFrame.from_dict(raw_dict['samples'])
+        times = [pysat.datetime.strptime(time, '%Y %m %d') for time in data.pop('time')]
+        data.index = times
+        # create file
+        data.to_csv(os.path.join(data_path, 'f107_1947_to_'+now.strftime('%Y-%m-%d')+'.txt'))
+            
+        
     elif tag == 'forecast':
         import requests
         print('This routine can only download the current forecast, not archived forecasts')
@@ -291,38 +272,4 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # write out as a file
         data.to_csv(os.path.join(data_path, 'f107_forecast_'+date.strftime('%Y-%m-%d')+'.txt'))
 
-    # elif tag == 'recent':
-    #     import requests
-    #     print('This routine can only download the current webpage, not archived forecasts')
-    #     # download webpage
-    #     r = requests.get('https://services.swpc.noaa.gov/text/daily-geomagnetic-indices.txt')
-    #     # parse text to get the date the prediction was generated
-    #     date = pysat.datetime.strptime(r.text.split(':Issued: ')[-1].split('\n')[0], '%H%M UT %d %b %Y')
-    #     # data is the forecast value for the next three days
-    #     raw_data = r.text.split('#  Date ')[-1]
-    #     # keep only the middle bits that matter
-    #     raw_data = raw_data.split('\n')[1:-1]
-    #     
-    #     # hold times from the file
-    #     kp_time = []
-    #     # holds Kp value for each station
-    #     sub_kps = [[], [], []]
-    #     # iterate through file lines and parse out the info we want
-    #     for line in raw_data:
-    #         # print (line)
-    #         kp_time.append(pysat.datetime.strptime(line[0:10], '%Y %m %d'))
-    #         # pick out Kp values for each of the three columns    
-    #         sub_lines = [line[17:33], line[40:56], line[63:]]
-    #         for sub_line, sub_kp in zip(sub_lines, sub_kps):
-    #             for i in np.arange(8):
-    #                 sub_kp.append(int(sub_line[i*2:(i+1)*2]))
-    #     # create times on 3 hour cadence
-    #     times = pds.date_range(kp_time[0], periods=8*30, freq='3H')
-    #     # put into DataFrame
-    #     data = pds.DataFrame({'mid_lat_Kp':sub_kps[0],
-    #                           'high_lat_Kp':sub_kps[1],
-    #                           'Kp':sub_kps[2]}, index=times)         
-    #     # write out as a file
-    #     data.to_csv(os.path.join(data_path, 'kp_recent_'+date.strftime('%Y-%m-%d')+'.txt'))
-        
     return        
