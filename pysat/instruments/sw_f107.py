@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports F10.7 index values. Downloads data from LASP.
+"""Supports F10.7 index values. Downloads data from LASP and the SWPC.
 
 Parameters
 ----------
@@ -22,7 +22,8 @@ will span three days.
 
 
 The forecast data should not be used with the data padding option available
-from pysat.Instrument objects.
+from pysat.Instrument objects. The 'all' tag shouldn't be used either, no
+other data available to pad with.
 
 Warnings
 --------
@@ -95,8 +96,9 @@ def load(fnames, tag=None, sat_id=None):
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
     
     meta = pysat.Meta()
-    meta['f107'] = {'units':'',
-                    'long_name':'F10.7 cm solar index',}
+    meta['f107'] = {'units':'SFU',
+                    'long_name':'F10.7 cm solar index',
+                    'desc':'F10.7 cm radio flux in Solar Flux Units (SFU)'}
                     
     return result, meta
     
