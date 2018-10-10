@@ -93,11 +93,15 @@ def load(fnames, tag=None, sat_id=None):
     elif tag == 'forecast':
         # load forecast data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-           
-    return result, pysat.Meta()
+    
+    meta = pysat.Meta()
+    meta['f107'] = {'units':'',
+                    'long_name':'F10.7 cm solar index',}
+                    
+    return result, meta
     
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data
+    """Return a Pandas Series of every file for F10.7 data
 
     Parameters
     -----------
@@ -223,6 +227,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             data = pds.DataFrame.from_dict(raw_dict['samples'])
             times = [pysat.datetime.strptime(time, '%Y %m %d') for time in data.pop('time')]
             data.index = times
+            # replace fill with NaNs
+            idx, = np.where(data['f107'] == -99999.)
+            data.iloc[idx,:] = np.nan
             # create file
             data.to_csv(os.path.join(data_path, 'f107_monthly_'+date.strftime('%Y-%m')+'.txt'))
 
@@ -244,6 +251,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame.from_dict(raw_dict['samples'])
         times = [pysat.datetime.strptime(time, '%Y %m %d') for time in data.pop('time')]
         data.index = times
+        # replace fill with NaNs
+        idx, = np.where(data['f107'] == -99999.)
+        data.iloc[idx,:] = np.nan
         # create file
         data.to_csv(os.path.join(data_path, 'f107_1947_to_'+now.strftime('%Y-%m-%d')+'.txt'))
             
