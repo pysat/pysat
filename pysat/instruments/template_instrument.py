@@ -1,23 +1,37 @@
 # -*- coding: utf-8 -*-
 """
-Supports loading data from files generated using TIEGCM 
-(Thermosphere Ionosphere Electrodynamics General Circulation Model) model.
-TIEGCM file is a netCDF file with multiple dimensions for some variables.
+This is a template for a pysat.Instrument support file.
+Modify this file as needed when adding a new Instrument to pysat.
+
+This is a good area to introduce the instrument, provide background
+on the mission, operations, instrumenation, and measurements.
+
+Also a good place to provide contact information. This text will
+be included in the pysat API documentation.
 
 Parameters
 ----------
 platform : string
-    'ucar'
+    *List platform string here*
 name : string
-    'tiegcm'
+    *List name string here*
+sat_id : string
+    *List supported sat_ids here*
 tag : string
-    None supported
-   
+    *List supported tag strings here*
+
 Note
 ----
 ::
 
-    Loads into xarray format.
+    Notes
+    
+Warnings
+--------
+
+
+Authors
+-------
     
 """
 
@@ -25,6 +39,9 @@ Note
 from __future__ import print_function
 from __future__ import absolute_import
 
+# pandas support
+import pandas as pds
+# xarray support
 import xarray as xr
 import pysat
 
@@ -33,23 +50,32 @@ import pysat
 # these attributes will be copied over to the Instrument object by pysat
 # the strings used here should also be used to name this file
 # platform_name.py
-platform = 'ucar'
-name = 'tiegcm'
+platform = ''
+name = ''
 
 # dictionary of data 'tags' and corresponding description
-tags = {'':'Level-2 IVM Files', # this is the default
-        'L1': 'Level-1 IVM Files',
-        'L0': 'Level-0 IVM Files'}
-# dictionary of satellite IDs, list of corresponding tags for each sat_ids
-# example
+tags = {'':'description 1', # this is the default
+        'tag_string': 'description 2'}
+
+# Let pysat know if there are multiple satellite platforms supported
+# by these routines        
+# define a dictionary keyed by satellite ID, each with a list of 
+# corresponding tags 
 # sat_ids = {'a':['L1', 'L0'], 'b':['L1', 'L2'], 'c':['L1', 'L3']}
 sat_ids = {'':['']}
-# good day to download test data for. Downloads aren't currently supported!
+
+# Define good days to download data for when pysat undergoes testing.
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
+# test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
+#                    'L1':pysat.datetime(2019,1,1)},
+#               'b':{'L1':pysat.datetime(2019,1,1),
+#                    'L2':pysat.datetime(2019,1,1),}}
 test_dates = {'':{'':pysat.datetime(2019,1,1)}}
 
 # specify using xarray (not using pandas)
+# set to True if data will be returned via a 
+# DataFrame
 pandas_format = False
 
 
@@ -76,7 +102,7 @@ def init(self):
 
 
 def load(fnames, tag=None, sat_id=None, **kwargs):
-    """Loads TIEGCM data using xarray.
+    """Loads PLATFORM data into (PANDAS/XARRAY).
     
     This routine is called as needed by pysat. It is not intended
     for direct user interaction.
@@ -86,10 +112,12 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     fnames : array-like
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
-    tag : string (None)
+    tag : string ('')
         tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string (None)
+        This input is nominally provided by pysat itself. While
+        tag defaults to None here, pysat provides '' as the default
+        tag unless specified by user at Instrument instantiation.
+    sat_id : string ('')
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
     **kwargs : extra keywords
@@ -115,7 +143,30 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
         inst.load(2019,1)
     
     """
+
+    # netCDF4 files, particularly those produced
+    # by pysat can be loaded using a pysat provided
+    # function
+    # Metadata in our notional example file is
+    # labeled by strings determined by a standard
+    # we can adapt pysat to the standard by specifying
+    # the string labels used in the file
+    # function below returns both data and metadata
+    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch', 
+                                    units_label='Units', name_label='Long_Name', 
+                                    notes_label='Var_Notes', desc_label='CatDesc',
+                                    plot_label='FieldNam', axis_label='LablAxis', 
+                                    scale_label='ScaleTyp',
+                                    min_label='ValidMin', max_label='ValidMax',
+                                    fill_label='FillVal')
     
+
+    # This code below demonstrates the use of xarray
+    # functions to load TIEGCM data
+    # Metadata is transferred from xarray to the Instrument object
+    # Data is transferred as well
+    # data not indexed by time are transferred to the Instrument object as an attribute
+        
     # load data
     data = xr.open_dataset(fnames[0])
     # move attributes to the Meta object
@@ -146,20 +197,20 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of files corresponding to UCAR TIEGCM.
+    """Produce a list of files corresponding to PLATFORM/NAME.
 
     This routine is invoked by pysat and is not intended for direct 
     use by the end user. Arguments are provided by pysat.
     
     Multiple data levels may be supported via the 'tag' input string.
-    Currently defaults to level-2 data, or L2 in the filename.
+    Multiple instruments via the sat_id string.
 
     Parameters
     ----------
-    tag : string (None)
+    tag : string ('')
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    sat_id : string (None)
+    sat_id : string ('')
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
     data_path : string (None)
@@ -190,12 +241,15 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     the returned files are up to pysat specifications.
     
     """
-    format_str = 'tiegcm_icon_merg2.0_totTgcm.s_{day:03d}_{year:4d}.nc'
+    
+    format_str = 'example_name_{year:04d}_{month:02d}_{day:02d}.nc'
+    # we use a pysat provided function to grab list of files from the
+    # local file system that match the format defined above
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
              **kwargs):
-    """Placeholder for UCAR TIEGCM downloads. Doesn't do anything.
+    """Placeholder for PLATFORM/NAME downloads. 
     
     This routine is invoked by pysat and is not intended for direct use by the end user.
     
@@ -227,6 +281,5 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
     
     """
     
-    print ('Not implemented.')
     return
 
