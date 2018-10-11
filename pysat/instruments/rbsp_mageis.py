@@ -49,7 +49,7 @@ tags=['l2','l3','l4']
 supported_tags_fname=defaultdict(dict)
 for sat_id in sat_ids:
     for tag in tags:
-        fname='rbsp'+sat_id+'_rel03_ect-mageis-'+tag +'{year:4d}{month:02d{day:02d}_v?????.cdf' 
+        fname='rbsp'+sat_id+'_rel03_ect-mageis-'+tag +'_{year:4d}{month:02d}{day:02d}_v?????.cdf'
         supported_tags_fname[sat_id][tag]=fname
 
 list_files = functools.partial(cdw.list_files, 
@@ -63,10 +63,8 @@ load = cdw.load
 supported_tags_download=defaultdict(dict)
 for sat_id in sat_ids:
     for tag in tags:
-        download_dict = {'dir':'/pub/data/rbsp/rbsp'+sat_id+'/'+tag
-                        +'/ect/mageis/sectors/rel03',
-                        'remote_fname':'{year:4d}/'
-                         +supported_tags_fname[sat_id][tag],
+        download_dict = {'dir':'/pub/data/rbsp/rbsp'+sat_id+'/'+tag +'/ect/mageis/sectors/rel03',
+                        'remote_fname':'{year:4d}/' +supported_tags_fname[sat_id][tag],
                         'local_fname':supported_tags_fname[sat_id][tag]}
         
         supported_tags_download[sat_id][tag]=download_dict
