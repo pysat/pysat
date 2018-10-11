@@ -231,7 +231,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         raise ValueError('Unsupported level supplied: ' + level)
 
     # deal with case of sat_id
-    satid = sat_id.captialize()
+    satid = sat_id.capitalize()
     
     if format_str is None:
         format_str = 'ICON_'+code+'_MIGHTI_Vector-Wind-'+satid
