@@ -52,7 +52,7 @@ load = cdw.load
 basic_tag = {'dir':'/pub/data/international_space_station_iss/sp_fpmu',
             'remote_fname':'{year:4d}/'+fname,
             'local_fname':fname}
-supported_tags = {'':basic_tag}
+supported_tags = {'':{'':basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
 
 
