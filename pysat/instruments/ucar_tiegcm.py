@@ -86,10 +86,10 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     fnames : array-like
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
-    tag : string (None)
+    tag : string ('')
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    sat_id : string (None)
+    sat_id : string ('')
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
     **kwargs : extra keywords
@@ -156,10 +156,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : string (None)
+    tag : string ('')
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    sat_id : string (None)
+    sat_id : string ('')
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
     data_path : string (None)
