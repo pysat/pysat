@@ -11,6 +11,7 @@ tag : string
     '' Standard F10.7 data (single day at a time)
     'all' All F10.7
     'forecast' Grab forecast data from SWPC (next 3 days)
+    '45day' 45-Day Forecast data frmo the Air Force
 
 Note
 ----
@@ -46,13 +47,15 @@ platform = 'sw'
 name = 'f107'
 tags = {'':'Daily value of F10.7',
         'all':'All F10.7 values',
-        'forecast':'SWPC Forecast F107 data next (3 days)'}
+        'forecast':'SWPC Forecast F107 data next (3 days)',
+        '45day':'Air Force 45-day Forecast'}
 # dict keyed by sat_id that lists supported tags for each sat_id
-sat_ids = {'':['', 'all', 'forecast']}
+sat_ids = {'':['', 'all', 'forecast', '45day']}
 # dict keyed by sat_id that lists supported tags and a good day of test data
 test_dates = {'':{'':pysat.datetime(2009,1,1), 
                   'all':pysat.datetime(2009,1,1),
-                  'forecast':pysat.datetime(2009,1,1)}}
+                  'forecast':pysat.datetime(2009,1,1),
+                  '45day':pysat.datetime(2009,1,1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -92,6 +95,9 @@ def load(fnames, tag=None, sat_id=None):
     elif tag == 'all':
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)                
     elif tag == 'forecast':
+        # load forecast data
+        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
+    elif tag == '45day':
         # load forecast data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
     
@@ -166,6 +172,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         elif tag == 'forecast':
             format_str = 'f107_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
+            return pysat.Files.from_os(data_path=data_path,
+                                       format_str=format_str)
+        elif tag == '45day':
+            format_str = 'f107_45day_{year:04d}-{month:02d}-{day:02d}.txt'
             return pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
         else:
@@ -283,5 +293,44 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])
         # write out as a file
         data.to_csv(os.path.join(data_path, 'f107_forecast_'+date.strftime('%Y-%m-%d')+'.txt'))
+
+    elif tag == '45day':
+        import requests
+        print('This routine can only download the current forecast, not archived forecasts')
+        # download webpage
+        r = requests.get('https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt')
+        # parse text to get the date the prediction was generated
+        date = pysat.datetime.strptime(r.text.split(':Issued: ')[-1].split(' UTC')[0], '%Y %b %d %H%M')
+        # get to the forecast data
+        raw_data = r.text.split('45-DAY AP FORECAST')[-1]
+        # grab AP part
+        raw_ap = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[0]
+        # clean up
+        raw_ap = raw_ap.split('\n')[1:-1]
+        # f107
+        raw_f107 = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[-1]
+        # clean up
+        raw_f107 = raw_f107.split('\n')[1:-4]
+        
+        # parse the AP data
+        ap_times = []
+        ap = []
+        for line in raw_ap:
+            for i in np.arange(5):
+                ap_times.append(pysat.datetime.strptime(line[0:7], '%d%b%y'))
+                ap.append(int(line[8:11]))
+        
+        f107 = []
+        f107_times = []
+        for line in raw_f107:
+            for i in np.arange(5):
+                f107_times.append(pysat.datetime.strptime(line[0:7], '%d%b%y'))
+                f107.append(int(line[8:11]))
+        
+        # collect into DataFrame
+        data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
+        data['ap'] = ap
+        # write out as a file
+        data.to_csv(os.path.join(data_path, 'f107_45day_'+date.strftime('%Y-%m-%d')+'.txt'))
 
     return        
