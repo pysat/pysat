@@ -31,7 +31,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-
+from collections import defaultdict
 import pandas as pds
 import numpy as np
 
@@ -41,24 +41,36 @@ from . import nasa_cdaweb_methods as cdw
 
 platform = 'rbsp'
 name = 'mageis'
-tags = {'':''}
-sat_ids = {'':['']}
+sat_ids=['a','b']
+tags=['l2','l3','l4']
 
 # support list files routine
 # use the default CDAWeb method
-mageis_fname = 'rbspa_rel03_ect-mageis-l3_{year:4d}{month:02d}{day:02d}_v?????.cdf'
-supported_tags = {'':{'':mageis_fname}}
+supported_tags_fname=defaultdict(dict)
+for sat_id in sat_ids:
+    for tag in tags:
+        fname='rbsp'+sat_id+'_rel03_ect-mageis-'+tag +'{year:4d}{month:02d{day:02d}_v?????.cdf' 
+        supported_tags_fname[sat_id][tag]=fname
+
 list_files = functools.partial(cdw.list_files, 
-                               supported_tags=supported_tags)
+                               supported_tags=supported_tags_fname)
 # support load routine
 # use the default CDAWeb method
 load = cdw.load
 
 # support download routine
 # use the default CDAWeb method
-basic_tag = {'dir':'/pub/data/rbsp/rbspa/l3/ect/mageis/sectors/rel03',
-            'remote_fname':'{year:4d}/'+mageis_fname,
-            'local_fname':mageis_fname}
-supported_tags = {'':basic_tag}
-download = functools.partial(cdw.download, supported_tags) 
+supported_tags_download=defaultdict(dict)
+for sat_id in sat_ids:
+    for tag in tags:
+        download_dict = {'dir':'/pub/data/rbsp/rbsp'+sat_id+'/'+tag
+                        +'/ect/mageis/sectors/rel03',
+                        'remote_fname':'{year:4d}/'
+                         +supported_tags_fname[sat_id][tag],
+                        'local_fname':supported_tags_fname[sat_id][tag]}
+        
+        supported_tags_download[sat_id][tag]=download_dict
+
+download = functools.partial(cdw.download, 
+                             supported_tags=supported_tags_download) 
 
