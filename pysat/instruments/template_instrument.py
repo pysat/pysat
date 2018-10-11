@@ -100,6 +100,26 @@ def init(self):
     print ("Mission acknowledgements and data restrictions will be printed here when available.")
     return
 
+def default(self):
+    """Default customization function.
+    
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue). 
+    
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+    
+    
+    """
+    
+    return
 
 def load(fnames, tag=None, sat_id=None, **kwargs):
     """Loads PLATFORM data into (PANDAS/XARRAY).
