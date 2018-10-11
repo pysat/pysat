@@ -89,7 +89,7 @@ def load(fnames, tag=None, sat_id=None):
         # the daily date is attached to filename
         # parse off the last date, load month of data, downselect to desired day
         date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
-        data = pds.pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True) 
+        data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True) 
         idx, = np.where((data.index >= date) & (data.index < date+pds.DateOffset(days=1)))
         result = data.iloc[idx,:]      
     elif tag == 'all':
