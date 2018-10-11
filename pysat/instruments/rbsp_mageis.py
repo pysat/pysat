@@ -70,5 +70,5 @@ for sat_id in sat_ids:
         supported_tags_download[sat_id][tag]=download_dict
 
 download = functools.partial(cdw.download, 
-                             supported_tags=supported_tags_download) 
+                             supported_tags_download) 
 
