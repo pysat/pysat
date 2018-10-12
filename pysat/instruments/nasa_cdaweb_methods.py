@@ -223,7 +223,10 @@ def download(supported_tags, date_array, tag, sat_id,
     ftp.login()               
     
     try:
-        ftp_dict = supported_tags[sat_id][tag]
+        if sat_id == '':
+            ftp_dict = supported_tags[tag]
+        else:
+            ftp_dict = supported_tags[sat_id][tag]
     except KeyError:
         raise ValueError('Tag name unknown.')
         
