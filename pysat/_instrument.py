@@ -524,25 +524,48 @@ class Instrument(object):
                 return
             elif isinstance(key, basestring):
                 # assigning basic variable
-                if len(np.shape(in_data)) == 1:
+                
+                # if xarray input, take as is
+                if isinstance(in_data, xr.DataArray):
+                    self.data[key] = in_data
+                    
+                # ok, not an xarray input
+                # but if we have an iterable input, then we
+                # go through here
+                elif len(np.shape(in_data)) == 1:
+                    # looking at a 1D input here
                     if len(in_data) == len(self.index):
+                        # 1D input has the correct length for storage along 'time'
                         self.data[key] = ('time', in_data)
                     elif len(in_data) == 1:
+                        # only provided a single number in iterable, make that the input
+                        # for all times
                         self.data[key] = ('time', [in_data[0]]*len(self.index))
                     elif len(in_data) == 0:
+                        # provided an empty iterable
+                        # make everything NaN
                         self.data[key] = ('time', [np.nan]*len(self.index))
+                # not an iterable input
                 elif len(np.shape(in_data)) == 0:
+                    # not given an iterable at all, single number
+                    # make that number the input for all times
                     self.data[key] = ('time', [in_data]*len(self.index))
+                    
                 else:
-                    # multidimensional input
+                    # multidimensional input that is not an xarray
                     # user needs to provide what is required
                     if isinstance(in_data, tuple):
                         self.data[key] = in_data
                     else:
                         raise ValueError('Must provide dimensions for xarray multidimensional data using input tuple.')
+                        
             elif hasattr(key, '__iter__'):
+                # multiple input strings (keys) are provided, but not in tuple form
+                # recurse back into this function, setting each
+                # input individually
                 for keyname in key:
                     self.data[keyname] = in_data[keyname]
+                    
             # attach metadata            
             self.meta[key] = new
                         
