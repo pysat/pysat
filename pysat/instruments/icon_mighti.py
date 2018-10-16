@@ -243,7 +243,37 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                 format_str=format_str)
 
 
-def download(inst, start, stop, user=None, password=None):
-    """ICON has not yet been launched."""
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
+    """Will download data for ICON MIGHTI, after successful launch and operations.
+    
+    Parameters
+    ----------
+    date_array : array-like
+        list of datetimes to download data for. The sequence of dates need not be contiguous.
+    tag : string ('')
+        Tag identifier used for particular dataset. This input is provided by pysat.
+    sat_id : string  ('')
+        Satellite ID string identifier used for particular dataset. This input is provided by pysat.
+    data_path : string (None)
+        Path to directory to download data to.
+    user : string (None)
+        User string input used for download. Provided by user and passed via pysat. If an account
+        is required for dowloads this routine here must error if user not supplied.
+    password : string (None)
+        Password for data download.
+    **kwargs : dict
+        Additional keywords supplied by user when invoking the download
+        routine attached to a pysat.Instrument object are passed to this
+        routine via kwargs.
+        
+    Returns
+    --------
+    Void : (NoneType)
+        Downloads data to disk.
+    
+    
+    """
+
     print ("Downloads aren't yet available.")
+
     return
