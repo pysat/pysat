@@ -163,8 +163,14 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # resample file list to provide the same filename for every day
             # of f107 data
             if not out.empty:
-                # first day 2-13
+                # only want to use the most recent file
+                out = out.iloc[-1:]
+                # first day of data is 2-14, ensure same file for first and most recent
+                # day
                 out.ix[pysat.datetime(1947, 2, 13)] = out.iloc[0]
+                # make sure things are in order and copy latest filename for all days
+                # thus no matter which day with data the user loads they get the
+                # most recent f10.7 file
                 out = out.sort_index()                
                 out = out.asfreq('D', 'pad')
 
