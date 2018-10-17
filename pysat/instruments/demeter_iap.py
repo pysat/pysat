@@ -207,7 +207,7 @@ def load_experiment_data(fhandle):
             data_units[dname] = chunk[64:70]
         elif dname.find('angle') > 0:
             data_units[dname] = chunk[70:76]
-        elif dname.find('ion_vel') == 0:
+        elif dname.find('iv') == 0:
             data_units[dname] = chunk[58:64]
 
     # Load the metadata
