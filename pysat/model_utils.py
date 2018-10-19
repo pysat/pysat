@@ -20,11 +20,7 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     mod_name : list of strings
         ordered list of modelled data to compare to instrument measurements
     methods : list of strings
-        statistics to calculate.  Accpeted are: 'mean_err', 'mean_abs_err',
-        'median_err', 'median_abs_err', 'moments_err', 'moments_abs_err',
-        'quartiles_err', 'quantiles_abs_err', 'deciles_err', 'deciles_abs_err',
-        'percent_bias', 'mean_sq_err', or 'all' to calculate all.
-        (default='all')
+        statistics to calculate.  See Notes for accecpted inputs
 
     Returns
     ----------
@@ -33,17 +29,63 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         name and the second layer provides the desired statistics
     data_units : dict
         Dictionary containing the units for the data
+
+    Notes
+    -----
+    Statistics are calculated using PyForecastTools (imported as verify).
+    See notes there for more details.
+    
+    all - all statistics
+    all_bias - bias, meanPercentageError, medianLogAccuracy, symmetricSignedBias
+    accuracy - returns dict with mean squared error, root mean squared error,
+               mean absolute error, and median absolute error
+    scaledAccuracy - returns dict with normaled root mean squared error, mean
+                     absolute scaled error, mean absolute percentage error,
+                     median absolute percentage error, median symmetric accuracy
+    bias - scale-dependent bias as measured by the mean error
+    meanPercentageError - mean percentage error
+    medianLogAccuracy - median of the log accuracy ratio
+    symmetricSignedBias - Symmetric signed bias, as a percentage
+    meanSquaredError - mean squared error
+    RMSE - root mean squared error
+    meanAbsError - mean absolute error
+    medAbsError - median absolute error
+    nRMSE - normaized root mean squared error
+    scaledError - scaled error (see PyForecastTools for references)
+    MASE - mean absolute scaled error
+    forecastError - forecast error (see PyForecastTools for references)
+    percError - percentage error
+    absPercError - absolute percentage error
+    logAccuracy - log accuracy ratio
+    medSymAccuracy - Scaled measure of accuracy
+    meanAPE - mean absolute percentage error
+
     """
-    from scipy import stats
+    import veriy # PyForecastTools
     from pysat import utils
 
-    known_methods = ['mean_err', 'mean_abs_err', 'median_err', 'median_abs_err',
-                     'moments_err', 'moments_abs_err', 'quartiles_err',
-                     'quartiles_abs_err', 'deciles_err', 'deciles_abs_err',
-                     'percent_bias', 'mean_sq_err']
+    method_rout = {"bias":verify.bias, "accuracy":verify.accuracy,
+                   "meanPercentageError":verify.meanPercentageError,
+                   "medianLogAccuracy":verify.medianLogAccuracy,
+                   "symmetricSignedBias":verify.symmetricSignedBias,
+                   "meanSquaredError":verify.meanSquaredError,
+                   "RMSE":verify.RMSE, "meanAbsError":verify.meanAbsError,
+                   "medAbsError":verify.medAbsError, "MASE":verify.MASE,
+                   "scaledAccuracy":verify.scaledAccuracy,
+                   "nRMSE":verify.nRMSE, "scaledError":verify.scaledError,
+                   "forecastError":verify.forecastError,
+                   "percError":verify.percError, "meanAPE":verify.meanAPE,
+                   "absPercError":verify.absPercError,
+                   "logAccuracy":verify.logAccuracy,
+                   "medSymAccuracy":verify.medSymAccuracy}
 
-    if methods == 'all':
-        methods = known_methods
+    # Grouped methods for things that don't have convenience functions
+    grouped_methods = {"all_bias":["bias", "meanPercentageError",
+                                   "medianLogAccuracy", "symmetricSignedBias"],
+                       "all":list(method_rout.keys())}
+
+    if methods in grouped_methods.keys():
+        methods = grouped_methods[methods]
 
     # Test the input
     if pairs is None:
@@ -59,83 +101,26 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     if not np.all([iname in pairs.data_vars.keys() for iname in mod_name]):
         raise ValueError('unknown model data value supplied')
 
-    if not np.all([mm in known_methods for mm in methods]):
+    if not np.all([mm in list(method_rout.keys()) for mm in methods]):
         raise ValueError('unknown statistical method requested, use only ' +
                          '{:}'.format(known_methods))
-    
-    # Calculate differences, if needed
-    diff_data = dict()
-    for i,iname in enumerate(inst_name):
-        iscale = utils.scale_units(pairs.data_vars[iname].units,
-                                   pairs.data_vars[mod_name[i]].units)
-        diff_data[iname] = pairs.data_vars[mod_name[i]] * iscale - \
-                pairs.data_vars[iname]
 
     # Initialize the output
     stat_dict = {iname:dict() for iname in inst_name}
     data_units = {iname:pairs.data_vars[iname].units for iname in inst_name}
 
-    # Calculate the desired statistics
-    if 'mean_err' in methods:
-        for iname in inst_name:
-            stat_dict[iname]['mean_err'] = diff_data[iname].mean().values
-    if 'mean_abs_err' in methods:
-        for iname in inst_name:
-            stat_dict[iname]['mean_abs_err'] = abs(diff_data[iname]).mean().values
-    if 'median_err' in methods:
-        for iname in inst_name:
-            stat_dict[iname]['median_err'] = diff_data[iname].median().values
-    if 'median_abs_err' in methods:
-        for iname in inst_name:
-            stat_dict[iname]['median_abs_err'] = abs(diff_data[iname]).median().values
-    if 'moments_err' in methods:
-        for iname in inst_name:
-            mmean = diff_data[iname].mean().values
-            mstd = diff_data[iname].std().values
-            mskew = stats.skew(diff_data[iname], nan_policy='omit')
-            mkurt = stats.kurtosis(diff_data[iname], nan_policy='omit')
-            stat_dict[iname]['moments_err'] = [mmean, mstd, mskew, mkurt]
-    if 'moments_abs_err' in methods:
-        for iname in inst_name:
-            mmean = abs(diff_data[iname]).mean().values
-            mstd = abs(diff_data[iname]).std().values
-            mskew = stats.skew(abs(diff_data[iname]), nan_policy='omit')
-            mkurt = stats.kurtosis(abs(diff_data[iname]), nan_policy='omit')
-            stat_dict[iname]['moments_abs_err'] = [mmean, mstd, mskew, mkurt]
-    if 'quartiles_err' in methods:
-        for iname in inst_name:
-            q1 = np.quantile(diff_data[iname][~np.isnan(diff_data[iname])],
-                             0.25)
-            q3 = np.quantile(diff_data[iname][~np.isnan(diff_data[iname])],
-                             0.75)
-            stat_dict[iname]['quartiles_err'] = [q1, q3]
-    if 'quartiles_abs_err' in methods:
-        for iname in inst_name:
-            q1 = np.quantile(abs(diff_data[iname][~np.isnan(diff_data[iname])]),
-                             0.25)
-            q3 = np.quantile(abs(diff_data[iname][~np.isnan(diff_data[iname])]),
-                             0.75)
-            stat_dict[iname]['quartiles_abs_err'] = [q1, q3]
-    if 'deciles_err' in methods:
-        for iname in inst_name:
-            q1 = np.quantile(diff_data[iname][~np.isnan(diff_data[iname])], 0.1)
-            q3 = np.quantile(diff_data[iname][~np.isnan(diff_data[iname])], 0.9)
-            stat_dict[iname]['deciles_err'] = [q1, q3]
-    if 'deciles_abs_err' in methods:
-        for iname in inst_name:
-            q1 = np.quantile(abs(diff_data[iname][~np.isnan(diff_data[iname])]),
-                             0.1)
-            q3 = np.quantile(abs(diff_data[iname][~np.isnan(diff_data[iname])]),
-                             0.9)
-            stat_dict[iname]['deciles_abs_err'] = [q1, q3]
-    if 'percent_bias' in methods:
-        for iname in inst_name:
-            stat_dict[iname]['percent_bias'] = (diff_data[iname].sum() / \
-                                    pairs.data_vars[iname].sum()).values * 100.0
-    if 'mean_sq_err' in methods:
-        for iname in inst_name:
-            stat_dict[iname]['mean_sq_err'] = (diff_data[iname]**2).mean().values
-        
+    # Cycle through all of the data types
+    for i,iname in enumerate(inst_name):
+        # Determine whether the model data needs to be scaled
+        iscale = utils.scale_units(pairs.data_vars[iname].units,
+                                   pairs.data_vars[mod_name[i]].units)
+
+        # Calculate all of the desired statistics
+        for mm in methods:
+            stat_dict[iname][mm] = method_rout[mm](pairs.data_vars[mod_name[i]]
+                                                   * iscale,
+                                                   pairs.data_vars[iname])
+
     return stat_dict, data_units
 
 
