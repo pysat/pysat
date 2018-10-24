@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pds
 
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
-                           methods='all'):
+                           methods=['all']):
     """Compare modelled and measured data
 
     Parameters
@@ -61,7 +61,7 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     meanAPE - mean absolute percentage error
 
     """
-    import veriy # PyForecastTools
+    import verify # PyForecastTools
     from pysat import utils
 
     method_rout = {"bias":verify.bias, "accuracy":verify.accuracy,
@@ -79,13 +79,25 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                    "logAccuracy":verify.logAccuracy,
                    "medSymAccuracy":verify.medSymAccuracy}
 
+    replace_keys = {'MSE':'meanSquaredError', 'MAE':'meanAbsError',
+                    'MdAE':'medAbsError', 'MAPE':'meanAPE',
+                    'MdSymAcc':'medSymAccuracy'}
+
     # Grouped methods for things that don't have convenience functions
     grouped_methods = {"all_bias":["bias", "meanPercentageError",
                                    "medianLogAccuracy", "symmetricSignedBias"],
                        "all":list(method_rout.keys())}
 
-    if methods in grouped_methods.keys():
-        methods = grouped_methods[methods]
+    # Replace any group method keys with the grouped methods
+    for gg in [(i,mm) for i,mm in enumerate(methods)
+               if mm in list(grouped_methods.keys())]:
+        # Extend the methods list to include all the grouped methods
+        methods.extend(grouped_methods[gg[1]])
+        # Remove the grouped method key
+        methods.pop(gg[0])
+
+    # Ensure there are no duplicate methods
+    methods = list(set(methods))
 
     # Test the input
     if pairs is None:
@@ -102,8 +114,13 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         raise ValueError('unknown model data value supplied')
 
     if not np.all([mm in list(method_rout.keys()) for mm in methods]):
-        raise ValueError('unknown statistical method requested, use only ' +
-                         '{:}'.format(known_methods))
+        known_methods = list(method_rout.keys())
+        known_methods.extend(list(grouped_methods.keys()))
+        unknown_methods = [mm for mm in methods
+                           if not mm in list(method_rout.keys())]
+        raise ValueError('unknown statistical method(s) requested:\n' +
+                         '{:}\nuse only:\n{:}'.format(unknown_methods,
+                                                      known_methods))
 
     # Initialize the output
     stat_dict = {iname:dict() for iname in inst_name}
@@ -114,12 +131,27 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Determine whether the model data needs to be scaled
         iscale = utils.scale_units(pairs.data_vars[iname].units,
                                    pairs.data_vars[mod_name[i]].units)
+        mod_scaled = pairs.data_vars[mod_name[i]] * iscale
 
         # Calculate all of the desired statistics
         for mm in methods:
-            stat_dict[iname][mm] = method_rout[mm](pairs.data_vars[mod_name[i]]
-                                                   * iscale,
-                                                   pairs.data_vars[iname])
+            try:
+                stat_dict[iname][mm] = method_rout[mm](mod_scaled,
+                                                       pairs.data_vars[iname])
+
+                # Convenience functions add layers to the output, remove
+                # these layers
+                if hasattr(stat_dict[iname][mm], "keys"):
+                    for nn in stat_dict[iname][mm].keys():
+                        new = replace_keys[nn] if nn in replace_keys.keys() \
+                            else nn
+                        stat_dict[iname][new] = stat_dict[iname][mm][nn]
+                    del stat_dict[iname][mm]
+            except ValueError or NotImplementedError as err:
+                # Not all data types can use all statistics.  Print warnings
+                # instead of stopping processing.  Only valid statistics will
+                # be included in output
+                print("{:s} can't use {:s}: {:}".format(iname, mm, err))
 
     return stat_dict, data_units
 
