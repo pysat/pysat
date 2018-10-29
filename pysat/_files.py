@@ -78,8 +78,34 @@ class Files(object):
     """
         
     def __init__(self, sat, manual_org=False, directory_format=None,
-                       update_files=False, file_format=None,
-                       write_to_disk=True):
+                 update_files=False, file_format=None, write_to_disk=True):
+        """ Initialization for Files class object
+
+        Parameters
+        -----------
+        sat : pysat._instrument.Instrument
+            Instrument object
+        manual_org : boolian
+            If True, then pysat will look directly in pysat data directory
+            for data files and will not use default /platform/name/tag
+            (default=False)
+        directory_format : string or NoneType
+            directory naming structure in string format. Variables such as
+            platform, name, and tag will be filled in as needed using python
+            string formatting. The default directory structure would be 
+            expressed as '{platform}/{name}/{tag}' (default=None)
+        update_files : boolean
+            If True, immediately query filesystem for instrument files and store
+            (default=False)
+        file_format : str or NoneType
+            File naming structure in string format.  Variables such as year,
+            month, and sat_id will be filled in as needed using python string
+            formatting.  The default file format structure is supplied in the
+            instrument list_files routine. (default=None)
+        write_to_disk : boolean
+            If true, the list of Instrument files will be written to disk.
+            Prevents a rare condition when running multiple pysat processes.
+        """
         
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
@@ -139,12 +165,22 @@ class Files(object):
                 self.refresh()
 
     def _attach_files(self, files_info):
-        """Attaches info returned by instrument list_files routine to
-        Instrument object.
+        """Attach results of instrument list_files routine to Instrument object
+
+        Parameters
+        -----------
+        file_info :
+            Stored file information
+
+        Returns
+        ---------
+        updates the file list (files), start_date, and stop_date attributes
+        of the Files class object.
         """
 
         if not files_info.empty:
-            if (len(files_info.index.unique()) != len(files_info)):
+            if(not self._sat.multi_file_day and
+               len(files_info.index.unique()) != len(files_info)):
                 estr = 'WARNING! Duplicate datetimes in provided file '
                 estr = '{:s}information.\nKeeping one of each '.format(estr)
                 estr = '{:s}of the duplicates, dropping the rest.'.format(estr)

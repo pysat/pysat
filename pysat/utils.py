@@ -383,6 +383,7 @@ def season_date_range(start, stop, freq='D'):
 
     freq codes correspond to pandas date_range codes, D daily, M monthly,
     S secondly
+
     """
 
     if hasattr(start, '__iter__'):  
@@ -429,6 +430,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     Note
     ----
     Leap seconds have no meaning here.
+
     """
     # need a timeseries index for storing satellite data in pandas but
     # creating a datetime object for everything is too slow
@@ -482,10 +484,10 @@ def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
     -----------
     samples : array_like
         Input array
-    low : float or int
-        Lower boundary for circular standard deviation range (default=0)
     high: float or int
         Upper boundary for circular standard deviation range (default=2 pi)
+    low : float or int
+        Lower boundary for circular standard deviation range (default=0)
     axis : int or NoneType
         Axis along which standard deviations are computed.  The default is to
         compute the standard deviation of the flattened array
@@ -494,6 +496,7 @@ def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
     --------
     circmean : float
         Circular mean
+
     """
 
     samples = np.asarray(samples)
@@ -530,10 +533,10 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
     -----------
     samples : array_like
         Input array
-    low : float or int
-        Lower boundary for circular standard deviation range (default=0)
     high: float or int
         Upper boundary for circular standard deviation range (default=2 pi)
+    low : float or int
+        Lower boundary for circular standard deviation range (default=0)
     axis : int or NoneType
         Axis along which standard deviations are computed.  The default is to
         compute the standard deviation of the flattened array
@@ -542,6 +545,7 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
     --------
     circstd : float
         Circular standard deviation
+
     """
 
     samples = np.asarray(samples)
@@ -561,3 +565,136 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
     # Calculate the circular standard deviation
     circstd = (high - low) * np.sqrt(-2.0 * np.log(rmean)) / (2.0 * np.pi)
     return circstd
+
+def adjust_cyclic_data(samples, high=2.0*np.pi, low=0.0):
+    """Adjust cyclic values such as longitude to a different scale
+
+    Parameters
+    -----------
+    samples : array_like
+        Input array
+    high: float or int
+        Upper boundary for circular standard deviation range (default=2 pi)
+    low : float or int
+        Lower boundary for circular standard deviation range (default=0)
+    axis : int or NoneType
+        Axis along which standard deviations are computed.  The default is to
+        compute the standard deviation of the flattened array
+
+    Returns
+    --------
+    out_samples : float
+        Circular standard deviation
+
+    """
+
+    out_samples = np.asarray(samples)
+    sample_range = high - low
+    out_samples[out_samples >= high] -= sample_range
+    out_samples[out_samples < low] += sample_range
+
+    return out_samples
+
+def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
+    """ Update longitude to the desired range
+
+    Parameters
+    ------------
+    inst : pysat.Instrument instance
+        instrument object for which modelled data will be extracted
+    lon_name : string
+        name of the longtiude data
+    high : float
+        Highest allowed longitude value (default=180.0)
+    low : float
+        Lowest allowed longitude value (default=-180.0)
+
+    Returns
+    ---------
+    updates instrument data in column 'lon_name'
+
+    """
+    from pysat.utils import adjust_cyclic_data
+
+    if not lon_name in inst.data.keys():
+        raise ValueError('uknown longitude variable name')
+    
+    inst[lon_name] = adjust_cyclic_data(inst[lon_name], high=high, low=low)
+
+    return
+
+def scale_units(out_unit, in_unit):
+    """ Determine the scaling factor between two units
+
+    Parameters
+    -------------
+    out_unit : str
+        Desired unit after scaling
+    in_unit : str
+        Unit to be scaled
+
+    Returns
+    -----------
+    unit_scale : float
+        Scaling factor that will convert from in_units to out_units
+
+    Notes
+    -------
+    Accepted units include degrees ('deg', 'degree', 'degrees'),
+    radians ('rad', 'radian', 'radians'),
+    hours ('h', 'hr', 'hrs', 'hour', 'hours'), and lengths ('m', 'km', 'cm').
+    Can convert between degrees, radians, and hours or different lengths.
+
+    Example
+    -----------
+    ::
+    import numpy as np
+    two_pi = 2.0 * np.pi
+    scale = scale_units("deg", "RAD")
+    two_pi *= scale
+    two_pi # will show 360.0
+
+
+    """
+
+    if out_unit == in_unit:
+        return 1.0
+
+    accepted_units = {'deg':['deg', 'degree', 'degrees'],
+                      'rad':['rad', 'radian', 'radians'],
+                      'h':['h', 'hr', 'hrs', 'hours'],
+                      'm':['m', 'km', 'cm'],
+                      'm/s':['m/s', 'cm/s', 'km/s']}
+
+    scales = {'deg':180.0, 'rad':np.pi, 'h':12.0,
+              'm':1.0, 'km':0.001, 'cm':100.0,
+              'm/s':1.0, 'cm/s':100.0, 'km/s':0.001}
+
+    # Test input and determine transformation type
+    out_key = None
+    in_key = None
+    for kk in accepted_units.keys():
+        if out_unit.lower() in accepted_units[kk]:
+            out_key = kk
+        if in_unit.lower() in accepted_units[kk]:
+            in_key = kk
+    
+    if out_key is None:
+        raise ValueError('Unknown output unit {:}'.format(out_unit))
+    
+    if in_key is None:
+        raise ValueError('Unknown input unit {:}'.format(in_unit))
+
+    if out_key == 'm' or out_key == 'm/s':
+        if in_key != out_key:
+            raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
+                                                                 in_unit))
+        unit_scale = scales[out_unit.lower()] / scales[in_unit.lower()]
+    else:
+        if in_key == 'm':
+            raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
+                                                                 in_unit))
+        unit_scale = scales[out_key] / scales[in_key]
+
+    return unit_scale
+
