@@ -579,7 +579,7 @@ class Files(object):
             # use these parameters to weed out files that have been replaced
             # with updated versions
             # first, check for duplicate index times
-            dups = index.get_duplicates()
+            dups = index[index.duplicated()].unique()
             if (len(dups) > 0) and (stored['version'] is not None):
                 # we have duplicates
                 # keep the highest version/revision combo
