@@ -67,3 +67,7 @@ target/
 .*.swp
 typescript
 custom_lint.sh
+
+
+#IDEs
+.idea/
