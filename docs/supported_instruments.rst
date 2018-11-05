@@ -1,4 +1,30 @@
 
+Instrument Templates
+====================
+
+General Instrument
+------------------
+
+.. automodule:: pysat.instruments.template_instrument
+   :members: __doc__, init, default, load, list_files, download, clean
+
+NASA CDAWeb Instrument
+----------------------
+
+.. automodule:: pysat.instruments.template_cdaweb_instrument
+   :members: __doc__, init, default, load, list_files, download, clean
+
+
+General Data Source Methods
+===========================
+
+NASA CDAWeb
+-----------
+
+.. automodule:: pysat.instruments.nasa_cdaweb_methods
+   :members: __doc__, init, load, list_files, download
+
+
 Supported Instruments
 =====================
 
@@ -78,12 +104,6 @@ netCDF Pandas
 -------------
 
 .. automodule:: pysat.instruments.netcdf_pandas
-   :members: __doc__, init, load, list_files, download
-
-NASA CDAWeb
------------
-
-.. automodule:: pysat.instruments.nasa_cdaweb_methods
    :members: __doc__, init, load, list_files, download
 
 OMNI
