@@ -222,9 +222,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     This routine is invoked by pysat and is not intended for direct 
     use by the end user. Arguments are provided by pysat.
     
-    Multiple data levels may be supported via the 'tag' input string.
-    Multiple instruments via the sat_id string.
-
     Parameters
     ----------
     tag : string ('')
@@ -259,6 +256,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     multiple versions of a file the most recent version should be kept and the rest
     discarded. This routine uses the pysat.Files.from_os constructor, thus
     the returned files are up to pysat specifications.
+    
+    Multiple data levels may be supported via the 'tag' input string.
+    Multiple instruments via the sat_id string.
+
     
     """
     
