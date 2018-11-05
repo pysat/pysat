@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """This is a template for a pysat.Instrument support file that
-utilizes CDAWeb methods. Modify this file as needed when adding a 
+utilizes CDAWeb methods. Copy and modify this file as needed when adding a 
 new Instrument to pysat.
 
 This is a good area to introduce the instrument, provide background
