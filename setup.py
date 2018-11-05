@@ -22,6 +22,8 @@ with open(os.path.join(here, version_filename)) as version_file:
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 install_requires=['pandas', 'numpy',  'sgp4', 'pyEphem', 'requests',
+                  'xarray',
+                  # remaining packages are excluded if on ReadTheDocs
                   'pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 
                   'madrigalWeb', 'h5py']
 
