@@ -47,6 +47,7 @@ install:
     fi
   - pwd
   - ls
+
    # check if there is a partial download of pyglow, remove if true
   - export PYGLOW_DIR=./pyglow
   - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
