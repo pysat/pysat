@@ -257,11 +257,16 @@ class Instrument(object):
         self.min_label = min_label
         self.max_label = max_label
         self.fill_label = fill_label
-        self.meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
-                               notes_label=self.notes_label, desc_label=self.desc_label,
-                               plot_label=self.plot_label, axis_label=self.axis_label,
-                               scale_label=self.scale_label, min_label=self.min_label,
-                               max_label=self.max_label, fill_label=self.fill_label)
+        self.meta = _meta.Meta(units_label=self.units_label,
+                               name_label=self.name_label,
+                               notes_label=self.notes_label,
+                               desc_label=self.desc_label,
+                               plot_label=self.plot_label,
+                               axis_label=self.axis_label,
+                               scale_label=self.scale_label,
+                               min_label=self.min_label,
+                               max_label=self.max_label,
+                               fill_label=self.fill_label)
 
         # function processing class, processes data on load
         self.custom = _custom.Custom()
@@ -374,7 +379,8 @@ class Instrument(object):
                         return self.data[key]      
                     except:
                         estring = '\n'.join(("Unable to sort out data access.",
-                                             "Instrument has data : " + str(not self.empty),
+                                             "Instrument has data : " +
+                                             str(not self.empty),
                                              "Requested key : ", key))
                         raise ValueError(estring)
         else:
@@ -482,14 +488,20 @@ class Instrument(object):
                     # this process ensures
                     if ('meta' not in new) and (key not in self.meta.keys_nD()):
                         # create an empty Meta instance but with variable names
-                        # this will ensure the correct defaults for all subvariables
-                        # meta can filter out empty metadata as needed, the check above reduces
-                        # the need to create Meta instances
-                        ho_meta = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
-                                            notes_label=self.notes_label, desc_label=self.desc_label,
-                                            plot_label=self.plot_label, axis_label=self.axis_label,
-                                            scale_label=self.scale_label, fill_label=self.fill_label,
-                                            min_label=self.min_label, max_label=self.max_label)
+                        # this will ensure the correct defaults for all
+                        # subvariables.  Meta can filter out empty metadata as
+                        # needed, the check above reducesthe need to create
+                        # Meta instances
+                        ho_meta = _meta.Meta(units_label=self.units_label,
+                                             name_label=self.name_label,
+                                            notes_label=self.notes_label,
+                                             desc_label=self.desc_label,
+                                            plot_label=self.plot_label,
+                                             axis_label=self.axis_label,
+                                            scale_label=self.scale_label,
+                                             fill_label=self.fill_label,
+                                            min_label=self.min_label,
+                                             max_label=self.max_label)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
                         
@@ -535,11 +547,12 @@ class Instrument(object):
                 elif len(np.shape(in_data)) == 1:
                     # looking at a 1D input here
                     if len(in_data) == len(self.index):
-                        # 1D input has the correct length for storage along 'time'
+                        # 1D input has the correct length for storage along
+                        # 'time'
                         self.data[key] = ('time', in_data)
                     elif len(in_data) == 1:
-                        # only provided a single number in iterable, make that the input
-                        # for all times
+                        # only provided a single number in iterable, make that
+                        # the input for all times
                         self.data[key] = ('time', [in_data[0]]*len(self.index))
                     elif len(in_data) == 0:
                         # provided an empty iterable
@@ -557,11 +570,13 @@ class Instrument(object):
                     if isinstance(in_data, tuple):
                         self.data[key] = in_data
                     else:
-                        raise ValueError('Must provide dimensions for xarray multidimensional data using input tuple.')
+                        raise ValueError('Must provide dimensions for xarray ' +
+                                         'multidimensional data using input ' +
+                                         'tuple.')
                         
             elif hasattr(key, '__iter__'):
-                # multiple input strings (keys) are provided, but not in tuple form
-                # recurse back into this function, setting each
+                # multiple input strings (keys) are provided, but not in tuple
+                # form recurse back into this function, setting each
                 # input individually
                 for keyname in key:
                     self.data[keyname] = in_data[keyname]
@@ -762,7 +777,8 @@ class Instrument(object):
         if len(self.files.files) > 0:
             output_str += 'Date Range: '
             output_str += self.files.files.index[0].strftime('%m/%d/%Y')
-            output_str += ' --- ' + self.files.files.index[-1].strftime('%m/%d/%Y')
+            output_str += ' --- '
+            output_str += self.files.files.index[-1].strftime('%m/%d/%Y')
 
         output_str += '\n\nLoaded Data Statistics'+'\n'
         output_str += '----------------------'+'\n'
@@ -831,11 +847,16 @@ class Instrument(object):
 
         else:
             data = self._null_data.copy()
-            mdata = _meta.Meta(units_label=self.units_label, name_label=self.name_label,
-                        notes_label = self.notes_label, desc_label = self.desc_label,
-                        plot_label = self.plot_label, axis_label = self.axis_label,
-                        scale_label = self.scale_label, min_label = self.min_label,
-                        max_label = self.max_label, fill_label=self.fill_label)
+            mdata = _meta.Meta(units_label=self.units_label,
+                               name_label=self.name_label,
+                               notes_label = self.notes_label,
+                               desc_label = self.desc_label,
+                               plot_label = self.plot_label,
+                               axis_label = self.axis_label,
+                               scale_label = self.scale_label,
+                               min_label = self.min_label,
+                               max_label = self.max_label,
+                               fill_label=self.fill_label)
 
         output_str = '{platform} {name} {tag} {sat_id}'
         output_str = output_str.format(platform=self.platform,
@@ -1582,15 +1603,15 @@ class Instrument(object):
             e.g. netcdf4'''
         export_dict = {}
         if self._meta_translation_table is not None:
-            # Create a translation table for the actual values of the meta labels.
-            # The instrument specific translation table only stores the names of the
-            # attributes that hold the various meta labels
+            # Create a translation table for the actual values of the meta
+            # labels. The instrument specific translation table only stores the
+            # names of the attributes that hold the various meta labels
             translation_table = {}
             for key in self._meta_translation_table:
                 translation_table[getattr(self, key)] = self._meta_translation_table[key]
         else:
             translation_table = None
-        #First Order Data
+        # First Order Data
         for key in meta_to_translate.data.index:
             if translation_table is None:
                 export_dict[key] = meta_to_translate.data.loc[key].to_dict()
@@ -1646,8 +1667,9 @@ class Instrument(object):
             an integer between 1 and 9 describing the level of compression
             desired (default 4). Ignored if zlib=False
         shuffle : boolean
-            the HDF5 shuffle filter will be applied before compressing the data (default True).
-            This significantly improves compression. Default is True. Ignored if zlib=False.
+            the HDF5 shuffle filter will be applied before compressing the data
+            (default True). This significantly improves compression. Default is
+            True. Ignored if zlib=False.
 
         Note
         ----
@@ -1661,7 +1683,8 @@ class Instrument(object):
          - A netCDF4 dimension is created for each main variable column
            with higher order data; first dimension Epoch
          - The index organizing the data stored as a dimension variable 
-         - from_netcdf4 uses the variable dimensions to reconstruct data structure
+         - from_netcdf4 uses the variable dimensions to reconstruct data
+           structure
             
         
         All attributes attached to instrument meta are written to netCDF attrs.
@@ -1694,7 +1717,8 @@ class Instrument(object):
             export_units_labels = self._meta_translation_table['units_label']
             export_desc_labels = self._meta_translation_table['desc_label']
             export_notes_labels = self._meta_translation_table['notes_label']
-            print('Using Metadata Translation Table: ', self._meta_translation_table)
+            print('Using Metadata Translation Table: ',
+                  self._meta_translation_table)
         # Apply instrument specific post-processing to the export_meta
         if hasattr(self._export_meta_post_processing, '__call__'):
             export_meta = self._export_meta_post_processing(export_meta)
@@ -1705,8 +1729,8 @@ class Instrument(object):
         # second, iterate over the variable colums in Instrument.data
         # check the type of data
         # if 1D column, do simple write (type is not an object)
-        # if it is an object, then check if writing strings, if not strings, then
-        # if column is a Series of Frames, write as 2D variables
+        # if it is an object, then check if writing strings, if not strings,
+        # then if column is a Series of Frames, write as 2D variables
         # metadata must be filtered before writing to netCDF4, string variables 
         # can't have a fill value
         with netCDF4.Dataset(fname, mode='w', format=file_format) as out_data:
@@ -1805,12 +1829,13 @@ class Instrument(object):
                     # what the actual objects are, then act as needed
                     
                     # use info in coltype to get real datatype of object
-                    # isinstance isn't working here because of something with coltype
+                    # isinstance isn't working here because of something with
+                    # coltype
                     if (coltype == type(' ')) or (coltype == type(u' ')):
                         # dealing with a string
                         cdfkey = out_data.createVariable(key, coltype, \
-                                            dimensions=(epoch_name), zlib=zlib, \
-                                            complevel=complevel, shuffle=shuffle) 
+                                        dimensions=(epoch_name), zlib=zlib, \
+                                        complevel=complevel, shuffle=shuffle) 
                         # attach any meta data
                         try:
                             # attach dimension metadata
@@ -1835,11 +1860,11 @@ class Instrument(object):
                     # of strings
                     # maps to if check on coltypes being stringbased
                     else:
-                        # presuming a series with a dataframe or series in each location
-                        # start by collecting some basic info on dimensions
-                        # sizes, names, then create corresponding netCDF4 dimensions
-                        # total dimensions stored for object are epoch plus ones
-                        # created below
+                        # presuming a series with a dataframe or series in each
+                        # location start by collecting some basic info on
+                        # dimensions sizes, names, then create corresponding
+                        # netCDF4 dimensions total dimensions stored for object
+                        # are epoch plus ones created below
                         dims = np.shape(self[key].iloc[0])
                         obj_dim_names = []
                         if len(dims) == 1:
@@ -1851,14 +1876,14 @@ class Instrument(object):
                             # don't need to go over last dimension value,
                             # it covers number of columns (if a frame)
                             obj_dim_names.append(key)
-                            out_data.createDimension(obj_dim_names[-1], dim)                            
+                            out_data.createDimension(obj_dim_names[-1], dim)
                         # create simple tuple with information needed to create
                         # the right dimensions for variables that will
                         # be written to file
                         var_dim = tuple([epoch_name] + obj_dim_names)
                         
-                        # We need to do different things if a series or dataframe
-                        # stored
+                        # We need to do different things if a series or
+                        # dataframe stored
                         try:
                             # start by assuming it is a dataframe
                             # get list of subvariables
@@ -1872,9 +1897,10 @@ class Instrument(object):
                             iterable = [self[key].iloc[0].name]
                             is_frame = False
 
-                        # find location within main variable
-                        # that actually has subvariable data (not just empty frame/series)
-                        # so we can determine what the real underlying data types are
+                        # find location within main variable that actually
+                        # has subvariable data (not just empty frame/series)
+                        # so we can determine what the real underlying data
+                        # types are
                         good_data_loc = 0
                         for jjj in np.arange(len(self.data)):
                             if len(self.data[key].iloc[0]) > 0:
@@ -1979,7 +2005,8 @@ class Instrument(object):
                                 new_dict[export_name_label] = epoch_name
                             for export_units_label in export_units_labels:
                                 new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
-                            new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                            new_dict = self._filter_netcdf4_metadata(new_dict,
+                                                                     coltype)
                             # set metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
@@ -1997,7 +2024,8 @@ class Instrument(object):
                             else:
                                 for export_name_label in export_name_labels:
                                     new_dict[export_name_label] = key
-                            new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                            new_dict = self._filter_netcdf4_metadata(new_dict,
+                                                                     coltype)
                             # assign metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
@@ -2030,8 +2058,10 @@ class Instrument(object):
             if 'Text_Supplement' not in adict:
                 adict['Text_Supplement'] = ''
 
-            adict['Date_Start'] = pysat.datetime.strftime(self.index[0], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
-            adict['Date_End'] = pysat.datetime.strftime(self.index[-1], '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['Date_Start'] = pysat.datetime.strftime(self.index[0], \
+                                    '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['Date_End'] = pysat.datetime.strftime(self.index[-1], \
+                                    '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
             adict['File'] = os.path.split(fname)
             adict['Generation_Date'] = pysat.datetime.utcnow().strftime('%Y%m%d')
             adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
