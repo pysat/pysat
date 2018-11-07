@@ -165,19 +165,37 @@ def clean(self):
     Notes
     --------
     Supports 'clean', 'dusty', 'dirty'
-    'Clean' is unknown
-    'Dusty' is unknown
-    'Dirty' is unknown
+    'Clean' is unknown for oblique modes, over 200 km for drifts
+    'Dusty' is unknown for oblique modes, over 200 km for drifts
+    'Dirty' is unknown for oblique modes, over 200 km for drifts
     'None' None
 
     Routine is called by pysat, and not by the end user directly.
     
     """
+    import numpy as np
 
-    if self.clean_level in ['clean', 'dusty', 'dirty']:
-        print('WARNING: this level 2 data has no quality flags')
-    idx = []
+    idx = list()
+    
+    if self.tag.find('oblique') == 0:
+        print('The double pulse, coded pulse, and long pulse modes ' +
+              'implemented at Jicamarca have different limitations arising ' +
+              'from different degrees of precision and accuracy. Users ' +
+              'should consult with the staff to determine which mode is ' +
+              'right for their application.')
 
+        if self.clean_level in ['clean', 'dusty', 'dirty']:
+            print('WARNING: this level 2 data has no quality flags')
+    else:
+        if self.clean_level in ['clean', 'dusty', 'dirty']:
+            if self.clean_level in ['clean', 'dusty']:
+                print('WARNING: this level 2 data has no quality flags')
+
+            idx, = np.where((self['gdalt'] > 200.0))
+        else:
+            print("WARNING: interpretation of drifts below 200 km should " +
+                  "always be done in partnership with the contact people")
+            
     # downselect data based upon cleaning conditions above
     self.data = self[idx]
         
