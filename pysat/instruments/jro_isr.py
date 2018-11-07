@@ -61,12 +61,11 @@ test_dates = {'':{'drifts':pysat.datetime(2010,1,19),
 # use the default CDAWeb method
 jro_fname1 = 'jro{year:4d}{month:02d}{day:02d}'
 jro_fname2 = '.{version:03d}.hdf5'
-supported_tags = {ss:{'drifts':jro_fname1[kk] + "drifts" + dmsp_fname2[kk],
-                      'drifts_ave':jro_fname1[kk] + "drifts_ave"
-                      + dmsp_fname2[kk],
-                      'oblique_stan':jro_fname1[kk] + dmsp_fname2[kk],
-                      'oblique_rand':jro_fname1[kk] + "?" + dmsp_fname2[kk],
-                      'oblique_rand':jro_fname1[kk] + "?" + dmsp_fname2[kk]}
+supported_tags = {ss:{'drifts':jro_fname1 + "drifts" + jro_fname2,
+                      'drifts_ave':jro_fname1 + "drifts_ave" + jro_fname2,
+                      'oblique_stan':jro_fname1 + jro_fname2,
+                      'oblique_rand':jro_fname1 + "?" + jro_fname2,
+                      'oblique_rand':jro_fname1 + "?" + jro_fname2}
                   for ss in sat_ids.keys()}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags)
@@ -77,7 +76,35 @@ madrigal_tag = {'':{'drifts':1910, 'drifts_ave':1911, 'oblique_stan':1800,
                 
 # let pysat know that data is spread across more than one file
 # multi_file_day=True
-                               
+ 
+# Set to False to specify using xarray (not using pandas)
+# Set to True if data will be returned via a pandas DataFrame
+pandas_format = True
+
+def init(self):
+    """Initializes the Instrument object with values specific to JRO ISR
+    
+    Runs once upon instantiation.
+    
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+    
+    
+    """
+    
+    print ("The Jicamarca Radio Observatory is operated by the Instituto " +
+           "Geofisico del Peru, Ministry of Education, with support from the" +
+           " National Science Foundation as contracted through Cornell " +
+           " University.")
+    return
+                         
 # support load routine
 def load(fnames, tag=None, sat_id=None):
     
