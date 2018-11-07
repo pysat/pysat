@@ -73,9 +73,8 @@ sat_ids = {'':['']}
 #                    'L2':pysat.datetime(2019,1,1),}}
 test_dates = {'':{'':pysat.datetime(2019,1,1)}}
 
-# specify using xarray (not using pandas)
-# set to True if data will be returned via a 
-# DataFrame
+# Set to False to specify using xarray (not using pandas)
+# Set to True if data will be returned via a pandas DataFrame
 pandas_format = False
 
 
