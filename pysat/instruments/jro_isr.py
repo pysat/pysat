@@ -37,6 +37,7 @@ from __future__ import absolute_import
 import functools
 import pysat
 from . import madrigal_methods as mad_meth
+from . import nasa_cdaweb_methods as cdw
 
 platform = 'jro'
 name = 'isr'
@@ -174,7 +175,7 @@ def clean(self):
     """
 
     if self.clean_level in ['clean', 'dusty', 'dirty']:
-        print('WARNING: this level 1 data has no quality flags')
+        print('WARNING: this level 2 data has no quality flags')
     idx = []
 
     # downselect data based upon cleaning conditions above
