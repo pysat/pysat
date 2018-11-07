@@ -27,7 +27,47 @@ def cedar_rules():
                          
 # support load routine
 def load(fnames, tag=None, sat_id=None):
+    """Loads data from Madrigal into Pandas.
     
+    This routine is called as needed by pysat. It is not intended
+    for direct user interaction.
+    
+    Parameters
+    ----------
+    fnames : array-like
+        iterable of filename strings, full path, to data files to be loaded.
+        This input is nominally provided by pysat itself.
+    tag : string ('')
+        tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. While
+        tag defaults to None here, pysat provides '' as the default
+        tag unless specified by user at Instrument instantiation.
+    sat_id : string ('')
+        Satellite ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself.
+    **kwargs : extra keywords
+        Passthrough for additional keyword arguments specified when 
+        instantiating an Instrument object. These additional keywords
+        are passed through to this routine by pysat.
+    
+    Returns
+    -------
+    data, metadata
+        Data and Metadata are formatted for pysat. Data is an xarray 
+        DataSet while metadata is a pysat.Meta instance.
+        
+    Note
+    ----
+    Any additional keyword arguments passed to pysat.Instrument
+    upon instantiation are passed along to this routine.
+    
+    Examples
+    --------
+    ::
+        inst = pysat.Instrument('ucar', 'tiegcm')
+        inst.load(2019,1)
+    
+    """    
     import h5py
     
     filed = h5py.File(fnames[0], 'r')
@@ -120,6 +160,7 @@ def download(date_array, inst_code=None, kindat=None, data_path=None, user=None,
     The affiliation field is set to pysat to enable tracking of pysat downloads.
     
     """
+  
     import subprocess
 
     if inst_code is None:
