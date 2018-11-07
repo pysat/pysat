@@ -44,15 +44,9 @@ Code development supported by NSF grant 1259508
 from __future__ import print_function
 from __future__ import absolute_import
 
-import sys
 import functools
-
-import pandas as pds
-import numpy as np
-
 import pysat
-
-from . import nasa_cdaweb_methods as cdw
+from . import madrigal_methods as mad_meth
 
 platform = 'dmsp'
 name = 'ivm'
@@ -78,6 +72,7 @@ list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
                                
 # madrigal tags
+madrigal_inst_tag = 8100
 madrigal_tag = {'f11':{'utd':10241, '':10111},
                 'f12':{'utd':10242, '':10112},
                 'f13':{'utd':10243, '':10113},
@@ -89,98 +84,81 @@ madrigal_tag = {'f11':{'utd':10241, '':10111},
                 
 # let pysat know that data is spread across more than one file
 # multi_file_day=True
-                               
+        
+# Set to False to specify using xarray (not using pandas)
+# Set to True if data will be returned via a pandas DataFrame
+pandas_format = True
+
 # support load routine
-def load(fnames, tag=None, sat_id=None):
-    
-    import h5py
-    
-    filed = h5py.File(fnames[0], 'r')
-    # data
-    file_data = filed['Data']['Table Layout']
-    # metadata
-    file_meta = filed['Metadata']['Data Parameters']
-    # load up what is offered into pysat.Meta
-    meta = pysat.Meta()
-    labels = []
-    for item in file_meta:
-        # handle difference in string output between python 2 and 3
-        name_string = item[0]
-        unit_string = item[3]
-        desc_string = item[1]
-        if sys.version_info[0] >= 3:
-            name_string = name_string.decode('UTF-8')
-            unit_string = unit_string.decode('UTF-8')
-            desc_string = desc_string.decode('UTF-8')
-        labels.append(name_string)
-        meta[name_string] = {'long_name':name_string,
-                             'units':unit_string,
-                             'desc':desc_string}
-    # add additional metadata notes
-    # custom attributes attached to meta are attached to
-    # corresponding Instrument object when pysat receives
-    # data and meta from this routine
-    for key in filed['Metadata']:
-        if key != 'Data Parameters':
-            setattr(meta, key.replace(' ', '_'), filed['Metadata'][key][:])
-    # data into frame, with labels from metadata
-    data = pds.DataFrame.from_records(file_data, columns=labels)
-    # lowercase variable names
-    data.columns = [item.lower() for item in data.columns]
-    # datetime index from times
-    time = pysat.utils.create_datetime_index(year=data.loc[:,'year'],
-                                             month=data.loc[:,'month'],
-                                             uts=3600.0 * data.loc[:,'hour'] +
-                                             60.0 * data.loc[:,'min'] +
-                                             data.loc[:,'sec'])
-    # set index
-    data.index = time
-    return data, meta
+load = mad_meth.load
 
+def init(self):
+    """Initializes the Instrument object with values specific to DMSP IVM
+    
+    Runs once upon instantiation.
+    
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
 
-def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+    
+    
+    """
+
+    print(mad_meth.cedar_rules())
+    return
+
+def download(date_array, tag='', sat_id='', data_path=None, user=None,
+             password=None):
     """Downloads data from Madrigal.
     
-    The user's names should be provided in field user. John Malkovich should be 
-    entered as John+Malkovich 
+    Parameters
+    ----------
+    date_array : array-like
+        list of datetimes to download data for. The sequence of dates need not
+        be contiguous.
+    tag : string ('')
+        Tag identifier used for particular dataset. This input is provided by
+        pysat.
+    sat_id : string  ('')
+        Satellite ID string identifier used for particular dataset. This input
+        is provided by pysat.
+    data_path : string (None)
+        Path to directory to download data to.
+    user : string (None)
+        User string input used for download. Provided by user and passed via
+        pysat. If an account
+        is required for dowloads this routine here must error if user not
+        supplied.
+    password : string (None)
+        Password for data download.
+
+    Returns
+    --------
+    Void : (NoneType)
+        Downloads data to disk.
     
+    Notes
+    -----
+    The user's names should be provided in field user. Ritu Karidhal should
+    be entered as Ritu+Karidhal
+
     The password field should be the user's email address. These parameters
     are passed to Madrigal when downloading.
     
     The affiliation field is set to pysat to enable tracking of pysat downloads.
     
-    Parameters
-    ----------
-    
-    
     """
-    import subprocess
-    
-    # currently passes things along if no user and password supplied
-    # need to do this for testing
-    # TODO, implement user and password values in test code
-    # specific to DMSP
-    if user is None:
-        print ('No user information supplied for download.')
-        user = 'pysat_testing'
-    if password is None:
-        print ('Please provide email address in password field.')
-        password = 'pysat_testing@not_real_email.org'
+    mad_meth.download(date_array, inst_code=str(madrigal_inst_code),
+                      kindat=str(madrigal_tag[sat_id][tag]),
+                      data_path=data_path, user=user, password=password)
 
-    a = subprocess.check_output(["globalDownload.py", "--verbose", 
-                    "--url=http://cedar.openmadrigal.org",
-                    '--outputDir='+data_path,
-                    '--user_fullname='+user,
-                    '--user_email='+password,
-                    '--user_affiliation=pysat',
-                    '--format=hdf5',
-                    '--startDate='+date_array[0].strftime('%m/%d/%Y'),
-                    '--endDate='+date_array[-1].strftime('%m/%d/%Y'),
-                    '--inst=8100',
-                    '--kindat='+str(madrigal_tag[sat_id][tag])])
-    print ('Feedback from openMadrigal ', a)
-    
-    
+
 def default(ivm):
     pass
    
