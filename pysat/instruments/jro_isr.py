@@ -34,15 +34,9 @@ Note
 from __future__ import print_function
 from __future__ import absolute_import
 
-import sys
 import functools
-
-import pandas as pds
-import numpy as np
-
 import pysat
-
-from . import nasa_cdaweb_methods as cdw
+from . import madrigal_methods as mad_meth
 
 platform = 'jro'
 name = 'isr'
@@ -69,17 +63,21 @@ supported_tags = {ss:{'drifts':jro_fname1 + "drifts" + jro_fname2,
                   for ss in sat_ids.keys()}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags)
-                               
+
 # madrigal tags
+madrigal_inst_code = 10
 madrigal_tag = {'':{'drifts':1910, 'drifts_ave':1911, 'oblique_stan':1800,
                     'oblique_rand':1801, 'oblique_long':1802},}
                 
 # let pysat know that data is spread across more than one file
 # multi_file_day=True
- 
+
 # Set to False to specify using xarray (not using pandas)
 # Set to True if data will be returned via a pandas DataFrame
 pandas_format = True
+
+# support load routine
+load = mad_meth.load
 
 def init(self):
     """Initializes the Instrument object with values specific to JRO ISR
@@ -98,62 +96,15 @@ def init(self):
     
     
     """
-    
+
     print ("The Jicamarca Radio Observatory is operated by the Instituto " +
            "Geofisico del Peru, Ministry of Education, with support from the" +
-           " National Science Foundation as contracted through Cornell " +
-           " University.")
+           " National Science Foundation as contracted through Cornell" +
+           " University.  " + mad_meth.cedar_rules())
     return
-                         
-# support load routine
-def load(fnames, tag=None, sat_id=None):
-    
-    import h5py
-    
-    filed = h5py.File(fnames[0], 'r')
-    # data
-    file_data = filed['Data']['Table Layout']
-    # metadata
-    file_meta = filed['Metadata']['Data Parameters']
-    # load up what is offered into pysat.Meta
-    meta = pysat.Meta()
-    labels = []
-    for item in file_meta:
-        # handle difference in string output between python 2 and 3
-        name_string = item[0]
-        unit_string = item[3]
-        desc_string = item[1]
-        if sys.version_info[0] >= 3:
-            name_string = name_string.decode('UTF-8')
-            unit_string = unit_string.decode('UTF-8')
-            desc_string = desc_string.decode('UTF-8')
-        labels.append(name_string)
-        meta[name_string] = {'long_name':name_string,
-                             'units':unit_string,
-                             'desc':desc_string}
-    # add additional metadata notes
-    # custom attributes attached to meta are attached to
-    # corresponding Instrument object when pysat receives
-    # data and meta from this routine
-    for key in filed['Metadata']:
-        if key != 'Data Parameters':
-            setattr(meta, key.replace(' ', '_'), filed['Metadata'][key][:])
-    # data into frame, with labels from metadata
-    data = pds.DataFrame.from_records(file_data, columns=labels)
-    # lowercase variable names
-    data.columns = [item.lower() for item in data.columns]
-    # datetime index from times
-    time = pysat.utils.create_datetime_index(year=data.loc[:,'year'],
-                                             month=data.loc[:,'month'],
-                                             uts=3600.0 * data.loc[:,'hour'] +
-                                             60.0 * data.loc[:,'min'] +
-                                             data.loc[:,'sec'])
-    # set index
-    data.index = time
-    return data, meta
 
-
-def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
+def download(date_array, tag='', sat_id='', data_path=None, user=None,
+             password=None):
     """Downloads data from Madrigal.
     
     Parameters
@@ -186,40 +137,18 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     -----
     The user's names should be provided in field user. Ruby Payne-Scott should
     be entered as Ruby+Payne-Scott
-    
+
     The password field should be the user's email address. These parameters
     are passed to Madrigal when downloading.
-    
-    The affiliation field is set to pysat to enable tracking of pysat downloads.
-    
-    """
-    import subprocess
-    
-    # currently passes things along if no user and password supplied
-    # need to do this for testing
-    # TODO, implement user and password values in test code
-    # specific to DMSP
-    if user is None:
-        print ('No user information supplied for download.')
-        user = 'pysat_testing'
-    if password is None:
-        print ('Please provide email address in password field.')
-        password = 'pysat_testing@not_real_email.org'
 
-    a = subprocess.check_output(["globalDownload.py", "--verbose", 
-                    "--url=http://jro1.igp.gob.pe/madrigal",
-                    '--outputDir='+data_path,
-                    '--user_fullname='+user,
-                    '--user_email='+password,
-                    '--user_affiliation=pysat',
-                    '--format=hdf5',
-                    '--startDate='+date_array[0].strftime('%m/%d/%Y'),
-                    '--endDate='+date_array[-1].strftime('%m/%d/%Y'),
-                    '--inst=8100',
-                    '--kindat='+str(madrigal_tag[sat_id][tag])])
-    print ('Feedback from openMadrigal ', a)
-    
-    
+    The affiliation field is set to pysat to enable tracking of pysat downloads.
+
+    """
+    mad_meth.download(date_array, inst_code=str(madrigal_inst_code),
+                      kindat=str(madrigal_tag[sat_id][tag]),
+                      data_path=data_path, user=user, password=password)
+
+
 def default(self):
     pass
    
