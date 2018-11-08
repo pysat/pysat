@@ -155,7 +155,7 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     The affiliation field is set to pysat to enable tracking of pysat downloads.
     
     """
-    mad_meth.download(date_array, inst_code=str(madrigal_inst_code),
+    mad_meth.download(date_array, inst_code=str(madrigal_inst_tag),
                       kindat=str(madrigal_tag[sat_id][tag]),
                       data_path=data_path, user=user, password=password)
 
