@@ -190,6 +190,7 @@ def clean(self):
     Supports 'clean', 'dusty', 'dirty'
     
     """
+    import numpy as np
 
     if self.tag == 'utd':
         if self.clean_level == 'clean':
