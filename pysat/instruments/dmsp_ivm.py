@@ -73,7 +73,7 @@ list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
                                
 # madrigal tags
-madrigal_inst_tag = 8100
+madrigal_inst_code = 8100
 madrigal_tag = {'f11':{'utd':10241, '':10111},
                 'f12':{'utd':10242, '':10112},
                 'f13':{'utd':10243, '':10113},
@@ -155,7 +155,7 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     The affiliation field is set to pysat to enable tracking of pysat downloads.
     
     """
-    mad_meth.download(date_array, inst_code=str(madrigal_inst_tag),
+    mad_meth.download(date_array, inst_code=str(madrigal_inst_code),
                       kindat=str(madrigal_tag[sat_id][tag]),
                       data_path=data_path, user=user, password=password)
 
