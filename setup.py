@@ -25,7 +25,7 @@ install_requires=['pandas', 'numpy',  'sgp4', 'pyEphem', 'requests',
                   'xarray',
                   # remaining packages are excluded if on ReadTheDocs
                   'pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 
-                  'madrigalWeb', 'h5py']
+                  'madrigalWeb', 'h5py', 'PyForecastTools']
 
 # keep pyglow out of requirements until pip installable
 # if sys.version_info[0] < 3:

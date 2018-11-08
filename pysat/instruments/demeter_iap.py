@@ -207,7 +207,7 @@ def load_experiment_data(fhandle):
             data_units[dname] = chunk[64:70]
         elif dname.find('angle') > 0:
             data_units[dname] = chunk[70:76]
-        elif dname.find('ion_vel') == 0:
+        elif dname.find('iv') == 0:
             data_units[dname] = chunk[58:64]
 
     # Load the metadata
@@ -233,12 +233,15 @@ def clean(iap):
     Notes
     -----
     clean : only data when at least two ions are considered and currents >= 1nA,
-            also considers house-keepings and status
-    dusty : only data when at least two ions are considered and currents >= 1nA
-    dirty : currents >= 1nA
+    dusty : not applicable
+    dirty : not applicable
     """
 
-    if iap.clean_level in ['clean', 'dusty']:
+    if iap.clean_level in ['dusty', 'dirty']:
+        print("'dusty' and 'dirty' levels not supported, defaulting to 'clean'")
+        iap.clean_level = 'clean'
+
+    if iap.clean_level == 'clean':
         # Determine the number of ions present, using a threshold for the
         # minimum significant density for one of the three ion species
         oplus_thresh = 5.0e2 # From Berthelier et al. 2006
@@ -253,12 +256,12 @@ def clean(iap):
                 if iap.data['He+_density'][i] > oplus * 0.02:
                     nions[i] += 1
 
-        if iap.clean_level == 'clean':
-            raise RuntimeError('not written yet')
-        else:       
-            idx, = np.where(nions > 1)
+                # Need Level 0 files to select data with J >= 1 nA
+                print("WARNING: Level 0 files needed to finish cleaning data")
+
+                # Select times with at least two ion species
+                idx, = np.where(nions > 1)
     else:
-        print("WARNING, can't select by current, not part of data set")
         idx = []
 
     self.data = self[idx]
