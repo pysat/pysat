@@ -494,13 +494,13 @@ class Instrument(object):
                         # Meta instances
                         ho_meta = _meta.Meta(units_label=self.units_label,
                                              name_label=self.name_label,
-                                            notes_label=self.notes_label,
+                                             notes_label=self.notes_label,
                                              desc_label=self.desc_label,
-                                            plot_label=self.plot_label,
+                                             plot_label=self.plot_label,
                                              axis_label=self.axis_label,
-                                            scale_label=self.scale_label,
+                                             scale_label=self.scale_label,
                                              fill_label=self.fill_label,
-                                            min_label=self.min_label,
+                                             min_label=self.min_label,
                                              max_label=self.max_label)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
