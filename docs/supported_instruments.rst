@@ -25,6 +25,20 @@ NASA CDAWeb
    :members: __doc__, init, load, list_files, download
 
 
+Madrigal
+--------
+
+.. automodule:: pysat.instruments.madrigal_methods
+   :members: __doc__, cedar_rules, load, download
+
+
+Demeter
+-------
+
+.. automodule:: pysat.instruments.demeter_methods
+   :members: __doc__, download, bytes_to_float, load_general_header, load_location_parameters, load_attitude_parameters, load_binary_file, set_metadata
+
+
 Supported Instruments
 =====================
 
@@ -64,11 +78,17 @@ COSMIC GPS
 .. automodule:: pysat.instruments.cosmic_gps
    :members: __doc__
 
+Demeter IAP
+-----------
+
+.. automodule:: pysat.instruments.demeter_iap
+    :members: __doc__, add_drift_sat_coord, add_drift_lgm_coord, add_drift_geo_coord
+
 DMSP IVM
 --------
 
 .. automodule:: pysat.instruments.dmsp_ivm
-   :members: __doc__
+   :members: __doc__, smooth_ram_drifts, update_DMSP_ephemeris, add_drift_unit_vectors, add_drifts_polar_cap_x_y
 
 Dst
 ---
@@ -111,6 +131,12 @@ ISS-FPMU
 
 .. automodule:: pysat.instruments.iss_fpmu
    :members: __doc__
+
+JRO ISR
+-------
+
+.. automodule:: pysat.instruments.jro_isr
+    :members: __doc__
 
 netCDF Pandas
 -------------
