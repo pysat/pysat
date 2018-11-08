@@ -60,7 +60,7 @@ supported_tags = {ss:{'drifts':jro_fname1 + "drifts" + jro_fname2,
                       'drifts_ave':jro_fname1 + "drifts_ave" + jro_fname2,
                       'oblique_stan':jro_fname1 + jro_fname2,
                       'oblique_rand':jro_fname1 + "?" + jro_fname2,
-                      'oblique_rand':jro_fname1 + "?" + jro_fname2}
+                      'oblique_long':jro_fname1 + "?" + jro_fname2}
                   for ss in sat_ids.keys()}
 list_files = functools.partial(cdw.list_files, 
                                supported_tags=supported_tags)
