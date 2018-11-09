@@ -1,4 +1,44 @@
 
+Instrument Templates
+====================
+
+General Instrument
+------------------
+
+.. automodule:: pysat.instruments.template_instrument
+   :members: __doc__, init, default, load, list_files, download, clean
+
+NASA CDAWeb Instrument
+----------------------
+
+.. automodule:: pysat.instruments.template_cdaweb_instrument
+   :members: __doc__, init, default, load, list_files, download, clean
+
+
+General Data Source Methods
+===========================
+
+NASA CDAWeb
+-----------
+
+.. automodule:: pysat.instruments.nasa_cdaweb_methods
+   :members: __doc__, init, load, list_files, download
+
+
+Madrigal
+--------
+
+.. automodule:: pysat.instruments.madrigal_methods
+   :members: __doc__, cedar_rules, load, download
+
+
+Demeter
+-------
+
+.. automodule:: pysat.instruments.demeter_methods
+   :members: __doc__, download, bytes_to_float, load_general_header, load_location_parameters, load_attitude_parameters, load_binary_file, set_metadata
+
+
 Supported Instruments
 =====================
 
@@ -38,11 +78,17 @@ COSMIC GPS
 .. automodule:: pysat.instruments.cosmic_gps
    :members: __doc__
 
+Demeter IAP
+-----------
+
+.. automodule:: pysat.instruments.demeter_iap
+    :members: __doc__, add_drift_sat_coord, add_drift_lgm_coord, add_drift_geo_coord
+
 DMSP IVM
 --------
 
 .. automodule:: pysat.instruments.dmsp_ivm
-   :members: __doc__
+   :members: __doc__, smooth_ram_drifts, update_DMSP_ephemeris, add_drift_unit_vectors, add_drifts_polar_cap_x_y
 
 Dst
 ---
@@ -62,10 +108,22 @@ ICON EUV
 .. automodule:: pysat.instruments.icon_euv
    :members: __doc__, remove_icon_names
 
+ICON FUV
+--------
+
+.. automodule:: pysat.instruments.icon_fuv
+   :members: __doc__, remove_icon_names
+
 ICON IVM
 --------
 
 .. automodule:: pysat.instruments.icon_ivm
+   :members: __doc__, remove_icon_names
+
+ICON MIGHTI
+-----------
+
+.. automodule:: pysat.instruments.icon_mighti
    :members: __doc__, remove_icon_names
 
 ISS-FPMU
@@ -74,16 +132,16 @@ ISS-FPMU
 .. automodule:: pysat.instruments.iss_fpmu
    :members: __doc__
 
+JRO ISR
+-------
+
+.. automodule:: pysat.instruments.jro_isr
+    :members: __doc__
+
 netCDF Pandas
 -------------
 
 .. automodule:: pysat.instruments.netcdf_pandas
-   :members: __doc__, init, load, list_files, download
-
-NASA CDAWeb
------------
-
-.. automodule:: pysat.instruments.nasa_cdaweb_methods
    :members: __doc__, init, load, list_files, download
 
 OMNI
@@ -126,4 +184,10 @@ TIMED/SEE
 ---------
 
 .. automodule:: pysat.instruments.timed_see
+   :members: __doc__
+
+UCAR TIEGCM
+-----------
+
+.. automodule:: pysat.instruments.ucar_tiegcm
    :members: __doc__
