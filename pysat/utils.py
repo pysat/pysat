@@ -1,4 +1,4 @@
-'''
+"""
 pysat.utils - utilities for running pysat
 =========================================
 
@@ -6,7 +6,7 @@ pysat.utils - utilities for running pysat
 throughout the pysat package.  This includes conversion
 of formats, loading of files, and user-supplied info
 for the pysat data directory structure.
-'''
+"""
 
 from __future__ import print_function
 from __future__ import absolute_import

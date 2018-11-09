@@ -1,4 +1,4 @@
-'''
+"""
 pysat - Python Satellite Data Analysis Toolkit
 ==============================================
 
@@ -32,7 +32,7 @@ Main Features
     instruments to pysat
 
 
-'''
+"""
 
 # -*- coding: utf-8 -*-
 from __future__ import print_function
