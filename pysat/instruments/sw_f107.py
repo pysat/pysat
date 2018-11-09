@@ -11,15 +11,15 @@ tag : string
     '' Standard F10.7 data (single day at a time)
     'all' All F10.7
     'forecast' Grab forecast data from SWPC (next 3 days)
-    '45day' 45-Day Forecast data frmo the Air Force
+    '45day' 45-Day Forecast data from the Air Force
 
 Note
 ----
-The forecast data is stored by generation date, where each file contains the forecast
-for the next three days. Forecast data downloads are only supported
-for the current day. When loading forecast data, the date specified
-with the load command is the date the forecast was generated. The data loaded
-will span three days.
+The forecast data is stored by generation date, where each file contains the
+forecast for the next three days. Forecast data downloads are only supported
+for the current day. When loading forecast data, the date specified with the
+load command is the date the forecast was generated. The data loaded will span
+three days.
 
 
 The forecast data should not be used with the data padding option available
@@ -90,10 +90,11 @@ def load(fnames, tag=None, sat_id=None):
         # parse off the last date, load month of data, downselect to desired day
         date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
         data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True) 
-        idx, = np.where((data.index >= date) & (data.index < date+pds.DateOffset(days=1)))
+        idx, = np.where((data.index >= date) &
+                        (data.index < date+pds.DateOffset(days=1)))
         result = data.iloc[idx,:]      
     elif tag == 'all':
-        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)                
+        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
     elif tag == 'forecast':
         # load forecast data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
@@ -165,12 +166,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             if not out.empty:
                 # only want to use the most recent file
                 out = out.iloc[-1:]
-                # first day of data is 2-14, ensure same file for first and most recent
-                # day
+                # first day of data is 2-14, ensure same file for first and
+                # most recent day
                 out.ix[pysat.datetime(1947, 2, 13)] = out.iloc[0]
-                # make sure things are in order and copy latest filename for all days
-                # thus no matter which day with data the user loads they get the
-                # most recent f10.7 file
+                # make sure things are in order and copy latest filename for
+                # all days, thus no matter which day with data the user loads
+                # they get the most recent F10.7 file
                 out = out.sort_index()                
                 out = out.asfreq('D', 'pad')
 
@@ -185,9 +186,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             return pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
         else:
-            raise ValueError('Unrecognized tag name for Space Weather Index F107')                  
+            raise ValueError('Unrecognized tag name for Space Weather Index ' +
+                             'F107')                  
     else:
-        raise ValueError ('A data_path must be passed to the loading routine for F107')  
+        raise ValueError ('A data_path must be passed to the loading routine ' +
+                          'for F107')  
 
 
 
@@ -231,25 +234,30 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         for date in date_array:
             # modify date to be the start of the month
             if date.day != 1:
-                raise ValueError('The Download routine must be invoked with a freq="MS" option.')
+                raise ValueError('The Download routine must be invoked with ' +
+                                 'a freq="MS" option.')
             # download webpage
-            dstr = 'http://lasp.colorado.edu/lisird/latis/noaa_radio_flux.json?time%3E=' 
+            dstr = 'http://lasp.colorado.edu/lisird/latis/'
+            dstr += 'noaa_radio_flux.json?time%3E=' 
             dstr += date.strftime('%Y-%m-%d')
             dstr += 'T00:00:00.000Z&time%3C=' 
-            dstr += (date+pds.DateOffset(months=1)-pds.DateOffset(days=1)).strftime('%Y-%m-%d')
+            dstr += (date + pds.DateOffset(months=1) -
+                     pds.DateOffset(days=1)).strftime('%Y-%m-%d')
             dstr += 'T00:00:00.000Z'
             # data returned as json
             r = requests.get(dstr)
             # process
             raw_dict = json.loads(r.text)['noaa_radio_flux']
             data = pds.DataFrame.from_dict(raw_dict['samples'])
-            times = [pysat.datetime.strptime(time, '%Y %m %d') for time in data.pop('time')]
+            times = [pysat.datetime.strptime(time, '%Y %m %d')
+                     for time in data.pop('time')]
             data.index = times
             # replace fill with NaNs
-            idx, = np.where(data['f107'] == -99999.)
+            idx, = np.where(data['f107'] == -99999.0)
             data.iloc[idx,:] = np.nan
             # create file
-            data.to_csv(os.path.join(data_path, 'f107_monthly_'+date.strftime('%Y-%m')+'.txt'))
+            data.to_csv(os.path.join(data_path, 'f107_monthly_' +
+                                     date.strftime('%Y-%m') + '.txt'))
 
     elif tag == 'all':    
         # download from LASP, by year
@@ -257,7 +265,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         import json
                     
         # download webpage
-        dstr = 'http://lasp.colorado.edu/lisird/latis/noaa_radio_flux.json?time%3E=' 
+        dstr = 'http://lasp.colorado.edu/lisird/latis/'
+        dstr += 'noaa_radio_flux.json?time%3E=' 
         dstr += pysat.datetime(1947, 2, 13).strftime('%Y-%m-%d')
         dstr += 'T00:00:00.000Z&time%3C='
         now = pysat.datetime.utcnow() 
@@ -267,22 +276,28 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # process
         raw_dict = json.loads(r.text)['noaa_radio_flux']
         data = pds.DataFrame.from_dict(raw_dict['samples'])
-        times = [pysat.datetime.strptime(time, '%Y %m %d') for time in data.pop('time')]
+        times = [pysat.datetime.strptime(time, '%Y %m %d')
+                 for time in data.pop('time')]
         data.index = times
         # replace fill with NaNs
-        idx, = np.where(data['f107'] == -99999.)
+        idx, = np.where(data['f107'] == -99999.0)
         data.iloc[idx,:] = np.nan
         # create file
-        data.to_csv(os.path.join(data_path, 'f107_1947_to_'+now.strftime('%Y-%m-%d')+'.txt'))
+        data.to_csv(os.path.join(data_path, 'f107_1947_to_' +
+                                 now.strftime('%Y-%m-%d') + '.txt'))
             
         
     elif tag == 'forecast':
         import requests
-        print('This routine can only download the current forecast, not archived forecasts')
+        print('This routine can only download the current forecast, not ' +
+              'archived forecasts')
         # download webpage
-        r = requests.get('https://services.swpc.noaa.gov/text/3-day-solar-geomag-predictions.txt')
+        furl = 'https://services.swpc.noaa.gov/text/' + \
+            '3-day-solar-geomag-predictions.txt'
+        r = requests.get(furl)
         # parse text to get the date the prediction was generated
-        date = pysat.datetime.strptime(r.text.split(':Issued: ')[-1].split(' UTC')[0], '%Y %b %d %H%M')
+        date_str = r.text.split(':Issued: ')[-1].split(' UTC')[0]
+        date = pysat.datetime.strptime(date_str, '%Y %b %d %H%M')
         # get starting date of the forecasts
         raw_data = r.text.split(':Prediction_dates:')[-1]
         forecast_date = pysat.datetime.strptime(raw_data[3:14], '%Y %b %d')
@@ -298,15 +313,19 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # put data into nicer DataFrame
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'f107_forecast_'+date.strftime('%Y-%m-%d')+'.txt'))
+        data.to_csv(os.path.join(data_path, 'f107_forecast_' +
+                                 date.strftime('%Y-%m-%d') + '.txt'))
 
     elif tag == '45day':
         import requests
-        print('This routine can only download the current forecast, not archived forecasts')
+        print('This routine can only download the current forecast, not ' +
+              'archived forecasts')
         # download webpage
-        r = requests.get('https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt')
+        furl = 'https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt'
+        r = requests.get(furl)
         # parse text to get the date the prediction was generated
-        date = pysat.datetime.strptime(r.text.split(':Issued: ')[-1].split(' UTC')[0], '%Y %b %d %H%M')
+        date_str = r.text.split(':Issued: ')[-1].split(' UTC')[0]
+        date = pysat.datetime.strptime(date_str, '%Y %b %d %H%M')
         # get to the forecast data
         raw_data = r.text.split('45-DAY AP FORECAST')[-1]
         # grab AP part
@@ -337,6 +356,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
         data['ap'] = ap
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'f107_45day_'+date.strftime('%Y-%m-%d')+'.txt'))
+        data.to_csv(os.path.join(data_path, 'f107_45day_' +
+                                 date.strftime('%Y-%m-%d') + '.txt'))
 
     return        
