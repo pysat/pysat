@@ -14,21 +14,22 @@ tag : string
 
 Note
 ----
-Standard Kp files are stored by the first day of each month. When downloading use
-kp.download(start, stop, freq='MS') to only download days that could possibly
-have data.  'MS' gives a monthly start frequency.
+Standard Kp files are stored by the first day of each month. When downloading
+use kp.download(start, stop, freq='MS') to only download days that could
+possibly have data.  'MS' gives a monthly start frequency.
 
-The forecast data is stored by generation date, where each file contains the forecast
-for the next three days. Forecast data downloads are only supported
-for the current day. When loading forecast data, the date specified
-with the load command is the date the forecast was generated. The data loaded
-will span three days.
+The forecast data is stored by generation date, where each file contains the
+forecast for the next three days. Forecast data downloads are only supported
+for the current day. When loading forecast data, the date specified with the
+load command is the date the forecast was generated. The data loaded will span
+three days.
 
-Recent data is also stored by the generation date from the SWPC. Each file contains
-30 days of Kp measurements. The load date issued to pysat corresponds to the generation date.
+Recent data is also stored by the generation date from the SWPC. Each file
+contains 30 days of Kp measurements. The load date issued to pysat corresponds
+to the generation date.
 
-The recent and forecast data should not be used with the data padding option available
-from pysat.Instrument objects.
+The recent and forecast data should not be used with the data padding option
+available from pysat.Instrument objects.
 
 Warnings
 --------
@@ -60,19 +61,10 @@ tags = {'':'',
         'forecast':'SWPC Forecast data next (3 days)',
         'recent':'SWPC provided Kp for past 30 days'}
 sat_ids = {'':['']}
-test_dates = {'':{'':pysat.datetime(2009,1,1), 'forecast':pysat.datetime(2009,1,1)}}
+test_dates = {'':{'':pysat.datetime(2009,1,1),
+                  'forecast':pysat.datetime(2009,1,1)}}
 
 # create a basic parser to deal with date format of the Kp file
-def _parse(yr, mo, day):
-    """
-    Basic parser to deal with date format of the Kp file.
-    """
-    
-    yr = '20'+yr
-    yr = int(yr)
-    mo = int(mo)
-    day = int(day)
-    return pds.datetime(yr, mo, day)
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -99,7 +91,8 @@ def load(fnames, tag=None, sat_id=None):
     Called by pysat. Not intended for direct use by user.
     
     """
-
+    from pysat.utils import parse_date
+    
 
     if tag == '':
         # Kp data stored monthly, need to return data daily
@@ -107,17 +100,20 @@ def load(fnames, tag=None, sat_id=None):
         # parse off the last date, load month of data, downselect to desired day
         data = pds.DataFrame()
         #set up fixed width format for these files
-        colspec = [(0,2),(2,4),(4,6),(7,10),(10,13),(13,16),(16,19),(19,23),(23,26),(26,29),(29,32),(32,50)]
+        colspec = [(0,2), (2,4), (4,6), (7,10), (10,13), (13,16), (16,19),
+                   (19,23), (23,26), (26,29), (29,32), (32,50)]
         for filename in fnames:
             # the daily date is attached to filename
-            # parse off the last date, load month of data, downselect to desired day
+            # parse off the last date, load month of data, downselect to the
+            # desired day
             fname = filename[0:-11]
             date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
     
-            temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,header=None, 
-                                parse_dates=[[0,1,2]], date_parser=_parse, 
-                                index_col='0_1_2')
-            idx, = np.where((temp.index >= date) & (temp.index < date+pds.DateOffset(days=1)))
+            temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,
+                                header=None, parse_dates=[[0,1,2]],
+                                date_parser=parse_date, index_col='0_1_2')
+            idx, = np.where((temp.index >= date) &
+                            (temp.index < date + pds.DateOffset(days=1)))
             temp = temp.iloc[idx,:]
             data = pds.concat([data,temp], axis=0)
             
@@ -125,13 +121,12 @@ def load(fnames, tag=None, sat_id=None):
         data = data.iloc[:,0:-1]
         
         # each column increments UT by three hours
-        # produce a single data series that has Kp value monotonically increasing in time
-        # with appropriate datetime indices
+        # produce a single data series that has Kp value monotonically
+        # increasing in time with appropriate datetime indices
         s = pds.Series()
         for i in np.arange(8):
             temp = pds.Series(data.iloc[:,i].values, 
-                            index=data.index+pds.DateOffset(hours=int(3*i))  )
-            #print temp
+                              index=data.index+pds.DateOffset(hours=int(3*i)))
             s = s.append(temp) 
         s = s.sort_index()
         s.index.name = 'time'
@@ -212,9 +207,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             return pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
         else:
-            raise ValueError('Unrecognized tag name for Space Weather Index Kp')                  
+            raise ValueError('Unrecognized tag name for Space Weather Index Kp')
     else:
-        raise ValueError ('A data_path must be passed to the loading routine for Kp')  
+        raise ValueError ('A data_path must be passed to the loading routine ' +
+                          'for Kp')  
 
 
 
@@ -260,7 +256,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     
         for date in date_array:
             fname = 'kp{year:02d}{month:02d}.tab'
-            fname = fname.format(year=(date.year - date.year//100*100), month=date.month)
+            fname = fname.format(year=(date.year - date.year//100*100),
+                                 month=date.month)
             local_fname = fname
             saved_fname = os.path.join(data_path,local_fname) 
             try:
@@ -281,42 +278,53 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         
     elif tag == 'forecast':
         import requests
-        print('This routine can only download the current forecast, not archived forecasts')
+        print('This routine can only download the current forecast, ' +
+              'not archived forecasts')
         # download webpage
-        r = requests.get('https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt')
+        furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
+        r = requests.get(furl)
         # parse text to get the date the prediction was generated
-        date = pysat.datetime.strptime(r.text.split(':Issued: ')[-1].split(' UTC')[0], '%Y %b %d %H%M')
+        date_str = r.text.split(':Issued: ')[-1].split(' UTC')[0]
+        date = pysat.datetime.strptime(date_str, '%Y %b %d %H%M')
         # data is the forecast value for the next three days
         raw_data = r.text.split('NOAA Kp index forecast ')[-1]
         # get date of the forecasts
-        forecast_date = pysat.datetime.strptime(raw_data[0:6]+' '+str(date.year), '%d %b %Y')
+        date_str = raw_data[0:6] + ' ' + str(date.year)
+        forecast_date = pysat.datetime.strptime(date_str, '%d %b %Y')
         # strings we will use to parse the downloaded text
         lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
                  '15-18UT', '18-21UT', '21-00UT']
         # storage for daily forecasts
         # get values for each day, then combine together
-        day1 = []; day2 = []; day3 = [];
+        day1 = []
+        day2 = []
+        day3 = []
         for line in lines:
             raw = raw_data.split(line)[-1].split('\n')[0]
             day1.append(int(raw[0:10]))
             day2.append(int(raw[10:20]))
             day3.append(int(raw[20:]))
         times = pds.date_range(forecast_date, periods=24, freq='3H')
-        day = [];
+        day = []
         for dd in [day1, day2, day3]:
             day.extend(dd)
         # put data into nicer DataFrame
         data = pds.DataFrame(day, index=times, columns=['Kp'])
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'kp_forecast_'+date.strftime('%Y-%m-%d')+'.txt'))
+        data.to_csv(os.path.join(data_path, 'kp_forecast_' +
+                                 date.strftime('%Y-%m-%d') + '.txt'))
 
     elif tag == 'recent':
         import requests
-        print('This routine can only download the current webpage, not archived forecasts')
+        print('This routine can only download the current webpage, not ' +
+              'archived forecasts')
         # download webpage
-        r = requests.get('https://services.swpc.noaa.gov/text/daily-geomagnetic-indices.txt')
+        rurl = 'https://services.swpc.noaa.gov/text/' + \
+            'daily-geomagnetic-indices.txt'
+        r = requests.get(rurl)
         # parse text to get the date the prediction was generated
-        date = pysat.datetime.strptime(r.text.split(':Issued: ')[-1].split('\n')[0], '%H%M UT %d %b %Y')
+        date_str = r.text.split(':Issued: ')[-1].split('\n')[0]
+        date = pysat.datetime.strptime(date_str, '%H%M UT %d %b %Y')
         # data is the forecast value for the next three days
         raw_data = r.text.split('#  Date ')[-1]
         # keep only the middle bits that matter
@@ -342,18 +350,15 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                               'high_lat_Kp':sub_kps[1],
                               'Kp':sub_kps[2]}, index=times)         
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'kp_recent_'+date.strftime('%Y-%m-%d')+'.txt'))
+        data.to_csv(os.path.join(data_path, 'kp_recent_' +
+                                 date.strftime('%Y-%m-%d') + '.txt'))
         
     return        
     
-def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None, kp_inst=None):
+def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
+                    kp_inst=None):
     """Filters pysat.Instrument data for given time after Kp drops below gate.
-    
-    Loads Kp data for the same timeframe covered by sat and sets sat.data to
-    NaN for times when Kp > maxKp and for filterTime after Kp drops below maxKp.
-    
-    This routine is written for standard Kp data, not the forecast or recent data.
-    
+
     Parameters
     ----------
     sat : pysat.Instrument
@@ -372,6 +377,14 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None, kp_inst=None)
     -------
     None : NoneType
         sat Instrument object modified in place
+
+    Notes
+    -----
+    Loads Kp data for the same timeframe covered by sat and sets sat.data to
+    NaN for times when Kp > maxKp and for filterTime after Kp drops below maxKp.
+    
+    This routine is written for standard Kp data, not the forecast or recent
+    data.
         
     """
     if kp_inst is not None:
@@ -395,7 +408,9 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None, kp_inst=None)
     selData = kpData[date-pds.DateOffset(days=1):date+pds.DateOffset(days=1)]
     ind, = np.where(selData['kp'] >= maxKp)
     for lind in ind:
-        sat.data[selData.index[lind]:(selData.index[lind]+pds.DateOffset(hours=filterTime) )] = np.NaN
+        sind = selData.index[lind]
+        eind = sind + pds.DateOffset(hours=filterTime)
+        sat.data[sind:eind] = np.NaN
         sat.data = sat.data.dropna(axis=0, how='all')
 
     return
