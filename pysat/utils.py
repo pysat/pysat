@@ -1,3 +1,13 @@
+'''
+pysat.utils - utilities for running pysat
+=========================================
+
+**pysat.utils** contains a number of functions used
+throughout the pysat package.  This includes conversion
+of formats, loading of files, and user-supplied info
+for the pysat data directory structure.
+'''
+
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -63,7 +73,7 @@ def set_data_dir(path=None, store=None):
     else:
         re_load = reload
     if store is None:
-        store = True    
+        store = True
     if os.path.isdir(path):
         if store:
             with open(os.path.join(os.path.expanduser('~'), '.pysat',
@@ -76,9 +86,9 @@ def set_data_dir(path=None, store=None):
         raise ValueError('Path %s does not lead to a valid directory.' % path)
 
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='Epoch',
-                 units_label='units', name_label='long_name', 
+                 units_label='units', name_label='long_name',
                  notes_label='notes', desc_label='desc',
-                 plot_label='label', axis_label='axis', 
+                 plot_label='label', axis_label='axis',
                  scale_label='scale',
                  min_label='value_min', max_label='value_max',
                  fill_label='fill'):
@@ -108,7 +118,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
-    if isinstance(fnames, basestring): 
+    if isinstance(fnames, basestring):
         fnames = [fnames]
 
     if file_format is None:
@@ -140,12 +150,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
             # loadup all of the variables in the netCDF
             loadedVars = {}
             for key in data.variables.keys():
-                # load up metadata.  From here group unique 
-                # dimensions and act accordingly, 1D, 2D, 3D  
+                # load up metadata.  From here group unique
+                # dimensions and act accordingly, 1D, 2D, 3D
                 if len(data.variables[key].dimensions) == 1:
                     # load 1D data variable
                     # assuming basic time dimension
-                    loadedVars[key] = data.variables[key][:] 
+                    loadedVars[key] = data.variables[key][:]
                     # if key != epoch_name:
                     # load up metadata
                     meta_dict = {}
@@ -181,10 +191,10 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                 # index - or we may have to create simple integer based DataFrame access
                 # if the dimension is stored as its own variable then use that info for index
                 if obj_key_name in obj_var_keys:
-                    # string used to indentify dimension also in data.variables 
-                    # will be used as an index 
-                    index_key_name = obj_key_name 
-                    # if the object index uses UNIX time, process into datetime index  
+                    # string used to indentify dimension also in data.variables
+                    # will be used as an index
+                    index_key_name = obj_key_name
+                    # if the object index uses UNIX time, process into datetime index
                     if data.variables[obj_key_name].getncattr(name_label) == epoch_name:
                         # name to be used in DataFrame index
                         index_name = epoch_name
@@ -195,7 +205,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                         index_name = data.variables[obj_key_name].getncattr(name_label)
                 else:
                     # dimension is not itself a variable
-                    index_key_name  = None                
+                    index_key_name  = None
 
                 # iterate over the variables and grab metadata
                 dim_meta_data = pysat.Meta(units_label=units_label, name_label=name_label,
@@ -218,7 +228,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                     for nc_key in data.variables[obj_key_name].ncattrs():
                         dim_meta_dict[nc_key] = data.variables[obj_key_name].getncattr(nc_key)
                     mdata[obj_key_name] = dim_meta_dict
-                
+
                 # iterate over all variables with this dimension and store data
                 # data storage, whole shebang
                 loop_dict = {}
@@ -226,7 +236,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                 loop_list = []
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     # data
-                    loop_dict[clean_key] = data.variables[key][:,:].flatten(order='C')                
+                    loop_dict[clean_key] = data.variables[key][:,:].flatten(order='C')
                 # number of values in time
                 loop_lim = data.variables[obj_var_keys[0]].shape[0]
                 # number of values per time
@@ -256,7 +266,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                     for i in np.arange(loop_lim, dtype=int):
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
-                        loop_list[-1].index.name = new_index_name             
+                        loop_list[-1].index.name = new_index_name
                 else:
                     loop_frame = pds.Series(loop_dict[clean_var_keys[0]], name=obj_var_keys[0])
                     # break massive series into bunch of smaller series
@@ -265,7 +275,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
                 # print (loop_frame.columns)
-                        
+
                 # add 2D object data, all based on a unique dimension within
                 # netCDF, to loaded data dictionary
                 loadedVars[obj_key_name] = loop_list
@@ -280,20 +290,20 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                 obj_var_keys = []
                 for i in idx:
                     obj_var_keys.append(three_d_keys[i])
-                    
+
                 for obj_key_name in obj_var_keys:
                     # store attributes in metadata
                     meta_dict = {}
                     for nc_key in data.variables[obj_key_name].ncattrs():
                         meta_dict[nc_key] = data.variables[obj_key_name].getncattr(nc_key)
                     mdata[obj_key_name] = meta_dict
-                    
+
                     # iterate over all variables with this dimension and store data
                     # data storage, whole shebang
                     loop_dict = {}
                     # list holds a series of slices, parsed from dict above
                     loop_list = []
-                    loop_dict[obj_key_name] = data.variables[obj_key_name][:,:,:]                
+                    loop_dict[obj_key_name] = data.variables[obj_key_name][:,:,:]
                     # number of values in time
                     loop_lim = data.variables[obj_key_name].shape[0]
                     # number of values per time
@@ -324,13 +334,13 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
                     for i in np.arange(loop_lim, dtype=int):
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
-                        loop_list[-1].index.name = new_index_name                                 
-                            
+                        loop_list[-1].index.name = new_index_name
+
                     # add 2D object data, all based on a unique dimension within netCDF,
                     # to loaded data dictionary
                     loadedVars[obj_key_name] = loop_list
                     del loop_list
-                                                                
+
             # prepare dataframe index for this netcdf file
             time_var = loadedVars.pop(epoch_name)
 
@@ -359,7 +369,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
     for item in running_store:
         out.append(pds.DataFrame.from_records(item, index=epoch_name))
     out = pds.concat(out, axis=0)
-    return out, mdata        
+    return out, mdata
 
 
 def getyrdoy(date):
@@ -378,7 +388,7 @@ def season_date_range(start, stop, freq='D'):
     """
     Return array of datetime objects using input frequency from start to stop
 
-    Supports single datetime object or list, tuple, ndarray of start and 
+    Supports single datetime object or list, tuple, ndarray of start and
     stop dates.
 
     freq codes correspond to pandas date_range codes, D daily, M monthly,
@@ -386,7 +396,7 @@ def season_date_range(start, stop, freq='D'):
 
     """
 
-    if hasattr(start, '__iter__'):  
+    if hasattr(start, '__iter__'):
         # missing check for datetime
         season = pds.date_range(start[0], stop[0], freq=freq)
         for (sta,stp) in zip(start[1:], stop[1:]):
@@ -417,7 +427,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
 
     Parameters
     ----------
-        year : array_like of ints 
+        year : array_like of ints
         month : array_like of ints or None
         day : array_like of ints
             for day (default) or day of year (use month=None)
@@ -434,11 +444,11 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     """
     # need a timeseries index for storing satellite data in pandas but
     # creating a datetime object for everything is too slow
-    # so I calculate the number of nanoseconds elapsed since first sample, 
-    # and create timeseries index from that. 
+    # so I calculate the number of nanoseconds elapsed since first sample,
+    # and create timeseries index from that.
     # Factor of 20 improvement compared to previous method,
     # which itself was an order of magnitude faster than datetime.
- 
+
     #get list of unique year, and month
     if not hasattr(year, '__iter__'):
         raise ValueError('Must provide an iterable for all inputs.')
@@ -457,11 +467,11 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     day = day.astype(int)
     # track changes in seconds
     uts_del = uts.copy().astype(float)
-    # determine where there are changes in year and month that need to be 
-    # accounted for    
+    # determine where there are changes in year and month that need to be
+    # accounted for
     _,idx = np.unique(year*100.+month, return_index=True)
     # create another index array for faster algorithm below
-    idx2 = np.hstack((idx,len(year)+1))   
+    idx2 = np.hstack((idx,len(year)+1))
     # computes UTC seconds offset for each unique set of year and month
     for _idx,_idx2 in zip(idx[1:],idx2[2:]):
         temp = (datetime(year[_idx],month[_idx],1)
@@ -618,7 +628,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
 
     if not lon_name in inst.data.keys():
         raise ValueError('uknown longitude variable name')
-    
+
     inst[lon_name] = adjust_cyclic_data(inst[lon_name], high=high, low=low)
 
     return
@@ -678,10 +688,10 @@ def scale_units(out_unit, in_unit):
             out_key = kk
         if in_unit.lower() in accepted_units[kk]:
             in_key = kk
-    
+
     if out_key is None:
         raise ValueError('Unknown output unit {:}'.format(out_unit))
-    
+
     if in_key is None:
         raise ValueError('Unknown input unit {:}'.format(in_unit))
 
@@ -697,4 +707,3 @@ def scale_units(out_unit, in_unit):
         unit_scale = scales[out_key] / scales[in_key]
 
     return unit_scale
-
