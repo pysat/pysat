@@ -1,3 +1,14 @@
+"""
+pysat.model_utils - interface for modeled observations
+======================================================
+
+Main Features
+-------------
+- Comparison of models and measured data.
+- Matching of instruments to modelled data parameters.
+- Extraction of instrument-aligned data from a modelled data set.
+"""
+
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -34,7 +45,7 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     -----
     Statistics are calculated using PyForecastTools (imported as verify).
     See notes there for more details.
-    
+
     all - all statistics
     all_bias - bias, meanPercentageError, medianLogAccuracy, symmetricSignedBias
     accuracy - returns dict with mean squared error, root mean squared error,
@@ -202,7 +213,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         Name of the time coordinate in the model Dataset
     mod_units : list of strings
         units for each of the mod_name location attributes.  Currently
-        supports: rad/radian(s), deg/degree(s), h/hr(s)/hour(s), m, km, and cm 
+        supports: rad/radian(s), deg/degree(s), h/hr(s)/hour(s), m, km, and cm
     sel_name : list of strings or NoneType
         list of names of modelled data indices to append to instrument object,
         or None to append all modelled data (default=None)
@@ -233,7 +244,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
     # Test the input
     if start is None or stop is None:
         raise ValueError('Must provide start and end time for comparison')
-    
+
     if inst is None:
         raise ValueError('Must provide a pysat instrument object')
 
@@ -362,7 +373,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
         Name of the time coordinate in the model Dataset
     mod_units : list of strings
         units for each of the mod_name location attributes.  Currently
-        supports: rad/radian(s), deg/degree(s), h/hr(s)/hour(s), m, km, and cm 
+        supports: rad/radian(s), deg/degree(s), h/hr(s)/hour(s), m, km, and cm
     sel_name : list of strings or NoneType
         list of names of modelled data indices to append to instrument object,
         or None to append all modelled data (default=None)
@@ -484,5 +495,3 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
         inst.meta.data.units[mdat] = model.data_vars[attr_name].units
 
     return interp_data.keys()
-    
-
