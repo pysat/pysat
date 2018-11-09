@@ -601,7 +601,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     Parameters
     ------------
     inst : pysat.Instrument instance
-        instrument object for which modelled data will be extracted
+        instrument object to be updated
     lon_name : string
         name of the longtiude data
     high : float
@@ -621,6 +621,47 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     
     inst[lon_name] = adjust_cyclic_data(inst[lon_name], high=high, low=low)
 
+    return
+
+def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
+    """ Append solar local time to an instrument object
+
+    Parameters
+    ------------
+    inst : pysat.Instrument instance
+        instrument object to be updated
+    lon_name : string
+        name of the longtiude data key (assumes data are in degrees)
+    slt_name : string
+        name of the output solar local time data key (default='slt')
+
+    Returns
+    ---------
+    updates instrument data in column specified by slt_name
+
+    """
+
+    if not lon_name in inst.data.keys():
+        raise ValueError('uknown longitude variable name')
+
+    # Convert from numpy epoch nanoseconds to UT seconds of day
+    utsec = list()
+    for nptime in inst.data.index.values.astype(int):
+        # Numpy times come out in nanoseconds and timestamp converts
+        # from seconds
+        dtime = dt.datetime.fromtimestamp(nptime * 1.0e-9)
+        utsec.append((dtime.hour * 3600.0 + dtime.minute * 60.0 + dtime.second
+                      + dtime.microsecond * 1.0e-6) / 3600.0)
+
+    # Calculate solar local time
+    slt = np.array([t + inst[lon_name][i] / 15.0 for i,t in enumerate(utsec)])
+
+    # Ensure that solar local time falls between 0 and 24 hours
+    slt[slt >= 24.0] -= 24.0
+    slt[slt < 0.0] += 24.0
+
+    # Add the solar local time to the instrument
+    inst[slt_name] = pds.Series(slt, index=inst.data.index)
     return
 
 def scale_units(out_unit, in_unit):
