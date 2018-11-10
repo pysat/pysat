@@ -35,7 +35,7 @@ install_requires=['pandas', 'numpy',  'sgp4', 'pyEphem', 'requests',
 if on_rtd:
     # read the docs doesn't do Fortran
     # remove pysatCDF through h5py
-    install_requires = install_requires[:-6]
+    install_requires = install_requires[:-7]
 
 setup(
     name='pysat',
