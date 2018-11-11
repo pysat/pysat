@@ -367,7 +367,7 @@ class Instrument(object):
         if self.pandas_format:
             if isinstance(key, tuple):
                 # support slicing
-                return self.data.ix[key[0], key[1]]
+                return self.data.iloc[key[0], key[1]]
             else:
                 try:
                     # integer based indexing
@@ -468,7 +468,7 @@ class Instrument(object):
         # aka slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
-                self.data.ix[key[0], key[1]] = new
+                self.data.iloc[key[0], key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
