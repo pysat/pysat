@@ -200,3 +200,48 @@ def clean(self):
     self.data = self[idx]
         
     return
+
+def calc_measurement_loc(self):
+    """ Calculate the instrument measurement location in geographic coordinates
+
+    Returns
+    -------
+    Void : adds 'gdlat#', 'gdlon#' to the instrument, for all directions that
+    have azimuth and elevation keys that match the format 'eldir#' and 'azdir#'
+
+    """
+
+    az_keys = [kk[5:] for kk in list(self.data.keys()) if kk.find('azdir') == 0]
+    el_keys = [kk[5:] for kk in list(self.data.keys()) if kk.find('eldir') == 0]
+    good_dir = list()
+
+    for i,kk in enumerate(az_keys):
+        if kk in el_keys:
+            try:
+                good_dir.append(int(kk))
+            except:
+                print("WARNING: unknown direction number [{:}]".format(kk))
+
+    # Calculate the geodetic latitude and longitude for each direction
+    for dd in good_dir:
+        # Format the direction location keys
+        az_key = 'azdir{:d}'.format(dd)
+        el_key = 'eldir{:d}'.format(dd)
+        lat_key = 'gdlat{:d}'.format(dd)
+        lon_key = 'gdlat{:d}'.format(dd)
+        # JRO is located 520 m above sea level (jro.igp.gob.pe./english/)
+        # Also, altitude has already been calculated
+        gdaltr = np.ones(shape=self['gdlonr'].shape) * 0.52
+        gdlat, gdlon, _ = local_horizontal_to_global_geo(self[az_key],
+                                                         self[el_key],
+                                                         self['range'],
+                                                         self['gdlatr'],
+                                                         self['gdlonr'], gdaltr,
+                                                         geodetic=True)
+
+        self[lat_key] = pds.Series(gdlat, index=self.data.index)
+        self[lon_key] = pds.Series(gdlon, index=self.data.index)
+    else:
+        raise ValueError("No matching azimuth and elevation data included")
+
+    return
