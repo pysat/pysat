@@ -78,7 +78,7 @@ madrigal_tag = {'':{'drifts':1910, 'drifts_ave':1911, 'oblique_stan':1800,
 pandas_format = True
 
 # support load routine
-load = mad_meth.load
+load = functools.partial(mad_meth.load, xarray_coords=['gdalt'])
 
 def init(self):
     """Initializes the Instrument object with values specific to JRO ISR
