@@ -26,7 +26,7 @@ def cedar_rules():
     return ackn
                          
 # support load routine
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     """Loads data from Madrigal into Pandas.
     
     This routine is called as needed by pysat. It is not intended
@@ -45,28 +45,23 @@ def load(fnames, tag=None, sat_id=None):
     sat_id : string ('')
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    **kwargs : extra keywords
-        Passthrough for additional keyword arguments specified when 
-        instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.
+    xarray_coords : list
+        List of keywords to use as coordinates if xarray output is desired
+        instead of a Pandas DataFrame (default=[])
     
     Returns
     -------
-    data, metadata
-        Data and Metadata are formatted for pysat. Data is an xarray 
-        DataSet while metadata is a pysat.Meta instance.
-        
-    Note
-    ----
-    Any additional keyword arguments passed to pysat.Instrument
-    upon instantiation are passed along to this routine.
-    
+    data : pds.DataFrame or xr.DataSet
+        A pandas DataFrame or xarray DataSet holding the data from the HDF5 file
+    metadata : pysat.Meta
+        Metadata from the HDF5 file, as well as default values from pysat
+
     Examples
     --------
     ::
-        inst = pysat.Instrument('ucar', 'tiegcm')
-        inst.load(2019,1)
-    
+        inst = pysat.Instrument('jro', 'isr', 'drifts')
+        inst.load(2010,18)
+
     """    
     import h5py
     
@@ -109,8 +104,32 @@ def load(fnames, tag=None, sat_id=None):
                                              uts=3600.0 * data.loc[:,'hour'] +
                                              60.0 * data.loc[:,'min'] +
                                              data.loc[:,'sec'])
-    # set index
-    data.index = time
+    # Declare index or recast as xarray
+    if len(xarray_coords) > 0:
+        if not np.all([xkey.lower() in data.columns for xkey in xarray_coords]):
+            estr = 'unknown coordinate key in {:}, '.format(xarray_coords)
+            estr += 'use only {:}'.format(data.columns)
+            raise ValueError(estr)
+
+        # Append time to the data frame and the coordinate list
+        data['time'] = time
+        xarray_coords.append('time')
+
+        # Set the indices
+        data = data.set_index(xarray_coords)
+
+        # Recast the data as an xarray
+        data = data.to_xarray()
+    else:
+        # Set the index to time, and put up a warning if there are duplicate
+        # times.  This could mean the data should be stored as an xarray DataSet
+        data.index = time
+
+        if np.any(time.duplicated()):
+            print("WARNING: duplicated time indices, consider specifing " +
+                  "additional coordinates and storing the data as an xarray" +
+                  " DataSet")
+
     return data, meta
 
 
