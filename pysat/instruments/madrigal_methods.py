@@ -105,6 +105,7 @@ def load(fnames, tag=None, sat_id=None):
     # datetime index from times
     time = pysat.utils.create_datetime_index(year=data.loc[:,'year'],
                                              month=data.loc[:,'month'],
+                                             day=data.loc[:,'day'],
                                              uts=3600.0 * data.loc[:,'hour'] +
                                              60.0 * data.loc[:,'min'] +
                                              data.loc[:,'sec'])
