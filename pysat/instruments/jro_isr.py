@@ -246,8 +246,8 @@ def calc_measurement_loc(self):
                                                                gdaltr,
                                                                geodetic=True)
 
-        # Assigning as a coordinate, since the azimuth and elevation angle
-        # don't change over time in these experiments
+        # Assigning as data, to ensure that the number of coordinates match
+        # the number of data dimensions
         self.data = self.data.assign(lat_key=gdlat, lon_key=gdlon)
         self.data.rename({"lat_key":lat_key, "lon_key":lon_key}, inplace=True)
 
