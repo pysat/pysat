@@ -446,7 +446,9 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
 
     # Determine the model coordinates closest to the satellite track
     interp_data = dict()
-    inst_coord = {kk:getattr(inst.data, inst_name[i]) * inst_scale[i]
+    interp_shape = inst.index.shape if inst.pandas_format else \
+        inst.data.data_vars.items()[0][1].shape
+    inst_coord = {kk:getattr(inst.data, inst_name[i]).values * inst_scale[i]
                   for i,kk in enumerate(mod_name)}
     for i,ii in enumerate(iind):
         # Cycle through each model data type, since it may not depend on
@@ -460,28 +462,106 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
 
             # Construct the data needed for interpolation
             points = [model.coords[kk].data for kk in dims if kk in mod_name]
+            get_coords = True if len(points) > 0 else False
+            idims = 0
 
-            if len(points) > 0:
-                xi = [inst_coord[kk][ii] for kk in dims if kk in mod_name]
+            while get_coords:
+                if inst.pandas_format:
+                    # This data iterates only by time
+                    xind = ii
+                    xi = [inst_coord[kk][xind] for kk in dims if kk in mod_name]
+                    get_coords = False
+                else:
+                    # This data may have additional dimensions
+                    if idims == 0:
+                        # Determine the number of dimensions
+                        idims = len(inst.data.coords)
+                        idim_names = inst.data.coords.keys()[1:]
+
+                        # Find relevent dimensions for cycling
+                        ind_dims = [i for i,kk in enumerate(inst_name)
+                                    if kk in idim_names]
+                        imod_dims = [i for i in ind_dims if mod_name[i] in dims]
+                        ind_dims = [inst.data.coords.keys().index(inst_name[i])
+                                    for i in imod_dims]
+                        
+                        # Set the number of cycles
+                        icycles = 0
+                        ncycles = sum([len(inst.data.coords[inst_name[i]])
+                                       for i in imod_dims])
+                        cinds = np.zeros(shape=len(imod_dims), dtype=int)
+
+                    # Get the instrument coordinate for this cycle
+                    if icycles < ncycles or icycles == 0:
+                        xind = [cinds[ind_dims.index(i)] if i in ind_dims
+                                else 0 for i in range(idims)]
+                        xind[0] = ii
+                        xind = tuple(xind)
+
+                        xi = list()
+                        for kk in dims:
+                            if kk in mod_name:
+                                # This is the next instrument coordinate
+                                i = mod_name.index(kk)
+                                if i in imod_dims:
+                                    # This is an xarray coordiante
+                                    xi.append(inst_coord[kk][cinds[i]])
+                                else:
+                                    # This is an xarray variable
+                                    xi.append(inst_coord[kk][xind])
+
+                        # Cycle the indices
+                        if len(cinds) > 0:
+                            i = 0
+                            cinds[i] += 1
+
+                            while cinds[i] > \
+                                inst.data.coords.dims[inst_name[imod_dims[i]]]:
+                                i += 1
+                                if i < len(cinds):
+                                    cinds[i-1] = 0
+                                    cinds[i] += 1
+                                else:
+                                    break
+                        icycles += 1
+
+                    # If we have cycled through all the coordinates for this
+                    # time, move onto the next time
+                    if icycles >= ncycles:
+                        get_coords = False
+                                    
+                # Get the model values for this time
                 values = model.data_vars[mdat].data[indices]
 
                 # Interpolate the desired value
-                yi = interpolate.interpn(points, values, xi, method=method)
-
+                try:
+                    yi = interpolate.interpn(points, values, xi, method=method)
+                except ValueError as verr:
+                    if str(verr).find("requested xi is out of bounds") > 0:
+                        # This is acceptable, pad the interpolated data with NaN
+                        print("Warning: {:}".format(verr))
+                        yi = [np.nan]
+                    else:
+                        raise ValueError(verr)
+                            
                 # Save the output
                 attr_name = "{:s}_{:s}".format(model_label, mdat)
                 if not attr_name in interp_data.keys():
                     interp_data[attr_name] = \
-                        np.empty(shape=inst.index.shape,
-                                 dtype=float) * np.nan
-                interp_data[attr_name][ii] = yi[0]
+                        np.empty(shape=interp_shape, dtype=float) * np.nan
+                interp_data[attr_name][xind] = yi[0]
 
     # Update the instrument object and attach units to the metadata
     for mdat in interp_data.keys():
-        inst[mdat] = pds.Series(interp_data[mdat], index=inst.index)
-
         attr_name = mdat.split("{:s}_".format(model_label))[-1]
         inst.meta.data.units[mdat] = model.data_vars[attr_name].units
+
+        if inst.pandas_format:
+            inst[mdat] = pds.Series(interp_data[mdat], index=inst.index)
+        else:
+            inst.data = inst.data.assign(interp_key=(inst.data.coords.keys(),
+                                                     interp_data[mdat]))
+            inst.data.rename({"interp_key":mdat}, inplace=True)
 
     return interp_data.keys()
     
