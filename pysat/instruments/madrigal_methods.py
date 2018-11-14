@@ -78,6 +78,9 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     file_meta = filed['Metadata']['Data Parameters']
     # load up what is offered into pysat.Meta
     meta = pysat.Meta()
+    meta.info = {'acknowledgements':"See 'meta.Experiment_Notes' for " +
+                 "instrument specific acknowledgements\n" + cedar_rules(),
+                 'references':"See 'meta.Experiment_Notes' for references"}
     labels = []
     for item in file_meta:
         # handle difference in string output between python 2 and 3
@@ -89,9 +92,10 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
             unit_string = unit_string.decode('UTF-8')
             desc_string = desc_string.decode('UTF-8')
         labels.append(name_string)
-        meta[name_string] = {'long_name':name_string,
-                             'units':unit_string,
-                             'desc':desc_string}
+        meta[name_string.lower()] = {'long_name':name_string,
+                                     'units':unit_string,
+                                     'desc':desc_string}
+
     # add additional metadata notes
     # custom attributes attached to meta are attached to
     # corresponding Instrument object when pysat receives
