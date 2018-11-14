@@ -12,7 +12,7 @@ import pandas as pds
 import collections
 
 def median2D(const, bin1, label1, bin2, label2, data_label, 
-             returnData=False):
+             returnData=False, auto_bin=True):
     """Return a 2D average of data_label over a season and label1, label2.
 
     Parameters
@@ -46,8 +46,12 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
 
     # create bins
     #// seems to create the boundaries used for sorting into bins
-    binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
-    biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)
+    if auto_bin:
+        binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
+        biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)
+    else:
+        binx=bin1
+        biny=bin2
 
     #// how many bins are used
     numx = len(binx)-1

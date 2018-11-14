@@ -255,3 +255,50 @@ class Test2DConstellation:
         for i, y in enumerate(dummy_y[:-1]):
             check.append(np.all(dummy_val[i, :] == y.astype(int)))
             check.append(np.all(dummy_dev[i, :] == 0))
+
+class TestSeasonalAverageUnevenBins:
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing2D', clean_level='clean')
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+    def test_basic_seasonal_average(self):
+        
+        self.testInst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        results = pysat.ssnl.avg.median2D(self.testInst, [0., 20., 167., 360.], 'longitude',
+                                          [0., 4., 6., 18., 24], 'mlt', ['dummy1', 'dummy2', 'dummy3'])
+        dummy_val = results['dummy1']['median']
+        dummy_dev = results['dummy1']['avg_abs_dev']
+
+        dummy2_val = results['dummy2']['median']
+        dummy2_dev = results['dummy2']['avg_abs_dev']
+
+        dummy3_val = results['dummy3']['median']
+        dummy3_dev = results['dummy3']['avg_abs_dev']
+        
+        dummy_x = results['dummy1']['bin_x']
+        dummy_y = results['dummy1']['bin_y']
+        
+        # iterate over all y rows, value should be equal to integer value of mlt
+        # no variation in the median, all values should be the same
+        check = []
+        for i, y in enumerate(dummy_y[:-1]):
+            assert np.all(dummy_val[i, :] == y.astype(int))
+            assert np.all(dummy_dev[i, :] == 0)
+
+        for i, x in enumerate(dummy_x[:-1]):
+            assert np.all(dummy2_val[:, i] == x/15.)
+            assert np.all(dummy2_dev[:, i] == 0)
+
+        for i, x in enumerate(dummy_x[:-1]):
+            check.append(np.all(dummy3_val[:, i] == x/15.*1000. + dummy_y[:-1]) )
+            check.append(np.all(dummy3_dev[:, i] == 0))
+                            
+        # holds here because there are 32 days, no data is discarded, 
+        # each day holds same amount of data
+        assert self.testInst.data['dummy1'].size*32 == sum([ sum(i) for i in results['dummy1']['count'] ])
+
+        assert np.all(check)
