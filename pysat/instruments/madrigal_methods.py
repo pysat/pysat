@@ -65,7 +65,7 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     """    
     import h5py
     import numpy as np
-    
+
     filed = h5py.File(fnames[0], 'r')
     # data
     file_data = filed['Data']['Table Layout']
@@ -119,7 +119,7 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
             raise ValueError(estr)
 
         # Append time to the data frame and add as the first coordinate
-        data['time'] = time
+        data = data.assign(time=pds.Series(time, index=data.index))
         xarray_coords.insert(0, 'time')
 
         # Set the indices

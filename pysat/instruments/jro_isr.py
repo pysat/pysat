@@ -75,7 +75,7 @@ madrigal_tag = {'':{'drifts':1910, 'drifts_ave':1911, 'oblique_stan':1800,
 
 # Set to False to specify using xarray (not using pandas)
 # Set to True if data will be returned via a pandas DataFrame
-pandas_format = True
+pandas_format = False
 
 # support load routine
 load = functools.partial(mad_meth.load, xarray_coords=['gdalt'])
