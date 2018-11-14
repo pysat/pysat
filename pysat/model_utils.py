@@ -283,12 +283,12 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
 
         if mdata is not None:
             # Load the instrument data, if needed
-            if inst.empty or inst.data.index[-1] < istart:
+            if inst.empty or inst.index[-1] < istart:
                 inst.custom.add(utils.update_longitude, 'modify', low=lon_low,
                                 lon_name=inst_lon_name, high=lon_high)
                 inst.load(date=istart)
 
-            if not inst.empty and inst.data.index[0] >= istart:
+            if not inst.empty and inst.index[0] >= istart:
                 added_names = extract_modelled_observations(inst=inst, \
                                 model=mdata, inst_name=inst_name,
                                                             mod_name=mod_name, \
@@ -431,7 +431,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     tm_sec = (np.array(model.data_vars[mod_datetime_name][1:]) -
               np.array(model.data_vars[mod_datetime_name][:-1])).min()
     tm_sec /= np.timedelta64(1, 's')
-    ti_sec = (inst.data.index[1:] - inst.data.index[:-1]).min().total_seconds()
+    ti_sec = (inst.index[1:] - inst.index[:-1]).min().total_seconds()
     min_del = tm_sec if tm_sec < ti_sec else ti_sec
 
     # Determine which instrument observations are within the model time
@@ -439,7 +439,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     mind = list()
     iind = list()
     for i,tt in enumerate(np.array(model.data_vars[mod_datetime_name])):
-        del_sec = abs(tt - inst.data.index).total_seconds()
+        del_sec = abs(tt - inst.index).total_seconds()
         if del_sec.min() < min_del:
             iind.append(del_sec.argmin())
             mind.append(i)
@@ -472,13 +472,13 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                 attr_name = "{:s}_{:s}".format(model_label, mdat)
                 if not attr_name in interp_data.keys():
                     interp_data[attr_name] = \
-                        np.empty(shape=inst.data.index.shape,
+                        np.empty(shape=inst.index.shape,
                                  dtype=float) * np.nan
                 interp_data[attr_name][ii] = yi[0]
 
     # Update the instrument object and attach units to the metadata
     for mdat in interp_data.keys():
-        inst[mdat] = pds.Series(interp_data[mdat], index=inst.data.index)
+        inst[mdat] = pds.Series(interp_data[mdat], index=inst.index)
 
         attr_name = mdat.split("{:s}_".format(model_label))[-1]
         inst.meta.data.units[mdat] = model.data_vars[attr_name].units
