@@ -66,6 +66,11 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     import h5py
     import numpy as np
 
+    # Ensure 'time' wasn't included as a coordinate, since it is the default
+    if 'time' in xarray_coords:
+        xarray_coords.pop(xarray_coords.index('time'))
+
+    # Open the specified file
     filed = h5py.File(fnames[0], 'r')
     # data
     file_data = filed['Data']['Table Layout']
