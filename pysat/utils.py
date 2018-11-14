@@ -640,13 +640,14 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     updates instrument data in column specified by slt_name
 
     """
+    import datetime as dt
 
     if not lon_name in inst.data.keys():
         raise ValueError('uknown longitude variable name')
 
     # Convert from numpy epoch nanoseconds to UT seconds of day
     utsec = list()
-    for nptime in inst.data.index.values.astype(int):
+    for nptime in inst.index.values.astype(int):
         # Numpy times come out in nanoseconds and timestamp converts
         # from seconds
         dtime = dt.datetime.fromtimestamp(nptime * 1.0e-9)
@@ -661,7 +662,13 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     slt[slt < 0.0] += 24.0
 
     # Add the solar local time to the instrument
-    inst[slt_name] = pds.Series(slt, index=inst.data.index)
+    if inst.pandas_format:
+        inst[slt_name] = pds.Series(slt, index=inst.data.index)
+    else:
+        data = inst.data.assign(pysat_slt=(inst.data.coords.indexes.keys(),
+                                           slt))
+        data.rename({"pysat_slt":slt_name}, inplace=True)
+        inst.data = data
     return
 
 def scale_units(out_unit, in_unit):
@@ -773,7 +780,7 @@ def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     """
     rad_eq = 6378.1370 # WGS-84 semi-major axis
     flat = 1.0 / 298.257223563 # WGS-84 flattening
-    rad_pol = rad_eq * (1.0 - f) # WGS-84 semi-minor axis
+    rad_pol = rad_eq * (1.0 - flat) # WGS-84 semi-minor axis
 
     # The ratio between the semi-major and minor axis is used several times
     rad_ratio_sq = (rad_eq / rad_pol)**2
@@ -856,7 +863,7 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
     # with Earth radial vector
     x_out = x_local
     y_out = y_local * np.cos(dev_vert) + z_local * np.sin(dev_vert)
-    z_out = -y_local * np.sin(devH) + z_local * np.cos(dev_vert)
+    z_out = -y_local * np.sin(dev_vert) + z_local * np.cos(dev_vert)
 
     # Transform the azimuth and elevation angles
     az_out = np.degrees(np.arctan2(x_out, y_out))

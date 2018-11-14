@@ -210,6 +210,9 @@ def calc_measurement_loc(self):
     have azimuth and elevation keys that match the format 'eldir#' and 'azdir#'
 
     """
+    import numpy as np
+    import pandas as pds
+    from pysat import utils
 
     az_keys = [kk[5:] for kk in list(self.data.keys()) if kk.find('azdir') == 0]
     el_keys = [kk[5:] for kk in list(self.data.keys()) if kk.find('eldir') == 0]
@@ -223,25 +226,30 @@ def calc_measurement_loc(self):
                 print("WARNING: unknown direction number [{:}]".format(kk))
 
     # Calculate the geodetic latitude and longitude for each direction
+    if len(good_dir) == 0:
+        raise ValueError("No matching azimuth and elevation data included")
+
     for dd in good_dir:
         # Format the direction location keys
         az_key = 'azdir{:d}'.format(dd)
         el_key = 'eldir{:d}'.format(dd)
         lat_key = 'gdlat{:d}'.format(dd)
-        lon_key = 'gdlat{:d}'.format(dd)
+        lon_key = 'gdlon{:d}'.format(dd)
         # JRO is located 520 m above sea level (jro.igp.gob.pe./english/)
         # Also, altitude has already been calculated
         gdaltr = np.ones(shape=self['gdlonr'].shape) * 0.52
-        gdlat, gdlon, _ = local_horizontal_to_global_geo(self[az_key],
-                                                         self[el_key],
-                                                         self['range'],
-                                                         self['gdlatr'],
-                                                         self['gdlonr'], gdaltr,
-                                                         geodetic=True)
+        gdlat, gdlon, _ = utils.local_horizontal_to_global_geo(self[az_key],
+                                                               self[el_key],
+                                                               self['range'],
+                                                               self['gdlatr'],
+                                                               self['gdlonr'],
+                                                               gdaltr,
+                                                               geodetic=True)
 
-        self[lat_key] = pds.Series(gdlat, index=self.data.index)
-        self[lon_key] = pds.Series(gdlon, index=self.data.index)
-    else:
-        raise ValueError("No matching azimuth and elevation data included")
+        # Assigning as a coordinate, since the azimuth and elevation angle
+        # don't change over time in these experiments
+        self.data = self.data.assign_coords(lat_key=gdlat.data[0,:],
+                                            lon_key=gdlon.data[0,:])
+        self.data.rename({"lat_key":lat_key, "lon_key":lon_key}, inplace=True)
 
     return
