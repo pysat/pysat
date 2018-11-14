@@ -111,9 +111,9 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
             estr += 'use only {:}'.format(data.columns)
             raise ValueError(estr)
 
-        # Append time to the data frame and the coordinate list
+        # Append time to the data frame and add as the first coordinate
         data['time'] = time
-        xarray_coords.append('time')
+        xarray_coords.insert(0, 'time')
 
         # Set the indices
         data = data.set_index(xarray_coords)
