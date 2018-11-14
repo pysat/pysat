@@ -98,6 +98,12 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     # lowercase variable names
     data.columns = [item.lower() for item in data.columns]
     # datetime index from times
+    time_keys = np.array(['year', 'month', 'day', 'hour', 'min', 'sec'])
+    if not np.all([key in data.columns for key in time_keys]):
+        time_keys = [key for key in time_keys if key not in data.columns]
+        raise ValueError("unable to construct time index, missing " +
+                         "{:}".format(time_keys))
+    
     time = pysat.utils.create_datetime_index(year=data.loc[:,'year'],
                                              month=data.loc[:,'month'],
                                              day=data.loc[:,'day'],
