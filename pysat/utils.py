@@ -618,8 +618,14 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
 
     if not lon_name in inst.data.keys():
         raise ValueError('uknown longitude variable name')
-    
-    inst[lon_name] = adjust_cyclic_data(inst[lon_name], high=high, low=low)
+
+    new_lon = adjust_cyclic_data(inst[lon_name], high=high, low=low)
+
+    # Update based on data type
+    if inst.pandas_format:
+        inst[lon_name] = new_lon
+    else:
+        inst[lon_name].data = new_lon
 
     return
 
