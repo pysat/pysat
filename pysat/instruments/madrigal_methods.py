@@ -64,6 +64,7 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
 
     """    
     import h5py
+    import numpy as np
     
     filed = h5py.File(fnames[0], 'r')
     # data
