@@ -421,8 +421,8 @@ class TestBasics():
     def test_bad_lon_name_update_longitude(self):
         """Test update_longitude with a bad longitude name"""
 
-            assert_raises(ValueError, pysat.utils.update_longitude,
-                          self.testInst)
+        assert_raises(ValueError, pysat.utils.update_longitude,
+                      self.testInst)
 
     def test_scale_units_same(self):
         """ Test scale_units when both units are the same """
