@@ -1,4 +1,5 @@
 """
+
 tests the pysat averaging code
 """
 import pysat
