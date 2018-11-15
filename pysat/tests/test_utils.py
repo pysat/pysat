@@ -1,14 +1,14 @@
 """
 tests the pysat utils area
 """
-import pysat
-import pandas as pds
-from nose.tools import assert_raises, raises
-import nose.tools
-import pysat.instruments.pysat_testing
-import numpy as np
 import os
+import numpy as np
+import pandas as pds
+import nose.tools
+from nose.tools import assert_raises, raises
 import tempfile
+import pysat
+import pysat.instruments.pysat_testing
 
 import sys
 if sys.version_info[0] >= 3:
@@ -88,8 +88,11 @@ class TestBasics():
         self.vel_units = ["m/s", "cm/s", "km/s"]
 
         # Add longitude to the test instrument
-        time = [dt.datetime(2001,1,1,i,0,0)
-                for i in range(len(self.test_angles))]
+        ones = np.ones(shape=len(self.test_angles))
+        time = pysat.utils.create_datetime_index(year=ones*2001, month=ones,
+                                                 uts=[i for i in
+                                                      range(len(ones))])
+
         self.testInst.data = pds.DataFrame(np.array([time, self.test_angles]).transpose(), index=time, columns=["time", "longitude"])
 
 
