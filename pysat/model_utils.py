@@ -6,6 +6,7 @@ import functools
 import datetime as dt
 import numpy as np
 import pandas as pds
+import xarray as xr
 
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                            methods=['all']):
@@ -226,7 +227,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
 
     """
     from os import path
-    from pysat import utils
+    import pysat
 
     matched_inst = None
 
@@ -284,8 +285,9 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         if mdata is not None:
             # Load the instrument data, if needed
             if inst.empty or inst.index[-1] < istart:
-                inst.custom.add(utils.update_longitude, 'modify', low=lon_low,
-                                lon_name=inst_lon_name, high=lon_high)
+                inst.custom.add(pysat.utils.update_longitude, 'modify',
+                                low=lon_low, lon_name=inst_lon_name,
+                                high=lon_high)
                 inst.load(date=istart)
 
             if not inst.empty and inst.index[0] >= istart:
@@ -302,15 +304,42 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     inst.clean_level = comp_clean
                     inst_clean_rout(inst)
 
-                    im = [i for i,t in enumerate(inst[added_names[0]])
-                          if not np.isnan(t)]
+                    im = list()
+                    for aname in added_names:
+                        # Determine the number of good points
+                        if inst.pandas_format:
+                            imnew = np.where(~np.isnan(inst[aname]))
+                        else:
+                            imnew = np.where(~np.isnan(inst[aname].values))
+
+                        # Some data types are higher dimensions than others,
+                        # make sure we end up choosing a high dimension one
+                        # so that we don't accidently throw away paired data
+                        if len(im) == 0 or len(im[0]) < len(imnew[0]):
+                            im = imnew
+
+                    # If the data is 1D, save it as a list instead of a tuple
+                    if len(im) == 1:
+                        im = im[0]
+                    else:
+                        im = {kk:im[i]
+                              for i,kk in enumerate(inst.data.coords.keys())}
 
                     # Save the clean, matched data
                     if matched_inst is None:
-                        matched_inst = inst.data.iloc[im]
+                        matched_inst = pysat.Instrument
                         matched_inst.meta = inst.meta
+                        if inst.pandas_format:
+                            matched_inst = inst.data.iloc[im]
+                        else:
+                            matched_inst = inst.data.isel(im)
                     else:
-                        matched_inst = matched_inst.append(inst.data.iloc[im])
+                        if inst.pandas_format:
+                            matched_inst = matched_inst.data.append( \
+                                                        inst.data.iloc[im])
+                        else:
+                            matched_inst = xr.merge(matched_inst.data,
+                                                    inst.data.isel(im))
 
                     # Reset the clean flag
                     inst.clean_level = 'none'
@@ -328,10 +357,11 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
 
     # Recast as xarray and add units
     if matched_inst is not None:
-        matched_inst = matched_inst.to_xarray()
+        if inst.pandas_format:
+            matched_inst.data = matched_inst.data.to_xarray()
         for im in inst.meta.data.units.keys():
-            if im in matched_inst.data_vars.keys():
-                matched_inst.data_vars[im].attrs['units'] = \
+            if im in matched_inst.data.data_vars.keys():
+                matched_inst.data.data_vars[im].attrs['units'] = \
                     inst.meta.data.units[im]
 
     return matched_inst
