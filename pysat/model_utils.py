@@ -330,15 +330,15 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                         matched_inst = pysat.Instrument
                         matched_inst.meta = inst.meta
                         if inst.pandas_format:
-                            matched_inst = inst.data.iloc[im]
+                            matched_inst.data = inst.data.iloc[im]
                         else:
-                            matched_inst = inst.data.isel(im)
+                            matched_inst.data = inst.data.isel(im)
                     else:
                         if inst.pandas_format:
-                            matched_inst = matched_inst.data.append( \
+                            matched_inst.data = matched_inst.data.append( \
                                                         inst.data.iloc[im])
                         else:
-                            matched_inst = xr.merge(matched_inst.data,
+                            matched_inst.data = xr.merge(matched_inst.data,
                                                     inst.data.isel(im))
 
                     # Reset the clean flag
