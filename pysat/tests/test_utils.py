@@ -90,8 +90,9 @@ class TestBasics():
         # Add longitude to the test instrument
         ones = np.ones(shape=len(self.test_angles))
         time = pysat.utils.create_datetime_index(year=ones*2001, month=ones,
-                                                 uts=[i for i in
-                                                      range(len(ones))])
+                                                 uts=np.arange(0.0, len(ones),
+                                                               1.0))
+
 
         self.testInst.data = pds.DataFrame(np.array([time, self.test_angles]).transpose(), index=time, columns=["time", "longitude"])
 
