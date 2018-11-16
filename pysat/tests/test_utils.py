@@ -419,8 +419,8 @@ class TestBasics():
 
         pysat.utils.update_longitude(self.testInst, lon_name="longitude")
 
-        assert self.testInst.data['longitude'] < 180.0
-        assert self.testInst.data['longitude'] >= -180.0
+        assert np.all(self.testInst.data['longitude'] < 180.0)
+        assert np.all(self.testInst.data['longitude'] >= -180.0)
 
     def test_bad_lon_name_update_longitude(self):
         """Test update_longitude with a bad longitude name"""
