@@ -50,8 +50,8 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
         binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
         biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)
     else:
-        binx=bin1
-        biny=bin2
+        binx = np.array(bin1)
+        biny = np.array(bin2)
 
     #// how many bins are used
     numx = len(binx)-1

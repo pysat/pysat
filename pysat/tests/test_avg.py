@@ -241,7 +241,7 @@ class Test2DConstellation:
         for i in self.testC.instruments:
             i.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         
-        results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'mlt',
+        results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24], 'mlt',
                                           [0., 24, 24], 'slt', ['uts'])
         dummy_val = results['uts']['median']
         dummy_dev = results['uts']['avg_abs_dev']
@@ -259,17 +259,17 @@ class Test2DConstellation:
 class TestSeasonalAverageUnevenBins:
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing2D', clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testing', clean_level='clean')
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
-    def test_basic_seasonal_average(self):
+    def test_seasonal_average_uneven_bins(self):
         
         self.testInst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
-        results = pysat.ssnl.avg.median2D(self.testInst, [0., 20., 167., 360.], 'longitude',
-                                          [0., 4., 6., 18., 24], 'mlt', ['dummy1', 'dummy2', 'dummy3'])
+        results = pysat.ssnl.avg.median2D(self.testInst, np.linspace(0., 360., 25), 'longitude',
+                                          np.linspace(0., 24., 25), 'mlt', ['dummy1', 'dummy2', 'dummy3'], auto_bin=False)
         dummy_val = results['dummy1']['median']
         dummy_dev = results['dummy1']['avg_abs_dev']
 
