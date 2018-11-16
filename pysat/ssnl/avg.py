@@ -18,11 +18,13 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
     Parameters
     ----------
         const: Constellation or Instrument
-        bin#: [min, max, number of bins]
+        bin#: [min, max, number of bins], or array-like containing bin edges
         label#: string 
             identifies data product for bin#
         data_label: list-like 
             contains strings identifying data product(s) to be averaged
+        auto_bin: if True, function will create bins from the min, max and 
+                  number of bins. If false, bin edges must be manually entered
 
     Returns
     -------
