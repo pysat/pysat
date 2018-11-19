@@ -689,8 +689,11 @@ def scale_units(out_unit, in_unit):
         if in_key != out_key:
             raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
                                                                  in_unit))
+        # Recast units as keys for the scales dictionary
+        out_key = out_unit
+        in_key = in_unit
 
-    unit_scale = scales[out_unit.lower()] / scales[in_unit.lower()]
+    unit_scale = scales[out_key.lower()] / scales[in_key.lower()]
 
 
     return unit_scale
