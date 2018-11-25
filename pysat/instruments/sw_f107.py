@@ -58,10 +58,15 @@ tags = {'':'Daily value of F10.7',
 # dict keyed by sat_id that lists supported tags for each sat_id
 sat_ids = {'':['', 'all', 'forecast', '45day']}
 # dict keyed by sat_id that lists supported tags and a good day of test data
+# generate todays date to support loading forecast data
+now = pysat.datetime.now()
+today = pysat.datetime(now.year, now.month, now.day)
+tomorrow = today + pds.DateOffset(days=1)
+# set test dates
 test_dates = {'':{'':pysat.datetime(2009,1,1), 
                   'all':pysat.datetime(2009,1,1),
-                  'forecast':pysat.datetime(2009,1,1),
-                  '45day':pysat.datetime(2009,1,1)}}
+                  'forecast':tomorrow,
+                  '45day':tomorrow}}
 
 
 def load(fnames, tag=None, sat_id=None):
