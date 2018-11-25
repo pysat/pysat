@@ -55,14 +55,20 @@ import numpy as np
 
 import pysat
 
+
 platform = 'sw'
 name = 'kp'
 tags = {'':'',
         'forecast':'SWPC Forecast data next (3 days)',
         'recent':'SWPC provided Kp for past 30 days'}
 sat_ids = {'':['']}
+
+# generate todays date to support loading forecast data
+now = pysat.datetime.now()
+today = pysat.datetime(now.year, now.month, now.day)
+# set test dates
 test_dates = {'':{'':pysat.datetime(2009,1,1),
-                  'forecast':pysat.datetime(2009,1,1)}}
+                  'forecast':today}}
 
 # create a basic parser to deal with date format of the Kp file
 
