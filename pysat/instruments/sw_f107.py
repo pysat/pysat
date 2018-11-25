@@ -19,7 +19,13 @@ The forecast data is stored by generation date, where each file contains the
 forecast for the next three days. Forecast data downloads are only supported
 for the current day. When loading forecast data, the date specified with the
 load command is the date the forecast was generated. The data loaded will span
-three days.
+three days. To always ensure you are loading the most recent data, load
+the data with tomorrow's date.
+
+    f107 = pysat.Instrument('sw', 'f107', tag='forecast')
+    f107.download()
+    f107.load(date=f107.tomorrow())
+
 
 
 The forecast data should not be used with the data padding option available
@@ -179,12 +185,18 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         elif tag == 'forecast':
             format_str = 'f107_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
-            return pysat.Files.from_os(data_path=data_path,
+            files = pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
+            # pad list of files data to include most recent file under tomorrow
+            files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+            return files
         elif tag == '45day':
             format_str = 'f107_45day_{year:04d}-{month:02d}-{day:02d}.txt'
-            return pysat.Files.from_os(data_path=data_path,
+            files = pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
+            # pad list of files data to include most recent file under tomorrow
+            files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+            return files
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index ' +
                              'F107')                  
