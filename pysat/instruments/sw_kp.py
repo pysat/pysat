@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports Kp index values. Downloads data from ftp.gfz-potsdam.de.
+"""Supports Kp index values. Downloads data from ftp.gfz-potsdam.de or SWPC.
 
 Parameters
 ----------
@@ -22,7 +22,12 @@ The forecast data is stored by generation date, where each file contains the
 forecast for the next three days. Forecast data downloads are only supported
 for the current day. When loading forecast data, the date specified with the
 load command is the date the forecast was generated. The data loaded will span
-three days.
+three days. To always ensure you are loading the most recent data, load
+the data with tomorrow's date.
+
+    kp = pysat.Instrument('sw', 'kp', tag='recent')
+    kp.download()
+    kp.load(date=kp.tomorrow())
 
 Recent data is also stored by the generation date from the SWPC. Each file
 contains 30 days of Kp measurements. The load date issued to pysat corresponds
@@ -68,9 +73,7 @@ now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
 test_dates = {'':{'':pysat.datetime(2009,1,1),
-                  'forecast':today}}
-
-# create a basic parser to deal with date format of the Kp file
+                  'forecast':today+pds.DateOffset(days=1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -95,6 +98,7 @@ def load(fnames, tag=None, sat_id=None):
     Notes
     -----
     Called by pysat. Not intended for direct use by user.
+    
     
     """
     from pysat.utils import parse_date
@@ -184,7 +188,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Notes
     -----
-    Called by pysat. Not intended for direct use by user.    
+    Called by pysat. Not intended for direct use by user.   
+     
     
     """
 
@@ -206,12 +211,19 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             return out
         elif tag == 'forecast':
             format_str = 'kp_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
-            return pysat.Files.from_os(data_path=data_path,
+            files = pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
+            # pad list of files data to include most recent file under tomorrow
+            files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+            return files           
         elif tag == 'recent':
             format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
-            return pysat.Files.from_os(data_path=data_path,
+            files = pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
+            # pad list of files data to include most recent file under tomorrow
+            files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+            return files
+
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index Kp')
     else:
