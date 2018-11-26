@@ -56,7 +56,7 @@ load = cdw.load
 basic_tag = {'dir':'/pub/data/cnofs/cindi/ivm_500ms_cdf',
             'remote_fname':'{year:4d}/'+ivm_fname,
             'local_fname':ivm_fname}
-supported_tags = {'':basic_tag}
+supported_tags = {'':{'':basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
 
 

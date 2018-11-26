@@ -934,9 +934,6 @@ def plot_simulated_data(ivm, filename=None):
     for item in idx:
         ivm[item:, 'glong'] += 360.
 
-    idx, = np.where((ivm['fit_type'] == 0)  | (ivm['fit_type'] == 1))
-    ivm.data = ivm.data.ix[idx,:]
-
     f = plt.figure(figsize=(8.5,7))
     
     time1 = ivm.data.index[0].strftime('%Y-%h-%d %H:%M:%S')

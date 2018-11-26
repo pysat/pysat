@@ -33,7 +33,6 @@ before_install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4 ipython xarray
 
-
 # command to install dependencies
 install:
   # Coverage packages are on my binstar channel
@@ -48,14 +47,28 @@ install:
     fi
   - pwd
   - ls
-  - if [[ -d "$pyglow_dir" && -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      cd pyglow;
+
+   # check if there is a partial download of pyglow, remove if true
+  - export PYGLOW_DIR=./pyglow
+  - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      export PYGLOW_SIZE=($(du -s $PYGLOW_DIR));
+      echo 'PYGLOW_SIZE' $PYGLOW_SIZE;
+      export CHECK_SIZE=50000;
+      if [[ "${PYGLOW_SIZE}" -lt "$CHECK_SIZE" ]]; then
+        rm -r $PYGLOW_DIR;
+        echo 'removing pyglow directory';
+      fi
+    fi
+    # If pyglow exists, install it
+  - if [[ -d "$PYGLOW_DIR" && -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      cd $PYGLOW_DIR;
       python setup.py install;
       cd ..;
     fi
-  - if [[ ! -d "$pyglow_dir" || ! -e "$pyglow_dir/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+    # If no pyglow, clone, then run script
+  - if [[ ! -d "$PYGLOW_DIR" || ! -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       travis_wait 40 git clone https://github.com/timduly4/pyglow.git;
-      cd pyglow;
+      cd $PYGLOW_DIR;
       travis_wait 40 ./pyglow_install.sh >/dev/null;
       cd ..;
     fi
