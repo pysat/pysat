@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pysat.instruments is a pysat package that provides
+pysat.instruments is a pysat module that provides
 the interface for pysat to download, load, manage,
 modify and analyze science data.  Each instrument
 is contained within a subpackage of this set.

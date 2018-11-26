@@ -1,5 +1,5 @@
 """
-pysat.ssnl is a pysat package that provides
+pysat.ssnl is a pysat module that provides
 the interface to perform seasonal analysis on
 data managed by pysat.  These analysis methods
 are independent of instrument type.

@@ -2,7 +2,7 @@
 pysat.utils - utilities for running pysat
 =========================================
 
-**pysat.utils** contains a number of functions used
+pysat.utils contains a number of functions used
 throughout the pysat package.  This includes conversion
 of formats, loading of files, and user-supplied info
 for the pysat data directory structure.
