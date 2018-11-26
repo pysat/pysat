@@ -57,7 +57,7 @@ test_dates = {'':{'drifts':pysat.datetime(2010,1,19),
 jro_fname1 = 'jro{year:4d}{month:02d}{day:02d}'
 jro_fname2 = '.{version:03d}.hdf5'
 supported_tags = {ss:{'drifts':jro_fname1 + "drifts" + jro_fname2,
-                      'drifts_ave':jro_fname1 + "drifts_ave" + jro_fname2,
+                      'drifts_ave':jro_fname1 + "drifts_avg" + jro_fname2,
                       'oblique_stan':jro_fname1 + jro_fname2,
                       'oblique_rand':jro_fname1 + "?" + jro_fname2,
                       'oblique_long':jro_fname1 + "?" + jro_fname2}
