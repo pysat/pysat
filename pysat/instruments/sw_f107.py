@@ -193,14 +193,16 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             files = pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
-            files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+            if not files.empty:
+                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
             return files
         elif tag == '45day':
             format_str = 'f107_45day_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
-            files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+            if not files.empty:
+                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
             return files
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index ' +
