@@ -678,23 +678,23 @@ def scale_units(out_unit, in_unit):
             out_key = kk
         if in_unit.lower() in accepted_units[kk]:
             in_key = kk
-    
+
     if out_key is None:
         raise ValueError('Unknown output unit {:}'.format(out_unit))
     
     if in_key is None:
         raise ValueError('Unknown input unit {:}'.format(in_unit))
 
-    if out_key == 'm' or out_key == 'm/s':
+    if out_key == 'm' or out_key == 'm/s' or in_key == 'm' or in_key == 'm/s':
         if in_key != out_key:
             raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
                                                                  in_unit))
-        unit_scale = scales[out_unit.lower()] / scales[in_unit.lower()]
-    else:
-        if in_key == 'm':
-            raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
-                                                                 in_unit))
-        unit_scale = scales[out_key] / scales[in_key]
+        # Recast units as keys for the scales dictionary
+        out_key = out_unit
+        in_key = in_unit
+
+    unit_scale = scales[out_key.lower()] / scales[in_key.lower()]
+
 
     return unit_scale
 

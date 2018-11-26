@@ -164,7 +164,8 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                              mod_units=[], sel_name=None, method='linear',
                              model_label='model', inst_clean_rout=None,
                              comp_clean='clean'):
-    """Extracts instrument-aligned data from a modelled data set
+    """Pair instrument and model data, applying data cleaning after finding the
+    times and locations where the instrument and model align
 
     Parameters
     ----------
@@ -265,7 +266,8 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         raise ValueError('Need routine to clean the instrument data')
 
     # Download the instrument data, if needed
-    # Could use some improvement, for not re-downloading times that you already have
+    # Could use some improvement, for not re-downloading times that you already
+    # have
     if (stop-start).days != len(inst.files[start:stop]):
         inst.download(start=start, stop=stop, user=user, password=password)
 
