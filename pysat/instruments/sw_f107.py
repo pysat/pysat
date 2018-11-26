@@ -195,6 +195,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
             return files
         elif tag == '45day':
             format_str = 'f107_45day_{year:04d}-{month:02d}-{day:02d}.txt'
@@ -202,6 +203,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
+                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
                 files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
             return files
         else:
