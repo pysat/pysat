@@ -365,9 +365,29 @@ class Instrument(object):
 
         """
         if self.pandas_format:
+            print(type(key[0]))
+            print(type(key[1]))
+            print(isinstance(key[0],(int,slice)))
             if isinstance(key, tuple):
                 # support slicing
-                return self.data.ix[key[0],key[1]]
+                if isinstance(key[0],int):
+                    try:
+                        return self.data.iloc[key[0]][key[1]]
+                    except:
+                        return self.data.iloc[key[0]]
+                elif isinstance(key[0],slice):
+                    if isinstance(key[0].start,int):
+                        try:
+                            return self.data.iloc[key[0]][key[1]]
+                        except:
+                            return self.data.iloc[key[0]]
+                    else:
+                        try:
+                            return self.data.loc[key[0]][key[1]]
+                        except:
+                            return self.data.loc[key[0]]
+                else:
+                    return self.data.ix[key[0],key[1]]
             else:
                 try:
                     # integer based indexing
@@ -384,6 +404,7 @@ class Instrument(object):
                                              "Requested key : ", key))
                         raise ValueError(estring)
         else:
+            print('Meh')
             return self.__getitem_xarray__(key)
 
     def __getitem_xarray__(self, key):
