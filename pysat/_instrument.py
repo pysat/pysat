@@ -22,6 +22,7 @@ from . import _meta
 from . import utils
 from pysat import data_dir
 from pysat import DataFrame, Series
+from pysat import datetime
 
 
 # main class for users
@@ -365,46 +366,39 @@ class Instrument(object):
 
         """
         if self.pandas_format:
-            print(type(key[0]))
-            print(type(key[1]))
-            print(isinstance(key[0],(int,slice)))
-            if isinstance(key, tuple):
-                # support slicing
-                if isinstance(key[0],int):
-                    try:
+            if isinstance(key, str):
+                # By variable name, directly apply keywords
+                return self.data[key]
+            elif isinstance(key, tuple):
+                # keys may be int, str, datetime, or a slice of any of these
+                if isinstance(key[1],str):
+                    if isinstance(key[0],int):
+                        # By position and variable name
                         return self.data.iloc[key[0]][key[1]]
-                    except:
-                        return self.data.iloc[key[0]]
-                elif isinstance(key[0],slice):
-                    if isinstance(key[0].start,int):
-                        try:
+                    elif isinstance(key[0],datetime):
+                        # By Date and variable name
+                        return self.data.loc[key[0]][key[1]]
+                    elif isinstance(key[0],slice):
+                        # Support Slicing
+                        if isinstance(key[0].start,int):
+                            # Slice by row
                             return self.data.iloc[key[0]][key[1]]
-                        except:
-                            return self.data.iloc[key[0]]
-                    else:
-                        try:
+                        elif isinstance(key[0].start,datetime):
+                            # By Date and variable name
                             return self.data.loc[key[0]][key[1]]
-                        except:
-                            return self.data.loc[key[0]]
+                        else:
+                            estring = '\n'.join(("Unable to sort out data access.",
+                                                 "Instrument has data : " +
+                                                 str(not self.empty),
+                                                 "Requested key : ", str(key)))
+                            raise ValueError(estring)
                 else:
-                    return self.data.ix[key[0],key[1]]
-            else:
-                try:
-                    # integer based indexing
-                    return self.data.iloc[key]
-                except:
-                    try:
-                        # let pandas sort it out, presumption is key is
-                        # a variable name, or iterable of variables
-                        return self.data[key]
-                    except:
-                        estring = '\n'.join(("Unable to sort out data access.",
-                                             "Instrument has data : " +
-                                             str(not self.empty),
-                                             "Requested key : ", key))
-                        raise ValueError(estring)
+                    estring = '\n'.join(("Unable to sort out data access.",
+                                         "Instrument has data : " +
+                                         str(not self.empty),
+                                         "Requested key : ", str(key)))
+                    raise ValueError(estring)
         else:
-            print('Meh')
             return self.__getitem_xarray__(key)
 
     def __getitem_xarray__(self, key):

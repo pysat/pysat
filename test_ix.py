@@ -12,6 +12,11 @@ print('input => Ni')
 print(ivm['Ni'])
 print('\n')
 
+# Slicing by name
+# print('input => zpos:zvel')
+# print(ivm['zpos':'zvel'])
+# print('\n')
+
 # By position
 print('input => 0, Ni')
 print(ivm[0,'Ni'])
