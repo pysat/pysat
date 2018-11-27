@@ -367,9 +367,9 @@ class Instrument(object):
         """
         if self.pandas_format:
             if isinstance(key, str):
-                # By variable name, directly apply keywords
                 return self.data[key]
             elif isinstance(key, tuple):
+                # Check if indices are used, otherwise pass directly through
                 if isinstance(key[0],int):
                     idx = self.data.index[key[0]]
                 elif isinstance(key[0],slice) and isinstance(key[0].start,int):
