@@ -397,13 +397,17 @@ class Instrument(object):
                                 raise ValueError(estring)
                 else:
                     try:
-                        return self.data[key]
+                        # integer based indexing
+                        return self.data.iloc[key]
                     except:
-                        estring = '\n'.join(("Unable to sort out data access.",
-                                             "Instrument has data : " +
-                                             str(not self.empty),
-                                             "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                        try:
+                            return self.data[key]
+                        except:
+                            estring = '\n'.join(("Unable to sort out data access.",
+                                                 "Instrument has data : " +
+                                                 str(not self.empty),
+                                                 "Requested key : ", str(key)))
+                            raise ValueError(estring)
         else:
             return self.__getitem_xarray__(key)
 
