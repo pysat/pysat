@@ -1,5 +1,5 @@
 # Test code for pandas ix deprecation tests
-# Delete before pull request!
+# Delete before merging pull request!
 
 import pysat
 
