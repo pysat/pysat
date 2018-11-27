@@ -17,6 +17,7 @@ import functools
 import datetime as dt
 import numpy as np
 import pandas as pds
+import xarray as xr
 
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                            methods=['all']):
@@ -175,7 +176,8 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                              mod_units=[], sel_name=None, method='linear',
                              model_label='model', inst_clean_rout=None,
                              comp_clean='clean'):
-    """Extracts instrument-aligned data from a modelled data set
+    """Pair instrument and model data, applying data cleaning after finding the
+    times and locations where the instrument and model align
 
     Parameters
     ----------
@@ -237,7 +239,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
 
     """
     from os import path
-    from pysat import utils
+    import pysat
 
     matched_inst = None
 
@@ -276,7 +278,8 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         raise ValueError('Need routine to clean the instrument data')
 
     # Download the instrument data, if needed
-    # Could use some improvement, for not re-downloading times that you already have
+    # Could use some improvement, for not re-downloading times that you already
+    # have
     if (stop-start).days != len(inst.files[start:stop]):
         inst.download(start=start, stop=stop, user=user, password=password)
 
@@ -294,12 +297,13 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
 
         if mdata is not None:
             # Load the instrument data, if needed
-            if inst.empty or inst.data.index[-1] < istart:
-                inst.custom.add(utils.update_longitude, 'modify', low=lon_low,
-                                lon_name=inst_lon_name, high=lon_high)
+            if inst.empty or inst.index[-1] < istart:
+                inst.custom.add(pysat.utils.update_longitude, 'modify',
+                                low=lon_low, lon_name=inst_lon_name,
+                                high=lon_high)
                 inst.load(date=istart)
 
-            if not inst.empty and inst.data.index[0] >= istart:
+            if not inst.empty and inst.index[0] >= istart:
                 added_names = extract_modelled_observations(inst=inst, \
                                 model=mdata, inst_name=inst_name,
                                                             mod_name=mod_name, \
@@ -313,15 +317,42 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     inst.clean_level = comp_clean
                     inst_clean_rout(inst)
 
-                    im = [i for i,t in enumerate(inst[added_names[0]])
-                          if not np.isnan(t)]
+                    im = list()
+                    for aname in added_names:
+                        # Determine the number of good points
+                        if inst.pandas_format:
+                            imnew = np.where(~np.isnan(inst[aname]))
+                        else:
+                            imnew = np.where(~np.isnan(inst[aname].values))
+
+                        # Some data types are higher dimensions than others,
+                        # make sure we end up choosing a high dimension one
+                        # so that we don't accidently throw away paired data
+                        if len(im) == 0 or len(im[0]) < len(imnew[0]):
+                            im = imnew
+
+                    # If the data is 1D, save it as a list instead of a tuple
+                    if len(im) == 1:
+                        im = im[0]
+                    else:
+                        im = {kk:im[i]
+                              for i,kk in enumerate(inst.data.coords.keys())}
 
                     # Save the clean, matched data
                     if matched_inst is None:
-                        matched_inst = inst.data.iloc[im]
+                        matched_inst = pysat.Instrument
                         matched_inst.meta = inst.meta
+                        if inst.pandas_format:
+                            matched_inst.data = inst.data.iloc[im]
+                        else:
+                            matched_inst.data = inst.data.isel(im)
                     else:
-                        matched_inst = matched_inst.append(inst.data.iloc[im])
+                        if inst.pandas_format:
+                            matched_inst.data = matched_inst.data.append( \
+                                                        inst.data.iloc[im])
+                        else:
+                            matched_inst.data = xr.merge(matched_inst.data,
+                                                    inst.data.isel(im))
 
                     # Reset the clean flag
                     inst.clean_level = 'none'
@@ -339,10 +370,11 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
 
     # Recast as xarray and add units
     if matched_inst is not None:
-        matched_inst = matched_inst.to_xarray()
+        if inst.pandas_format:
+            matched_inst.data = matched_inst.data.to_xarray()
         for im in inst.meta.data.units.keys():
-            if im in matched_inst.data_vars.keys():
-                matched_inst.data_vars[im].attrs['units'] = \
+            if im in matched_inst.data.data_vars.keys():
+                matched_inst.data.data_vars[im].attrs['units'] = \
                     inst.meta.data.units[im]
 
     return matched_inst
@@ -442,7 +474,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     tm_sec = (np.array(model.data_vars[mod_datetime_name][1:]) -
               np.array(model.data_vars[mod_datetime_name][:-1])).min()
     tm_sec /= np.timedelta64(1, 's')
-    ti_sec = (inst.data.index[1:] - inst.data.index[:-1]).min().total_seconds()
+    ti_sec = (inst.index[1:] - inst.index[:-1]).min().total_seconds()
     min_del = tm_sec if tm_sec < ti_sec else ti_sec
 
     # Determine which instrument observations are within the model time
@@ -450,14 +482,16 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     mind = list()
     iind = list()
     for i,tt in enumerate(np.array(model.data_vars[mod_datetime_name])):
-        del_sec = abs(tt - inst.data.index).total_seconds()
+        del_sec = abs(tt - inst.index).total_seconds()
         if del_sec.min() < min_del:
             iind.append(del_sec.argmin())
             mind.append(i)
 
     # Determine the model coordinates closest to the satellite track
     interp_data = dict()
-    inst_coord = {kk:getattr(inst.data, inst_name[i]) * inst_scale[i]
+    interp_shape = inst.index.shape if inst.pandas_format else \
+        inst.data.data_vars.items()[0][1].shape
+    inst_coord = {kk:getattr(inst.data, inst_name[i]).values * inst_scale[i]
                   for i,kk in enumerate(mod_name)}
     for i,ii in enumerate(iind):
         # Cycle through each model data type, since it may not depend on
@@ -471,27 +505,105 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
 
             # Construct the data needed for interpolation
             points = [model.coords[kk].data for kk in dims if kk in mod_name]
+            get_coords = True if len(points) > 0 else False
+            idims = 0
 
-            if len(points) > 0:
-                xi = [inst_coord[kk][ii] for kk in dims if kk in mod_name]
+            while get_coords:
+                if inst.pandas_format:
+                    # This data iterates only by time
+                    xind = ii
+                    xi = [inst_coord[kk][xind] for kk in dims if kk in mod_name]
+                    get_coords = False
+                else:
+                    # This data may have additional dimensions
+                    if idims == 0:
+                        # Determine the number of dimensions
+                        idims = len(inst.data.coords)
+                        idim_names = inst.data.coords.keys()[1:]
+
+                        # Find relevent dimensions for cycling
+                        ind_dims = [i for i,kk in enumerate(inst_name)
+                                    if kk in idim_names]
+                        imod_dims = [i for i in ind_dims if mod_name[i] in dims]
+                        ind_dims = [inst.data.coords.keys().index(inst_name[i])
+                                    for i in imod_dims]
+                        
+                        # Set the number of cycles
+                        icycles = 0
+                        ncycles = sum([len(inst.data.coords[inst_name[i]])
+                                       for i in imod_dims])
+                        cinds = np.zeros(shape=len(imod_dims), dtype=int)
+
+                    # Get the instrument coordinate for this cycle
+                    if icycles < ncycles or icycles == 0:
+                        xind = [cinds[ind_dims.index(i)] if i in ind_dims
+                                else 0 for i in range(idims)]
+                        xind[0] = ii
+                        xind = tuple(xind)
+
+                        xi = list()
+                        for kk in dims:
+                            if kk in mod_name:
+                                # This is the next instrument coordinate
+                                i = mod_name.index(kk)
+                                if i in imod_dims:
+                                    # This is an xarray coordiante
+                                    xi.append(inst_coord[kk][cinds[i]])
+                                else:
+                                    # This is an xarray variable
+                                    xi.append(inst_coord[kk][xind])
+
+                        # Cycle the indices
+                        if len(cinds) > 0:
+                            i = 0
+                            cinds[i] += 1
+
+                            while cinds[i] > \
+                                inst.data.coords.dims[inst_name[imod_dims[i]]]:
+                                i += 1
+                                if i < len(cinds):
+                                    cinds[i-1] = 0
+                                    cinds[i] += 1
+                                else:
+                                    break
+                        icycles += 1
+
+                    # If we have cycled through all the coordinates for this
+                    # time, move onto the next time
+                    if icycles >= ncycles:
+                        get_coords = False
+                                    
+                # Get the model values for this time
                 values = model.data_vars[mdat].data[indices]
 
                 # Interpolate the desired value
-                yi = interpolate.interpn(points, values, xi, method=method)
-
+                try:
+                    yi = interpolate.interpn(points, values, xi, method=method)
+                except ValueError as verr:
+                    if str(verr).find("requested xi is out of bounds") > 0:
+                        # This is acceptable, pad the interpolated data with NaN
+                        print("Warning: {:}".format(verr))
+                        yi = [np.nan]
+                    else:
+                        raise ValueError(verr)
+                            
                 # Save the output
                 attr_name = "{:s}_{:s}".format(model_label, mdat)
                 if not attr_name in interp_data.keys():
                     interp_data[attr_name] = \
-                        np.empty(shape=inst.data.index.shape,
-                                 dtype=float) * np.nan
-                interp_data[attr_name][ii] = yi[0]
+                        np.empty(shape=interp_shape, dtype=float) * np.nan
+                interp_data[attr_name][xind] = yi[0]
 
     # Update the instrument object and attach units to the metadata
     for mdat in interp_data.keys():
-        inst[mdat] = pds.Series(interp_data[mdat], index=inst.data.index)
-
         attr_name = mdat.split("{:s}_".format(model_label))[-1]
         inst.meta.data.units[mdat] = model.data_vars[attr_name].units
+
+        if inst.pandas_format:
+            inst[mdat] = pds.Series(interp_data[mdat], index=inst.index)
+        else:
+            inst.data = inst.data.assign(interp_key=(inst.data.coords.keys(),
+                                                     interp_data[mdat]))
+            inst.data.rename({"interp_key":mdat}, inplace=True)
 
     return interp_data.keys()

@@ -57,7 +57,7 @@ test_dates = {'':{'drifts':pysat.datetime(2010,1,19),
 jro_fname1 = 'jro{year:4d}{month:02d}{day:02d}'
 jro_fname2 = '.{version:03d}.hdf5'
 supported_tags = {ss:{'drifts':jro_fname1 + "drifts" + jro_fname2,
-                      'drifts_ave':jro_fname1 + "drifts_ave" + jro_fname2,
+                      'drifts_ave':jro_fname1 + "drifts_avg" + jro_fname2,
                       'oblique_stan':jro_fname1 + jro_fname2,
                       'oblique_rand':jro_fname1 + "?" + jro_fname2,
                       'oblique_long':jro_fname1 + "?" + jro_fname2}
@@ -75,10 +75,10 @@ madrigal_tag = {'':{'drifts':1910, 'drifts_ave':1911, 'oblique_stan':1800,
 
 # Set to False to specify using xarray (not using pandas)
 # Set to True if data will be returned via a pandas DataFrame
-pandas_format = True
+pandas_format = False
 
 # support load routine
-load = mad_meth.load
+load = functools.partial(mad_meth.load, xarray_coords=['gdalt'])
 
 def init(self):
     """Initializes the Instrument object with values specific to JRO ISR
@@ -199,4 +199,56 @@ def clean(self):
     # downselect data based upon cleaning conditions above
     self.data = self[idx]
         
+    return
+
+def calc_measurement_loc(self):
+    """ Calculate the instrument measurement location in geographic coordinates
+
+    Returns
+    -------
+    Void : adds 'gdlat#', 'gdlon#' to the instrument, for all directions that
+    have azimuth and elevation keys that match the format 'eldir#' and 'azdir#'
+
+    """
+    import numpy as np
+    import pandas as pds
+    from pysat import utils
+
+    az_keys = [kk[5:] for kk in list(self.data.keys()) if kk.find('azdir') == 0]
+    el_keys = [kk[5:] for kk in list(self.data.keys()) if kk.find('eldir') == 0]
+    good_dir = list()
+
+    for i,kk in enumerate(az_keys):
+        if kk in el_keys:
+            try:
+                good_dir.append(int(kk))
+            except:
+                print("WARNING: unknown direction number [{:}]".format(kk))
+
+    # Calculate the geodetic latitude and longitude for each direction
+    if len(good_dir) == 0:
+        raise ValueError("No matching azimuth and elevation data included")
+
+    for dd in good_dir:
+        # Format the direction location keys
+        az_key = 'azdir{:d}'.format(dd)
+        el_key = 'eldir{:d}'.format(dd)
+        lat_key = 'gdlat{:d}'.format(dd)
+        lon_key = 'gdlon{:d}'.format(dd)
+        # JRO is located 520 m above sea level (jro.igp.gob.pe./english/)
+        # Also, altitude has already been calculated
+        gdaltr = np.ones(shape=self['gdlonr'].shape) * 0.52
+        gdlat, gdlon, _ = utils.local_horizontal_to_global_geo(self[az_key],
+                                                               self[el_key],
+                                                               self['range'],
+                                                               self['gdlatr'],
+                                                               self['gdlonr'],
+                                                               gdaltr,
+                                                               geodetic=True)
+
+        # Assigning as data, to ensure that the number of coordinates match
+        # the number of data dimensions
+        self.data = self.data.assign(lat_key=gdlat, lon_key=gdlon)
+        self.data.rename({"lat_key":lat_key, "lon_key":lon_key}, inplace=True)
+
     return
