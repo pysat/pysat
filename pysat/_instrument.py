@@ -22,7 +22,6 @@ from . import _meta
 from . import utils
 from pysat import data_dir
 from pysat import DataFrame, Series
-from pysat import datetime
 
 
 # main class for users
