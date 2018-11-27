@@ -387,17 +387,23 @@ class Instrument(object):
                             # By Date and variable name
                             return self.data.loc[key[0]][key[1]]
                         else:
-                            estring = '\n'.join(("Unable to sort out data access.",
-                                                 "Instrument has data : " +
-                                                 str(not self.empty),
-                                                 "Requested key : ", str(key)))
-                            raise ValueError(estring)
+                            try:
+                                return self.data[key]
+                            except:
+                                estring = '\n'.join(("Unable to sort out data access.",
+                                                     "Instrument has data : " +
+                                                     str(not self.empty),
+                                                     "Requested key : ", str(key)))
+                                raise ValueError(estring)
                 else:
-                    estring = '\n'.join(("Unable to sort out data access.",
-                                         "Instrument has data : " +
-                                         str(not self.empty),
-                                         "Requested key : ", str(key)))
-                    raise ValueError(estring)
+                    try:
+                        return self.data[key]
+                    except:
+                        estring = '\n'.join(("Unable to sort out data access.",
+                                             "Instrument has data : " +
+                                             str(not self.empty),
+                                             "Requested key : ", str(key)))
+                        raise ValueError(estring)
         else:
             return self.__getitem_xarray__(key)
 
