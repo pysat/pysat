@@ -808,13 +808,78 @@ class Instrument(object):
         output_str += '\n'
 
         return output_str
+        
+    def _filter_datetime_input(self, date):
+        """
+        Returns datetime that only includes year, month, and day.
+        
+        Parameters
+        ----------
+        date : datetime
+        
+        Returns
+        -------
+        datetime
+            Only includes year, month, and day from original input
+        
+        """
+        
+        return pds.datetime(date.year, date.month, date.day)
+        
+    def today(self):
+        """Returns today's date, with no hour, minute, second, etc.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        datetime
+            Today's date
+            
+        """
+        
+        return self._filter_datetime_input(pds.datetime.today())
+
+    def tomorrow(self):
+        """Returns tomorrow's date, with no hour, minute, second, etc.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        datetime
+            Tomorrow's date
+            
+        """
+        
+        return self.today()+pds.DateOffset(days=1)
+        
+    def yesterday(self):
+        """Returns yesterday's date, with no hour, minute, second, etc.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        datetime
+            Yesterday's date
+            
+        """
+        
+        return self.today()-pds.DateOffset(days=1)
 
     def _load_data(self, date=None, fid=None):
         """
         Load data for an instrument on given date or fid, dependng upon input.
 
         Parameters
-        ------------
+        ----------
         date : (dt.datetime.date object or NoneType)
             file date
         fid : (int or NoneType)
@@ -965,7 +1030,9 @@ class Instrument(object):
         """
         # set options used by loading routine based upon user input
         if date is not None:
-            self._set_load_parameters(date=date, fid=None)
+            # ensure date portion from user is only year, month, day
+            self._set_load_parameters(date=self._filter_datetime_input(date), 
+                                      fid=None)
             # increment 
             inc = pds.DateOffset(days=1)
             curr = date
@@ -1157,15 +1224,15 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def download(self, start, stop, freq='D', user=None, password=None,
+    def download(self, start=None, stop=None, freq='D', user=None, password=None,
                  **kwargs):
         """Download data for given Instrument object from start to stop.
         
         Parameters
         ----------
-        start : pandas.datetime
+        start : pandas.datetime (yesterday)
             start date to download data
-        stop : pandas.datetime
+        stop : pandas.datetime (tomorrow)
             stop date to download data
         freq : string
             Stepsize between dates for season, 'D' for daily, 'M' monthly 
@@ -1192,7 +1259,21 @@ class Instrument(object):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
+        if (start is None) or (stop is None):
+            # defaults for downloads are set here rather than 
+            # in the method signature since method defaults are
+            # only set once! If an Instrument object persists
+            # longer than a day then the download defaults would
+            # no longer be correct. Dates are always correct in this
+            # setup.
+            print ('Downloading the most recent data by default.')
+            start = self.yesterday()
+            stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
+        # make sure dates are whole days
+        start = self._filter_datetime_input(start)
+        stop = self._filter_datetime_input(stop)
+        # create range of dates to download data for
         date_array = utils.season_date_range(start, stop, freq=freq)
         if user is None:
             self._download_rtn(date_array,

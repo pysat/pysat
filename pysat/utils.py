@@ -85,25 +85,45 @@ def set_data_dir(path=None, store=None):
     else:
         raise ValueError('Path %s does not lead to a valid directory.' % path)
 
-def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='Epoch',
-                 units_label='units', name_label='long_name',
-                 notes_label='notes', desc_label='desc',
-                 plot_label='label', axis_label='axis',
-                 scale_label='scale',
-                 min_label='value_min', max_label='value_max',
-                 fill_label='fill'):
-                    # unix_time=False, **kwargs):
+def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
+                 epoch_name='Epoch', units_label='units',
+                 name_label='long_name', notes_label='notes',
+                 desc_label='desc', plot_label='label', axis_label='axis', 
+                 scale_label='scale', min_label='value_min',
+                 max_label='value_max', fill_label='fill'):
+    # unix_time=False, **kwargs):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
     ----------
-    fnames : string or array_like of strings
+    fnames : string or array_like of strings (None)
         filenames to load
-    strict_meta : boolean
+    strict_meta : boolean (False)
         check if metadata across fnames is the same
-    file_format : string
+    file_format : string (None)
         file_format keyword passed to netCDF4 routine
         NETCDF3_CLASSIC, NETCDF3_64BIT, NETCDF4_CLASSIC, and NETCDF4
+    epoch_name : string ('Epoch')
+    units_label : string ('units')
+        keyword for unit information
+    name_label : string ('long_name')
+        keyword for informative name label
+    notes_label : string ('notes')
+        keyword for file notes
+    desc_label : string ('desc')
+        keyword for data descriptions
+    plot_label : string ('label')
+        keyword for name to use on plot labels
+    axis_label : string ('axis')
+        keyword for axis labels
+    scale_label : string ('scale')
+        keyword for plot scaling
+    min_label : string ('value_min')
+        keyword for minimum in allowable value range
+    max_label : string ('value_max')
+        keyword for maximum in allowable value range
+    fill_label : string ('fill')
+        keyword for fill values
 
     Returns
     --------
@@ -373,15 +393,63 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None, epoch_name='E
 
 
 def getyrdoy(date):
-    """Return a tuple of year, day of year for a supplied datetime object."""
+    """Return a tuple of year, day of year for a supplied datetime object.
+
+    Parameters
+    ----------
+    date : datetime.datetime
+        Datetime object
+
+    Returns
+    -------
+    year : int
+        Integer year
+    doy : int
+        Integer day of year
+
+    """
 
     try:
-        doy = date.toordinal()-datetime(date.year,1,1).toordinal()+1
+        doy = date.toordinal() - datetime(date.year,1,1).toordinal() + 1
     except AttributeError:
         raise AttributeError("Must supply a pandas datetime object or " +
                              "equivalent")
     else:
         return date.year, doy
+
+def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
+               century=2000):
+    """ Basic date parser for file reading
+
+    Parameters
+    ----------
+    str_yr : string
+        String containing the year (2 or 4 digits)
+    str_mo : string
+        String containing month digits
+    str_day : string
+        String containing day of month digits
+    str_hr : string ('0')
+        String containing the hour of day
+    str_min : string ('0')
+        String containing the minutes of hour
+    str_sec : string ('0')
+        String containing the seconds of minute
+    century : int (2000)
+        Century, only used if str_yr is a 2-digit year
+
+    Returns
+    -------
+    out_date : pds.datetime
+        Pandas datetime object
+
+    """
+
+    yr = int(str_yr) + century  if len(str_yr) == 2 else int(str_yr)
+    out_date = pds.datetime(yr, int(str_mo), int(str_day), int(str_hr),
+                            int(str_min), int(str_sec))
+
+    return out_date
 
 
 def season_date_range(start, stop, freq='D'):

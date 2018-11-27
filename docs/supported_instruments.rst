@@ -90,18 +90,6 @@ DMSP IVM
 .. automodule:: pysat.instruments.dmsp_ivm
    :members: __doc__, smooth_ram_drifts, update_DMSP_ephemeris, add_drift_unit_vectors, add_drifts_polar_cap_x_y
 
-Dst
----
-
-.. automodule:: pysat.instruments.sw_dst
-   :members: __doc__
-
-Kp
---
-
-.. automodule:: pysat.instruments.sw_kp
-   :members: __doc__, filter_geoquiet
-
 ICON EUV
 --------
 
@@ -179,6 +167,24 @@ SuperMAG
 
 .. automodule:: pysat.instruments.supermag_magnetometer
    :members: __doc__
+
+SW Dst
+------
+
+.. automodule:: pysat.instruments.sw_dst
+   :members: __doc__
+
+SW F107
+-------
+
+.. automodule:: pysat.instruments.sw_f107
+   :members: __doc__
+
+SW Kp
+-----
+
+.. automodule:: pysat.instruments.sw_kp
+   :members: __doc__, filter_geoquiet
 
 TIMED/SEE
 ---------

@@ -109,6 +109,21 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
         assert (test_date == pds.datetime(2009,1,3))  & (test_date == self.testInst.date)
+        
+        
+    ############################
+    # test basic date helpers
+    def test_today_yesterday_and_tomorrow(self):
+        now = pysat.datetime.now()
+        today = pysat.datetime(now.year, now.month, now.day)
+        assert today == self.testInst.today()
+        assert today - pds.DateOffset(days=1) == self.testInst.yesterday()
+        assert today + pds.DateOffset(days=1) == self.testInst.tomorrow()
+
+    def test_filter_datetime(self):
+        now = pysat.datetime.now()
+        today = pysat.datetime(now.year, now.month, now.day)
+        assert today == self.testInst._filter_datetime_input(now)
 
     ###########################
     # test flags
