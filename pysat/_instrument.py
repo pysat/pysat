@@ -370,44 +370,26 @@ class Instrument(object):
                 # By variable name, directly apply keywords
                 return self.data[key]
             elif isinstance(key, tuple):
-                # keys may be int, str, datetime, or a slice of any of these
-                if isinstance(key[1],str):
-                    if isinstance(key[0],int):
-                        # By position and variable name
-                        return self.data.iloc[key[0]][key[1]]
-                    elif isinstance(key[0],datetime):
-                        # By Date and variable name
-                        return self.data.loc[key[0]][key[1]]
-                    elif isinstance(key[0],slice):
-                        # Support Slicing
-                        if isinstance(key[0].start,int):
-                            # Slice by row
-                            return self.data.iloc[key[0]][key[1]]
-                        elif isinstance(key[0].start,datetime):
-                            # By Date and variable name
-                            return self.data.loc[key[0]][key[1]]
-                        else:
-                            try:
-                                return self.data[key]
-                            except:
-                                estring = '\n'.join(("Unable to sort out data access.",
-                                                     "Instrument has data : " +
-                                                     str(not self.empty),
-                                                     "Requested key : ", str(key)))
-                                raise ValueError(estring)
+                if isinstance(key[0],int):
+                    idx = self.data.index[key[0]]
+                elif isinstance(key[0],slice) and isinstance(key[0].start,int):
+                    idx = self.data.index[key[0]]
                 else:
+                    idx = key[0]
+                return self.data.loc[idx,key[1]]
+            else:
+                try:
+                    # integer based indexing
+                    return self.data.iloc[key]
+                except:
                     try:
-                        # integer based indexing
-                        return self.data.iloc[key]
+                        return self.data[key]
                     except:
-                        try:
-                            return self.data[key]
-                        except:
-                            estring = '\n'.join(("Unable to sort out data access.",
-                                                 "Instrument has data : " +
-                                                 str(not self.empty),
-                                                 "Requested key : ", str(key)))
-                            raise ValueError(estring)
+                        estring = '\n'.join(("Unable to sort out data access.",
+                                             "Instrument has data : " +
+                                             str(not self.empty),
+                                             "Requested key : ", str(key)))
+                        raise ValueError(estring)
         else:
             return self.__getitem_xarray__(key)
 
@@ -493,7 +475,14 @@ class Instrument(object):
         # aka slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
-                self.data.ix[key[0], key[1]] = new
+                if isinstance(key[0],int):
+                    idx = self.data.index[key[0]]
+                elif isinstance(key[0],slice) and isinstance(key[0].start,int):
+                    idx = self.data.index[key[0]]
+                else:
+                    idx = key[0]
+                self.data.loc[idx,key[1]] = new
+                # self.data.ix[key[0], key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
