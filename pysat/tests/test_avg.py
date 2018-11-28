@@ -302,3 +302,16 @@ class TestSeasonalAverageUnevenBins:
         assert self.testInst.data['dummy1'].size*32 == sum([ sum(i) for i in results['dummy1']['count'] ])
 
         assert np.all(check)
+
+    def test_nonmonotonic_bins(self):
+        '''if the user provides non-monotonic bins then numpy.digitize should 
+           raise a ValueError
+        '''
+        self.testInst.bounds = (pysat.datetime(2008,1,1), 
+                                pysat.datetime(2008,2,1))
+        with assert_raises(ValueError):
+            pysat.ssnl.avg.median2D(self.testInst, 
+                                    np.array([0., 300., 100.]), 'longitude',
+                                    np.array([0., 24., 13.]), 'mlt', 
+                                    ['dummy1', 'dummy2', 'dummy3'], 
+                                    auto_bin=False)
