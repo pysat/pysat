@@ -364,6 +364,8 @@ class Instrument(object):
             inst[datetime1:datetime1, 'name1':'name2']
 
         """
+        from numpy import ndarray
+
         if self.pandas_format:
             if isinstance(key, str):
                 return self.data[key]
@@ -373,6 +375,8 @@ class Instrument(object):
                     idx = self.data.index[key[0]]
                 elif isinstance(key[0],slice) and isinstance(key[0].start,int):
                     idx = self.data.index[key[0]]
+                elif isinstance(key[0],ndarray):
+                    idx = self.data.index[key[0].astype(int)]
                 else:
                     idx = key[0]
                 return self.data.loc[idx,key[1]]
@@ -478,6 +482,8 @@ class Instrument(object):
                     idx = self.data.index[key[0]]
                 elif isinstance(key[0],slice) and isinstance(key[0].start,int):
                     idx = self.data.index[key[0]]
+                elif isinstance(key[0],ndarray):
+                    idx = self.data.index[key[0].astype(int)]
                 else:
                     idx = key[0]
                 self.data.loc[idx,key[1]] = new
