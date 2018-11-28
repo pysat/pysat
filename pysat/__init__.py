@@ -41,17 +41,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os
 
-from pandas import Panel, DataFrame, Series, datetime
-from . import utils, model_utils
-from ._constellation import Constellation
-from ._instrument import Instrument
-from ._meta import Meta
-from ._files import Files
-from ._custom import Custom
-from ._orbits import Orbits
-from . import instruments
-from . import ssnl
-
 
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
@@ -80,5 +69,16 @@ else:
 if data_dir == '':
     print(''.join(('Run pysat.utils.set_data_dir to set the path',
           ' to top-level directory that will/does contain science data.')))
+
+from pandas import Panel, DataFrame, Series, datetime
+from . import utils, model_utils
+from ._constellation import Constellation
+from ._instrument import Instrument
+from ._meta import Meta
+from ._files import Files
+from ._custom import Custom
+from ._orbits import Orbits
+from . import instruments
+from . import ssnl
 
 __all__ = ['ssnl', 'instruments', 'utils']
