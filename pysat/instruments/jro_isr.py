@@ -82,7 +82,13 @@ pandas_format = False
 # support load routine
 load = functools.partial(mad_meth.load, xarray_coords=['gdalt'])
     
-    
+# Madrigal will sometimes include multiple days within a file
+# labeled with a single date.
+# Filter out this extra data using the pysat nanokernel processing queue.
+# To ensure this function is always applied first, we set the filter
+# function as the default function for (JRO).
+# Default function is run first by the nanokernel on every load call.
+default = pysat.instruments.madrigal_methods.filter_data_single_date      
 
 def init(self):
     """Initializes the Instrument object with values specific to JRO ISR
@@ -153,43 +159,7 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
                       kindat=str(madrigal_tag[sat_id][tag]),
                       data_path=data_path, user=user, password=password)
 
-
-def default(self):
-    """Default customization function.
-    
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue). 
-
-    Madrigal serves multiple days within a single JRO file
-    to counter this, we will filter each loaded day so that it only
-    contains the relevant day of data. This is only applied if loading
-    by date. It is not applied when supplying pysat with a specific
-    filename to load, nor when data padding is enabled. Note that when
-    data padding is enabled the final data available within the instrument
-    will be downselected by pysat to only include the date specified.  
-        
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-    
-    
-    """
-
-    # only do this if loading by date!
-    if self._load_by_date and self.pad is None:
-        # identify times for the loaded date
-        idx, = np.where( (self.index >= self.date) &
-                         (self.index < (self.date+pds.DateOffset(days=1))))
-        # downselect from all data
-        self.data = self[idx]
-   
-        
+            
 def clean(self):
     """Routine to return JRO ISR data cleaned to the specified level
 
