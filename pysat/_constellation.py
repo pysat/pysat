@@ -74,8 +74,9 @@ class Constellation(object):
 
         The function is not partially applied to modify member data.
 
-        When the Constellation receives a function call to register a function for data modification,
-        it passes the call to each instrument and registers it in the instrument's pysat.Custom queue.
+        When the Constellation receives a function call to register
+        a function for data modification, it passes the call to each
+        instrument and registers it in the instrument's pysat.Custom queue.
 
         (Wraps pysat.Custom.add; documentation of that function is
         reproduced here.)
@@ -170,9 +171,9 @@ class Constellation(object):
         Returns
         -------
         median : dictionary
-            Dictionary indexed by data label, each value of which is a 
-            dictionary with keys 'median', 'count', 'avg_abs_dev', and 
-            'bin' (the values of the bin edges.) 
+            Dictionary indexed by data label, each value of which is a
+            dictionary with keys 'median', 'count', 'avg_abs_dev', and
+            'bin' (the values of the bin edges.)
         """
 
         # TODO Update for 2.7 compatability.
@@ -219,7 +220,7 @@ class Constellation(object):
 
                     # Iterate over the bins along y
                     for yj in yarr:
-                        # Indicies of data in this bin
+                        # Indices of data in this bin
                         yindex, = np.where(y_indexes == yj)
 
                         # If there's data in this bin
@@ -227,8 +228,8 @@ class Constellation(object):
 
                             # For each data label, add the points.
                             for zk in zarr:
-                                ans[zk][yj][0].extend(
-                                    data_considered.ix[yindex, data_label[zk]].tolist())
+                                ans[zk][yj][0].extend(data_considered.ix[yindex,
+                                                      data_label[zk]].tolist())
 
         # Now for the averaging.
         # Let's, try .. packing the answers for the 2d function.
@@ -237,14 +238,15 @@ class Constellation(object):
         binx = None
 
         # TODO modify output
-        out_2d = _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz)
+        out_2d = _calc_2d_median(ans, data_label, binx, biny, xarr, yarr,
+                zarr, numx, numy, numz)
 
         # Transform output
         output = {}
         for i, label in enumerate(data_label):
             median = [r[0] for r in out_2d[label]['median']]
-            count  = [r[0] for r in out_2d[label]['count']]
-            dev    = [r[0] for r in out_2d[label]['avg_abs_dev']]
+            count = [r[0] for r in out_2d[label]['count']]
+            dev = [r[0] for r in out_2d[label]['avg_abs_dev']]
             output[label] = {'median':  median,
                              'count':   count,
                              'avg_abs_dev': dev,
@@ -289,13 +291,13 @@ class Constellation(object):
         data_df: pandas DataFrame
             Each row has a point from instrument1, with the keys
             preceded by '1_', and a point within bounds on that point
-            from instrument2 with the keys preceded by '2_', and the 
+            from instrument2 with the keys preceded by '2_', and the
             difference between the instruments' data for all the labels
             in data_labels
 
         Created as part of a Spring 2018 UTDesign project.
         """
-        
+
         """
         Draft Pseudocode
         ----------------

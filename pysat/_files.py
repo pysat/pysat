@@ -10,15 +10,16 @@ import numpy as np
 import pandas as pds
 from pysat import data_dir as data_dir
 
+
 class Files(object):
     """Maintains collection of files for instrument object.
-    
+
     Uses the list_files functions for each specific instrument
     to create an ordered collection of files in time. Used by
     instrument object to load the correct files. Files also
     contains helper methods for determining the presence of
     new files and creating an ordered list of files.
-      
+
     Attributes
     ----------
     base_path : string
@@ -43,40 +44,40 @@ class Files(object):
     User should generally use the interface provided by a pysat.Instrument
     instance. Exceptions are the classmethod from_os, provided to assist
     in generating the appropriate output for an instrument routine.
-    
+
     Examples
     --------
     ::
-    
+
         # convenient file access
         inst = pysat.Instrument(platform=platform, name=name, tag=tag,
                                 sat_id=sat_id)
         # first file
         inst.files[0]
-        
+
         # files from start up to stop (exclusive on stop)
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,3)
         print(vefi.files[start:stop])
-        
+
         # files for date
         print(vefi.files[start])
-        
+
         # files by slicing
         print(vefi.files[0:4])
-        
+
         # get a list of new files
         # new files are those that weren't present the last time
         # a given instrument's file list was stored
         new_files = vefi.files.get_new()
-        
+
         # search pysat appropriate directory for instrument files and
         # update Files instance.
         vefi.files.refresh()
 
-        
+
     """
-        
+
     def __init__(self, sat, manual_org=False, directory_format=None,
                  update_files=False, file_format=None, write_to_disk=True):
         """ Initialization for Files class object
@@ -92,10 +93,11 @@ class Files(object):
         directory_format : string or NoneType
             directory naming structure in string format. Variables such as
             platform, name, and tag will be filled in as needed using python
-            string formatting. The default directory structure would be 
+            string formatting. The default directory structure would be
             expressed as '{platform}/{name}/{tag}' (default=None)
         update_files : boolean
-            If True, immediately query filesystem for instrument files and store
+            If True, immediately query filesystem for instrument files and
+            store
             (default=False)
         file_format : str or NoneType
             File naming structure in string format.  Variables such as year,
@@ -106,7 +108,7 @@ class Files(object):
             If true, the list of Instrument files will be written to disk.
             Prevents a rare condition when running multiple pysat processes.
         """
-        
+
         # pysat.Instrument object
         self._sat = weakref.proxy(sat)
         # location of .pysat file
@@ -115,9 +117,9 @@ class Files(object):
         self.stop_date = None
         self.files = pds.Series(None)
         # location of stored files
-        self.stored_file_name = ''.join((self._sat.platform,'_', self._sat.name,
-                                        '_',self._sat.tag, '_',
-                                         self._sat.sat_id,
+        self.stored_file_name = ''.join((self._sat.platform, '_',
+                                         self._sat.name, '_', self._sat.tag,
+                                         '_', self._sat.sat_id,
                                          '_stored_file_info.txt'))
 
         # flag for setting simple organization of files, only
@@ -125,7 +127,7 @@ class Files(object):
         self.manual_org = manual_org
         # path for sub-directories under pysat data path
         if directory_format is None:
-            directory_format = os.path.join('{platform}','{name}','{tag}')
+            directory_format = os.path.join('{platform}', '{name}', '{tag}')
         self.directory_format = directory_format
 
         # user-specified file format
@@ -156,7 +158,7 @@ class Files(object):
         if self._sat.platform != '':
             # load stored file info
             info = self._load()
-            if not info.empty: 
+            if not info.empty:
                 self._attach_files(info)
                 if update_files:
                     self.refresh()
@@ -189,7 +191,7 @@ class Files(object):
 
                 idx = np.unique(files_info.index, return_index=True)
                 files_info = files_info.ix[idx[1]]
-                #raise ValueError('List of files must have unique datetimes.')
+                # raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
             date = files_info.index[0]
@@ -223,13 +225,13 @@ class Files(object):
                 new_flag = True
 
         if new_flag:
-            
+
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path,
                                                  'previous_'+name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f')
                 self.files.to_csv(os.path.join(self.home_path, name),
-                                date_format='%Y-%m-%d %H:%M:%S.%f')
+                                  date_format='%Y-%m-%d %H:%M:%S.%f')
             else:
                 self._previous_file_list = stored_files
                 self._current_file_list = self.files.copy()
@@ -269,26 +271,25 @@ class Files(object):
         else:
             return pds.Series([], dtype='a')
 
-
     def refresh(self):
         """Update list of files, if there are changes.
-        
+
         Calls underlying list_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
         pysat_data_dir/platform/name/tag/,
         where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
-        
+
 
         """
 
         output_str = '{platform} {name} {tag} {sat_id}'
         output_str = output_str.format(platform=self._sat.platform,
-                                       name=self._sat.name, tag=self._sat.tag, 
+                                       name=self._sat.name, tag=self._sat.tag,
                                        sat_id=self._sat.sat_id)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
         output_str = " ".join(output_str.split())
-        print (output_str)
-        
+        print(output_str)
+
         info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id,
                                    data_path=self.data_path,
                                    format_str=self.file_format)
@@ -296,8 +297,8 @@ class Files(object):
         if not info.empty:
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
-            estr = "Unable to find any files that match the supplied template. "
-            estr += "If you have the necessary files please check pysat "
+            estr = "Unable to find any files that match the supplied template."
+            estr += " If you have the necessary files please check pysat "
             estr += "settings and file locations (e.g. pysat.pysat_dir)."
             print(estr)
         info = self._remove_data_dir_path(info)
@@ -306,12 +307,12 @@ class Files(object):
 
     def get_new(self):
         """List new files since last recorded file state.
-        
+
         pysat stores filenames in the user_home/.pysat directory. Returns
         a list of all new fileanmes since the last known change to files.
         Filenames are stored if there is a change and either update_files
         is True at instrument object level or files.refresh() is called.
-        
+
         Returns
         -------
         pandas.Series
@@ -333,8 +334,6 @@ class Files(object):
     #
     #     """
     #     pass
-
-
         # stored_info = self._load()
         # if not stored_info.empty: # is not False:
         #     new_info = self._sat._list_rtn(tag = self._sat.tag,
@@ -348,26 +347,26 @@ class Files(object):
         #     return pds.Series([], dtype='a') #False
 
     def get_index(self, fname):
-        """Return index for a given filename. 
-        
+        """Return index for a given filename.
+
         Parameters
         ----------
         fname : string
             filename
-        
+
         Note
         ----
-        If fname not found in the file information already attached 
-        to the instrument.files instance, then a files.refresh() call 
+        If fname not found in the file information already attached
+        to the instrument.files instance, then a files.refresh() call
         is made.
-        
+
         """
 
         idx, = np.where(fname == self.files)
         if len(idx) == 0:
             # filename not in index, try reloading files from disk
             self.refresh()
-            #print("DEBUG get_index:", fname, self.files)
+            # print("DEBUG get_index:", fname, self.files)
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
@@ -407,36 +406,36 @@ class Files(object):
                 return out
         else:
             return self.files.ix[key]
-            #raise ValueError('Not implemented yet.')         
-        #if isinstance(key, tuple):
+            # raise ValueError('Not implemented yet.')
+        # if isinstance(key, tuple):
         #    if len(key) == 2:
         #        start = key[0]
         #        end = key[1]
         #    else:
         #        raise ValueError('Must input 2 and only 2 items/iterables')
-                
+
     def get_file_array(self, start, end):
         """Return a list of filenames between and including start and end.
-        
+
         Parameters
         ----------
-            start: array_like or single string 
+            start: array_like or single string
                 filenames for start of returned filelist
             stop: array_like or single string
                 filenames inclusive end of list
-                
+
         Returns
         -------
             list of filenames between and including start and end over all
-            intervals. 
-            
+            intervals.
+
         """
         if hasattr(start, '__iter__') & hasattr(end, '__iter__'):
             files = []
-            for (sta,stp) in zip(start, end):
+            for (sta, stp) in zip(start, end):
                 id1 = self.get_index(sta)
                 id2 = self.get_index(stp)
-                files.extend(self.files.iloc[id1 : id2+1])
+                files.extend(self.files.iloc[id1:id2+1])
         elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
             estr = 'Either both or none of the inputs need to be iterable'
             raise ValueError(estr)
@@ -455,22 +454,22 @@ class Files(object):
             split_str = os.path.join(self.data_path, '')
             return inp.apply(lambda x: x.split(split_str)[-1])
 
-        #elif inp is not None:
-        #    
+        # elif inp is not None:
+        #
         #    return inp.split(split_str)[-1]
-            
+
             # match = os.path.join(self.data_path,'')
             # num = len(match)
             # return inp.apply(lambda x: x[num:])
-        
-    @classmethod    
-    def from_os(cls, data_path=None, format_str=None, 
+
+    @classmethod
+    def from_os(cls, data_path=None, format_str=None,
                 two_digit_year_break=None):
         """
         Produces a list of files and and formats it for Files class.
 
         Requires fixed_width filename
-        
+
         Parameters
         ----------
         data_path : string
@@ -478,7 +477,7 @@ class Files(object):
             is provided by pysat to the instrument_module.list_files
             functions as data_path.
         format_str : string with python format codes
-            Provides the naming pattern of the instrument files and the 
+            Provides the naming pattern of the instrument files and the
             locations of date information so an ordered list may be produced.
             Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
             and 'revision'
@@ -487,7 +486,7 @@ class Files(object):
             If filenames only store two digits for the year, then
             '1900' will be added for years >= two_digit_year_break
             and '2000' will be added for years < two_digit_year_break.
-          
+
         Note
         ----
         Does not produce a Files instance, but the proper output
@@ -499,27 +498,32 @@ class Files(object):
         """
 
         import collections
-        
+
         from pysat.utils import create_datetime_index
-        
+
         if format_str is None:
             raise ValueError("Must supply a filename template (format_str).")
         if data_path is None:
             raise ValueError("Must supply instrument directory path (dir_path)")
-        
+
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
         search_str = ''
         form = string.Formatter()
         # stores the keywords extracted from format_string
         keys = []
-        #, and length of string
+        # , and length of string
         snips = []
         length = []
         stored = collections.OrderedDict()
-        stored['year'] = []; stored['month'] = []; stored['day'] = [];
-        stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
-        stored['version'] = []; stored['revision'] = [];
+        stored['year'] = []
+        stored['month'] = []
+        stored['day'] = []
+        stored['hour'] = []
+        stored['min'] = []
+        stored['sec'] = []
+        stored['version'] = []
+        stored['revision'] = []
         for snip in form.parse(format_str):
             # collect all of the format keywords
             # replace them in the string with the '*' wildcard
@@ -542,20 +546,20 @@ class Files(object):
                     raise ValueError("Couldn't determine formatting width")
 
         abs_search_str = os.path.join(data_path, search_str)
-        files = glob.glob(abs_search_str)   
-        
+        files = glob.glob(abs_search_str)
+
         # we have a list of files, now we need to extract the date information
-        # code below works, but only if the size of file string 
+        # code below works, but only if the size of file string
         # remains unchanged
-        
+
         # determine the locations the date information in a filename is stored
         # use these indices to slice out date from loaded filenames
         # test_str = format_str.format(**periods)
-        if len(files) > 0:  
+        if len(files) > 0:
             idx = 0
             begin_key = []
             end_key = []
-            for i,snip in enumerate(snips):
+            for i, snip in enumerate(snips):
                 idx += len(snip)
                 if i < (len(length)):
                     begin_key.append(idx)
@@ -563,18 +567,18 @@ class Files(object):
                     end_key.append(idx)
             max_len = idx
             # setting up negative indexing to pick out filenames
-            key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
+            key_str_idx = [np.array(begin_key, dtype=int) - max_len,
                            np.array(end_key, dtype=int) - max_len]
             # need to parse out dates for datetime index
-            for i,temp in enumerate(files):
-                for j,key in enumerate(keys):
+            for i, temp in enumerate(files):
+                for j, key in enumerate(keys):
                     val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
                     stored[key].append(val)
             # convert to numpy arrays
             for key in stored.keys():
                 stored[key] = np.array(stored[key]).astype(int)
                 if len(stored[key]) == 0:
-                    stored[key]=None
+                    stored[key] = None
             # deal with the possibility of two digit years
             # years above or equal to break are considered to be 1900+
             # years below break are considered to be 2000+
@@ -583,7 +587,7 @@ class Files(object):
                                 two_digit_year_break)
                 stored['year'][idx] = stored['year'][idx] + 1900
                 idx, = np.where(np.array(stored['year']) < two_digit_year_break)
-                stored['year'][idx] = stored['year'][idx] + 2000 
+                stored['year'][idx] = stored['year'][idx] + 2000
             # need to sort the information for things to work
             rec_arr = [stored[key] for key in keys]
             rec_arr.append(files)
@@ -597,7 +601,7 @@ class Files(object):
             files = rec_arr['files']
             # add hour and minute information to 'sec'
             if stored['sec'] is None:
-                stored['sec'] = np.zeros(len(files))                
+                stored['sec'] = np.zeros(len(files))
             if stored['hour'] is not None:
                 stored['sec'] += 3600 * stored['hour']
             if stored['min'] is not None:
@@ -608,7 +612,7 @@ class Files(object):
                 stored['revision'] = np.zeros(len(files))
 
             index = create_datetime_index(year=stored['year'],
-                                          month=stored['month'], 
+                                          month=stored['month'],
                                           day=stored['day'], uts=stored['sec'])
 
             # if version and revision are supplied
@@ -622,8 +626,8 @@ class Files(object):
                 version = pds.Series(stored['version'], index=index)
                 revision = pds.Series(stored['revision'], index=index)
                 revive = version*100000. + revision
-                frame = pds.DataFrame({'files':files, 'revive':revive,
-                                       'time':index}, index=index)
+                frame = pds.DataFrame({'files': files, 'revive': revive,
+                                       'time': index}, index=index)
                 frame = frame.sort_values(by=['time', 'revive'],
                                           ascending=[True, False])
                 frame = frame.drop_duplicates(subset='time', keep='first')
@@ -632,5 +636,4 @@ class Files(object):
             else:
                 return pds.Series(files, index=index)
         else:
-            return pds.Series(None) 
-
+            return pds.Series(None)

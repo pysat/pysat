@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pds
 import xarray as xr
 
+
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                            methods=['all']):
     """Compare modelled and measured data
@@ -73,27 +74,27 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     meanAPE - mean absolute percentage error
 
     """
-    import verify # PyForecastTools
+    import verify  # PyForecastTools
     from pysat import utils
 
-    method_rout = {"bias":verify.bias, "accuracy":verify.accuracy,
-                   "meanPercentageError":verify.meanPercentageError,
-                   "medianLogAccuracy":verify.medianLogAccuracy,
-                   "symmetricSignedBias":verify.symmetricSignedBias,
-                   "meanSquaredError":verify.meanSquaredError,
-                   "RMSE":verify.RMSE, "meanAbsError":verify.meanAbsError,
-                   "medAbsError":verify.medAbsError, "MASE":verify.MASE,
-                   "scaledAccuracy":verify.scaledAccuracy,
-                   "nRMSE":verify.nRMSE, "scaledError":verify.scaledError,
-                   "forecastError":verify.forecastError,
-                   "percError":verify.percError, "meanAPE":verify.meanAPE,
-                   "absPercError":verify.absPercError,
-                   "logAccuracy":verify.logAccuracy,
-                   "medSymAccuracy":verify.medSymAccuracy}
+    method_rout = {"bias": verify.bias, "accuracy": verify.accuracy,
+                   "meanPercentageError": verify.meanPercentageError,
+                   "medianLogAccuracy": verify.medianLogAccuracy,
+                   "symmetricSignedBias": verify.symmetricSignedBias,
+                   "meanSquaredError": verify.meanSquaredError,
+                   "RMSE": verify.RMSE, "meanAbsError": verify.meanAbsError,
+                   "medAbsError": verify.medAbsError, "MASE": verify.MASE,
+                   "scaledAccuracy": verify.scaledAccuracy,
+                   "nRMSE": verify.nRMSE, "scaledError": verify.scaledError,
+                   "forecastError": verify.forecastError,
+                   "percError": verify.percError, "meanAPE": verify.meanAPE,
+                   "absPercError": verify.absPercError,
+                   "logAccuracy": verify.logAccuracy,
+                   "medSymAccuracy": verify.medSymAccuracy}
 
-    replace_keys = {'MSE':'meanSquaredError', 'MAE':'meanAbsError',
-                    'MdAE':'medAbsError', 'MAPE':'meanAPE',
-                    'MdSymAcc':'medSymAccuracy'}
+    replace_keys = {'MSE': 'meanSquaredError', 'MAE': 'meanAbsError',
+                    'MdAE': 'medAbsError', 'MAPE': 'meanAPE',
+                    'MdSymAcc': 'medSymAccuracy'}
 
     # Grouped methods for things that don't have convenience functions
     grouped_methods = {"all_bias":["bias", "meanPercentageError",
@@ -129,7 +130,7 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         known_methods = list(method_rout.keys())
         known_methods.extend(list(grouped_methods.keys()))
         unknown_methods = [mm for mm in methods
-                           if not mm in list(method_rout.keys())]
+                           if mm not in list(method_rout.keys())]
         raise ValueError('unknown statistical method(s) requested:\n' +
                          '{:}\nuse only:\n{:}'.format(unknown_methods,
                                                       known_methods))
@@ -304,13 +305,16 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                 inst.load(date=istart)
 
             if not inst.empty and inst.index[0] >= istart:
-                added_names = extract_modelled_observations(inst=inst, \
-                                model=mdata, inst_name=inst_name,
-                                                            mod_name=mod_name, \
-                                mod_datetime_name=mod_datetime_name, \
-                                mod_time_name=mod_time_name, \
-                                mod_units=mod_units, sel_name=sel_name, \
-                                method=method, model_label=model_label)
+                added_names = extract_modelled_observations(inst=inst,
+                                                            model=mdata,
+                                                            inst_name=inst_name,
+                                                            mod_name=mod_name,
+                                                            mod_datetime_name=mod_datetime_name,
+                                                            mod_time_name=mod_time_name,
+                                                            mod_units=mod_units,
+                                                            sel_name=sel_name,
+                                                            method=method,
+                                                            model_label=model_label)
 
                 if len(added_names) > 0:
                     # Clean the instrument data
@@ -348,11 +352,11 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                             matched_inst.data = inst.data.isel(im)
                     else:
                         if inst.pandas_format:
-                            matched_inst.data = matched_inst.data.append( \
+                            matched_inst.data = matched_inst.data.append(
                                                         inst.data.iloc[im])
                         else:
                             matched_inst.data = xr.merge(matched_inst.data,
-                                                    inst.data.isel(im))
+                                                         inst.data.isel(im))
 
                     # Reset the clean flag
                     inst.clean_level = 'none'
@@ -457,7 +461,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
 
     inst_scale = np.ones(shape=len(inst_name), dtype=float)
     for i,ii in enumerate(inst_name):
-        if not ii in list(inst.data.keys()):
+        if ii not in list(inst.data.keys()):
             raise ValueError('Unknown instrument location index {:}'.format(ii))
         inst_scale[i] = utils.scale_units(mod_units[i],
                                           inst.meta.data.units[ii])
@@ -527,7 +531,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         imod_dims = [i for i in ind_dims if mod_name[i] in dims]
                         ind_dims = [inst.data.coords.keys().index(inst_name[i])
                                     for i in imod_dims]
-                        
+
                         # Set the number of cycles
                         icycles = 0
                         ncycles = sum([len(inst.data.coords[inst_name[i]])
@@ -572,7 +576,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     # time, move onto the next time
                     if icycles >= ncycles:
                         get_coords = False
-                                    
+
                 # Get the model values for this time
                 values = model.data_vars[mdat].data[indices]
 
@@ -586,7 +590,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         yi = [np.nan]
                     else:
                         raise ValueError(verr)
-                            
+
                 # Save the output
                 attr_name = "{:s}_{:s}".format(model_label, mdat)
                 if not attr_name in interp_data.keys():
