@@ -229,3 +229,56 @@ def download(date_array, inst_code=None, kindat=None, data_path=None, user=None,
         print ('Feedback from openMadrigal ', a)
     except OSError as err:
         print("problem running globalDownload.py, check python path")
+
+
+def filter_data_single_date(self):
+    """Filters data to a single date.
+
+    Madrigal serves multiple days within a single JRO file
+    to counter this, we will filter each loaded day so that it only
+    contains the relevant day of data. This is only applied if loading
+    by date. It is not applied when supplying pysat with a specific
+    filename to load, nor when data padding is enabled. Note that when
+    data padding is enabled the final data available within the instrument
+    will be downselected by pysat to only include the date specified.  
+
+        
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+    
+
+    Note
+    ----    
+    This routine is intended to be added to the Instrument 
+    nanokernel processing queue via
+        inst = pysat.Instrument()
+        inst.custom.add(filter_data_single_date, 'modify')
+    This function will then be automatically applied to the 
+    Instrument object data on every load by the pysat nanokernel.
+    
+    Warnings
+    --------
+    For the best performance, this function should be added first in the queue.
+    This may be ensured by setting the default function in a
+    pysat instrument file to this one.
+    
+    within platform_name.py set
+        default = pysat.instruments.madrigal_methods.filter_data_single_date
+    at the top level
+    
+    """
+
+    # only do this if loading by date!
+    if self._load_by_date and self.pad is None:
+        # identify times for the loaded date
+        idx, = np.where( (self.index >= self.date) &
+                         (self.index < (self.date+pds.DateOffset(days=1))))
+        # downselect from all data
+        self.data = self[idx]
