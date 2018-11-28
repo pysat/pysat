@@ -9,6 +9,7 @@ from __future__ import absolute_import
 
 import sys
 import pandas as pds
+import numpy as np
 import pysat
 
 def cedar_rules():
