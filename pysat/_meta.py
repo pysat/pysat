@@ -1091,19 +1091,19 @@ class Meta(object):
         elif not isinstance(name, str):
             raise ValueError('keyword name must be related to a string')
         elif not os.path.isfile(name):
-                # Not a real file, assume input is a pysat instrument name
-                # and look in the standard pysat location.
-                test = os.path.join(pysat.__path__[0], 'instruments', name)
-                if os.path.isfile(test):
-                    name = test
+            # Not a real file, assume input is a pysat instrument name
+            # and look in the standard pysat location.
+            test = os.path.join(pysat.__path__[0], 'instruments', name)
+            if os.path.isfile(test):
+                name = test
+            else:
+                # trying to form an absolute path for success
+                test = os.path.abspath(name)
+                if not os.path.isfile(test):
+                    raise ValueError("Unable to create valid file path.")
                 else:
-                    # trying to form an absolute path for success
-                    test = os.path.abspath(name)
-                    if not os.path.isfile(test):
-                        raise ValueError("Unable to create valid file path.")
-                    else:
-                        # success
-                        name = test
+                    # success
+                    name = test
 
         mdata = pds.read_csv(name, names=col_names, sep=sep, **kwargs)
 
