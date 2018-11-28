@@ -164,7 +164,9 @@ def default(self):
     to counter this, we will filter each loaded day so that it only
     contains the relevant day of data. This is only applied if loading
     by date. It is not applied when supplying pysat with a specific
-    filename to load.  
+    filename to load, nor when data padding is enabled. Note that when
+    data padding is enabled the final data available within the instrument
+    will be downselected by pysat to only include the date specified.  
         
     Parameters
     ----------
@@ -180,7 +182,7 @@ def default(self):
     """
 
     # only do this if loading by date!
-    if self._load_by_date:
+    if self._load_by_date and self.pad is None:
         # identify times for the loaded date
         idx, = np.where( (self.index >= self.date) &
                          (self.index < (self.date+pds.DateOffset(days=1))))
