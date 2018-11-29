@@ -88,7 +88,7 @@ def set_data_dir(path=None, store=None):
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                  epoch_name='Epoch', units_label='units',
                  name_label='long_name', notes_label='notes',
-                 desc_label='desc', plot_label='label', axis_label='axis', 
+                 desc_label='desc', plot_label='label', axis_label='axis',
                  scale_label='scale', min_label='value_min',
                  max_label='value_max', fill_label='fill'):
     # unix_time=False, **kwargs):
