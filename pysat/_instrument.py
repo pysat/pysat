@@ -1907,7 +1907,7 @@ class Instrument(object):
                     # use info in coltype to get real datatype of object
                     # isinstance isn't working here because of something with
                     # coltype
-                    if isinstance(coltype(str)):
+                    if isinstance(coltype,str):
                     # if (coltype == type(' ')) or (coltype == type(u' ')):
                         # dealing with a string
                         cdfkey = out_data.createVariable(key, coltype,
