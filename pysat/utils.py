@@ -484,7 +484,8 @@ def median1D(self, bin_params, bin_label,data_label):
     for i in xrange(bins.size-1):
         index, = np.where(ind==(i+1))
         if len(index)>0:
-            ans[i] = self.data.ix[index, data_label].median()
+            idx = self.data.index[index.astype(int)]
+            ans[i] = self.data.loc[idx, data_label].median()
 
     return ans
 
