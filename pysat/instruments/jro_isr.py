@@ -33,6 +33,8 @@ Note
 
 from __future__ import print_function
 from __future__ import absolute_import
+import numpy as np
+import pandas as pds
 
 import functools
 import pysat
@@ -79,6 +81,14 @@ pandas_format = False
 
 # support load routine
 load = functools.partial(mad_meth.load, xarray_coords=['gdalt'])
+    
+# Madrigal will sometimes include multiple days within a file
+# labeled with a single date.
+# Filter out this extra data using the pysat nanokernel processing queue.
+# To ensure this function is always applied first, we set the filter
+# function as the default function for (JRO).
+# Default function is run first by the nanokernel on every load call.
+default = pysat.instruments.madrigal_methods.filter_data_single_date      
 
 def init(self):
     """Initializes the Instrument object with values specific to JRO ISR
@@ -149,11 +159,7 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
                       kindat=str(madrigal_tag[sat_id][tag]),
                       data_path=data_path, user=user, password=password)
 
-
-def default(self):
-    pass
-   
-        
+            
 def clean(self):
     """Routine to return JRO ISR data cleaned to the specified level
 
