@@ -693,6 +693,7 @@ def parse_fixed_width_filenames(files, format_str):
     
     return stored
 
+
 def parse_delimited_filenames(files, format_str, delimiter):
     """Parses list of files, extracting data identified by format_str
     
