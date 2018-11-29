@@ -505,91 +505,40 @@ class Files(object):
         # to identify files in the filesystem
         search_dict = construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
-        # keys = search_dict['keys']
         # perform local file search
-        files = search_local_system_formatted_filename(data_path, search_str)  
-        
+        files = search_local_system_formatted_filename(data_path, search_str)          
         # we have a list of files, now we need to extract the information        
         # pull of data from the areas identified by format_str
         stored = parse_fixed_width_filenames(files, format_str)
-
+        # process the parsed filenames and return a properly formatted Series
         return process_parsed_filenames(stored, two_digit_year_break)
 
-#         if len(files) > 0:  
-#             
-#             # deal with the possibility of two digit years
-#             # years above or equal to break are considered to be 1900+
-#             # years below break are considered to be 2000+
-#             if two_digit_year_break is not None:
-#                 idx, = np.where(np.array(stored['year']) >=
-#                                 two_digit_year_break)
-#                 stored['year'][idx] = stored['year'][idx] + 1900
-#                 idx, = np.where(np.array(stored['year']) < two_digit_year_break)
-#                 stored['year'][idx] = stored['year'][idx] + 2000 
-#             # need to sort the information for things to work
-#             rec_arr = [stored[key] for key in keys]
-#             rec_arr.append(files)
-#             # sort all arrays
-#             val_keys = keys + ['files']
-#             print (keys)
-#             print (val_keys)
-#             print (rec_arr)
-#             rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
-# 
-#             rec_arr.sort(order=val_keys, axis=0)
-#             # pull out sorted info
-#             for key in keys:
-#                 stored[key] = rec_arr[key]
-#             files = rec_arr['files']
-#             # add hour and minute information to 'sec'
-#             if stored['sec'] is None:
-#                 stored['sec'] = np.zeros(len(files))                
-#             if stored['hour'] is not None:
-#                 stored['sec'] += 3600 * stored['hour']
-#             if stored['min'] is not None:
-#                 stored['sec'] += 60 * stored['min']
-#             # if stored['version'] is None:
-#             #     stored['version'] = np.zeros(len(files))
-#             if stored['revision'] is None:
-#                 stored['revision'] = np.zeros(len(files))
-# 
-#             index = create_datetime_index(year=stored['year'],
-#                                           month=stored['month'], 
-#                                           day=stored['day'], uts=stored['sec'])
-# 
-#             # if version and revision are supplied
-#             # use these parameters to weed out files that have been replaced
-#             # with updated versions
-#             # first, check for duplicate index times
-#             dups = index[index.duplicated()].unique()
-#             if (len(dups) > 0) and (stored['version'] is not None):
-#                 # we have duplicates
-#                 # keep the highest version/revision combo
-#                 version = pds.Series(stored['version'], index=index)
-#                 revision = pds.Series(stored['revision'], index=index)
-#                 revive = version*100000. + revision
-#                 frame = pds.DataFrame({'files':files, 'revive':revive,
-#                                         'time':index}, index=index)
-#                 frame = frame.sort_values(by=['time', 'revive'],
-#                                           ascending=[True, False])
-#                 frame = frame.drop_duplicates(subset='time', keep='first')
-# 
-#                 return frame['files']
-#             else:
-#                 return pds.Series(files, index=index)
-#         else:
-#             return pds.Series(None) 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
-    """
+    """Accepts dict with data parsed from filenames and creates
+    a pandas Series object formatted for the Files class.
     
     Parameters
     ----------
+    stored : orderedDict
+        Dict produced by parse_fixed_width_filenames or 
+        parse_delimited_filenames
     two_digit_year_break : int
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
 
+    Returns
+    -------
+    pandas.Series
+        Series, indexed by datetime, with file strings
+        
+    Note
+    ----
+        If two files have the same date and time information in the
+        filename then the file with the higher version/revision is used.
+        Series returned only has one file der datetime.
+        
     """
 
     from pysat.utils import create_datetime_index
