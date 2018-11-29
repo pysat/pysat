@@ -474,6 +474,8 @@ class Instrument(object):
 
         """
 
+        from numpy import ndarray
+
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
         if self.pandas_format:
