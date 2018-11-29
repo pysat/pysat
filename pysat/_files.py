@@ -462,7 +462,8 @@ class Files(object):
             # match = os.path.join(self.data_path,'')
             # num = len(match)
             # return inp.apply(lambda x: x[num:])
-        
+
+
     @classmethod    
     def from_os(cls, data_path=None, format_str=None, 
                 two_digit_year_break=None):
@@ -507,42 +508,24 @@ class Files(object):
         if data_path is None:
             raise ValueError("Must supply instrument directory path (dir_path)")
         
-        # parse format string to figure out the search string to use
-        # to identify files in the filesystem
-        search_str = ''
-        form = string.Formatter()
-        # stores the keywords extracted from format_string
-        keys = []
-        #, and length of string
-        snips = []
-        length = []
         stored = collections.OrderedDict()
         stored['year'] = []; stored['month'] = []; stored['day'] = [];
         stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
         stored['version'] = []; stored['revision'] = [];
-        for snip in form.parse(format_str):
-            # collect all of the format keywords
-            # replace them in the string with the '*' wildcard
-            # then try and get width from format keywords so we know
-            # later on where to parse information out from
-            search_str += snip[0]
-            snips.append(snip[0])
-            if snip[1] is not None:
-                keys.append(snip[1])
-                search_str += '*'
-                # try and determine formatting width
-                temp = re.findall(r'\d+', snip[2])
-                if temp:
-                    # there are items, try and grab width
-                    for i in temp:
-                        if i != 0:
-                            length.append(int(i))
-                            break
-                else:
-                    raise ValueError("Couldn't determine formatting width")
 
-        abs_search_str = os.path.join(data_path, search_str)
-        files = glob.glob(abs_search_str)   
+
+        # parse format string to figure out the search string to use
+        # to identify files in the filesystem
+        search_dict = construct_searchstring_from_format(format_str)
+        search_str = search_dict['search_string']
+        snips = search_dict['string_blocks']
+        length = search_dict['lengths']
+        keys = search_dict['keys']
+
+        # perform local file search
+        # abs_search_str = os.path.join(data_path, search_str)
+        # files = glob.glob(abs_search_str) 
+        files = search_local_system_formatted_filename(data_path, search_str)  
         
         # we have a list of files, now we need to extract the date information
         # code below works, but only if the size of file string 
@@ -634,3 +617,114 @@ class Files(object):
         else:
             return pds.Series(None) 
 
+
+def construct_searchstring_from_format(format_str):
+    """
+    Parses format file string and returns string formatted for searching.
+
+    Parameters
+    ----------
+    format_str : string with python format codes
+        Provides the naming pattern of the instrument files and the 
+        locations of date information so an ordered list may be produced.
+        Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
+        and 'revision'
+        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
+        
+    Returns
+    -------
+    dict
+        'search_string' format_str with data to be parsed replaced with ?
+        'keys' keys for data to be parsed
+        'lengths' string length for data to be parsed
+        'string_blocks' the filenames are broken down into fixed width
+            segments and '' strings are placed in locations where data will 
+            eventually be parsed from a list of filenames. A standards compliant
+            filename can be constructed by starting with string_blocks,
+            adding keys in order, and replacing the '' locations with data
+            of length length.
+        
+    Note
+    ----
+        The '?' may be used to indicate a set number of spaces for a variable
+        part of the name that need not be extracted.
+        'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
+        
+    """
+
+    if format_str is None:
+        raise ValueError("Must supply a filename template (format_str).")
+    
+    # parse format string to figure out how to construct the search string
+    # to identify files in the filesystem
+    search_str = ''
+    form = string.Formatter()
+    # stores the keywords extracted from format_string
+    keys = []
+    # and length of string
+    snips = []
+    lengths = []
+    for snip in form.parse(format_str):
+        # collect all of the format keywords
+        # replace them in the string with the '?' wildcard
+        # numnber of ?s goes with length of data to be parsed
+        # length grabbed from format keywords so we know
+        # later on where to parse information out from
+        search_str += snip[0]
+        snips.append(snip[0])
+        if snip[1] is not None:
+            keys.append(snip[1])
+            # try and determine formatting width
+            temp = re.findall(r'\d+', snip[2])
+            if temp:
+                # there are items, try and grab width
+                for i in temp:
+                    # make sure there is truly something there
+                    if i != 0:
+                        # store length and add to the search string
+                        lengths.append(int(i))
+                        search_str += '?'*int(i)
+                        break
+            else:
+                raise ValueError("Couldn't determine formatting width")
+                
+    return {'search_string':search_str,
+            'keys':keys,
+            'lengths':lengths,
+            'string_blocks':snips}
+
+
+def search_local_system_formatted_filename(data_path, search_str):
+    """
+    Parses format file string and returns string formatted for searching.
+
+    Parameters
+    ----------
+    data_path : string
+        Top level directory to search files for. This directory
+        is provided by pysat to the instrument_module.list_files
+        functions as data_path.
+    search_str : string 
+        String to search local file system for
+        Ex: 'cnofs_cindi_ivm_500ms_????????_v??.cdf'
+            'cnofs_cinfi_ivm_500ms_*_v??.cdf'
+        
+    Returns
+    -------
+    list
+        list of files matching the format_str
+    
+    Note
+    ----
+    The use of ?s (1 ? per character) rather than the full wildcard *
+    provides a more specific filename search string that limits the
+    false positive rate.
+        
+    """
+
+
+    # perform local file search
+    abs_search_str = os.path.join(data_path, search_str)
+    files = glob.glob(abs_search_str)    
+    # return info
+    return files
