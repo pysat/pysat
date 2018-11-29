@@ -447,10 +447,7 @@ class Files(object):
         return files
 
     def _remove_data_dir_path(self, inp=None):
-        # import string
         """Remove the data directory path from filenames"""
-        # need to add a check in here to make sure data_dir path is actually in
-        # the filename
         if inp is not None:
             split_str = os.path.join(self.data_path, '')
             return inp.apply(lambda x: x.split(split_str)[-1])
@@ -499,126 +496,175 @@ class Files(object):
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
         """
 
-        # import collections
+        # from pysat.utils import create_datetime_index
         
-        from pysat.utils import create_datetime_index
-        
-        # if format_str is None:
-        #     raise ValueError("Must supply a filename template (format_str).")
         if data_path is None:
             raise ValueError("Must supply instrument directory path (dir_path)")
         
-        # stored = collections.OrderedDict()
-        # stored['year'] = []; stored['month'] = []; stored['day'] = [];
-        # stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
-        # stored['version'] = []; stored['revision'] = [];
-
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
         search_dict = construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
-        # snips = search_dict['string_blocks']
-        # length = search_dict['lengths']
-        keys = search_dict['keys']
-
+        # keys = search_dict['keys']
         # perform local file search
         files = search_local_system_formatted_filename(data_path, search_str)  
         
-        # we have a list of files, now we need to extract the date information
-        # code below works, but only if the size of file string 
-        # remains unchanged
+        # we have a list of files, now we need to extract the information        
+        # pull of data from the areas identified by format_str
+        stored = parse_fixed_width_filenames(files, format_str)
+
+        return process_parsed_filenames(stored, two_digit_year_break)
+
+#         if len(files) > 0:  
+#             
+#             # deal with the possibility of two digit years
+#             # years above or equal to break are considered to be 1900+
+#             # years below break are considered to be 2000+
+#             if two_digit_year_break is not None:
+#                 idx, = np.where(np.array(stored['year']) >=
+#                                 two_digit_year_break)
+#                 stored['year'][idx] = stored['year'][idx] + 1900
+#                 idx, = np.where(np.array(stored['year']) < two_digit_year_break)
+#                 stored['year'][idx] = stored['year'][idx] + 2000 
+#             # need to sort the information for things to work
+#             rec_arr = [stored[key] for key in keys]
+#             rec_arr.append(files)
+#             # sort all arrays
+#             val_keys = keys + ['files']
+#             print (keys)
+#             print (val_keys)
+#             print (rec_arr)
+#             rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
+# 
+#             rec_arr.sort(order=val_keys, axis=0)
+#             # pull out sorted info
+#             for key in keys:
+#                 stored[key] = rec_arr[key]
+#             files = rec_arr['files']
+#             # add hour and minute information to 'sec'
+#             if stored['sec'] is None:
+#                 stored['sec'] = np.zeros(len(files))                
+#             if stored['hour'] is not None:
+#                 stored['sec'] += 3600 * stored['hour']
+#             if stored['min'] is not None:
+#                 stored['sec'] += 60 * stored['min']
+#             # if stored['version'] is None:
+#             #     stored['version'] = np.zeros(len(files))
+#             if stored['revision'] is None:
+#                 stored['revision'] = np.zeros(len(files))
+# 
+#             index = create_datetime_index(year=stored['year'],
+#                                           month=stored['month'], 
+#                                           day=stored['day'], uts=stored['sec'])
+# 
+#             # if version and revision are supplied
+#             # use these parameters to weed out files that have been replaced
+#             # with updated versions
+#             # first, check for duplicate index times
+#             dups = index[index.duplicated()].unique()
+#             if (len(dups) > 0) and (stored['version'] is not None):
+#                 # we have duplicates
+#                 # keep the highest version/revision combo
+#                 version = pds.Series(stored['version'], index=index)
+#                 revision = pds.Series(stored['revision'], index=index)
+#                 revive = version*100000. + revision
+#                 frame = pds.DataFrame({'files':files, 'revive':revive,
+#                                         'time':index}, index=index)
+#                 frame = frame.sort_values(by=['time', 'revive'],
+#                                           ascending=[True, False])
+#                 frame = frame.drop_duplicates(subset='time', keep='first')
+# 
+#                 return frame['files']
+#             else:
+#                 return pds.Series(files, index=index)
+#         else:
+#             return pds.Series(None) 
+
+def process_parsed_filenames(stored, two_digit_year_break=None):
+    """
+    
+    Parameters
+    ----------
+    two_digit_year_break : int
+        If filenames only store two digits for the year, then
+        '1900' will be added for years >= two_digit_year_break
+        and '2000' will be added for years < two_digit_year_break.
+
+    """
+
+    from pysat.utils import create_datetime_index
+    
+    search_dict = construct_searchstring_from_format(stored['format_str'])
+    keys = search_dict['keys']
+    
+    if len(stored['files']) > 0:
+        # deal with the possibility of two digit years
+        # years above or equal to break are considered to be 1900+
+        # years below break are considered to be 2000+
+        if two_digit_year_break is not None:
+            idx, = np.where(np.array(stored['year']) >=
+                            two_digit_year_break)
+            stored['year'][idx] = stored['year'][idx] + 1900
+            idx, = np.where(np.array(stored['year']) < two_digit_year_break)
+            stored['year'][idx] = stored['year'][idx] + 2000 
+
+        # need to sort the information for things to work
+        rec_arr = [stored[key] for key in keys]
+        rec_arr.append(stored['files'])
+        # sort all arrays
+        # create a sortable records array
+        # keys with files
+        val_keys = keys + ['files']
+        rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
+        rec_arr.sort(order=val_keys, axis=0)
         
-        # determine the locations the date information in a filename is stored
-        # use these indices to slice out date from loaded filenames
-        # test_str = format_str.format(**periods)
-        if len(files) > 0:  
-            # idx = 0
-            # begin_key = []
-            # end_key = []
-            # for i,snip in enumerate(snips):
-            #     idx += len(snip)
-            #     if i < (len(length)):
-            #         begin_key.append(idx)
-            #         idx += length[i]
-            #         end_key.append(idx)
-            # max_len = idx
-            # # setting up negative indexing to pick out filenames
-            # key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
-            #                np.array(end_key, dtype=int) - max_len]
-            # # need to parse out dates for datetime index
-            # for i,temp in enumerate(files):
-            #     for j,key in enumerate(keys):
-            #         val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
-            #         stored[key].append(val)
-            # # convert to numpy arrays
-            # for key in stored.keys():
-            #     stored[key] = np.array(stored[key]).astype(int)
-            #     if len(stored[key]) == 0:
-            #         stored[key]=None
-            
-            stored = parse_fixed_width_filenames(files, format_str)
-            
-            # deal with the possibility of two digit years
-            # years above or equal to break are considered to be 1900+
-            # years below break are considered to be 2000+
-            if two_digit_year_break is not None:
-                idx, = np.where(np.array(stored['year']) >=
-                                two_digit_year_break)
-                stored['year'][idx] = stored['year'][idx] + 1900
-                idx, = np.where(np.array(stored['year']) < two_digit_year_break)
-                stored['year'][idx] = stored['year'][idx] + 2000 
-            # need to sort the information for things to work
-            rec_arr = [stored[key] for key in keys]
-            rec_arr.append(files)
-            # sort all arrays
-            val_keys = keys + ['files']
-            rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
-            rec_arr.sort(order=val_keys, axis=0)
-            # pull out sorted info
-            for key in keys:
-                stored[key] = rec_arr[key]
-            files = rec_arr['files']
-            # add hour and minute information to 'sec'
-            if stored['sec'] is None:
-                stored['sec'] = np.zeros(len(files))                
-            if stored['hour'] is not None:
-                stored['sec'] += 3600 * stored['hour']
-            if stored['min'] is not None:
-                stored['sec'] += 60 * stored['min']
-            # if stored['version'] is None:
-            #     stored['version'] = np.zeros(len(files))
-            if stored['revision'] is None:
-                stored['revision'] = np.zeros(len(files))
+        # pull out sorted info
+        for key in keys:
+            stored[key] = rec_arr[key]
+        files = rec_arr['files']
+        
+        # add hour and minute information to 'sec'
+        if stored['sec'] is None:
+            stored['sec'] = np.zeros(len(files))                
+        if stored['hour'] is not None:
+            stored['sec'] += 3600 * stored['hour']
+        if stored['min'] is not None:
+            stored['sec'] += 60 * stored['min']
+        if stored['version'] is None:
+            stored['version'] = np.zeros(len(files))
+        if stored['revision'] is None:
+            stored['revision'] = np.zeros(len(files))
 
-            index = create_datetime_index(year=stored['year'],
-                                          month=stored['month'], 
-                                          day=stored['day'], uts=stored['sec'])
+        index = create_datetime_index(year=stored['year'],
+                                        month=stored['month'], 
+                                        day=stored['day'], uts=stored['sec'])
 
-            # if version and revision are supplied
-            # use these parameters to weed out files that have been replaced
-            # with updated versions
-            # first, check for duplicate index times
-            dups = index[index.duplicated()].unique()
-            if (len(dups) > 0) and (stored['version'] is not None):
-                # we have duplicates
-                # keep the highest version/revision combo
-                version = pds.Series(stored['version'], index=index)
-                revision = pds.Series(stored['revision'], index=index)
-                revive = version*100000. + revision
-                frame = pds.DataFrame({'files':files, 'revive':revive,
-                                       'time':index}, index=index)
-                frame = frame.sort_values(by=['time', 'revive'],
-                                          ascending=[True, False])
-                frame = frame.drop_duplicates(subset='time', keep='first')
+        # if version and revision are supplied
+        # use these parameters to weed out files that have been replaced
+        # with updated versions
+        # first, check for duplicate index times
+        dups = index[index.duplicated()].unique()
+        if (len(dups) > 0) and (stored['version'] is not None):
+            # we have duplicates
+            # keep the highest version/revision combo
+            version = pds.Series(stored['version'], index=index)
+            revision = pds.Series(stored['revision'], index=index)
+            revive = version*100000. + revision
+            frame = pds.DataFrame({'files':files, 'revive':revive,
+                                    'time':index}, index=index)
+            frame = frame.sort_values(by=['time', 'revive'],
+                                        ascending=[True, False])
+            frame = frame.drop_duplicates(subset='time', keep='first')
 
-                return frame['files']
-            else:
-                return pds.Series(files, index=index)
+            return frame['files']
         else:
-            return pds.Series(None) 
+            return pds.Series(files, index=index)
+    else:
+        return pds.Series(None) 
+    
 
 def parse_fixed_width_filenames(files, format_str):
-    """Parses list of files, extracing data identified by format_str
+    """Parses list of files, extracting data identified by format_str
     
     Parameters
     ----------
@@ -637,6 +683,7 @@ def parse_fixed_width_filenames(files, format_str):
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'min', 'sec', 'version', 'revision'
         'files' - input list of files
+        
     """
  
     import collections
@@ -658,7 +705,7 @@ def parse_fixed_width_filenames(files, format_str):
     keys = search_dict['keys']
     
     # determine the locations the date/version information in a filename is stored
-    # use these indices to slice out date from loaded filenames
+    # use these indices to slice out date from filenames
     idx = 0
     begin_key = []
     end_key = []
@@ -684,6 +731,7 @@ def parse_fixed_width_filenames(files, format_str):
             stored[key]=None
     # include files in output
     stored['files'] = files
+    stored['format_str'] = format_str
     return stored
    
 
