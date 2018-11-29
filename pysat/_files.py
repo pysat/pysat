@@ -499,32 +499,29 @@ class Files(object):
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
         """
 
-        import collections
+        # import collections
         
         from pysat.utils import create_datetime_index
         
-        if format_str is None:
-            raise ValueError("Must supply a filename template (format_str).")
+        # if format_str is None:
+        #     raise ValueError("Must supply a filename template (format_str).")
         if data_path is None:
             raise ValueError("Must supply instrument directory path (dir_path)")
         
-        stored = collections.OrderedDict()
-        stored['year'] = []; stored['month'] = []; stored['day'] = [];
-        stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
-        stored['version'] = []; stored['revision'] = [];
-
+        # stored = collections.OrderedDict()
+        # stored['year'] = []; stored['month'] = []; stored['day'] = [];
+        # stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
+        # stored['version'] = []; stored['revision'] = [];
 
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
         search_dict = construct_searchstring_from_format(format_str)
         search_str = search_dict['search_string']
-        snips = search_dict['string_blocks']
-        length = search_dict['lengths']
+        # snips = search_dict['string_blocks']
+        # length = search_dict['lengths']
         keys = search_dict['keys']
 
         # perform local file search
-        # abs_search_str = os.path.join(data_path, search_str)
-        # files = glob.glob(abs_search_str) 
         files = search_local_system_formatted_filename(data_path, search_str)  
         
         # we have a list of files, now we need to extract the date information
@@ -535,29 +532,32 @@ class Files(object):
         # use these indices to slice out date from loaded filenames
         # test_str = format_str.format(**periods)
         if len(files) > 0:  
-            idx = 0
-            begin_key = []
-            end_key = []
-            for i,snip in enumerate(snips):
-                idx += len(snip)
-                if i < (len(length)):
-                    begin_key.append(idx)
-                    idx += length[i]
-                    end_key.append(idx)
-            max_len = idx
-            # setting up negative indexing to pick out filenames
-            key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
-                           np.array(end_key, dtype=int) - max_len]
-            # need to parse out dates for datetime index
-            for i,temp in enumerate(files):
-                for j,key in enumerate(keys):
-                    val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
-                    stored[key].append(val)
-            # convert to numpy arrays
-            for key in stored.keys():
-                stored[key] = np.array(stored[key]).astype(int)
-                if len(stored[key]) == 0:
-                    stored[key]=None
+            # idx = 0
+            # begin_key = []
+            # end_key = []
+            # for i,snip in enumerate(snips):
+            #     idx += len(snip)
+            #     if i < (len(length)):
+            #         begin_key.append(idx)
+            #         idx += length[i]
+            #         end_key.append(idx)
+            # max_len = idx
+            # # setting up negative indexing to pick out filenames
+            # key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
+            #                np.array(end_key, dtype=int) - max_len]
+            # # need to parse out dates for datetime index
+            # for i,temp in enumerate(files):
+            #     for j,key in enumerate(keys):
+            #         val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
+            #         stored[key].append(val)
+            # # convert to numpy arrays
+            # for key in stored.keys():
+            #     stored[key] = np.array(stored[key]).astype(int)
+            #     if len(stored[key]) == 0:
+            #         stored[key]=None
+            
+            stored = parse_fixed_width_filenames(files, format_str)
+            
             # deal with the possibility of two digit years
             # years above or equal to break are considered to be 1900+
             # years below break are considered to be 2000+
@@ -617,6 +617,75 @@ class Files(object):
         else:
             return pds.Series(None) 
 
+def parse_fixed_width_filenames(files, format_str):
+    """Parses list of files, extracing data identified by format_str
+    
+    Parameters
+    ----------
+    files : list
+        List of files
+    format_str : string with python format codes
+        Provides the naming pattern of the instrument files and the 
+        locations of date information so an ordered list may be produced.
+        Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
+        and 'revision'
+        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+    
+    Returns
+    -------
+    OrderedDict
+        Information parsed from filenames
+        'year', 'month', 'day', 'hour', 'min', 'sec', 'version', 'revision'
+        'files' - input list of files
+    """
+ 
+    import collections
+
+    # create storage for data to be parsed from filenames
+    stored = collections.OrderedDict()
+    stored['year'] = []; stored['month'] = []; stored['day'] = [];
+    stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
+    stored['version'] = []; stored['revision'] = [];
+
+    if len(files) == 0:  
+        stored['files'] = []
+        return stored
+
+    # parse format string to get information needed to parse filenames
+    search_dict = construct_searchstring_from_format(format_str)
+    snips = search_dict['string_blocks']
+    lengths = search_dict['lengths']
+    keys = search_dict['keys']
+    
+    # determine the locations the date/version information in a filename is stored
+    # use these indices to slice out date from loaded filenames
+    idx = 0
+    begin_key = []
+    end_key = []
+    for i,snip in enumerate(snips):
+        idx += len(snip)
+        if i < (len(lengths)):
+            begin_key.append(idx)
+            idx += lengths[i]
+            end_key.append(idx)
+    max_len = idx
+    # setting up negative indexing to pick out filenames
+    key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
+                    np.array(end_key, dtype=int) - max_len]
+    # need to parse out dates for datetime index
+    for i,temp in enumerate(files):
+        for j,key in enumerate(keys):
+            val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
+            stored[key].append(val)
+    # convert to numpy arrays
+    for key in stored.keys():
+        stored[key] = np.array(stored[key]).astype(int)
+        if len(stored[key]) == 0:
+            stored[key]=None
+    # include files in output
+    stored['files'] = files
+    return stored
+   
 
 def construct_searchstring_from_format(format_str):
     """
@@ -721,7 +790,6 @@ def search_local_system_formatted_filename(data_path, search_str):
     false positive rate.
         
     """
-
 
     # perform local file search
     abs_search_str = os.path.join(data_path, search_str)
