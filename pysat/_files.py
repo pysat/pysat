@@ -537,7 +537,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     ----
         If two files have the same date and time information in the
         filename then the file with the higher version/revision is used.
-        Series returned only has one file der datetime.
+        Series returned only has one file der datetime. Version is required
+        for this filtering, revision is optional.
         
     """
 
@@ -579,8 +580,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             stored['sec'] += 3600 * stored['hour']
         if stored['min'] is not None:
             stored['sec'] += 60 * stored['min']
-        if stored['version'] is None:
-            stored['version'] = np.zeros(len(files))
+        # version shouldn't be set to zero
+        # version is required to remove duplicate datetimes
         if stored['revision'] is None:
             stored['revision'] = np.zeros(len(files))
 
@@ -642,9 +643,11 @@ def parse_fixed_width_filenames(files, format_str):
     stored['year'] = []; stored['month'] = []; stored['day'] = [];
     stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
     stored['version'] = []; stored['revision'] = [];
-
+    
     if len(files) == 0:  
         stored['files'] = []
+        # include format string as convenience for later functions
+        stored['format_str'] = format_str
         return stored
 
     # parse format string to get information needed to parse filenames
@@ -680,7 +683,9 @@ def parse_fixed_width_filenames(files, format_str):
             stored[key]=None
     # include files in output
     stored['files'] = files
+    # include format string as convenience for later functions
     stored['format_str'] = format_str
+    
     return stored
    
 
