@@ -495,8 +495,6 @@ class Files(object):
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
         """
-
-        # from pysat.utils import create_datetime_index
         
         if data_path is None:
             raise ValueError("Must supply instrument directory path (dir_path)")
@@ -795,6 +793,8 @@ def search_local_system_formatted_filename(data_path, search_str):
 
     # perform local file search
     abs_search_str = os.path.join(data_path, search_str)
-    files = glob.glob(abs_search_str)    
+    files = glob.glob(abs_search_str) 
+    # remove data_path portion
+    files = [sfile.split(data_path)[-1] for sfile in files]   
     # return info
     return files
