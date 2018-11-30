@@ -64,6 +64,9 @@ basic_tag = {'dir': '/pub/data/timed/see/data/level3a_cdf',
              'local_fname': fname}
 supported_tags = {'':{'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
+# support listing files currently on CDAWeb
+list_remote_files = functools.partial(cdw.list_remote_files, 
+                               supported_tags=supported_tags)
 
 # support load routine
 # use the default CDAWeb method
