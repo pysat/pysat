@@ -241,7 +241,7 @@ class Test2DConstellation:
         for i in self.testC.instruments:
             i.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         
-        results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24], 'mlt',
+        results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24], 'longitude',
                                           [0., 24, 24], 'slt', ['uts'])
         dummy_val = results['uts']['median']
         dummy_dev = results['uts']['avg_abs_dev']
