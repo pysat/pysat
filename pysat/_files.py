@@ -385,7 +385,7 @@ class Files(object):
     def __getitem__(self, key):
         if isinstance(key, slice):
             try:
-                out = self.files.ix[key]
+                out = self.files.loc[key]
             except IndexError:
                 raise IndexError('Date requested outside file bounds.')
             if isinstance(key.start, pds.datetime):
@@ -406,7 +406,7 @@ class Files(object):
                 # not a datetime
                 return out
         else:
-            return self.files.ix[key]
+            return self.files.loc[key]
             #raise ValueError('Not implemented yet.')
         #if isinstance(key, tuple):
         #    if len(key) == 2:
