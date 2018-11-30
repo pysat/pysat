@@ -1316,7 +1316,7 @@ class Instrument(object):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-        if (start is None) or (stop is None):
+        if (start is None) or (stop is None) and (date_array is None):
             # defaults for downloads are set here rather than 
             # in the method signature since method defaults are
             # only set once! If an Instrument object persists
