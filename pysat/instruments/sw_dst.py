@@ -157,8 +157,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 format_str=format_str,
                 two_digit_year_break=94)
             if not out.empty:
-                out.ix[out.index[-1]+pds.DateOffset(years=1)-
-                         pds.DateOffset(days=1)] = out.iloc[-1]  
+                out.loc[out.index[-1] + pds.DateOffset(years=1) -
+                        pds.DateOffset(days=1)] = out.iloc[-1]
                 out = out.asfreq('D', 'pad')
                 out = out + '_' + out.index.strftime('%Y-%m-%d')
             return out

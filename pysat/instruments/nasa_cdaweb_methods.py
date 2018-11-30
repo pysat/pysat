@@ -73,8 +73,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                                   format_str=format_str)
 
         if (not out.empty) and fake_daily_files_from_monthly:
-            out.ix[out.index[-1] + pds.DateOffset(months=1) -
-                                   pds.DateOffset(days=1)] = out.iloc[-1]  
+            out.loc[out.index[-1] + pds.DateOffset(months=1) -
+                                   pds.DateOffset(days=1)] = out.iloc[-1]
             out = out.asfreq('D', 'pad')
             out = out + '_' + out.index.strftime('%Y-%m-%d')
             return out
@@ -149,7 +149,7 @@ def load(fnames, tag=None, sat_id=None,
                 # convert data to pysat format
                 data, meta = cdf.to_pysat(flatten_twod=flatten_twod)
                 # select data from monthly
-                data = data.ix[date:date+pds.DateOffset(days=1) - pds.DateOffset(microseconds=1),:]
+                data = data.loc[date:date+pds.DateOffset(days=1) - pds.DateOffset(microseconds=1),:]
                 return data, meta
         else:
             # basic data return

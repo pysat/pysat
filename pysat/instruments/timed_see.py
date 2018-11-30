@@ -23,6 +23,7 @@ flatten_twod : bool (True)
     may be accessed via, data.ix[:,'item':'item_end']
     If False, then 2D data is stored as a series of DataFrames,
     indexed by Epoch. data.ix[0, 'item']
+    !!!!!!! Rewrite examples using loc, iloc !!!!!!!!!
 
 Note
 ----

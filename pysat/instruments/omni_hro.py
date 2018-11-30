@@ -95,7 +95,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # each day of the month. load routine will use date to select out
             # appropriate data
             if not files.empty:
-                files.ix[files.index[-1] + pds.DateOffset(months=1) -
+                files.loc[files.index[-1] + pds.DateOffset(months=1) -
                          pds.DateOffset(days=1)] = files.iloc[-1]
                 files = files.asfreq('D', 'pad')
                 # add the date to the filename
@@ -122,8 +122,8 @@ def load(fnames, tag=None, sat_id=None):
         with pysatCDF.CDF(fname) as cdf:
             data, meta = cdf.to_pysat()
             # pick out data for date
-            data = data.ix[date:date+pds.DateOffset(days=1) -
-                           pds.DateOffset(microseconds=1)] 
+            data = data.loc[date:date+pds.DateOffset(days=1) -
+                           pds.DateOffset(microseconds=1)]
             return data, meta
 
 def clean(omni):
