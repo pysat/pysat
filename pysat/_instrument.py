@@ -373,6 +373,8 @@ class Instrument(object):
                 # Check if indices are used, otherwise pass directly through
                 if isinstance(key[0],int):
                     idx = self.data.index[key[0]]
+                elif isinstance(key[0],list) and isinstance(key[0][0],int):
+                    idx = self.data.index[key[0]]
                 elif isinstance(key[0],slice) and isinstance(key[0].start,int):
                     idx = self.data.index[key[0]]
                 elif isinstance(key[0],ndarray):
