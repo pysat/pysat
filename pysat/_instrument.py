@@ -1252,6 +1252,8 @@ class Instrument(object):
         
         # get list of remote files
         remote_files = self._list_remote_rtn(self.tag, self.sat_id)
+        if remote_files.empty:
+            print('No remote files found. Unable to download latest data.')
         # get current list of local files
         self.files.refresh()
         local_files = self.files.files
@@ -1265,14 +1267,15 @@ class Instrument(object):
                 
         # now compare filenames between common dates as it may
         # be a new version or revision
-        # this will have a problem with filenames that are faking daily data from monthly
+        # this will have a problem with filenames that are 
+        # faking daily data from monthly
         for date in local_files.index:
             if date in remote_files.index:
                 if remote_files[date] != local_files[date]:
                     new_dates.append(date)
-            
+        print ('Found ', len(new_dates), ' files that are new or updated.')
         # download date for dates in new_dates (also includes new names)
-        self.download(user=user, password=password, **kwargs, date_array=new_dates)
+        self.download(user=user, password=password, date_array=new_dates, **kwargs)
         
 
     def download(self, start=None, stop=None, freq='D', user=None, password=None,
@@ -1324,12 +1327,14 @@ class Instrument(object):
             start = self.yesterday()
             stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
-        # make sure dates are whole days
-        start = self._filter_datetime_input(start)
-        stop = self._filter_datetime_input(stop)
-        # create range of dates to download data for
+        
         if date_array is None:
+            # create range of dates to download data for
+            # make sure dates are whole days
+            start = self._filter_datetime_input(start)
+            stop = self._filter_datetime_input(stop)
             date_array = utils.season_date_range(start, stop, freq=freq)
+            
         if user is None:
             self._download_rtn(date_array,
                                tag=self.tag,
