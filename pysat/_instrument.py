@@ -1263,9 +1263,11 @@ class Instrument(object):
         """
         
         # get list of remote files
-        remote_files = self._list_remote_rtn(self.tag, self.sat_id)
+        remote_files = self.remote_file_list()
         if remote_files.empty:
             print('No remote files found. Unable to download latest data.')
+            return
+            
         # get current list of local files
         self.files.refresh()
         local_files = self.files.files
