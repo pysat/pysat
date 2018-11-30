@@ -93,7 +93,8 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
                                 for zk in zarr:
                                     #// take the data (already filtered by x); filter it by y and
                                     #// select the data product, put it in a list, and extend the deque
-                                    ans[zk][yj][xi].extend( yData.ix[yindex,data_label[zk]].tolist() )
+                                    indlab = yData.columns.get_loc(data_label[zk])
+                                    ans[zk][yj][xi].extend(yData.iloc[yindex, indlab].tolist() )
 
     return _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz, returnData)
 

@@ -144,7 +144,8 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                         if len(yindex) > 0:
                             # iterate over the different data_labels
                             for zk in arrz:
-                                zdata = yData.ix[yindex,data_label[zk]]
+                                indlab = yData.columns.get_loc(data_label[zk])
+                                zdata = yData.ix[yindex,indlab]
                                 if np.any(np.isfinite(zdata)):
                                     total[zk,yj,xi] += 1.
                                     if np.any(zdata > gate[zk]):
@@ -291,22 +292,23 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
             for xi in xarr:
                 xindex, = np.where(xind==xi)
                 if len(xindex)>0:
-                    yData = sat.data.ix[xindex]
+                    yData = sat.data.iloc[xindex]
                     yind = np.digitize(yData[label2], biny)-1
                     for yj in yarr:
                         yindex, = np.where(yind==yj)
                         if len(yindex) > 0:
-                            zData = yData.ix[yindex]
+                            zData = yData.iloc[yindex]
                             zind = np.digitize(zData[label3], binz)-1
                             for zk in zarr:
                                 zindex, = np.where(zind==zk)
                                 if len(zindex) > 0:
                                     for di in darr:
-                                        ddata = zData.ix[zindex,data_label[di]]
+                                        indlab = zData.columns.get_loc(data_label[di])
+                                        ddata = zData.iloc[zindex,indlab]
                                         idx, = np.where(np.isfinite(ddata))
                                         if len(idx) > 0:
                                             total[di,zk,yj,xi] += 1
-                                            idx, = np.where( ddata > gate[di]  )
+                                            idx, = np.where(ddata > gate[di])
                                             if len(idx) > 0:
                                                 hits[di,zk,yj,xi] += 1
 
