@@ -307,6 +307,8 @@ def list_remote_files(tag, sat_id,
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
+    delimiter : string
+        If filename is delimited, then provide delimiter alone e.g. '_'
 
     Returns
     --------
