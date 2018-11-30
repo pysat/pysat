@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Supports the Ion Velocity Meter (IVM) 
-onboard the Defense Meteorological Satellite Program (DMSP). 
+"""Supports the Ion Velocity Meter (IVM)
+onboard the Defense Meteorological Satellite Program (DMSP).
 
 The IVM is comprised of the Retarding Potential Analyzer (RPA) and
-Drift Meter (DM). The RPA measures the energy of plasma along the 
+Drift Meter (DM). The RPA measures the energy of plasma along the
 direction of satellite motion. By fitting these measurements
 to a theoretical description of plasma the number density, plasma
-composition, plasma temperature, and plasma motion may be determined. 
-The DM directly measures the arrival angle of plasma. Using the reported 
+composition, plasma temperature, and plasma motion may be determined.
+The DM directly measures the arrival angle of plasma. Using the reported
 motion of the satellite the angle is converted into ion motion along
 two orthogonal directions, perpendicular to the satellite track.
 
@@ -29,14 +29,14 @@ Example
 -------
     import pysat
     dmsp = pysat.Instrument('dmsp', 'ivm', 'utd', 'f15', clean_level='clean')
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31), 
+    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
                   user='Firstname+Lastname', password='email@address.com')
     dmsp.load(2017,363)
 
 Note
 ----
     Please provide name and email when downloading data with this routine.
-    
+
 Code development supported by NSF grant 1259508
 
 """
@@ -69,9 +69,9 @@ dmsp_fname1 = {'utd':'dms_ut_{year:4d}{month:02d}{day:02d}_',
 dmsp_fname2 = {'utd':'.{version:03d}.hdf5', '':'s?.{version:03d}.hdf5'}
 supported_tags = {ss:{kk:dmsp_fname1[kk] + ss[1:] + dmsp_fname2[kk]
                       for kk in sat_ids[ss]} for ss in sat_ids.keys()}
-list_files = functools.partial(cdw.list_files, 
+list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
-                               
+
 # madrigal tags
 madrigal_inst_code = 8100
 madrigal_tag = {'f11':{'utd':10241, '':10111},
@@ -82,10 +82,10 @@ madrigal_tag = {'f11':{'utd':10241, '':10111},
                 'f16':{'':10116},
                 'f17':{'':10117},
                 'f18':{'':10118},}
-                
+
 # let pysat know that data is spread across more than one file
 # multi_file_day=True
-        
+
 # Set to False to specify using xarray (not using pandas)
 # Set to True if data will be returned via a pandas DataFrame
 pandas_format = True
@@ -95,9 +95,9 @@ load = mad_meth.load
 
 def init(self):
     """Initializes the Instrument object with values specific to DMSP IVM
-    
+
     Runs once upon instantiation.
-    
+
     Parameters
     ----------
     self : pysat.Instrument
@@ -107,8 +107,8 @@ def init(self):
     --------
     Void : (NoneType)
         Object modified in place.
-    
-    
+
+
     """
 
     print(mad_meth.cedar_rules())
@@ -117,7 +117,7 @@ def init(self):
 def download(date_array, tag='', sat_id='', data_path=None, user=None,
              password=None):
     """Downloads data from Madrigal.
-    
+
     Parameters
     ----------
     date_array : array-like
@@ -143,7 +143,7 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     --------
     Void : (NoneType)
         Downloads data to disk.
-    
+
     Notes
     -----
     The user's names should be provided in field user. Ritu Karidhal should
@@ -151,9 +151,9 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
 
     The password field should be the user's email address. These parameters
     are passed to Madrigal when downloading.
-    
+
     The affiliation field is set to pysat to enable tracking of pysat downloads.
-    
+
     """
     mad_meth.download(date_array, inst_code=str(madrigal_inst_code),
                       kindat=str(madrigal_tag[sat_id][tag]),
@@ -162,8 +162,8 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
 
 def default(ivm):
     pass
-   
-        
+
+
 def clean(ivm):
     """Routine to return DMSP IVM data cleaned to the specified level
 
@@ -171,9 +171,9 @@ def clean(ivm):
     'Dusty' <= 2
     'Dirty' <= 3
     'None' None
-    
+
     Routine is called by pysat, and not by the end user directly.
-    
+
     Parameters
     -----------
     inst : (pysat.Instrument)
@@ -188,7 +188,7 @@ def clean(ivm):
     Notes
     --------
     Supports 'clean', 'dusty', 'dirty'
-    
+
     """
     import numpy as np
 
@@ -211,7 +211,7 @@ def clean(ivm):
 
     # downselect data based upon cleaning conditions above
     ivm.data = ivm[idx]
-        
+
     return
 
 def smooth_ram_drifts(ivm, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
@@ -261,7 +261,7 @@ def update_DMSP_ephemeris(ivm, ephem=None):
 
     if ephem.sat_id != dmsp.sat_id:
         raise ValueError('ephemera provided for the wrong satellite')
-    
+
     if ephem.date != ivm.date:
         ephem.load(date=ivm.date, verifyPad=True)
 
@@ -316,7 +316,7 @@ def add_drift_unit_vectors(ivm):
     idx, = np.where(ivm['mlat'] < 0)
     ivm.data.ix[idx, 'unit_cross_x'] *= -1.0
     ivm.data.ix[idx, 'unit_cross_y'] *= -1.0
-        
+
     ivm['unit_ram_r'] = ivm['unit_ram_x'] * np.cos(theta) + \
         ivm['unit_ram_y'] * np.sin(theta)
     ivm['unit_ram_theta'] = -ivm['unit_ram_x'] * np.sin(theta) + \
@@ -326,7 +326,7 @@ def add_drift_unit_vectors(ivm):
         ivm['unit_cross_y'] * np.sin(theta)
     ivm['unit_cross_theta'] = -ivm['unit_cross_x'] * np.sin(theta) + \
         ivm['unit_cross_y'] * np.cos(theta)
-    return 
+    return
 
 def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
                              rpa_vel_key='ion_v_sat_for',
