@@ -674,6 +674,7 @@ class Instrument(object):
         self._clean_rtn = self._pass_func
         self._init_rtn = self._pass_func
         self._download_rtn = self._pass_func
+        self._list_remote_rtn = self._pass_func
         # default params
         self.directory_format = None
         self.file_format = None
@@ -710,6 +711,10 @@ class Instrument(object):
             pass   
         try:
             self._clean_rtn = inst.clean
+        except AttributeError:
+            pass
+        try:
+            self._list_remote_rtn = inst.list_remote_files
         except AttributeError:
             pass
 
