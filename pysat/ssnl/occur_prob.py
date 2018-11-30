@@ -6,13 +6,13 @@ from __future__ import absolute_import
 Routines calculate the occurrence of an event greater than a supplied gate
 occuring at least once per day, or once per orbit. The probability is
 calculated as the (number of times with at least one hit in bin)/(number
-of times in the bin).The data used to determine the occurrence must be 1D. 
-If a property of a 2D or higher dataset is needed attach a custom function 
+of times in the bin).The data used to determine the occurrence must be 1D.
+If a property of a 2D or higher dataset is needed attach a custom function
 that performs the check and returns a 1D Series.
 
 Note
 ----
-The included routines use the bounds attached to the supplied instrument 
+The included routines use the bounds attached to the supplied instrument
 object as the season of interest.
 
 """
@@ -21,10 +21,10 @@ import numpy as np
 
 def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False):
     """2D Daily Occurrence Probability of data_label > gate over a season.
-    
-    If data_label is greater than gate at least once per day, 
+
+    If data_label is greater than gate at least once per day,
     then a 100% occurrence probability results.Season delineated by the bounds
-    attached to Instrument object. 
+    attached to Instrument object.
     Prob = (# of times with at least one hit)/(# of times in bin)
 
     Parameters
@@ -33,12 +33,12 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False
         Instrument to use for calculating occurrence probability
     binx: list
         [min, max, number of bins]
-    labelx: string 
+    labelx: string
         name for data product for binx
-    data_label: list of strings 
+    data_label: list of strings
         identifies data product(s) to calculate occurrence probability
         e.g. inst[data_label]
-    gate: list of values 
+    gate: list of values
         values that data_label must achieve to be counted as an occurrence
     returnBins: Boolean
         if True, return arrays with values of bin edges, useful for pcolor
@@ -50,36 +50,36 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False
         'prob' for the probability and 'count' for the number of days with any
         data; 'bin_x' and 'bin_y' are also returned if requested. Note that arrays
         are organized for direct plotting, y values along rows, x along columns.
-    
+
     Note
     ----
     Season delineated by the bounds attached to Instrument object.
-    
+
     """
-    
+
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                         by_orbit=False, returnBins=returnBins)
 
 
 def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=False):
     """2D Occurrence Probability of data_label orbit-by-orbit over a season.
-    
-    If data_label is greater than gate atleast once per orbit, then a 
+
+    If data_label is greater than gate atleast once per orbit, then a
     100% occurrence probability results. Season delineated by the bounds
     attached to Instrument object.
     Prob = (# of times with at least one hit)/(# of times in bin)
-    
+
     Parameters
     ----------
     inst: pysat.Instrument()
         Instrument to use for calculating occurrence probability
     binx: list
         [min value, max value, number of bins]
-    labelx: string 
+    labelx: string
         identifies data product for binx
-    data_label: list of strings 
+    data_label: list of strings
         identifies data product(s) to calculate occurrence probability
-    gate: list of values 
+    gate: list of values
         values that data_label must achieve to be counted as an occurrence
     returnBins: Boolean
         if True, return arrays with values of bin edges, useful for pcolor
@@ -95,14 +95,14 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate, returnBins=Fa
     Note
     ----
     Season delineated by the bounds attached to Instrument object.
-    
+
     """
-    
+
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                         by_orbit=True, returnBins=returnBins)
 
-                                                                                                
-def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate, 
+
+def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                 by_orbit=False, returnBins=False):
     if not hasattr(data_label, '__iter__'):
         raise ValueError('Data label must be list-like group of variable names.')
@@ -145,11 +145,11 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                             # iterate over the different data_labels
                             for zk in arrz:
                                 zdata = yData.ix[yindex,data_label[zk]]
-                                if np.any(np.isfinite(zdata)):    
+                                if np.any(np.isfinite(zdata)):
                                     total[zk,yj,xi] += 1.
                                     if np.any(zdata > gate[zk]):
                                         hits[zk,yj,xi] += 1.
-                               
+
     # all of the loading and storing data is done
     # get probability
     prob = hits/total
@@ -163,14 +163,14 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
     # clean up
     del iterator
     return output
-        
-        
-def daily3D(inst, bin1, label1, bin2, label2, bin3, label3, 
+
+
+def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
             data_label, gate, returnBins=False):
     """3D Daily Occurrence Probability of data_label > gate over a season.
-    
-    If data_label is greater than gate atleast once per day, 
-    then a 100% occurrence probability results. Season delineated by 
+
+    If data_label is greater than gate atleast once per day,
+    then a 100% occurrence probability results. Season delineated by
     the bounds attached to Instrument object.
     Prob = (# of times with at least one hit)/(# of times in bin)
 
@@ -180,11 +180,11 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
         Instrument to use for calculating occurrence probability
     binx: list
         [min, max, number of bins]
-    labelx: string 
+    labelx: string
         name for data product for binx
-    data_label: list of strings 
+    data_label: list of strings
         identifies data product(s) to calculate occurrence probability
-    gate: list of values 
+    gate: list of values
         values that data_label must achieve to be counted as an occurrence
     returnBins: Boolean
         if True, return arrays with values of bin edges, useful for pcolor
@@ -199,19 +199,19 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     Note
     ----
-    Season delineated by the bounds attached to Instrument object.    
-            
-    """
-        
-    return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3, 
-                        data_label, gate, returnBins=returnBins, by_orbit=False)
-           
+    Season delineated by the bounds attached to Instrument object.
 
-def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3, 
+    """
+
+    return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
+                        data_label, gate, returnBins=returnBins, by_orbit=False)
+
+
+def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
                 data_label, gate, returnBins=False):
     """3D Occurrence Probability of data_label orbit-by-orbit over a season.
-    
-    If data_label is greater than gate atleast once per orbit, then a 
+
+    If data_label is greater than gate atleast once per orbit, then a
     100% occurrence probability results. Season delineated by the bounds
     attached to Instrument object.
     Prob = (# of times with at least one hit)/(# of times in bin)
@@ -222,11 +222,11 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
         Instrument to use for calculating occurrence probability
     binx: list
         [min value, max value, number of bins]
-    labelx: string 
+    labelx: string
         identifies data product for binx
-    data_label: list of strings 
+    data_label: list of strings
         identifies data product(s) to calculate occurrence probability
-    gate: list of values 
+    gate: list of values
         values that data_label must achieve to be counted as an occurrence
     returnBins: Boolean
         if True, return arrays with values of bin edges, useful for pcolor
@@ -241,16 +241,16 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     Note
     ----
-    Season delineated by the bounds attached to Instrument object.    
-            
+    Season delineated by the bounds attached to Instrument object.
+
     """
-        
-    return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3, 
+
+    return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
                         data_label, gate, returnBins=returnBins, by_orbit=True)
 
-                                     
-                                                                                                               
-def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3, 
+
+
+def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
                     data_label, gate, returnBins=False, by_orbit=False):
 
     if not hasattr(data_label, '__iter__'):
@@ -309,8 +309,8 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
                                             idx, = np.where( ddata > gate[di]  )
                                             if len(idx) > 0:
                                                 hits[di,zk,yj,xi] += 1
-                                
-                               
+
+
     #all of the loading and storing data is done
     #prob = np.zeros((numz, numy, numx))
     prob = hits/total
@@ -325,4 +325,4 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
             output[label]['bin_z'] = biny
     # clean up
     del iterator
-    return output    
+    return output
