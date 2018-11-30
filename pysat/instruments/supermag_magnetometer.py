@@ -93,6 +93,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
                 data_path = path.join(psplit[0], "all", "")
 
         if tag == "stations":
+            file_base += '_stations'
             min_fmt = '_'.join([file_base, '{year:4d}.???'])
             doff = pds.DateOffset(years=1)
         else:
