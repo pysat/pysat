@@ -22,7 +22,7 @@ NASA CDAWeb
 -----------
 
 .. automodule:: pysat.instruments.nasa_cdaweb_methods
-   :members: __doc__, init, load, list_files, download
+   :members: __doc__, init, load, list_files, list_remote_files, download
 
 
 Madrigal
