@@ -313,9 +313,9 @@ def add_drift_unit_vectors(ivm):
     ivm['unit_ram_y'] = diff_y / norm
     ivm['unit_cross_x'] = -diff_y / norm
     ivm['unit_cross_y'] = diff_x / norm
-    idx, = np.where(ivm['mlat'] < 0)
-    ivm.data.ix[idx, 'unit_cross_x'] *= -1.0
-    ivm.data.ix[idx, 'unit_cross_y'] *= -1.0
+    idx = ivm.data.index[ivm['mlat']<0]
+    ivm.data.loc[idx, 'unit_cross_x'] *= -1.0
+    ivm.data.loc[idx, 'unit_cross_y'] *= -1.0
 
     ivm['unit_ram_r'] = ivm['unit_ram_x'] * np.cos(theta) + \
         ivm['unit_ram_y'] * np.sin(theta)
