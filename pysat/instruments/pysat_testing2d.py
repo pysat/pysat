@@ -35,7 +35,7 @@ alt_profile_meta['fraction'] = {'units':'', 'long_name':'profiles'}
 meta['alt_profiles'] = {'meta':alt_profile_meta, 'units':'', 'long_name':'profiles'}
 
 def init(self):
-    self.new_thing=True        
+    self.new_thing=True
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -56,8 +56,8 @@ def load(fnames, tag=None, sat_id=None):
     # seed DataFrame with UT array
     data = pysat.DataFrame(uts, columns=['uts'])
 
-    # need to create simple orbits here. Have start of first orbit 
-    # at 2009,1, 0 UT. 14.84 orbits per day	
+    # need to create simple orbits here. Have start of first orbit
+    # at 2009,1, 0 UT. 14.84 orbits per day
     # figure out how far in time from the root start
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
@@ -81,16 +81,16 @@ def load(fnames, tag=None, sat_id=None):
     # create latitude signal for testing polar orbits
     latitude = 90.*np.cos(np.mod(uts_root+num_array, 5820)*(2.*np.pi/5820.))
     data['latitude'] = latitude
-    
+
     # create real UTC time signal
     index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq=str(scalar)+'S')
     data.index=index
     data.index.name = 'epoch'
     # higher rate time signal (for scalar >= 2)
-    # this time signal used for 2D profiles associated with each time in main 
+    # this time signal used for 2D profiles associated with each time in main
     # DataFrame
     high_rate_template = pds.date_range(date,date+pds.DateOffset(hours=0, minutes=1, seconds=39),freq='2S')
-    
+
     # create a few simulated profiles
     # DataFrame at each time with mixed variables
     profiles = []
@@ -101,8 +101,8 @@ def load(fnames, tag=None, sat_id=None):
     # frame indexed by date times
     frame = pds.DataFrame({'density': data.ix[0:50, 'mlt'].values.copy(), 'dummy_str': ['test'] * 50,
                            'dummy_ustr': [u'test'] * 50},
-                          index=data.index[0:50],
-                          columns=['density', 'dummy_str', 'dummy_ustr'])
+                           index=data.index[0:50],
+                           columns=['density', 'dummy_str', 'dummy_ustr'])
     # frame indexed by float
     dd = np.arange(50)*1.2
     ff = np.arange(50)/50.
@@ -127,8 +127,8 @@ def load(fnames, tag=None, sat_id=None):
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
-    
-    index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31)) 
+
+    index = pds.date_range(pysat.datetime(2008,1,1), pysat.datetime(2010,12,31))
     names = [ data_path+date.strftime('%Y-%m-%d')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
 

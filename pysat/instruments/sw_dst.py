@@ -17,13 +17,13 @@ Will only work until 2057.
 Download method should be invoked on a yearly frequency,
 dst.download(date1, date2, freq='AS')
 
-This material is based upon work supported by the 
-National Science Foundation under Grant Number 1259508. 
+This material is based upon work supported by the
+National Science Foundation under Grant Number 1259508.
 
-Any opinions, findings, and conclusions or recommendations expressed in this 
-material are those of the author(s) and do not necessarily reflect the views 
+Any opinions, findings, and conclusions or recommendations expressed in this
+material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
-       
+
 """
 
 import os
@@ -61,11 +61,11 @@ def load(fnames, tag=None, sat_id=None):
     Note
     ----
     Called by pysat. Not intended for direct use by user.
-    
+
     """
 
     data = pds.DataFrame()
-    
+
     for filename in fnames:
         # need to remove date appended to dst filename
         fname = filename[0:-11]
@@ -85,12 +85,12 @@ def load(fnames, tag=None, sat_id=None):
             dst = np.zeros(max_lines*24, dtype=int)
             for line in lines:
                 if len(line) > 1:
-                    temp_year = int(line[14:16] + line[3:5]) 
+                    temp_year = int(line[14:16] + line[3:5])
                     if temp_year > 57:
                         temp_year += 1900
                     else:
                         temp_year += 2000
-                        
+
                     yr[idx:idx+24] = temp_year
                     mo[idx:idx+24] = int(line[5:7])
                     day[idx:idx+24] = int(line[8:10])
@@ -98,25 +98,25 @@ def load(fnames, tag=None, sat_id=None):
                     temp = line.strip()[20:-4]
                     temp2 = [temp[4*i:4*(i+1)] for i in np.arange(24)]
                     dst[idx:idx+24] = temp2
-                    idx += 24   
-    
+                    idx += 24
+
             #f.close()
-    
-            
+
+
             start = pds.datetime(yr[0], mo[0], day[0], ut[0])
             stop = pds.datetime(yr[-1], mo[-1], day[-1], ut[-1])
-            dates = pds.date_range(start, stop, freq='H') 
-            
+            dates = pds.date_range(start, stop, freq='H')
+
             new_data = pds.DataFrame(dst, index=dates, columns=['dst'])
-            # pull out specific day 
+            # pull out specific day
             new_date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
             idx, = np.where((new_data.index >= new_date) & (new_data.index < new_date+pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx,:]
             # add specific day to all data loaded for filenames
-            data = pds.concat([data, new_data], axis=0) 
-        
+            data = pds.concat([data, new_data], axis=0)
+
     return data, pysat.Meta()
-    
+
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
@@ -142,8 +142,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Notes
     -----
-    Called by pysat. Not intended for direct use by user.    
-    
+    Called by pysat. Not intended for direct use by user.
+
     """
 
     if data_path is not None:
@@ -153,19 +153,19 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # data and use the appended date to select out appropriate data.
             if format_str is None:
                 format_str = 'dst{year:2d}.txt'
-            out = pysat.Files.from_os(data_path=data_path, 
+            out = pysat.Files.from_os(data_path=data_path,
                 format_str=format_str,
                 two_digit_year_break=94)
             if not out.empty:
                 out.ix[out.index[-1]+pds.DateOffset(years=1)-
                          pds.DateOffset(days=1)] = out.iloc[-1]  
                 out = out.asfreq('D', 'pad')
-                out = out + '_' + out.index.strftime('%Y-%m-%d')  
+                out = out + '_' + out.index.strftime('%Y-%m-%d')
             return out
         else:
-            raise ValueError('Unrecognized tag name for Space Weather Dst Index')                  
+            raise ValueError('Unrecognized tag name for Space Weather Dst Index')
     else:
-        raise ValueError ('A data_path must be passed to the loading routine for Dst')  
+        raise ValueError ('A data_path must be passed to the loading routine for Dst')
 
 
 
@@ -188,7 +188,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     --------
     Void : (NoneType)
         data downloaded to disk, if available.
-    
+
     Notes
     -----
     Called by pysat. Not intended for direct use by user.
@@ -206,7 +206,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         fname = 'dst{year:02d}.txt'
         fname = fname.format(year=date.year)
         local_fname = fname
-        saved_fname = os.path.join(data_path,local_fname) 
+        saved_fname = os.path.join(data_path,local_fname)
         try:
             print('Downloading file for '+date.strftime('%D'))
             sys.stdout.flush()
@@ -218,7 +218,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             else:
                 os.remove(saved_fname)
                 print('File not available for '+date.strftime('%D'))
-    
-    ftp.close()
-    return        
 
+    ftp.close()
+    return
