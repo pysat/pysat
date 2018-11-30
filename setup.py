@@ -21,19 +21,20 @@ with open(os.path.join(here, version_filename)) as version_file:
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-install_requires=['pandas', 'numpy',  'sgp4', 'pyEphem', 'requests',
+install_requires=['xarray', 'pandas', 'numpy',  'sgp4', 'pyEphem', 'requests',     
                   'pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 
-                  'madrigalWeb', 'h5py']
+                  'madrigalWeb', 'h5py', 'PyForecastTools']
 
 # keep pyglow out of requirements until pip installable
 # if sys.version_info[0] < 3:
 #     # TODO Remove when pyglow works in python 3
 #     install_requires.append('pyglow')
 
+# all packages after pysatCDF are excluded if on ReadTheDocs
 if on_rtd:
     # read the docs doesn't do Fortran
     # remove pysatCDF through h5py
-    install_requires = install_requires[:-6]
+    install_requires = install_requires[:-7]
 
 setup(
     name='pysat',

@@ -55,10 +55,10 @@ To set up `pysat` for local development:
    test file exists, then you should create one.  This testing uses nose, which
    will run tests on any python file in the test directory that starts with
    ``test_``.
-    
+
 4. When you're done making changes, run all the checks to ensure that nothing
    is broken on your local system::
-   
+
     nosetests -vs pysat
 
 5. Update/add documentation (in ``docs``), if relevant
@@ -76,7 +76,7 @@ Pull Request Guidelines
 -----------------------
 
 If you need some code review or feedback while you're developing the code, just
-make a pull request.
+make a pull request. Pull requests should be made to the ``develop`` branch.
 
 For merging, you should:
 

@@ -1,34 +1,35 @@
 # -*- coding: utf-8 -*-
-
-"""Supports the Ion Velocity Meter (IVM) 
-onboard the Ionospheric Connections (ICON) Explorer. 
+"""Supports the Far Ultraviolet (FUV) imager onboard the Ionospheric
+CONnection Explorer (ICON) satellite.  Accesses local data in
+netCDF format.
 
 Parameters
 ----------
 platform : string
     'icon'
 name : string
-    'ivm'
+    'fuv'
 tag : string
     None supported
-sat_id : string
-    'a' or 'b'
 
 Warnings
 --------
-- No download routine as ICON has not yet been launched
-- Data not yet publicly available
+- The cleaning parameters for the instrument are still under development.
+- Only supports level-2 data.
 
 Example
 -------
     import pysat
-    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2', clean_level='clean')
-    ivm.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
-    ivm.load(2017,363)
+    fuv = pysat.Instrument('icon', 'fuv', clean_level='clean')
+    fuv.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
+    fuv.load(2017,363)
 
-Author
-------
-R. A. Stoneback
+Authors
+---------
+Originated from EUV support.
+Jeff Klenzing, Mar 17, 2018, Goddard Space Flight Center
+Russell Stoneback, Mar 23, 2018, University of Texas at Dallas
+Conversion to FUV, Oct 8th, 2028, University of Texas at Dallas
 
 """
 
@@ -41,18 +42,13 @@ import pandas as pds
 import numpy as np
 
 import pysat
-from . import nasa_cdaweb_methods as cdw
 
 
 platform = 'icon'
-name = 'ivm'
+name = 'fuv'
 tags = {'level_2':'Level 2 public geophysical data'}
-# dictionary of sat_ids ad tags supported by each
-sat_ids = {'a':['level_2'], 
-           'b':['level_2']}
-test_dates = {'a':{'level_2':pysat.datetime(2018,1,1)},
-              'b':{'level_2':pysat.datetime(2018,1,1)}}
-
+sat_ids = {'':['level_2']}
+test_dates = {'':{'level_2':pysat.datetime(2017,5,27)}}
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
@@ -75,7 +71,40 @@ def init(self):
     
     pass
 
+def clean(inst, clean_level=None):
+    """Provides data cleaning based upon clean_level.
+    
+    clean_level is set upon Instrument instantiation to
+    one of the following:
+    
+    'Clean' 
+    'Dusty' 
+    'Dirty' 
+    'None' 
+    
+    Routine is called by pysat, and not by the end user directly.
+    
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
 
+    Returns
+    --------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Note
+    ----
+        Supports 'clean', 'dusty', 'dirty', 'none'
+    
+    """
+    
+    if clean_level is not 'none':
+        print ("Cleaning actions for ICON FUV aren't yet defined.")
+    return
+    
 def default(inst):
     """Default routine to be applied when loading data. 
     
@@ -90,11 +119,13 @@ def default(inst):
 
     """
     
-    remove_icon_names(inst)
+    import pysat.instruments.icon_ivm as icivm
+    inst.tag = 'level_2'
+    icivm.remove_icon_names(inst, target='ICON_L2_FUV_Daytime_ON2_')
 
 
 def load(fnames, tag=None, sat_id=None):
-    """Loads ICON IVM data using pysat into pandas.
+    """Loads ICON FUV data using pysat into pandas.
     
     This routine is called as needed by pysat. It is not intended
     for direct user interaction.
@@ -129,22 +160,22 @@ def load(fnames, tag=None, sat_id=None):
     Examples
     --------
     ::
-        inst = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2')
+        inst = pysat.Instrument('icon', 'fuv')
         inst.load(2019,1)
     
     """
-
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch', 
+    
+    return pysat.utils.load_netcdf4(fnames, epoch_name='EPOCH', 
                                     units_label='Units', name_label='Long_Name', 
                                     notes_label='Var_Notes', desc_label='CatDesc',
                                     plot_label='FieldNam', axis_label='LablAxis', 
                                     scale_label='ScaleTyp',
                                     min_label='ValidMin', max_label='ValidMax',
                                     fill_label='FillVal')
-  
+
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of files corresponding to ICON IVM.
+    """Produce a list of files corresponding to ICON FUV.
 
     This routine is invoked by pysat and is not intended for direct use by the end user.
     
@@ -187,20 +218,20 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     the returned files are up to pysat specifications.
     
     """
-    
+
     desc = None
-    tag = 'level_2'
-    if tag == 'level_1':
+    level = tag
+    if level == 'level_1':
         code = 'L1'
         desc = None
-    elif tag == 'level_2':
+    elif level == 'level_2':
         code = 'L2'
         desc = None
     else:
-        raise ValueError('Unsupported tag supplied: ' + tag)
-        
+        raise ValueError('Unsupported level supplied: ' + level)
+
     if format_str is None:
-        format_str = 'ICON_'+code+'_IVM-'+sat_id.upper()
+        format_str = 'ICON_'+code+'_FUV_Daytime-ON2'
         if desc is not None:
             format_str += '_' + desc +'_'
         format_str += '_{year:4d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
@@ -209,9 +240,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                 format_str=format_str)
 
 
-
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
-    """Will download data for ICON MIGHTI, after successful launch and operations.
+    """Will download data for ICON FUV, after successful launch and operations.
     
     Parameters
     ----------
@@ -244,63 +274,3 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     print ("Downloads aren't yet available.")
 
     return
-        
-
-def remove_icon_names(inst, target=None):
-    """Removes leading text on ICON project variable names
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        ICON associated pysat.Instrument object
-    target : str
-        Leading string to remove. If none supplied,
-        ICON project standards are used to identify and remove
-        leading text
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
-
-    """
-  
-    if target is None:
-        lev = inst.tag
-        if lev == 'level_2':
-            lev = 'L2'
-        elif lev == 'level_0':
-            lev = 'L0'
-        elif lev == 'level_0p':
-            lev = 'L0P'
-        elif lev == 'level_1.5':
-            lev = 'L1-5'
-        elif lev == 'level_1':
-            lev = 'L1'
-        else:
-            raise ValueError('Uknown ICON data level')
-        
-        # get instrument code
-        sid = inst.sat_id.lower()
-        if sid == 'a':
-            sid = 'IVM_A'
-        elif sid == 'b':
-            sid = 'IVM_B'
-        else:
-            raise ValueError('Unknown ICON satellite ID')
-        prepend_str = '_'.join(('ICON', lev, sid)) + '_'
-    else:
-        prepend_str = target
-
-    inst.data.rename(columns=lambda x: x.split(prepend_str)[-1], inplace=True)
-    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
-    orig_keys = inst.meta.keys_nD()  
-    for keynd in orig_keys:
-        new_key = keynd.split(prepend_str)[-1]
-        new_meta = inst.meta.pop(keynd)
-        new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
-        inst.meta[new_key] = new_meta
-        
-    return    
-

@@ -95,11 +95,11 @@ class Meta(object):
     object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, name, notes, desc, plot_label, axis, scale, 
-    value_min, value_max, and fill). These base attributes may be used to 
-    programatically access and set types of metadata regardless of the string 
-    values used for the attribute. String values for attributes may need to be 
-    changed depending upon the standards of code or files interacting with pysat.
+    attributes (units, name, notes, desc, plot_label, axis, scale, value_min,
+    value_max, and fill). These base attributes may be used to programatically
+    access and set types of metadata regardless of the string values used for
+    the attribute. String values for attributes may need to be changed depending
+    upon the standards of code or files interacting with pysat.
     
     Meta objects returned as part of pysat loading routines are automatically
     updated to use the same values of plot_label, units_label, etc. as found

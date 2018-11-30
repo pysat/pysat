@@ -30,7 +30,8 @@ before_install:
   - conda update -q --yes conda
   # Useful for debugging any issues with conda
   - conda info -a
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4 ipython
+  # Replace dep1 dep2 ... with your dependencies
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4 ipython xarray
 
 # command to install dependencies
 install:
@@ -46,6 +47,7 @@ install:
     fi
   - pwd
   - ls
+
    # check if there is a partial download of pyglow, remove if true
   - export PYGLOW_DIR=./pyglow
   - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -53,7 +55,7 @@ install:
       echo 'PYGLOW_SIZE' $PYGLOW_SIZE;
       export CHECK_SIZE=50000;
       if [[ "${PYGLOW_SIZE}" -lt "$CHECK_SIZE" ]]; then
-        rm -r $PYGLOW_DIR;
+        rm -rf $PYGLOW_DIR;
         echo 'removing pyglow directory';
       fi
     fi
@@ -65,9 +67,9 @@ install:
     fi
     # If no pyglow, clone, then run script
   - if [[ ! -d "$PYGLOW_DIR" || ! -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      travis_wait 40 git clone https://github.com/timduly4/pyglow.git;
+      travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
       cd $PYGLOW_DIR;
-      travis_wait 40 ./pyglow_install.sh >/dev/null;
+      travis_wait 50 ./pyglow_install.sh >/dev/null;
       cd ..;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then

@@ -1,46 +1,57 @@
 # -*- coding: utf-8 -*-
-"""Supports the Extreme Ultraviolet (EUV) imager onboard the Ionospheric
-CONnection Explorer (ICON) satellite.  Accesses local data in
-netCDF format.
+"""
+Supports loading data from files generated using TIEGCM 
+(Thermosphere Ionosphere Electrodynamics General Circulation Model) model.
+TIEGCM file is a netCDF file with multiple dimensions for some variables.
 
 Parameters
 ----------
 platform : string
-    'icon'
+    'ucar'
 name : string
-    'euv'
+    'tiegcm'
 tag : string
     None supported
+   
+Note
+----
+::
 
-Warnings
---------
-- The cleaning parameters for the instrument are still under development.
-- Only supports level-2 data.
-
-Authors
----------
-Jeff Klenzing, Mar 17, 2018, Goddard Space Flight Center
-Russell Stoneback, Mar 23, 2018, University of Texas at Dallas
-
+    Loads into xarray format.
+    
 """
 
+# python 2/3 comptability
 from __future__ import print_function
 from __future__ import absolute_import
 
-import functools
-
-import pandas as pds
-import numpy as np
-
+import xarray as xr
 import pysat
-from . import nasa_cdaweb_methods as cdw
 
+# the platform and name strings associated with this instrument
+# need to be defined at the top level
+# these attributes will be copied over to the Instrument object by pysat
+# the strings used here should also be used to name this file
+# platform_name.py
+platform = 'ucar'
+name = 'tiegcm'
 
-platform = 'icon'
-name = 'euv'
-tags = {'level_2':'Level 2 public geophysical data'}
-sat_ids = {'':['level_2']}
-test_dates = {'':{'level_2':pysat.datetime(2017,5,27)}}
+# dictionary of data 'tags' and corresponding description
+tags = {'':'Level-2 IVM Files', # this is the default
+        'L1': 'Level-1 IVM Files',
+        'L0': 'Level-0 IVM Files'}
+# dictionary of satellite IDs, list of corresponding tags for each sat_ids
+# example
+# sat_ids = {'a':['L1', 'L0'], 'b':['L1', 'L2'], 'c':['L1', 'L3']}
+sat_ids = {'':['']}
+# good day to download test data for. Downloads aren't currently supported!
+# format is outer dictionary has sat_id as the key
+# each sat_id has a dictionary of test dates keyed by tag string
+test_dates = {'':{'':pysat.datetime(2019,1,1)}}
+
+# specify using xarray (not using pandas)
+pandas_format = False
+
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
@@ -48,43 +59,24 @@ def init(self):
     Runs once upon instantiation.
     
     Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object
+    ----------
+    self : pysat.Instrument
+        This object
 
     Returns
     --------
     Void : (NoneType)
-        modified in-place, as desired.
-
+        Object modified in place.
+    
+    
     """
-
-    pass
-
+    
+    print ("Mission acknowledgements and data restrictions will be printed here when available.")
     return
 
 
-def default(inst):
-    """Default routine to be applied when loading data. 
-    
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object
-
-    Note
-    ----
-        Removes ICON preamble on variable names.
-
-    """
-
-    import pysat.instruments.icon_ivm as icivm
-    inst.tag = 'level_2'
-    icivm.remove_icon_names(inst, target='ICON_L2_EUV_Daytime_OP_')
-
-
-def load(fnames, tag=None, sat_id=None):
-    """Loads ICON EUV data using pysat into pandas.
+def load(fnames, tag=None, sat_id=None, **kwargs):
+    """Loads TIEGCM data using xarray.
     
     This routine is called as needed by pysat. It is not intended
     for direct user interaction.
@@ -94,10 +86,10 @@ def load(fnames, tag=None, sat_id=None):
     fnames : array-like
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
-    tag : string
+    tag : string ('')
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    sat_id : string
+    sat_id : string ('')
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
     **kwargs : extra keywords
@@ -108,8 +100,8 @@ def load(fnames, tag=None, sat_id=None):
     Returns
     -------
     data, metadata
-        Data and Metadata are formatted for pysat. Data is a pandas 
-        DataFrame while metadata is a pysat.Meta instance.
+        Data and Metadata are formatted for pysat. Data is an xarray 
+        DataSet while metadata is a pysat.Meta instance.
         
     Note
     ----
@@ -119,24 +111,45 @@ def load(fnames, tag=None, sat_id=None):
     Examples
     --------
     ::
-        inst = pysat.Instrument('icon', 'euv', sat_id='a', tag='level_2')
+        inst = pysat.Instrument('ucar', 'tiegcm')
         inst.load(2019,1)
     
     """
     
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch', 
-                                    units_label='Units', name_label='Long_Name', 
-                                    notes_label='Var_Notes', desc_label='CatDesc',
-                                    plot_label='FieldNam', axis_label='LablAxis', 
-                                    scale_label='ScaleTyp',
-                                    min_label='ValidMin', max_label='ValidMax',
-                                    fill_label='FillVal')
+    # load data
+    data = xr.open_dataset(fnames[0])
+    # move attributes to the Meta object
+    # these attributes will be trasnferred to the Instrument object
+    # automatically by pysat
+    meta = pysat.Meta()
+    for attr in data.attrs:
+        setattr(meta, attr[0], attr[1])
+    data.attrs = []
+        
+    # fill Meta object with variable information
+    for key in data.variables.keys():
+        attrs = data.variables[key].attrs
+        meta[key] = attrs
+
+    # move misc parameters from xarray to the Instrument object via Meta
+    # doing this after the meta ensures all metadata is still kept
+    # even for moved variables
+    meta.p0 = data['p0']
+    meta.p0_model = data['p0_model']
+    meta.grav = data['grav']
+    meta.mag = data['mag']
+    meta.timestep = data['timestep']
+    # remove these variables from xarray
+    data = data.drop(['p0', 'p0_model', 'grav', 'mag', 'timestep'])
+            
+    return data, meta
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of files corresponding to ICON EUV.
+    """Produce a list of files corresponding to UCAR TIEGCM.
 
-    This routine is invoked by pysat and is not intended for direct use by the end user.
+    This routine is invoked by pysat and is not intended for direct 
+    use by the end user. Arguments are provided by pysat.
     
     Multiple data levels may be supported via the 'tag' input string.
     Currently defaults to level-2 data, or L2 in the filename.
@@ -149,7 +162,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     sat_id : string ('')
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    data_path : string
+    data_path : string (None)
         Full path to directory containing files to be loaded. This
         is provided by pysat. The user may specify their own data path
         at Instrument instantiation and it will appear here.
@@ -176,33 +189,15 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     discarded. This routine uses the pysat.Files.from_os constructor, thus
     the returned files are up to pysat specifications.
     
-    Currently fixed to level-2
-
     """
+    format_str = 'tiegcm_icon_merg2.0_totTgcm.s_{day:03d}_{year:4d}.nc'
+    return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
-    desc = None
-    level = tag
-    if level == 'level_1':
-        code = 'L1'
-        desc = None
-    elif level == 'level_2':
-        code = 'L2'
-        desc = None
-    else:
-        raise ValueError('Unsupported level supplied: ' + level)
-
-    if format_str is None:
-        format_str = 'ICON_'+code+'_EUV_Daytime'
-        if desc is not None:
-            format_str += '_' + desc +'_'
-        format_str += '_{year:4d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
-
-    return pysat.Files.from_os(data_path=data_path,
-                                format_str=format_str)
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
-    """Will download data for ICON EUV, after successful launch and operations.
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
+             **kwargs):
+    """Placeholder for UCAR TIEGCM downloads. Doesn't do anything.
+    
+    This routine is invoked by pysat and is not intended for direct use by the end user.
     
     Parameters
     ----------
@@ -231,6 +226,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
     
     
     """
-    print ("ICON hasn't launched yet.")
     
+    print ('Not implemented.')
     return
+
