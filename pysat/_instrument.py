@@ -1229,6 +1229,18 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
+    def remote_file_list(self):
+        """List remote files for chosen instrument.
+        
+        Returns
+        -------
+        Series
+            pandas Series of filenames indexed by date and time
+        
+        """
+        
+        return self._list_remote_rtn(self.tag, self.sat_id)
+
     def download_updated_files(self, user=None, password=None, **kwargs):
         """Grabs a list of remote files, compares to local, then downloads new files.
         
