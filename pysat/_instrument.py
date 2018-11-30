@@ -1648,8 +1648,8 @@ class Instrument(object):
             if type(mdata_dict[key]) == bool:
                 mdata_dict[key] = int(mdata_dict[key])
         # Should use isinstance here
-        # if (coltype == type(' ')) or (coltype == type(u' ')):
-        if isinstance(coltype, str):
+        if (coltype == type(' ')) or (coltype == type(u' ')):
+        # if isinstance(coltype, str):
             remove = True
         # print ('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
