@@ -170,9 +170,9 @@ class Constellation(object):
         Returns
         -------
         median : dictionary
-            Dictionary indexed by data label, each value of which is a 
-            dictionary with keys 'median', 'count', 'avg_abs_dev', and 
-            'bin' (the values of the bin edges.) 
+            Dictionary indexed by data label, each value of which is a
+            dictionary with keys 'median', 'count', 'avg_abs_dev', and
+            'bin' (the values of the bin edges.)
         """
 
         # TODO Update for 2.7 compatability.
@@ -289,13 +289,13 @@ class Constellation(object):
         data_df: pandas DataFrame
             Each row has a point from instrument1, with the keys
             preceded by '1_', and a point within bounds on that point
-            from instrument2 with the keys preceded by '2_', and the 
+            from instrument2 with the keys preceded by '2_', and the
             difference between the instruments' data for all the labels
             in data_labels
 
         Created as part of a Spring 2018 UTDesign project.
         """
-        
+
         """
         Draft Pseudocode
         ----------------
