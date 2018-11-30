@@ -224,11 +224,12 @@ class Constellation(object):
 
                         # If there's data in this bin
                         if len(yindex) > 0:
-
+                            ydx = data_considered.index[yindex.astype(int)]
                             # For each data label, add the points.
                             for zk in zarr:
                                 ans[zk][yj][0].extend(
-                                    data_considered.ix[yindex, data_label[zk]].tolist())
+                                    data_considered.loc[ydx,
+                                                        data_label[zk]].tolist())
 
         # Now for the averaging.
         # Let's, try .. packing the answers for the 2d function.
