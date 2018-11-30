@@ -145,7 +145,7 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                             # iterate over the different data_labels
                             for zk in arrz:
                                 indlab = yData.columns.get_loc(data_label[zk])
-                                zdata = yData.ix[yindex,indlab]
+                                zdata = yData.iloc[yindex,indlab]
                                 if np.any(np.isfinite(zdata)):
                                     total[zk,yj,xi] += 1.
                                     if np.any(zdata > gate[zk]):
