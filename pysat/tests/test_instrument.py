@@ -309,6 +309,24 @@ class TestBasics():
                       2.*self.testInst[4:,'mlt']) & \
                       np.all(self.testInst[0:4,'doubleMLT'] == 0)
 
+    def test_setting_partial_data_by_datetime_and_name(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst[pysat.datetime(2009,1,1,0,0,0),'doubleMLT'] = 0
+        assert np.all(self.testInst[0,'doubleMLT'] == \
+                      2.*self.testInst[0,'mlt']) & \
+                      np.all(self.testInst[0,'doubleMLT'] == 0)
+
+    def test_setting_partial_data_by_datetime_slicing_and_name(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst[pysat.datetime(2009,1,1,0,0,0): \
+                      pysat.datetime(2009,1,1,0,0,10),
+                      'doubleMLT'] = 0
+        assert np.all(self.testInst[11:,'doubleMLT'] == \
+                      2.*self.testInst[11:,'mlt']) & \
+                      np.all(self.testInst[0:11,'doubleMLT'] == 0)
+
     def test_modifying_data_inplace(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
