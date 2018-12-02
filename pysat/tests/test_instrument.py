@@ -20,7 +20,7 @@ class TestBasics():
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '10', 
+        self.testInst = pysat.Instrument('pysat', 'testing', '10',
                                          clean_level='clean',
                                          update_files=True)
 
@@ -29,8 +29,8 @@ class TestBasics():
         del self.testInst
 
 ###########################
-    # basic loading tests, by date, filename, file id 
-    # and checks for .next and .prev data loading   
+    # basic loading tests, by date, filename, file id
+    # and checks for .next and .prev data loading
     def test_basic_instrument_load(self):
         """Test if the correct day is being loaded (checking object date and data)."""
         self.testInst.load(2009,1)
@@ -63,7 +63,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
         assert test_date == pds.datetime(2010,12,31)
-        
+
     def test_basic_fid_instrument_load(self):
         """Test if first day is loaded by default when first invoking .next."""
         self.testInst.load(fid=0)
@@ -86,7 +86,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
         assert (test_date == pds.datetime(2008,1,3))  & (test_date == self.testInst.date)
-         
+
     def test_filename_load(self):
         """Test if file is loadable by filename, relative to top_data_dir/platform/name/tag"""
         self.testInst.load(fname='2010-12-31.nofile')
@@ -109,8 +109,8 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
         assert (test_date == pds.datetime(2009,1,3))  & (test_date == self.testInst.date)
-        
-        
+
+
     ############################
     # test basic date helpers
     def test_today_yesterday_and_tomorrow(self):
@@ -165,7 +165,7 @@ class TestBasics():
 
 ### testing init functions
 
-###### need to check with default1!!!!!                        
+###### need to check with default1!!!!!
     def test_instrument_init(self):
         """Test if init function supplied by instrument can modify object"""
         assert self.testInst.new_thing==True
@@ -177,27 +177,27 @@ class TestBasics():
 #         date = pds.datetime(2009,1,1)
 #         yr, doy = pysat.utils.getyrdoy(date)
 #         assert ((yr == 2009) & (doy == 1))
-# 
+#
 #     def test_getyrdoy_leap_year(self):
 #         """Test the date to year, day of year code functionality (leap_year)"""
 #         date = pds.datetime(2008,12,31)
 #         yr, doy = pysat.utils.getyrdoy(date)
-#         assert ((yr == 2008) & (doy == 366)) 
+#         assert ((yr == 2008) & (doy == 366))
 
     def test_custom_instrument_load(self):
         """
-        Test if the correct day is being loaded (End-to-End), 
+        Test if the correct day is being loaded (End-to-End),
         with no instrument file but routines are passed.
         """
         import pysat.instruments.pysat_testing as test
         testInst = pysat.Instrument(inst_module=test, tag='', clean_level='clean')
         testInst.load(2009,32)
-        assert testInst.date == pds.datetime(2009,2,1)	
-        
+        assert testInst.date == pds.datetime(2009,2,1)
+
     @raises(AttributeError)
     def test_custom_instrument_load_2(self):
         """
-        Test if an exception is thrown correctly if there is no 
+        Test if an exception is thrown correctly if there is no
         instrument file and supplied routines are incomplete.
         """
         import pysat.instruments.pysat_testing as test
@@ -208,7 +208,7 @@ class TestBasics():
     @raises(AttributeError)
     def test_custom_instrument_load_3(self):
         """
-        Test if an exception is thrown correctly if there is no 
+        Test if an exception is thrown correctly if there is no
         instrument file and supplied routines are incomplete.
         """
         import pysat.instruments.pysat_testing as test
@@ -217,11 +217,11 @@ class TestBasics():
         testIn.load(2009,1)
 
 ###################
-    # test data setting features        
+    # test data setting features
     def test_basic_data_access_by_name(self):
         self.testInst.load(2009,1)
         assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
-        
+
     def test_data_access_by_row_slicing_and_name(self):
         self.testInst.load(2009,1)
         assert np.all(self.testInst[0:10,'uts'] == self.testInst.data['uts'].values[0:10])
@@ -238,12 +238,12 @@ class TestBasics():
     def test_data_access_by_datetime_and_name(self):
         self.testInst.load(2009,1)
         assert np.all(self.testInst[pysat.datetime(2009,1,1,0,0,0),'uts'] == self.testInst.data['uts'].values[0])
-       
+
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(2009,1)
-        assert np.all(self.testInst[pysat.datetime(2009,1,1,0,0,0):pysat.datetime(2009,1,1,0,0,10),'uts'] == 
+        assert np.all(self.testInst[pysat.datetime(2009,1,1,0,0,0):pysat.datetime(2009,1,1,0,0,10),'uts'] ==
                         self.testInst.data['uts'].values[0:11])
-                        
+
     def test_setting_data_by_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
@@ -251,17 +251,17 @@ class TestBasics():
 
     def test_setting_series_data_by_name(self):
         self.testInst.load(2009,1)
-        self.testInst['doubleMLT'] = 2.*pds.Series(self.testInst['mlt'].values, 
+        self.testInst['doubleMLT'] = 2.*pds.Series(self.testInst['mlt'].values,
                                                    index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
-        
+
         self.testInst['blankMLT'] = pds.Series(None)
         assert np.all(np.isnan(self.testInst['blankMLT']))
 
     def test_setting_pandas_dataframe_by_names(self):
         self.testInst.load(2009,1)
         self.testInst[['doubleMLT', 'tripleMLT']] = pds.DataFrame({'doubleMLT':2.*self.testInst['mlt'].values,
-                                                                   'tripleMLT':3.*self.testInst['mlt'].values}, 
+                                                                   'tripleMLT':3.*self.testInst['mlt'].values},
                                                                     index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
         assert np.all(self.testInst['tripleMLT'] == 3.*self.testInst['mlt'])
@@ -270,10 +270,10 @@ class TestBasics():
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.
         assert np.all(self.testInst['doubleMLT'] == 2.)
-        
+
         self.testInst['nanMLT'] = np.nan
         assert np.all(np.isnan(self.testInst['nanMLT']))
-        
+
     def test_setting_data_by_name_with_meta(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = {'data':2.*self.testInst['mlt'],
@@ -281,7 +281,7 @@ class TestBasics():
                                       'long_name':'double trouble'}
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
         assert self.testInst.meta['doubleMLT'].units == 'hours'
-        assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'                               
+        assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
 
     def test_setting_partial_data_by_name(self):
         self.testInst.load(2009,1)
@@ -301,12 +301,20 @@ class TestBasics():
         self.testInst[0:10,'doubleMLT'] = 0
         assert np.all(self.testInst[10:,'doubleMLT'] == 2.*self.testInst[10:,'mlt']) & np.all(self.testInst[0:10,'doubleMLT'] == 0)
 
+    def test_setting_partial_numpy_array_data_by_name(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst[np.array([0, 1, 2, 3]),'doubleMLT'] = 0
+        assert np.all(self.testInst[4:,'doubleMLT'] == \
+                      2.*self.testInst[4:,'mlt']) & \
+                      np.all(self.testInst[0:4,'doubleMLT'] == 0)
+
     def test_modifying_data_inplace(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'] + 100)
-        
+
     def test_getting_all_data_by_index(self):
         self.testInst.load(2009,1)
         a = self.testInst[[0,1,2,3,4]]
@@ -314,10 +322,10 @@ class TestBasics():
             assert len(a) == 5
         else:
             assert a.sizes['time'] == 5
-        
+
 #######################
 ######
-#### check iteration behavior                        
+#### check iteration behavior
     @raises(StopIteration)
     def test_left_bounds_with_prev(self):
         """Test if passing bounds raises StopIteration."""
@@ -325,8 +333,8 @@ class TestBasics():
         self.testInst.next()
         # go back to no data
         self.testInst.prev()
-        # self.testInst.prev()        
-        
+        # self.testInst.prev()
+
     @raises(StopIteration)
     def test_right_bounds_with_next(self):
         """Test if passing bounds raises StopIteration."""
@@ -334,8 +342,8 @@ class TestBasics():
         self.testInst.prev()
         # move on to future data that doesn't exist
         self.testInst.next()
-        # self.testInst.next()        
-                                                                                                                                         
+        # self.testInst.next()
+
     def test_set_bounds_by_date(self):
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,15)
@@ -348,20 +356,20 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
-            dates.append(inst.date)            
+            dates.append(inst.date)
         out = pds.date_range(start, stop).tolist()
         assert np.all(dates == out)
-        
+
     def test_iterate_over_default_bounds(self):
         start = pysat.datetime(2008,1,1)
         stop = pysat.datetime(2010,12,31)
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
-            dates.append(inst.date)            
+            dates.append(inst.date)
         out = pds.date_range(start, stop).tolist()
         assert np.all(dates == out)
-        
+
     def test_set_bounds_by_date_season(self):
         start = [pysat.datetime(2009,1,1), pysat.datetime(2009,2,1)]
         stop = [pysat.datetime(2009,1,15), pysat.datetime(2009,2,15)]
@@ -376,7 +384,7 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
-            dates.append(inst.date)            
+            dates.append(inst.date)
         out = pds.date_range(start[0], stop[0]).tolist()
         out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(dates == out)
@@ -385,7 +393,7 @@ class TestBasics():
         start = '2009-01-01.nofile'
         stop = '2009-01-03.nofile'
         self.testInst.bounds = (start, stop)
-        assert np.all(self.testInst._iter_list == 
+        assert np.all(self.testInst._iter_list ==
             ['2009-01-01.nofile', '2009-01-02.nofile', '2009-01-03.nofile'])
 
     def test_iterate_over_bounds_set_by_fname(self):
@@ -396,7 +404,7 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
-            dates.append(inst.date)            
+            dates.append(inst.date)
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out)
 
@@ -408,10 +416,10 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         dates = []
         self.testInst.next()
-        dates.append(self.testInst.date) 
+        dates.append(self.testInst.date)
         while self.testInst.date < stop_d:
             self.testInst.next()
-            dates.append(self.testInst.date)            
+            dates.append(self.testInst.date)
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out)
 
@@ -423,10 +431,10 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         dates = []
         self.testInst.prev()
-        dates.append(self.testInst.date) 
+        dates.append(self.testInst.date)
         while self.testInst.date > start_d:
             self.testInst.prev()
-            dates.append(self.testInst.date)            
+            dates.append(self.testInst.date)
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out[::-1])
 
@@ -434,7 +442,7 @@ class TestBasics():
         start = ['2009-01-01.nofile', '2009-02-01.nofile']
         stop = ['2009-01-03.nofile', '2009-02-03.nofile']
         self.testInst.bounds = (start, stop)
-        assert np.all(self.testInst._iter_list == 
+        assert np.all(self.testInst._iter_list ==
             ['2009-01-01.nofile', '2009-01-02.nofile', '2009-01-03.nofile',
             '2009-02-01.nofile', '2009-02-02.nofile', '2009-02-03.nofile'])
 
@@ -446,33 +454,33 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
-            dates.append(inst.date)            
+            dates.append(inst.date)
         out = pds.date_range(start_d[0], stop_d[0]).tolist()
         out.extend(pds.date_range(start_d[1], stop_d[1]).tolist())
         assert np.all(dates == out)
-        
+
     def test_creating_empty_instrument_object(self):
         null = pysat.Instrument()
-        
+
         assert isinstance(null, pysat.Instrument)
 
     @raises(ValueError)
     def test_incorrect_creation_empty_instrument_object(self):
         # both name and platform should be empty
         null = pysat.Instrument(platform='cnofs')
-        
-    @raises(AttributeError)        
+
+    @raises(AttributeError)
     def test_supplying_instrument_module_requires_name_and_platform(self):
         class Dummy: pass
         Dummy.name = 'help'
-        
+
         temp = pysat.Instrument(inst_module=Dummy)
 
 class TestBasicsXarray(TestBasics):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '10', 
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '10',
                                          clean_level='clean',
                                          update_files=True)
 
@@ -484,13 +492,13 @@ class TestDataPaddingbyFile():
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
                                          pad={'minutes':5},
                                          update_files=True)
         self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
-        
-        self.rawInst = pysat.Instrument('pysat', 'testing', '', 
+
+        self.rawInst = pysat.Instrument('pysat', 'testing', '',
                                     clean_level='clean',
                                     update_files=True)
         self.rawInst.bounds = self.testInst.bounds
@@ -503,14 +511,14 @@ class TestDataPaddingbyFile():
     def test_fid_data_padding(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.rawInst.load(fid=1)
-        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) & 
+        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] == self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
 
     def test_fid_data_padding_next(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fid=2)
-        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) & 
+        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] == self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
 
     def test_fid_data_padding_multi_next(self):
@@ -519,7 +527,7 @@ class TestDataPaddingbyFile():
         self.testInst.next()
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fid=3)
-        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) & 
+        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] == self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
 
     def test_fid_data_padding_prev(self):
@@ -530,7 +538,7 @@ class TestDataPaddingbyFile():
         #print(self.rawInst.index)
         #print(self.testInst.index[0], self.rawInst.index[0] - pds.DateOffset(minutes=5),
         #   self.testInst.index[-1],  self.rawInst.index[-1] + pds.DateOffset(minutes=5))
-        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) & 
+        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] == self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
 
     def test_fid_data_padding_multi_prev(self):
@@ -539,16 +547,16 @@ class TestDataPaddingbyFile():
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fid=8)
-        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) & 
+        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] == self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
 
     def test_fid_data_padding_jump(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.load(fid=10, verifyPad=True)
         self.rawInst.load(fid=10)
-        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) & 
+        assert ( (self.testInst.index[0] == self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] == self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
-                
+
     def test_fid_data_padding_uniqueness(self):
         self.testInst.load(fid=1, verifyPad=True)
         assert (self.testInst.index.is_unique)
@@ -573,13 +581,13 @@ class TestDataPaddingbyFileXarray():
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
                                          pad={'minutes':5},
                                          update_files=True)
         self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
-        
-        self.rawInst = pysat.Instrument('pysat', 'testing_xarray', '', 
+
+        self.rawInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                     clean_level='clean',
                                     update_files=True)
         self.rawInst.bounds = self.testInst.bounds
@@ -594,12 +602,12 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
                                          pad={'minutes':5})
-        self.rawInst = pysat.Instrument('pysat', 'testing', '', 
+        self.rawInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True)
@@ -610,12 +618,12 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
                                          pad={'minutes':5})
-        self.rawInst = pysat.Instrument('pysat', 'testing_xarray', '', 
+        self.rawInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True)
@@ -627,12 +635,12 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
                                          pad={'minutes':5})
-        self.rawInst = pysat.Instrument('pysat', 'testing', '', 
+        self.rawInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True)
@@ -643,7 +651,7 @@ class TestDataPadding():
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
                                          pad={'minutes':5},
                                          update_files=True)
@@ -654,8 +662,8 @@ class TestDataPadding():
 
     def test_data_padding(self):
         self.testInst.load(2009,2, verifyPad=True)
-        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
-                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) &
+                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) +
                                         pds.DateOffset(minutes=5)) )
 
     def test_yrdoy_data_padding_missing_days(self):
@@ -683,8 +691,8 @@ class TestDataPadding():
     def test_data_padding_next(self):
         self.testInst.load(2009,2, verifyPad=True)
         self.testInst.next(verifyPad=True)
-        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
-                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) &
+                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) +
                                         pds.DateOffset(minutes=5)) )
 
     def test_data_padding_multi_next(self):
@@ -692,16 +700,16 @@ class TestDataPadding():
         self.testInst.load(2009,2)
         self.testInst.next()
         self.testInst.next(verifyPad=True)
-        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
-                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) &
+                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) +
                                         pds.DateOffset(minutes=5)) )
 
     def test_data_padding_prev(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.prev(verifyPad=True)
         print(self.testInst.index)
-        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
-                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) &
+                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) +
                                         pds.DateOffset(minutes=5)) )
 
     def test_data_padding_multi_prev(self):
@@ -709,17 +717,17 @@ class TestDataPadding():
         self.testInst.load(2009, 10)
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
-        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
-                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) &
+                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) +
                                         pds.DateOffset(minutes=5)) )
 
     def test_data_padding_jump(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.load(2009, 11, verifyPad=True)
-        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) & 
-                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) + 
+        assert ( (self.testInst.index[0] == self.testInst.date - pds.DateOffset(minutes=5)) &
+                (self.testInst.index[-1] == self.testInst.date + pds.DateOffset(hours=23,minutes=59,seconds=59) +
                                         pds.DateOffset(minutes=5)) )
-                     
+
     def test_data_padding_uniqueness(self):
         self.testInst.load(2009,1, verifyPad=True)
         assert (self.testInst.index.is_unique)
@@ -739,17 +747,17 @@ class TestDataPaddingXarray(TestDataPadding):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
                                          pad={'minutes':5},
                                          update_files=True)
-                
-                                
+
+
 class TestMultiFileRightDataPaddingBasics(TestDataPadding):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
@@ -764,7 +772,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
@@ -775,18 +783,18 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
-       
+
 class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
                                          pad={'minutes':5},
                                          multi_file_day=True)
-        
+
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -796,13 +804,13 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '', 
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
                                          pad={'minutes':5},
                                          multi_file_day=True)
-        
+
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
