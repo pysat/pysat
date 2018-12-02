@@ -295,13 +295,13 @@ class TestBasics():
         self.testInst[[0, 1, 2, 3], 'doubleMLT'] = 0
         assert np.all(self.testInst[4:,'doubleMLT'] == 2.*self.testInst[4:,'mlt']) & np.all(self.testInst[[0, 1, 2, 3], 'doubleMLT'] == 0)
 
-    def test_setting_partial_slice_data_by_name(self):
+    def test_setting_partial_data_by_slice_and_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         self.testInst[0:10,'doubleMLT'] = 0
         assert np.all(self.testInst[10:,'doubleMLT'] == 2.*self.testInst[10:,'mlt']) & np.all(self.testInst[0:10,'doubleMLT'] == 0)
 
-    def test_setting_partial_numpy_array_data_by_name(self):
+    def test_setting_partial_data_by_numpy_array_and_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         self.testInst[np.array([0, 1, 2, 3]),'doubleMLT'] = 0
