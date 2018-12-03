@@ -482,17 +482,15 @@ class Instrument(object):
         # aka slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
-                if isinstance(key[0],int):
-                    idx = self.data.index[key[0]]
-                elif isinstance(key[0],list) and isinstance(key[0][0],int):
-                    idx = self.data.index[key[0]]
-                elif isinstance(key[0],slice) and isinstance(key[0].start,int):
+                if isinstance(key[0],int) or \
+                        (isinstance(key[0],list) and isinstance(key[0][0],int)) or \
+                        (isinstance(key[0],slice) and isinstance(key[0].start,int)):
                     idx = self.data.index[key[0]]
                 elif isinstance(key[0],ndarray):
                     idx = self.data.index[key[0].astype(int)]
                 else:
                     idx = key[0]
-                self.data.loc[idx,key[1]] = new
+                self.data.loc[idx, key[1]] = new
                 # self.data.ix[key[0], key[1]] = new
                 self.meta[key[1]] = {}
                 return
@@ -515,7 +513,7 @@ class Instrument(object):
                         # create an empty Meta instance but with variable names
                         # this will ensure the correct defaults for all
                         # subvariables.  Meta can filter out empty metadata as
-                        # needed, the check above reducesthe need to create
+                        # needed, the check above reduces the need to create
                         # Meta instances
                         ho_meta = _meta.Meta(units_label=self.units_label,
                                              name_label=self.name_label,
