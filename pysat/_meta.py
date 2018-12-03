@@ -416,6 +416,8 @@ class Meta(object):
                 names = [names]
                 for key in input_data:
                     input_data[key] = [input_data[key]]
+            elif isinstance(names, slice) and (names.start == None):
+                names = list(self.data.keys())
             # make sure the variable names are in good shape
             # Meta object is case insensitive but case preserving
             # convert given names into ones Meta has already seen
