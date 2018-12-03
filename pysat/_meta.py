@@ -417,6 +417,7 @@ class Meta(object):
                 for key in input_data:
                     input_data[key] = [input_data[key]]
             elif isinstance(names, slice) and (names.start is None):
+                # Check for : passed through as empty slice
                 names = list(self.data.keys())
             # make sure the variable names are in good shape
             # Meta object is case insensitive but case preserving
