@@ -34,8 +34,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
     supported_tags : (dict or NoneType)
-        keys are tags supported by list_files routine. Values are the
-        default format_str values for key. (default=None)
+        keys are sat_id, each containing a dict keyed by tag
+        where the values file format template strings. (default=None)
     fake_daily_files_from_monthly : bool
         Some CDAWeb instrument data files are stored by month, interfering
         with pysat's functionality of loading by day. This flag, when true,
