@@ -70,10 +70,10 @@ install:
       if [[ ! -d "$PYGLOW_DIR" ]]; then 
         echo 'making root pyglow directory';
         mkdir $PYGLOW_DIR;
-      fi
+      fi;
       cd $PYGLOW_DIR;
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
-      cd ./pyglow;
+      cd pyglow;
       travis_wait 50 ./pyglow_install.sh >/dev/null;
       cd ../..;
     fi
