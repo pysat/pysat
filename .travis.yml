@@ -7,7 +7,7 @@ sudo: false
 cache: pip
 cache:		
    directories:		
-      - ../pyglow
+      - ../pyglow_cache
  
 addons:
   apt:
@@ -49,7 +49,7 @@ install:
   - ls
 
    # check if there is a partial download of pyglow, remove if true
-  - export PYGLOW_DIR=./pyglow
+  - export PYGLOW_DIR=./pyglow_cache
   - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       export PYGLOW_SIZE=($(du -s $PYGLOW_DIR));
       echo 'PYGLOW_SIZE' $PYGLOW_SIZE;
