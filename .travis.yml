@@ -84,8 +84,10 @@ install:
       echo 'cloning pyglow';
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
       echo 'installing pyglow';
-      travis_wait 50 ./pyglow/pyglow_install.sh >/dev/null;
-      cd pysat;
+      cd ./pyglow;
+      travis_wait 50 make -C src/pyglow/models source
+      travis_wait 50 python setup.py install --user
+      cd ../pysat;
     fi
   # install pysat
   - "python setup.py install"
