@@ -55,19 +55,33 @@ sat_ids = {'':tags.keys()}
 test_dates = {'':{kk:pysat.datetime(2009,1,1) for kk in tags.keys()}}
 
 def init(self):
-    print("When using this data please acknowledge the SuperMAG collaboration "
-        + "according to the request outlined in the metadata attribute "
-        + "'acknowledgements'")
+    """Initializes the Instrument object with instrument specific values.
+    
+    Runs once upon instantiation.
+    
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+    
+    
+    """
+
     # reset the list_remote_files routine to include the data path
     # now conveniently included with instrument object
-    self.list_remote_files = functools.partial(list_remote_files, 
+    self._list_remote_rtn = functools.partial(list_remote_files, 
                                                data_path=self.files.data_path,
                                                format_str=self.files.file_format)
     return 
 
 
 def list_remote_files(tag, sat_id, data_path=None, format_str=None):
-    """Lists files available for SuperMAG.
+    """Lists remote files available for SuperMAG.
     
     Note
     ----
@@ -120,8 +134,11 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
     # the init function above is used to reset the
     # lost_remote_files method with one where the
     # data path and format_str are set
+    # iterating directly since pandas is complaining about periods
+    # between different between indexes
     local_files = list_files(tag, sat_id, data_path, format_str)
-    remote_files.loc[local_files.index] = local_files
+    for time, fname in local_files.iteritems():   
+        remote_files.loc[time] = fname
     return remote_files
     
 
