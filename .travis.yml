@@ -47,40 +47,44 @@ install:
     fi
   - pwd
   - ls
-
+    
    # check if there is a partial download of pyglow, remove if true
-  - export PYGLOW_DIR=./pyglow_cache
-  - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      export PYGLOW_SIZE=($(du -s $PYGLOW_DIR));
-      echo 'PYGLOW_SIZE' $PYGLOW_SIZE;
-      export CHECK_SIZE=50000;
-      if [[ "${PYGLOW_SIZE}" -lt "$CHECK_SIZE" ]]; then
-        rm -rf $PYGLOW_DIR;
-        echo 'trying to remove pyglow directory';
-      fi
-    fi
-    # If pyglow exists, install it
-  - if [[ -d "$PYGLOW_DIR/pyglow" && -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      cd $PYGLOW_DIR/pyglow;
-      python setup.py install;
-      cd ../..;
-    fi
+  #- export PYGLOW_DIR=./pyglow_cache
+  # - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+  #    export PYGLOW_SIZE=($(du -s $PYGLOW_DIR));
+  #    echo 'PYGLOW_SIZE' $PYGLOW_SIZE;
+  #    export CHECK_SIZE=50000;
+  #    if [[ "${PYGLOW_SIZE}" -lt "$CHECK_SIZE" ]]; then
+  #      rm -rf $PYGLOW_DIR;
+  #      echo 'trying to remove pyglow directory';
+  #    fi
+  #  fi
+  #  # If pyglow exists, install it
+  #- if [[ -d "$PYGLOW_DIR/pyglow" && -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+  #    cd $PYGLOW_DIR/pyglow;
+  #    python setup.py install;
+  #    cd ../..;
+  #  fi
     # If no pyglow, clone, then run script
-  - if [[ ! -d "$PYGLOW_DIR/pyglow" || ! -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      if [[ ! -d "$PYGLOW_DIR" ]]; then 
-        ls;
-        echo 'making root pyglow directory';
-        mkdir $PYGLOW_DIR;
-      fi;
-      cd $PYGLOW_DIR;
-      echo 'dir listing';
-      ls;
-      git clone https://github.com/timduly4/pyglow.git;
-      cd ./pyglow;
-      travis_wait 50 ./pyglow_install.sh >/dev/null;
-      cd ../..;
-    fi
+  #- if [[ ! -d "$PYGLOW_DIR/pyglow" || ! -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+  #    if [[ ! -d "$PYGLOW_DIR" ]]; then 
+  #      ls;
+  #      echo 'making root pyglow directory';
+  #      mkdir $PYGLOW_DIR;
+  #    fi;
+  #    cd $PYGLOW_DIR;
+  #    echo 'dir listing';
+  #    ls;
+  #    travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
+  #    cd ./pyglow;
+  #    travis_wait 50 ./pyglow_install.sh >/dev/null;
+  #    cd ../..;
+  #  fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      echo 'cloning pyglow';
+      travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
+      echo 'installing pyglow';
+      travis_wait 50 ./pyglow/pyglow_install.sh >/dev/null;
       cd pysat;
     fi
   # install pysat
