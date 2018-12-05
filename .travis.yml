@@ -73,6 +73,8 @@ install:
         mkdir $PYGLOW_DIR;
       fi;
       cd $PYGLOW_DIR;
+      echo 'dir listing';
+      ls;
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
       cd ./pyglow;
       travis_wait 50 ./pyglow_install.sh >/dev/null;
