@@ -67,7 +67,7 @@ install:
     fi
     # If no pyglow, clone, then run script
   - if [[ ! -d "$PYGLOW_DIR/pyglow" || ! -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      if [[ ! -d "$PYGLOW_DIR"]]; then 
+      if [[ ! -d "$PYGLOW_DIR" ]]; then 
         echo 'making root pyglow directory';
         mkdir $PYGLOW_DIR;
       fi
