@@ -86,7 +86,7 @@ install:
   - echo 'installing pyglow';
   - cd ./pyglow;
   - travis_wait 50 make -C src/pyglow/models source >/dev/null;
-  - travis_wait 50 python setup.py install --user >/dev/null;
+  - travis_wait 50 python setup.py install --user
   - cd ../pysat;
   # install pysat
   - "python setup.py install"
