@@ -781,21 +781,21 @@ class Instrument(object):
 
         if len(self.files.files) > 0:
             output_str += 'Date Range: '
-            output_str += self.files.files.index[0].strftime('%m/%d/%Y')
+            output_str += self.files.files.index[0].strftime('%d %B %Y')
             output_str += ' --- '
-            output_str += self.files.files.index[-1].strftime('%m/%d/%Y')
+            output_str += self.files.files.index[-1].strftime('%d %B %Y')
 
         output_str += '\n\nLoaded Data Statistics'+'\n'
         output_str += '----------------------'+'\n'
         if not self.empty:
             # if self._fid is not None:
             #     output_str += 'Filename: ' +
-            output_str += 'Date: ' + self.date.strftime('%m/%d/%Y') + '\n'
+            output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
             output_str += 'DOY: {:03d}'.format(self.doy) + '\n'
             output_str += 'Time range: '
-            output_str += self.index[0].strftime('%m/%d/%Y %H:%M:%S')
+            output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
             output_str += ' --- '
-            output_str += self.index[-1].strftime('%m/%d/%Y %H:%M:%S')+'\n'
+            output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S')+'\n'
             output_str += 'Number of Times: ' + str(len(self.index)) + '\n'
             output_str += 'Number of variables: ' + str(len(self.variables))
 
