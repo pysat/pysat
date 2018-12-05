@@ -55,6 +55,10 @@ multi_file_day = True
 # Use default demeter download method
 download = demeter_methods.download
 
+# use default demeter list_remote_files method
+# as of 04 Dec 2018 this is a placeholder
+list_remote_files = demeter_methods.list_remote_files
+
 def init(self):
     print("When using this data please include a version of the acknoledgement"
           + " outlined in the metadata attribute 'info.acknowledgements'.  We "
