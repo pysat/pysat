@@ -56,7 +56,7 @@ install:
       export CHECK_SIZE=50000;
       if [[ "${PYGLOW_SIZE}" -lt "$CHECK_SIZE" ]]; then
         rm -rf $PYGLOW_DIR;
-        echo 'removing pyglow directory';
+        echo 'trying to remove pyglow directory';
       fi
     fi
     # If pyglow exists, install it
@@ -68,11 +68,12 @@ install:
     # If no pyglow, clone, then run script
   - if [[ ! -d "$PYGLOW_DIR/pyglow" || ! -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       if [[ ! -d "$PYGLOW_DIR"]]; then 
-        mkdir $PYGLOW
+        echo 'making root pyglow directory';
+        mkdir $PYGLOW;
       fi
       cd $PYGLOW_DIR;
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
-      cd ./pyglow
+      cd ./pyglow;
       travis_wait 50 ./pyglow_install.sh >/dev/null;
       cd ../..;
     fi
