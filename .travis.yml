@@ -69,7 +69,7 @@ install:
   - if [[ ! -d "$PYGLOW_DIR/pyglow" || ! -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       if [[ ! -d "$PYGLOW_DIR"]]; then 
         echo 'making root pyglow directory';
-        mkdir $PYGLOW;
+        mkdir $PYGLOW_DIR;
       fi
       cd $PYGLOW_DIR;
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
