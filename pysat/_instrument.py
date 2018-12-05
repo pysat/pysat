@@ -943,7 +943,7 @@ class Instrument(object):
         if len(data) > 0: 
             if date is not None:
                 output_str = ' '.join(('Returning', output_str, 'data for',
-                                       date.strftime('%x')))
+                                       date.strftime('%d %B %Y')))
             else:
                 if len(fname) == 1:
                     # this check was zero
@@ -955,7 +955,7 @@ class Instrument(object):
         else:
             # no data signal
             output_str = ' '.join(('No', output_str, 'data for',
-                                   date.strftime('%m/%d/%y')))
+                                   date.strftime('%d %B %Y')))
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         print (output_str)                
