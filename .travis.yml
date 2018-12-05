@@ -60,17 +60,21 @@ install:
       fi
     fi
     # If pyglow exists, install it
-  - if [[ -d "$PYGLOW_DIR" && -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      cd $PYGLOW_DIR;
+  - if [[ -d "$PYGLOW_DIR/pyglow" && -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      cd $PYGLOW_DIR/pyglow;
       python setup.py install;
-      cd ..;
+      cd ../..;
     fi
     # If no pyglow, clone, then run script
-  - if [[ ! -d "$PYGLOW_DIR" || ! -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
+  - if [[ ! -d "$PYGLOW_DIR/pyglow" || ! -e "$PYGLOW_DIR/pyglow/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      if [[ ! -d "$PYGLOW_DIR"]]; then 
+        mkdir $PYGLOW
+      fi
       cd $PYGLOW_DIR;
+      travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
+      cd ./pyglow
       travis_wait 50 ./pyglow_install.sh >/dev/null;
-      cd ..;
+      cd ../..;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd pysat;
