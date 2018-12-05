@@ -264,7 +264,7 @@ def clean(iap):
     else:
         idx = []
 
-    self.data = self[idx]
+    iap.data = iap[idx]
 
     return
 
