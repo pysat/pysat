@@ -107,7 +107,6 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
     index = pds.period_range(pysat.datetime(1985,1,1), now, freq='D')
     # pre fill in blank strings
     remote_files = pds.Series(['']*len(index), index=index)
-    print ('remote', remote_files)
     
     # pysat compares both dates and filenames when determining
     # which files it needs to download
