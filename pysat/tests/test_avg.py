@@ -303,15 +303,41 @@ class TestSeasonalAverageUnevenBins:
 
         assert np.all(check)
 
+    @raises(ValueError)
     def test_nonmonotonic_bins(self):
-        '''if the user provides non-monotonic bins then numpy.digitize should 
+        '''If provided with a non-monotonic bins then numpy.digitize should 
            raise a ValueError
         '''
         self.testInst.bounds = (pysat.datetime(2008,1,1), 
                                 pysat.datetime(2008,2,1))
-        with assert_raises(ValueError):
-            pysat.ssnl.avg.median2D(self.testInst, 
-                                    np.array([0., 300., 100.]), 'longitude',
-                                    np.array([0., 24., 13.]), 'mlt', 
-                                    ['dummy1', 'dummy2', 'dummy3'], 
-                                    auto_bin=False)
+        pysat.ssnl.avg.median2D(self.testInst, 
+                                np.array([0., 300., 100.]), 'longitude',
+                                np.array([0., 24., 13.]), 'mlt', 
+                                ['dummy1', 'dummy2', 'dummy3'], 
+                                auto_bin=False)
+                                    
+    @raises(TypeError)
+    def test_bin_data_depth(self):
+        '''If an array-like of length 1 is given to median2D len() 
+           should raise an exception 
+        '''
+        self.testInst.bounds = (pysat.datetime(2008,1,1), 
+                                pysat.datetime(2008,2,1))
+        pysat.ssnl.avg.median2D(self.testInst, 
+                                1, 'longitude',
+                                24, 'mlt', 
+                                ['dummy1', 'dummy2', 'dummy3'], 
+                                auto_bin=False)
+
+    @raises(TypeError)
+    def test_bin_data_type(self):
+        '''If a non array-like is given to median2D numpy.digitize should
+           raise an exception 
+        '''
+        self.testInst.bounds = (pysat.datetime(2008,1,1), 
+                                pysat.datetime(2008,2,1))
+        pysat.ssnl.avg.median2D(self.testInst, 
+                                ['1', 'a', '23', '10'], 'longitude',
+                                ['0', 'd', '24', 'c'], 'mlt', 
+                                ['dummy1', 'dummy2', 'dummy3'], 
+                                auto_bin=False)
