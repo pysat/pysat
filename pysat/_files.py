@@ -408,10 +408,11 @@ class Files(object):
             else:
                 # not a datetime
                 return out
-        elif isinstance(key, int) or isinstance(key, np.int64):
-            return self.files.iloc[key]
         else:
-            return self.files.loc[key]
+            try:
+                return self.files.iloc[key]
+            except:
+                return self.files.loc[key]
             #raise ValueError('Not implemented yet.')
         #if isinstance(key, tuple):
         #    if len(key) == 2:

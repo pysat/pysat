@@ -377,11 +377,19 @@ class Instrument(object):
                     idx = self.data.index[key[0]]
                 elif isinstance(key[0],slice) and isinstance(key[0].start,int):
                     idx = self.data.index[key[0]]
-                elif isinstance(key[0],ndarray):
+                elif isinstance(key[0],ndarray) and \
+                        isinstance(key[0,0],np.int64):
                     idx = self.data.index[key[0].astype(int)]
                 else:
                     idx = key[0]
-                return self.data.loc[idx,key[1]]
+                try:
+                    return self.data.loc[idx,key[1]]
+                except:
+                    estring = '\n'.join(("Unable to sort out data access.",
+                                         "Instrument has data : " +
+                                         str(not self.empty),
+                                         "Requested key : ", str(key)))
+                    raise ValueError(estring)
             else:
                 try:
                     # integer based indexing
