@@ -301,6 +301,12 @@ class TestBasics():
         self.testInst[0:10,'doubleMLT'] = 0
         assert np.all(self.testInst[10:,'doubleMLT'] == 2.*self.testInst[10:,'mlt']) & np.all(self.testInst[0:10,'doubleMLT'] == 0)
 
+    def test_setting_partial_data_by_index_and_name(self):
+        self.testInst.load(2009,1)
+        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst[self.testInst.index[0:10],'doubleMLT'] = 0
+        assert np.all(self.testInst[10:,'doubleMLT'] == 2.*self.testInst[10:,'mlt']) & np.all(self.testInst[0:10,'doubleMLT'] == 0)
+
     def test_setting_partial_data_by_numpy_array_and_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
