@@ -81,7 +81,7 @@ install:
   #    travis_wait 50 ./pyglow_install.sh >/dev/null;
   #    cd ../..;
   #  fi
-  - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       echo 'cloning pyglow';
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
       echo 'installing pyglow';
