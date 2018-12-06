@@ -188,7 +188,7 @@ class Files(object):
                 estr = '{:s}information.\nKeeping one of each '.format(estr)
                 estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
                 print(estr)
-                print(files_info.index.get_duplicates())
+                print(files_info.index[files_info.index.duplicated()].unique())
 
                 idx = np.unique(files_info.index, return_index=True)
                 files_info = files_info.ix[idx[1]]
