@@ -103,7 +103,7 @@ class Orbits(object):
             raise ValueError('Unknown kind of orbit requested.')
 
         self._orbit_breaks = []
-        self.num = 0  # []
+        self.num = 0
         self._current = 0
         self.orbit_index = index
 
@@ -151,7 +151,7 @@ class Orbits(object):
     def _reset(self):
         # create null arrays for storing orbit info
         self._orbit_breaks = []
-        self.num = 0 #None
+        self.num = 0
         self._current = 0
 
     def _calcOrbits(self):

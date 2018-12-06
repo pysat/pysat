@@ -305,16 +305,16 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                 inst.load(date=istart)
 
             if not inst.empty and inst.index[0] >= istart:
-                added_names = extract_modelled_observations(inst=inst,
-                                                            model=mdata,
-                                                            inst_name=inst_name,
-                                                            mod_name=mod_name,
-                                                            mod_datetime_name=mod_datetime_name,
-                                                            mod_time_name=mod_time_name,
-                                                            mod_units=mod_units,
-                                                            sel_name=sel_name,
-                                                            method=method,
-                                                            model_label=model_label)
+                added_names = extract_modelled_observations(inst=inst, \
+                                        model=mdata, \
+                                        inst_name=inst_name, \
+                                        mod_name=mod_name, \
+                                        mod_datetime_name=mod_datetime_name, \
+                                        mod_time_name=mod_time_name, \
+                                        mod_units=mod_units, \
+                                        sel_name=sel_name, \
+                                        method=method, \
+                                        model_label=model_label)
 
                 if len(added_names) > 0:
                     # Clean the instrument data
@@ -352,7 +352,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                             matched_inst.data = inst.data.isel(im)
                     else:
                         if inst.pandas_format:
-                            matched_inst.data = matched_inst.data.append(
+                            matched_inst.data = matched_inst.data.append( \
                                                         inst.data.iloc[im])
                         else:
                             matched_inst.data = xr.merge(matched_inst.data,
@@ -505,7 +505,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
             dims = list(model.data_vars[mdat].dims)
             ndim = model.data_vars[mdat].data.shape
             indices = tuple([mind[i] if kk == mod_time_name
-                             else slice(0,ndim[k]) for k,kk in enumerate(dims)])
+                            else slice(0,ndim[k]) for k,kk in enumerate(dims)])
 
             # Construct the data needed for interpolation
             points = [model.coords[kk].data for kk in dims if kk in mod_name]

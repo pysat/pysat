@@ -239,7 +239,7 @@ class Constellation(object):
 
         # TODO modify output
         out_2d = _calc_2d_median(ans, data_label, binx, biny, xarr, yarr,
-                zarr, numx, numy, numz)
+                                 zarr, numx, numy, numz)
 
         # Transform output
         output = {}
@@ -247,10 +247,10 @@ class Constellation(object):
             median = [r[0] for r in out_2d[label]['median']]
             count = [r[0] for r in out_2d[label]['count']]
             dev = [r[0] for r in out_2d[label]['avg_abs_dev']]
-            output[label] = {'median':  median,
-                             'count':   count,
+            output[label] = {'median': median,
+                             'count': count,
                              'avg_abs_dev': dev,
-                             'bin':     out_2d[label]['bin_y']}
+                             'bin': out_2d[label]['bin_y']}
         return output
 
     def difference(self, instrument1, instrument2, bounds, data_labels,
