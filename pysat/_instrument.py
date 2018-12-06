@@ -370,26 +370,24 @@ class Instrument(object):
             if isinstance(key, str):
                 return self.data[key]
             elif isinstance(key, tuple):
-                # Check if indices are used, otherwise pass directly through
-                if isinstance(key[0],int):
-                    idx = self.data.index[key[0]]
-                elif isinstance(key[0],list) and isinstance(key[0][0],int):
-                    idx = self.data.index[key[0]]
-                elif isinstance(key[0],slice) and isinstance(key[0].start,int):
-                    idx = self.data.index[key[0]]
-                elif isinstance(key[0],ndarray) and \
-                        isinstance(key[0,0],np.int64):
-                    idx = self.data.index[key[0].astype(int)]
-                else:
-                    idx = key[0]
                 try:
-                    return self.data.loc[idx,key[1]]
+                    # Assume key[0] is integer (including list or slice)
+                    return self.data.loc[self.data.index[key[0]],key[1]]
                 except:
-                    estring = '\n'.join(("Unable to sort out data access.",
-                                         "Instrument has data : " +
-                                         str(not self.empty),
-                                         "Requested key : ", str(key)))
-                    raise ValueError(estring)
+                    try:
+                        # Try to force as integer (eg, if ndarray)
+                        idx = self.data.index[key[0].astype(int)]
+                        return self.data.loc[idx,key[1]]
+                    except:
+                        try:
+                            # Give up and try to pass directly through
+                            return self.data.loc[key[0],key[1]]
+                        except:
+                            estring = '\n'.join(("Unable to sort out data.",
+                                                 "Instrument has data : " +
+                                                 str(not self.empty),
+                                                 "Requested key : ", str(key)))
+                            raise ValueError(estring)
             else:
                 try:
                     # integer based indexing
@@ -484,22 +482,24 @@ class Instrument(object):
 
         """
 
-        from numpy import ndarray
+        import numpy as np
 
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
-                if isinstance(key[0],int) or \
-                        (isinstance(key[0],list) and isinstance(key[0][0],int)) or \
-                        (isinstance(key[0],slice) and isinstance(key[0].start,int)):
-                    idx = self.data.index[key[0]]
-                elif isinstance(key[0],ndarray):
-                    idx = self.data.index[key[0].astype(int)]
-                else:
-                    idx = key[0]
-                self.data.loc[idx, key[1]] = new
-                # self.data.ix[key[0], key[1]] = new
+                try:
+                    # Assume key[0] is integer (including list or slice)
+                    self.data.loc[self.data.index[key[0]], key[1]] = new
+                except:
+                    try:
+                        # Try to force conversion to integer
+                        idx = self.data.index[key[0].astype(int)]
+                        self.data.loc[idx, key[1]] = new
+                    except:
+                        # Pass directly through to loc
+                        idx = key[0]
+                        self.data.loc[idx, key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):

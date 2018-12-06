@@ -385,9 +385,11 @@ class Files(object):
     def __getitem__(self, key):
         if isinstance(key, slice):
             try:
-                if isinstance(key.start, int) or isinstance(key.start, np.int64):
+                try:
+                    # Assume key is integer (including list or slice)
                     out = self.files.iloc[key]
-                else:
+                except:
+                    # Assume key is something else
                     out = self.files.loc[key]
             except IndexError:
                 raise IndexError('Date requested outside file bounds.')
