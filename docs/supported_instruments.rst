@@ -29,7 +29,7 @@ Madrigal
 --------
 
 .. automodule:: pysat.instruments.madrigal_methods
-   :members: __doc__, cedar_rules, load, download
+   :members: __doc__, cedar_rules, load, download, filter_data_single_date
 
 
 Demeter
