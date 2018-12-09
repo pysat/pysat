@@ -18,10 +18,11 @@ import copy
 try:
     basestring
 except NameError:
-    #print ('setting basestring')
+    # print ('setting basestring')
     basestring = str
 
 from pysat import DataFrame, Series, datetime, Panel
+
 
 def computational_form(data):
     """
@@ -40,7 +41,7 @@ def computational_form(data):
     """
 
     if isinstance(data.iloc[0], DataFrame):
-        dslice = Panel.from_dict(dict([(i,data.iloc[i])
+        dslice = Panel.from_dict(dict([(i, data.iloc[i])
                                        for i in xrange(len(data))]))
     elif isinstance(data.iloc[0], Series):
         dslice = DataFrame(data.tolist())
@@ -48,6 +49,7 @@ def computational_form(data):
     else:
         dslice = data
     return dslice
+
 
 def set_data_dir(path=None, store=None):
     """
@@ -85,10 +87,11 @@ def set_data_dir(path=None, store=None):
     else:
         raise ValueError('Path %s does not lead to a valid directory.' % path)
 
+
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                  epoch_name='Epoch', units_label='units',
                  name_label='long_name', notes_label='notes',
-                 desc_label='desc', plot_label='label', axis_label='axis', 
+                 desc_label='desc', plot_label='label', axis_label='axis',
                  scale_label='scale', min_label='value_min',
                  max_label='value_max', fill_label='fill'):
     # unix_time=False, **kwargs):
@@ -148,8 +151,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     saved_mdata = None
     running_idx = 0
-    running_store=[]
-    two_d_keys = []; two_d_dims = []; three_d_keys = []; three_d_dims = [];
+    running_store = []
+    two_d_keys = []
+    two_d_dims = []
+    three_d_keys = []
+    three_d_dims = []
+
     for fname in fnames:
         with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
             # build up dictionary with all global ncattrs
@@ -180,7 +187,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # load up metadata
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
-                        meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
+                        meta_dict[nc_key] = \
+                                data.variables[key].getncattr(nc_key)
                     mdata[key] = meta_dict
                 if len(data.variables[key].dimensions) == 2:
                     # part of dataframe within dataframe
@@ -205,48 +213,60 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 clean_var_keys = []
                 for i in idx:
                     obj_var_keys.append(two_d_keys[i])
-                    clean_var_keys.append(two_d_keys[i].split(obj_key_name+'_')[-1])
+                    clean_var_keys.append(
+                            two_d_keys[i].split(obj_key_name + '_')[-1])
 
                 # figure out how to index this data, it could provide its own
-                # index - or we may have to create simple integer based DataFrame access
-                # if the dimension is stored as its own variable then use that info for index
+                # index - or we may have to create simple integer based
+                # DataFrame access. If the dimension is stored as its own
+                # variable then use that info for index
                 if obj_key_name in obj_var_keys:
                     # string used to indentify dimension also in data.variables
                     # will be used as an index
                     index_key_name = obj_key_name
-                    # if the object index uses UNIX time, process into datetime index
-                    if data.variables[obj_key_name].getncattr(name_label) == epoch_name:
+                    # if the object index uses UNIX time, process into datetime
+                    # index
+                    if data.variables[obj_key_name].getncattr(name_label) == \
+                            epoch_name:
                         # name to be used in DataFrame index
                         index_name = epoch_name
                         time_index_flag = True
                     else:
                         time_index_flag = False
                         # label to be used in DataFrame index
-                        index_name = data.variables[obj_key_name].getncattr(name_label)
+                        index_name = \
+                            data.variables[obj_key_name].getncattr(name_label)
                 else:
                     # dimension is not itself a variable
-                    index_key_name  = None
+                    index_key_name = None
 
                 # iterate over the variables and grab metadata
-                dim_meta_data = pysat.Meta(units_label=units_label, name_label=name_label,
-                                           notes_label=notes_label, desc_label=desc_label,
-                                           plot_label=plot_label, axis_label=axis_label,
+                dim_meta_data = pysat.Meta(units_label=units_label,
+                                           name_label=name_label,
+                                           notes_label=notes_label,
+                                           desc_label=desc_label,
+                                           plot_label=plot_label,
+                                           axis_label=axis_label,
                                            scale_label=scale_label,
-                                           min_label=min_label, max_label=max_label,
+                                           min_label=min_label,
+                                           max_label=max_label,
                                            fill_label=fill_label)
+
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     # store attributes in metadata, exept for dim name
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
-                        meta_dict[nc_key] = data.variables[key].getncattr(nc_key)
+                        meta_dict[nc_key] = \
+                            data.variables[key].getncattr(nc_key)
                     dim_meta_data[clean_key] = meta_dict
 
                 # print (dim_meta_data)
-                dim_meta_dict = {'meta':dim_meta_data}
+                dim_meta_dict = {'meta': dim_meta_data}
                 if index_key_name is not None:
                     # add top level meta
                     for nc_key in data.variables[obj_key_name].ncattrs():
-                        dim_meta_dict[nc_key] = data.variables[obj_key_name].getncattr(nc_key)
+                        dim_meta_dict[nc_key] = \
+                            data.variables[obj_key_name].getncattr(nc_key)
                     mdata[obj_key_name] = dim_meta_dict
 
                 # iterate over all variables with this dimension and store data
@@ -256,11 +276,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 loop_list = []
                 for key, clean_key in zip(obj_var_keys, clean_var_keys):
                     # data
-                    loop_dict[clean_key] = data.variables[key][:,:].flatten(order='C')
+                    loop_dict[clean_key] = \
+                        data.variables[key][:, :].flatten(order='C')
                 # number of values in time
                 loop_lim = data.variables[obj_var_keys[0]].shape[0]
                 # number of values per time
-                step_size = len(data.variables[obj_var_keys[0]][0,:])
+                step_size = len(data.variables[obj_var_keys[0]][0, :])
                 # check if there is an index we should use
                 if not (index_key_name is None):
                     # an index was found
@@ -284,11 +305,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         del loop_frame[obj_key_name]
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
+                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1), :])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
                 else:
-                    loop_frame = pds.Series(loop_dict[clean_var_keys[0]], name=obj_var_keys[0])
+                    loop_frame = pds.Series(loop_dict[clean_var_keys[0]],
+                                            name=obj_var_keys[0])
                     # break massive series into bunch of smaller series
                     for i in np.arange(loop_lim, dtype=int):
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1)])
@@ -323,7 +345,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     loop_dict = {}
                     # list holds a series of slices, parsed from dict above
                     loop_list = []
-                    loop_dict[obj_key_name] = data.variables[obj_key_name][:,:,:]
+                    loop_dict[obj_key_name] = data.variables[obj_key_name][:, :, :]
                     # number of values in time
                     loop_lim = data.variables[obj_key_name].shape[0]
                     # number of values per time
@@ -352,7 +374,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # del loop_frame['dimension_1']
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1),:])
+                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1), :])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
 
@@ -366,14 +388,14 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
             # convert from GPS seconds to seconds used in pandas (unix time,
             # no leap)
-            #time_var = convert_gps_to_unix_seconds(time_var)
+            # time_var = convert_gps_to_unix_seconds(time_var)
             if file_format == 'NETCDF4':
                 loadedVars[epoch_name] = pds.to_datetime((1E6 *
                                                           time_var).astype(int))
             else:
                 loadedVars[epoch_name] = pds.to_datetime((time_var *
                                                           1E6).astype(int))
-            #loadedVars[epoch_name] = pds.to_datetime((time_var*1E6).astype(int))
+            # loadedVars[epoch_name] = pds.to_datetime((time_var*1E6).astype(int))
             running_store.append(loadedVars)
             running_idx += len(loadedVars[epoch_name])
 
@@ -410,12 +432,13 @@ def getyrdoy(date):
     """
 
     try:
-        doy = date.toordinal() - datetime(date.year,1,1).toordinal() + 1
+        doy = date.toordinal() - datetime(date.year, 1, 1).toordinal() + 1
     except AttributeError:
         raise AttributeError("Must supply a pandas datetime object or " +
                              "equivalent")
     else:
         return date.year, doy
+
 
 def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
                century=2000):
@@ -445,7 +468,7 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
 
     """
 
-    yr = int(str_yr) + century  if len(str_yr) == 2 else int(str_yr)
+    yr = int(str_yr) + century if len(str_yr) == 2 else int(str_yr)
     out_date = pds.datetime(yr, int(str_mo), int(str_day), int(str_hr),
                             int(str_min), int(str_sec))
 
@@ -467,23 +490,24 @@ def season_date_range(start, stop, freq='D'):
     if hasattr(start, '__iter__'):
         # missing check for datetime
         season = pds.date_range(start[0], stop[0], freq=freq)
-        for (sta,stp) in zip(start[1:], stop[1:]):
+        for (sta, stp) in zip(start[1:], stop[1:]):
             season = season.append(pds.date_range(sta, stp, freq=freq))
     else:
         season = pds.date_range(start, stop, freq=freq)
     return season
 
 
-#determine the median in 1 dimension
-def median1D(self, bin_params, bin_label,data_label):
+# determine the median in 1 dimension
+def median1D(self, bin_params, bin_label, data_label):
 
-    bins = np.arange(bin_params[0],bin_params[1]+bin_params[2],bin_params[2])
+    bins = np.arange(bin_params[0], bin_params[1] + bin_params[2],
+                     bin_params[2])
     ans = 0.*bins[0:-1]
     ind = np.digitize(self.data[bin_label], bins)
 
     for i in xrange(bins.size-1):
-        index, = np.where(ind==(i+1))
-        if len(index)>0:
+        index, = np.where(ind == (i + 1))
+        if len(index) > 0:
             ans[i] = self.data.ix[index, data_label].median()
 
     return ans
@@ -517,7 +541,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     # Factor of 20 improvement compared to previous method,
     # which itself was an order of magnitude faster than datetime.
 
-    #get list of unique year, and month
+    # get list of unique year, and month
     if not hasattr(year, '__iter__'):
         raise ValueError('Must provide an iterable for all inputs.')
     if len(year) == 0:
@@ -537,19 +561,20 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     uts_del = uts.copy().astype(float)
     # determine where there are changes in year and month that need to be
     # accounted for
-    _,idx = np.unique(year*100.+month, return_index=True)
+    _, idx = np.unique(year*100.+month, return_index=True)
     # create another index array for faster algorithm below
-    idx2 = np.hstack((idx,len(year)+1))
+    idx2 = np.hstack((idx, len(year) + 1))
     # computes UTC seconds offset for each unique set of year and month
-    for _idx,_idx2 in zip(idx[1:],idx2[2:]):
-        temp = (datetime(year[_idx],month[_idx],1)
-                - datetime(year[0],month[0],1))
+    for _idx, _idx2 in zip(idx[1:], idx2[2:]):
+        temp = (datetime(year[_idx], month[_idx], 1) -
+                datetime(year[0], month[0], 1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
     uts_del += (day-1)*86400
     # add in seconds since unix epoch to first day
-    uts_del += (datetime(year[0],month[0],1)-datetime(1970,1,1)).total_seconds()
+    uts_del += (datetime(year[0], month[0], 1) -
+                datetime(1970, 1, 1)).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)
@@ -644,6 +669,7 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
     circstd = (high - low) * np.sqrt(-2.0 * np.log(rmean)) / (2.0 * np.pi)
     return circstd
 
+
 def adjust_cyclic_data(samples, high=2.0*np.pi, low=0.0):
     """Adjust cyclic values such as longitude to a different scale
 
@@ -673,6 +699,7 @@ def adjust_cyclic_data(samples, high=2.0*np.pi, low=0.0):
 
     return out_samples
 
+
 def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     """ Update longitude to the desired range
 
@@ -694,7 +721,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     """
     from pysat.utils import adjust_cyclic_data
 
-    if not lon_name in inst.data.keys():
+    if lon_name not in inst.data.keys():
         raise ValueError('uknown longitude variable name')
 
     new_lon = adjust_cyclic_data(inst[lon_name], high=high, low=low)
@@ -706,6 +733,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
         inst[lon_name].data = new_lon
 
     return
+
 
 def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     """ Append solar local time to an instrument object
@@ -726,7 +754,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     """
     import datetime as dt
 
-    if not lon_name in inst.data.keys():
+    if lon_name not in inst.data.keys():
         raise ValueError('uknown longitude variable name')
 
     # Convert from numpy epoch nanoseconds to UT seconds of day
@@ -735,11 +763,11 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
         # Numpy times come out in nanoseconds and timestamp converts
         # from seconds
         dtime = dt.datetime.fromtimestamp(nptime * 1.0e-9)
-        utsec.append((dtime.hour * 3600.0 + dtime.minute * 60.0 + dtime.second
-                      + dtime.microsecond * 1.0e-6) / 3600.0)
+        utsec.append((dtime.hour * 3600.0 + dtime.minute * 60.0 +
+                      dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
 
     # Calculate solar local time
-    slt = np.array([t + inst[lon_name][i] / 15.0 for i,t in enumerate(utsec)])
+    slt = np.array([t + inst[lon_name][i] / 15.0 for i, t in enumerate(utsec)])
 
     # Ensure that solar local time falls between 0 and 24 hours
     slt[slt >= 24.0] -= 24.0
@@ -750,9 +778,10 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
         inst[slt_name] = pds.Series(slt, index=inst.data.index)
     else:
         data = inst.data.assign(pysat_slt=(inst.data.coords.keys(), slt))
-        data.rename({"pysat_slt":slt_name}, inplace=True)
+        data.rename({"pysat_slt": slt_name}, inplace=True)
         inst.data = data
     return
+
 
 def scale_units(out_unit, in_unit):
     """ Determine the scaling factor between two units
@@ -791,15 +820,15 @@ def scale_units(out_unit, in_unit):
     if out_unit == in_unit:
         return 1.0
 
-    accepted_units = {'deg':['deg', 'degree', 'degrees'],
-                      'rad':['rad', 'radian', 'radians'],
-                      'h':['h', 'hr', 'hrs', 'hours'],
-                      'm':['m', 'km', 'cm'],
-                      'm/s':['m/s', 'cm/s', 'km/s']}
+    accepted_units = {'deg': ['deg', 'degree', 'degrees'],
+                      'rad': ['rad', 'radian', 'radians'],
+                      'h': ['h', 'hr', 'hrs', 'hours'],
+                      'm': ['m', 'km', 'cm'],
+                      'm/s': ['m/s', 'cm/s', 'km/s']}
 
-    scales = {'deg':180.0, 'rad':np.pi, 'h':12.0,
-              'm':1.0, 'km':0.001, 'cm':100.0,
-              'm/s':1.0, 'cm/s':100.0, 'km/s':0.001}
+    scales = {'deg': 180.0, 'rad': np.pi, 'h': 12.0,
+              'm': 1.0, 'km': 0.001, 'cm': 100.0,
+              'm/s': 1.0, 'cm/s': 100.0, 'km/s': 0.001}
 
     # Test input and determine transformation type
     out_key = None
@@ -826,8 +855,8 @@ def scale_units(out_unit, in_unit):
 
     unit_scale = scales[out_key.lower()] / scales[in_key.lower()]
 
-
     return unit_scale
+
 
 def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     """Converts position from geodetic to geocentric or vice-versa.
@@ -861,9 +890,9 @@ def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     Based on J.M. Ruohoniemi's geopack and R.J. Barnes radar.pro
 
     """
-    rad_eq = 6378.1370 # WGS-84 semi-major axis
-    flat = 1.0 / 298.257223563 # WGS-84 flattening
-    rad_pol = rad_eq * (1.0 - flat) # WGS-84 semi-minor axis
+    rad_eq = 6378.1370  # WGS-84 semi-major axis
+    flat = 1.0 / 298.257223563  # WGS-84 flattening
+    rad_pol = rad_eq * (1.0 - flat)  # WGS-84 semi-minor axis
 
     # The ratio between the semi-major and minor axis is used several times
     rad_ratio_sq = (rad_eq / rad_pol)**2
@@ -882,13 +911,14 @@ def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     lat_out = np.degrees(np.arctan(rad_ratio_sq * tan_in))
 
     # Calculate the Earth radius at this latitude
-    rad_earth = rad_eq / np.sqrt(1.0 + eprime_sq
-                                 * np.sin(np.radians(lat_out))**2)
+    rad_earth = rad_eq / np.sqrt(1.0 + eprime_sq *
+                                 np.sin(np.radians(lat_out))**2)
 
     # longitude remains unchanged
     lon_out = lon_in
 
     return lat_out, lon_out, rad_earth
+
 
 def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
                                       inverse=False):
@@ -954,6 +984,7 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
 
     return lat_out, lon_out, rad_earth, az_out, el_out
 
+
 def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     """Convert a position from spherical to cartesian, or vice-versa
 
@@ -987,9 +1018,9 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     if inverse:
         # Cartesian to Spherical
         xy_sq = az_in**2 + el_in**2
-        z_out = np.sqrt(xy_sq + r_in**2) # This is r
-        x_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in)) # This is azimuth
-        y_out = np.degrees(np.arctan2(el_in, az_in)) # This is elevation
+        z_out = np.sqrt(xy_sq + r_in**2)  # This is r
+        x_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in))  # This is azimuth
+        y_out = np.degrees(np.arctan2(el_in, az_in))  # This is elevation
     else:
         # Spherical to Cartesian
         x_out = r_in * np.cos(np.radians(az_in)) * np.sin(np.radians(el_in))
@@ -997,6 +1028,7 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
         z_out = r_in * np.sin(np.radians(az_in))
 
     return x_out, y_out, z_out
+
 
 def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
                               inverse=False):
@@ -1083,6 +1115,7 @@ def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
 
     return x_out, y_out, z_out
 
+
 def local_horizontal_to_global_geo(az, el, dist, lat_orig, lon_orig, alt_orig,
                                    geodetic=True):
     """ Convert from local horizontal coordinates to geodetic or geocentric
@@ -1124,14 +1157,14 @@ def local_horizontal_to_global_geo(az, el, dist, lat_orig, lon_orig, alt_orig,
 
     # If the data are in geodetic coordiantes, convert to geocentric
     if geodetic:
-       (glat, glon, rearth, gaz,
-        gel) = geodetic_to_geocentric_horizontal(lat_orig, lon_orig, az, el,
-                                                 inverse=False)
-       grad = rearth + alt_orig
+        (glat, glon, rearth, gaz, gel) = \
+            geodetic_to_geocentric_horizontal(lat_orig, lon_orig, az, el,
+                                              inverse=False)
+        grad = rearth + alt_orig
     else:
         glat = lat_orig
         glon = lon_orig
-        grad = alt_orig + 6371.0 # Add the mean earth radius in km
+        grad = alt_orig + 6371.0  # Add the mean earth radius in km
         gaz = az
         gel = el
 

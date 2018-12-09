@@ -47,7 +47,7 @@ class Orbits(object):
     ::
 
         info = {'index':'longitude', 'kind':'longitude'}
-        vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', 
+        vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                                 clean_level=None, orbit_info=info)
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,10)
@@ -103,14 +103,14 @@ class Orbits(object):
             raise ValueError('Unknown kind of orbit requested.')
 
         self._orbit_breaks = []
-        self.num = 0 #[]
+        self.num = 0
         self._current = 0
         self.orbit_index = index
 
     @property
     def current(self):
-        """Current orbit number. 
-        
+        """Current orbit number.
+
         Returns
         -------
         int or None
@@ -119,14 +119,14 @@ class Orbits(object):
             The first orbit for day n is generally also the last orbit
             on day n - 1. When iterating forward, the orbit will be labeled
             as first (0). When iterating backward, orbit labeled as the last.
-            
+
         """
-        
+
         if self._current > 0:
             return self._current - 1
         else:
             return None
-        
+
     def __getitem__(self, key):
         """Enable convenience notation for loading orbit into parent object.
 
@@ -151,7 +151,7 @@ class Orbits(object):
     def _reset(self):
         # create null arrays for storing orbit info
         self._orbit_breaks = []
-        self.num = 0 #None
+        self.num = 0
         self._current = 0
 
     def _calcOrbits(self):
@@ -171,7 +171,7 @@ class Orbits(object):
     def _equaBreaks(self, orbit_index_period=24.):
         """Determine where breaks in an equatorial satellite orbit occur.
 
-        Looks for negative gradients in local time (or longitude) as well as 
+        Looks for negative gradients in local time (or longitude) as well as
         breaks in UT.
 
         Parameters
@@ -182,7 +182,7 @@ class Orbits(object):
 
         if self.orbit_index is None:
             raise ValueError('Orbit properties must be defined at ' +
-                             'pysat.Instrument object instantiation.' + 
+                             'pysat.Instrument object instantiation.' +
                              'See Instrument docs.')
         else:
             try:
@@ -248,7 +248,7 @@ class Orbits(object):
 
         # check if there is a UT break that is larger than orbital period, aka
         # a time gap
-        ut_change_vs_period = ( ut_diff > self.orbit_period )
+        ut_change_vs_period = (ut_diff > self.orbit_period)
         # characterize ut change using orbital period
         norm_ut = ut_diff / self.orbit_period
         # now, look for breaks because the length of time between samples is
@@ -308,13 +308,13 @@ class Orbits(object):
     def _polarBreaks(self):
         """Determine where breaks in a polar orbiting satellite orbit occur.
 
-        Looks for sign changes in latitude (magnetic or geographic) as well as 
+        Looks for sign changes in latitude (magnetic or geographic) as well as
         breaks in UT.
         """
 
         if self.orbit_index is None:
             raise ValueError('Orbit properties must be defined at ' +
-                             'pysat.Instrument object instantiation.' + 
+                             'pysat.Instrument object instantiation.' +
                              'See Instrument docs.')
         else:
             try:
@@ -419,7 +419,7 @@ class Orbits(object):
                 elif ((orbit < 0) & (orbit >= -self.num)):
                     # load orbit data into data
                     self.sat.data = self.sat[self._orbit_breaks[self.num + orbit]:
-                                            self._orbit_breaks[self.num + orbit + 1]]
+                                             self._orbit_breaks[self.num + orbit + 1]]
 
                     self._current = self.num + orbit + 1
                 elif (orbit < self.num) & (orbit != 0):
@@ -451,10 +451,10 @@ class Orbits(object):
             orbit number, 1 indexed
 
         Note
-        ----    
+        ----
         A day of data must be loaded before this routine functions properly.
         If the last orbit of the day is requested, it will automatically be
-        padded with data from the next day. The orbit counter will be 
+        padded with data from the next day. The orbit counter will be
         reset to 1.
         """
         if not self.sat.empty:  # ensure data exists
@@ -475,7 +475,7 @@ class Orbits(object):
                         true_date = self.sat.date  # .copy()
 
                         self.sat.prev()
-                        # if and else added becuase of CINDI turn off 
+                        # if and else added becuase of CINDI turn off
                         # 6/5/2013, turn on 10/22/2014
                         # crashed when starting on 10/22/2014
                         # prev returned empty data
@@ -703,7 +703,7 @@ class Orbits(object):
                     # need to save this current orbit and load the prev day
                     temp_orbit_data = self.sat[self.sat.date:]
                     # load previous day, which clears orbit breaks info
-    
+
                     try:
                         self.sat.prev()
                         # combine this next day orbit with previous last orbit
@@ -721,7 +721,7 @@ class Orbits(object):
                         # will move the date backwards, and StopIteration is
                         # made. everything is already ok, just move along
                         pass
-    
+
                     del temp_orbit_data
 
                 print('Loaded Orbit:%i' % (self._current - 1))
@@ -777,7 +777,7 @@ class Orbits(object):
                                 'Talk to someone about this fundamental ' +
                                 'failure.')
             # includes hack to appear to be zero indexed
-            #print('Loaded Orbit:%i' % (self._current - 1))
+            # print('Loaded Orbit:%i' % (self._current - 1))
         else:
             # no data
             while self.sat.empty:
@@ -818,7 +818,7 @@ class Orbits(object):
         #         break
         # else:
         #     raise ValueError('Iteration type not set')
-    
+
         while True:
             self.next()
             yield self.sat

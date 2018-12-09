@@ -13,21 +13,21 @@ import xarray as xr
 class Custom(object):
     """
     Applies a queue of functions when instrument.load called.
-    
+
     Nano-kernel functionality enables instrument objects that are
     'set and forget'. The functions are always run whenever
-    the instrument load routine is called so instrument objects may 
+    the instrument load routine is called so instrument objects may
     be passed safely to other routines and the data will always
     be processed appropriately.
 
     Examples
     --------
     ::
- 
+
         def custom_func(inst, opt_param1=False, opt_param2=False):
             return None
         instrument.custom.add(custom_func, 'modify', opt_param1=True)
-        
+
         def custom_func2(inst, opt_param1=False, opt_param2=False):
             return data_to_be_added
         instrument.custom.add(custom_func2, 'add', opt_param2=True)
@@ -40,7 +40,7 @@ class Custom(object):
 
     Note
     ----
-    User should interact with Custom through pysat.Instrument instance's 
+    User should interact with Custom through pysat.Instrument instance's
     attribute, instrument.custom
     """
 
@@ -54,9 +54,9 @@ class Custom(object):
         # keyword arguments to functions
         self._kwargs = []
 
-    def add(self, function, kind='add', at_pos='end',*args, **kwargs):
-        """Add a function to custom processing queue. 
-        
+    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
+        """Add a function to custom processing queue.
+
         Custom functions are applied automatically to associated
         pysat instrument whenever instrument.load command called.
 
@@ -64,19 +64,19 @@ class Custom(object):
         ----------
             function : string or function object
                 name of function or function object to be added to queue
-            
+
             kind : {'add', 'modify', 'pass}
-                add 
-                    Adds data returned from function to instrument object. 
-                    A copy of pysat instrument object supplied to routine. 
-                modify  
+                add
+                    Adds data returned from function to instrument object.
+                    A copy of pysat instrument object supplied to routine.
+                modify
                     pysat instrument object supplied to routine. Any and all
                     changes to object are retained.
-                pass  
-                    A copy of pysat object is passed to function. No 
+                pass
+                    A copy of pysat object is passed to function. No
                     data is accepted from return.
-                       
-            at_pos : string or int 
+
+            at_pos : string or int
                 insert at position. (default, insert at end).
             args : extra arguments
                 extra arguments are passed to the custom function (once)
@@ -88,20 +88,20 @@ class Custom(object):
         Allowed `add` function returns:
 
         - {'data' : pandas Series/DataFrame/array_like,
-          'units' : string/array_like of strings, 
+          'units' : string/array_like of strings,
           'long_name' : string/array_like of strings,
-          'name' : string/array_like of strings (iff data array_like)} 
+          'name' : string/array_like of strings (iff data array_like)}
 
         - pandas DataFrame, names of columns are used
 
-        - pandas Series, .name required 
+        - pandas Series, .name required
 
-        - (string/list of strings, numpy array/list of arrays) 
+        - (string/list of strings, numpy array/list of arrays)
         """
 
         if isinstance(function, str):
             # convert string to function object
-            function=eval(function)
+            function = eval(function)
 
         if (at_pos == 'end') | (at_pos == len(self._functions)):
             # store function object
@@ -124,9 +124,9 @@ class Custom(object):
         Apply all of the custom functions to the satellite data object.
         """
         if len(self._functions) > 0:
-            for func, arg, kwarg, kind in zip(self._functions, self._args, 
-                                                self._kwargs, self._kind):
-                if len(sat.data) > 0:     
+            for func, arg, kwarg, kind in zip(self._functions, self._args,
+                                              self._kwargs, self._kind):
+                if len(sat.data) > 0:
                     if kind == 'add':
                         # apply custom functions that add data to the
                         # instrument object
@@ -175,30 +175,30 @@ class Custom(object):
                         # bare Series is returned, name must be attached to
                         # Series
                         elif isinstance(newData, pds.Series):
-                            sat[newData.name] = newData      
-                        
+                            sat[newData.name] = newData
+
                         # xarray returned
                         elif isinstance(newData, xr.DataArray):
                             sat[newData.name] = newData
-                            
+
                         # some kind of iterable returned,
                         # presuming (name, data)
-                        # or ([name1,...], [data1,...])                      
+                        # or ([name1,...], [data1,...])
                         elif hasattr(newData, '__iter__'):
                             # falling back to older behavior
                             # unpack tuple/list that was returned
                             newName = newData[0]
                             newData = newData[1]
-                            if len(newData)>0:
+                            if len(newData) > 0:
                                 # doesn't really check ensure data, there could
                                 # be multiple empty arrays returned, [[],[]]
                                 if isinstance(newName, basestring):
                                     # one item to add
                                     sat[newName] = newData
-                                else:    		
+                                else:
                                     # multiple items
                                     for name, data in zip(newName, newData):
-                                        if len(data)>0:        
+                                        if len(data) > 0:
                                             # fixes up the incomplete check
                                             # from before
                                             sat[name] = data
@@ -208,7 +208,7 @@ class Custom(object):
 
                     # modifying loaded data
                     if kind == 'modify':
-                        t = func(sat,*arg,**kwarg)
+                        t = func(sat, *arg, **kwarg)
                         if t is not None:
                             raise ValueError('Modify functions should not ' +
                                              'return any information via ' +
@@ -219,7 +219,7 @@ class Custom(object):
                     # pass function (function runs, no data allowed back)
                     if kind == 'pass':
                         tempd = sat.copy()
-                        t = func(tempd,*arg,**kwarg)
+                        t = func(tempd, *arg, **kwarg)
                         del tempd
                         if t is not None:
                             raise ValueError('Pass functions should not ' +
@@ -228,11 +228,11 @@ class Custom(object):
 
     def clear(self):
         """Clear custom function list."""
-        self._functions=[]
-        self._args=[]
-        self._kwargs=[]
-        self._kind=[]
+        self._functions = []
+        self._args = []
+        self._kwargs = []
+        self._kind = []
 
-######################################################
-##### END CUSTOM CLASS ##############################
-####################################################
+#################################################
+# END CUSTOM CLASS ##############################
+#################################################
