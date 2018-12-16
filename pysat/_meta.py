@@ -416,8 +416,8 @@ class Meta(object):
                 names = [names]
                 for key in input_data:
                     input_data[key] = [input_data[key]]
-            elif isinstance(names, slice) and (names.start is None):
-                # Check for ':' passed through as empty slice
+            elif isinstance(names, slice) and (names.step is None):
+                # Check for instrument[indx,:] or instrument[idx] usage
                 names = list(self.data.keys())
             # make sure the variable names are in good shape
             # Meta object is case insensitive but case preserving

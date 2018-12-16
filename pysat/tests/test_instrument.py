@@ -316,6 +316,13 @@ class TestBasics():
         assert self.testInst.meta['doubleMLT'].units == 'hours'
         assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
 
+    def test_setting_partial_data(self):
+        self.testInst.load(2009,1)
+        cloneInst = self.testInst
+        self.testInst[0:3] = 0
+        assert np.all(self.testInst[3:] == cloneInst[3:]) & \
+               np.all(self.testInst[0:3] == 0)
+        
     def test_setting_partial_data_by_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
