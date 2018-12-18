@@ -489,16 +489,17 @@ class Instrument(object):
         if self.pandas_format:
             if isinstance(key, tuple):
                 try:
-                    # Assume key[0] is integer (including list or slice)
-                    self.data.loc[self.data.index[key[0]], key[1]] = new
-                except:
+                    # Pass directly through to loc
+                    self.data.loc[key[0], key[1]] = new
+                except  (KeyError, TypeError):
+                    # TypeError for single integer
+                    # KeyError for list, array, slice of integers
                     try:
+                        # Assume key[0] is integer (including list or slice)
+                        self.data.loc[self.data.index[key[0]], key[1]] = new
+                    except  KeyError:
                         # Try to force conversion to integer
                         idx = self.data.index[key[0].astype(int)]
-                        self.data.loc[idx, key[1]] = new
-                    except:
-                        # Pass directly through to loc
-                        idx = key[0]
                         self.data.loc[idx, key[1]] = new
                 self.meta[key[1]] = {}
                 return

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#Test some of the basic _core functions
+# Test some of the basic _core functions
 import sys
 import pysat
 import pandas as pds
@@ -110,7 +110,6 @@ class TestBasics():
         self.testInst.load(fname='2010-12-31.nofile')
         assert self.testInst.index[0] == pds.datetime(2010,12,31)
 
-
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.testInst.load(fname='2010-12-30.nofile')
@@ -131,7 +130,6 @@ class TestBasics():
                                    test_date.day)
         assert (test_date == pds.datetime(2009,1,3)) & \
                (test_date == self.testInst.date)
-
 
     ############################
     # test basic date helpers
@@ -191,9 +189,7 @@ class TestBasics():
 ###### need to check with default1!!!!!
     def test_instrument_init(self):
         """Test if init function supplied by instrument can modify object"""
-        assert self.testInst.new_thing==True
-
-
+        assert self.testInst.new_thing
 
 #     def test_getyrdoy_1(self):
 #         """Test the date to year, day of year code functionality"""
@@ -293,9 +289,9 @@ class TestBasics():
     def test_setting_pandas_dataframe_by_names(self):
         self.testInst.load(2009,1)
         self.testInst[['doubleMLT', 'tripleMLT']] = \
-                pds.DataFrame({'doubleMLT':2.*self.testInst['mlt'].values,
-                               'tripleMLT':3.*self.testInst['mlt'].values},
-                               index=self.testInst.index)
+            pds.DataFrame({'doubleMLT': 2.*self.testInst['mlt'].values,
+                           'tripleMLT': 3.*self.testInst['mlt'].values},
+                          index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
         assert np.all(self.testInst['tripleMLT'] == 3.*self.testInst['mlt'])
 
@@ -309,9 +305,9 @@ class TestBasics():
 
     def test_setting_data_by_name_with_meta(self):
         self.testInst.load(2009,1)
-        self.testInst['doubleMLT'] = {'data':2.*self.testInst['mlt'],
-                                      'units':'hours',
-                                      'long_name':'double trouble'}
+        self.testInst['doubleMLT'] = {'data': 2.*self.testInst['mlt'],
+                                      'units': 'hours',
+                                      'long_name': 'double trouble'}
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
         assert self.testInst.meta['doubleMLT'].units == 'hours'
         assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
@@ -322,7 +318,7 @@ class TestBasics():
         self.testInst[0:3] = 0
         assert np.all(self.testInst[3:] == cloneInst[3:]) & \
                np.all(self.testInst[0:3] == 0)
-        
+
     def test_setting_partial_data_by_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
@@ -359,7 +355,7 @@ class TestBasics():
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         self.testInst[np.array([0, 1, 2, 3]),'doubleMLT'] = 0
-        assert np.all(self.testInst[4:,'doubleMLT'] == \
+        assert np.all(self.testInst[4:,'doubleMLT'] ==
                       2.*self.testInst[4:,'mlt']) & \
                       np.all(self.testInst[0:4,'doubleMLT'] == 0)
 
@@ -367,17 +363,17 @@ class TestBasics():
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         self.testInst[pysat.datetime(2009,1,1,0,0,0),'doubleMLT'] = 0
-        assert np.all(self.testInst[0,'doubleMLT'] == \
+        assert np.all(self.testInst[0,'doubleMLT'] ==
                       2.*self.testInst[0,'mlt']) & \
                       np.all(self.testInst[0,'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_datetime_slicing_and_name(self):
         self.testInst.load(2009,1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
-        self.testInst[pysat.datetime(2009,1,1,0,0,0): \
+        self.testInst[pysat.datetime(2009,1,1,0,0,0):
                       pysat.datetime(2009,1,1,0,0,10),
                       'doubleMLT'] = 0
-        assert np.all(self.testInst[11:,'doubleMLT'] == \
+        assert np.all(self.testInst[11:,'doubleMLT'] ==
                       2.*self.testInst[11:,'mlt']) & \
                       np.all(self.testInst[0:11,'doubleMLT'] == 0)
 
@@ -468,7 +464,8 @@ class TestBasics():
         stop = '2009-01-03.nofile'
         self.testInst.bounds = (start, stop)
         assert np.all(self.testInst._iter_list ==
-            ['2009-01-01.nofile', '2009-01-02.nofile', '2009-01-03.nofile'])
+                      ['2009-01-01.nofile', '2009-01-02.nofile',
+                       '2009-01-03.nofile'])
 
     def test_iterate_over_bounds_set_by_fname(self):
         start = '2009-01-01.nofile'
@@ -517,8 +514,9 @@ class TestBasics():
         stop = ['2009-01-03.nofile', '2009-02-03.nofile']
         self.testInst.bounds = (start, stop)
         assert np.all(self.testInst._iter_list ==
-            ['2009-01-01.nofile', '2009-01-02.nofile', '2009-01-03.nofile',
-            '2009-02-01.nofile', '2009-02-02.nofile', '2009-02-03.nofile'])
+                      ['2009-01-01.nofile', '2009-01-02.nofile',
+                       '2009-01-03.nofile', '2009-02-01.nofile',
+                       '2009-02-02.nofile', '2009-02-03.nofile'])
 
     def test_iterate_over_bounds_set_by_fname_season(self):
         start = ['2009-01-01.nofile', '2009-02-01.nofile']
@@ -550,6 +548,7 @@ class TestBasics():
 
         temp = pysat.Instrument(inst_module=Dummy)
 
+
 class TestBasicsXarray(TestBasics):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
@@ -562,6 +561,7 @@ class TestBasicsXarray(TestBasics):
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
+
 class TestDataPaddingbyFile():
     def setup(self):
         reload(pysat.instruments.pysat_testing)
@@ -573,8 +573,8 @@ class TestDataPaddingbyFile():
         self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
 
         self.rawInst = pysat.Instrument('pysat', 'testing', '',
-                                    clean_level='clean',
-                                    update_files=True)
+                                        clean_level='clean',
+                                        update_files=True)
         self.rawInst.bounds = self.testInst.bounds
 
     def teardown(self):
@@ -585,19 +585,19 @@ class TestDataPaddingbyFile():
     def test_fid_data_padding(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.rawInst.load(fid=1)
-        assert ( (self.testInst.index[0] ==
-                  self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
+                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
 
     def test_fid_data_padding_next(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fid=2)
-        assert ( (self.testInst.index[0] ==
-                  self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
+                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
 
     def test_fid_data_padding_multi_next(self):
         """This also tests that _prev_data and _next_data cacheing"""
@@ -605,23 +605,23 @@ class TestDataPaddingbyFile():
         self.testInst.next()
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fid=3)
-        assert ( (self.testInst.index[0] ==
-                  self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
+                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
 
     def test_fid_data_padding_prev(self):
         self.testInst.load(fid=2, verifyPad=True)
         self.testInst.prev(verifyPad=True)
-        #print(self.testInst.index)
+        # print(self.testInst.index)
         self.rawInst.load(fid=1)
-        #print(self.rawInst.index)
-        #print(self.testInst.index[0], self.rawInst.index[0] - pds.DateOffset(minutes=5),
+        # print(self.rawInst.index)
+        # print(self.testInst.index[0], self.rawInst.index[0] - pds.DateOffset(minutes=5),
         #   self.testInst.index[-1],  self.rawInst.index[-1] + pds.DateOffset(minutes=5))
-        assert ( (self.testInst.index[0] ==
-                  self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
+                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
 
     def test_fid_data_padding_multi_prev(self):
         """This also tests that _prev_data and _next_data cacheing"""
@@ -629,19 +629,19 @@ class TestDataPaddingbyFile():
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fid=8)
-        assert ( (self.testInst.index[0] ==
-                  self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
+                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
 
     def test_fid_data_padding_jump(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.load(fid=10, verifyPad=True)
         self.rawInst.load(fid=10)
-        assert ( (self.testInst.index[0] ==
-                  self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)) )
+                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
 
     def test_fid_data_padding_uniqueness(self):
         self.testInst.load(fid=1, verifyPad=True)
@@ -651,18 +651,19 @@ class TestDataPaddingbyFile():
         self.testInst.load(fid=1, verifyPad=True)
         test_index = pds.date_range(self.testInst.index[0],
                                     self.testInst.index[-1], freq='S')
-        #print (test_index[0], test_index[-1], len(test_index))
-        #print(self.testInst.index[0], self.testInst.index[-1], len(self.testInst.data))
+        # print (test_index[0], test_index[-1], len(test_index))
+        # print(self.testInst.index[0], self.testInst.index[-1], len(self.testInst.data))
         assert (np.all(self.testInst.index == test_index))
 
     def test_fid_data_padding_removal(self):
         self.testInst.load(fid=1)
         self.rawInst.load(fid=1)
-        #print(self.testInst.index)
-        #print(new_inst.data.index)
+        # print(self.testInst.index)
+        # print(new_inst.data.index)
         assert (self.testInst.index[0] == self.rawInst.index[0]) & \
                (self.testInst.index[-1] == self.rawInst.index[-1]) & \
                (len(self.rawInst.data) == len(self.testInst.data))
+
 
 class TestDataPaddingbyFileXarray():
     def setup(self):
@@ -675,8 +676,8 @@ class TestDataPaddingbyFileXarray():
         self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
 
         self.rawInst = pysat.Instrument('pysat', 'testing_xarray', '',
-                                    clean_level='clean',
-                                    update_files=True)
+                                        clean_level='clean',
+                                        update_files=True)
         self.rawInst.bounds = self.testInst.bounds
 
     def teardown(self):
@@ -700,6 +701,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
                                          sim_multi_file_right=True)
         self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
+
 
 class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
     def setup(self):
@@ -734,6 +736,7 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
         self.testInst.bounds = ('2008-01-01.nofile','2010-12-31.nofile')
         self.rawInst.bounds = self.testInst.bounds
 
+
 class TestDataPadding():
     def setup(self):
         reload(pysat.instruments.pysat_testing)
@@ -749,12 +752,12 @@ class TestDataPadding():
 
     def test_data_padding(self):
         self.testInst.load(2009,2, verifyPad=True)
-        assert ( (self.testInst.index[0] ==
-                  self.testInst.date - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.testInst.date - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
                  self.testInst.date +
                  pds.DateOffset(hours=23,minutes=59,seconds=59) +
-                 pds.DateOffset(minutes=5)) )
+                 pds.DateOffset(minutes=5)))
 
     def test_yrdoy_data_padding_missing_days(self):
         self.testInst.load(2008,1)
@@ -781,57 +784,57 @@ class TestDataPadding():
     def test_data_padding_next(self):
         self.testInst.load(2009,2, verifyPad=True)
         self.testInst.next(verifyPad=True)
-        assert ( (self.testInst.index[0] ==
-                  self.testInst.date - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.testInst.date - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
                  self.testInst.date +
                  pds.DateOffset(hours=23,minutes=59,seconds=59) +
-                 pds.DateOffset(minutes=5)) )
+                 pds.DateOffset(minutes=5)))
 
     def test_data_padding_multi_next(self):
-        #"""This also tests that _prev_data and _next_data cacheing"""
+        # """This also tests that _prev_data and _next_data cacheing"""
         self.testInst.load(2009,2)
         self.testInst.next()
         self.testInst.next(verifyPad=True)
-        assert ( (self.testInst.index[0] ==
-                  self.testInst.date - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.testInst.date - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
                  self.testInst.date +
                  pds.DateOffset(hours=23,minutes=59,seconds=59) +
-                 pds.DateOffset(minutes=5)) )
+                 pds.DateOffset(minutes=5)))
 
     def test_data_padding_prev(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.prev(verifyPad=True)
         print(self.testInst.index)
-        assert ( (self.testInst.index[0] ==
-                  self.testInst.date - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.testInst.date - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
                  self.testInst.date +
                  pds.DateOffset(hours=23,minutes=59,seconds=59) +
-                 pds.DateOffset(minutes=5)) )
+                 pds.DateOffset(minutes=5)))
 
     def test_data_padding_multi_prev(self):
-        #"""This also tests that _prev_data and _next_data cacheing"""
+        # """This also tests that _prev_data and _next_data cacheing"""
         self.testInst.load(2009, 10)
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
-        assert ( (self.testInst.index[0] ==
-                  self.testInst.date - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.testInst.date - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
                  self.testInst.date +
                  pds.DateOffset(hours=23,minutes=59,seconds=59) +
-                 pds.DateOffset(minutes=5)) )
+                 pds.DateOffset(minutes=5)))
 
     def test_data_padding_jump(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.load(2009, 11, verifyPad=True)
-        assert ( (self.testInst.index[0] ==
-                  self.testInst.date - pds.DateOffset(minutes=5)) &
+        assert ((self.testInst.index[0] ==
+                 self.testInst.date - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
                  self.testInst.date +
                  pds.DateOffset(hours=23,minutes=59,seconds=59) +
-                 pds.DateOffset(minutes=5)) )
+                 pds.DateOffset(minutes=5)))
 
     def test_data_padding_uniqueness(self):
         self.testInst.load(2009,1, verifyPad=True)
@@ -845,10 +848,11 @@ class TestDataPadding():
 
     def test_data_padding_removal(self):
         self.testInst.load(2009,1)
-        #print(self.testInst.index)
+        # print(self.testInst.index)
         assert (self.testInst.index[0] == self.testInst.date) & \
                (self.testInst.index[-1] == self.testInst.date +
                 pds.DateOffset(hour=23, minutes=59,seconds=59))
+
 
 class TestDataPaddingXarray(TestDataPadding):
     def setup(self):
@@ -874,6 +878,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
 
 class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
@@ -902,10 +907,10 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
                                          pad={'minutes':5},
                                          multi_file_day=True)
 
-
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
 
 class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
@@ -917,7 +922,6 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
                                          sim_multi_file_left=True,
                                          pad={'minutes':5},
                                          multi_file_day=True)
-
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
