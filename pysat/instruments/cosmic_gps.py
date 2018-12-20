@@ -104,7 +104,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     
         year=np.array(year).astype(int)
         days=np.array(days).astype(int)
-        uts=np.array(hours).astype(int)*3600+np.array(minutes).astype(int)*60
+        uts = np.array(hours).astype(int)*3600. + \
+            np.array(minutes).astype(int)*60.
         # adding microseconds to ensure each time is unique, not allowed to
         # pass 1.E-3 s
         uts+=np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
