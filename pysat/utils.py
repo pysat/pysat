@@ -966,7 +966,7 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
 
     return lat_out, lon_out, rad_earth, az_out, el_out
 
-def spherical_to_cartesian(az_in, zen_in, r_in, inverse=False):
+def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     """Convert a position from spherical to cartesian, or vice-versa
 
     Parameters
@@ -1003,18 +1003,18 @@ def spherical_to_cartesian(az_in, zen_in, r_in, inverse=False):
         # Cartesian to Spherical
         xy_sq = az_in**2 + el_in**2
         z_out = np.sqrt(xy_sq + r_in**2) # This is r
-        x_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in)) # This is azimuth
-        y_out = np.degrees(np.arctan2(el_in, az_in)) # This is zenith angle
-        y_out = 90.0 - y_out # This is the elevation angle
+        y_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in)) # This is zenith
+        y_out = 90.0 - y_out # This is the elevation
+        x_out = np.degrees(np.arctan2(el_in, az_in)) # This is azimuth
     else:
         # Spherical coordinate system uses zenith angle (degrees from the
         # z-axis) and not the elevation angle (degrees from the x-y plane)
         zen_in = np.radians(90.0 - el_in)
         
         # Spherical to Cartesian
-        x_out = r_in * np.cos(zen_in) * np.sin(np.radians(az_in))
-        y_out = r_in * np.cos(zen_in) * np.cos(np.radians(az_in))
-        z_out = r_in * np.sin(zen_in)
+        x_out = r_in * np.sin(zen_in) * np.cos(np.radians(az_in))
+        y_out = r_in * np.sin(zen_in) * np.sin(np.radians(az_in))
+        z_out = r_in * np.cos(zen_in)
 
     return x_out, y_out, z_out
 
@@ -1061,7 +1061,7 @@ def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
     """
 
     # Get the global cartesian coordinates of local origin
-    x_cent, y_cent, z_cent = spherical_to_cartesian(lat_cent, lon_cent,
+    x_cent, y_cent, z_cent = spherical_to_cartesian(lon_cent, lat_cent,
                                                     rad_cent)
 
     # Get the amount of rotation needed to align the x-axis with the
