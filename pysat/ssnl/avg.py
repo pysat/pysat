@@ -12,17 +12,19 @@ import pandas as pds
 import collections
 
 def median2D(const, bin1, label1, bin2, label2, data_label,
-             returnData=False):
+             returnData=False, auto_bin=True):
     """Return a 2D average of data_label over a season and label1, label2.
 
     Parameters
     ----------
         const: Constellation or Instrument
-        bin#: [min, max, number of bins]
+        bin#: [min, max, number of bins], or array-like containing bin edges
         label#: string
             identifies data product for bin#
         data_label: list-like
             contains strings identifying data product(s) to be averaged
+        auto_bin: if True, function will create bins from the min, max and
+                  number of bins. If false, bin edges must be manually entered
 
     Returns
     -------
@@ -46,8 +48,12 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
 
     # create bins
     #// seems to create the boundaries used for sorting into bins
-    binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
-    biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)
+    if auto_bin:
+        binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
+        biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)
+    else:
+        binx = np.array(bin1)
+        biny = np.array(bin2)
 
     #// how many bins are used
     numx = len(binx)-1

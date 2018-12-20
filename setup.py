@@ -21,9 +21,9 @@ with open(os.path.join(here, version_filename)) as version_file:
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-install_requires=['xarray', 'pandas', 'numpy',  'sgp4', 'pyEphem', 'requests',     
-                  'pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 
-                  'madrigalWeb', 'h5py', 'PyForecastTools']
+install_requires = ['xarray', 'pandas', 'numpy',  'sgp4', 'pyEphem',
+                    'requests', 'pysatCDF', 'apexpy', 'aacgmv2',
+                    'pysatMagVect', 'madrigalWeb', 'h5py', 'PyForecastTools']
 
 # keep pyglow out of requirements until pip installable
 # if sys.version_info[0] < 3:
@@ -42,8 +42,8 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version=version,
-    
-    description='Supports science data analysis across measurement platforms',    
+
+    description='Supports science data analysis across measurement platforms',
     long_description=long_description,
     # The project's main homepage.
     url='http://github.com/rstoneback/pysat',
@@ -52,10 +52,10 @@ setup(
     author='Russell Stoneback',
     author_email='rstoneba@utdallas.edu',
 
-    
-    package_data = {'pysat': ['pysat/version*.txt']},
+
+    package_data={'pysat': ['pysat/version*.txt']},
     include_package_data=True,
-    
+
     # Choose your license
     license='BSD',
 
@@ -85,7 +85,7 @@ setup(
     ],
 
     # What does your project relate to?
-    #keywords='sample setuptools development',
+    # keywords='sample setuptools development',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
@@ -95,5 +95,5 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires = install_requires,
+    install_requires=install_requires,
 )

@@ -74,8 +74,9 @@ class Constellation(object):
 
         The function is not partially applied to modify member data.
 
-        When the Constellation receives a function call to register a function for data modification,
-        it passes the call to each instrument and registers it in the instrument's pysat.Custom queue.
+        When the Constellation receives a function call to register
+        a function for data modification, it passes the call to each
+        instrument and registers it in the instrument's pysat.Custom queue.
 
         (Wraps pysat.Custom.add; documentation of that function is
         reproduced here.)
@@ -219,7 +220,7 @@ class Constellation(object):
 
                     # Iterate over the bins along y
                     for yj in yarr:
-                        # Indicies of data in this bin
+                        # Indices of data in this bin
                         yindex, = np.where(y_indexes == yj)
 
                         # If there's data in this bin
@@ -238,18 +239,19 @@ class Constellation(object):
         binx = None
 
         # TODO modify output
-        out_2d = _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx, numy, numz)
+        out_2d = _calc_2d_median(ans, data_label, binx, biny, xarr, yarr,
+                                 zarr, numx, numy, numz)
 
         # Transform output
         output = {}
         for i, label in enumerate(data_label):
             median = [r[0] for r in out_2d[label]['median']]
-            count  = [r[0] for r in out_2d[label]['count']]
-            dev    = [r[0] for r in out_2d[label]['avg_abs_dev']]
-            output[label] = {'median':  median,
-                             'count':   count,
+            count = [r[0] for r in out_2d[label]['count']]
+            dev = [r[0] for r in out_2d[label]['avg_abs_dev']]
+            output[label] = {'median': median,
+                             'count': count,
                              'avg_abs_dev': dev,
-                             'bin':     out_2d[label]['bin_y']}
+                             'bin': out_2d[label]['bin_y']}
         return output
 
     def difference(self, instrument1, instrument2, bounds, data_labels,

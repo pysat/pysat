@@ -32,7 +32,8 @@ class Meta(object):
     notes_label : str
         String used to label 'notes' in storage. Defaults to 'notes'
     desc_label : str
-        String used to label variable descriptions in storage. Defaults to 'desc'
+        String used to label variable descriptions in storage.
+        Defaults to 'desc'
     plot_label : str
         String used to label variables in plots. Defaults to 'label'
     axis_label : str
@@ -63,7 +64,8 @@ class Meta(object):
     notes_label : str
        String used to label 'notes' in storage. Defaults to 'notes'
     desc_label : str
-       String used to label variable descriptions in storage. Defaults to 'desc'
+       String used to label variable descriptions in storage.
+       Defaults to 'desc'
     plot_label : str
        String used to label variables in plots. Defaults to 'label'
     axis_label : str
@@ -98,8 +100,8 @@ class Meta(object):
     attributes (units, name, notes, desc, plot_label, axis, scale, value_min,
     value_max, and fill). These base attributes may be used to programatically
     access and set types of metadata regardless of the string values used for
-    the attribute. String values for attributes may need to be changed depending
-    upon the standards of code or files interacting with pysat.
+    the attribute. String values for attributes may need to be changed
+    depending upon the standards of code or files interacting with pysat.
 
     Meta objects returned as part of pysat loading routines are automatically
     updated to use the same values of plot_label, units_label, etc. as found
@@ -170,9 +172,10 @@ class Meta(object):
 
     """
 
-    def __init__(self, metadata=None, units_label='units', name_label='long_name',
-                 notes_label='notes', desc_label='desc', plot_label='label',
-                 axis_label='axis', scale_label='scale', min_label='value_min',
+    def __init__(self, metadata=None, units_label='units',
+                 name_label='long_name', notes_label='notes',
+                 desc_label='desc', plot_label='label', axis_label='axis',
+                 scale_label='scale', min_label='value_min',
                  max_label='value_max', fill_label='fill'):
         # set units and name labels directly
         self._units_label = units_label
@@ -195,15 +198,19 @@ class Meta(object):
                 # make sure defaults are taken care of for required metadata
                 self.accept_default_labels(self)
             else:
-                raise ValueError("Input must be a pandas DataFrame type. "+
-                            "See other constructors for alternate inputs.")
+                raise ValueError("Input must be a pandas DataFrame type. " +
+                                 "See other constructors for alternate inputs.")
         else:
-            self._data = DataFrame(None, columns=[self._units_label, self._name_label,
-                                                 self._desc_label,
-                                                 self._plot_label, self._axis_label,
-                                                 self._scale_label, self.notes_label,
-                                                 self._min_label, self._max_label,
-                                                 self._fill_label])
+            self._data = DataFrame(None, columns=[self._units_label,
+                                                  self._name_label,
+                                                  self._desc_label,
+                                                  self._plot_label,
+                                                  self._axis_label,
+                                                  self._scale_label,
+                                                  self.notes_label,
+                                                  self._min_label,
+                                                  self._max_label,
+                                                  self._fill_label])
 
         # establish attributes intrinsic to object, before user can
         # add any
@@ -356,7 +363,6 @@ class Meta(object):
         self.fill_label = other.fill_label
         return
 
-
     def __contains__(self, other):
         """case insensitive check for variable name"""
 
@@ -457,7 +463,7 @@ class Meta(object):
                                 self._data.loc[name, key] = '\n\n'.join(to_be_set)
                             else:
                                 warnings.warn(' '.join(('Array elements are disallowed in meta.',
-                                                'Dropping input :', key)))
+                                              'Dropping input :', key)))
                         else:
                             self._data.loc[name, key] = to_be_set
                 else:
@@ -567,7 +573,7 @@ class Meta(object):
                 else:
                     # empty_meta = Meta()
                     # self.apply_default_labels(empty_meta)
-                    meta_row.at['children'] = None #empty_meta
+                    meta_row.at['children'] = None  # empty_meta
                 return meta_row
                 # else:
                 #     return pds.Series([self.ho_data[new_key].copy()], index=['children'])
@@ -631,7 +637,7 @@ class Meta(object):
 
         # now update 'hidden' attribute value
         # current_label = new_label
-        setattr(self, ''.join(('_',attr_label)), new_label)
+        setattr(self, ''.join(('_', attr_label)), new_label)
 
     @property
     def units_label(self):
@@ -676,30 +682,39 @@ class Meta(object):
     @units_label.setter
     def units_label(self, new_label):
         self._label_setter(new_label, self._units_label, 'units_label', '')
+
     @name_label.setter
     def name_label(self, new_label):
         self._label_setter(new_label, self._name_label, 'name_label', use_names_default=True)
+
     @notes_label.setter
     def notes_label(self, new_label):
         self._label_setter(new_label, self._notes_label, 'notes_label', '')
+
     @desc_label.setter
     def desc_label(self, new_label):
         self._label_setter(new_label, self._desc_label, 'desc_label', '')
+
     @plot_label.setter
     def plot_label(self, new_label):
         self._label_setter(new_label, self._plot_label, 'plot_label', use_names_default=True)
+
     @axis_label.setter
     def axis_label(self, new_label):
         self._label_setter(new_label, self._axis_label, 'axis_label', use_names_default=True)
+
     @scale_label.setter
     def scale_label(self, new_label):
         self._label_setter(new_label, self._scale_label, 'scale_label', 'linear')
+
     @min_label.setter
     def min_label(self, new_label):
         self._label_setter(new_label, self._min_label, 'min_label', np.NaN)
+
     @max_label.setter
     def max_label(self, new_label):
         self._label_setter(new_label, self._max_label, 'max_label', np.NaN)
+
     @fill_label.setter
     def fill_label(self, new_label):
         self._label_setter(new_label, self._fill_label, 'fill_label', np.NaN)
@@ -840,7 +855,7 @@ class Meta(object):
                 if key in mdata:
 
                     raise RuntimeError('Duplicated keys (variable names) across '
-                                        'Meta objects in keys_nD().')
+                                       'Meta objects in keys_nD().')
 
         # make sure labels between the two objects are the same
         other_updated = self.apply_default_labels(other)
@@ -893,7 +908,6 @@ class Meta(object):
             return output
         else:
             raise KeyError('Key not present in metadata variables')
-
 
     def transfer_attributes_to_instrument(self, inst, strict_names=False):
         """Transfer non-standard attributes in Meta to Instrument object.
@@ -949,9 +963,9 @@ class Meta(object):
                         inst.__setattr__(key, adict[key])
                     else:
                         raise RuntimeError('Attribute ' + key +
-                                           'attached to Meta object can not be '
-                                           + 'transferred as it already exists'
-                                           + ' in the Instrument object.')
+                                           ' attached to Meta object can not ' +
+                                           'be transferred as it already ' +
+                                           'exists in the Instrument object.')
         # return inst
 
     def __eq__(self, other):
@@ -1066,7 +1080,7 @@ class Meta(object):
         assumed if col_names is None.
         """
         import pysat
-        req_names = ['name','long_name','units']
+        req_names = ['name', 'long_name', 'units']
         if col_names is None:
             col_names = req_names
         elif not all([i in col_names for i in req_names]):
@@ -1080,19 +1094,19 @@ class Meta(object):
         elif not isinstance(name, str):
             raise ValueError('keyword name must be related to a string')
         elif not os.path.isfile(name):
-                # Not a real file, assume input is a pysat instrument name
-                # and look in the standard pysat location.
-                test =  os.path.join(pysat.__path__[0],'instruments',name)
-                if os.path.isfile(test):
-                    name = test
+            # Not a real file, assume input is a pysat instrument name
+            # and look in the standard pysat location.
+            test = os.path.join(pysat.__path__[0], 'instruments', name)
+            if os.path.isfile(test):
+                name = test
+            else:
+                # trying to form an absolute path for success
+                test = os.path.abspath(name)
+                if not os.path.isfile(test):
+                    raise ValueError("Unable to create valid file path.")
                 else:
-                    #trying to form an absolute path for success
-                    test = os.path.abspath(name)
-                    if not os.path.isfile(test):
-                        raise ValueError("Unable to create valid file path.")
-                    else:
-                        #success
-                        name = test
+                    # success
+                    name = test
 
         mdata = pds.read_csv(name, names=col_names, sep=sep, **kwargs)
 
