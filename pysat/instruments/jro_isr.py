@@ -257,4 +257,31 @@ def calc_measurement_loc(self):
         self.data = self.data.assign(lat_key=gdlat, lon_key=gdlon)
         self.data.rename({"lat_key":lat_key, "lon_key":lon_key}, inplace=True)
 
+        # Add metadata for the new data values
+        bm_label = "Beam {:d} ".format(dd)
+        self.meta.__setitem__(lat_key, {self.meta.units_label: 'degrees',
+                                        self.meta.name_label: bm_label +
+                                        'latitude',
+                                        self.meta.desc_label: bm_label +
+                                        'latitude',
+                                        self.meta.plot_label: bm_label +
+                                        'Latitude',
+                                        self.meta.axis_label: bm_label +
+                                        'Latitude',
+                                        self.meta.scale_label: 'linear',
+                                        self.meta.min_label: -90.0,
+                                        self.meta.max_label: 90.0,
+                                        self.meta.fill_label: np.nan})
+        self.meta.__setitem__(lon_key, {self.meta.units_label: 'degrees',
+                                        self.meta.name_label: bm_label +
+                                        'longitude',
+                                        self.meta.desc_label: bm_label +
+                                        'longitude',
+                                        self.meta.plot_label: bm_label +
+                                        'Longitude',
+                                        self.meta.axis_label: bm_label +
+                                        'Longitude',
+                                        self.meta.scale_label: 'linear',
+                                        self.meta.fill_label: np.nan})
+
     return
