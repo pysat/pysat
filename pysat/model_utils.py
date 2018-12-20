@@ -348,11 +348,12 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                             matched_inst.data = inst.data.isel(im)
                     else:
                         if inst.pandas_format:
-                            matched_inst.data = matched_inst.data.append( \
-                                                        inst.data.iloc[im])
+                            idata = inst.data.iloc[im]
                         else:
-                            matched_inst.data = xr.merge(matched_inst.data,
-                                                    inst.data.isel(im))
+                            idata = inst.data.isel(im)
+                        
+                        matched_inst.data = inst.concat_data([matched_inst.data,
+                                                              idata])
 
                     # Reset the clean flag
                     inst.clean_level = 'none'
@@ -594,6 +595,11 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         np.empty(shape=interp_shape, dtype=float) * np.nan
                 interp_data[attr_name][xind] = yi[0]
 
+    # Test and ensure the instrument data doesn't already have the interpolated
+    # data.  This should not happen
+    if np.any([mdat in inst.data.keys() for mdat in interp_data.keys()]):
+        raise ValueError("instrument object already contains model data")
+                
     # Update the instrument object and attach units to the metadata
     for mdat in interp_data.keys():
         attr_name = mdat.split("{:s}_".format(model_label))[-1]
