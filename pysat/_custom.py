@@ -166,8 +166,10 @@ class Custom(object):
                                     name = newData.pop('name')
                                     sat[name] = newData
                                 else:
-                                    raise ValueError('Must include "name" in ' +
-                                                     'returned dictionary.')
+                                    raise ValueError(''.join(('Must include ',
+                                                              '"name" in ',
+                                                              'returned ',
+                                                              'dictionary.')))
 
                         # bare DataFrame is returned
                         elif isinstance(newData, pds.DataFrame):
@@ -203,18 +205,22 @@ class Custom(object):
                                             # from before
                                             sat[name] = data
                         else:
-                            raise ValueError("kernel doesn't know what to do " +
-                                             "with returned data.")
+                            raise ValueError(''.join(("kernel doesn't know",
+                                                      " what to do with",
+                                                      " returned data.")))
 
                     # modifying loaded data
                     if kind == 'modify':
                         t = func(sat, *arg, **kwarg)
                         if t is not None:
-                            raise ValueError('Modify functions should not ' +
-                                             'return any information via ' +
-                                             'return. Information may only be' +
-                                             ' propagated back by modifying ' +
-                                             'supplied pysat object.')
+                            raise ValueError(''.join(('Modified functions',
+                                                      ' should not return',
+                                                      ' any information via',
+                                                      ' return. Information ',
+                                                      'may only be propagated',
+                                                      ' back by modifying ',
+                                                      'supplied pysat object.'
+                                                      )))
 
                     # pass function (function runs, no data allowed back)
                     if kind == 'pass':
@@ -222,9 +228,10 @@ class Custom(object):
                         t = func(tempd, *arg, **kwarg)
                         del tempd
                         if t is not None:
-                            raise ValueError('Pass functions should not ' +
-                                             'return any information via ' +
-                                             'return.')
+                            raise ValueError(''.join(('Pass functions should',
+                                                      ' not return any ',
+                                                      'information via ',
+                                                      'return.')))
 
     def clear(self):
         """Clear custom function list."""

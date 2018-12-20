@@ -191,7 +191,7 @@ class Files(object):
 
                 idx = np.unique(files_info.index, return_index=True)
                 files_info = files_info.iloc[idx[1]]
-                #raise ValueError('List of files must have unique datetimes.')
+                # raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
             date = files_info.index[0]
@@ -414,8 +414,8 @@ class Files(object):
                 return self.files.iloc[key]
             except:
                 return self.files.loc[key]
-            #raise ValueError('Not implemented yet.')
-        #if isinstance(key, tuple):
+            # raise ValueError('Not implemented yet.')
+        # if isinstance(key, tuple):
         #    if len(key) == 2:
         #        start = key[0]
         #        end = key[1]
@@ -594,7 +594,8 @@ class Files(object):
                 idx, = np.where(np.array(stored['year']) >=
                                 two_digit_year_break)
                 stored['year'][idx] = stored['year'][idx] + 1900
-                idx, = np.where(np.array(stored['year']) < two_digit_year_break)
+                idx, = np.where(np.array(stored['year']) <
+                                two_digit_year_break)
                 stored['year'][idx] = stored['year'][idx] + 2000
             # need to sort the information for things to work
             rec_arr = [stored[key] for key in keys]

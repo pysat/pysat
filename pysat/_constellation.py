@@ -228,9 +228,9 @@ class Constellation(object):
                             ydx = data_considered.index[yindex.astype(int)]
                             # For each data label, add the points.
                             for zk in zarr:
+                                dlab = data_label[zk]
                                 ans[zk][yj][0].extend(
-                                    data_considered.loc[ydx,
-                                                        data_label[zk]].tolist())
+                                    data_considered.loc[ydx, dlab].tolist())
 
         # Now for the averaging.
         # Let's, try .. packing the answers for the 2d function.
@@ -387,7 +387,9 @@ class Constellation(object):
         return { 'data': data_df, 'start':start, 'end':end }
         """
 
-        labels = [dl1 for dl1, dl2 in data_labels] + ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + ['dist']
+        labels = [dl1 for dl1, dl2 in data_labels] + \
+            ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + \
+            ['dist']
         data = {label: [] for label in labels}
 
         # Apply bounds

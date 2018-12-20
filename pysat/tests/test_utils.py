@@ -23,7 +23,7 @@ else:
 
 
 #########
-## basic yrdoy tests
+# basic yrdoy tests
 def test_getyrdoy_1():
     """Test the date to year, day of year code functionality"""
     date = pds.datetime(2009, 1, 1)
@@ -38,9 +38,7 @@ def test_getyrdoy_leap_year():
     assert ((yr == 2008) & (doy == 366))
 
 
-####################3
 # test netCDF fexport ile support
-
 def prep_dir(inst=None):
     import os
     import shutil
@@ -50,7 +48,7 @@ def prep_dir(inst=None):
     # create data directories
     try:
         os.makedirs(inst.files.data_path)
-        #print ('Made Directory')
+        # print ('Made Directory')
     except OSError:
         pass
 
@@ -100,7 +98,6 @@ class TestBasics():
         self.testInst.data = pds.DataFrame(
                 np.array([time, self.test_angles]).transpose(),
                 index=time, columns=["time", "longitude"])
-
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -171,7 +168,8 @@ class TestBasics():
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile, epoch_name='Santa')
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile, epoch_name='Santa')
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
+                                                     epoch_name='Santa')
         self.testInst.data = self.testInst.data.reindex(
                 sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
@@ -200,7 +198,7 @@ class TestBasics():
 
         # test Series of DataFrames
         test_list = []
-        #print (loaded_inst.columns)
+        # print (loaded_inst.columns)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
@@ -219,9 +217,6 @@ class TestBasics():
                                   loaded_inst['series_profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
 
-        # print (test_inst['series_profiles'][0], loaded_inst['series_profiles'][0])
-        # print (type(test_inst['series_profiles'][0]), type(loaded_inst['series_profiles'][0]))
-        # print ( (test_inst['series_profiles'][0]) == (loaded_inst['series_profiles'][0]) )
         loaded_inst.drop('series_profiles', inplace=True, axis=1)
         test_inst.data.drop('series_profiles', inplace=True, axis=1)
 
@@ -286,18 +281,21 @@ class TestBasics():
     #     outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
     #     self.testInst.load(2009,1)
     #     check = []
-    #     for format in ['NETCDF3_CLASSIC','NETCDF3_64BIT', 'NETCDF4_CLASSIC', 'NETCDF4']:
+    #     for format in ['NETCDF3_CLASSIC','NETCDF3_64BIT', 'NETCDF4_CLASSIC',
+    #                    'NETCDF4']:
     #         self.testInst.to_netcdf4(outfile, file_format=format)
-    #         loaded_inst, meta = pysat.utils.load_netcdf4(outfile, file_format=format)
+    #         loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
+    #                                                      file_format=format)
     #         self.testInst.data = self.testInst.data.reindex(sorted(self.testInst.data.columns), axis=1)
-    #         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+    #         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
+    #                                           axis=1)
     #         check.append(np.all(self.testInst.data == loaded_inst))
     #         print(loaded_inst['string_dummy'])
     #
     #     assert(np.all(check))
 
     #######################
-    ### test pysat data dir options
+    # test pysat data dir options
     def test_set_data_dir(self):
         saved_dir = self.data_path
         # update data_dir
@@ -390,7 +388,8 @@ class TestBasics():
         from scipy import stats
 
         ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
-        test_std = pysat.utils.nan_circstd(self.test_angles, **self.circ_kwargs)
+        test_std = pysat.utils.nan_circstd(self.test_angles,
+                                           **self.circ_kwargs)
         ans1 = ref_std == test_std
 
         assert ans1

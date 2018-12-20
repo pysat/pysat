@@ -169,10 +169,10 @@ class Instrument(object):
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, units_label='units',
-                 name_label='long_name', notes_label='notes', desc_label='desc',
-                 plot_label='label', axis_label='axis', scale_label='scale',
-                 min_label='value_min', max_label='value_max',
-                 fill_label='fill', *arg, **kwargs):
+                 name_label='long_name', notes_label='notes',
+                 desc_label='desc', plot_label='label', axis_label='axis',
+                 scale_label='scale', min_label='value_min',
+                 max_label='value_max', fill_label='fill', *arg, **kwargs):
 
         if inst_module is None:
             # use strings to look up module name
@@ -370,18 +370,20 @@ class Instrument(object):
                 return self.data[key]
             elif isinstance(key, tuple):
                 try:
-                    # Assume key[0] is integer (including list or slice)
-                    return self.data.loc[self.data.index[key[0]],key[1]]
-                except:
+                    # Pass keys directly through
+                    return self.data.loc[key[0], key[1]]
+                except (KeyError, TypeError):
+                    # TypeError for single integer
+                    # KeyError for list, array, slice of integers
                     try:
-                        # Try to force as integer (eg, if ndarray)
-                        idx = self.data.index[key[0].astype(int)]
-                        return self.data.loc[idx,key[1]]
-                    except:
+                        # Assume key[0] is integer (including list or slice)
+                        return self.data.loc[self.data.index[key[0]], key[1]]
+                    except KeyError:
                         try:
-                            # Give up and try to pass directly through
-                            return self.data.loc[key[0],key[1]]
-                        except:
+                            # Try to force as integer (eg, if ndarray)
+                            idx = self.data.index[key[0].astype(int)]
+                            return self.data.loc[idx, key[1]]
+                        except ValueError:
                             estring = '\n'.join(("Unable to sort out data.",
                                                  "Instrument has data : " +
                                                  str(not self.empty),
@@ -394,7 +396,7 @@ class Instrument(object):
                 except:
                     try:
                         return self.data[key]
-                    except:
+                    except ValueError:
                         estring = '\n'.join(("Unable to sort out data access.",
                                              "Instrument has data : " +
                                              str(not self.empty),
@@ -488,13 +490,13 @@ class Instrument(object):
                 try:
                     # Pass directly through to loc
                     self.data.loc[key[0], key[1]] = new
-                except  (KeyError, TypeError):
+                except (KeyError, TypeError):
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
                     try:
                         # Assume key[0] is integer (including list or slice)
                         self.data.loc[self.data.index[key[0]], key[1]] = new
-                    except  KeyError:
+                    except KeyError:
                         # Try to force conversion to integer
                         idx = self.data.index[key[0].astype(int)]
                         self.data.loc[idx, key[1]] = new
@@ -972,11 +974,12 @@ class Instrument(object):
             else:
                 if len(fname) == 1:
                     # this check was zero
-                    output_str = ' '.join(('Returning', output_str, 'data from',
-                                           fname[0]))
+                    output_str = ' '.join(('Returning', output_str,
+                                           'data from', fname[0]))
                 else:
-                    output_str = ' '.join(('Returning', output_str, 'data from',
-                                           fname[0], '::', fname[-1]))
+                    output_str = ' '.join(('Returning', output_str,
+                                           'data from', fname[0], '::',
+                                           fname[-1]))
         else:
             # no data signal
             output_str = ' '.join(('No', output_str, 'data for',
@@ -988,7 +991,8 @@ class Instrument(object):
 
     def _load_next(self):
         """Load the next days data (or file) without incrementing the date.
-        Repeated calls will not advance date/file and will produce the same data
+        Repeated calls will not advance date/file and will produce the same
+        data.
 
         Uses info stored in object to either increment the date,
         or the file. Looks for self._load_by_date flag.
@@ -1119,7 +1123,7 @@ class Instrument(object):
                     self._curr_data = self._prev_data
                     self._curr_meta = self._prev_meta
                     self._prev_data, self._prev_meta = self._load_prev()
-                # jumped in time/or switched from filebased to date based access
+                # jumped in time / switched from filebased to date based access
                 else:
                     del self._prev_data
                     del self._curr_data
@@ -1254,8 +1258,8 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def download(self, start=None, stop=None, freq='D', user=None, password=None,
-                 **kwargs):
+    def download(self, start=None, stop=None, freq='D', user=None,
+                 password=None, **kwargs):
         """Download data for given Instrument object from start to stop.
 
         Parameters
@@ -1400,14 +1404,15 @@ class Instrument(object):
             base = type(start[0])
             for s, t in zip(start, end):
                 if (type(s) != type(t)) or (type(s) != base):
-                    raise ValueError('Start and end items must all be of the ' +
-                                     'same type')
+                    raise ValueError(''.join(('Start and end items must all',
+                                              ' be of the same type')))
             if isinstance(start[0], str):
                 self._iter_type = 'file'
                 self._iter_list = self.files.get_file_array(start, end)
             elif isinstance(start[0], pds.datetime):
                 self._iter_type = 'date'
-                self._iter_list = utils.season_date_range(start, end, freq=step)
+                self._iter_list = utils.season_date_range(start, end,
+                                                          freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1420,7 +1425,8 @@ class Instrument(object):
                              'bound is iterable')
 
         elif isinstance(start, str) or isinstance(end, str):
-            if isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
+            if isinstance(start, pds.datetime) or \
+                    isinstance(end, pds.datetime):
                 raise ValueError('Not allowed to mix file and date bounds')
             if start is None:
                 start = self.files[0]
@@ -1442,10 +1448,11 @@ class Instrument(object):
             self._iter_list = utils.season_date_range(start, end, freq=step)
             self._iter_type = 'date'
         else:
-            raise ValueError('Provided an invalid combination of bounds. ' +
-                             'if specifying by file, both bounds must be by ' +
-                             'file. Other combinations of datetime objects ' +
-                             'and None are allowed.')
+            raise ValueError(''.join(('Provided an invalid combination of',
+                                      ' bounds. if specifying by file, both',
+                                      ' bounds must be by file. Other ',
+                                      'combinations of datetime objects ',
+                                      'and None are allowed.')))
 
     def __iter__(self):
         """Iterates instrument object by loading subsequent days or files.
@@ -1499,7 +1506,8 @@ class Instrument(object):
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
                 if (len(idx) == 0):
-                    raise StopIteration('File list is empty. Nothing to be done.')
+                    raise StopIteration(''.join(('File list is empty. ',
+                                                 'Nothing to be done.')))
                 elif idx[-1]+1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
@@ -1537,7 +1545,8 @@ class Instrument(object):
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
                 if len(idx) == 0:
-                    raise StopIteration('File list is empty. Nothing to be done.')
+                    raise StopIteration(''.join(('File list is empty. ',
+                                                 'Nothing to be done.')))
                 elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
@@ -1689,13 +1698,15 @@ class Instrument(object):
             if remove:
                 mdata_dict.pop('_FillValue')
             else:
-                mdata_dict['_FillValue'] = np.array(mdata_dict['_FillValue']).astype(coltype)
+                mdata_dict['_FillValue'] = \
+                    np.array(mdata_dict['_FillValue']).astype(coltype)
         if u'FillVal' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
                 mdata_dict.pop('FillVal')
             else:
-                mdata_dict['FillVal'] = np.array(mdata_dict['FillVal']).astype(coltype)
+                mdata_dict['FillVal'] = \
+                    np.array(mdata_dict['FillVal']).astype(coltype)
         return mdata_dict
 
     def generic_meta_translator(self, meta_to_translate):
@@ -1719,7 +1730,8 @@ class Instrument(object):
             # names of the attributes that hold the various meta labels
             translation_table = {}
             for key in self._meta_translation_table:
-                translation_table[getattr(self, key)] = self._meta_translation_table[key]
+                translation_table[getattr(self, key)] = \
+                    self._meta_translation_table[key]
         else:
             translation_table = None
         # First Order Data
@@ -1733,9 +1745,11 @@ class Instrument(object):
                 for original_key in meta_dict:
                     if original_key in translation_table:
                         for translated_key in translation_table[original_key]:
-                            export_dict[key][translated_key] = meta_dict[original_key]
+                            export_dict[key][translated_key] = \
+                                meta_dict[original_key]
                     else:
-                        export_dict[key][original_key] = meta_dict[original_key]
+                        export_dict[key][original_key] = \
+                            meta_dict[original_key]
 
         # Higher Order Data
         for key in meta_to_translate.ho_data:
@@ -1743,7 +1757,8 @@ class Instrument(object):
                 export_dict[key] = {}
             for ho_key in meta_to_translate.ho_data[key].data.index:
                 if translation_table is None:
-                    export_dict[key+'_'+ho_key] = meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
+                    export_dict[key+'_'+ho_key] = \
+                        meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
                 else:
                     # Translate each key if a translation is provided
                     export_dict[key+'_'+ho_key] = {}
@@ -1863,10 +1878,12 @@ class Instrument(object):
                     new_dict[export_name_label] = epoch_name
             for export_units_label in export_units_labels:
                 if export_units_label not in new_dict:
-                    new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+                    new_dict[export_units_label] = \
+                        'Milliseconds since 1970-1-1 00:00:00'
             for export_desc_label in export_desc_labels:
                 if export_desc_label not in new_dict:
-                    new_dict[export_desc_label] = 'Milliseconds since 1970-1-1 00:00:00'
+                    new_dict[export_desc_label] = \
+                        'Milliseconds since 1970-1-1 00:00:00'
             for export_notes_label in export_notes_labels:
                 if export_notes_label not in new_dict:
                     new_dict[export_notes_label] = ''
@@ -1908,7 +1925,6 @@ class Instrument(object):
                                                      zlib=zlib,
                                                      complevel=complevel,
                                                      shuffle=shuffle)
-                                                     # , chunksizes=1)
                     # attach any meta data, after filtering for standards
                     try:
                         # attach dimension metadata
@@ -1953,7 +1969,8 @@ class Instrument(object):
                             new_dict = export_meta[key]
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Display_Type'] = 'Time Series'
-                            new_dict['Format'] = self._get_var_type_code(coltype)
+                            new_dict['Format'] = \
+                                self._get_var_type_code(coltype)
                             new_dict['Var_Type'] = 'data'
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict,
@@ -2024,8 +2041,8 @@ class Instrument(object):
                         for col in iterable:
                             if is_frame:
                                 # we are working with a dataframe
-                                # so multiple subvariables stored under a single
-                                # main variable heading
+                                # so multiple subvariables stored under a
+                                # single main variable heading
                                 data, coltype, _ = self._get_data_info(self[key].iloc[good_data_loc][col], file_format)
                                 cdfkey = out_data.createVariable(key + '_' + col,
                                                                  coltype,
