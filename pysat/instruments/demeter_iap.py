@@ -11,8 +11,8 @@ currents of at least 1 nA to produce believable measurements.  The IAP was run
 in both survey and burst mode.
 
 Downloads data from the Plasma physics data center (Centre de donees de la
-physique des plasmas, CDPP), the French national data center for natural plasmas
-of the solar system.  This data product requires registration and user
+physique des plasmas, CDPP), the French national data center for natural
+plasmas of the solar system.  This data product requires registration and user
 initiated downloading after ordering a data product.
 
 Parameters
@@ -44,23 +44,25 @@ from . import demeter_methods
 
 platform = 'demeter'
 name = 'iap'
-tags = {'survey':'Survey mode', 'burst':'Burst mode'}
-sat_ids = {'':list(tags.keys())}
-test_dates = {'':{'survey':pysat.datetime(2010,1,1)}}
+tags = {'survey': 'Survey mode', 'burst': 'Burst mode'}
+sat_ids = {'': list(tags.keys())}
+test_dates = {'': {'survey': pysat.datetime(2010, 1, 1)}}
 
-apid = {'survey':1140, 'burst':1139}
+apid = {'survey': 1140, 'burst': 1139}
 
 multi_file_day = True
 
 # Use default demeter download method
 download = demeter_methods.download
 
+
 def init(self):
     print("When using this data please include a version of the acknoledgement"
           + " outlined in the metadata attribute 'info.acknowledgements'.  We "
-          + "recommend that data users contact the experiment PI early in their"
-          + " study.  Experiment reference information is available in the "
-          + "metadata attribute 'info.reference'")
+          + "recommend that data users contact the experiment PI early in "
+          + " their study.  Experiment reference information is available in "
+          + "the metadata attribute 'info.reference'")
+
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
                index_start_time=True):
@@ -92,18 +94,19 @@ def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
     """
 
     if format_str is None:
-        if not tag in list(apid.keys()):
+        if tag not in list(apid.keys()):
             raise ValueError('unknown {:s} {:s} tag: {:s}'.format(platform,
                                                                   name, tag))
         if index_start_time:
             time_str = '{year:4d}{month:02d}{day:02d}_??????_????????_??????'
         else:
             time_str = '????????_??????_{year:4d}{month:02d}{day:02d}_??????'
-        
+
         format_str = ''.join(('DMT_N1_{:d}_??????_'.format(apid[tag]),
                               time_str, '.DAT'))
 
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
+
 
 def load(fnames, tag='survey', sat_id=''):
     """ Load DEMETER IAP data
@@ -123,7 +126,7 @@ def load(fnames, tag='survey', sat_id=''):
     -------
     data : (pds.DataFrame)
         DataFrame of DEMETER satellite data
-    meta : 
+    meta :
         Metadata object
 
     """
@@ -140,7 +143,7 @@ def load(fnames, tag='survey', sat_id=''):
         data.extend(fdata)
 
     data = np.vstack(data)
-    data = pysat.DataFrame(data, index=data[:,3], columns=fmeta['data names'])
+    data = pysat.DataFrame(data, index=data[:, 3], columns=fmeta['data names'])
 
     # Assign metadata
     if len(data.columns) > 0:
@@ -149,6 +152,7 @@ def load(fnames, tag='survey', sat_id=''):
         meta = pysat.Meta(None)
 
     return data, meta
+
 
 def load_experiment_data(fhandle):
     """ Load survey mode binary file
@@ -171,7 +175,7 @@ def load_experiment_data(fhandle):
         'data names'
 
     """
-    import codecs # ensures encode is python 2/3 compliant
+    import codecs  # ensures encode is python 2/3 compliant
 
     chunk = fhandle.read(108)
 
@@ -211,12 +215,12 @@ def load_experiment_data(fhandle):
             data_units[dname] = chunk[58:64]
 
     # Load the metadata
-    meta = {'data type':chunk[0:10], 'data names':data_names,
-            'data units':data_units}
+    meta = {'data type': chunk[0:10], 'data names': data_names,
+            'data units': data_units}
 
     return data, meta
 
-    
+
 def clean(iap):
     """ Remove data to the desired level of cleanliness
 
@@ -232,21 +236,22 @@ def clean(iap):
 
     Notes
     -----
-    clean : only data when at least two ions are considered and currents >= 1nA,
+    clean : only data when at least two ions are considered and currents >= 1nA
     dusty : not applicable
     dirty : not applicable
     """
 
     if iap.clean_level in ['dusty', 'dirty']:
-        print("'dusty' and 'dirty' levels not supported, defaulting to 'clean'")
+        print(''.join("'dusty' and 'dirty' levels not supported, ",
+                      "defaulting to 'clean'"))
         iap.clean_level = 'clean'
 
     if iap.clean_level == 'clean':
         # Determine the number of ions present, using a threshold for the
         # minimum significant density for one of the three ion species
-        oplus_thresh = 5.0e2 # From Berthelier et al. 2006
+        oplus_thresh = 5.0e2  # From Berthelier et al. 2006
         nions = np.zeros(shape=iap.data.index.shape)
-        for i,oplus in enumerate(iap.data['O+_density']):
+        for i, oplus in enumerate(iap.data['O+_density']):
             if oplus >= oplus_thresh:
                 nions[i] += 1
 
@@ -267,6 +272,7 @@ def clean(iap):
     self.data = self[idx]
 
     return
+
 
 def add_drift_sat_coord(iap):
     """ Calculate the ion velocity in satellite x,y,z coordinates
@@ -295,10 +301,11 @@ def add_drift_sat_coord(iap):
     # Because the ADV instrument is not fully aligned with the axis of the
     # satellite, reposition into satellite coordinates
     # (IS THIS ALREADY CORRECTED IN FILES?)
-    print("WARNING the ADV instrument is not fully aligned with the axis of the"
-          + " satellite and this may not have been corrected")
+    print("WARNING the ADV instrument is not fully aligned with the axis of "
+          + "the satellite and this may not have been corrected")
 
     return
+
 
 def add_drift_lgm_coord(iap):
     """ Calcuate the ion velocity in local geomagneic coordinates
@@ -330,7 +337,7 @@ def add_drift_lgm_coord(iap):
     # from satellite to local geomagnetic coordinates.  Then calculate the
     # velocity in local geomagnetic coordinates
     lgm_vel = list()
-    for i,ind in enumerate(iap.data.index):
+    for i, ind in enumerate(iap.data.index):
         sat2geo = np.matrix([[iap['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
                               for k in range(3)] for j in range(3)])
         geo2lgm = np.matrix([[iap['geo2lgm_{:d}{:d}'.format(j+1, k+1)][ind]
@@ -341,11 +348,12 @@ def add_drift_lgm_coord(iap):
     lgm_vel = np.array(lgm_vel).reshape((len(lgm_vel), 3))
 
     # Save the data
-    for i,name in enumerate(['iv_pos', 'iv_perp', 'iv_par']):
-        iap[name] = pds.Series(lgm_vel[:,i], index=iap.data.index, name=name)
+    for i, name in enumerate(['iv_pos', 'iv_perp', 'iv_par']):
+        iap[name] = pds.Series(lgm_vel[:, i], index=iap.data.index, name=name)
         iap.meta.data.units[name] = iap.meta.data.units[sc_keys[-1]]
 
     return
+
 
 def add_drift_geo_coord(iap):
     """ Calcuate the ion velocity in geographic coordinates
@@ -377,7 +385,7 @@ def add_drift_geo_coord(iap):
     # from satellite to local geomagnetic coordinates.  Then calculate the
     # velocity in local geomagnetic coordinates
     geo_vel = list()
-    for i,ind in enumerate(iap.data.index):
+    for i, ind in enumerate(iap.data.index):
         sat2geo = np.matrix([[iap['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
                               for k in range(3)] for j in range(3)])
 
@@ -385,10 +393,8 @@ def add_drift_geo_coord(iap):
     geo_vel = np.array(geo_vel).reshape((len(geo_vel), 3))
 
     # Save the data
-    for i,name in enumerate(['iv_geo_x', 'iv_geo_y', 'iv_geo_z']):
-        iap[name] = pds.Series(geo_vel[:,i], index=iap.data.index, name=name)
+    for i, name in enumerate(['iv_geo_x', 'iv_geo_y', 'iv_geo_z']):
+        iap[name] = pds.Series(geo_vel[:, i], index=iap.data.index, name=name)
         iap.meta.data.units[name] = iap.meta.data.units[sc_keys[-1]]
 
     return
-    
-    

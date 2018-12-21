@@ -22,7 +22,8 @@ Warnings
 Example
 -------
     import pysat
-    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2', clean_level='clean')
+    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2',
+                           clean_level='clean')
     ivm.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
     ivm.load(2017,363)
 
@@ -46,12 +47,12 @@ from . import nasa_cdaweb_methods as cdw
 
 platform = 'icon'
 name = 'ivm'
-tags = {'level_2':'Level 2 public geophysical data'}
+tags = {'level_2': 'Level 2 public geophysical data'}
 # dictionary of sat_ids ad tags supported by each
-sat_ids = {'a':['level_2'],
-           'b':['level_2']}
-test_dates = {'a':{'level_2':pysat.datetime(2018,1,1)},
-              'b':{'level_2':pysat.datetime(2018,1,1)}}
+sat_ids = {'a': ['level_2'],
+           'b': ['level_2']}
+test_dates = {'a': {'level_2': pysat.datetime(2018, 1, 1)},
+              'b': {'level_2': pysat.datetime(2018, 1, 1)}}
 
 
 def init(self):
@@ -71,7 +72,8 @@ def init(self):
 
     """
 
-    print ("Mission acknowledgements and data restrictions will be printed here when available.")
+    print("Mission acknowledgements and data restrictions will be printed " +
+          "here when available.")
 
     pass
 
@@ -135,18 +137,23 @@ def load(fnames, tag=None, sat_id=None):
     """
 
     return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                    units_label='Units', name_label='Long_Name',
-                                    notes_label='Var_Notes', desc_label='CatDesc',
-                                    plot_label='FieldNam', axis_label='LablAxis',
+                                    units_label='Units',
+                                    name_label='Long_Name',
+                                    notes_label='Var_Notes',
+                                    desc_label='CatDesc',
+                                    plot_label='FieldNam',
+                                    axis_label='LablAxis',
                                     scale_label='ScaleTyp',
-                                    min_label='ValidMin', max_label='ValidMax',
+                                    min_label='ValidMin',
+                                    max_label='ValidMax',
                                     fill_label='FillVal')
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a list of files corresponding to ICON IVM.
 
-    This routine is invoked by pysat and is not intended for direct use by the end user.
+    This routine is invoked by pysat and is not intended for direct use by
+    the end user.
 
     Multiple data levels may be supported via the 'tag' input string.
     Currently defaults to level-2 data, or L2 in the filename.
@@ -182,8 +189,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     Note
     ----
     The returned Series should not have any duplicate datetimes. If there are
-    multiple versions of a file the most recent version should be kept and the rest
-    discarded. This routine uses the pysat.Files.from_os constructor, thus
+    multiple versions of a file the most recent version should be kept and the
+    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
     the returned files are up to pysat specifications.
 
     """
@@ -202,30 +209,35 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     if format_str is None:
         format_str = 'ICON_'+code+'_IVM-'+sat_id.upper()
         if desc is not None:
-            format_str += '_' + desc +'_'
-        format_str += '_{year:4d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
+            format_str += '_' + desc + '_'
+        format_str += '_{year:4d}-{month:02d}-{day:02d}'
+        format_str += '_v{version:02d}r{revision:03d}.NC'
 
     return pysat.Files.from_os(data_path=data_path,
-                                format_str=format_str)
+                               format_str=format_str)
 
 
-
-def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
+def download(date_array, tag, sat_id, data_path=None, user=None,
+             password=None):
     """Will download data for ICON IVM, after successful launch and operations.
 
     Parameters
     ----------
     date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not be contiguous.
+        list of datetimes to download data for. The sequence of dates need not
+        be contiguous.
     tag : string ('')
-        Tag identifier used for particular dataset. This input is provided by pysat.
+        Tag identifier used for particular dataset. This input is provided by
+        pysat.
     sat_id : string  ('')
-        Satellite ID string identifier used for particular dataset. This input is provided by pysat.
+        Satellite ID string identifier used for particular dataset. This input
+        is provided by pysat.
     data_path : string (None)
         Path to directory to download data to.
     user : string (None)
-        User string input used for download. Provided by user and passed via pysat. If an account
-        is required for dowloads this routine here must error if user not supplied.
+        User string input used for download. Provided by user and passed via
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied.
     password : string (None)
         Password for data download.
     **kwargs : dict
@@ -241,7 +253,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
 
     """
 
-    print ("Downloads aren't yet available.")
+    print("Downloads aren't yet available.")
 
     return
 
@@ -294,12 +306,14 @@ def remove_icon_names(inst, target=None):
         prepend_str = target
 
     inst.data.rename(columns=lambda x: x.split(prepend_str)[-1], inplace=True)
-    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
+    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
+                          inplace=True)
     orig_keys = inst.meta.keys_nD()
     for keynd in orig_keys:
         new_key = keynd.split(prepend_str)[-1]
         new_meta = inst.meta.pop(keynd)
-        new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1], inplace=True)
+        new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
+                             inplace=True)
         inst.meta[new_key] = new_meta
 
     return

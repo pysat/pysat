@@ -21,7 +21,7 @@ Example
 -------
     import pysat
     dmsp = pysat.Instrument('jro', 'isr', 'drifts', clean_level='clean')
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31), 
+    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
                   user='Firstname+Lastname', password='email@address.com')
     dmsp.load(2017,363)
 
@@ -43,35 +43,35 @@ from . import nasa_cdaweb_methods as cdw
 
 platform = 'jro'
 name = 'isr'
-tags = {'drifts':'Drifts and wind', 'drifts_ave':'Averaged drifts',
-        'oblique_stan':'Standard Faraday rotation double-pulse',
-        'oblique_rand':'Randomized Faraday rotation double-pulse',
-        'oblique_long':'Long pulse Faraday rotation'}
-sat_ids = {'':list(tags.keys())}
-test_dates = {'':{'drifts':pysat.datetime(2010,1,19),
-                  'drifts_ave':pysat.datetime(2010,1,19),
-                  'oblique_stan':pysat.datetime(2010,4,19),
-                  'oblique_rand':pysat.datetime(2000,11,9),
-                  'oblique_long':pysat.datetime(2010,4,12)}}
+tags = {'drifts': 'Drifts and wind', 'drifts_ave': 'Averaged drifts',
+        'oblique_stan': 'Standard Faraday rotation double-pulse',
+        'oblique_rand': 'Randomized Faraday rotation double-pulse',
+        'oblique_long': 'Long pulse Faraday rotation'}
+sat_ids = {'': list(tags.keys())}
+test_dates = {'': {'drifts': pysat.datetime(2010, 1, 19),
+                   'drifts_ave': pysat.datetime(2010, 1, 19),
+                   'oblique_stan': pysat.datetime(2010, 4, 19),
+                   'oblique_rand': pysat.datetime(2000, 11, 9),
+                   'oblique_long': pysat.datetime(2010, 4, 12)}}
 
 # support list files routine
 # use the default CDAWeb method
 jro_fname1 = 'jro{year:4d}{month:02d}{day:02d}'
 jro_fname2 = '.{version:03d}.hdf5'
-supported_tags = {ss:{'drifts':jro_fname1 + "drifts" + jro_fname2,
-                      'drifts_ave':jro_fname1 + "drifts_avg" + jro_fname2,
-                      'oblique_stan':jro_fname1 + jro_fname2,
-                      'oblique_rand':jro_fname1 + "?" + jro_fname2,
-                      'oblique_long':jro_fname1 + "?" + jro_fname2}
+supported_tags = {ss: {'drifts': jro_fname1 + "drifts" + jro_fname2,
+                       'drifts_ave': jro_fname1 + "drifts_avg" + jro_fname2,
+                       'oblique_stan': jro_fname1 + jro_fname2,
+                       'oblique_rand': jro_fname1 + "?" + jro_fname2,
+                       'oblique_long': jro_fname1 + "?" + jro_fname2}
                   for ss in sat_ids.keys()}
-list_files = functools.partial(cdw.list_files, 
+list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
 
 # madrigal tags
 madrigal_inst_code = 10
-madrigal_tag = {'':{'drifts':1910, 'drifts_ave':1911, 'oblique_stan':1800,
-                    'oblique_rand':1801, 'oblique_long':1802},}
-                
+madrigal_tag = {'': {'drifts': 1910, 'drifts_ave': 1911, 'oblique_stan': 1800,
+                     'oblique_rand': 1801, 'oblique_long': 1802}, }
+
 # let pysat know that data is spread across more than one file
 # multi_file_day=True
 
@@ -81,20 +81,21 @@ pandas_format = False
 
 # support load routine
 load = functools.partial(mad_meth.load, xarray_coords=['gdalt'])
-    
+
 # Madrigal will sometimes include multiple days within a file
 # labeled with a single date.
 # Filter out this extra data using the pysat nanokernel processing queue.
 # To ensure this function is always applied first, we set the filter
 # function as the default function for (JRO).
 # Default function is run first by the nanokernel on every load call.
-default = pysat.instruments.madrigal_methods.filter_data_single_date      
+default = pysat.instruments.madrigal_methods.filter_data_single_date
+
 
 def init(self):
     """Initializes the Instrument object with values specific to JRO ISR
-    
+
     Runs once upon instantiation.
-    
+
     Parameters
     ----------
     self : pysat.Instrument
@@ -104,20 +105,21 @@ def init(self):
     --------
     Void : (NoneType)
         Object modified in place.
-    
-    
+
+
     """
 
-    print ("The Jicamarca Radio Observatory is operated by the Instituto " +
-           "Geofisico del Peru, Ministry of Education, with support from the" +
-           " National Science Foundation as contracted through Cornell" +
-           " University.  " + mad_meth.cedar_rules())
+    print("The Jicamarca Radio Observatory is operated by the Instituto " +
+          "Geofisico del Peru, Ministry of Education, with support from the" +
+          " National Science Foundation as contracted through Cornell" +
+          " University.  " + mad_meth.cedar_rules())
     return
+
 
 def download(date_array, tag='', sat_id='', data_path=None, user=None,
              password=None):
     """Downloads data from Madrigal.
-    
+
     Parameters
     ----------
     date_array : array-like
@@ -143,7 +145,7 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     --------
     Void : (NoneType)
         Downloads data to disk.
-    
+
     Notes
     -----
     The user's names should be provided in field user. Ruby Payne-Scott should
@@ -152,14 +154,15 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     The password field should be the user's email address. These parameters
     are passed to Madrigal when downloading.
 
-    The affiliation field is set to pysat to enable tracking of pysat downloads.
+    The affiliation field is set to pysat to enable tracking of pysat
+    downloads.
 
     """
     mad_meth.download(date_array, inst_code=str(madrigal_inst_code),
                       kindat=str(madrigal_tag[sat_id][tag]),
                       data_path=data_path, user=user, password=password)
 
-            
+
 def clean(self):
     """Routine to return JRO ISR data cleaned to the specified level
 
@@ -177,12 +180,12 @@ def clean(self):
     'None' None
 
     Routine is called by pysat, and not by the end user directly.
-    
+
     """
     import numpy as np
 
     idx = list()
-    
+
     if self.tag.find('oblique') == 0:
         print('The double pulse, coded pulse, and long pulse modes ' +
               'implemented at Jicamarca have different limitations arising ' +
@@ -201,11 +204,12 @@ def clean(self):
         else:
             print("WARNING: interpretation of drifts below 200 km should " +
                   "always be done in partnership with the contact people")
-            
+
     # downselect data based upon cleaning conditions above
     self.data = self[idx]
-        
+
     return
+
 
 def calc_measurement_loc(self):
     """ Calculate the instrument measurement location in geographic coordinates
@@ -220,11 +224,13 @@ def calc_measurement_loc(self):
     import pandas as pds
     from pysat import utils
 
-    az_keys = [kk[5:] for kk in list(self.data.keys()) if kk.find('azdir') == 0]
-    el_keys = [kk[5:] for kk in list(self.data.keys()) if kk.find('eldir') == 0]
+    az_keys = [kk[5:] for kk in list(self.data.keys())
+               if kk.find('azdir') == 0]
+    el_keys = [kk[5:] for kk in list(self.data.keys())
+               if kk.find('eldir') == 0]
     good_dir = list()
 
-    for i,kk in enumerate(az_keys):
+    for i, kk in enumerate(az_keys):
         if kk in el_keys:
             try:
                 good_dir.append(int(kk))
@@ -255,6 +261,7 @@ def calc_measurement_loc(self):
         # Assigning as data, to ensure that the number of coordinates match
         # the number of data dimensions
         self.data = self.data.assign(lat_key=gdlat, lon_key=gdlon)
-        self.data.rename({"lat_key":lat_key, "lon_key":lon_key}, inplace=True)
+        self.data.rename({"lat_key": lat_key, "lon_key": lon_key},
+                         inplace=True)
 
     return
