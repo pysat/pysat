@@ -352,7 +352,8 @@ class Orbits(object):
         self.num = num_orbits
 
     def _orbitNumberBreaks(self):
-        """Determine where orbital breaks in a dataset with orbit numbers occur.
+        """Determine where orbital breaks in a dataset with orbit numbers
+        occur.
 
         Looks for changes in unique values.
 
@@ -414,17 +415,21 @@ class Orbits(object):
                 # pull out requested orbit
                 if orbit == -1:
                     # load orbit data into data
-                    self.sat.data = self.sat[self._orbit_breaks[self.num + orbit]:]
+                    self.sat.data = self.sat[self._orbit_breaks[self.num +
+                                                                orbit]:]
                     self._current = self.num + orbit + 1
                 elif ((orbit < 0) & (orbit >= -self.num)):
                     # load orbit data into data
-                    self.sat.data = self.sat[self._orbit_breaks[self.num + orbit]:
-                                             self._orbit_breaks[self.num + orbit + 1]]
+                    self.sat.data = self.sat[self._orbit_breaks[self.num +
+                                                                orbit]:
+                                             self._orbit_breaks[self.num +
+                                                                orbit + 1]]
 
                     self._current = self.num + orbit + 1
                 elif (orbit < self.num) & (orbit != 0):
                     # load orbit data into data
-                    self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:self._orbit_breaks[orbit]]
+                    self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:
+                                             self._orbit_breaks[orbit]]
                     self._current = orbit
                 elif orbit == self.num:
                     self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:]
@@ -518,7 +523,8 @@ class Orbits(object):
                 else:
                     # gone too far
                     self.sat.data = self.sat._null_data
-                    raise Exception('Requested an orbit past total orbits for day')
+                    raise Exception('Requested an orbit past total orbits ' +
+                                    'for day')
             else:
                 raise Exception('Must set an orbit')
         else:
@@ -564,7 +570,8 @@ class Orbits(object):
                             # combine this next day's data with previous last
                             # orbit, grab the first one
                             self.sat.data = self.sat.concat_data(
-                                    [temp_orbit_data[:self.sat.index[0] - pds.DateOffset(microseconds=1)],
+                                    [temp_orbit_data[:self.sat.index[0] -
+                                                     pds.DateOffset(microseconds=1)],
                                      self.sat.data])
                             self._getBasicOrbit(orbit=1)
                         else:
@@ -603,8 +610,8 @@ class Orbits(object):
                         # data and grab second orbit (first is old)
                         self.sat.data = self.sat.concat_data(
                                 [temp_orbit_data[:self.sat.index[0] -
-                                                pds.DateOffset(microseconds=1)],
-                                self.sat.data])
+                                                 pds.DateOffset(microseconds=1)],
+                                 self.sat.data])
                         # select second orbit of combined data
                         self._getBasicOrbit(orbit=2)
                     else:
@@ -616,13 +623,13 @@ class Orbits(object):
                                     - self.sat.index[0]
 
                             if delta < self.orbit_period:
-                                # this orbits end occurs on the next day, though
-                                # we grabbed the first orbit, missing data
-                                # means the first available orbit in the data
-                                # is actually the last for the day. Resetting to
-                                # the second to last orbit and then calling
-                                # next() will get the last orbit, accounting
-                                # for tomorrow's data as well.
+                                # this orbits end occurs on the next day,
+                                # though we grabbed the first orbit, missing
+                                # data means the first available orbit in the
+                                # datais actually the last for the day.
+                                # Resetting to the second to last orbit and t
+                                # hen callingnext() will get the last orbit,
+                                # accounting for tomorrow's data as well.
                                 self._current = self.num - 1
                                 self.next()
                 else:
@@ -708,8 +715,9 @@ class Orbits(object):
                         self.sat.prev()
                         # combine this next day orbit with previous last orbit
                         if not self.sat.empty:
-                            self.sat.data = self.sat.concat_data([self.sat.data,
-                                                                  temp_orbit_data])
+                            self.sat.data = \
+                                self.sat.concat_data([self.sat.data,
+                                                      temp_orbit_data])
                             # select first orbit of combined data
                             self._getBasicOrbit(orbit=-1)
                         else:
@@ -717,9 +725,9 @@ class Orbits(object):
                             self._getBasicOrbit(orbit=1)
                     except StopIteration:
                         # if loading the first orbit, of first day of data,
-                        # you'll end up here as the attempt to make a full orbit
-                        # will move the date backwards, and StopIteration is
-                        # made. everything is already ok, just move along
+                        # you'll end up here as the attempt to make a full
+                        # orbit will move the date backwards, and StopIteration
+                        # is made. everything is already ok, just move along
                         pass
 
                     del temp_orbit_data

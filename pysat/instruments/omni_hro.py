@@ -19,11 +19,11 @@ Files are stored by the first day of each month. When downloading use
 omni.download(start, stop, freq='MS') to only download days that could possibly
 have data.  'MS' gives a monthly start frequency.
 
-This material is based upon work supported by the 
-National Science Foundation under Grant Number 1259508. 
+This material is based upon work supported by the
+National Science Foundation under Grant Number 1259508.
 
-Any opinions, findings, and conclusions or recommendations expressed in this 
-material are those of the author(s) and do not necessarily reflect the views 
+Any opinions, findings, and conclusions or recommendations expressed in this
+material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
 
 
@@ -56,11 +56,11 @@ import pysat
 
 platform = 'omni'
 name = 'hro'
-tags = {'1min':'1-minute time averaged data',
-        '5min':'5-minute time averaged data'}
-sat_ids = {'':['1min', '5min']}
-test_dates = {'':{'1min':pysat.datetime(2009,1,1),
-                  '5min':pysat.datetime(2009,1,1)}}
+tags = {'1min': '1-minute time averaged data',
+        '5min': '5-minute time averaged data'}
+sat_ids = {'': ['1min', '5min']}
+test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
+                   '5min': pysat.datetime(2009, 1, 1)}}
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -90,7 +90,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         if (tag == '1min') | (tag == '5min'):
             min_fmt = ''.join(['omni_hro_', tag,
                                '{year:4d}{month:02d}{day:02d}_v01.cdf'])
-            files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
+            files = pysat.Files.from_os(data_path=data_path,
+                                        format_str=min_fmt)
             # files are by month, just add date to monthly filename for
             # each day of the month. load routine will use date to select out
             # appropriate data
@@ -105,15 +106,15 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             raise ValueError('Unknown tag')
     elif format_str is None:
         estr = 'A directory must be passed to the loading routine for OMNI HRO'
-        raise ValueError (estr)
+        raise ValueError(estr)
     else:
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
-            
+
 
 def load(fnames, tag=None, sat_id=None):
     import pysatCDF
-    
-    if len(fnames) <= 0 :
+
+    if len(fnames) <= 0:
         return pysat.DataFrame(None), None
     else:
         # pull out date appended to filename
@@ -123,8 +124,9 @@ def load(fnames, tag=None, sat_id=None):
             data, meta = cdf.to_pysat()
             # pick out data for date
             data = data.ix[date:date+pds.DateOffset(days=1) -
-                           pds.DateOffset(microseconds=1)] 
+                           pds.DateOffset(microseconds=1)]
             return data, meta
+
 
 def clean(omni):
     for fill_attr in ["fillval", "fill"]:
@@ -133,10 +135,11 @@ def clean(omni):
             # get real name
             fill_attr = omni.meta.attr_case_name(fill_attr)
             for key in omni.data.columns:
-                if key != 'Epoch':    
+                if key != 'Epoch':
                     idx, = np.where(omni[key] == omni.meta[key, fill_attr])
                     omni[idx, key] = np.nan
     return
+
 
 def time_shift_to_magnetic_poles(inst):
     """ OMNI data is time-shifted to bow shock. Time shifted again
@@ -151,13 +154,13 @@ def time_shift_to_magnetic_poles(inst):
     ---------
     Time shift calculated using distance to bow shock nose (BSN)
     and velocity of solar wind along x-direction.
-    
+
     Warnings
     --------
     Use at own risk.
-    
+
     """
-    
+
     # need to fill in Vx to get an estimate of what is going on
     inst['Vx'] = inst['Vx'].interpolate('nearest')
     inst['Vx'] = inst['Vx'].fillna(method='backfill')
@@ -173,17 +176,18 @@ def time_shift_to_magnetic_poles(inst):
     time_x = inst['BSN_x']*6371.2/-inst['Vx']
     idx, = np.where(np.isnan(time_x))
     if len(idx) > 0:
-        print (time_x[idx])
-        print (time_x)
-    time_x_offset = [pds.DateOffset(seconds = time)
+        print(time_x[idx])
+        print(time_x)
+    time_x_offset = [pds.DateOffset(seconds=time)
                      for time in time_x.astype(int)]
-    new_index=[]
+    new_index = []
     for i, time in enumerate(time_x_offset):
         new_index.append(inst.data.index[i] + time)
     inst.data.index = new_index
-    inst.data = inst.data.sort_index()    
-    
+    inst.data = inst.data.sort_index()
+
     return
+
 
 def download(date_array, tag, sat_id='', data_path=None, user=None,
              password=None):
@@ -193,8 +197,8 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     -----------
     data_array : np.array
     tag : string
-        String denoting the type of file to load, accepted values are '1min' and
-       '5min'
+        String denoting the type of file to load, accepted values are '1min'
+        and '5min'
     sat_id : string
         Not used (default='')
     data_path : string or NoneType
@@ -209,33 +213,35 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
 
     ftp = ftplib.FTP('cdaweb.gsfc.nasa.gov')   # connect to host, default port
     ftp.login()               # user anonymous, passwd anonymous@
-    
+
     if (tag == '1min') | (tag == '5min'):
         ftp.cwd('/pub/data/omni/omni_cdaweb/hro_'+tag)
-    
+
         for date in date_array:
             fname = '{year1:4d}/omni_hro_' + tag + \
                     '_{year2:4d}{month:02d}{day:02d}_v01.cdf'
             fname = fname.format(year1=date.year, year2=date.year,
                                  month=date.month, day=date.day)
             local_fname = ''.join(['omni_hro_', tag, \
-            '_{year:4d}{month:02d}{day:02d}_v01.cdf']).format(year=date.year, \
-                                                month=date.month, day=date.day)
-            saved_fname = os.path.join(data_path,local_fname) 
+            '_{year:4d}{month:02d}{day:02d}_v01.cdf']).format(year=date.year,
+                                                              month=date.month,
+                                                              day=date.day)
+            saved_fname = os.path.join(data_path, local_fname)
             try:
                 print('Downloading file for '+date.strftime('%D'))
                 sys.stdout.flush()
-                ftp.retrbinary('RETR '+fname, open(saved_fname,'wb').write)
+                ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
             except ftplib.error_perm as exception:
                 # if exception[0][0:3] != '550':
                 if str(exception.args[0]).split(" ", 1)[0] != '550':
                     raise
                 else:
                     os.remove(saved_fname)
-                    print('File not available for '+ date.strftime('%D'))
+                    print('File not available for ' + date.strftime('%D'))
     ftp.close()
     # ftp.quit()
     return
+
 
 def calculate_clock_angle(inst):
     """ Calculate IMF clock angle and magnitude of IMF in GSM Y-Z plane
@@ -245,7 +251,7 @@ def calculate_clock_angle(inst):
     inst : pysat.Instrument
         Instrument with OMNI HRO data
     """
-    
+
     # Calculate clock angle in degrees
     clock_angle = np.degrees(np.arctan2(inst['BY_GSM'], inst['BZ_GSM']))
     clock_angle[clock_angle < 0.0] += 360.0
@@ -254,9 +260,10 @@ def calculate_clock_angle(inst):
     # Calculate magnitude of IMF in Y-Z plane
     inst['BYZ_GSM'] = pds.Series(np.sqrt(inst['BY_GSM']**2 +
                                          inst['BZ_GSM']**2),
-                                       index=inst.data.index)
+                                 index=inst.data.index)
 
     return
+
 
 def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
                              max_clock_angle_std=90.0/np.pi, max_bmag_cv=0.5):
@@ -297,7 +304,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     inst['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
 
     # Calculate the running circular standard deviation of the clock angle
-    circ_kwargs = {'high':360.0, 'low':0.0}
+    circ_kwargs = {'high': 360.0, 'low': 0.0}
     ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
     ca_std = inst['clock_angle'].rolling(min_periods=min_wnum,
                                          window=steady_window, \
@@ -308,7 +315,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     imf_steady = np.zeros(shape=inst.data.index.shape)
 
     steady = False
-    for i,cv in enumerate(inst.data['BYZ_CV']):
+    for i, cv in enumerate(inst.data['BYZ_CV']):
         if steady:
             del_min = int((inst.data.index[i] -
                            inst.data.index[i-1]).total_seconds() / 60.0)
@@ -328,6 +335,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     inst['IMF_Steady'] = pds.Series(imf_steady, index=inst.data.index)
     return
 
+
 def calculate_dayside_reconnection(inst):
     """ Calculate the dayside reconnection rate (Milan et al. 2014)
 
@@ -344,9 +352,8 @@ def calculate_dayside_reconnection(inst):
     sin_htheta = np.power(np.sin(np.radians(0.5 * inst['clock_angle'])), 4.5)
     byz = inst['BYZ_GSM'] * 1.0e-9
     vx = inst['flow_speed'] * 1000.0
-    
+
     recon_day = 3.8 * rearth * vx * byz * sin_htheta * np.power((vx / 4.0e5),
                                                                 1.0/3.0)
     inst['recon_day'] = pds.Series(recon_day, index=inst.data.index)
     return
-

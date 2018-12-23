@@ -49,12 +49,14 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     See notes there for more details.
 
     all - all statistics
-    all_bias - bias, meanPercentageError, medianLogAccuracy, symmetricSignedBias
+    all_bias - bias, meanPercentageError, medianLogAccuracy,
+               symmetricSignedBias
     accuracy - returns dict with mean squared error, root mean squared error,
                mean absolute error, and median absolute error
     scaledAccuracy - returns dict with normaled root mean squared error, mean
                      absolute scaled error, mean absolute percentage error,
-                     median absolute percentage error, median symmetric accuracy
+                     median absolute percentage error, median symmetric
+                     accuracy
     bias - scale-dependent bias as measured by the mean error
     meanPercentageError - mean percentage error
     medianLogAccuracy - median of the log accuracy ratio
@@ -97,12 +99,13 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                     'MdSymAcc': 'medSymAccuracy'}
 
     # Grouped methods for things that don't have convenience functions
-    grouped_methods = {"all_bias":["bias", "meanPercentageError",
-                                   "medianLogAccuracy", "symmetricSignedBias"],
-                       "all":list(method_rout.keys())}
+    grouped_methods = {"all_bias": ["bias", "meanPercentageError",
+                                    "medianLogAccuracy",
+                                    "symmetricSignedBias"],
+                       "all": list(method_rout.keys())}
 
     # Replace any group method keys with the grouped methods
-    for gg in [(i,mm) for i,mm in enumerate(methods)
+    for gg in [(i, mm) for i, mm in enumerate(methods)
                if mm in list(grouped_methods.keys())]:
         # Extend the methods list to include all the grouped methods
         methods.extend(grouped_methods[gg[1]])
@@ -136,11 +139,11 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                                                       known_methods))
 
     # Initialize the output
-    stat_dict = {iname:dict() for iname in inst_name}
-    data_units = {iname:pairs.data_vars[iname].units for iname in inst_name}
+    stat_dict = {iname: dict() for iname in inst_name}
+    data_units = {iname: pairs.data_vars[iname].units for iname in inst_name}
 
     # Cycle through all of the data types
-    for i,iname in enumerate(inst_name):
+    for i, iname in enumerate(inst_name):
         # Determine whether the model data needs to be scaled
         iscale = utils.scale_units(pairs.data_vars[iname].units,
                                    pairs.data_vars[mod_name[i]].units)
@@ -273,7 +276,8 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         raise ValueError(estr)
 
     if len(mod_name) != len(mod_units):
-        raise ValueError('Must provide units for each model location attribute')
+        raise ValueError('Must provide units for each model location ' +
+                         'attribute')
 
     if inst_clean_rout is None:
         raise ValueError('Need routine to clean the instrument data')
@@ -339,8 +343,8 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     if len(im) == 1:
                         im = im[0]
                     else:
-                        im = {kk:im[i]
-                              for i,kk in enumerate(inst.data.coords.keys())}
+                        im = {kk: im[i]
+                              for i, kk in enumerate(inst.data.coords.keys())}
 
                     # Save the clean, matched data
                     if matched_inst is None:
@@ -457,16 +461,19 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
         raise ValueError(estr)
 
     if len(mod_name) != len(mod_units):
-        raise ValueError('Must provide units for each model location attribute')
+        raise ValueError('Must provide units for each model location ' +
+                         'attribute')
 
     inst_scale = np.ones(shape=len(inst_name), dtype=float)
-    for i,ii in enumerate(inst_name):
+    for i, ii in enumerate(inst_name):
         if ii not in list(inst.data.keys()):
-            raise ValueError('Unknown instrument location index {:}'.format(ii))
+            raise ValueError('Unknown instrument location index ' +
+                             '{:}'.format(ii))
         inst_scale[i] = utils.scale_units(mod_units[i],
                                           inst.meta.data.units[ii])
 
-    # Determine which data to interpolate and initialize the interpolated output
+    # Determine which data to interpolate and initialize the interpolated
+    # output
     if sel_name is None:
         sel_name = list(model.data_vars.keys())
 
@@ -485,7 +492,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     # resolution of a model run
     mind = list()
     iind = list()
-    for i,tt in enumerate(np.array(model.data_vars[mod_datetime_name])):
+    for i, tt in enumerate(np.array(model.data_vars[mod_datetime_name])):
         del_sec = abs(tt - inst.index).total_seconds()
         if del_sec.min() < min_del:
             iind.append(del_sec.argmin())
@@ -495,9 +502,9 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     interp_data = dict()
     interp_shape = inst.index.shape if inst.pandas_format else \
         inst.data.data_vars.items()[0][1].shape
-    inst_coord = {kk:getattr(inst.data, inst_name[i]).values * inst_scale[i]
-                  for i,kk in enumerate(mod_name)}
-    for i,ii in enumerate(iind):
+    inst_coord = {kk: getattr(inst.data, inst_name[i]).values * inst_scale[i]
+                  for i, kk in enumerate(mod_name)}
+    for i, ii in enumerate(iind):
         # Cycle through each model data type, since it may not depend on
         # all the dimensions
         for mdat in sel_name:
@@ -505,7 +512,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
             dims = list(model.data_vars[mdat].dims)
             ndim = model.data_vars[mdat].data.shape
             indices = tuple([mind[i] if kk == mod_time_name
-                            else slice(0,ndim[k]) for k,kk in enumerate(dims)])
+                            else slice(0, ndim[k])
+                            for k, kk in enumerate(dims)])
 
             # Construct the data needed for interpolation
             points = [model.coords[kk].data for kk in dims if kk in mod_name]
@@ -516,7 +524,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                 if inst.pandas_format:
                     # This data iterates only by time
                     xind = ii
-                    xi = [inst_coord[kk][xind] for kk in dims if kk in mod_name]
+                    xi = [inst_coord[kk][xind]
+                          for kk in dims if kk in mod_name]
                     get_coords = False
                 else:
                     # This data may have additional dimensions
@@ -528,7 +537,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         # Find relevent dimensions for cycling
                         ind_dims = [i for i,kk in enumerate(inst_name)
                                     if kk in idim_names]
-                        imod_dims = [i for i in ind_dims if mod_name[i] in dims]
+                        imod_dims = [i for i in ind_dims
+                                     if mod_name[i] in dims]
                         ind_dims = [inst.data.coords.keys().index(inst_name[i])
                                     for i in imod_dims]
 
@@ -563,7 +573,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                             cinds[i] += 1
 
                             while cinds[i] > \
-                                inst.data.coords.dims[inst_name[imod_dims[i]]]:
+                                    inst.data.coords.dims[inst_name[imod_dims[i]]]:
                                 i += 1
                                 if i < len(cinds):
                                     cinds[i-1] = 0
@@ -585,7 +595,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     yi = interpolate.interpn(points, values, xi, method=method)
                 except ValueError as verr:
                     if str(verr).find("requested xi is out of bounds") > 0:
-                        # This is acceptable, pad the interpolated data with NaN
+                        # This is acceptable, pad the interpolated data with
+                        # NaN
                         print("Warning: {:}".format(verr))
                         yi = [np.nan]
                     else:
@@ -593,7 +604,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
 
                 # Save the output
                 attr_name = "{:s}_{:s}".format(model_label, mdat)
-                if not attr_name in interp_data.keys():
+                if attr_name not in interp_data.keys():
                     interp_data[attr_name] = \
                         np.empty(shape=interp_shape, dtype=float) * np.nan
                 interp_data[attr_name][xind] = yi[0]
@@ -608,6 +619,6 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
         else:
             inst.data = inst.data.assign(interp_key=(inst.data.coords.keys(),
                                                      interp_data[mdat]))
-            inst.data.rename({"interp_key":mdat}, inplace=True)
+            inst.data.rename({"interp_key": mdat}, inplace=True)
 
     return interp_data.keys()

@@ -5,13 +5,14 @@ from nose.tools import assert_raises, raises
 import nose.tools
 import datetime as dt
 
+
 class TestOMNICustom():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', tag='12',
                                          clean_level='clean')
-        self.testInst.load(2009,1)
+        self.testInst.load(2009, 1)
 
         # Recast time in minutes rather than seconds
         self.testInst.data.index = pds.Series([t + dt.timedelta(seconds=60-i) +
@@ -24,34 +25,33 @@ class TestOMNICustom():
                                               2.73080263, 1.58814078,
                                               5.24880448, 3.92347300,
                                               5.59494670, 0.93246592,
-                                              5.23676319, 1.14214992], \
-                                           index=self.testInst.data.index)
+                                              5.23676319, 1.14214992],
+                                             index=self.testInst.data.index)
         self.testInst['BY_GSM'] = pds.Series([3.93531272, 2.50331246,
                                               0.99765539, 1.07203600,
                                               5.43752734, 5.10629137,
                                               0.59588891, 2.19412638,
                                               0.15550858, 3.75433603,
-                                              4.82323932, 3.61784563], \
-                                           index=self.testInst.data.index)
+                                              4.82323932, 3.61784563],
+                                             index=self.testInst.data.index)
         self.testInst['BZ_GSM'] = pds.Series([3.94396168, 5.61163579,
                                               4.02930788, 5.47347958,
                                               5.69823962, 0.47219819,
                                               1.47760461, 3.47187188,
                                               4.12581021, 4.40641671,
-                                              2.87780562, 0.58539121], \
-                                           index=self.testInst.data.index)
+                                              2.87780562, 0.58539121],
+                                             index=self.testInst.data.index)
         self.testInst['flow_speed'] = pds.Series([394.396168, 561.163579,
                                                   402.930788, 547.347958,
                                                   569.823962, 47.219819,
                                                   147.760461, 347.187188,
                                                   412.581021, 440.641671,
-                                                  287.780562, 58.539121], \
-                                           index=self.testInst.data.index)
+                                                  287.780562, 58.539121],
+                                                 index=self.testInst.data.index)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
-
 
     def test_clock_angle(self):
         """ Test clock angle."""
@@ -68,7 +68,6 @@ class TestOMNICustom():
         # Test the difference.  There may be a 2 pi integer ambiguity
         test_diff = abs(test_angle - self.testInst['clock_angle'])
         assert np.all(test_diff < 1.0e-8)
-        
 
     def test_yz_plane_mag(self):
         """ Test the Byz plane magnitude calculation."""
@@ -128,7 +127,6 @@ class TestOMNICustom():
         assert np.all(np.isnan(self.testInst['clock_angle_std']) ==
                       np.isnan(ca_std))
 
-
     def test_dayside_recon(self):
         """ Test the IMF steadiness standard deviation calculation."""
 
@@ -137,13 +135,12 @@ class TestOMNICustom():
         pysat.instruments.omni_hro.calculate_dayside_reconnection(self.testInst)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
-        rcon = np.array([698.297487, 80.233896, 3.033586, 2.216075, 1425.310083,
-                         486.460306, 2.350339, 103.843722, 0.000720, 534.586320,
-                         1464.596772, 388.974792])
+        rcon = np.array([698.297487, 80.233896, 3.033586, 2.216075,
+                         1425.310083, 486.460306, 2.350339, 103.843722,
+                         0.000720, 534.586320, 1464.596772, 388.974792])
 
         # Test the difference
         test_diff = abs(rcon - self.testInst['recon_day'])
 
         assert test_diff.shape[0] == 12
         assert np.all(test_diff < 1.0e-6)
-        

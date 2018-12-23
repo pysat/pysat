@@ -199,7 +199,8 @@ class Meta(object):
                 self.accept_default_labels(self)
             else:
                 raise ValueError("Input must be a pandas DataFrame type. " +
-                                 "See other constructors for alternate inputs.")
+                                 "See other constructors for alternate " +
+                                 "inputs.")
         else:
             self._data = DataFrame(None, columns=[self._units_label,
                                                   self._name_label,
@@ -279,7 +280,8 @@ class Meta(object):
         self.drop(drop_names)
 
 #     def default_labels_and_values(self, name):
-#         """Returns dictionary of default meta labels and values for name variable.
+#         """Returns dictionary of default meta labels and values for name
+#         variable.
 #
 #         Metadata is automatically tracked for various properties, name,
 #         long_name, units, description, etc. Each of these values (labels)
@@ -293,8 +295,8 @@ class Meta(object):
 #         Returns
 #         -------
 #         dict
-#             keys are metadata labels used within Meta object, values are the default
-#             values assigned if data is never specified by user
+#             keys are metadata labels used within Meta object, values are the
+#             default values assigned if data is never specified by user
 #
 #         """
 #         num = len(name)
@@ -439,11 +441,13 @@ class Meta(object):
             # make sure number of inputs matches number of metadata inputs
             for key in input_data:
                 if len(names) != len(input_data[key]):
-                    raise ValueError('Length of names and inputs must be equal.')
+                    raise ValueError('Length of names and inputs must be ' +
+                                     'equal.')
             # make sure the attribute names are in good shape
             # check name of attributes against existing attribute names
-            # if attribute name exists somewhere, then case of existing attribute
-            # will be enforced upon new data by default for consistency
+            # if attribute name exists somewhere, then case of existing
+            # attribute will be enforced upon new data by default for
+            # consistency
             keys = [i for i in input_data]
             for name in keys:
                 new_name = self.attr_case_name(name)
@@ -455,12 +459,16 @@ class Meta(object):
                 if key not in ['children', 'meta']:
                     for i, name in enumerate(names):
                         to_be_set = input_data[key][i]
-                        if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
+                        if hasattr(to_be_set, '__iter__') and \
+                                not isinstance(to_be_set, basestring):
                             if isinstance(to_be_set[0], basestring):
-                                self._data.loc[name, key] = '\n\n'.join(to_be_set)
+                                self._data.loc[name, key] = \
+                                    '\n\n'.join(to_be_set)
                             else:
-                                warnings.warn(' '.join(('Array elements are disallowed in meta.',
-                                              'Dropping input :', key)))
+                                warnings.warn(' '.join(('Array elements' +
+                                                        'are disallowed in' +
+                                                        'meta. Dropping' +
+                                                        'input :', key)))
                         else:
                             self._data.loc[name, key] = to_be_set
                 else:
@@ -468,7 +476,8 @@ class Meta(object):
                     # process higher order stuff. Meta inputs could be part of
                     # larger multiple parameter assignment
                     # so not all names may actually have 'meta' to add
-                    for j, (item, val) in enumerate(zip(names, input_data['meta'])):
+                    for j, (item, val) in enumerate(zip(names,
+                                                        input_data['meta'])):
                         if val is not None:
                             # assign meta data, recursive call....
                             # heads to if Meta instance call
@@ -504,7 +513,8 @@ class Meta(object):
 
             # go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
-            # this covers custom attributes not handled by default routine above
+            # this covers custom attributes not handled by default routine
+            # above
             attr_names = input_data.attrs()
             new_names = []
             for name in attr_names:
@@ -555,7 +565,8 @@ class Meta(object):
                 new_index = self.var_case_name(key[0])
                 new_child_index = self.var_case_name(key[1])
                 new_name = self.attr_case_name(key[2])
-                return self.ho_data[new_index].data.loc[new_child_index, new_name]
+                return self.ho_data[new_index].data.loc[new_child_index,
+                                                        new_name]
         else:
             # ensure variable is present somewhere
             if key in self:
@@ -577,7 +588,8 @@ class Meta(object):
             else:
                 raise KeyError('Key not found in MetaData')
 
-    def _label_setter(self, new_label, current_label, attr_label, default=np.NaN, use_names_default=False):
+    def _label_setter(self, new_label, current_label, attr_label,
+                      default=np.NaN, use_names_default=False):
         """Generalized setter of default meta attributes
 
         Parameters
@@ -618,7 +630,8 @@ class Meta(object):
                 if self.has_attr(current_label):
                     # there is something like label, wrong case though
                     current_label = self.attr_case_name(current_label)
-                    self.data.loc[:, new_label] = self.data.loc[:, current_label]
+                    self.data.loc[:, new_label] = \
+                        self.data.loc[:, current_label]
                     self.data.drop(current_label, axis=1, inplace=True)
                 else:
                     # there is no existing label
@@ -682,7 +695,8 @@ class Meta(object):
 
     @name_label.setter
     def name_label(self, new_label):
-        self._label_setter(new_label, self._name_label, 'name_label', use_names_default=True)
+        self._label_setter(new_label, self._name_label, 'name_label',
+                           use_names_default=True)
 
     @notes_label.setter
     def notes_label(self, new_label):
@@ -694,15 +708,18 @@ class Meta(object):
 
     @plot_label.setter
     def plot_label(self, new_label):
-        self._label_setter(new_label, self._plot_label, 'plot_label', use_names_default=True)
+        self._label_setter(new_label, self._plot_label, 'plot_label',
+                           use_names_default=True)
 
     @axis_label.setter
     def axis_label(self, new_label):
-        self._label_setter(new_label, self._axis_label, 'axis_label', use_names_default=True)
+        self._label_setter(new_label, self._axis_label, 'axis_label',
+                           use_names_default=True)
 
     @scale_label.setter
     def scale_label(self, new_label):
-        self._label_setter(new_label, self._scale_label, 'scale_label', 'linear')
+        self._label_setter(new_label, self._scale_label, 'scale_label',
+                           'linear')
 
     @min_label.setter
     def min_label(self, new_label):
@@ -960,7 +977,7 @@ class Meta(object):
                         inst.__setattr__(key, adict[key])
                     else:
                         raise RuntimeError('Attribute ' + key +
-                                           ' attached to Meta object can not ' +
+                                           'attached to Meta object can not ' +
                                            'be transferred as it already ' +
                                            'exists in the Instrument object.')
         # return inst
@@ -999,15 +1016,16 @@ class Meta(object):
             for attr in attrs1:
                 if attr not in attrs2:
                     return False
-            # now check the values of all elements now that we know all variable
-            # and attribute names are the same
+            # now check the values of all elements now that we know all
+            # variable and attribute names are the same
             for key in self.keys():
                 for attr in self.attrs():
                     if not (self[key, attr] == other[key, attr]):
                         # np.nan is not equal to anything
                         # if both values are NaN, ok in my book
                         try:
-                            if not (np.isnan(self[key, attr]) and np.isnan(other[key, attr])):
+                            if not (np.isnan(self[key, attr]) and
+                                    np.isnan(other[key, attr])):
                                 # one or both are not NaN and they aren't equal
                                 # test failed
                                 return False
@@ -1044,12 +1062,17 @@ class Meta(object):
                 # now time to check if all elements are individually equal
                 for key2 in self[key].children.keys():
                     for attr in self[key].children.attrs():
-                        if not (self[key].children[key2, attr] == other[key].children[key2, attr]):
+                        if not (self[key].children[key2, attr] ==
+                                other[key].children[key2, attr]):
                             try:
-                                if not (np.isnan(self[key].children[key2, attr]) and np.isnan(other[key].children[key2, attr])):
+                                if not (np.isnan(self[key].children[key2,
+                                                                    attr]) and
+                                        np.isnan(other[key].children[key2,
+                                                                     attr])):
                                     return False
                             except TypeError:
-                                # comparison above gets unhappy with string inputs
+                                # comparison above gets unhappy with string
+                                # inputs
                                 return False
             # if we made it this far, things are good
             return True

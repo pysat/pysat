@@ -296,25 +296,31 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     new_index_name = index_name
                 else:
                     # using integer indexing
-                    new_index = np.arange(loop_lim*step_size, dtype=int) % step_size
+                    new_index = np.arange(loop_lim*step_size,
+                                          dtype=int) % step_size
                     new_index_name = 'index'
                 # load all data into frame
                 if len(loop_dict.keys()) > 1:
-                    loop_frame = pds.DataFrame(loop_dict, columns=clean_var_keys)
+                    loop_frame = pds.DataFrame(loop_dict,
+                                               columns=clean_var_keys)
                     if obj_key_name in loop_frame:
                         del loop_frame[obj_key_name]
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1), :])
-                        loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size*i:
+                                                         step_size*(i+1), :])
+                        loop_list[-1].index = new_index[step_size*i:
+                                                        step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
                 else:
                     loop_frame = pds.Series(loop_dict[clean_var_keys[0]],
                                             name=obj_var_keys[0])
                     # break massive series into bunch of smaller series
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1)])
-                        loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size*i:
+                                                         step_size*(i+1)])
+                        loop_list[-1].index = new_index[step_size*i:
+                                                        step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
                 # print (loop_frame.columns)
 
@@ -367,19 +373,22 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         new_index_name = index_name
                     else:
                         # using integer indexing
-                        new_index = np.arange(loop_lim*step_size, dtype=int) % step_size
+                        new_index = np.arange(loop_lim*step_size,
+                                              dtype=int) % step_size
                         new_index_name = 'index'
                     # load all data into frame
                     loop_frame = pds.DataFrame(loop_dict[obj_key_name])
                     # del loop_frame['dimension_1']
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1), :])
-                        loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size*i:
+                                                         step_size*(i+1), :])
+                        loop_list[-1].index = new_index[step_size*i:
+                                                        step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
 
-                    # add 2D object data, all based on a unique dimension within netCDF,
-                    # to loaded data dictionary
+                    # add 2D object data, all based on a unique dimension
+                    # within netCDF, to loaded data dictionary
                     loadedVars[obj_key_name] = loop_list
                     del loop_list
 
@@ -941,7 +950,8 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
     Returns
     -------
     lat_out : float
-        latitude in degrees of the converted horizontal coordinate system center
+        latitude in degrees of the converted horizontal coordinate system
+        center
     lon_out : float
         longitude in degrees of the converted horizontal coordinate system
         center
@@ -1047,7 +1057,8 @@ def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
     lon_cent : float
         geocentric longitude in degrees of local cartesian system origin
     rad_cent : float
-        distance from center of the Earth in km of local cartesian system origin
+        distance from center of the Earth in km of local cartesian system
+        origin
     inverse : bool
         False to convert from global to local cartesian coodiantes, and True
         for the inverse (default=False)

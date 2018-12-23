@@ -19,7 +19,7 @@ Note
 Warnings
 --------
 - Currently no cleaning routine.
-        
+
 """
 
 from __future__ import print_function
@@ -36,16 +36,16 @@ from . import nasa_cdaweb_methods as cdw
 
 platform = 'rocsat1'
 name = 'ivm'
-tags = {'':''}
-sat_ids = {'':['']}
-test_dates = {'':{'':pysat.datetime(2002,1,1)}}
+tags = {'': ''}
+sat_ids = {'': ['']}
+test_dates = {'': {'': pysat.datetime(2002, 1, 1)}}
 
 
 # support list files routine
 # use the default CDAWeb method
 fname = 'rs_k0_ipei_{year:04d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'':{'':fname}}
-list_files = functools.partial(cdw.list_files, 
+supported_tags = {'': {'': fname}}
+list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
 # support load routine
 # use the default CDAWeb method
@@ -53,13 +53,13 @@ load = cdw.load
 
 # support download routine
 # use the default CDAWeb method
-basic_tag = {'dir':'/pub/data/rocsat/ipei',
-            'remote_fname':'{year:4d}/'+fname,
-            'local_fname':fname}
-supported_tags = {'':{'':basic_tag}}
+basic_tag = {'dir': '/pub/data/rocsat/ipei',
+             'remote_fname': '{year:4d}/'+fname,
+             'local_fname': fname}
+supported_tags = {'': {'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
-                
-                    
+
+
 def clean(inst):
     """Routine to return ROCSAT-1 IVM data cleaned to the specified level
 
@@ -80,10 +80,3 @@ def clean(inst):
     """
 
     return None
-                    
-                    
-                    
-                    
-                    
-
-
