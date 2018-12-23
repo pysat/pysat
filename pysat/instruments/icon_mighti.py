@@ -217,7 +217,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     --------
     ::
         If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
-        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:04d}.NC'
+        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
+        'v{version:02d}r{revision:04d}.NC'
 
     Note
     ----

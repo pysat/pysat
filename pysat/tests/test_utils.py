@@ -84,7 +84,7 @@ class TestBasics():
         # Add testing data for circular statistics
         self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
         self.test_nan = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87, np.nan]
-        self.circ_kwargs = {"high":360.0, "low":0.0}
+        self.circ_kwargs = {"high": 360.0, "low": 0.0}
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
@@ -121,7 +121,7 @@ class TestBasics():
 
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
-        self.testInst.load(2009,1)
+        self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)

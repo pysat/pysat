@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Provides default routines for integrating NASA CDAWeb instruments into pysat.
-Adding new CDAWeb datasets should only require mininal user intervention.
+"""Provides default routines for integrating NASA CDAWeb instruments into
+pysat. Adding new CDAWeb datasets should only require mininal user
+intervention.
 
 """
 
@@ -57,7 +58,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         list_files = functools.partial(nasa_cdaweb_methods.list_files,
                                        supported_tags=supported_tags)
 
-        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}' +
+            '_v01.cdf'
         supported_tags = {'':ivm_fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
@@ -206,7 +208,8 @@ def download(supported_tags, date_array, tag, sat_id,
     ::
 
         # download support added to cnofs_vefi.py using code below
-        rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
+        rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}'+
+            '_v05.cdf'
         ln = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         dc_b_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
                     'remote_fname':rn,

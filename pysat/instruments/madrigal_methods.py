@@ -229,9 +229,11 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
                                      '--user_fullname='+user,
                                      '--user_email='+password,
                                      '--user_affiliation=pysat',
-                                     '--format='+file_format, \
-                            '--startDate='+date_array[0].strftime('%m/%d/%Y'),\
-                            '--endDate='+date_array[-1].strftime('%m/%d/%Y'),
+                                     '--format='+file_format,
+                                     '--startDate=' +
+                                     date_array[0].strftime('%m/%d/%Y'),
+                                     '--endDate=' +
+                                     date_array[-1].strftime('%m/%d/%Y'),
                                      '--inst='+inst_code, '--kindat='+kindat])
         print('Feedback from openMadrigal ', a)
     except OSError as err:

@@ -504,7 +504,8 @@ class Files(object):
         if format_str is None:
             raise ValueError("Must supply a filename template (format_str).")
         if data_path is None:
-            raise ValueError("Must supply instrument directory path (dir_path)")
+            raise ValueError("Must supply instrument directory path " +
+                             "(dir_path)")
 
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
@@ -586,7 +587,8 @@ class Files(object):
                 idx, = np.where(np.array(stored['year']) >=
                                 two_digit_year_break)
                 stored['year'][idx] = stored['year'][idx] + 1900
-                idx, = np.where(np.array(stored['year']) < two_digit_year_break)
+                idx, = np.where(np.array(stored['year']) <
+                                two_digit_year_break)
                 stored['year'][idx] = stored['year'][idx] + 2000
             # need to sort the information for things to work
             rec_arr = [stored[key] for key in keys]

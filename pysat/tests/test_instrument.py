@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#Test some of the basic _core functions
+# Test some of the basic _core functions
 import sys
 import pysat
 import pandas as pds
@@ -102,10 +102,10 @@ class TestBasics():
             (test_date == self.testInst.date)
 
     def test_filename_load(self):
-        """Test if file is loadable by filename, relative to top_data_dir/platform/name/tag"""
+        """Test if file is loadable by filename, relative to
+        top_data_dir/platform/name/tag"""
         self.testInst.load(fname='2010-12-31.nofile')
         assert self.testInst.index[0] == pds.datetime(2010, 12, 31)
-
 
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
@@ -261,14 +261,14 @@ class TestBasics():
 
     def test_data_access_by_datetime_and_name(self):
         self.testInst.load(2009, 1)
-        assert np.all(self.testInst[pysat.datetime(2009,1,1,0,0,0),'uts'] ==
-                      self.testInst.data['uts'].values[0])
+        assert np.all(self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0), 'uts']
+                      == self.testInst.data['uts'].values[0])
 
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
         assert np.all(self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0):
-                                    pysat.datetime(2009,1,1,0,0,10),'uts'] ==
-                      self.testInst.data['uts'].values[0:11])
+                                    pysat.datetime(2009, 1, 1, 0, 0, 10), 'uts']
+                      == self.testInst.data['uts'].values[0:11])
 
     def test_setting_data_by_name(self):
         self.testInst.load(2009, 1)

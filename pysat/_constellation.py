@@ -386,7 +386,9 @@ class Constellation(object):
         return { 'data': data_df, 'start':start, 'end':end }
         """
 
-        labels = [dl1 for dl1, dl2 in data_labels] + ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + ['dist']
+        labels = [dl1 for dl1, dl2 in data_labels] + \
+            ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + \
+            ['dist']
         data = {label: [] for label in labels}
 
         # Apply bounds

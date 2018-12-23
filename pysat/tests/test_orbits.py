@@ -445,7 +445,7 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
                   pysat.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = pysat.datetime(2009,1,2)+pds.DateOffset(days=int(seconds))
+            day = pysat.datetime(2009, 1, 2)+pds.DateOffset(days=int(seconds))
             times.append([day, day +
                           pds.DateOffset(hours=1, minutes=37,
                                          seconds=int(seconds)) -

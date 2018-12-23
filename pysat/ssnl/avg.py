@@ -68,7 +68,7 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
     xarr = np.arange(numx)
     zarr = np.arange(numz)
     # 3d array:  stores the data that is sorted into each bin? - in a deque
-    ans = [ [ [collections.deque() for i in xarr] for j in yarr] for k in zarr]
+    ans = [[[collections.deque() for i in xarr] for j in yarr] for k in zarr]
 
     for inst in const:
         # do loop to iterate over instrument season
@@ -110,6 +110,7 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
 
     return _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr,
                            numx, numy, numz, returnData)
+
 
 def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx,
                     numy, numz, returnData=False):
@@ -164,7 +165,8 @@ def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx,
                         countAns[zk][yj][xi] = len(ans[zk][yj][xi])
                         devAns[zk][yj][xi] = \
                             pds.DataFrame([abs(temp - medianAns[zk][yj][xi])
-                                           for temp in ans[zk][yj][xi]]).median(axis=0)
+                                           for temp in
+                                           ans[zk][yj][xi]]).median(axis=0)
 
     # if some pandas DataFrames are returned in average, return a list
     objidx, = np.where(objArray == 'F')
@@ -176,7 +178,8 @@ def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx,
                         ans[zk][yj][xi] = list(ans[zk][yj][xi])
                         countAns[zk][yj][xi] = len(ans[zk][yj][xi])
                         test = pds.Panel.from_dict(dict([(i, temp)
-                                                   for i, temp in enumerate(ans[zk][yj][xi])]))
+                                                   for i, temp in
+                                                   enumerate(ans[zk][yj][xi])]))
                         medianAns[zk][yj][xi] = test.median(axis=0)
                         devAns[zk][yj][xi] = \
                             (test.subtract(medianAns[zk][yj][xi],

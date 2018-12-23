@@ -201,8 +201,8 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
     occur_prob : dictionary
         A dict of dicts indexed by data_label. Each entry is dict with entries
         'prob' for the probability and 'count' for the number of days with any
-        data; 'bin_x', 'bin_y', and 'bin_z' are also returned if requested. Note
-        that arrays are organized for direct plotting, z,y,x.
+        data; 'bin_x', 'bin_y', and 'bin_z' are also returned if requested.
+        Note that arrays are organized for direct plotting, z,y,x.
 
     Note
     ----

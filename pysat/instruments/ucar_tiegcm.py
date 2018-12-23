@@ -181,38 +181,46 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     --------
     ::
         If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
-        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:04d}.NC'
+        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
+        'v{version:02d}r{revision:04d}.NC'
 
     Note
     ----
     The returned Series should not have any duplicate datetimes. If there are
-    multiple versions of a file the most recent version should be kept and the rest
-    discarded. This routine uses the pysat.Files.from_os constructor, thus
+    multiple versions of a file the most recent version should be kept and the
+    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
     the returned files are up to pysat specifications.
 
     """
     format_str = 'tiegcm_icon_merg2.0_totTgcm.s_{day:03d}_{year:4d}.nc'
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
+
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
              **kwargs):
     """Placeholder for UCAR TIEGCM downloads. Doesn't do anything.
 
-    This routine is invoked by pysat and is not intended for direct use by the end user.
+    This routine is invoked by pysat and is not intended for direct use by
+    the end user.
 
     Parameters
     ----------
     date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not be contiguous.
+        list of datetimes to download data for. The sequence of dates need not
+        be contiguous.
     tag : string ('')
-        Tag identifier used for particular dataset. This input is provided by pysat.
+        Tag identifier used for particular dataset. This input is provided by
+        pysat.
     sat_id : string  ('')
-        Satellite ID string identifier used for particular dataset. This input is provided by pysat.
+        Satellite ID string identifier used for particular dataset. This input
+        is provided by pysat.
     data_path : string (None)
         Path to directory to download data to.
     user : string (None)
-        User string input used for download. Provided by user and passed via pysat. If an account
-        is required for dowloads this routine here must error if user not supplied.
+        User string input used for download. Provided by user and passed via
+        pysat. If an account
+        is required for dowloads this routine here must error if user not
+        supplied.
     password : string (None)
         Password for data download.
     **kwargs : dict
@@ -228,5 +236,5 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
 
     """
 
-    print ('Not implemented.')
+    print('Not implemented.')
     return

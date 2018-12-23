@@ -224,7 +224,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         elif tag == 'recent':
             format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
-                                       format_str=format_str)
+                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 files.ix[files.index[-1] +

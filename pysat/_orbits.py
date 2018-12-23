@@ -491,8 +491,10 @@ class Orbits(object):
                             self._getBasicOrbit(orbit=1)
                         # check that this orbit should end on the current day
                         delta = true_date - self.sat.index[0]
-                        # print 'checking if first orbit should land on requested day'
-                        # print self.sat.date, self.sat.index[0], delta, delta >= self.orbit_period
+                        # print 'checking if first orbit should land on
+                        #     requested day'
+                        # print self.sat.date, self.sat.index[0], delta,
+                        #     delta >= self.orbit_period
                         if delta >= self.orbit_period:
                             # the orbit loaded isn't close enough to date
                             # to be the first orbit of the day, move forward
@@ -570,9 +572,9 @@ class Orbits(object):
                             # combine this next day's data with previous last
                             # orbit, grab the first one
                             self.sat.data = self.sat.concat_data(
-                                    [temp_orbit_data[:self.sat.index[0] -
-                                                     pds.DateOffset(microseconds=1)],
-                                     self.sat.data])
+                                [temp_orbit_data[:self.sat.index[0] -
+                                                 pds.DateOffset(microseconds=1)],
+                                 self.sat.data])
                             self._getBasicOrbit(orbit=1)
                         else:
                             # no data, go back a day and grab the last orbit.
@@ -609,9 +611,9 @@ class Orbits(object):
                         # orbit went across day break, stick old orbit onto new
                         # data and grab second orbit (first is old)
                         self.sat.data = self.sat.concat_data(
-                                [temp_orbit_data[:self.sat.index[0] -
-                                                 pds.DateOffset(microseconds=1)],
-                                 self.sat.data])
+                            [temp_orbit_data[:self.sat.index[0] -
+                                             pds.DateOffset(microseconds=1)],
+                             self.sat.data])
                         # select second orbit of combined data
                         self._getBasicOrbit(orbit=2)
                     else:

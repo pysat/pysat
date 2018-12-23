@@ -356,7 +356,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                             matched_inst.data = inst.data.isel(im)
                     else:
                         if inst.pandas_format:
-                            matched_inst.data = matched_inst.data.append( \
+                            matched_inst.data = matched_inst.data.append(
                                                         inst.data.iloc[im])
                         else:
                             matched_inst.data = xr.merge(matched_inst.data,
@@ -535,7 +535,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         idim_names = inst.data.coords.keys()[1:]
 
                         # Find relevent dimensions for cycling
-                        ind_dims = [i for i,kk in enumerate(inst_name)
+                        ind_dims = [i for i, kk in enumerate(inst_name)
                                     if kk in idim_names]
                         imod_dims = [i for i in ind_dims
                                      if mod_name[i] in dims]

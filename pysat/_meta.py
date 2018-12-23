@@ -584,7 +584,8 @@ class Meta(object):
                     meta_row.at['children'] = None  # empty_meta
                 return meta_row
                 # else:
-                #     return pds.Series([self.ho_data[new_key].copy()], index=['children'])
+                #     return pds.Series([self.ho_data[new_key].copy()],
+                #      index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
 
@@ -868,8 +869,8 @@ class Meta(object):
             for key in other.keys_nD():
                 if key in mdata:
 
-                    raise RuntimeError('Duplicated keys (variable names) across '
-                                       'Meta objects in keys_nD().')
+                    raise RuntimeError('Duplicated keys (variable names) '
+                                       'across Meta objects in keys_nD().')
 
         # make sure labels between the two objects are the same
         other_updated = self.apply_default_labels(other)
@@ -1145,5 +1146,5 @@ class Meta(object):
     #
     # @classmethod
     # def from_dict():
-    #     """not implemented yet, load metadata from dict of items/list types"""
+    #    """not implemented yet, load metadata from dict of items/list types"""
     #     pass

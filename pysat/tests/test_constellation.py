@@ -61,6 +61,7 @@ class TestConstellation:
         assert str(self.const) == \
             "\npysat Constellation object:\ntesting\ntesting\n"
 
+
 class TestAdditionIdenticalInstruments:
     def setup(self):
         self.const1 = pysat.Constellation(name='testing')

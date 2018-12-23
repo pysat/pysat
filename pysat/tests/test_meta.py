@@ -943,7 +943,8 @@ class TestBasics():
         assert (self.meta['NEW', 'YoYoYO'] == 'YOLO')
         assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
         assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].children.attr_case_name('YoYoYo') == 'YoYoYO')
+        assert (self.meta['new2'].children.attr_case_name('YoYoYo') ==
+                'YoYoYO')
 
     def test_get_attribute_name_case_preservation_w_higher_order_reverse_order(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
