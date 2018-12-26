@@ -181,9 +181,11 @@ def clean(self):
     """
     import numpy as np
 
-    idx = list()
-    
+    # Default to selecting all of the data
+    ida = [i for i in range(self.data.indexes['gdalt'].shape[0])]
+
     if self.tag.find('oblique') == 0:
+        # Oblique profile cleaning
         print('The double pulse, coded pulse, and long pulse modes ' +
               'implemented at Jicamarca have different limitations arising ' +
               'from different degrees of precision and accuracy. Users ' +
@@ -193,17 +195,18 @@ def clean(self):
         if self.clean_level in ['clean', 'dusty', 'dirty']:
             print('WARNING: this level 2 data has no quality flags')
     else:
+        # Ion drift cleaning
         if self.clean_level in ['clean', 'dusty', 'dirty']:
             if self.clean_level in ['clean', 'dusty']:
                 print('WARNING: this level 2 data has no quality flags')
 
-            idx, = np.where((self['gdalt'] > 200.0))
+            ida, = np.where((self.data.indexes['gdalt'] > 200.0))
         else:
             print("WARNING: interpretation of drifts below 200 km should " +
                   "always be done in partnership with the contact people")
             
     # downselect data based upon cleaning conditions above
-    self.data = self[idx]
+    self.data = self.data.isel(gdalt=ida)
         
     return
 
