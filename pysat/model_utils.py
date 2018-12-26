@@ -143,13 +143,15 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Determine whether the model data needs to be scaled
         iscale = utils.scale_units(pairs.data_vars[iname].units,
                                    pairs.data_vars[mod_name[i]].units)
-        mod_scaled = pairs.data_vars[mod_name[i]] * iscale
+        mod_scaled = pairs.data_vars[mod_name[i]].values.flatten() * iscale
+
+        # Flatten both data sets, since accuracy routines require 1D arrays
+        inst_dat = pairs.data_vars[iname].values.flatten()
 
         # Calculate all of the desired statistics
         for mm in methods:
             try:
-                stat_dict[iname][mm] = method_rout[mm](mod_scaled,
-                                                       pairs.data_vars[iname])
+                stat_dict[iname][mm] = method_rout[mm](mod_scaled, inst_dat)
 
                 # Convenience functions add layers to the output, remove
                 # these layers
@@ -335,7 +337,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     if len(im) == 1:
                         im = im[0]
                     else:
-                        im = {kk:im[i]
+                        im = {kk:np.unique(im[i])
                               for i,kk in enumerate(inst.data.coords.keys())}
 
                     # Save the clean, matched data
@@ -522,9 +524,9 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         idims = len(inst.data.coords)
                         idim_names = inst.data.coords.keys()[1:]
 
-                        # Find relevent dimensions for cycling
+                        # Find relevent dimensions for cycling and slicing
                         ind_dims = [i for i,kk in enumerate(inst_name)
-                                    if kk in idim_names]
+                                      if kk in idim_names]
                         imod_dims = [i for i in ind_dims if mod_name[i] in dims]
                         ind_dims = [inst.data.coords.keys().index(inst_name[i])
                                     for i in imod_dims]
@@ -537,9 +539,15 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
 
                     # Get the instrument coordinate for this cycle
                     if icycles < ncycles or icycles == 0:
+                        ss = [ii if i == 0 else 0 for i in range(idims)]
+                        se = [ii+1 if i == 0 else
+                              len(inst.data.coords[idim_names[i-1]])
+                              for i in range(idims)]
+                        xout = [cinds[ind_dims.index(i)] if i in ind_dims
+                                else slice(ss[i], se[i]) for i in range(idims)]
                         xind = [cinds[ind_dims.index(i)] if i in ind_dims
-                                else 0 for i in range(idims)]
-                        xind[0] = ii
+                                else ss[i] for i in range(idims)]
+                        xout = tuple(xout)
                         xind = tuple(xind)
 
                         xi = list()
@@ -583,7 +591,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                 except ValueError as verr:
                     if str(verr).find("requested xi is out of bounds") > 0:
                         # This is acceptable, pad the interpolated data with NaN
-                        print("Warning: {:}".format(verr))
+                        print("Warning: {:} for ".format(verr) +
+                              "{:s} data at {:}".format(mdat, xi))
                         yi = [np.nan]
                     else:
                         raise ValueError(verr)
@@ -593,7 +602,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                 if not attr_name in interp_data.keys():
                     interp_data[attr_name] = \
                         np.empty(shape=interp_shape, dtype=float) * np.nan
-                interp_data[attr_name][xind] = yi[0]
+                interp_data[attr_name][xout] = yi[0]
 
     # Test and ensure the instrument data doesn't already have the interpolated
     # data.  This should not happen
