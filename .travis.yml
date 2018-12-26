@@ -5,10 +5,10 @@ python:
 sudo: false
 
 cache: pip
-cache:		
-   directories:		
-      - ../pyglow
- 
+cache:
+   directories:
+      - ../pyglow_cache
+
 addons:
   apt:
     packages:
@@ -39,6 +39,7 @@ install:
   # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
   - pip install coveralls
+  - pip install future
   - pip install pysatCDF >/dev/null
     # install pyglow, space science models
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -48,37 +49,21 @@ install:
   - pwd
   - ls
 
-   # check if there is a partial download of pyglow, remove if true
-  - export PYGLOW_DIR=./pyglow
-  - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      export PYGLOW_SIZE=($(du -s $PYGLOW_DIR));
-      echo 'PYGLOW_SIZE' $PYGLOW_SIZE;
-      export CHECK_SIZE=50000;
-      if [[ "${PYGLOW_SIZE}" -lt "$CHECK_SIZE" ]]; then
-        rm -rf $PYGLOW_DIR;
-        echo 'removing pyglow directory';
-      fi
-    fi
-    # If pyglow exists, install it
-  - if [[ -d "$PYGLOW_DIR" && -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      cd $PYGLOW_DIR;
-      python setup.py install;
-      cd ..;
-    fi
-    # If no pyglow, clone, then run script
-  - if [[ ! -d "$PYGLOW_DIR" || ! -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
-      cd $PYGLOW_DIR;
-      travis_wait 50 ./pyglow_install.sh >/dev/null;
-      cd ..;
-    fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      cd pysat;
+      cd ..;
+      echo 'cloning pyglow';
+      travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
+      echo 'installing pyglow';
+      cd ./pyglow;
+      travis_wait 50 make -C src/pyglow/models source >/dev/null;
+      travis_wait 50 python setup.py install --user >/dev/null;
+      cd ..;
     fi
   # install pysat
+  - cd /home/travis/build/rstoneback/pysat
   - "python setup.py install"
 # command to run tests
-script: 
+script:
   - nosetests -vs --with-coverage --cover-package=pysat
 after_success:
   coveralls

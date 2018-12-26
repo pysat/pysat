@@ -241,7 +241,7 @@ class Test2DConstellation:
         for i in self.testC.instruments:
             i.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
         
-        results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24.], 'mlt',
+        results = pysat.ssnl.avg.median2D(self.testC, [0., 360., 24], 'longitude',
                                           [0., 24, 24], 'slt', ['uts'])
         dummy_val = results['uts']['median']
         dummy_dev = results['uts']['avg_abs_dev']
@@ -255,3 +255,89 @@ class Test2DConstellation:
         for i, y in enumerate(dummy_y[:-1]):
             check.append(np.all(dummy_val[i, :] == y.astype(int)))
             check.append(np.all(dummy_dev[i, :] == 0))
+
+class TestSeasonalAverageUnevenBins:
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing', clean_level='clean')
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+    def test_seasonal_average_uneven_bins(self):
+        
+        self.testInst.bounds = (pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
+        results = pysat.ssnl.avg.median2D(self.testInst, np.linspace(0., 360., 25), 'longitude',
+                                          np.linspace(0., 24., 25), 'mlt', ['dummy1', 'dummy2', 'dummy3'], auto_bin=False)
+        dummy_val = results['dummy1']['median']
+        dummy_dev = results['dummy1']['avg_abs_dev']
+
+        dummy2_val = results['dummy2']['median']
+        dummy2_dev = results['dummy2']['avg_abs_dev']
+
+        dummy3_val = results['dummy3']['median']
+        dummy3_dev = results['dummy3']['avg_abs_dev']
+        
+        dummy_x = results['dummy1']['bin_x']
+        dummy_y = results['dummy1']['bin_y']
+        
+        # iterate over all y rows, value should be equal to integer value of mlt
+        # no variation in the median, all values should be the same
+        check = []
+        for i, y in enumerate(dummy_y[:-1]):
+            assert np.all(dummy_val[i, :] == y.astype(int))
+            assert np.all(dummy_dev[i, :] == 0)
+
+        for i, x in enumerate(dummy_x[:-1]):
+            assert np.all(dummy2_val[:, i] == x/15.)
+            assert np.all(dummy2_dev[:, i] == 0)
+
+        for i, x in enumerate(dummy_x[:-1]):
+            check.append(np.all(dummy3_val[:, i] == x/15.*1000. + dummy_y[:-1]) )
+            check.append(np.all(dummy3_dev[:, i] == 0))
+                            
+        # holds here because there are 32 days, no data is discarded, 
+        # each day holds same amount of data
+        assert self.testInst.data['dummy1'].size*32 == sum([ sum(i) for i in results['dummy1']['count'] ])
+
+        assert np.all(check)
+
+    @raises(ValueError)
+    def test_nonmonotonic_bins(self):
+        '''If provided with a non-monotonic bins then numpy.digitize should 
+           raise a ValueError
+        '''
+        self.testInst.bounds = (pysat.datetime(2008,1,1), 
+                                pysat.datetime(2008,2,1))
+        pysat.ssnl.avg.median2D(self.testInst, 
+                                np.array([0., 300., 100.]), 'longitude',
+                                np.array([0., 24., 13.]), 'mlt', 
+                                ['dummy1', 'dummy2', 'dummy3'], 
+                                auto_bin=False)
+                                    
+    @raises(TypeError)
+    def test_bin_data_depth(self):
+        '''If an array-like of length 1 is given to median2D len() 
+           should raise an exception 
+        '''
+        self.testInst.bounds = (pysat.datetime(2008,1,1), 
+                                pysat.datetime(2008,2,1))
+        pysat.ssnl.avg.median2D(self.testInst, 
+                                1, 'longitude',
+                                24, 'mlt', 
+                                ['dummy1', 'dummy2', 'dummy3'], 
+                                auto_bin=False)
+
+    @raises(TypeError)
+    def test_bin_data_type(self):
+        '''If a non array-like is given to median2D numpy.digitize should
+           raise an exception 
+        '''
+        self.testInst.bounds = (pysat.datetime(2008,1,1), 
+                                pysat.datetime(2008,2,1))
+        pysat.ssnl.avg.median2D(self.testInst, 
+                                ['1', 'a', '23', '10'], 'longitude',
+                                ['0', 'd', '24', 'c'], 'mlt', 
+                                ['dummy1', 'dummy2', 'dummy3'], 
+                                auto_bin=False)
