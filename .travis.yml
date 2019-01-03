@@ -50,6 +50,7 @@ install:
   - ls
     
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      cd ..;
       echo 'cloning pyglow';
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
       echo 'installing pyglow';
@@ -59,7 +60,7 @@ install:
       cd ..; 
     fi
   # install pysat
-  - cd pysat
+  - cd /home/travis/build/rstoneback/pysat
   - "python setup.py install"
 # command to run tests
 script: 
