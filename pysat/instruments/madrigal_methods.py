@@ -320,7 +320,7 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     # get list of experiments for instrument from 1900 till now
     now = pysat.datetime.now()
     expList = web_data.getExperiments(inst_code,1900,1,1,0,0,0,now.year,
-                                        now.month,now.day,23,59,59)
+                                      now.month,now.day,23,59,59)
     # iterate over experiments to grab files for each one
     files = []
     print ("Grabbing filenames for each experiment")
@@ -328,6 +328,7 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     for exp in expList:
         file_list = web_data.getExperimentFiles(exp.id)
         files.extend(file_list)
+
     # parse these filenames to grab out the ones we want
     print ("Parsing filenames")
     stored = pysat._files.parse_fixed_width_filenames(files, format_str)    
