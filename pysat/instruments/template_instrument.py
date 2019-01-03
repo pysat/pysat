@@ -273,6 +273,36 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # local file system that match the format defined above
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
+def list_remote_files(tag, sat_id, user=None, password=None):
+    """Return a Pandas Series of every file for chosen remote data.
+    
+    This routine is intended to be used by pysat instrument modules supporting
+    a particular NASA CDAWeb dataset.
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    user : (string or NoneType)
+        Username to be passed along to resource with relevant data.  
+        (default=None)
+    password : (string or NoneType)
+        User password to be passed along to resource with relevant data.  
+        (default=None)
+
+    Returns
+    --------
+    pandas.Series
+        A Series formatted for the Files class (pysat._files.Files)
+        containing filenames and indexed by date and time
+    
+    """
+    
+    pass
+
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
              **kwargs):
     """Placeholder for PLATFORM/NAME downloads. 
