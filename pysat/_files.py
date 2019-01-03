@@ -152,7 +152,7 @@ class Files(object):
         # store write to disk preference
         self.write_to_disk = write_to_disk
         if self.write_to_disk is False:
-            # using blank memory rather than loading from diisk
+            # using blank memory rather than loading from disk
             self._previous_file_list = pds.Series([], dtype='a')
             self._current_file_list = pds.Series([], dtype='a')
 
@@ -720,11 +720,11 @@ def parse_delimited_filenames(files, format_str, delimiter):
     import collections
 
     # create storage for data to be parsed from filenames
-    stored = collections.OrderedDict()
-    stored['year'] = []; stored['month'] = []; stored['day'] = [];
-    stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
-    stored['version'] = []; stored['revision'] = [];
-    
+    ordered_keys = ['year', 'month', 'day', 'hour', 'min', 'sec',
+                    'version', 'revision']
+    stored = collections.OrderedDict({kk:list() for kk in ordered_keys})
+
+    # exit early if there are no files    
     if len(files) == 0:  
         stored['files'] = []
         # include format string as convenience for later functions
