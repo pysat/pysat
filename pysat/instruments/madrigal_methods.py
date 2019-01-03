@@ -319,13 +319,13 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     web_data = madrigalWeb.madrigalWeb.MadrigalData(url)
     # get list of experiments for instrument from 1900 till now
     now = pysat.datetime.now()
-    expList = web_data.getExperiments(inst_code,1900,1,1,0,0,0,now.year,
+    exp_list = web_data.getExperiments(inst_code,1900,1,1,0,0,0,now.year,
                                       now.month,now.day,23,59,59)
     # iterate over experiments to grab files for each one
     files = []
     print ("Grabbing filenames for each experiment")
-    print ("A total of", len(expList), "experiments were found")
-    for exp in expList:
+    print ("A total of", len(exp_list), "experiments were found")
+    for exp in exp_list:
         file_list = web_data.getExperimentFiles(exp.id)
         files.extend(file_list)
 
