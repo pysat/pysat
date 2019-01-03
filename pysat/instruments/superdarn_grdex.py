@@ -73,6 +73,16 @@ def init(self):
     self._list_remote_rtn = functools.partial(list_remote_files, 
                                                data_path=self.files.data_path,
                                                format_str=self.files.file_format)
+    
+    # data acknowledgement from SuperDARN
+    # coped from SD Documents area of VT SuperDARN webpage
+    # http://vt.superdarn.org/tiki-list_file_gallery.php?galleryId=81
+    # How to acknowledge use of SuperDARN Data - 2017
+    print ('Authors should acknowledge the use of SuperDARN data. ',  
+           'SuperDARN is a collection of radars funded by national scientific ',
+           'funding agencies of Australia, Canada, China, France, Italy, ',
+           'Japan, Norway, South Africa, United Kingdom and the United States ',
+           'of America.')
     return 
 
 def list_remote_files(tag, sat_id, data_path=None, format_str=None):
