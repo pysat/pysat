@@ -7,7 +7,7 @@ data sets. Using these codes, the madrigal_methods.py routines will
 be used to support downloading and loading of data.
 
 
-Downloads data from the JRO Madrigal Database.
+Downloads data from the Madrigal Database.
 
 Parameters
 ----------
@@ -79,7 +79,7 @@ load = mad_meth.load
 download = mad_meth.download
 
 def init(self):
-    """Initializes the Instrument object with values specific to JRO ISR
+    """Initializes the Instrument object in support of Madrigal access
     
     Runs once upon instantiation.
     
@@ -101,8 +101,8 @@ def init(self):
     code = self.kwargs['madrigal_code']
     tag = self.kwargs['madrigal_tag']
     self._download_rtn = functools.partial(_general_download, 
-                                      inst_code=str(code),
-                                      kindat=str(tag))
+                                           inst_code=str(code),
+                                           kindat=str(tag))
     return
 
 def _general_download(date_array, tag='', sat_id='', data_path=None, user=None,
@@ -156,14 +156,13 @@ def _general_download(date_array, tag='', sat_id='', data_path=None, user=None,
     The affiliation field is set to pysat to enable tracking of pysat downloads.
 
     """
-    mad_meth.download(date_array, inst_code=inst_code,
-                      kindat=kindat,
+    mad_meth.download(date_array, inst_code=inst_code, kindat=kindat,
                       data_path=data_path, user=user, password=password)
 
    
         
 def clean(self):
-    """Routine to return JRO ISR data cleaned to the specified level
+    """Placeholder routine that would normally return cleaned data 
 
     Returns
     --------
@@ -172,16 +171,14 @@ def clean(self):
 
     Notes
     --------
-    Supports 'clean', 'dusty', 'dirty'
-    'Clean' is unknown for oblique modes, over 200 km for drifts
-    'Dusty' is unknown for oblique modes, over 200 km for drifts
-    'Dirty' is unknown for oblique modes, over 200 km for drifts
-    'None' None
+    Supports 'clean', 'dusty', 'dirty' in the sense that it prints
+    a message noting there is no cleaning. 
+    'None' is also supported as it signifies no cleaning.
 
     Routine is called by pysat, and not by the end user directly.
     
     """
-    if self.clean_level in ['clean', 'dusty']:
+    if self.clean_level in ['clean', 'dusty', 'dirty']:
         print('WARNING: Generalized Madrigal data support has no cleaning.')
     
     return
