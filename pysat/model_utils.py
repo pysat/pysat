@@ -149,10 +149,14 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Flatten both data sets, since accuracy routines require 1D arrays
         inst_dat = pairs.data_vars[iname].values.flatten()
 
+        # Ensure no NaN are used in statistics
+        inum = np.where(~np.isnan(mod_scaled) & ~np.isnan(inst_dat))[0]
+
         # Calculate all of the desired statistics
         for mm in methods:
             try:
-                stat_dict[iname][mm] = method_rout[mm](mod_scaled, inst_dat)
+                stat_dict[iname][mm] = method_rout[mm](mod_scaled[inum],
+                                                       inst_dat[inum])
 
                 # Convenience functions add layers to the output, remove
                 # these layers
