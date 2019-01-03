@@ -49,6 +49,7 @@ install:
   - pwd
   - ls
     
+
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd ..;
       echo 'cloning pyglow';
@@ -63,7 +64,7 @@ install:
   - cd /home/travis/build/rstoneback/pysat
   - "python setup.py install"
 # command to run tests
-script: 
+script:
   - nosetests -vs --with-coverage --cover-package=pysat
 after_success:
   coveralls
