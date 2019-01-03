@@ -60,7 +60,7 @@ supported_tags = {'':{'dc_b':basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files, 
-                               supported_tags=supported_tags)
+                                      supported_tags=supported_tags)
 
                     
 def clean(inst):
