@@ -1239,6 +1239,19 @@ class Instrument(object):
         
         return self._list_remote_rtn(self.tag, self.sat_id)
 
+    def remote_date_range(self):
+        """Returns fist and last date for remote data.
+        
+        Returns
+        -------
+        List
+            First and last datetimes obtained from remote_file_list
+        
+        """
+        
+        files = self.remote_file_list()
+        return [files.index[0], files.index[-1]]
+
     def download_updated_files(self, user=None, password=None, **kwargs):
         """Grabs a list of remote files, compares to local, then downloads new files.
         
