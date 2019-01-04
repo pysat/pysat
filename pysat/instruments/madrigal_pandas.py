@@ -6,8 +6,19 @@ as well as the data tag numbers that Madrigal uses to uniquely identify
 data sets. Using these codes, the madrigal_methods.py routines will
 be used to support downloading and loading of data.
 
-
 Downloads data from the Madrigal Database.
+
+Warnings
+--------
+    All data downloaded under this general support is placed in the same
+    directory, pysat_data_dir/madrigal/pandas/. For technical reasons, 
+    the file search algorithm for pysat's Madrigal support is set to permissive 
+    defaults. Thus, all instrument files downloaded via this interface will be 
+    picked up by the madrigal pandas pysat Instrument object unless the 
+    file_format keyword is used at instantiation.
+    
+    Files can be safely downloaded without knowing the file_format keyword, 
+    or equivalently, how Madrigal names the files. See `Examples` for more.
 
 Parameters
 ----------
@@ -18,17 +29,44 @@ name : string
 tag : string
     ''
 
-Example
--------
+Examples
+--------
+::
+    # for isolated use of a madrigal data set
     import pysat
     # download DMSP data from Madrigal
     dmsp = pysat.Instrument('madrigal', 'pandas',
-                            madrigal_inst_code=8100,
+                            madrigal_code=8100,
                             madrigal_tag=10241)
     dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31), 
                   user='Firstname+Lastname', password='email@address.com')
     dmsp.load(2017,363)
-
+    
+    # for users that plan on using multiple Madrigal datasets 
+    # using this general interface then an additional parameter
+    # should be supplied upon instrument instantiation (file_format)
+    
+    # pysat needs information on how to parse filenames from Madrigal
+    # for the particular instrument under study.
+    # When starting from scratch (no files), this is a two step process.
+    # First, get atleast one file from Madrigal, using the steps above
+    # using the file downloaded. Using the filename, convert it to a template string
+    # and pass that to pysat when instantiating future Instruments.
+    
+    # For example, one of the files downloaded above is dms_ut_19980101_11.002.hdf5
+    # pysat needs a template for how to pull out the year, month, day, and,
+    # if available, hour, minute, second, etc.
+    # the format/template string for this instrument is 
+    # 'dms_ut_{year:4d}{month:02d}{day:02d}_12.002.hdf5', following
+    # python standards for string templates/Formatters
+    # https://docs.python.org/2/library/string.html
+    
+    # the complete instantiation for this instrument is 
+    dmsp = pysat.Instrument('madrigal', 'pandas',  
+                            madrigal_code=8100, 
+                            madrigal_tag=10241, 
+                            file_format='dms_ut_{year:4d}{month:02d}{day:02d}_11.002.hdf5')
+                            
 Note
 ----
     Please provide name and email when downloading data with this routine.
