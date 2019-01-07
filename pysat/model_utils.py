@@ -345,23 +345,16 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     if len(im) == 1:
                         im = im[0]
                     else:
-                        im = {kk:np.unique(im[i])
+                        im = {kk: np.unique(im[i])
                               for i,kk in enumerate(inst.data.coords.keys())}
 
                     # Save the clean, matched data
                     if matched_inst is None:
                         matched_inst = pysat.Instrument
                         matched_inst.meta = inst.meta
-                        if inst.pandas_format:
-                            matched_inst.data = inst.data.iloc[im]
-                        else:
-                            matched_inst.data = inst.data.isel(im)
+                        matched_inst.data = inst.data[im]
                     else:
-                        if inst.pandas_format:
-                            idata = inst.data.iloc[im]
-                        else:
-                            idata = inst.data.isel(im)
-                        
+                        idata = inst[im]
                         matched_inst.data = inst.concat_data([matched_inst.data,
                                                               idata])
 
