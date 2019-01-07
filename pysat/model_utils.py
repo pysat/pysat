@@ -504,10 +504,10 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
             # Determine the dimension values
             dims = list(model.data_vars[mdat].dims)
             ndim = model.data_vars[mdat].data.shape
-            indices = tuple([mind[i] if kk == mod_time_name
-                            else slice(0,ndim[k]) for k,kk in enumerate(dims)])
+            indices = {mod_time_name: mind[i]}
 
             # Construct the data needed for interpolation
+            values = model[indices][mdat].data
             points = [model.coords[kk].data for kk in dims if kk in mod_name]
             get_coords = True if len(points) > 0 else False
             idims = 0
@@ -527,7 +527,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
 
                         # Find relevent dimensions for cycling and slicing
                         ind_dims = [i for i,kk in enumerate(inst_name)
-                                      if kk in idim_names]
+                                    if kk in idim_names]
                         imod_dims = [i for i in ind_dims if mod_name[i] in dims]
                         ind_dims = [inst.data.coords.keys().index(inst_name[i])
                                     for i in imod_dims]
@@ -582,9 +582,6 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     # time, move onto the next time
                     if icycles >= ncycles:
                         get_coords = False
-
-                # Get the model values for this time
-                values = model.data_vars[mdat].data[indices]
 
                 # Interpolate the desired value
                 try:
