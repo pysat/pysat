@@ -182,7 +182,7 @@ def clean(self):
     import numpy as np
 
     # Default to selecting all of the data
-    ida = [i for i in range(self.data.indexes['gdalt'].shape[0])]
+    idx = {'gdalt': [i for i in range(self.data.indexes['gdalt'].shape[0])]}
 
     if self.tag.find('oblique') == 0:
         # Oblique profile cleaning
@@ -201,12 +201,13 @@ def clean(self):
                 print('WARNING: this level 2 data has no quality flags')
 
             ida, = np.where((self.data.indexes['gdalt'] > 200.0))
+            idx['gdalt'] = np.unique(ida)
         else:
             print("WARNING: interpretation of drifts below 200 km should " +
                   "always be done in partnership with the contact people")
             
     # downselect data based upon cleaning conditions above
-    self.data = self.data.isel(gdalt=ida)
+    self.data = self[idx]
         
     return
 
