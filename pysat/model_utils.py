@@ -150,7 +150,7 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         inst_dat = pairs.data_vars[iname].values.flatten()
 
         # Ensure no NaN are used in statistics
-        inum = np.where(~np.isnan(mod_scaled) & ~np.isnan(inst_dat))[0]
+        inum = np.where(np.isfinite(mod_scaled) & np.isfinite(inst_dat))[0]
 
         # Calculate all of the desired statistics
         for mm in methods:
@@ -331,9 +331,9 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     for aname in added_names:
                         # Determine the number of good points
                         if inst.pandas_format:
-                            imnew = np.where(~np.isnan(inst[aname]))
+                            imnew = np.where(np.isfinite(inst[aname]))
                         else:
-                            imnew = np.where(~np.isnan(inst[aname].values))
+                            imnew = np.where(np.isfinite(inst[aname].values))
 
                         # Some data types are higher dimensions than others,
                         # make sure we end up choosing a high dimension one
