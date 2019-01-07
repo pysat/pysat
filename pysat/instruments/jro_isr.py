@@ -186,9 +186,11 @@ def clean(self):
     """
     import numpy as np
 
-    idx = list()
-    
+    # Default to selecting all of the data
+    idx = {'gdalt': [i for i in range(self.data.indexes['gdalt'].shape[0])]}
+
     if self.tag.find('oblique') == 0:
+        # Oblique profile cleaning
         print('The double pulse, coded pulse, and long pulse modes ' +
               'implemented at Jicamarca have different limitations arising ' +
               'from different degrees of precision and accuracy. Users ' +
@@ -198,11 +200,13 @@ def clean(self):
         if self.clean_level in ['clean', 'dusty', 'dirty']:
             print('WARNING: this level 2 data has no quality flags')
     else:
+        # Ion drift cleaning
         if self.clean_level in ['clean', 'dusty', 'dirty']:
             if self.clean_level in ['clean', 'dusty']:
                 print('WARNING: this level 2 data has no quality flags')
 
-            idx, = np.where((self['gdalt'] > 200.0))
+            ida, = np.where((self.data.indexes['gdalt'] > 200.0))
+            idx['gdalt'] = np.unique(ida)
         else:
             print("WARNING: interpretation of drifts below 200 km should " +
                   "always be done in partnership with the contact people")
@@ -261,5 +265,24 @@ def calc_measurement_loc(self):
         # the number of data dimensions
         self.data = self.data.assign(lat_key=gdlat, lon_key=gdlon)
         self.data.rename({"lat_key":lat_key, "lon_key":lon_key}, inplace=True)
+
+        # Add metadata for the new data values
+        bm_label = "Beam {:d} ".format(dd)
+        self.meta[lat_key] = {self.meta.units_label: 'degrees',
+                              self.meta.name_label: bm_label + 'latitude',
+                              self.meta.desc_label: bm_label + 'latitude',
+                              self.meta.plot_label: bm_label + 'Latitude',
+                              self.meta.axis_label: bm_label + 'Latitude',
+                              self.meta.scale_label: 'linear',
+                              self.meta.min_label: -90.0,
+                              self.meta.max_label: 90.0,
+                              self.meta.fill_label: np.nan}
+        self.meta[lon_key] = {self.meta.units_label: 'degrees',
+                              self.meta.name_label: bm_label + 'longitude',
+                              self.meta.desc_label: bm_label + 'longitude',
+                              self.meta.plot_label: bm_label + 'Longitude',
+                              self.meta.axis_label: bm_label + 'Longitude',
+                              self.meta.scale_label: 'linear',
+                              self.meta.fill_label: np.nan}
 
     return
