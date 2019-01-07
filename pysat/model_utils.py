@@ -487,7 +487,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     iind = list()
     for i,tt in enumerate(np.array(model.data_vars[mod_datetime_name])):
         del_sec = abs(tt - inst.index).total_seconds()
-        if del_sec.min() < min_del:
+        if del_sec.min() <= min_del:
             iind.append(del_sec.argmin())
             mind.append(i)
 
@@ -526,28 +526,28 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         idim_names = inst.data.coords.keys()[1:]
 
                         # Find relevent dimensions for cycling and slicing
-                        ind_dims = [i for i,kk in enumerate(inst_name)
+                        ind_dims = [k for k,kk in enumerate(inst_name)
                                     if kk in idim_names]
-                        imod_dims = [i for i in ind_dims if mod_name[i] in dims]
-                        ind_dims = [inst.data.coords.keys().index(inst_name[i])
-                                    for i in imod_dims]
+                        imod_dims = [k for k in ind_dims if mod_name[k] in dims]
+                        ind_dims = [inst.data.coords.keys().index(inst_name[k])
+                                    for k in imod_dims]
 
                         # Set the number of cycles
                         icycles = 0
-                        ncycles = sum([len(inst.data.coords[inst_name[i]])
-                                       for i in imod_dims])
+                        ncycles = sum([len(inst.data.coords[inst_name[k]])
+                                       for k in imod_dims])
                         cinds = np.zeros(shape=len(imod_dims), dtype=int)
 
                     # Get the instrument coordinate for this cycle
                     if icycles < ncycles or icycles == 0:
-                        ss = [ii if i == 0 else 0 for i in range(idims)]
-                        se = [ii+1 if i == 0 else
-                              len(inst.data.coords[idim_names[i-1]])
-                              for i in range(idims)]
-                        xout = [cinds[ind_dims.index(i)] if i in ind_dims
-                                else slice(ss[i], se[i]) for i in range(idims)]
-                        xind = [cinds[ind_dims.index(i)] if i in ind_dims
-                                else ss[i] for i in range(idims)]
+                        ss = [ii if k == 0 else 0 for k in range(idims)]
+                        se = [ii+1 if k == 0 else
+                              len(inst.data.coords[idim_names[k-1]])
+                              for k in range(idims)]
+                        xout = [cinds[ind_dims.index(k)] if k in ind_dims
+                                else slice(ss[k], se[k]) for k in range(idims)]
+                        xind = [cinds[ind_dims.index(k)] if k in ind_dims
+                                else ss[k] for k in range(idims)]
                         xout = tuple(xout)
                         xind = tuple(xind)
 
@@ -555,25 +555,25 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         for kk in dims:
                             if kk in mod_name:
                                 # This is the next instrument coordinate
-                                i = mod_name.index(kk)
-                                if i in imod_dims:
+                                k = mod_name.index(kk)
+                                if k in imod_dims:
                                     # This is an xarray coordiante
-                                    xi.append(inst_coord[kk][cinds[i]])
+                                    xi.append(inst_coord[kk][cinds[k]])
                                 else:
                                     # This is an xarray variable
                                     xi.append(inst_coord[kk][xind])
 
                         # Cycle the indices
                         if len(cinds) > 0:
-                            i = 0
-                            cinds[i] += 1
+                            k = 0
+                            cinds[k] += 1
 
-                            while cinds[i] > \
-                                inst.data.coords.dims[inst_name[imod_dims[i]]]:
-                                i += 1
-                                if i < len(cinds):
-                                    cinds[i-1] = 0
-                                    cinds[i] += 1
+                            while cinds[k] > \
+                                inst.data.coords.dims[inst_name[imod_dims[k]]]:
+                                k += 1
+                                if k < len(cinds):
+                                    cinds[k-1] = 0
+                                    cinds[k] += 1
                                 else:
                                     break
                         icycles += 1
