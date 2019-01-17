@@ -102,8 +102,8 @@ def load(fnames, tag=None, sat_id=None):
     
     """
     from pysat.utils import parse_date
-    
 
+    meta = pysat.Meta()
     if tag == '':
         # Kp data stored monthly, need to return data daily
         # the daily date is attached to filename
@@ -148,20 +148,26 @@ def load(fnames, tag=None, sat_id=None):
         flag = np.array([x[1] for x in s])
     
         ind, = np.where(flag == '+')
-        first[ind] += 1./3.
+        first[ind] += 1.0 / 3.0
         ind, = np.where(flag == '-')
-        first[ind] -= 1./3.
+        first[ind] -= 1.0 / 3.0
         
         result = pds.DataFrame(first, columns=['Kp'], index=s.index)
+        fill_val = np.nan
     elif tag == 'forecast':
         # load forecast data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-        
+        fill_val = -1
     elif tag == 'recent':
         # load recent Kp data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
+        fill_val = -1
+
+    # Initalize the meta data
+    for kk in result.keys():
+        initialize_kp_metadata(meta, kk, fill_val)
            
-    return result, pysat.Meta()
+    return result, meta
     
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -438,5 +444,34 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         sat.data = sat.data.dropna(axis=0, how='all')
 
     return
+
+def initialize_kp_metadata(meta, data_key, fill_val=-1):
+    """ Initialize the Kp meta data using our knowledge of the index
     
-    
+    Parameters
+    ----------
+    meta : (pysat._meta.Meta)
+        Pysat metadata
+    data_key : (str)
+        String denoting the data key
+    fill_val : (int or float)
+        File-specific fill value (default=-1)
+
+    Returns
+    -------
+    Void
+
+    Updates metadata
+
+    """
+
+    data_label = data_key.replace("_", " ")
+
+    meta[data_key] = {meta.units_label: '', meta.name_label: data_key,
+                      meta.desc_label: data_label ,
+                      meta.plot_label: data_label.capitalize(),
+                      meta.axis_label: data_label.capitalize(),
+                      meta.scale_label: 'linear', meta.min_label: 0,
+                      meta.max_label: 9, meta.fill_label: fill_val}
+
+    return
