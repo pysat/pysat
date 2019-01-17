@@ -152,7 +152,7 @@ def load(fnames, tag=None, sat_id=None):
         ind, = np.where(flag == '-')
         first[ind] -= 1./3.
         
-        result = pds.DataFrame(first, columns=['kp'], index=s.index)
+        result = pds.DataFrame(first, columns=['Kp'], index=s.index)
     elif tag == 'forecast':
         # load forecast data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
@@ -215,8 +215,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
-                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
-                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+                pds_off = pds.DateOffset(days=1)
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
             return files           
         elif tag == 'recent':
             format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
@@ -224,8 +225,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
-                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
-                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+                pds_off = pds.DateOffset(days=1)
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
             return files
 
         else:
@@ -413,7 +415,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         kp_inst.load(date=sat.date, verifyPad=True)
         kpData = kp_inst
     elif kpData is None:
-        kp = pysat.Instrument('sw', 'kp', pad=pds.DateOffset(days=1))
+        kp = pysat.Instrument('sw', 'Kp', pad=pds.DateOffset(days=1))
         kp.load(date=sat.date, verifyPad=True)
         kpData = kp
         
@@ -428,7 +430,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     # date of satellite data
     date = sat.date
     selData = kpData[date-pds.DateOffset(days=1):date+pds.DateOffset(days=1)]
-    ind, = np.where(selData['kp'] >= maxKp)
+    ind, = np.where(selData['Kp'] >= maxKp)
     for lind in ind:
         sind = selData.index[lind]
         eind = sind + pds.DateOffset(hours=filterTime)
