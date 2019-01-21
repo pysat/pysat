@@ -147,13 +147,19 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Determine whether the model data needs to be scaled
         iscale = utils.scale_units(pairs.data_vars[iname].units,
                                    pairs.data_vars[mod_name[i]].units)
-        mod_scaled = pairs.data_vars[mod_name[i]] * iscale
+        mod_scaled = pairs.data_vars[mod_name[i]].values.flatten() * iscale
+
+        # Flatten both data sets, since accuracy routines require 1D arrays
+        inst_dat = pairs.data_vars[iname].values.flatten()
+
+        # Ensure no NaN are used in statistics
+        inum = np.where(np.isfinite(mod_scaled) & np.isfinite(inst_dat))[0]
 
         # Calculate all of the desired statistics
         for mm in methods:
             try:
-                stat_dict[iname][mm] = method_rout[mm](mod_scaled,
-                                                       pairs.data_vars[iname])
+                stat_dict[iname][mm] = method_rout[mm](mod_scaled[inum],
+                                                       inst_dat[inum])
 
                 # Convenience functions add layers to the output, remove
                 # these layers
@@ -329,9 +335,9 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     for aname in added_names:
                         # Determine the number of good points
                         if inst.pandas_format:
-                            imnew = np.where(~np.isnan(inst[aname]))
+                            imnew = np.where(np.isfinite(inst[aname]))
                         else:
-                            imnew = np.where(~np.isnan(inst[aname].values))
+                            imnew = np.where(np.isfinite(inst[aname].values))
 
                         # Some data types are higher dimensions than others,
                         # make sure we end up choosing a high dimension one
@@ -343,24 +349,18 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     if len(im) == 1:
                         im = im[0]
                     else:
-                        im = {kk: im[i]
+                        im = {kk: np.unique(im[i])
                               for i, kk in enumerate(inst.data.coords.keys())}
 
                     # Save the clean, matched data
                     if matched_inst is None:
                         matched_inst = pysat.Instrument
                         matched_inst.meta = inst.meta
-                        if inst.pandas_format:
-                            matched_inst.data = inst.data.iloc[im]
-                        else:
-                            matched_inst.data = inst.data.isel(im)
+                        matched_inst.data = inst.data[im]
                     else:
-                        if inst.pandas_format:
-                            matched_inst.data = matched_inst.data.append(
-                                                        inst.data.iloc[im])
-                        else:
-                            matched_inst.data = xr.merge(matched_inst.data,
-                                                         inst.data.isel(im))
+                        idata = inst[im]
+                        matched_inst.data = inst.concat_data([matched_inst.data,
+                                                              idata])
 
                     # Reset the clean flag
                     inst.clean_level = 'none'
@@ -494,7 +494,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     iind = list()
     for i, tt in enumerate(np.array(model.data_vars[mod_datetime_name])):
         del_sec = abs(tt - inst.index).total_seconds()
-        if del_sec.min() < min_del:
+        if del_sec.min() <= min_del:
             iind.append(del_sec.argmin())
             mind.append(i)
 
@@ -511,11 +511,10 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
             # Determine the dimension values
             dims = list(model.data_vars[mdat].dims)
             ndim = model.data_vars[mdat].data.shape
-            indices = tuple([mind[i] if kk == mod_time_name
-                            else slice(0, ndim[k])
-                            for k, kk in enumerate(dims)])
+            indices = {mod_time_name: mind[i]}
 
             # Construct the data needed for interpolation
+            values = model[indices][mdat].data
             points = [model.coords[kk].data for kk in dims if kk in mod_name]
             get_coords = True if len(points) > 0 else False
             idims = 0
@@ -534,50 +533,55 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         idims = len(inst.data.coords)
                         idim_names = inst.data.coords.keys()[1:]
 
-                        # Find relevent dimensions for cycling
-                        ind_dims = [i for i, kk in enumerate(inst_name)
+                        # Find relevent dimensions for cycling and slicing
+                        ind_dims = [k for k, kk in enumerate(inst_name)
                                     if kk in idim_names]
-                        imod_dims = [i for i in ind_dims
-                                     if mod_name[i] in dims]
-                        ind_dims = [inst.data.coords.keys().index(inst_name[i])
-                                    for i in imod_dims]
+                        imod_dims = [k for k in ind_dims if mod_name[k] in dims]
+                        ind_dims = [inst.data.coords.keys().index(inst_name[k])
+                                    for k in imod_dims]
 
                         # Set the number of cycles
                         icycles = 0
-                        ncycles = sum([len(inst.data.coords[inst_name[i]])
-                                       for i in imod_dims])
+                        ncycles = sum([len(inst.data.coords[inst_name[k]])
+                                       for k in imod_dims])
                         cinds = np.zeros(shape=len(imod_dims), dtype=int)
 
                     # Get the instrument coordinate for this cycle
                     if icycles < ncycles or icycles == 0:
-                        xind = [cinds[ind_dims.index(i)] if i in ind_dims
-                                else 0 for i in range(idims)]
-                        xind[0] = ii
+                        ss = [ii if k == 0 else 0 for k in range(idims)]
+                        se = [ii+1 if k == 0 else
+                              len(inst.data.coords[idim_names[k-1]])
+                              for k in range(idims)]
+                        xout = [cinds[ind_dims.index(k)] if k in ind_dims
+                                else slice(ss[k], se[k]) for k in range(idims)]
+                        xind = [cinds[ind_dims.index(k)] if k in ind_dims
+                                else ss[k] for k in range(idims)]
+                        xout = tuple(xout)
                         xind = tuple(xind)
 
                         xi = list()
                         for kk in dims:
                             if kk in mod_name:
                                 # This is the next instrument coordinate
-                                i = mod_name.index(kk)
-                                if i in imod_dims:
+                                k = mod_name.index(kk)
+                                if k in imod_dims:
                                     # This is an xarray coordiante
-                                    xi.append(inst_coord[kk][cinds[i]])
+                                    xi.append(inst_coord[kk][cinds[k]])
                                 else:
                                     # This is an xarray variable
                                     xi.append(inst_coord[kk][xind])
 
                         # Cycle the indices
                         if len(cinds) > 0:
-                            i = 0
-                            cinds[i] += 1
+                            k = 0
+                            cinds[k] += 1
 
-                            while cinds[i] > \
-                                    inst.data.coords.dims[inst_name[imod_dims[i]]]:
-                                i += 1
-                                if i < len(cinds):
-                                    cinds[i-1] = 0
-                                    cinds[i] += 1
+                            while cinds[k] > \
+                                inst.data.coords.dims[inst_name[imod_dims[k]]]:
+                                k += 1
+                                if k < len(cinds):
+                                    cinds[k-1] = 0
+                                    cinds[k] += 1
                                 else:
                                     break
                         icycles += 1
@@ -587,9 +591,6 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     if icycles >= ncycles:
                         get_coords = False
 
-                # Get the model values for this time
-                values = model.data_vars[mdat].data[indices]
-
                 # Interpolate the desired value
                 try:
                     yi = interpolate.interpn(points, values, xi, method=method)
@@ -597,7 +598,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     if str(verr).find("requested xi is out of bounds") > 0:
                         # This is acceptable, pad the interpolated data with
                         # NaN
-                        print("Warning: {:}".format(verr))
+                        print("Warning: {:} for ".format(verr) +
+                              "{:s} data at {:}".format(mdat, xi))
                         yi = [np.nan]
                     else:
                         raise ValueError(verr)
@@ -607,7 +609,12 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                 if attr_name not in interp_data.keys():
                     interp_data[attr_name] = \
                         np.empty(shape=interp_shape, dtype=float) * np.nan
-                interp_data[attr_name][xind] = yi[0]
+                interp_data[attr_name][xout] = yi[0]
+
+    # Test and ensure the instrument data doesn't already have the interpolated
+    # data.  This should not happen
+    if np.any([mdat in inst.data.keys() for mdat in interp_data.keys()]):
+        raise ValueError("instrument object already contains model data")
 
     # Update the instrument object and attach units to the metadata
     for mdat in interp_data.keys():

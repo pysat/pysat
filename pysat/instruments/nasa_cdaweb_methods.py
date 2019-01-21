@@ -36,13 +36,17 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
     supported_tags : (dict or NoneType)
-        keys are tags supported by list_files routine. Values are the
-        default format_str values for key. (default=None)
+        keys are sat_id, each containing a dict keyed by tag
+        where the values file format template strings. (default=None)
     fake_daily_files_from_monthly : bool
         Some CDAWeb instrument data files are stored by month, interfering
         with pysat's functionality of loading by day. This flag, when true,
         appends daily dates to monthly files internally. These dates are
         used by load routine in this module to provide data by day.
+    two_digit_year_break : int
+        If filenames only store two digits for the year, then
+        '1900' will be added for years >= two_digit_year_break
+        and '2000' will be added for years < two_digit_year_break.
 
     Returns
     --------
@@ -111,6 +115,9 @@ def load(fnames, tag=None, sat_id=None,
         parses of daily dates to monthly files that were added internally
         by the list_files routine, when flagged. These dates are
         used here to provide data by day.
+    flatted_twod : bool
+        Flattens 2D data into different columns of root DataFrame rather
+        than produce a Series of DataFrames
 
     Returns
     ---------
@@ -270,3 +277,129 @@ def download(supported_tags, date_array, tag, sat_id,
                 os.remove(saved_local_fname)
                 print('File not available for ' + date.strftime('%x'))
     ftp.close()
+
+
+def list_remote_files(tag, sat_id,
+                      ftp_site='cdaweb.gsfc.nasa.gov',
+                      supported_tags=None,
+                      user=None, password=None,
+                      fake_daily_files_from_monthly=False,
+                      two_digit_year_break=None,
+                      delimiter=None):
+    """Return a Pandas Series of every file for chosen remote data.
+
+    This routine is intended to be used by pysat instrument modules supporting
+    a particular NASA CDAWeb dataset.
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are <tag strings>.
+        (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    ftp_site : (string or NoneType)
+        FTP site to download data from (default='cdaweb.gsfc.nasa.gov')
+    supported_tags : dict
+        dict of dicts. Keys are supported tag names for download. Value is
+        a dict with 'dir', 'remote_fname', 'local_fname'. Inteded to be
+        pre-set with functools.partial then assigned to new instrument code.
+    user : (string or NoneType)
+        Username to be passed along to resource with relevant data.
+        (default=None)
+    password : (string or NoneType)
+        User password to be passed along to resource with relevant data.
+        (default=None)
+    fake_daily_files_from_monthly : bool
+        Some CDAWeb instrument data files are stored by month.This flag,
+        when true, accomodates this reality with user feedback on a monthly
+        time frame.
+    two_digit_year_break : int
+        If filenames only store two digits for the year, then
+        '1900' will be added for years >= two_digit_year_break
+        and '2000' will be added for years < two_digit_year_break.
+    delimiter : string
+        If filename is delimited, then provide delimiter alone e.g. '_'
+
+    Returns
+    --------
+    pysat.Files.from_os : (pysat._files.Files)
+        A class containing the verified available files
+
+    Examples
+    --------
+    ::
+
+        fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
+        supported_tags = {'dc_b':fname}
+        list_files = functools.partial(nasa_cdaweb_methods.list_files,
+                                       supported_tags=supported_tags)
+
+        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        supported_tags = {'':ivm_fname}
+        list_files = functools.partial(cdw.list_files,
+                                       supported_tags=supported_tags)
+
+    """
+
+    import os
+    import ftplib
+
+    # connect to CDAWeb default port
+    ftp = ftplib.FTP(ftp_site)
+    # user anonymous, passwd anonymous@
+    ftp.login()
+
+    try:
+        ftp_dict = supported_tags[sat_id][tag]
+    except KeyError:
+        raise ValueError('Tag name unknown.')
+
+    # path to relevant file on CDAWeb
+    ftp.cwd(ftp_dict['dir'])
+
+    # naming scheme for files on the CDAWeb server
+    format_str = ftp_dict['remote_fname']
+    # started from https://stackoverflow.com/questions/111954/using-pythons-ftplib-to-get-a-directory-listing-portably
+
+    # get a listing of all files
+    # determine if we need to walk directories
+    dir_split = os.path.split(format_str)
+    if (len(dir_split) == 2) & (len(dir_split[0]) != 0):
+        try:
+            dirs = ftp.nlst()
+        except ftplib.error_perm as resp:
+            if str(resp) == "550 No files found":
+                print("No files in this directory")
+            else:
+                raise
+        # only want to keep file portion of the string
+        format_str = dir_split[-1]
+    elif len(dir_split) == 2:
+        # no extra directories
+        dirs = ['']
+    else:
+        raise ValueError('Only travereses one extra level of directory.')
+
+    full_files = []
+    for direct in dirs:
+        ftp.cwd(ftp_dict['dir']+'/'+direct)
+        try:
+            files = ftp.nlst()
+            full_files.extend(files)
+        except ftplib.error_perm as resp:
+            if str(resp) == "550 No files found":
+                print("No files in this directory")
+            else:
+                raise
+    ftp.close()
+    # parse remote filenames to get date information
+    if delimiter is None:
+        stored = pysat._files.parse_fixed_width_filenames(full_files,
+                                                          format_str)
+    else:
+        stored = pysat._files.parse_delimited_filenames(full_files, format_str,
+                                                        delimiter)
+    # process the parsed filenames and return a properly formatted Series
+    return pysat._files.process_parsed_filenames(stored, two_digit_year_break)

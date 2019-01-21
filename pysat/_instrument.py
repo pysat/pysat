@@ -673,6 +673,7 @@ class Instrument(object):
         self._clean_rtn = self._pass_func
         self._init_rtn = self._pass_func
         self._download_rtn = self._pass_func
+        self._list_remote_rtn = self._pass_func
         # default params
         self.directory_format = None
         self.file_format = None
@@ -709,6 +710,10 @@ class Instrument(object):
             pass
         try:
             self._clean_rtn = inst.clean
+        except AttributeError:
+            pass
+        try:
+            self._list_remote_rtn = inst.list_remote_files
         except AttributeError:
             pass
 
@@ -775,21 +780,21 @@ class Instrument(object):
 
         if len(self.files.files) > 0:
             output_str += 'Date Range: '
-            output_str += self.files.files.index[0].strftime('%m/%d/%Y')
+            output_str += self.files.files.index[0].strftime('%d %B %Y')
             output_str += ' --- '
-            output_str += self.files.files.index[-1].strftime('%m/%d/%Y')
+            output_str += self.files.files.index[-1].strftime('%d %B %Y')
 
         output_str += '\n\nLoaded Data Statistics'+'\n'
         output_str += '----------------------'+'\n'
         if not self.empty:
             # if self._fid is not None:
             #     output_str += 'Filename: ' +
-            output_str += 'Date: ' + self.date.strftime('%m/%d/%Y') + '\n'
+            output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
             output_str += 'DOY: {:03d}'.format(self.doy) + '\n'
             output_str += 'Time range: '
-            output_str += self.index[0].strftime('%m/%d/%Y %H:%M:%S')
+            output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
             output_str += ' --- '
-            output_str += self.index[-1].strftime('%m/%d/%Y %H:%M:%S')+'\n'
+            output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S')+'\n'
             output_str += 'Number of Times: ' + str(len(self.index)) + '\n'
             output_str += 'Number of variables: ' + str(len(self.variables))
 
@@ -937,7 +942,7 @@ class Instrument(object):
         if len(data) > 0:
             if date is not None:
                 output_str = ' '.join(('Returning', output_str, 'data for',
-                                       date.strftime('%x')))
+                                       date.strftime('%d %B %Y')))
             else:
                 if len(fname) == 1:
                     # this check was zero
@@ -950,7 +955,7 @@ class Instrument(object):
         else:
             # no data signal
             output_str = ' '.join(('No', output_str, 'data for',
-                                   date.strftime('%m/%d/%y')))
+                                   date.strftime('%d %B %Y')))
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         print(output_str)
@@ -1226,8 +1231,84 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def download(self, start=None, stop=None, freq='D', user=None,
-                 password=None, **kwargs):
+    def remote_file_list(self):
+        """List remote files for chosen instrument.
+
+        Returns
+        -------
+        Series
+            pandas Series of filenames indexed by date and time
+
+        """
+
+        return self._list_remote_rtn(self.tag, self.sat_id)
+
+    def remote_date_range(self):
+        """Returns fist and last date for remote data.
+
+        Returns
+        -------
+        List
+            First and last datetimes obtained from remote_file_list
+
+        """
+
+        files = self.remote_file_list()
+        return [files.index[0], files.index[-1]]
+
+    def download_updated_files(self, user=None, password=None, **kwargs):
+        """Grabs a list of remote files, compares to local, then downloads new files.
+
+        Parameters
+        ----------
+        user : string
+            username, if required by instrument data archive
+        password : string
+            password, if required by instrument data archive
+        **kwargs : dict
+            Dictionary of keywords that may be options for specific instruments
+
+        Note
+        ----
+        Data will be downloaded to pysat_data_dir/patform/name/tag
+
+        If Instrument bounds are set to defaults they are updated
+        after files are downloaded.
+
+        """
+
+        # get list of remote files
+        remote_files = self.remote_file_list()
+        if remote_files.empty:
+            print('No remote files found. Unable to download latest data.')
+            return
+
+        # get current list of local files
+        self.files.refresh()
+        local_files = self.files.files
+        # compare local and remote files
+
+        # first look for dates that are in remote but not in local
+        new_dates = []
+        for date in remote_files.index:
+            if date not in local_files:
+                new_dates.append(date)
+
+        # now compare filenames between common dates as it may
+        # be a new version or revision
+        # this will have a problem with filenames that are
+        # faking daily data from monthly
+        for date in local_files.index:
+            if date in remote_files.index:
+                if remote_files[date] != local_files[date]:
+                    new_dates.append(date)
+        print ('Found ', len(new_dates), ' files that are new or updated.')
+        # download date for dates in new_dates (also includes new names)
+        self.download(user=user, password=password, date_array=new_dates, **kwargs)
+
+
+    def download(self, start=None, stop=None, freq='D', user=None, password=None,
+                 date_array=None, **kwargs):
         """Download data for given Instrument object from start to stop.
 
         Parameters
@@ -1243,6 +1324,9 @@ class Instrument(object):
             username, if required by instrument data archive
         password : string
             password, if required by instrument data archive
+        date_array : list-like
+            Sequence of dates to download date for. Takes precendence over
+            start and stop inputs
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments
 
@@ -1261,22 +1345,27 @@ class Instrument(object):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-        if (start is None) or (stop is None):
+
+        if (start is None) or (stop is None) and (date_array is None):
             # defaults for downloads are set here rather than
             # in the method signature since method defaults are
             # only set once! If an Instrument object persists
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            print('Downloading the most recent data by default.')
+            print ('Downloading the most recent data by default. ',
+                   '(yesterday through tomorrow)')
             start = self.yesterday()
             stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
-        # make sure dates are whole days
-        start = self._filter_datetime_input(start)
-        stop = self._filter_datetime_input(stop)
-        # create range of dates to download data for
-        date_array = utils.season_date_range(start, stop, freq=freq)
+
+        if date_array is None:
+            # create range of dates to download data for
+            # make sure dates are whole days
+            start = self._filter_datetime_input(start)
+            stop = self._filter_datetime_input(stop)
+            date_array = utils.season_date_range(start, stop, freq=freq)
+
         if user is None:
             self._download_rtn(date_array,
                                tag=self.tag,

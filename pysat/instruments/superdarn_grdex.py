@@ -35,6 +35,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import sys
 import os
+import functools
 
 import pandas as pds
 import numpy as np
@@ -49,6 +50,93 @@ sat_ids = {'': ['north', 'south']}
 test_dates = {'': {'north': pysat.datetime(2009, 1, 1),
                    'south': pysat.datetime(2009, 1, 1)}}
 
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+    
+    Runs once upon instantiation.
+    
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+    
+    
+    """
+
+    # reset the list_remote_files routine to include the data path
+    # now conveniently included with instrument object
+    self._list_remote_rtn = functools.partial(list_remote_files, 
+                                               data_path=self.files.data_path,
+                                               format_str=self.files.file_format)
+    
+    # data acknowledgement from SuperDARN
+    # coped from SD Documents area of VT SuperDARN webpage
+    # http://vt.superdarn.org/tiki-list_file_gallery.php?galleryId=81
+    # How to acknowledge use of SuperDARN Data - 2017
+    print ('Authors should acknowledge the use of SuperDARN data. ',  
+           'SuperDARN is a collection of radars funded by national scientific ',
+           'funding agencies of Australia, Canada, China, France, Italy, ',
+           'Japan, Norway, South Africa, United Kingdom and the United States ',
+           'of America.')
+    return 
+
+def list_remote_files(tag, sat_id, data_path=None, format_str=None):
+    """Lists remote files available for SuperDARN.
+    
+    Note
+    ----
+    This routine currently fakes the list but
+    produces the desired effect of keeping data current.
+    Begins with data in 1985. (this needs to be checked)
+    
+    Parameters
+    ----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+
+    Returns
+    -------
+    pandas.Series
+        Series indexed by date that stores the filename for each date.
+
+    """
+    
+    # given the function of SuperMAG, create a fake list of files
+    # starting 01 Jan 1970, through today
+    now = pysat.datetime.now()
+    now = pysat.datetime(now.year, now.month, now.day)
+    # create a list of dates with appropriate frequency
+    index = pds.period_range(pysat.datetime(1985,1,1), now, freq='D')
+    # pre fill in blank strings
+    remote_files = pds.Series(['']*len(index), index=index)
+    
+    # pysat compares both dates and filenames when determining
+    # which files it needs to download
+    # so we need to ensure that filename for dates that overlap
+    # are the same or data that is already present will be redownloaded
+    
+    # need to get a list of the current files attached to
+    # the Instrument object. In this case, the object hasn't 
+    # been passed in.....
+    #   that is ok, we can just call list_files right here
+    #   except we don't have the data path
+    # the init function above is used to reset the
+    # lost_remote_files method with one where the
+    # data path and format_str are set
+    local_files = list_files(tag, sat_id, data_path, format_str)
+    # iterating directly since pandas is complaining about periods
+    # between different between indexes
+    for time, fname in local_files.iteritems():   
+        remote_files.loc[time] = fname
+    return remote_files
 
 def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -205,12 +293,12 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             saved_fname = os.path.join(data_path, local_fname)
             full_fname = os.path.join(data_path, fname)
             try:
-                print('Downloading file for '+date.strftime('%D'))
+                print('Downloading file for '+date.strftime('%d %B %Y'))
                 sys.stdout.flush()
                 sftp.get(myDir+local_fname, saved_fname)
                 os.system('bunzip2 -c '+saved_fname+' > '+full_fname)
                 os.system('rm ' + saved_fname)
             except IOError:
-                print('File not available for '+date.strftime('%D'))
+                print('File not available for '+date.strftime('%d %B %Y'))
 
     return

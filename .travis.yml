@@ -5,10 +5,10 @@ python:
 sudo: false
 
 cache: pip
-cache:
-   directories:
+cache:		
+   directories:		
       - ../pyglow_cache
-
+ 
 addons:
   apt:
     packages:
@@ -48,6 +48,7 @@ install:
     fi
   - pwd
   - ls
+    
 
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd ..;
@@ -57,7 +58,7 @@ install:
       cd ./pyglow;
       travis_wait 50 make -C src/pyglow/models source >/dev/null;
       travis_wait 50 python setup.py install --user >/dev/null;
-      cd ..;
+      cd ..; 
     fi
   # install pysat
   - cd /home/travis/build/rstoneback/pysat

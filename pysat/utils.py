@@ -794,6 +794,18 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
         data = inst.data.assign(pysat_slt=(inst.data.coords.keys(), slt))
         data.rename({"pysat_slt": slt_name}, inplace=True)
         inst.data = data
+
+    # Add units to the metadata
+    inst.meta.__setitem__(slt_name, {inst.meta.units_label: 'h',
+                                     inst.meta.name_label: "Solar Local Time",
+                                     inst.meta.desc_label: "Solar local time",
+                                     inst.meta.plot_label: "SLT",
+                                     inst.meta.axis_label: "SLT",
+                                     inst.meta.scale_label: "linear",
+                                     inst.meta.min_label: 0.0,
+                                     inst.meta.max_label: 24.0,
+                                     inst.meta.fill_label:np.nan})
+        
     return
 
 
@@ -1026,21 +1038,29 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     Notes
     ------
     This transform is the same for local or global spherical/cartesian
-    transformations
+    transformations.
+
+    Returns elevation angle (angle from the xy plane) rather than zenith angle
+    (angle from the z-axis)
 
     """
 
     if inverse:
         # Cartesian to Spherical
         xy_sq = az_in**2 + el_in**2
-        z_out = np.sqrt(xy_sq + r_in**2)  # This is r
-        x_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in))  # This is azimuth
-        y_out = np.degrees(np.arctan2(el_in, az_in))  # This is elevation
+        z_out = np.sqrt(xy_sq + r_in**2) # This is r
+        y_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in)) # This is zenith
+        y_out = 90.0 - y_out # This is the elevation
+        x_out = np.degrees(np.arctan2(el_in, az_in)) # This is azimuth
     else:
+        # Spherical coordinate system uses zenith angle (degrees from the
+        # z-axis) and not the elevation angle (degrees from the x-y plane)
+        zen_in = np.radians(90.0 - el_in)
+        
         # Spherical to Cartesian
-        x_out = r_in * np.cos(np.radians(az_in)) * np.sin(np.radians(el_in))
-        y_out = r_in * np.cos(np.radians(az_in)) * np.cos(np.radians(el_in))
-        z_out = r_in * np.sin(np.radians(az_in))
+        x_out = r_in * np.sin(zen_in) * np.cos(np.radians(az_in))
+        y_out = r_in * np.sin(zen_in) * np.sin(np.radians(az_in))
+        z_out = r_in * np.cos(zen_in)
 
     return x_out, y_out, z_out
 
@@ -1089,7 +1109,7 @@ def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
     """
 
     # Get the global cartesian coordinates of local origin
-    x_cent, y_cent, z_cent = spherical_to_cartesian(lat_cent, lon_cent,
+    x_cent, y_cent, z_cent = spherical_to_cartesian(lon_cent, lat_cent,
                                                     rad_cent)
 
     # Get the amount of rotation needed to align the x-axis with the
@@ -1185,7 +1205,7 @@ def local_horizontal_to_global_geo(az, el, dist, lat_orig, lon_orig, alt_orig,
         gel = el
 
     # Convert from local horizontal to local cartesian coordiantes
-    x_loc, y_loc, z_loc = spherical_to_cartesian(az, el, dist, inverse=False)
+    x_loc, y_loc, z_loc = spherical_to_cartesian(gaz, gel, dist, inverse=False)
 
     # Convert from local to global cartesian coordiantes
     x_glob, y_glob, z_glob = global_to_local_cartesian(x_loc, y_loc, z_loc,
