@@ -166,7 +166,7 @@ def load(fnames, tag=None, sat_id=None):
     # Initalize the meta data
     for kk in result.keys():
         initialize_kp_metadata(meta, kk, fill_val)
-           
+
     return result, meta
     
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -451,7 +451,7 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
     Parameters
     ----------
     meta : (pysat._meta.Meta)
-        Pysat metadata
+        Pysat Metadata
     data_key : (str)
         String denoting the data key
     fill_val : (int or float)
@@ -466,11 +466,12 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
     """
 
     data_label = data_key.replace("_", " ")
+    format_label = data_label[0].upper() + data_label[1:]
 
     meta[data_key] = {meta.units_label: '', meta.name_label: data_key,
-                      meta.desc_label: data_label ,
-                      meta.plot_label: data_label.capitalize(),
-                      meta.axis_label: data_label.capitalize(),
+                      meta.desc_label: data_label,
+                      meta.plot_label: format_label,
+                      meta.axis_label: format_label,
                       meta.scale_label: 'linear', meta.min_label: 0,
                       meta.max_label: 9, meta.fill_label: fill_val}
 
