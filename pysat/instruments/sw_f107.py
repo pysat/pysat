@@ -9,7 +9,7 @@ name : string
     'f107'
 tag : string
     '' Standard F10.7 data (single day at a time)
-    'all' All F10.7
+    'all' All standard F10.7
     'forecast' Grab forecast data from SWPC (next 3 days)
     '45day' 45-Day Forecast data from the Air Force
 
@@ -51,8 +51,8 @@ import pysat
 
 platform = 'sw'
 name = 'f107'
-tags = {'':'Daily value of F10.7',
-        'all':'All F10.7 values',
+tags = {'':'Daily standard value of F10.7',
+        'all':'All standard F10.7 values',
         'forecast':'SWPC Forecast F107 data next (3 days)',
         '45day':'Air Force 45-day Forecast'}
 # dict keyed by sat_id that lists supported tags for each sat_id
@@ -114,9 +114,10 @@ def load(fnames, tag=None, sat_id=None):
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
     
     meta = pysat.Meta()
-    meta['f107'] = {'units':'SFU',
-                    'long_name':'F10.7 cm solar index',
-                    'desc':'F10.7 cm radio flux in Solar Flux Units (SFU)'}
+    meta['f107'] = {meta.units_label: 'SFU',
+                    meta.name_label: 'F10.7 cm solar index',
+                    meta.desc_label:
+                    'F10.7 cm radio flux in Solar Flux Units (SFU)'}
                     
     return result, meta
     
@@ -272,15 +273,18 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             # process
             raw_dict = json.loads(r.text)['noaa_radio_flux']
             data = pds.DataFrame.from_dict(raw_dict['samples'])
-            times = [pysat.datetime.strptime(time, '%Y %m %d')
-                     for time in data.pop('time')]
-            data.index = times
-            # replace fill with NaNs
-            idx, = np.where(data['f107'] == -99999.0)
-            data.iloc[idx,:] = np.nan
-            # create file
-            data.to_csv(os.path.join(data_path, 'f107_monthly_' +
-                                     date.strftime('%Y-%m') + '.txt'))
+            if data.empty:
+                print("WARNING: no data for {:}".format(date))
+            else:
+                times = [pysat.datetime.strptime(time, '%Y %m %d')
+                         for time in data.pop('time')]
+                data.index = times
+                # replace fill with NaNs
+                idx, = np.where(data['f107'] == -99999.0)
+                data.iloc[idx,:] = np.nan
+                # create file
+                data.to_csv(os.path.join(data_path, 'f107_monthly_' +
+                                         date.strftime('%Y-%m') + '.txt'))
 
     elif tag == 'all':    
         # download from LASP, by year
