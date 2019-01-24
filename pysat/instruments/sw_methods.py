@@ -142,7 +142,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
                 # Determine which times to save
                 local_fill_val = recent_inst.meta['Kp'].fill
-                good_times = recent_inst.index >= itime
+                good_times = ((recent_inst.index >= itime) &
+                              (recent_inst.index < stop))
                 good_vals = recent_inst['Kp'][good_times] != local_fill_val
 
                 # Save output data and cycle time
@@ -172,7 +173,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
                 # Determine which times to save
                 local_fill_val = forecast_inst.meta['Kp'].fill
-                good_times = forecast_inst.index >= itime
+                good_times = ((forecast_inst.index >= itime) &
+                              (forecast_inst.index < stop))
                 good_vals = forecast_inst['Kp'][good_times] != local_fill_val
 
                 # Save desired data and cycle time
@@ -299,7 +301,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         # Load and save the standard data for as many times as possible
         if inst_flag == 'standard':
             standard_inst.load(date=itime)
-            good_times = standard_inst.index >= itime
+            good_times = ((standard_inst.index >= itime) &
+                          (standard_inst.index < stop))
 
             if notes.find("standard") < 0:
                 notes += " the {:} source ({:} to ".format(inst_flag,
@@ -341,7 +344,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     fill_val = f107_inst.meta['f107'].fill
 
                 # Determine which times to save
-                good_times = forecast_inst.index >= itime
+                good_times = ((forecast_inst.index >= itime) &
+                              (forecast_inst.index < stop))
                 good_vals = forecast_inst['f107'][good_times] != fill_val
 
                 # Save desired data and cycle time
@@ -380,7 +384,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         f107_values.extend([fill_val for kk in extend_times])
 
     # Save output data
-    f107_inst.data = pds.DataFrame(f107_values, columns=['f107'], index=f107_times)
+    f107_inst.data = pds.DataFrame(f107_values, columns=['f107'],
+                                   index=f107_times)
 
     # Resample the output data, filling missing values
     if(date_range.shape != f107_inst.index.shape or
