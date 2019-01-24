@@ -11,7 +11,7 @@ import numpy as np
 import pysat
 
 def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
-               start=None, stop=None):
+               start=None, stop=None, fill_val=np.nan):
     """ Combine the output from the different Kp sources for a range of dates
 
     Parameters
@@ -31,6 +31,9 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     stop : (dt.datetime)
         Ending time for combining data, or None to use the latest loaded date
         from the pysat Instruments (default=None)
+    fill_val : (int or float)
+        Desired fill value (since the standard instrument fill value differs
+        from the other sources) (default=np.nan)
 
     Returns
     -------
@@ -47,6 +50,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     Will not attempt to download any missing data, but will load data
 
     """
+    notes = "Combines data from"
 
     # Create an ordered list of the Instruments, excluding any that are None
     all_inst = list()
@@ -86,8 +90,6 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
         raise ValueError("must either load in Instrument objects or provide" +
                          " starting and ending times")
 
-    print("TEST", start, stop, tag, inst_flag)
-
     # Initialize the output instrument
     kp_inst = pysat.Instrument()
     kp_inst.platform = all_inst[0].platform
@@ -95,7 +97,9 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     kp_inst.tag = tag
     kp_inst.date = start
     kp_inst.doy = int(start.strftime("%j"))
-    kp_inst.meta = all_inst[0].meta['Kp']
+    kp_inst.meta = pysat.Meta()
+    pysat.instruments.sw_kp.initialize_kp_metadata(kp_inst.meta, 'Kp',
+                                                   fill_val=fill_val)
 
     kp_times = list()
     kp_values = list()
@@ -103,18 +107,21 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     # Cycle through the desired time range
     itime = start
     while itime < stop and inst_flag is not None:
-        print("TEST", itime, stop, inst_flag, len(kp_times), len(kp_values))
-        
         # Load and save the standard data for as many times as possible
         if inst_flag == 'standard':
             standard_inst.load(date=itime)
 
+            if notes.find("standard") < 0:
+                notes += " the {:} source ({:} to ".format(inst_flag,
+                                                           itime.date())
+
             if len(standard_inst.index) == 0:
                 inst_flag = 'forecast' if recent_inst is None else 'recent'
+                notes += "{:})".format(itime.date())
             else:
                 kp_times.extend(list(standard_inst.index))
                 kp_values.extend(list(standard_inst['Kp']))
-                itime += pds.DateOffset(days=1)
+                itime = kp_times[-1] + pds.DateOffset(hours=3)
 
         # Load and save the recent data for as many times as possible
         if inst_flag == 'recent':
@@ -129,17 +136,22 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                 if filename is not None:
                     recent_inst.load(fname=filename)
 
+                if notes.find("recent") < 0:
+                    notes += " the {:} source ({:} to ".format(inst_flag,
+                                                               itime.date())
+
                 # Determine which times to save
-                fill_val = recent_inst.meta['Kp'].fill
+                local_fill_val = recent_inst.meta['Kp'].fill
                 good_times = recent_inst.index >= itime
-                good_vals = recent_inst['Kp'][good_times] != fill_val
+                good_vals = recent_inst['Kp'][good_times] != local_fill_val
 
                 # Save output data and cycle time
                 kp_times.extend(list(recent_inst.index[good_times][good_vals]))
                 kp_values.extend(list(recent_inst['Kp'][good_times][good_vals]))
-                itime = kp_times[-1].date() + pds.DateOffset(days=1)
+                itime = kp_times[-1] + pds.DateOffset(hours=3)
 
             inst_flag = 'forecast' if forecast_inst is not None else None
+            notes += "{:})".format(itime.date())
 
         # Load and save the forecast data for as many times as possible
         if inst_flag == "forecast":
@@ -154,21 +166,28 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                 if filename is not None:
                     forecast_inst.load(fname=filename)
 
+                if notes.find("forecast") < 0:
+                    notes += " the {:} source ({:} to ".format(inst_flag,
+                                                               itime.date())
+
                 # Determine which times to save
-                fill_val = forecast_inst.meta['Kp'].fill
+                local_fill_val = forecast_inst.meta['Kp'].fill
                 good_times = forecast_inst.index >= itime
-                good_vals = forecast_inst['Kp'][good_times] != fill_val
+                good_vals = forecast_inst['Kp'][good_times] != local_fill_val
 
                 # Save desired data and cycle time
                 kp_times.extend(list(forecast_inst.index[good_times][good_vals]))
                 kp_values.extend(list(forecast_inst['Kp'][good_times][good_vals]))
-                itime = kp_times[-1].date() + pds.DateOffset(days=1)
+                itime = kp_times[-1] + pds.DateOffset(hours=3)
+            notes += "{:})".format(itime.date())
 
             inst_flag = None
 
+    if inst_flag is not None:
+        notes += "{:})".format(itime.date())
+
     # Determine if the beginning or end of the time series needs to be padded
-    fill_val = kp_inst.meta['Kp'].fill
-    del_time = (kp_times[1:] - kp_times[:-1]).min()
+    del_time = (np.array(kp_times[1:]) - np.array(kp_times[:-1])).min()
     freq = "{:.0f}S".format(del_time.total_seconds())
     date_range = pds.date_range(start=start, end=stop, freq=freq)
 
@@ -197,6 +216,12 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     # Resample the output data, filling missing values
     if(date_range.shape != kp_inst.index.shape or
        abs(date_range - kp_inst.index).max().total_seconds() > 0.0):
-        kp_inst.data = kp_inst.data.resample(freq).fillna(value=fill_val)
+        kp_inst.data = kp_inst.data.resample(freq).fillna(method=None)
+        if np.isfinite(fill_val):
+            kp_inst.data[np.isnan(kp_inst.data)] = fill_val
+
+    # Update the metadata notes for this custom procedure
+    notes += ", in that order"
+    kp_inst.meta.__setitem__('Kp', {kp_inst.meta.notes_label: notes})
 
     return kp_inst
