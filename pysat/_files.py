@@ -197,10 +197,8 @@ class Files(object):
                 # raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
-            date = files_info.index[0]
-            self.start_date = pds.datetime(date.year, date.month, date.day)
-            date = files_info.index[-1]
-            self.stop_date = pds.datetime(date.year, date.month, date.day)
+            self.start_date = self._sat._filter_datetime_input(files_info.index[0])
+            self.stop_date = self._sat._filter_datetime_input(files_info.index[-1])
         else:
             self.start_date = None
             self.stop_date = None
