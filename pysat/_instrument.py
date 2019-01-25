@@ -609,18 +609,20 @@ class Instrument(object):
                 return len(data.indexes['time']) == 0
             else:
                 return True
-
+    @property
+    def date(self):
+        """Date for loaded data."""
+        return self._date
+        
+    @date.setter
+    def date(self, new):
+        """Date for loaded data."""
+        self._date = self._filter_datetime_input(new)
+        
     @property
     def index(self):
         """Returns time index of loaded data."""
-
-        if self.pandas_format:
-            return self.data.index
-        else:
-            if 'time' in self.data.indexes:
-                return self.data.indexes['time']
-            else:
-                return pds.Index([])
+        return self._index()
 
     def _index(self, data=None):
         """Returns time index of loaded data."""
@@ -818,16 +820,22 @@ class Instrument(object):
 
         Parameters
         ----------
-        date : datetime
+        date : datetime (array_like or single input)
 
         Returns
         -------
-        datetime
+        datetime (or list of datetimes)
             Only includes year, month, and day from original input
 
         """
 
-        return pds.datetime(date.year, date.month, date.day)
+        if date is None:
+            return date
+        else:
+            if hasattr(date, '__iter__'):
+                return [pds.datetime(da.year, da.month, da.day) for da in date]
+            else:   
+                return pds.datetime(date.year, date.month, date.day)
 
     def today(self):
         """Returns today's date, with no hour, minute, second, etc.
@@ -896,6 +904,7 @@ class Instrument(object):
             pysat meta data
         """
 
+        date = self._filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
             fname = self.files[fid:fid+1]
@@ -990,8 +999,12 @@ class Instrument(object):
             return self._load_data(fid=self._fid-1)
 
     def _set_load_parameters(self, date=None, fid=None):
+        # filter supplied data so that it is only year, month, and day
+        # and then store as part of instrument object
+        # filtering instrinsic to assignment
         self.date = date
         self._fid = fid
+        
         if date is not None:
             year, doy = utils.getyrdoy(date)
             self.yr = year
@@ -1034,11 +1047,11 @@ class Instrument(object):
         # set options used by loading routine based upon user input
         if date is not None:
             # ensure date portion from user is only year, month, day
-            self._set_load_parameters(date=self._filter_datetime_input(date),
+            self._set_load_parameters(date=date,
                                       fid=None)
             # increment
             inc = pds.DateOffset(days=1)
-            curr = date
+            curr = self._filter_datetime_input(date)
         elif (yr is not None) & (doy is not None):
             date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
             self._set_load_parameters(date=date, fid=None)
@@ -1362,8 +1375,8 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            print ('Downloading the most recent data by default. ',
-                   '(yesterday through tomorrow)')
+            print ('Downloading the most recent data by default ',
+                   '(yesterday through tomorrow).')
             start = self.yesterday()
             stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
@@ -1451,7 +1464,7 @@ class Instrument(object):
         if len(value) == 3:
             step = value[2]
         else:
-            # default do daily
+            # default to daily
             step = 'D'
 
         if (start is None) and (end is None):
@@ -1477,6 +1490,8 @@ class Instrument(object):
                 self._iter_list = self.files.get_file_array(start, end)
             elif isinstance(start[0], pds.datetime):
                 self._iter_type = 'date'
+                start = self._filter_datetime_input(start)
+                end = self._filter_datetime_input(end)
                 self._iter_list = utils.season_date_range(start, end, freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
@@ -1507,8 +1522,8 @@ class Instrument(object):
                 start = self.files.start_date
             if end is None:
                 end = self.files.stop_date
-            self._iter_start = [start]
-            self._iter_stop = [end]
+            self._iter_start = [self._filter_datetime_input(start)]
+            self._iter_stop = [self._filter_datetime_input(end)]
             self._iter_list = utils.season_date_range(start, end, freq=step)
             self._iter_type = 'date'
         else:
