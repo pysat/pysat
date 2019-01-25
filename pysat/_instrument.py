@@ -1197,6 +1197,7 @@ class Instrument(object):
             self.meta[self.variables] = {self.name_label: self.variables,
                                          self.units_label: [''] *
                                          len(self.variables)}
+                                         
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
             if self.pad is not None:
@@ -1206,16 +1207,28 @@ class Instrument(object):
             self.date = pds.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.getyrdoy(self.date)
 
+        # ensure data is unique and monotonic
+        # check occurs after all the data padding loads, or individual load
+        # thus it can potentially check issues with padding or with raw data
+        if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
+            raise ValueError('Loaded data is not unique (',not self.index.is_unique,
+                             ') or not monotonic increasing (', 
+                             not self.index.is_monotonic_increasing,
+                             ')')
+
+        # apply default instrument routine, if data present
         if not self.empty:
             self._default_rtn(self)
-        # clean
+            
+        # clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
             self._clean_rtn(self)
-        # apply custom functions
+            
+        # apply custom functions via the nanokernel in self.custom
         if not self.empty:
             self.custom._apply_all(self)
 
-        # remove the excess padding, if any applied
+        # remove the excess data padding, if any applied
         if (self.pad is not None) & (not self.empty) & (not verifyPad):
             self.data = self[first_time: last_time]
             if not self.empty:
