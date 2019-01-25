@@ -36,8 +36,12 @@ class TestSWKp():
         self.downloaded = True
         # Load the instrument objects
         for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
-            self.combine[kk].download(start=self.combine['start'],
-                                      stop=self.combine['stop'])
+            try:
+                self.combine[kk].download(start=self.combine['start'],
+                                          stop=self.combine['stop'])
+            except:
+                pass
+
             if len(self.combine[kk].files.files) == 0:
                 self.download = False
 
@@ -228,18 +232,6 @@ class TestSWKp():
 class TestSWF107():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='12',
-                                         clean_level='clean')
-        self.testInst.load(2009,1)
-
-        # Add Kp data
-        self.testInst['f107'] = pds.Series(np.arange(72, 84, 1.0),
-                                           index=self.testInst.data.index)
-
-        # Load a test Metadata
-        self.testMeta = pysat.Meta()
-
         # Set combination testing input
         self.today = dt.datetime.today().date()
         self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
@@ -251,14 +243,21 @@ class TestSWF107():
         self.downloaded = True
         # Load the instrument objects
         for kk in self.combineInst.keys():
-            self.combineInst[kk].download(**self.combineTimes)
+            try:
+                if kk == '':
+                    self.combineInst[kk].download(self.combineTimes['start'],
+                                                  freq='MS')
+                else:
+                    self.combineInst[kk].download(**self.combineTimes)
+            except:
+                pass
+
             if len(self.combine[kk].files.files) == 0:
                 self.download = False
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.testMeta, self.combineInst, self.download
-        del self.today, self.combineTimes
+        del self.combineInst, self.download, self.today, self.combineTimes
 
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
