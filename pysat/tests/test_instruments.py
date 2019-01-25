@@ -18,7 +18,7 @@ import numpy as np
 import sys
 import importlib
 
-exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps', 
+exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps',
                 'icon_euv', 'icon_ivm']
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer':['rstoneback', None]}
@@ -44,7 +44,8 @@ def init_func_external(self):
     temp = []
     for name in instrument_names:
         if name not in exclude_list:
-            temp.append(name)
+            if name.find("methods") < 0:
+                temp.append(name)
     instrument_names = temp
     self.instruments = []
     self.instrument_modules = []
@@ -56,7 +57,8 @@ def init_func_external(self):
         
     for name in instrument_names:
         try:
-            module = importlib.import_module(''.join(('.', name)), package='pysat.instruments')
+            module = importlib.import_module(''.join(('.', name)),
+                                             package='pysat.instruments')
         except ImportError:
             print ("Couldn't import instrument module")
             pass
@@ -114,7 +116,8 @@ class TestInstrumentQualifier():
         assert True
         
     def check_module_importable(self, name):
-        module = importlib.import_module(''.join(('.', name)), package='pysat.instruments')
+        module = importlib.import_module(''.join(('.', name)),
+                                         package='pysat.instruments')
         assert True
         
     def check_module_info(self, module):
@@ -137,11 +140,13 @@ class TestInstrumentQualifier():
     
         for name in instrument_names:
             f = partial(self.check_module_importable, name)
-            f.description = ' '.join(('Checking importability for module:', name))
+            f.description = ' '.join(('Checking importability for module:',
+                                      name))
             yield (f,)
             
             try:
-                module = importlib.import_module(''.join(('.', name)), package='pysat.instruments')
+                module = importlib.import_module(''.join(('.', name)),
+                                                 package='pysat.instruments')
             except ImportError:
                 pass
             else:
