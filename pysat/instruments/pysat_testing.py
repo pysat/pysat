@@ -82,10 +82,16 @@ meta['int64_dummy'] = {'units':'', 'long_name':'int64_dummy'}
 
         
 def init(self):
-    self.new_thing=True        
+    # set test parameter
+    self.new_thing=True 
+    # mess with file dates if kwarg option present
+    if 'mangle_file_dates' in self.kwargs:
+        if self.kwargs['mangle_file_dates']:
+            self.files.files.index = self.files.files.index + pds.DateOffset(minutes=5)
                 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-        sim_multi_file_left=False, root_date=None, malformed_index=False):
+        sim_multi_file_left=False, root_date=None, malformed_index=False,
+        **kwargs):
     # create an artifical satellite data set
     parts = os.path.split(fnames[0])[-1].split('-')
     yr = int(parts[0])
