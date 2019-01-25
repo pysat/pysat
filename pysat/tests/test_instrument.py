@@ -47,6 +47,21 @@ class TestBasics():
         test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
         assert (test_date == pds.datetime(2009,1,1)) & (test_date == self.testInst.date)
 
+    def test_basic_instrument_load_by_date(self):
+        date = pysat.datetime(2009,1,1)
+        self.testInst.load(date=date)
+        test_date = self.testInst.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2009,1,1)) & (test_date == self.testInst.date)
+
+    def test_basic_instrument_load_by_date_with_extra_time(self):
+        # put in a date that has more than year, month, day
+        date = pysat.datetime(2009,1,1,1,1,1)
+        self.testInst.load(date=date)
+        test_date = self.testInst.index[0]
+        test_date = pysat.datetime(test_date.year, test_date.month, test_date.day)
+        assert (test_date == pds.datetime(2009,1,1)) & (test_date == self.testInst.date)
+
     def test_basic_instrument_load_data(self):
         """Test if the correct day is being loaded (checking data down to the second)."""
         self.testInst.load(2009,1)
@@ -137,7 +152,12 @@ class TestBasics():
         today = pysat.datetime(now.year, now.month, now.day)
         assert today == self.testInst._filter_datetime_input(now)
 
-
+    def test_filtered_date_attribute(self):
+        now = pysat.datetime.now()
+        today = pysat.datetime(now.year, now.month, now.day)
+        self.testInst.date = now
+        assert today == self.testInst.date
+     
     #------------------------------------------------------------------------------
     #
     # Test empty property flags, if True, no data
@@ -524,6 +544,24 @@ class TestBasicsXarray(TestBasics):
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
+#------------------------------------------------------------------------------
+#
+# Repeat TestBasics above with shifted file dates
+#
+#------------------------------------------------------------------------------
+
+class TestBasicsShiftedFileDates(TestBasics):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing', '10', 
+                                         clean_level='clean',
+                                         update_files=True,
+                                         mangle_file_dates=True)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
 
 
 #------------------------------------------------------------------------------
