@@ -4,8 +4,8 @@ import pandas as pds
 import numpy as np
 from nose.tools import assert_raises, raises
 import nose.tools
+from nose.plugins import SkipTest
 import datetime as dt
-import unittest
 
 class TestSWKp():
     def setup(self):
@@ -117,9 +117,11 @@ class TestSWKp():
 
         del combo_in
 
-    @unittest.skipIf(~self.download)
     def test_combine_kp_inst_time(self):
         """Test combine_kp when times are provided through the instruments"""
+
+        if not self.download:
+            raise SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
@@ -141,9 +143,11 @@ class TestSWKp():
 
         del combo_in, kp_inst
 
-    @unittest.skipIf(~self.download)
     def test_combine_kp_all(self):
         """Test combine_kp when all input is provided"""
+
+        if not self.download:
+            raise SkipTest("test needs downloaded data")
 
         kp_inst = sw_methods.combine_kp(**self.combine)
 
@@ -158,9 +162,11 @@ class TestSWKp():
 
         del kp_inst
 
-    @unittest.skipIf(~self.download)
     def test_combine_kp_no_forecast(self):
         """Test combine_kp when forecasted data is not provided"""
+
+        if not self.download:
+            raise SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine for kk in self.combine.keys()
                     if kk != 'forecast_inst'}
@@ -177,9 +183,11 @@ class TestSWKp():
 
         del kp_inst, combo_in
 
-    @unittest.skipIf(~self.download)
     def test_combine_kp_no_recent(self):
         """Test combine_kp when recent data is not provided"""
+
+        if not self.download:
+            raise SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine for kk in self.combine.keys()
                     if kk != 'recent_inst'}
@@ -196,9 +204,11 @@ class TestSWKp():
 
         del kp_inst, combo_in
 
-    @unittest.skipIf(~self.download)
     def test_combine_kp_no_standard(self):
         """Test combine_kp when standard data is not provided"""
+
+        if not self.download:
+            raise SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine for kk in self.combine.keys()
                     if kk != 'standard_inst'}
@@ -261,9 +271,11 @@ class TestSWF107():
         assert_raises(ValueError, sw_methods.combine_f107, self.combineInst[''],
                       self.combineInst['forecast'])
 
-    @unittest.skipIf(~self.download)
     def test_combine_f107_inst_time(self):
         """Test combine_f107 with times provided through 'all' and 'forecast'"""
+
+        if not self.download:
+            raise SkipTest("test needs downloaded data")
 
         self.combineInst['all'].load(date=self.combineTimes['start'])
         self.combineInst['forecast'].load(date=self.today)
@@ -278,9 +290,11 @@ class TestSWF107():
 
         del f107_inst
 
-    @unittest.skipIf(~self.download)
     def test_combine_f107_all(self):
         """Test combine_f107 when all input is provided with '' and '45day'"""
+
+        if not self.download:
+            raise SkipTest("test needs downloaded data")
 
         f107_inst = sw_methods.combine_f107(self.combineInst[''],
                                             self.combineInst['45day'],
