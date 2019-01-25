@@ -27,7 +27,7 @@ def init(self):
     self.new_thing=True        
                 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-        sim_multi_file_left=False):
+         sim_multi_file_left=False, malformed_index=False):
 
     # create an artifical satellite data set
     parts = os.path.split(fnames[0])[-1].split('-')
@@ -49,6 +49,12 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     num_array = np.arange(num)
     uts = num_array
     index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), freq='S')
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
         
     data = xarray.Dataset({'uts': (('time'), index)}, coords={'time':index})
     # need to create simple orbits here. Have start of first orbit 

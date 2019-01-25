@@ -85,7 +85,7 @@ def init(self):
     self.new_thing=True        
                 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-        sim_multi_file_left=False, root_date = None):
+        sim_multi_file_left=False, root_date=None, malformed_index=False):
     # create an artifical satellite data set
     parts = os.path.split(fnames[0])[-1].split('-')
     yr = int(parts[0])
@@ -150,7 +150,15 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
     # print (data['string_dummy'])
     
-    index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), freq='S')
+    index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1), 
+                           freq='S')
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
+        
     data.index=index[0:num]
     data.index.name = 'Epoch'
     return data, meta.copy()

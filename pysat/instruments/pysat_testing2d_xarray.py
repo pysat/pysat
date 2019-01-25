@@ -21,7 +21,7 @@ def init(self):
     self.new_thing=True        
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, malformed_index=False):
     
     # create an artifical satellite data set
     parts = os.path.split(fnames[0])[-1].split('-')
@@ -37,6 +37,12 @@ def load(fnames, tag=None, sat_id=None):
     num_array = np.arange(num)*scalar
     # seed DataFrame with UT array
     index = pds.date_range(date, date+pds.DateOffset(seconds=num-1), freq='S')
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
     data = xr.Dataset({'uts': (('time'), index)}, coords={'time':index})
 
     # need to create simple orbits here. Have start of first orbit 

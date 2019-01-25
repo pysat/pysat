@@ -38,7 +38,7 @@ def init(self):
     self.new_thing=True        
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # create an artifical satellite data set
     parts = os.path.split(fnames[0])[-1].split('-')
     yr = int(parts[0])
@@ -84,6 +84,13 @@ def load(fnames, tag=None, sat_id=None):
     
     # create real UTC time signal
     index = pds.date_range(date,date+pds.DateOffset(hours=23,minutes=59,seconds=59),freq=str(scalar)+'S')
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
+        
     data.index=index
     data.index.name = 'epoch'
     # higher rate time signal (for scalar >= 2)

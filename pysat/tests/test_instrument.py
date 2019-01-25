@@ -15,6 +15,12 @@ if sys.version_info[0] >= 3:
         import importlib
         reload = importlib.reload
 
+#------------------------------------------------------------------------------
+#
+# Test Instrument object basics
+#
+#------------------------------------------------------------------------------
+
 
 class TestBasics():
     def setup(self):
@@ -28,9 +34,12 @@ class TestBasics():
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
-###########################
-    # basic loading tests, by date, filename, file id 
-    # and checks for .next and .prev data loading   
+    #------------------------------------------------------------------------------
+    #
+    # Test basic loads, by date, filename, file id, as well as prev/next
+    #
+    #------------------------------------------------------------------------------
+
     def test_basic_instrument_load(self):
         """Test if the correct day is being loaded (checking object date and data)."""
         self.testInst.load(2009,1)
@@ -111,8 +120,11 @@ class TestBasics():
         assert (test_date == pds.datetime(2009,1,3))  & (test_date == self.testInst.date)
         
         
-    ############################
-    # test basic date helpers
+    #------------------------------------------------------------------------------
+    #
+    # Test date helpers
+    #
+    #------------------------------------------------------------------------------
     def test_today_yesterday_and_tomorrow(self):
         now = pysat.datetime.now()
         today = pysat.datetime(now.year, now.month, now.day)
@@ -125,8 +137,12 @@ class TestBasics():
         today = pysat.datetime(now.year, now.month, now.day)
         assert today == self.testInst._filter_datetime_input(now)
 
-    ###########################
-    # test flags
+
+    #------------------------------------------------------------------------------
+    #
+    # Test empty property flags, if True, no data
+    #
+    #------------------------------------------------------------------------------
     def test_empty_flag_data_empty(self):
         assert self.testInst.empty
 
@@ -134,8 +150,33 @@ class TestBasics():
         self.testInst.load(2009, 1)
         assert not self.testInst.empty
 
-    ############################
-    # test the textual representation
+    #------------------------------------------------------------------------------
+    #
+    # Test index attribute, should always be a datetime index
+    #
+    #------------------------------------------------------------------------------
+    def test_index_attribute(self):
+        # empty Instrument test
+        assert isinstance(self.testInst.index, pds.Index)
+        # now repeat the same test but with data loaded
+        self.testInst.load(2009, 1)
+        assert isinstance(self.testInst.index, pds.Index)
+
+    def test_index_return(self):
+        # load data
+        self.testInst.load(2009, 1)
+        # ensure we get the index back
+        if self.testInst.pandas_format:
+            assert np.all(self.testInst.index == self.testInst.data.index)
+        else:
+            assert np.all(self.testInst.index == 
+                          self.testInst.data.indexes['time'])    
+
+    #------------------------------------------------------------------------------
+    #
+    # test textual representations
+    #
+    #------------------------------------------------------------------------------
     def test_basic_repr(self):
         print(self.testInst)
         assert True
@@ -163,26 +204,14 @@ class TestBasics():
         print(self.testInst)
         assert True
 
-### testing init functions
-
-###### need to check with default1!!!!!                        
+    #------------------------------------------------------------------------------
+    #
+    # test instrument initialization functions
+    #
+    #------------------------------------------------------------------------------                      
     def test_instrument_init(self):
         """Test if init function supplied by instrument can modify object"""
         assert self.testInst.new_thing==True
-
-
-
-#     def test_getyrdoy_1(self):
-#         """Test the date to year, day of year code functionality"""
-#         date = pds.datetime(2009,1,1)
-#         yr, doy = pysat.utils.getyrdoy(date)
-#         assert ((yr == 2009) & (doy == 1))
-# 
-#     def test_getyrdoy_leap_year(self):
-#         """Test the date to year, day of year code functionality (leap_year)"""
-#         date = pds.datetime(2008,12,31)
-#         yr, doy = pysat.utils.getyrdoy(date)
-#         assert ((yr == 2008) & (doy == 366)) 
 
     def test_custom_instrument_load(self):
         """
@@ -216,8 +245,11 @@ class TestBasics():
         testIn = pysat.Instrument(inst_module=test, tag='', clean_level='clean')
         testIn.load(2009,1)
 
-###################
-    # test data setting features        
+    #------------------------------------------------------------------------------
+    #
+    # Test basis data access features, both getting and setting data
+    #
+    #------------------------------------------------------------------------------
     def test_basic_data_access_by_name(self):
         self.testInst.load(2009,1)
         assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
@@ -237,7 +269,8 @@ class TestBasics():
 
     def test_data_access_by_datetime_and_name(self):
         self.testInst.load(2009,1)
-        assert np.all(self.testInst[pysat.datetime(2009,1,1,0,0,0),'uts'] == self.testInst.data['uts'].values[0])
+        assert np.all(self.testInst[pysat.datetime(2009,1,1,0,0,0),'uts'] == 
+                      self.testInst.data['uts'].values[0])
        
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(2009,1)
@@ -314,10 +347,13 @@ class TestBasics():
             assert len(a) == 5
         else:
             assert a.sizes['time'] == 5
-        
-#######################
-######
-#### check iteration behavior                        
+                    
+                                                            
+    #------------------------------------------------------------------------------
+    #
+    # Test iteration behaviors
+    #
+    #------------------------------------------------------------------------------
     @raises(StopIteration)
     def test_left_bounds_with_prev(self):
         """Test if passing bounds raises StopIteration."""
@@ -468,6 +504,14 @@ class TestBasics():
         
         temp = pysat.Instrument(inst_module=Dummy)
 
+
+
+#------------------------------------------------------------------------------
+#
+# Repeat tests above with xarray data
+#
+#------------------------------------------------------------------------------
+
 class TestBasicsXarray(TestBasics):
     def setup(self):
         reload(pysat.instruments.pysat_testing)
@@ -479,6 +523,64 @@ class TestBasicsXarray(TestBasics):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
+
+
+#------------------------------------------------------------------------------
+#
+# Test Instrument with a non-unique and non-monotonic index
+#
+#------------------------------------------------------------------------------
+
+
+class TestMalformedIndex():
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing', '10', 
+                                         clean_level='clean',
+                                         malformed_index=True,
+                                         update_files=True)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+    #------------------------------------------------------------------------------
+    #
+    # Test checks on time uniqueness and monotonicity
+    #
+    #------------------------------------------------------------------------------
+    @raises(ValueError)
+    def test_ensure_unique_index(self):
+        self.testInst.load(2009,1)
+
+#------------------------------------------------------------------------------
+#
+# Repeat tests above with xarray data
+#
+#------------------------------------------------------------------------------
+
+class TestMalformedIndexXarray(TestMalformedIndex):
+    def setup(self):
+        reload(pysat.instruments.pysat_testing)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '10', 
+                                         clean_level='clean',
+                                         malformed_index=True,
+                                         update_files=True)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+
+
+#------------------------------------------------------------------------------
+#
+# Test data padding, loading by file
+#
+#------------------------------------------------------------------------------
 
 class TestDataPaddingbyFile():
     def setup(self):
@@ -568,6 +670,13 @@ class TestDataPaddingbyFile():
         assert (self.testInst.index[0] == self.rawInst.index[0] ) & \
                 (self.testInst.index[-1] == self.rawInst.index[-1]) & \
                 (len(self.rawInst.data) == len(self.testInst.data))
+
+
+#------------------------------------------------------------------------------
+#
+# Repeat tests above with xarray data
+#
+#------------------------------------------------------------------------------
 
 class TestDataPaddingbyFileXarray():
     def setup(self):
