@@ -1425,12 +1425,13 @@ class Instrument(object):
             start of iteration, if None uses first data date.
             list-like collection also accepted
         end :  datetime object, filename, or None (default)
-                end of iteration, inclusive. If None uses last data date.
-                list-like collection also accepted
+            end of iteration, inclusive. If None uses last data date.
+            list-like collection also accepted
 
         Note
         ----
-        Both start and stop must be the same type (date, or filename) or None
+        Both start and stop must be the same type (date, or filename) or None.
+        Only the year, month, and day are used for date inputs.
 
         Examples
         --------
@@ -1524,7 +1525,9 @@ class Instrument(object):
                 end = self.files.stop_date
             self._iter_start = [self._filter_datetime_input(start)]
             self._iter_stop = [self._filter_datetime_input(end)]
-            self._iter_list = utils.season_date_range(start, end, freq=step)
+            self._iter_list = utils.season_date_range(self._iter_start, 
+                                                      self._iter_stop, 
+                                                      freq=step)
             self._iter_type = 'date'
         else:
             raise ValueError('Provided an invalid combination of bounds. ' +
