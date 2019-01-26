@@ -22,7 +22,8 @@ else:
     re_load = reload
 
 
-#########
+
+#-------------------
 # basic yrdoy tests
 def test_getyrdoy_1():
     """Test the date to year, day of year code functionality"""
@@ -37,6 +38,8 @@ def test_getyrdoy_leap_year():
     yr, doy = pysat.utils.getyrdoy(date)
     assert ((yr == 2008) & (doy == 366))
 
+#----------------------------------
+# test netCDF export file support
 
 # test netCDF fexport ile support
 def prep_dir(inst=None):
@@ -217,6 +220,14 @@ class TestBasics():
                                   loaded_inst['series_profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
 
+        # Debugging statements
+        # print(test_inst['series_profiles'][0],
+        #       loaded_inst['series_profiles'][0])
+        # print(type(test_inst['series_profiles'][0]),
+        #       type(loaded_inst['series_profiles'][0]))
+        # print((test_inst['series_profiles'][0]) ==
+        #       (loaded_inst['series_profiles'][0]))
+
         loaded_inst.drop('series_profiles', inplace=True, axis=1)
         test_inst.data.drop('series_profiles', inplace=True, axis=1)
 
@@ -320,7 +331,7 @@ class TestBasics():
         else:
             re_load = reload
 
-        saved_dir = self.data_path  # pysat.data_dir
+        saved_dir = self.data_path
         # update data_dir
         pysat.utils.set_data_dir('.', store=False)
         check1 = (pysat.data_dir == '.')
@@ -491,3 +502,48 @@ class TestBasics():
         assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
         assert_raises(ValueError, pysat.utils.scale_units, "m", "deg")
         assert_raises(ValueError, pysat.utils.scale_units, "h", "km/s")
+
+    def test_spherical_to_cartesian_single(self):
+        """Test conversion from spherical to cartesian coordinates"""
+
+        x, y, z = pysat.utils.spherical_to_cartesian(45.0, 30.0, 1.0)
+
+        assert abs(x - y) < 1.0e-6
+        assert abs(z - 0.5) < 1.0e-6
+
+    def test_cartesian_to_spherical_single(self):
+        """Test conversion from cartesian to spherical coordinates"""
+
+        x = 0.6123724356957946
+        az, el, r = pysat.utils.spherical_to_cartesian(x, x, 0.5, inverse=True)
+
+        assert abs(az - 45.0) < 1.0e-6
+        assert abs(el - 30.0) < 1.0e-6
+        assert abs(r - 1.0) < 1.0e-6
+
+    def test_spherical_to_cartesian_mult(self):
+        """Test array conversion from spherical to cartesian coordinates"""
+
+        arr = np.ones(shape=(10,), dtype=float)
+        x, y, z = pysat.utils.spherical_to_cartesian(45.0*arr, 30.0*arr, arr)
+
+        assert x.shape == arr.shape
+        assert y.shape == arr.shape
+        assert z.shape == arr.shape
+        assert abs(x - y).max() < 1.0e-6
+        assert abs(z - 0.5).max() < 1.0e-6
+
+    def test_cartesian_to_spherical_mult(self):
+        """Test array conversion from cartesian to spherical coordinates"""
+
+        arr = np.ones(shape=(10,), dtype=float)
+        x = 0.6123724356957946
+        az, el, r = pysat.utils.spherical_to_cartesian(x*arr, x*arr, 0.5*arr,
+                                                       inverse=True)
+
+        assert az.shape == arr.shape
+        assert el.shape == arr.shape
+        assert r.shape == arr.shape
+        assert abs(az - 45.0).max() < 1.0e-6
+        assert abs(el - 30.0).max() < 1.0e-6
+        assert abs(r - 1.0).max() < 1.0e-6

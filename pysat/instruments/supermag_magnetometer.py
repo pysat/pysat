@@ -41,6 +41,7 @@ from __future__ import print_function, absolute_import
 import pandas as pds
 import numpy as np
 from os import path
+import functools
 
 import pysat
 
@@ -54,10 +55,92 @@ sat_ids = {'':tags.keys()}
 test_dates = {'':{kk:pysat.datetime(2009,1,1) for kk in tags.keys()}}
 
 def init(self):
-    print("When using this data please acknowledge the SuperMAG collaboration "
-        + "according to the request outlined in the metadata attribute "
-        + "'acknowledgements'")
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+
+
+    """
+
+    # reset the list_remote_files routine to include the data path
+    # now conveniently included with instrument object
+    self._list_remote_rtn = functools.partial(list_remote_files,
+                                               data_path=self.files.data_path,
+                                               format_str=self.files.file_format)
     return
+
+
+def list_remote_files(tag, sat_id, data_path=None, format_str=None):
+    """Lists remote files available for SuperMAG.
+
+    Note
+    ----
+    Given the setup of the SuperMAG system, files aren't directly
+    available as the requested data is put into files as requested.
+    To enable the functionality of keeping SuperMAG up to date, we
+    fake the files here such that data from 1970 through the present
+    is downloaded.
+
+    Parameters
+    ----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+
+    Returns
+    -------
+    pandas.Series
+        Series indexed by date that stores the filename for each date.
+
+    """
+
+    # given the function of SuperMAG, create a fake list of files
+    # starting 01 Jan 1970, through today
+    now = pysat.datetime.now()
+    now = pysat.datetime(now.year, now.month, now.day)
+    if tag == 'stations':
+        # yearly
+        freq = 'Y'
+    else:
+        # daily
+        freq = 'D'
+    # create a list of dates with appropriate frequency
+    index = pds.period_range(pysat.datetime(1970,1,1), now, freq=freq)
+    # pre fill in blank strings
+    remote_files = pds.Series(['']*len(index), index=index)
+
+    # pysat compares both dates and filenames when determining
+    # which files it needs to download
+    # so we need to ensure that filename for dates that overlap
+    # are the same or data that is already present will be redownloaded
+
+    # need to get a list of the current files attached to
+    # the Instrument object. In this case, the object hasn't
+    # been passed in.....
+    #   that is ok, we can just call list_files right here
+    #   except we don't have the data path
+    # the init function above is used to reset the
+    # lost_remote_files method with one where the
+    # data path and format_str are set
+    # iterating directly since pandas is complaining about periods
+    # between different between indexes
+    local_files = list_files(tag, sat_id, data_path, format_str)
+    for time, fname in local_files.iteritems():
+        remote_files.loc[time] = fname
+    return remote_files
+
 
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen SuperMAG data
@@ -80,7 +163,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     Returns
     --------
     pysat.Files.from_os : (pysat._files.Files)
-        A class containing the verified available files
+        A pandas Series containing the verified available files
 
     """
     if format_str is None and data_path is not None:
@@ -93,6 +176,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
                 data_path = path.join(psplit[0], "all", "")
 
         if tag == "stations":
+            file_base += '_stations'
             min_fmt = '_'.join([file_base, '{year:4d}.???'])
             doff = pds.DateOffset(years=1)
         else:
