@@ -191,27 +191,29 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         elif tag == 'forecast':
             format_str = 'f107_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
-                                       format_str=format_str)
+                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
-                files.loc[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
-                files.loc[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+                pds_off = pds.DateOffset(days=1)
+                files.loc[files.index[-1]+pds_off] = files.values[-1]
+                files.loc[files.index[-1]+pds_off] = files.values[-1]
             return files
         elif tag == '45day':
             format_str = 'f107_45day_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
-                                       format_str=format_str)
+                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
-                files.loc[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
-                files.loc[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+                pds_off = pds.DateOffset(days=1)
+                files.loc[files.index[-1]+pds_off] = files.values[-1]
+                files.loc[files.index[-1]+pds.pds_off] = files.values[-1]
             return files
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index ' +
                              'F107')
     else:
-        raise ValueError ('A data_path must be passed to the loading routine ' +
-                          'for F107')
+        raise ValueError('A data_path must be passed to the loading routine ' +
+                         'for F107')
 
 
 
