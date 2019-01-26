@@ -194,10 +194,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                         format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
-                files.ix[files.index[-1] +
-                         pds.DateOffset(days=1)] = files.values[-1]
-                files.ix[files.index[-1] +
-                         pds.DateOffset(days=1)] = files.values[-1]
+                pds_off = pds.DateOffset(days=1)
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
             return files
         elif tag == '45day':
             format_str = 'f107_45day_{year:04d}-{month:02d}-{day:02d}.txt'
@@ -205,10 +204,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                         format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
-                files.ix[files.index[-1] +
-                         pds.DateOffset(days=1)] = files.values[-1]
-                files.ix[files.index[-1] +
-                         pds.DateOffset(days=1)] = files.values[-1]
+                pds_off = pds.DateOffset(days=1)
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
             return files
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index ' +
@@ -216,6 +214,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     else:
         raise ValueError('A data_path must be passed to the loading routine ' +
                          'for F107')
+
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
@@ -360,19 +359,10 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         raw_f107 = raw_f107.split('\n')[1:-4]
 
         # parse the AP data
-        ap_times = []
-        ap = []
-        for line in raw_ap:
-            for i in np.arange(5):
-                ap_times.append(pysat.datetime.strptime(line[0:7], '%d%b%y'))
-                ap.append(int(line[8:11]))
+        ap_times, ap = parse_45day_block(raw_ap)
 
-        f107 = []
-        f107_times = []
-        for line in raw_f107:
-            for i in np.arange(5):
-                f107_times.append(pysat.datetime.strptime(line[0:7], '%d%b%y'))
-                f107.append(int(line[8:11]))
+        # parse the F10.7 data
+        f107_times, f107 = parse_45day_block(raw_f107)
 
         # collect into DataFrame
         data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
@@ -382,3 +372,38 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                                  date.strftime('%Y-%m-%d') + '.txt'))
 
     return
+
+def parse_45day_block(block_lines):
+    """ Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast file
+
+    Parameters
+    ----------
+    block_lines : (list)
+        List of lines containing data in this data block
+
+    Returns
+    -------
+    dates : (list)
+        List of dates for each date/data pair in this block
+    values : (list)
+        List of values for each date/data pair in this block
+
+    """
+
+    # Initialize the output
+    dates = list()
+    values = list()
+
+    # Cycle through each line in this block
+    for line in block_lines:
+        # Split the line on whitespace
+        split_line = line.split()
+
+        # Format the dates
+        dates.extend([pysat.datetime.strptime(tt, "%d%b%y")
+                      for tt in split_line[::2]])
+
+        # Format the data values
+        values.extend([int(vv) for vv in split_line[1::2]])
+
+    return dates, values
