@@ -391,11 +391,48 @@ class TestBasics():
         # move on to future data that doesn't exist
         self.testInst.next()
         # self.testInst.next()        
-                                                                                                                                         
+
+    def test_set_bounds_with_frequency(self):
+        start = pysat.datetime(2009,1,1)
+        stop = pysat.datetime(2010,1,15)
+        self.testInst.bounds = (start, stop, 'M')
+        assert np.all(self.testInst._iter_list == pds.date_range(start, stop, 
+                                                                 freq='M').tolist())
+                                                                                                                                                                                                                                
+    @raises(ValueError)
+    def test_set_bounds_too_few(self):
+        start = pysat.datetime(2009,1,1)
+        self.testInst.bounds = [start]
+
     def test_set_bounds_by_date(self):
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,15)
         self.testInst.bounds = (start, stop)
+        assert np.all(self.testInst._iter_list == pds.date_range(start, 
+                                                                 stop).tolist())
+
+    def test_set_bounds_by_default(self):
+        start = self.testInst.files.start_date
+        stop = self.testInst.files.stop_date
+        self.testInst.bounds = (None, None)
+        assert np.all(self.testInst._iter_list == pds.date_range(start, 
+                                                                 stop).tolist())
+        self.testInst.bounds = None
+        assert np.all(self.testInst._iter_list == pds.date_range(start, 
+                                                                 stop).tolist())
+        self.testInst.bounds = (start, None)
+        assert np.all(self.testInst._iter_list == pds.date_range(start, 
+                                                                 stop).tolist())
+        self.testInst.bounds = (None, stop)
+        assert np.all(self.testInst._iter_list == pds.date_range(start, 
+                                                                 stop).tolist())
+
+    def test_set_bounds_by_date_extra_time(self):
+        start = pysat.datetime(2009,1,1,1,10)
+        stop = pysat.datetime(2009,1,15,1,10)
+        self.testInst.bounds = (start, stop)
+        start = self.testInst._filter_datetime_input(start)
+        stop = self.testInst._filter_datetime_input(stop)
         assert np.all(self.testInst._iter_list == pds.date_range(start, stop).tolist())
 
     def test_iterate_over_bounds_set_by_date(self):
@@ -408,10 +445,20 @@ class TestBasics():
         out = pds.date_range(start, stop).tolist()
         assert np.all(dates == out)
         
-    def test_iterate_over_default_bounds(self):
+    def test_iterate_over_bounds_set_by_date2(self):
         start = pysat.datetime(2008,1,1)
         stop = pysat.datetime(2010,12,31)
         self.testInst.bounds = (start, stop)
+        dates = []
+        for inst in self.testInst:
+            dates.append(inst.date)            
+        out = pds.date_range(start, stop).tolist()
+        assert np.all(dates == out)
+
+    def test_iterate_over_default_bounds(self):
+        start = self.testInst.files.start_date
+        stop = self.testInst.files.stop_date
+        self.testInst.bounds = (None, None)
         dates = []
         for inst in self.testInst:
             dates.append(inst.date)            
@@ -426,10 +473,35 @@ class TestBasics():
         out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(self.testInst._iter_list == out)
 
+    def test_set_bounds_by_date_season_extra_time(self):
+        start = [pysat.datetime(2009,1,1,1,10), pysat.datetime(2009,2,1,1,10)]
+        stop = [pysat.datetime(2009,1,15,1,10), pysat.datetime(2009,2,15,1,10)]
+        self.testInst.bounds = (start, stop)
+        start = self.testInst._filter_datetime_input(start)
+        stop = self.testInst._filter_datetime_input(stop)
+        out = pds.date_range(start[0], stop[0]).tolist()
+        out.extend(pds.date_range(start[1], stop[1]).tolist())
+        assert np.all(self.testInst._iter_list == out)
+
     def test_iterate_over_bounds_set_by_date_season(self):
         start = [pysat.datetime(2009,1,1), pysat.datetime(2009,2,1)]
         stop = [pysat.datetime(2009,1,15), pysat.datetime(2009,2,15)]
         self.testInst.bounds = (start, stop)
+        dates = []
+        for inst in self.testInst:
+            dates.append(inst.date)            
+        out = pds.date_range(start[0], stop[0]).tolist()
+        out.extend(pds.date_range(start[1], stop[1]).tolist())
+        assert np.all(dates == out)
+
+    def test_iterate_over_bounds_set_by_date_season_extra_time(self):
+        start = [pysat.datetime(2009,1,1,1,10), pysat.datetime(2009,2,1,1,10)]
+        stop = [pysat.datetime(2009,1,15,1,10), pysat.datetime(2009,2,15,1,10)]
+        self.testInst.bounds = (start, stop)
+        # filter
+        start = self.testInst._filter_datetime_input(start)
+        stop = self.testInst._filter_datetime_input(stop)
+        # iterate
         dates = []
         for inst in self.testInst:
             dates.append(inst.date)            
