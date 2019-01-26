@@ -411,9 +411,9 @@ def set_metadata(name, meta_dict):
                             "Physique des Plasmas) for the provision of these",
                             "data.")}
 
-    refs = {'iap': ' 'join('Berthelier at al., 2006. IAP, the thermal plasma',
-                           'analyzer on DEMETER, Planet. and Space Sci.,',
-                           '54(5), pp 487-501.')}
+    refs = {'iap': ' '.join('Berthelier at al., 2006. IAP, the thermal plasma',
+                            'analyzer on DEMETER, Planet. and Space Sci.,',
+                            '54(5), pp 487-501.')}
 
     if name not in refs.keys():
         refs[name] = 'Instrument reference information available at ' + \
