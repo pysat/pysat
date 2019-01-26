@@ -825,7 +825,7 @@ class TestInstrumentWithVersionedFiles():
                                use_doy=False,
                                root_fname='pysat_testing_unique_' +
                                '{version:02d}_{revision:03d}_{year:04d}_g_' +
-                               ''{day:03d}_st.pysat_testing_file')
+                               '{day:03d}_st.pysat_testing_file')
 
         pysat.instruments.pysat_testing.list_files = list_versioned_files
         self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
