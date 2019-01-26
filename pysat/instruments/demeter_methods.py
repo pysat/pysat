@@ -9,13 +9,37 @@ import pysat
 import sys
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None):
-    """ Download 
+    """ Download  
 
     """
     url = 'https://cdpp-archive.cnes.fr/'
     print('Data must be downloaded by registered users at: {:s}'.format(url))
     return
+    
+    
+def list_remote_files(tag, sat_id):
+    """Lists files available for Demeter.
+    
+    Note
+    ----
+    Unfortunately, obtaining a list of remote files is not
+    avilable for this instrument. This function is expected
+    by pysat thus it is located here as a placeholder.
+    
+    Parameters
+    ----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
 
+    """
+    
+    print ('Remote file lists are not supported for Demeter.')
+    return
+    
+            
 def bytes_to_float(chunk):
     """ Convert a chunk of bytes to a float
 

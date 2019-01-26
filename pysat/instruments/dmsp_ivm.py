@@ -82,7 +82,12 @@ madrigal_tag = {'f11':{'utd':10241, '':10111},
                 'f16':{'':10116},
                 'f17':{'':10117},
                 'f18':{'':10118},}
-                
+
+# support listing files currently available on remote server (Madrigal)
+list_remote_files = functools.partial(mad_meth.list_remote_files, 
+                                      supported_tags=supported_tags,
+                                      inst_code=madrigal_inst_code)                
+                                                
 # let pysat know that data is spread across more than one file
 # multi_file_day=True
         

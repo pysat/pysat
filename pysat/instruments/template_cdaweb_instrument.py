@@ -119,6 +119,10 @@ basic_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
 supported_tags = {'':{'':basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
 
+# support listing files currently on CDAWeb
+list_remote_files = functools.partial(cdw.list_remote_files, 
+                               supported_tags=supported_tags)
+
 # code should be defined below as needed  
 def default(self):
     """Default customization function.

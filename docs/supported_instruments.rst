@@ -6,13 +6,13 @@ General Instrument
 ------------------
 
 .. automodule:: pysat.instruments.template_instrument
-   :members: __doc__, init, default, load, list_files, download, clean
+   :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
 
 NASA CDAWeb Instrument
 ----------------------
 
 .. automodule:: pysat.instruments.template_cdaweb_instrument
-   :members: __doc__, init, default, load, list_files, download, clean
+   :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
 
 
 General Data Source Methods
@@ -22,7 +22,7 @@ NASA CDAWeb
 -----------
 
 .. automodule:: pysat.instruments.nasa_cdaweb_methods
-   :members: __doc__, init, load, list_files, download
+   :members: __doc__, init, load, list_files, list_remote_files, download
 
 
 Madrigal
