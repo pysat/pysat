@@ -645,9 +645,14 @@ def parse_fixed_width_filenames(files, format_str):
 
     # create storage for data to be parsed from filenames
     stored = collections.OrderedDict()
-    stored['year'] = []; stored['month'] = []; stored['day'] = [];
-    stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
-    stored['version'] = []; stored['revision'] = [];
+    stored['year'] = []
+    stored['month'] = []
+    stored['day'] = []
+    stored['hour'] = []
+    stored['min'] = []
+    stored['sec'] = []
+    stored['version'] = []
+    stored['revision'] = []
 
     if len(files) == 0:
         stored['files'] = []
@@ -661,12 +666,12 @@ def parse_fixed_width_filenames(files, format_str):
     lengths = search_dict['lengths']
     keys = search_dict['keys']
 
-    # determine the locations the date/version information in a filename is stored
-    # use these indices to slice out date from filenames
+    # determine the locations the date/version information in a filename is
+    # stored use these indices to slice out date from filenames
     idx = 0
     begin_key = []
     end_key = []
-    for i,snip in enumerate(snips):
+    for i, snip in enumerate(snips):
         idx += len(snip)
         if i < (len(lengths)):
             begin_key.append(idx)
@@ -675,17 +680,17 @@ def parse_fixed_width_filenames(files, format_str):
     max_len = idx
     # setting up negative indexing to pick out filenames
     key_str_idx = [np.array(begin_key, dtype=int) - max_len,
-                    np.array(end_key, dtype=int) - max_len]
+                   np.array(end_key, dtype=int) - max_len]
     # need to parse out dates for datetime index
-    for i,temp in enumerate(files):
-        for j,key in enumerate(keys):
+    for i, temp in enumerate(files):
+        for j, key in enumerate(keys):
             val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
             stored[key].append(val)
     # convert to numpy arrays
     for key in stored.keys():
         stored[key] = np.array(stored[key]).astype(int)
         if len(stored[key]) == 0:
-            stored[key]=None
+            stored[key] = None
     # include files in output
     stored['files'] = files
     # include format string as convenience for later functions
@@ -722,7 +727,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'min', 'sec',
                     'version', 'revision']
-    stored = collections.OrderedDict({kk:list() for kk in ordered_keys})
+    stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
     # exit early if there are no files
     if len(files) == 0:
@@ -766,7 +771,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     for key in stored.keys():
         stored[key] = np.array(stored[key]).astype(int)
         if len(stored[key]) == 0:
-            stored[key]=None
+            stored[key] = None
     # include files in output
     stored['files'] = files
     # include format string as convenience for later functions
@@ -799,10 +804,10 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         'lengths' string length for data to be parsed
         'string_blocks' the filenames are broken down into fixed width
             segments and '' strings are placed in locations where data will
-            eventually be parsed from a list of filenames. A standards compliant
-            filename can be constructed by starting with string_blocks,
-            adding keys in order, and replacing the '' locations with data
-            of length length.
+            eventually be parsed from a list of filenames. A standards
+            compliant filename can be constructed by starting with
+            string_blocks, adding keys in order, and replacing the '' locations
+            with data of length length.
 
     Note
     ----
@@ -851,10 +856,10 @@ def construct_searchstring_from_format(format_str, wildcard=False):
             else:
                 raise ValueError("Couldn't determine formatting width")
 
-    return {'search_string':search_str,
-            'keys':keys,
-            'lengths':lengths,
-            'string_blocks':snips}
+    return {'search_string': search_str,
+            'keys': keys,
+            'lengths': lengths,
+            'string_blocks': snips}
 
 
 def search_local_system_formatted_filename(data_path, search_str):

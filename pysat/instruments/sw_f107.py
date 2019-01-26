@@ -216,7 +216,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                          'for F107')
 
 
-
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """Routine to download F107 index data
 
@@ -373,8 +372,10 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     return
 
+
 def parse_45day_block(block_lines):
-    """ Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast file
+    """ Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast
+    file
 
     Parameters
     ----------

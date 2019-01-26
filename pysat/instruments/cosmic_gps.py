@@ -133,9 +133,11 @@ def load(cosmicFiles, tag=None, sat_id=None):
         # multiprocessor load, not included and only benefits about 20%
         output = pysat.DataFrame(load_files(cosmicFiles, tag=tag,
                                             sat_id=sat_id))
+        utsec = output.hour*3600.+output.minute*60.+output.second
         output.index = pysat.utils.create_datetime_index(year=output.year,
-                month=output.month, day=output.day,
-                uts=output.hour*3600.+output.minute*60.+output.second)
+                                                         month=output.month,
+                                                         day=output.day,
+                                                         uts=utsec)
         # make sure UTS strictly increasing
         output.sort_index(inplace=True)
         # use the first available file to pick out meta information
@@ -151,7 +153,7 @@ def load(cosmicFiles, tag=None, sat_id=None):
                 keys = data.variables.keys()
                 for key in keys:
                     meta[key] = {'units': data.variables[key].units,
-                                'long_name': data.variables[key].long_name}
+                                 'long_name': data.variables[key].long_name}
                 repeat = False
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind

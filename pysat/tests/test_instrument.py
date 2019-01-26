@@ -267,7 +267,8 @@ class TestBasics():
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
         assert np.all(self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0):
-                                    pysat.datetime(2009, 1, 1, 0, 0, 10), 'uts']
+                                    pysat.datetime(2009, 1, 1, 0, 0, 10),
+                                    'uts']
                       == self.testInst.data['uts'].values[0:11])
 
     def test_setting_data_by_name(self):

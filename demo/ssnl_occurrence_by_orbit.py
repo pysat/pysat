@@ -43,7 +43,8 @@ vefi.bounds = (start, stop)
 # perform occurrence probability calculation
 # any data added by custom functions is available within routine below
 ans = pysat.ssnl.occur_prob.by_orbit2D(vefi, [0, 360, 144], 'longitude',
-                [-13,13,104], 'latitude', ['dB_mer'], [0.], returnBins=True)
+                                       [-13, 13, 104], 'latitude', ['dB_mer'],
+                                       [0.], returnBins=True)
 
 # a dict indexed by data_label is returned
 # in this case, only one, we'll pull it out
@@ -54,7 +55,7 @@ masked = np.ma.array(ans['prob'], mask=np.isnan(ans['prob']))
 im = axarr[0].pcolor(ans['bin_x'], ans['bin_y'], masked)
 axarr[0].set_title('Occurrence Probability Delta-B Meridional > 0')
 axarr[0].set_ylabel('Latitude')
-axarr[0].set_yticks((-13, -10, -5, 0, 5, 10 ,13))
+axarr[0].set_yticks((-13, -10, -5, 0, 5, 10, 13))
 axarr[0].set_ylim((ans['bin_y'][0], ans['bin_y'][-1]))
 plt.colorbar(im, ax=axarr[0], label='Occurrence Probability')
 
@@ -68,4 +69,4 @@ axarr[1].set_title('Number of Orbits in Bin')
 plt.colorbar(im, ax=axarr[1], label='Counts')
 f.tight_layout()
 plt.show()
-plt.savefig(os.path.join(results_dir,'ssnl_occurrence_by_orbit_demo') )
+plt.savefig(os.path.join(results_dir, 'ssnl_occurrence_by_orbit_demo'))

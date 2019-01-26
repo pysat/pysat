@@ -303,7 +303,7 @@ class TestBasics():
     #     assert(np.all(check))
 
     #######################
-    ### test pysat data dir options
+    # test pysat data dir options
     def test_set_data_dir(self):
         saved_dir = self.data_path
         # update data_dir

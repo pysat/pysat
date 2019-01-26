@@ -804,8 +804,8 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                                      inst.meta.scale_label: "linear",
                                      inst.meta.min_label: 0.0,
                                      inst.meta.max_label: 24.0,
-                                     inst.meta.fill_label:np.nan})
-        
+                                     inst.meta.fill_label: np.nan})
+
     return
 
 
@@ -1048,15 +1048,15 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     if inverse:
         # Cartesian to Spherical
         xy_sq = az_in**2 + el_in**2
-        z_out = np.sqrt(xy_sq + r_in**2) # This is r
-        y_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in)) # This is zenith
-        y_out = 90.0 - y_out # This is the elevation
-        x_out = np.degrees(np.arctan2(el_in, az_in)) # This is azimuth
+        z_out = np.sqrt(xy_sq + r_in**2)  # This is r
+        y_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in))  # This is zenith
+        y_out = 90.0 - y_out  # This is the elevation
+        x_out = np.degrees(np.arctan2(el_in, az_in))  # This is azimuth
     else:
         # Spherical coordinate system uses zenith angle (degrees from the
         # z-axis) and not the elevation angle (degrees from the x-y plane)
         zen_in = np.radians(90.0 - el_in)
-        
+
         # Spherical to Cartesian
         x_out = r_in * np.sin(zen_in) * np.cos(np.radians(az_in))
         y_out = r_in * np.sin(zen_in) * np.sin(np.radians(az_in))

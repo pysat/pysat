@@ -241,15 +241,16 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
 
 
 def list_remote_files(tag, sat_id, inst_code=None, user=None,
-             password=None, supported_tags=None,
-             url="http://cedar.openmadrigal.org",
-             two_digit_year_break=None):
+                      password=None, supported_tags=None,
+                      url="http://cedar.openmadrigal.org",
+                      two_digit_year_break=None):
     """Lists files available from Madrigal.
 
     Parameters
     ----------
     tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+        Denotes type of file to load.  Accepted types are <tag strings>.
+        (default=None)
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
@@ -288,7 +289,8 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     The password field should be the user's email address. These parameters
     are passed to Madrigal when downloading.
 
-    The affiliation field is set to pysat to enable tracking of pysat downloads.
+    The affiliation field is set to pysat to enable tracking of pysat
+    downloads.
 
     Examples
     --------
@@ -311,10 +313,10 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     # TODO, implement user and password values in test code
     # specific to each instrument
     if user is None:
-        print ('No user information supplied for download.')
+        print('No user information supplied for download.')
         user = 'pysat_testing'
     if password is None:
-        print ('Please provide email address in password field.')
+        print('Please provide email address in password field.')
         password = 'pysat_testing@not_real_email.org'
 
     try:
@@ -326,22 +328,24 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     web_data = madrigalWeb.madrigalWeb.MadrigalData(url)
     # get list of experiments for instrument from 1900 till now
     now = pysat.datetime.now()
-    exp_list = web_data.getExperiments(inst_code,1900,1,1,0,0,0,now.year,
-                                      now.month,now.day,23,59,59)
+    exp_list = web_data.getExperiments(inst_code, 1900, 1, 1, 0, 0, 0,
+                                       now.year, now.month, now.day,
+                                       23, 59, 59)
     # iterate over experiments to grab files for each one
     files = []
-    print ("Grabbing filenames for each experiment")
-    print ("A total of", len(exp_list), "experiments were found")
+    print("Grabbing filenames for each experiment")
+    print("A total of", len(exp_list), "experiments were found")
     for exp in exp_list:
         file_list = web_data.getExperimentFiles(exp.id)
         files.extend(file_list)
 
     # parse these filenames to grab out the ones we want
-    print ("Parsing filenames")
+    print("Parsing filenames")
     stored = pysat._files.parse_fixed_width_filenames(files, format_str)
     # process the parsed filenames and return a properly formatted Series
-    print ("Processing filenames")
+    print("Processing filenames")
     return pysat._files.process_parsed_filenames(stored, two_digit_year_break)
+
 
 def filter_data_single_date(self):
     """Filters data to a single date.

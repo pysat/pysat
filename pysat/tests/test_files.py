@@ -238,7 +238,7 @@ class TestBasics():
                      root_fname=root_fname)
         # use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
-            format_str=root_fname)
+                                    format_str=root_fname)
         # check overall length
         check1 = len(files) == 145
         # check specific dates

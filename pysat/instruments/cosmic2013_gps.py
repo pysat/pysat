@@ -139,9 +139,11 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
         output = pysat.DataFrame(load_files(cosmicFiles, tag=tag,
                                             sat_id=sat_id,
                                             altitude_bin=altitude_bin))
+        utsec = output.hour*3600.+output.minute*60.+output.second
         output.index = pysat.utils.create_datetime_index(year=output.year,
-                month=output.month, day=output.day,
-                uts=output.hour*3600.+output.minute*60.+output.second)
+                                                         month=output.month,
+                                                         day=output.day,
+                                                         uts=utsec)
         # make sure UTS strictly increasing
         output.sort_index(inplace=True)
         # use the first available file to pick out meta information
@@ -192,7 +194,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             # ncattrsList = data.ncattrs()
             ncattrsList = data._attributes.keys()
             for d in ncattrsList:
-                new[d] = data._attributes[d] # data.getncattr(d)
+                new[d] = data._attributes[d]  # data.getncattr(d)
             # load all of the variables in the netCDF
             loadedVars = {}
             keys = data.variables.keys()

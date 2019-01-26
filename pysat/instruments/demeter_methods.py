@@ -31,14 +31,15 @@ def list_remote_files(tag, sat_id):
     Parameters
     ----------
     tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+        Denotes type of file to load.  Accepted types are <tag strings>.
+        (default=None)
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
 
     """
-    
-    print ('Remote file lists are not supported for Demeter.')
+
+    print('Remote file lists are not supported for Demeter.')
     return
 
 
@@ -361,45 +362,58 @@ def set_metadata(name, meta_dict):
     """
 
     # Define the acknowledgements and references
-    ackn = {'iap': "This work is based on observations with the plasma "
-            + "analyser IAP embarked on the satellite DEMETER launched by "
-            + "CNES (Centre National d'Etudes Spatiales). The author thanks "
-            + "J.J. Berthelier the PI of this instrument for the use of the "
-            + "data, and CDPP (Centre des Données de la Physique des Plasmas) "
-            + "for the provision of these data.",
-            'ice': "This work is based on observations with the electric "
-            + "field instrument ICE embarked on the satellite DEMETER "
-            + "launched by CNES (Centre National d'Etudes Spatiales). The "
-            + "author thanks J.J. Berthelier the PI of this instrument for "
-            + "the use of the data, and CDPP (Centre des Données de la "
-            + "Physique des Plasmas) for the provision of these data.",
-            'imsc': "This work is based on observations with the magnetic "
-            + "field instrument IMSC embarked on the satellite DEMETER "
-            + "launched by CNES (Centre National d'Etudes Spatiales). The "
-            + "author thanks M. Parrot the PI of this instrument for the use "
-            + "of the data, and CDPP (Centre des Données de la Physique des "
-            + "Plasmas) for the provision of these data.",
-            'rnf': "This work is based on observations with the neural "
-            + "network RNF embarked on the satellite DEMETER launched by CNES "
-            + "(Centre National d'Etudes Spatiales). The author thanks J.L. "
-            + "Pinçon the PI of this instrument for the use of the data, and "
-            + "CDPP (Centre des Données de la Physique des Plasmas) for the "
-            + "provision of these data.",
-            'idp': "This work is based on observations with the particle "
-            + "spectrometer instrument IDP embarked on the satellite DEMETER "
-            + "launched by CNES (Centre National d'Etudes Spatiales). The "
-            + "author thanks J.A. Sauvaud the PI of this instrument for the "
-            + "use of the data, and CDPP (Centre des Données de la Physique "
-            + "des Plasmas) for the provision of these data.",
-            'isl': "This work is based on observations with the Langmuir "
-            + "probe ISL embarked on the satellite DEMETER launched by CNES "
-            + "(Centre National d'Etudes Spatiales). The author thanks J.P. "
-            + "Lebreton the PI of this instrument for the use of the data, "
-            + "and CDPP (Centre des Données de la Physique des Plasmas) for "
-            + "the provision of these data."}
+    ackn = {'iap': ' '.join("This work is based on observations with the",
+                            "plasma analyser IAP embarked on the satellite",
+                            "DEMETER launched by CNES (Centre National",
+                            "d'Etudes Spatiales). The author thanks J.J.",
+                            "Berthelier the PI of this instrument for the use",
+                            "of the data, and CDPP (Centre des Données de la",
+                            "Physique des Plasmas) for the provision of these",
+                            "data."),
+            'ice': ' '.join("This work is based on observations with the",
+                            "electric field instrument ICE embarked on the",
+                            "satellite DEMETER launched by CNES (Centre",
+                            "National d'Etudes Spatiales). The author thanks",
+                            "J.J. Berthelier the PI of this instrument for",
+                            "the use of the data, and CDPP (Centre des",
+                            "Données de la Physique des Plasmas) for the",
+                            "provision of these data."),
+            'imsc': ' '.join("This work is based on observations with the",
+                             "magnetic field instrument IMSC embarked on the",
+                             "satellite DEMETER launched by CNES (Centre",
+                             "National d'Etudes Spatiales). The author thanks",
+                             "M. Parrot the PI of this instrument for the use",
+                             "of the data, and CDPP (Centre des Données de la",
+                             "Physique des Plasmas) for the provision of",
+                             "these data."),
+            'rnf': ' '.join("This work is based on observations with the",
+                            "neural network RNF embarked on the satellite",
+                            "DEMETER launched by CNES (Centre National",
+                            "d'Etudes Spatiales). The author thanks J.L.",
+                            "Pinçon the PI of this instrument for the use",
+                            "of the data, and CDPP (Centre des Données de",
+                            "la Physique des Plasmas) for the provision of",
+                            "these data."),
+            'idp': ' '.join("This work is based on observations with the",
+                            "particle spectrometer instrument IDP embarked on",
+                            "the satellite DEMETER launched by CNES (Centre",
+                            "National d'Etudes Spatiales). The author thanks",
+                            "J.A. Sauvaud the PI of this instrument for the",
+                            "use of the data, and CDPP (Centre des Données",
+                            "de la Physique des Plasmas) for the provision of",
+                            "these data."),
+            'isl': ' '.join("This work is based on observations with the",
+                            "Langmuir probe ISL embarked on the satellite",
+                            "DEMETER launched by CNES (Centre National",
+                            "d'Etudes Spatiales). The author thanks J.P.",
+                            "Lebreton the PI of this instrument for the use",
+                            "of the data, and CDPP (Centre des Données de la",
+                            "Physique des Plasmas) for the provision of these",
+                            "data.")}
 
-    refs = {'iap': 'Berthelier at al., 2006. IAP, the thermal plasma analyzer '
-            + 'on DEMETER, Planet. and Space Sci., 54(5), pp 487-501.'}
+    refs = {'iap': ' 'join('Berthelier at al., 2006. IAP, the thermal plasma',
+                           'analyzer on DEMETER, Planet. and Space Sci.,',
+                           '54(5), pp 487-501.')}
 
     if name not in refs.keys():
         refs[name] = 'Instrument reference information available at ' + \
@@ -421,99 +435,122 @@ def set_metadata(name, meta_dict):
                  'MLT': 'Magnetic Local Time',
                  'ilat': 'Invarient Latitude',
                  'L': 'Mc Ilwain Parameter L',
-                 'glat_conj': 'Geocentric ' +
-                 'latitude of the conjugate point at the satellite altitude',
-                 'glon_conj': 'Geocentric longitude of the conjugate point at '
-                 + 'the satellite altitude', 'glat_conj_N_110km':'Geocentric ' +
-                 'latitude of North conjuage point at altitude 110 km',
-                 'glon_conj_N_110km':'Geocentric longitude of North conjugate' +
-                 ' point at altitude 110 km', 'glat_conj_S_110km':'Geocentric' +
-                 ' latitude of South conjugate point at altitude 110 km',
-                 'glon_conj_S_110km':'Geocentric longitude of South conjugate' +
-                 'point at altitude 110 km', 'mag_comp_1':'Component of the ' +
-                 'magnetic field model at the satellite point',
-                 'mag_comp_2':'Component of the magnetic field model at the ' +
-                 'satellite point', 'mag_comp_3':'Component of the magnetic ' +
-                 'field model at the satellite point',
-                 'proton_gyrofreq':'Proton gyrofrequency at satellite point',
-                 'Xs':'Solar position in geographic coordinate system',
-                 'Ys':'Solar position in geographic coordinate system',
-                 'Zs':'Solar position in geographic coordinate system',
-                 'sat2geo_11':'Conversion matrix from satellite to ' +
-                 'geographic coordinate system', 'sat2geo_12':'Conversion ' +
-                 'matrix from satellite to geographic coordinate system',
-                 'sat2geo_13':'Conversion matrix from satellite to ' +
-                 'geographic coordinate system', 'sat2geo_21':'Conversion ' +
-                 'matrix from satellite to geographic coordinate system',
-                 'sat2geo_22':'Conversion matrix from satellite to ' +
-                 'geographic coordinate system', 'sat2geo_23':'Conversion ' +
-                 'matrix from satellite to geographic coordinate system',
-                 'sat2geo_31':'Conversion matrix from satellite to ' +
-                 'geographic coordinate system', 'sat2geo_32':'Conversion ' +
-                 'matrix from satellite to geographic coordinate system',
-                 'sat2geo_33':'Conversion matrix from satellite to ' +
-                 'geographic coordinate system', 'geo2lgm_11':'Conversion ' +
-                 'matrix from geographic to geomagnetic coordinate system',
-                 'geo2lgm_12':'Conversion matrix from geographic to ' +
-                 'geomagnetic coordinate system', 'geo2lgm_13':'Conversion ' +
-                 'matrix from geographic to geomagnetic coordinate system',
-                 'geo2lgm_21':'Conversion matrix from geographic to ' +
-                 'geomagnetic coordinate system', 'geo2lgm_22':'Conversion ' +
-                 'matrix from geographic to geomagnetic coordinate system',
-                 'geo2lgm_23':'Conversion matrix from geographic to ' +
-                 'geomagnetic coordinate system', 'geo2lgm_31':'Conversion ' +
-                 'matrix from geographic to geomagnetic coordinate system',
-                 'geo2lgm_32':'Conversion matrix from geographic to ' +
-                 'geomagnetic coordinate system', 'geo2lgm_33':'Conversion ' +
-                 'matrix from geographic to geomagnetic coordinate system',
-                 'attitude_flag':'Quality index of attitude parameters',
-                 'status_flag_00':'Housekeeping and status',
-                 'status_flag_01':'Housekeeping and status',
-                 'status_flag_02':'Housekeeping and status',
-                 'status_flag_03':'Housekeeping and status',
-                 'status_flag_04':'Housekeeping and status',
-                 'status_flag_05':'Housekeeping and status',
-                 'status_flag_06':'Housekeeping and status',
-                 'status_flag_07':'Housekeeping and status',
-                 'status_flag_08':'Housekeeping and status',
-                 'status_flag_09':'Housekeeping and status',
-                 'status_flag_10':'Housekeeping and status',
-                 'status_flag_11':'Housekeeping and status',
-                 'status_flag_12':'Housekeeping and status',
-                 'status_flag_13':'Housekeeping and status',
-                 'status_flag_14':'Housekeeping and status',
-                 'status_flag_15':'Housekeeping and status',
-                 'status_flag_16':'Housekeeping and status',
-                 'status_flag_17':'Housekeeping and status',
-                 'status_flag_18':'Housekeeping and status',
-                 'status_flag_19':'Housekeeping and status',
-                 'status_flag_20':'Housekeeping and status',
-                 'status_flag_21':'Housekeeping and status',
-                 'status_flag_22':'Housekeeping and status',
-                 'status_flag_23':'Housekeeping and status',
-                 'status_flag_24':'Housekeeping and status',
-                 'status_flag_25':'Housekeeping and status',
-                 'status_flag_26':'Housekeeping and status',
-                 'status_flag_27':'Housekeeping and status',
-                 'status_flag_28':'Housekeeping and status',
-                 'status_flag_29':'Housekeeping and status',
-                 'status_flag_30':'Housekeeping and status',
-                 'status_flag_31':'Housekeeping and status',}
-    long_inst = {'iap':{'time_resolution':'Time resolution',
-                        'H+_density':'H+ density', 'He+_density':'He+ density',
-                        'O+_density':'O+ density',
-                        'Ion_temperature':'Ion temperature',
-                        'iv_Oz':'Ion velocity along the satellite z axis',
-                        'iv_negOz_angle':'Angle between the ion velocity and' +
-                        ' -z axis (ram direction) of satellite',
-                        'iv_xOy_Ox_angle':'Angle between projection of the ' +
-                        'ion velocity on the x-y plane and satellite x axis',
-                        'satellite_potential':'Satellite potential'}}
+                 'glat_conj': ' '.join('Geocentric latitude of the conjugate',
+                                       'point at the satellite altitude'),
+                 'glon_conj': ' '.join('Geocentric longitude of the conjugate',
+                                       'point at the satellite altitude'),
+                 'glat_conj_N_110km': ' '.join('Geocentric latitude of North',
+                                               'conjugate point at altitude',
+                                               '110 km'),
+                 'glon_conj_N_110km': ' '.join('Geocentric longitude of North',
+                                               'conjugate point at altitude',
+                                               '110 km'),
+                 'glat_conj_S_110km': ' '.join('Geocentric latitude of South',
+                                               'conjugate point at altitude',
+                                               '110 km'),
+                 'glon_conj_S_110km': ' '.join('Geocentric longitude of South',
+                                               'conjugate point at altitude',
+                                               '110 km'),
+                 'mag_comp_1': ' '.join('Component of the magnetic field',
+                                        'model at the satellite point'),
+                 'mag_comp_2': ' '.join('Component of the magnetic field',
+                                        'model at the satellite point'),
+                 'mag_comp_3': ' '.join('Component of the magnetic field',
+                                        'model at the satellite point'),
+                 'proton_gyrofreq': 'Proton gyrofrequency at satellite point',
+                 'Xs': 'Solar position in geographic coordinate system',
+                 'Ys': 'Solar position in geographic coordinate system',
+                 'Zs': 'Solar position in geographic coordinate system',
+                 'sat2geo_11': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'sat2geo_12': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'sat2geo_13': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'sat2geo_21': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'sat2geo_22': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'sat2geo_23': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'sat2geo_31': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'sat2geo_32': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'sat2geo_33': ' '.join('Conversion matrix from satellite to',
+                                        'geographic coordinate system'),
+                 'geo2lgm_11': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'geo2lgm_12': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'geo2lgm_13': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'geo2lgm_21': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'geo2lgm_22': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'geo2lgm_23': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'geo2lgm_31': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'geo2lgm_32': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'geo2lgm_33': ' '.join('Conversion matrix from geographic to',
+                                        'geomagnetic coordinate system'),
+                 'attitude_flag': 'Quality index of attitude parameters',
+                 'status_flag_00': 'Housekeeping and status',
+                 'status_flag_01': 'Housekeeping and status',
+                 'status_flag_02': 'Housekeeping and status',
+                 'status_flag_03': 'Housekeeping and status',
+                 'status_flag_04': 'Housekeeping and status',
+                 'status_flag_05': 'Housekeeping and status',
+                 'status_flag_06': 'Housekeeping and status',
+                 'status_flag_07': 'Housekeeping and status',
+                 'status_flag_08': 'Housekeeping and status',
+                 'status_flag_09': 'Housekeeping and status',
+                 'status_flag_10': 'Housekeeping and status',
+                 'status_flag_11': 'Housekeeping and status',
+                 'status_flag_12': 'Housekeeping and status',
+                 'status_flag_13': 'Housekeeping and status',
+                 'status_flag_14': 'Housekeeping and status',
+                 'status_flag_15': 'Housekeeping and status',
+                 'status_flag_16': 'Housekeeping and status',
+                 'status_flag_17': 'Housekeeping and status',
+                 'status_flag_18': 'Housekeeping and status',
+                 'status_flag_19': 'Housekeeping and status',
+                 'status_flag_20': 'Housekeeping and status',
+                 'status_flag_21': 'Housekeeping and status',
+                 'status_flag_22': 'Housekeeping and status',
+                 'status_flag_23': 'Housekeeping and status',
+                 'status_flag_24': 'Housekeeping and status',
+                 'status_flag_25': 'Housekeeping and status',
+                 'status_flag_26': 'Housekeeping and status',
+                 'status_flag_27': 'Housekeeping and status',
+                 'status_flag_28': 'Housekeeping and status',
+                 'status_flag_29': 'Housekeeping and status',
+                 'status_flag_30': 'Housekeeping and status',
+                 'status_flag_31': 'Housekeeping and status', }
+    long_inst = {'iap': {'time_resolution': 'Time resolution',
+                         'H+_density': 'H+ density',
+                         'He+_density': 'He+ density',
+                         'O+_density': 'O+ density',
+                         'Ion_temperature': 'Ion temperature',
+                         'iv_Oz': 'Ion velocity along the satellite z axis',
+                         'iv_negOz_angle': ' '.join('Angle between the ion',
+                                                    'velocity and -z axis',
+                                                    '(ram direction) of',
+                                                    'satellite'),
+                         'iv_xOy_Ox_angle': ' '.join('Angle between',
+                                                     'projection of the ion',
+                                                     'velocity on the x-y',
+                                                     'plane and satellite',
+                                                     'x axis'),
+                         'satellite_potential': 'Satellite potential'}}
 
-    if not name in long_inst.keys():
+    if name not in long_inst.keys():
         print('Warning, no long-form names available for {:s}'.format(name))
 
-        long_inst[name] = {nn:nn for nn in meta_dict['data names']}
+        long_inst[name] = {nn: nn for nn in meta_dict['data names']}
 
     # Initialise the meta data
     meta = pysat.Meta()
@@ -525,7 +562,7 @@ def set_metadata(name, meta_dict):
             ll = long_name[cc]
 
         # Assign the data units, long names, acknowledgements, and references
-        meta[cc] = {'units':meta_dict['data units'][cc], 'long_name':ll}
+        meta[cc] = {'units': meta_dict['data units'][cc], 'long_name': ll}
 
     # Set the remaining metadata
     meta_dict['acknowledgements'] = ackn[name]
@@ -534,6 +571,6 @@ def set_metadata(name, meta_dict):
     mkeys.pop(mkeys.index('data names'))
     mkeys.pop(mkeys.index('data units'))
 
-    meta.info = {cc:meta_dict[cc] for cc in mkeys}
+    meta.info = {cc: meta_dict[cc] for cc in mkeys}
 
     return meta

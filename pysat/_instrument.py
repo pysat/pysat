@@ -1257,7 +1257,8 @@ class Instrument(object):
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, user=None, password=None, **kwargs):
-        """Grabs a list of remote files, compares to local, then downloads new files.
+        """Grabs a list of remote files, compares to local, then downloads new
+        files.
 
         Parameters
         ----------
@@ -1302,13 +1303,13 @@ class Instrument(object):
             if date in remote_files.index:
                 if remote_files[date] != local_files[date]:
                     new_dates.append(date)
-        print ('Found ', len(new_dates), ' files that are new or updated.')
+        print('Found ', len(new_dates), ' files that are new or updated.')
         # download date for dates in new_dates (also includes new names)
-        self.download(user=user, password=password, date_array=new_dates, **kwargs)
+        self.download(user=user, password=password, date_array=new_dates,
+                      **kwargs)
 
-
-    def download(self, start=None, stop=None, freq='D', user=None, password=None,
-                 date_array=None, **kwargs):
+    def download(self, start=None, stop=None, freq='D', user=None,
+                 password=None, date_array=None, **kwargs):
         """Download data for given Instrument object from start to stop.
 
         Parameters
@@ -1353,8 +1354,8 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            print ('Downloading the most recent data by default. ',
-                   '(yesterday through tomorrow)')
+            print('Downloading the most recent data by default. ',
+                  '(yesterday through tomorrow)')
             start = self.yesterday()
             stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
@@ -2040,7 +2041,8 @@ class Instrument(object):
                             new_dict['Var_Type'] = 'data'
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict,
-                                                        coltype, remove=True)
+                                                                     coltype,
+                                                                     remove=True)
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
