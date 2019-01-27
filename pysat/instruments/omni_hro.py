@@ -89,7 +89,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     if format_str is None and data_path is not None:
         if (tag == '1min') | (tag == '5min'):
             min_fmt = ''.join(['omni_hro_', tag,
-                               '{year:4d}{month:02d}{day:02d}_v01.cdf'])
+                               '_{year:4d}{month:02d}{day:02d}_v01.cdf'])
             files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
             # files are by month, just add date to monthly filename for
             # each day of the month. load routine will use date to select out
