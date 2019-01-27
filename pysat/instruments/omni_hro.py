@@ -19,11 +19,11 @@ Files are stored by the first day of each month. When downloading use
 omni.download(start, stop, freq='MS') to only download days that could possibly
 have data.  'MS' gives a monthly start frequency.
 
-This material is based upon work supported by the 
-National Science Foundation under Grant Number 1259508. 
+This material is based upon work supported by the
+National Science Foundation under Grant Number 1259508.
 
-Any opinions, findings, and conclusions or recommendations expressed in this 
-material are those of the author(s) and do not necessarily reflect the views 
+Any opinions, findings, and conclusions or recommendations expressed in this
+material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
 
 
@@ -108,11 +108,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         raise ValueError (estr)
     else:
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
-            
+
 
 def load(fnames, tag=None, sat_id=None):
     import pysatCDF
-    
+
     if len(fnames) <= 0 :
         return pysat.DataFrame(None), None
     else:
@@ -123,7 +123,7 @@ def load(fnames, tag=None, sat_id=None):
             data, meta = cdf.to_pysat()
             # pick out data for date
             data = data.ix[date:date+pds.DateOffset(days=1) -
-                           pds.DateOffset(microseconds=1)] 
+                           pds.DateOffset(microseconds=1)]
             return data, meta
 
 def clean(omni):
@@ -133,7 +133,7 @@ def clean(omni):
             # get real name
             fill_attr = omni.meta.attr_case_name(fill_attr)
             for key in omni.data.columns:
-                if key != 'Epoch':    
+                if key != 'Epoch':
                     idx, = np.where(omni[key] == omni.meta[key, fill_attr])
                     omni[idx, key] = np.nan
     return
@@ -151,13 +151,13 @@ def time_shift_to_magnetic_poles(inst):
     ---------
     Time shift calculated using distance to bow shock nose (BSN)
     and velocity of solar wind along x-direction.
-    
+
     Warnings
     --------
     Use at own risk.
-    
+
     """
-    
+
     # need to fill in Vx to get an estimate of what is going on
     inst['Vx'] = inst['Vx'].interpolate('nearest')
     inst['Vx'] = inst['Vx'].fillna(method='backfill')
@@ -181,8 +181,8 @@ def time_shift_to_magnetic_poles(inst):
     for i, time in enumerate(time_x_offset):
         new_index.append(inst.data.index[i] + time)
     inst.data.index = new_index
-    inst.data = inst.data.sort_index()    
-    
+    inst.data = inst.data.sort_index()
+
     return
 
 def download(date_array, tag, sat_id='', data_path=None, user=None,
@@ -205,36 +205,39 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
         Not used, CDAWeb provides password (default=None)
     """
     import os
-    import ftplib
+    import requests
 
-    ftp = ftplib.FTP('cdaweb.gsfc.nasa.gov')   # connect to host, default port
-    ftp.login()               # user anonymous, passwd anonymous@
-    
+    remote_site = 'https://cdaweb.gsfc.nasa.gov'
+
     if (tag == '1min') | (tag == '5min'):
-        ftp.cwd('/pub/data/omni/omni_cdaweb/hro_'+tag)
-    
+        remote_url = remote_site + '/pub/data/omni/omni_cdaweb/hro_' + tag
+
         for date in date_array:
-            fname = '{year1:4d}/omni_hro_' + tag + \
-                    '_{year2:4d}{month:02d}{day:02d}_v01.cdf'
-            fname = fname.format(year1=date.year, year2=date.year,
-                                 month=date.month, day=date.day)
-            local_fname = ''.join(['omni_hro_', tag, \
-            '_{year:4d}{month:02d}{day:02d}_v01.cdf']).format(year=date.year, \
-                                                month=date.month, day=date.day)
-            saved_fname = os.path.join(data_path,local_fname) 
+            remote_fname = ''.join(('{year1:4d}/omni_hro_', tag,
+                                    '_{year2:4d}{month:02d}{day:02d}_v01.cdf'))
+            remote_fname = remote_fname.format(year1=date.year,
+                                               year2=date.year,
+                                               month=date.month,
+                                               day=date.day)
+            local_fname = ''.join(('omni_hro_', tag,
+                                   '_{year:4d}{month:02d}{day:02d}_v01.cdf'))
+            local_fname = local_fname.format(year=date.year,
+                                             month=date.month,
+                                             day=date.day)
+            saved_local_fname = os.path.join(data_path, local_fname)
             try:
                 print('Downloading file for '+date.strftime('%D'))
                 sys.stdout.flush()
-                ftp.retrbinary('RETR '+fname, open(saved_fname,'wb').write)
-            except ftplib.error_perm as exception:
-                # if exception[0][0:3] != '550':
-                if str(exception.args[0]).split(" ", 1)[0] != '550':
-                    raise
+                remote_path = '/'.join((remote_url, remote_fname))
+                r = requests.get(remote_path)
+                if r.status_code != 404:
+                    open(saved_local_fname, 'wb').write(r.content)
+                    print('Finished.')
                 else:
-                    os.remove(saved_fname)
-                    print('File not available for '+ date.strftime('%D'))
-    ftp.close()
-    # ftp.quit()
+                    print('File not available for ' + date.strftime('%x'))
+            except requests.exceptions.RequestException as exception:
+                print('File not available for ' + date.strftime('%x'))
+
     return
 
 def calculate_clock_angle(inst):
@@ -245,7 +248,7 @@ def calculate_clock_angle(inst):
     inst : pysat.Instrument
         Instrument with OMNI HRO data
     """
-    
+
     # Calculate clock angle in degrees
     clock_angle = np.degrees(np.arctan2(inst['BY_GSM'], inst['BZ_GSM']))
     clock_angle[clock_angle < 0.0] += 360.0
@@ -344,9 +347,8 @@ def calculate_dayside_reconnection(inst):
     sin_htheta = np.power(np.sin(np.radians(0.5 * inst['clock_angle'])), 4.5)
     byz = inst['BYZ_GSM'] * 1.0e-9
     vx = inst['flow_speed'] * 1000.0
-    
+
     recon_day = 3.8 * rearth * vx * byz * sin_htheta * np.power((vx / 4.0e5),
                                                                 1.0/3.0)
     inst['recon_day'] = pds.Series(recon_day, index=inst.data.index)
     return
-
