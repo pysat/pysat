@@ -21,6 +21,7 @@ def test_geodetic_to_geocentric_inverse():
                                                             lon_in=lon2,
                                                             inverse=True)
     tol = 1e-9
+    
     assert ((np.abs(lon1-lon3) < np.abs(lon1*tol)) &
             (np.abs(lat1-lat3) < np.abs(lat1*tol)))
 
@@ -30,23 +31,23 @@ def test_geodetic_to_geocentric_horizontal_inverse():
 
     Note:  inverse of az and el angles currently non-functional"""
 
-    lat1 = 37.5
-    lon1 = 117.3
-    az1 = 32.0
-    el1 = 113.0
+    lat1 = -17.5
+    lon1 = 187.3
+    az1 = 52.0
+    el1 = 63.0
     lat2, lon2, rad_e, az2, el2 = \
         pysat.coords.geodetic_to_geocentric_horizontal(lat1, lon1, az1, el1,
                                                        inverse=False)
     lat3, lon3, rad_e, az3, el3 = \
         pysat.coords.geodetic_to_geocentric_horizontal(lat2, lon2, az2, el2,
                                                        inverse=True)
-    print(lat1, lat2, lat3)
-    print(lon1, lon2, lon3)
-    print(az1, az2, az3)  # rotates azimuth by 180 degrees ???
-    print(el1, el2, el3)  # output + input elevation = 180 degrees ???
 
-    assert ((lon1 == lon3) & (lat1 == lat3) &
-            (az1 == az3) & (el1 == el3))
+    tol = 1e-9
+
+    assert ((np.abs(lon1-lon3) < np.abs(lon1*tol)) &
+            (np.abs(lat1-lat3) < np.abs(lat1*tol)) &
+            (np.abs(az1-az3) < np.abs(az1*tol)) &
+            (np.abs(el1-el3) < np.abs(el1*tol)))
 
 
 def test_spherical_to_cartesian_inverse():
@@ -60,14 +61,9 @@ def test_spherical_to_cartesian_inverse():
 
     tol = 1e-9
 
-    print(x1, x2)
-    print(y1, y2)
-    print(z1, z2)
-
-    assert True
-    # assert ((np.abs(x1-x2) < np.abs(x1*tol)) &
-    #         (np.abs(y1-y2) < np.abs(y1*tol)) &
-    #         (np.abs(z1-z2) < np.abs(z1*tol)))
+    assert ((np.abs(x1-x2) < np.abs(x1*tol)) &
+            (np.abs(y1-y2) < np.abs(y1*tol)) &
+            (np.abs(z1-z2) < np.abs(z1*tol)))
 
 
 def test_global_to_local_cartesian_inverse():
