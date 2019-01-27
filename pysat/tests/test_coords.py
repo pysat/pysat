@@ -42,8 +42,8 @@ def test_geodetic_to_geocentric_horizontal_inverse():
                                                        inverse=True)
     print(lat1, lat2, lat3)
     print(lon1, lon2, lon3)
-    print(az1, az2, az3)
-    print(el1, el2, el3)
+    print(az1, az2, az3)  # rotates azimuth by 180 degrees ???
+    print(el1, el2, el3)  # output + input elevation = 180 degrees ???
 
     assert ((lon1 == lon3) & (lat1 == lat3) &
             (az1 == az3) & (el1 == el3))
