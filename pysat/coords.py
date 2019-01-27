@@ -54,9 +54,9 @@ def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     # Calculate the tangent of the input latitude
     tan_in = np.tan(np.radians(lat_in))
 
+    # If converting from geodetic to geocentric, take the inverse of the
+    # radius ratio
     if not inverse:
-        # If converting from geodetic to geocentric, take the inverse of the
-        # radius ratio
         rad_ratio_sq = 1.0 / rad_ratio_sq
 
     # Calculate the output latitude
