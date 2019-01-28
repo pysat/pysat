@@ -8,8 +8,9 @@ platform : string
 name : string
     'f107'
 tag : string
-    '' Standard F10.7 data (single day at a time)
-    'all' All standard F10.7
+    '' LASP F10.7 data (downloads by month, loads by day)
+    'all' All LASP standard F10.7
+    'daily' Daily SWPC solar indices (contains last 30 days)
     'forecast' Grab forecast data from SWPC (next 3 days)
     '45day' 45-Day Forecast data from the Air Force
 
@@ -51,22 +52,24 @@ import pysat
 
 platform = 'sw'
 name = 'f107'
-tags = {'':'Daily standard value of F10.7',
-        'all':'All standard F10.7 values',
-        'forecast':'SWPC Forecast F107 data next (3 days)',
-        '45day':'Air Force 45-day Forecast'}
+tags = {'': 'Daily LASP value of F10.7',
+        'all': 'All LASP F10.7 values',
+        'daily': 'Daily SWPC solar indices (contains last 30 days)',
+        'forecast': 'SWPC Forecast F107 data next (3 days)',
+        '45day': 'Air Force 45-day Forecast'}
 # dict keyed by sat_id that lists supported tags for each sat_id
-sat_ids = {'':['', 'all', 'forecast', '45day']}
+sat_ids = {'':['', 'all', 'daily', 'forecast', '45day']}
 # dict keyed by sat_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
 now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
 # set test dates
-test_dates = {'':{'':pysat.datetime(2009,1,1), 
-                  'all':pysat.datetime(2009,1,1),
-                  'forecast':tomorrow,
-                  '45day':tomorrow}}
+test_dates = {'':{'': pysat.datetime(2009,1,1), 
+                  'all': pysat.datetime(2009,1,1),
+                  'daily': tomorrow,
+                  'forecast': tomorrow,
+                  '45day': tomorrow}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -106,6 +109,8 @@ def load(fnames, tag=None, sat_id=None):
         result = data.iloc[idx,:]      
     elif tag == 'all':
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
+    elif tag == 'daily':
+        result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
     elif tag == 'forecast':
         # load forecast data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
@@ -118,6 +123,36 @@ def load(fnames, tag=None, sat_id=None):
                     meta.name_label: 'F10.7 cm solar index',
                     meta.desc_label:
                     'F10.7 cm radio flux in Solar Flux Units (SFU)'}
+
+    if tag == '45day':
+        meta['ap'] = {meta.name_label: 'Daily Ap index',
+                      meta.desc_label: 'Daily average of 3-h ap indices'}
+    elif tag == 'daily':
+        meta['ssn'] = {meta.name_label: 'Sunspot Number',
+                       meta.desc_label: 'SESC Sunspot Number'}
+        meta['ss_area'] = {meta.name_label: 'Sunspot Area',
+                           meta.desc_label: 'Sunspot Area 10$^6$ Hemisphere'}
+        meta['new_reg'] = {meta.name_label: 'New Regions',
+                           meta.desc_label: 'New active solar regions'}
+        meta['smf'] = {meta.name_label: 'Solar Mean Field',
+                       meta.desc_label: 'Standford Solar Mean Field',
+                       meta.fill_label: -999}
+        meta['goes_bgd_flux'] = {meta.name_label: 'X-ray Background Flux',
+                                 meta.desc_label:
+                                 'GOES15 X-ray Background Flux'}
+        meta['c_flare'] = {meta.name_label: 'C X-Ray Flares',
+                           meta.desc_label: 'C-class X-Ray Flares'}
+        meta['m_flare'] = {meta.name_label: 'M X-Ray Flares',
+                           meta.desc_label: 'M-class X-Ray Flares'}
+        meta['x_flare'] = {meta.name_label: 'X X-Ray Flares',
+                           meta.desc_label: 'X-class X-Ray Flares'}
+        meta['o1_flare'] = {meta.name_label: '1 Optical Flares',
+                            meta.desc_label: '1-class Optical Flares'}
+        meta['o2_flare'] = {meta.name_label: '2 Optical Flares',
+                            meta.desc_label: '2-class Optical Flares'}
+        meta['o3_flare'] = {meta.name_label: '3 Optical Flares',
+                            meta.desc_label: '3-class Optical Flares'}
+                      
                     
     return result, meta
     
@@ -189,26 +224,42 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
             return out
 
+        elif tag == 'daily':
+            format_str = 'f107_daily_{year:04d}-{month:02d}-{day:02d}.txt'
+            files = pysat.Files.from_os(data_path=data_path,
+                                       format_str=format_str)
+
+            # pad list of files data to include most recent file under tomorrow
+            if not files.empty:
+                pds_off = pds.DateOffset(days=1)
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
+            return files
+
         elif tag == 'forecast':
             format_str = 'f107_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
                                        format_str=format_str)
+
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
                 files.ix[files.index[-1] + pds_off] = files.values[-1]
                 files.ix[files.index[-1] + pds_off] = files.values[-1]
             return files
+
         elif tag == '45day':
             format_str = 'f107_45day_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
                                         format_str=format_str)
+
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
                 files.ix[files.index[-1] + pds_off] = files.values[-1]
                 files.ix[files.index[-1] + pds_off] = files.values[-1]
             return files
+
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index ' +
                              'F107')                  
@@ -312,8 +363,34 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # create file
         data.to_csv(os.path.join(data_path, 'f107_1947_to_' +
                                  now.strftime('%Y-%m-%d') + '.txt'))
-            
-        
+
+    elif tag == 'daily':
+        import requests
+        print('This routine can only download the lastest 30 day file')
+
+        # download webpage
+        furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
+        r = requests.get(furl)
+
+        # parse text to get the date the prediction was generated
+        date_str = r.text.split(':Issued: ')[-1].split('\n')[0]
+        date = pysat.datetime.strptime(date_str, '%H%M UT %d %b %Y')
+
+        # get to the solar index data
+        raw_data = r.text.split('#---------------------------------')[-1]
+        raw_data = raw_data.split('\n')[1:-1]
+
+        # parse the data
+        solar_times, data_dict = parse_daily_solar_data(raw_data)
+
+        # collect into DataFrame
+        data = pds.DataFrame(data_dict, index=solar_times,
+                             columns=data_dict.keys())
+
+        # write out as a file
+        data.to_csv(os.path.join(data_path, 'f107_daily_' +
+                                 date.strftime('%Y-%m-%d') + '.txt'))
+
     elif tag == 'forecast':
         import requests
         print('This routine can only download the current forecast, not ' +
@@ -363,13 +440,13 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         raw_f107 = raw_data.split('45-DAY F10.7 CM FLUX FORECAST')[-1]
         # clean up
         raw_f107 = raw_f107.split('\n')[1:-4]
-        
+
         # parse the AP data
         ap_times, ap = parse_45day_block(raw_ap)
 
         # parse the F10.7 data
         f107_times, f107 = parse_45day_block(raw_f107)
-        
+
         # collect into DataFrame
         data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
         data['ap'] = ap
@@ -411,5 +488,47 @@ def parse_45day_block(block_lines):
 
         # Format the data values
         values.extend([int(vv) for vv in split_line[1::2]])
+
+    return dates, values
+
+def parse_daily_solar_data(data_lines):
+    """ Parse the data in the SWPC daily solar index file
+
+    Parameters
+    ----------
+    data_lines : (list)
+        List of lines containing data
+
+    Returns
+    -------
+    dates : (list)
+        List of dates for each date/data pair in this block
+    values : (dict)
+        Dict of lists of values, where each key is the value name
+
+    """
+
+    # Initialize the output
+    dates = list()
+    val_keys = ['f107', 'ssn', 'ss_area', 'new_reg', 'smf', 'goes_bgd_flux',
+                'c_flare', 'm_flare', 'x_flare', 'o1_flare', 'o2_flare',
+                'o3_flare']
+    values = {kk: list() for kk in val_keys}
+    
+    # Cycle through each line in this file
+    for line in data_lines:
+        # Split the line on whitespace
+        split_line = line.split()
+
+        # Format the date
+        dates.append(pysat.datetime.strptime("".join(split_line[0:3]),
+                                                     "%Y%m%d"))
+
+        # Format the data values
+        for i,kk in enumerate(val_keys):
+            val = split_line[i + 3]
+            if kk != 'goes_bgd_flux':
+                val = int(val)
+            values[kk].append(val)
 
     return dates, values

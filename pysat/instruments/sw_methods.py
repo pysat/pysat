@@ -85,7 +85,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     if stop is None:
         stimes = [inst.index.max() for inst in all_inst if len(inst.index) > 0]
         stop = max(stimes) if len(stimes) > 0 else None
-
+        stop += pds.DateOffset(days=1)
+        
     if start is None or stop is None:
         raise ValueError("must either load in Instrument objects or provide" +
                          " starting and ending times")
@@ -191,7 +192,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     # Determine if the beginning or end of the time series needs to be padded
     del_time = (np.array(kp_times[1:]) - np.array(kp_times[:-1])).min()
     freq = "{:.0f}S".format(del_time.total_seconds())
-    date_range = pds.date_range(start=start, end=stop, freq=freq)
+    date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
+                                freq=freq)
 
     if date_range[0] < kp_times[0]:
         # Extend the time and value arrays from their beginning with fill values
@@ -236,7 +238,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     ----------
     standard_inst : (pysat.Instrument or NoneType)
         Instrument object containing data for the 'sw' platform, 'f107' name,
-        and '' or 'all' tag
+        and '', 'all', or 'daily' tag
     forecast_inst : (pysat.Instrument or NoneType)
         Instrument object containing data for the 'sw' platform, 'f107' name,
         and '45day' or 'forecast' tag
@@ -264,7 +266,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     """
     # Initialize metadata and flags
     notes = "Combines data from"
-    stag = standard_inst.tag if len(standard_inst.tag) > 0 else 'daily'
+    stag = standard_inst.tag if len(standard_inst.tag) > 0 else 'default'
     tag = 'combined_{:s}_{:s}'.format(stag, forecast_inst.tag)
     inst_flag = 'standard'
 
@@ -278,6 +280,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         stimes = [inst.index.max() for inst in [standard_inst, forecast_inst]
                   if len(inst.index) > 0]
         stop = max(stimes) if len(stimes) > 0 else None
+        stop += pds.DateOffset(days=1)
 
     if start is None or stop is None:
         raise ValueError("must either load in Instrument objects or provide" +
@@ -300,10 +303,17 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     while itime < stop and inst_flag is not None:
         # Load and save the standard data for as many times as possible
         if inst_flag == 'standard':
-            standard_inst.load(date=itime)
+            # Test to see if data loading is needed
+            if not np.any(standard_inst.index == itime):
+                if standard_inst.tag == 'daily':
+                    # Add 30 days
+                    standard_inst.load(date=itime+pds.DateOffset(days=30))
+                else:
+                    standard_inst.load(date=itime)
+
             good_times = ((standard_inst.index >= itime) &
                           (standard_inst.index < stop))
-
+                
             if notes.find("standard") < 0:
                 notes += " the {:} source ({:} to ".format(inst_flag,
                                                            itime.date())
@@ -352,6 +362,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                 f107_times.extend(list(forecast_inst.index[good_times][good_vals]))
                 f107_values.extend(list(forecast_inst['f107'][good_times][good_vals]))
                 itime = f107_times[-1] + pds.DateOffset(days=1)
+
             notes += "{:})".format(itime.date())
 
             inst_flag = None
@@ -362,7 +373,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     # Determine if the beginning or end of the time series needs to be padded
     del_time = (np.array(f107_times[1:]) - np.array(f107_times[:-1])).min()
     freq = "{:.0f}S".format(del_time.total_seconds())
-    date_range = pds.date_range(start=start, end=stop, freq=freq)
+    date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
+                                freq=freq)
 
     if date_range[0] < f107_times[0]:
         # Extend the time and value arrays from their beginning with fill values
