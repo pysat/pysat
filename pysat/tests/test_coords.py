@@ -1,5 +1,5 @@
 """
-tests the pysat utils area
+tests the pysat coords area
 """
 import os
 import numpy as np
@@ -7,6 +7,55 @@ import nose.tools
 from nose.tools import assert_raises, raises
 import pysat
 import pysat.instruments.pysat_testing
+
+
+def test_spherical_to_cartesian_single(self):
+    """Test conversion from spherical to cartesian coordinates"""
+
+    x, y, z = pysat.coords.spherical_to_cartesian(45.0, 30.0, 1.0)
+
+    assert abs(x - y) < 1.0e-6
+    assert abs(z - 0.5) < 1.0e-6
+
+
+def test_cartesian_to_spherical_single(self):
+    """Test conversion from cartesian to spherical coordinates"""
+
+    x = 0.6123724356957946
+    az, el, r = pysat.coords.spherical_to_cartesian(x, x, 0.5, inverse=True)
+
+    assert abs(az - 45.0) < 1.0e-6
+    assert abs(el - 30.0) < 1.0e-6
+    assert abs(r - 1.0) < 1.0e-6
+
+
+def test_spherical_to_cartesian_mult(self):
+    """Test array conversion from spherical to cartesian coordinates"""
+
+    arr = np.ones(shape=(10,), dtype=float)
+    x, y, z = pysat.coords.spherical_to_cartesian(45.0*arr, 30.0*arr, arr)
+
+    assert x.shape == arr.shape
+    assert y.shape == arr.shape
+    assert z.shape == arr.shape
+    assert abs(x - y).max() < 1.0e-6
+    assert abs(z - 0.5).max() < 1.0e-6
+
+
+def test_cartesian_to_spherical_mult(self):
+    """Test array conversion from cartesian to spherical coordinates"""
+
+    arr = np.ones(shape=(10,), dtype=float)
+    x = 0.6123724356957946
+    az, el, r = pysat.coords.spherical_to_cartesian(x*arr, x*arr, 0.5*arr,
+                                                    inverse=True)
+
+    assert az.shape == arr.shape
+    assert el.shape == arr.shape
+    assert r.shape == arr.shape
+    assert abs(az - 45.0).max() < 1.0e-6
+    assert abs(el - 30.0).max() < 1.0e-6
+    assert abs(r - 1.0).max() < 1.0e-6
 
 
 def test_geodetic_to_geocentric_inverse():
@@ -21,7 +70,7 @@ def test_geodetic_to_geocentric_inverse():
                                                             lon_in=lon2,
                                                             inverse=True)
     tol = 1e-9
-    
+
     assert ((np.abs(lon1-lon3) < np.abs(lon1*tol)) &
             (np.abs(lat1-lat3) < np.abs(lat1*tol)))
 
