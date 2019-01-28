@@ -89,16 +89,17 @@ class TestSWKp():
 
     def test_long_name_kp_metadata(self):
         """Test Kp metadata initialization with a long name"""
-        sw_kp.initialize_kp_metadata(self.testInst.meta, 'high_lat_Kp')
+        dkey = 'high_lat_Kp'
+        sw_kp.initialize_kp_metadata(self.testInst.meta, dkey)
 
-        assert(self.testInst.meta['Kp'][self.testInst.meta.name_label] ==
-               'high_lat_Kp')
-        assert(self.testInst.meta['Kp'][self.testInst.meta.desc_label] ==
+        assert self.testInst.meta[dkey][self.testInst.meta.name_label] == dkey
+        assert(self.testInst.meta[dkey][self.testInst.meta.desc_label] ==
                'Planetary K-index')
-        assert(self.testInst.meta['Kp'][self.testInst.meta.plot_label] ==
+        assert(self.testInst.meta[dkey][self.testInst.meta.plot_label] ==
                'High lat Kp')
-        assert(self.testInst.meta['Kp'][self.testInst.meta.axis_label] ==
+        assert(self.testInst.meta[dkey][self.testInst.meta.axis_label] ==
                'High lat Kp')
+        del dkey
 
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
@@ -176,7 +177,7 @@ class TestSWKp():
 
         combo_in = {kk: self.combine for kk in self.combine.keys()
                     if kk != 'forecast_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_methods.combine_kp(combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['recent_inst'].index[-1]
@@ -197,7 +198,7 @@ class TestSWKp():
 
         combo_in = {kk: self.combine for kk in self.combine.keys()
                     if kk != 'recent_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_methods.combine_kp(combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -218,7 +219,7 @@ class TestSWKp():
 
         combo_in = {kk: self.combine for kk in self.combine.keys()
                     if kk != 'standard_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_methods.combine_kp(combo_in)
 
         assert kp_inst.index[0] >= self.combine['recent_inst'].index[0]
         assert kp_inst.index[-1] < self.combine['stop']
@@ -269,8 +270,8 @@ class TestSWF107():
     def test_combine_f107_no_time(self):
         """Test combine_f107 failure when no times are provided"""
 
-        assert_raises(ValueError, sw_methods.combine_f107, self.combineInst[''],
-                      self.combineInst['forecast'])
+        assert_raises(ValueError, sw_methods.combine_f107,
+                      [self.combineInst[''], self.combineInst['forecast']])
 
     def test_combine_f107_inst_time(self):
         """Test combine_f107 with times provided through 'all' and 'forecast'"""
