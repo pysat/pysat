@@ -33,7 +33,7 @@ class TestSWKp():
                         "fill_val": -1}
 
         # Download combination testing input
-        self.downloaded = True
+        self.download = True
         # Load the instrument objects
         for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
             try:
@@ -240,7 +240,7 @@ class TestSWF107():
                              "stop": self.today + dt.timedelta(days=3)}
 
         # Download combination testing input
-        self.downloaded = True
+        self.download = True
         # Load the instrument objects
         for kk in self.combineInst.keys():
             try:
@@ -252,7 +252,7 @@ class TestSWF107():
             except:
                 pass
 
-            if len(self.combine[kk].files.files) == 0:
+            if len(self.combineInst[kk].files.files) == 0:
                 self.download = False
 
     def teardown(self):
