@@ -56,7 +56,8 @@ class TestSWKp():
 
         assert self.testInst.meta['Kp'][self.testInst.meta.units_label] == ''
         assert self.testInst.meta['Kp'][self.testInst.meta.name_label] == 'Kp'
-        assert self.testInst.meta['Kp'][self.testInst.meta.desc_label] == 'Kp'
+        assert(self.testInst.meta['Kp'][self.testInst.meta.desc_label] ==
+               'Planetary K-index')
         assert self.testInst.meta['Kp'][self.testInst.meta.plot_label] == 'Kp'
         assert self.testInst.meta['Kp'][self.testInst.meta.axis_label] == 'Kp'
         assert(self.testInst.meta['Kp'][self.testInst.meta.scale_label] ==
@@ -71,7 +72,8 @@ class TestSWKp():
 
         assert self.testMeta['Kp'][self.testMeta.units_label] == ''
         assert self.testMeta['Kp'][self.testMeta.name_label] == 'Kp'
-        assert self.testMeta['Kp'][self.testMeta.desc_label] == 'Kp'
+        assert(self.testMeta['Kp'][self.testMeta.desc_label] ==
+               'Planetary K-index')
         assert self.testMeta['Kp'][self.testMeta.plot_label] == 'Kp'
         assert self.testMeta['Kp'][self.testMeta.axis_label] == 'Kp'
         assert self.testMeta['Kp'][self.testMeta.scale_label] == 'linear'
@@ -92,7 +94,7 @@ class TestSWKp():
         assert(self.testInst.meta['Kp'][self.testInst.meta.name_label] ==
                'high_lat_Kp')
         assert(self.testInst.meta['Kp'][self.testInst.meta.desc_label] ==
-               'high lat Kp')
+               'Planetary K-index')
         assert(self.testInst.meta['Kp'][self.testInst.meta.plot_label] ==
                'High lat Kp')
         assert(self.testInst.meta['Kp'][self.testInst.meta.axis_label] ==
@@ -107,7 +109,7 @@ class TestSWKp():
         """ Test combine_kp failure when only one instrument is provided"""
 
         combo_in = {"standard_inst": self.testInst}
-        assert_raises(ValueError, sw_methods.combine_kp, **combo_in)
+        assert_raises(ValueError, sw_methods.combine_kp, combo_in)
 
         del combo_in
 
@@ -117,7 +119,7 @@ class TestSWKp():
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
-        assert_raises(ValueError, sw_methods.combine_kp, **combo_in)
+        assert_raises(ValueError, sw_methods.combine_kp, combo_in)
 
         del combo_in
 
