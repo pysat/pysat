@@ -270,7 +270,7 @@ def download(supported_tags, date_array, tag, sat_id,
 
 
 def list_remote_files(tag, sat_id,
-                      ftp_site='cdaweb.gsfc.nasa.gov',
+                      remote_site='https://cdaweb.gsfc.nasa.gov',
                       supported_tags=None,
                       user=None, password=None,
                       fake_daily_files_from_monthly=False,
@@ -333,56 +333,55 @@ def list_remote_files(tag, sat_id,
     """
 
     import os
-    import ftplib
-
-    # connect to CDAWeb default port
-    ftp = ftplib.FTP(ftp_site)
-    # user anonymous, passwd anonymous@
-    ftp.login()
+    import requests
+    from bs4 import BeautifulSoup
 
     try:
-        ftp_dict = supported_tags[sat_id][tag]
+        inst_dict = supported_tags[sat_id][tag]
     except KeyError:
         raise ValueError('Tag name unknown.')
 
     # path to relevant file on CDAWeb
-    ftp.cwd(ftp_dict['dir'])
+    remote_url = remote_site + inst_dict['dir']
 
     # naming scheme for files on the CDAWeb server
-    format_str = ftp_dict['remote_fname']
-    # started from https://stackoverflow.com/questions/111954/using-pythons-ftplib-to-get-a-directory-listing-portably
+    format_str = inst_dict['remote_fname']
 
     # get a listing of all files
     # determine if we need to walk directories
+
+    soup = BeautifulSoup(requests.get(remote_url).content)
+
+    # Find Subdirectories if needed
     dir_split = os.path.split(format_str)
     if (len(dir_split) == 2) & (len(dir_split[0]) != 0):
-        try:
-            dirs = ftp.nlst()
-        except ftplib.error_perm as resp:
-            if str(resp) == "550 No files found":
-                print ("No files in this directory")
-            else:
-                raise
+        # try:
+        links = soup.find_all('a', href=True)
+        dirs = []
+        for link in links:
+            if link['href'].count('/') == 1:
+                dirs.extend(link['href'])
+        # except:
+        #     raise
         # only want to keep file portion of the string
         format_str = dir_split[-1]
     elif len(dir_split) == 2:
         # no extra directories
         dirs = ['']
     else:
-        raise ValueError('Only travereses one extra level of directory.')
+        raise ValueError('Only traverses one extra level of directory.')
 
     full_files = []
     for direct in dirs:
-        ftp.cwd(ftp_dict['dir']+'/'+direct)
+        sub_path = remote_url + '/' + direct
+        sub_soup = BeautifulSoup(requests.get(sub_path).content)
+        sub_links = sub_soup.find_all('a', href=True)
         try:
-            files = ftp.nlst()
-            full_files.extend(files)
-        except ftplib.error_perm as resp:
-            if str(resp) == "550 No files found":
-                print ("No files in this directory")
-            else:
-                raise
-    ftp.close()
+            for slink in sub_links:
+                if slink['href'].count('.cdf') == 1:
+                    full_files.extend(slink['href'])
+        except:
+            raise
     # parse remote filenames to get date information
     if delimiter is None:
         stored = pysat._files.parse_fixed_width_filenames(full_files, format_str)
