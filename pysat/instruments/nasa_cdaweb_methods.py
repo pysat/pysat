@@ -384,8 +384,10 @@ def list_remote_files(tag, sat_id,
         #     raise
     # parse remote filenames to get date information
     if delimiter is None:
-        stored = pysat._files.parse_fixed_width_filenames(full_files, format_str)
+        stored = pysat._files.parse_fixed_width_filenames(full_files,
+                                                          format_str)
     else:
-        stored = pysat._files.parse_delimited_filenames(full_files, format_str, delimiter)
+        stored = pysat._files.parse_delimited_filenames(full_files,
+                                                        format_str, delimiter)
     # process the parsed filenames and return a properly formatted Series
     return pysat._files.process_parsed_filenames(stored, two_digit_year_break)
