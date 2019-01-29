@@ -360,7 +360,7 @@ def list_remote_files(tag, sat_id,
         dirs = []
         for link in links:
             if link['href'].count('/') == 1:
-                dirs.extend(link['href'])
+                dirs.append(link['href'])
         # except:
         #     raise
         # only want to keep file portion of the string
@@ -378,8 +378,8 @@ def list_remote_files(tag, sat_id,
         sub_links = sub_soup.find_all('a', href=True)
         # try:
         for slink in sub_links:
-            if slink['href'].count('cdf') == 1:
-                full_files.extend(slink['href'])
+            if slink['href'].count('.cdf') == 1:
+                full_files.append(slink['href'])
         # except:
         #     raise
     # parse remote filenames to get date information
