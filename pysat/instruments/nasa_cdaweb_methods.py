@@ -350,7 +350,7 @@ def list_remote_files(tag, sat_id,
     # get a listing of all files
     # determine if we need to walk directories
 
-    soup = BeautifulSoup(requests.get(remote_url).content)
+    soup = BeautifulSoup(requests.get(remote_url).content, "lxml")
 
     # Find Subdirectories if needed
     dir_split = os.path.split(format_str)
@@ -374,14 +374,14 @@ def list_remote_files(tag, sat_id,
     full_files = []
     for direct in dirs:
         sub_path = remote_url + '/' + direct
-        sub_soup = BeautifulSoup(requests.get(sub_path).content)
+        sub_soup = BeautifulSoup(requests.get(sub_path).content, "lxml")
         sub_links = sub_soup.find_all('a', href=True)
-        try:
-            for slink in sub_links:
-                if slink['href'].count('.cdf') == 1:
-                    full_files.extend(slink['href'])
-        except:
-            raise
+        # try:
+        for slink in sub_links:
+            if slink['href'].count('cdf') == 1:
+                full_files.extend(slink['href'])
+        # except:
+        #     raise
     # parse remote filenames to get date information
     if delimiter is None:
         stored = pysat._files.parse_fixed_width_filenames(full_files, format_str)
