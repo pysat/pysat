@@ -185,6 +185,9 @@ def download(supported_tags, date_array, tag, sat_id,
         tag or None (default=None)
     sat_id : (str or NoneType)
         satellite id or None (default=None)
+    remote_site : (string or NoneType)
+        Remote site to download data from
+        (default='https://cdaweb.gsfc.nasa.gov')
     data_path : (string or NoneType)
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
@@ -284,12 +287,14 @@ def list_remote_files(tag, sat_id,
     Parameters
     -----------
     tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+        Denotes type of file to load.  Accepted types are <tag strings>.
+        (default=None)
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    ftp_site : (string or NoneType)
-        FTP site to download data from (default='cdaweb.gsfc.nasa.gov')
+    remote_site : (string or NoneType)
+        Remote site to download data from
+        (default='https://cdaweb.gsfc.nasa.gov')
     supported_tags : dict
         dict of dicts. Keys are supported tag names for download. Value is
         a dict with 'dir', 'remote_fname', 'local_fname'. Inteded to be
