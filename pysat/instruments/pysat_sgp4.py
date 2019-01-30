@@ -276,7 +276,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                            pysat.datetime(2018, 12, 1))
     # file list is effectively just the date in string format - '%D' works
     # only in Mac. '%x' workins in both Windows and Mac
-    names = [data_path+date.strftime('%Y-%m-%d')+'.nofile' for date in index]
+    names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
+             for date in index]
     return pysat.Series(names, index=index)
 
 
@@ -736,7 +737,7 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat',
     mag = np.sqrt(inst['position_ecef_x']**2 + inst['position_ecef_y']**2)
     inst['unit_zonal_wind_ecef_x'] = -inst['position_ecef_y']/mag
     inst['unit_zonal_wind_ecef_y'] = inst['position_ecef_x']/mag
-    inst['unit_zonal_wind_ecef_z'] = 0*inst['position_ecef_x']
+    inst['unit_zonal_wind_ecef_z'] = 0 * inst['position_ecef_x']
 
     # calculate meridional unit vector in ECEF
     # meridional wind: north - south; positive north
@@ -1005,18 +1006,19 @@ def project_ecef_vector_onto_sc(inst, x_label, y_label, z_label,
 
     import pysatMagVect
 
-    x, y, z = pysatMagVect.project_ecef_vector_onto_basis(inst[x_label],
-                                                          inst[y_label],
-                                                          inst[z_label],
-                                                          inst['sc_xhat_ecef_x'],
-                                                          inst['sc_xhat_ecef_y'],
-                                                          inst['sc_xhat_ecef_z'],
-                                                          inst['sc_yhat_ecef_x'],
-                                                          inst['sc_yhat_ecef_y'],
-                                                          inst['sc_yhat_ecef_z'],
-                                                          inst['sc_zhat_ecef_x'],
-                                                          inst['sc_zhat_ecef_y'],
-                                                          inst['sc_zhat_ecef_z'])
+    x, y, z = \
+        pysatMagVect.project_ecef_vector_onto_basis(inst[x_label],
+                                                    inst[y_label],
+                                                    inst[z_label],
+                                                    inst['sc_xhat_ecef_x'],
+                                                    inst['sc_xhat_ecef_y'],
+                                                    inst['sc_xhat_ecef_z'],
+                                                    inst['sc_yhat_ecef_x'],
+                                                    inst['sc_yhat_ecef_y'],
+                                                    inst['sc_yhat_ecef_z'],
+                                                    inst['sc_zhat_ecef_x'],
+                                                    inst['sc_zhat_ecef_y'],
+                                                    inst['sc_zhat_ecef_z'])
     inst[new_x_label] = x
     inst[new_y_label] = y
     inst[new_z_label] = z
@@ -1040,18 +1042,19 @@ def project_hwm_onto_sc(inst):
     total_wind_z = inst['zonal_wind']*inst['unit_zonal_wind_ecef_z'] + \
         inst['meridional_wind']*inst['unit_mer_wind_ecef_z']
 
-    x, y, z = pysatMagVect.project_ecef_vector_onto_basis(total_wind_x,
-                                                          total_wind_y,
-                                                          total_wind_z,
-                                                          inst['sc_xhat_ecef_x'],
-                                                          inst['sc_xhat_ecef_y'],
-                                                          inst['sc_xhat_ecef_z'],
-                                                          inst['sc_yhat_ecef_x'],
-                                                          inst['sc_yhat_ecef_y'],
-                                                          inst['sc_yhat_ecef_z'],
-                                                          inst['sc_zhat_ecef_x'],
-                                                          inst['sc_zhat_ecef_y'],
-                                                          inst['sc_zhat_ecef_z'])
+    x, y, z = \
+        pysatMagVect.project_ecef_vector_onto_basis(total_wind_x,
+                                                    total_wind_y,
+                                                    total_wind_z,
+                                                    inst['sc_xhat_ecef_x'],
+                                                    inst['sc_xhat_ecef_y'],
+                                                    inst['sc_xhat_ecef_z'],
+                                                    inst['sc_yhat_ecef_x'],
+                                                    inst['sc_yhat_ecef_y'],
+                                                    inst['sc_yhat_ecef_z'],
+                                                    inst['sc_zhat_ecef_x'],
+                                                    inst['sc_zhat_ecef_y'],
+                                                    inst['sc_zhat_ecef_z'])
     inst['sim_wind_sc_x'] = x
     inst['sim_wind_sc_y'] = y
     inst['sim_wind_sc_z'] = z

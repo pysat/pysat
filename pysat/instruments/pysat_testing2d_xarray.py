@@ -35,9 +35,11 @@ def load(fnames, tag=None, sat_id=None):
     # the number of samples (86400/scalar)
     scalar = 1
     num = 86400//scalar
-    num_array = np.arange(num)*scalar
+    num_array = np.arange(num) * scalar
     # seed DataFrame with UT array
-    index = pds.date_range(date, date+pds.DateOffset(seconds=num-1), freq='S')
+    index = pds.date_range(date,
+                           date + pds.DateOffset(seconds=num-1),
+                           freq='S')
     data = xr.Dataset({'uts': (('time'), index)}, coords={'time': index})
 
     # need to create simple orbits here. Have start of first orbit
@@ -49,42 +51,44 @@ def load(fnames, tag=None, sat_id=None):
     # root start
     uts_root = np.mod(time_delta.total_seconds(), 5820)
     # mlt runs 0-24 each orbit.
-    mlt = np.mod(uts_root+np.arange(num)*scalar, 5820)*(24./5820.)
+    mlt = np.mod(uts_root + np.arange(num) * scalar, 5820) * (24. / 5820.)
     data['mlt'] = (('time'), mlt)
     # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds()+20, 5820)
+    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
     data['slt'] = (('time'),
-                   np.mod(uts_root+np.arange(num)*scalar, 5820)*(24./5820.))
+                   np.mod(uts_root + np.arange(num) * scalar, 5820) *
+                   (24. / 5820.))
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root+num_array, 6240)*(360./6240.)
+    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
     data['longitude'] = (('time'), longitude)
 
     # create latitude signal for testing polar orbits
-    latitude = 90.*np.cos(np.mod(uts_root+num_array, 5820)*(2.*np.pi/5820.))
+    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
+                            (2. * np.pi / 5820.))
     data['latitude'] = (('time'), latitude)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
-    long_int = (data['longitude']/15.).astype(int)
+    long_int = (data['longitude'] / 15.).astype(int)
     data['dummy1'] = (('time'), mlt_int)
     data['dummy2'] = (('time'), long_int)
-    data['dummy3'] = (('time'), mlt_int + long_int*1000.)
+    data['dummy3'] = (('time'), mlt_int + long_int * 1000.)
     data['dummy4'] = (('time'), num_array)
 
     # create altitude 'profile' at each location
     data['profiles'] = \
         (('time', 'altitude'),
-         data['dummy3'].values[:, np.newaxis]*np.ones((num, 15)))
+         data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
     data.coords['altitude'] = ('altitude', np.arange(15))
 
     # profiles that could have different altitude values
     data['variable_profiles'] = \
         (('time', 'z'),
-         data['dummy3'].values[:, np.newaxis]*np.ones((num, 15)))
+         data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
     data.coords['altitude2'] = \
         (('time', 'z'),
          np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
@@ -92,13 +96,19 @@ def load(fnames, tag=None, sat_id=None):
     # basic image simulation
     data['images'] = \
         (('time', 'x', 'y'),
-         data['dummy3'].values[:, np.newaxis, np.newaxis]*np.ones((num, 17, 17)))
+         data['dummy3'].values[:,
+                               np.newaxis,
+                               np.newaxis] * np.ones((num, 17, 17)))
     data.coords['latitude'] = \
         (('time', 'x', 'y'),
-         np.arange(17)[np.newaxis, np.newaxis, :]*np.ones((num, 17, 17)))
+         np.arange(17)[np.newaxis,
+                       np.newaxis,
+                       :]*np.ones((num, 17, 17)))
     data.coords['longitude'] = \
         (('time', 'x', 'y'),
-         np.arange(17)[np.newaxis, np.newaxis, :]*np.ones((num, 17, 17)))
+         np.arange(17)[np.newaxis,
+                       np.newaxis,
+                       :] * np.ones((num, 17, 17)))
 
     return data, meta.copy()
 
@@ -108,7 +118,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     index = pds.date_range(pysat.datetime(2008, 1, 1),
                            pysat.datetime(2010, 12, 31))
-    names = [data_path+date.strftime('%Y-%m-%d')+'.nofile' for date in index]
+    names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
+             for date in index]
     return pysat.Series(names, index=index)
 
 

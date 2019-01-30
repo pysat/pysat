@@ -54,8 +54,8 @@ def load(fnames, tag=None, sat_id=None):
     scalar = 100
     num = 86400/scalar
     # basic time signal in UTS
-    uts = np.arange(num)*scalar
-    num_array = np.arange(num)*scalar
+    uts = np.arange(num) * scalar
+    num_array = np.arange(num) * scalar
     # seed DataFrame with UT array
     data = pysat.DataFrame(uts, columns=['uts'])
 
@@ -68,27 +68,30 @@ def load(fnames, tag=None, sat_id=None):
     # root start
     uts_root = np.mod(time_delta.total_seconds(), 5820)
     # mlt runs 0-24 each orbit.
-    mlt = np.mod(uts_root+np.arange(num)*scalar, 5820)*(24./5820.)
+    mlt = np.mod(uts_root+np.arange(num)*scalar, 5820) * (24./5820.)
     data['mlt'] = mlt
     # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds()+20, 5820)
-    data['slt'] = np.mod(uts_root+np.arange(num)*scalar, 5820)*(24./5820.)
+    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
+    data['slt'] = np.mod(uts_root + np.arange(num) * scalar,
+                         5820) * (24./5820.)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root+num_array, 6240)*(360./6240.)
+    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
     data['longitude'] = longitude
 
     # create latitude signal for testing polar orbits
-    latitude = 90.*np.cos(np.mod(uts_root+num_array, 5820)*(2.*np.pi/5820.))
+    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
+                            (2. * np.pi / 5820.))
     data['latitude'] = latitude
 
     # create real UTC time signal
     index = pds.date_range(date,
-                           date+pds.DateOffset(hours=23, minutes=59,
-                                               seconds=59),
+                           date + pds.DateOffset(hours=23,
+                                                 minutes=59,
+                                                 seconds=59),
                            freq=str(scalar)+'S')
     data.index = index
     data.index.name = 'epoch'
@@ -96,8 +99,9 @@ def load(fnames, tag=None, sat_id=None):
     # this time signal used for 2D profiles associated with each time in main
     # DataFrame
     high_rate_template = pds.date_range(date,
-                                        date+pds.DateOffset(hours=0, minutes=1,
-                                                            seconds=39),
+                                        date + pds.DateOffset(hours=0,
+                                                              minutes=1,
+                                                              seconds=39),
                                         freq='2S')
 
     # create a few simulated profiles
@@ -114,8 +118,8 @@ def load(fnames, tag=None, sat_id=None):
                           index=data.index[0:50],
                           columns=['density', 'dummy_str', 'dummy_ustr'])
     # frame indexed by float
-    dd = np.arange(50)*1.2
-    ff = np.arange(50)/50.
+    dd = np.arange(50) * 1.2
+    ff = np.arange(50) / 50.
     ii = np.arange(50) * 0.5
     frame_alt = pds.DataFrame({'density': dd, 'fraction': ff},
                               index=ii,
@@ -140,7 +144,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     index = pds.date_range(pysat.datetime(2008, 1, 1),
                            pysat.datetime(2010, 12, 31))
-    names = [data_path+date.strftime('%Y-%m-%d')+'.nofile' for date in index]
+    names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
+             for date in index]
     return pysat.Series(names, index=index)
 
 

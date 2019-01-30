@@ -15,9 +15,10 @@ class TestOMNICustom():
         self.testInst.load(2009, 1)
 
         # Recast time in minutes rather than seconds
-        self.testInst.data.index = pds.Series([t + dt.timedelta(seconds=60-i) +
-                                               dt.timedelta(minutes=i) \
-                                for i,t in enumerate(self.testInst.data.index)])
+        self.testInst.data.index = \
+            pds.Series([t + dt.timedelta(seconds=60-i) +
+                        dt.timedelta(minutes=i)
+                        for i, t in enumerate(self.testInst.data.index)])
 
         # Add IMF data
         self.testInst['BX_GSM'] = pds.Series([3.17384966, 5.98685138,
@@ -41,13 +42,14 @@ class TestOMNICustom():
                                               4.12581021, 4.40641671,
                                               2.87780562, 0.58539121],
                                              index=self.testInst.data.index)
-        self.testInst['flow_speed'] = pds.Series([394.396168, 561.163579,
-                                                  402.930788, 547.347958,
-                                                  569.823962, 47.219819,
-                                                  147.760461, 347.187188,
-                                                  412.581021, 440.641671,
-                                                  287.780562, 58.539121],
-                                                 index=self.testInst.data.index)
+        self.testInst['flow_speed'] = \
+            pds.Series([394.396168, 561.163579,
+                        402.930788, 547.347958,
+                        569.823962, 47.219819,
+                        147.760461, 347.187188,
+                        412.581021, 440.641671,
+                        287.780562, 58.539121],
+                       index=self.testInst.data.index)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""

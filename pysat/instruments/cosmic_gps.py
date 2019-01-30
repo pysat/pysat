@@ -89,14 +89,14 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # need to get date and time from filename to generate index
     num = len(cosmicFiles)
     if num != 0:
-        print('Estimated time:', num*1.E-5, 'seconds')
+        print('Estimated time:', num * 1.E-5, 'seconds')
         sys.stdout.flush()
         # preallocate lists
-        year = [None]*num
-        days = [None]*num
-        hours = [None]*num
-        minutes = [None]*num
-        microseconds = [None]*num
+        year = [None] * num
+        days = [None] * num
+        hours = [None] * num
+        minutes = [None] * num
+        microseconds = [None] * num
         for i, f in enumerate(cosmicFiles):
             f2 = f.split('.')
             year[i] = f2[-6]
@@ -133,7 +133,7 @@ def load(cosmicFiles, tag=None, sat_id=None):
         # multiprocessor load, not included and only benefits about 20%
         output = pysat.DataFrame(load_files(cosmicFiles, tag=tag,
                                             sat_id=sat_id))
-        utsec = output.hour*3600.+output.minute*60.+output.second
+        utsec = output.hour * 3600. + output.minute * 60. + output.second
         output.index = pysat.utils.create_datetime_index(year=output.year,
                                                          month=output.month,
                                                          day=output.day,
@@ -174,7 +174,7 @@ def load_files(files, tag=None, sat_id=None):
     Returns a list of dicts, a dict for each file.
     '''
 
-    output = [None]*len(files)
+    output = [None] * len(files)
     drop_idx = []
     for (i, file) in enumerate(files):
         try:

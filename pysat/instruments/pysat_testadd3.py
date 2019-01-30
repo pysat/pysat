@@ -32,14 +32,14 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None):
     # create an artifical satellite data set
     parts = fnames[0].split('/')
-    yr = int('20'+parts[-1][0:2])
+    yr = int('20' + parts[-1][0:2])
     month = int(parts[-3])
     day = int(parts[-2])
 
     date = pysat.datetime(yr, month, day)
     if sim_multi_file_right:
         root_date = root_date or pysat.datetime(2009, 1, 1, 12)
-        data_date = date+pds.DateOffset(hours=12)
+        data_date = date + pds.DateOffset(hours=12)
     elif sim_multi_file_left:
         root_date = root_date or pysat.datetime(2008, 12, 31, 12)
         data_date = date-pds.DateOffset(hours=12)
@@ -62,30 +62,31 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     fake_delta = date - pysat.datetime(2008, 1, 1)
     fake_uts_root = fake_delta.total_seconds()
 
-    data['orbit_num'] = ((fake_uts_root+num_array)/5820.).astype(int)
+    data['orbit_num'] = ((fake_uts_root + num_array) / 5820.).astype(int)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root+num_array, 6240)*(360./6240.)
+    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
     data['longitude'] = longitude
 
     # create latitude area for testing polar orbits
-    latitude = 90.*np.cos(np.mod(uts_root+num_array, 5820)*(2.*np.pi/5820.))
+    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
+                            (2. * np.pi / 5820.))
     data['latitude'] = latitude
 
     # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds()+20, 5820)
-    data['slt'] = np.mod(uts_root+num_array, 5820)*(24./5820.)
+    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
+    data['slt'] = np.mod(uts_root+num_array, 5820) * (24. / 5820.)
 
     # create some fake data to support testing of averaging routines
     dummy1 = []
     for i in range(len(data['mlt'])):
-        dummy1.append(i+10)
-    long_int = (data['longitude']/15.).astype(int)
+        dummy1.append(i + 10)
+    long_int = (data['longitude'] / 15.).astype(int)
     data['dummy1'] = dummy1
-    data['string_dummy'] = ['test']*len(data)
+    data['string_dummy'] = ['test'] * len(data)
     data['unicode_dummy'] = [u'test'] * len(data)
     data['int8_dummy'] = np.ones(len(data), dtype=np.int8)
     data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
@@ -105,7 +106,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     index = pds.date_range(pysat.datetime(2008, 1, 1),
                            pysat.datetime(2010, 12, 31))
-    names = [data_path+date.strftime('%D')+'.nofile' for date in index]
+    names = [data_path + date.strftime('%D') + '.nofile' for date in index]
     return pysat.Series(names, index=index)
 
 

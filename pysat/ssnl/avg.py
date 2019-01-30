@@ -140,7 +140,7 @@ def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx,
 
     # determine if normal number objects are being used or if there
     # are more complicated objects
-    objArray = [False]*len(zarr)
+    objArray = [False] * len(zarr)
     for i, thing in enumerate(dataType):
         if thing == pds.core.series.Series:
             objArray[i] = 'S'

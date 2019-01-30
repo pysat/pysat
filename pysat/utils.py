@@ -289,9 +289,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     if time_index_flag:
                         # create datetime index from data
                         if file_format == 'NETCDF4':
-                            time_var = pds.to_datetime(1E6*time_var)
+                            time_var = pds.to_datetime(1E6 * time_var)
                         else:
-                            time_var = pds.to_datetime(1E6*time_var)
+                            time_var = pds.to_datetime(1E6 * time_var)
                     new_index = time_var
                     new_index_name = index_name
                 else:
@@ -307,20 +307,21 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         del loop_frame[obj_key_name]
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:
-                                                         step_size*(i+1), :])
-                        loop_list[-1].index = new_index[step_size*i:
-                                                        step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size * i:
+                                                         step_size * (i + 1),
+                                                         :])
+                        loop_list[-1].index = new_index[step_size * i:
+                                                        step_size * (i + 1)]
                         loop_list[-1].index.name = new_index_name
                 else:
                     loop_frame = pds.Series(loop_dict[clean_var_keys[0]],
                                             name=obj_var_keys[0])
                     # break massive series into bunch of smaller series
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:
-                                                         step_size*(i+1)])
-                        loop_list[-1].index = new_index[step_size*i:
-                                                        step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size * i:
+                                                         step_size * (i + 1)])
+                        loop_list[-1].index = new_index[step_size * i:
+                                                        step_size * (i + 1)]
                         loop_list[-1].index.name = new_index_name
                 # print (loop_frame.columns)
 
@@ -362,7 +363,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     step_size_y = len(data.variables[obj_key_name][0, 0, :])
                     step_size = step_size_x
                     loop_dict[obj_key_name] = \
-                        loop_dict[obj_key_name].reshape((loop_lim*step_size_x,
+                        loop_dict[obj_key_name].reshape((loop_lim * step_size_x,
                                                          step_size_y))
                     # check if there is an index we should use
                     if not (index_key_name is None):
@@ -371,14 +372,14 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         if time_index_flag:
                             # create datetime index from data
                             if file_format == 'NETCDF4':
-                                time_var = pds.to_datetime(1E6*time_var)
+                                time_var = pds.to_datetime(1E6 * time_var)
                             else:
-                                time_var = pds.to_datetime(1E6*time_var)
+                                time_var = pds.to_datetime(1E6 * time_var)
                         new_index = time_var
                         new_index_name = index_name
                     else:
                         # using integer indexing
-                        new_index = np.arange(loop_lim*step_size,
+                        new_index = np.arange(loop_lim * step_size,
                                               dtype=int) % step_size
                         new_index_name = 'index'
                     # load all data into frame
@@ -386,10 +387,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # del loop_frame['dimension_1']
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:
-                                                         step_size*(i+1), :])
-                        loop_list[-1].index = new_index[step_size*i:
-                                                        step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size * i:
+                                                         step_size * (i + 1),
+                                                         :])
+                        loop_list[-1].index = new_index[step_size * i:
+                                                        step_size * (i + 1)]
                         loop_list[-1].index.name = new_index_name
 
                     # add 2D object data, all based on a unique dimension
@@ -575,7 +577,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     uts_del = uts.copy().astype(float)
     # determine where there are changes in year and month that need to be
     # accounted for
-    _, idx = np.unique(year*100.+month, return_index=True)
+    _, idx = np.unique(year * 100. + month, return_index=True)
     # create another index array for faster algorithm below
     idx2 = np.hstack((idx, len(year) + 1))
     # computes UTC seconds offset for each unique set of year and month
@@ -585,7 +587,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (day-1)*86400
+    uts_del += (day - 1) * 86400
     # add in seconds since unix epoch to first day
     uts_del += (datetime(year[0], month[0], 1) -
                 datetime(1970, 1, 1)).total_seconds()

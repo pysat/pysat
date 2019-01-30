@@ -119,11 +119,11 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
         raise ValueError('Must have a gate value for each data_label')
 
     # create bins
-    binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
-    biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)
+    binx = np.linspace(bin1[0], bin1[1], bin1[2] + 1)
+    biny = np.linspace(bin2[0], bin2[1], bin2[2] + 1)
 
-    numx = len(binx)-1
-    numy = len(biny)-1
+    numx = len(binx) - 1
+    numy = len(biny) - 1
     numz = len(data_label)
     arrx = np.arange(numx)
     arry = np.arange(numy)
@@ -140,12 +140,12 @@ def _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
 
     for i, inst in enumerate(iterator):
         if len(inst.data) != 0:
-            xind = np.digitize(inst.data[label1], binx)-1
+            xind = np.digitize(inst.data[label1], binx) - 1
             for xi in arrx:
                 xindex, = np.where(xind == xi)
                 if len(xindex) > 0:
                     yData = inst.data.iloc[xindex]
-                    yind = np.digitize(yData[label2], biny)-1
+                    yind = np.digitize(yData[label2], biny) - 1
                     for yj in arry:
                         yindex, = np.where(yind == yj)
                         if len(yindex) > 0:
@@ -271,13 +271,13 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
         raise ValueError('Must have a gate value for each data_label')
 
     # create bins
-    binx = np.linspace(bin1[0], bin1[1], bin1[2]+1)
-    biny = np.linspace(bin2[0], bin2[1], bin2[2]+1)
-    binz = np.linspace(bin3[0], bin3[1], bin3[2]+1)
+    binx = np.linspace(bin1[0], bin1[1], bin1[2] + 1)
+    biny = np.linspace(bin2[0], bin2[1], bin2[2] + 1)
+    binz = np.linspace(bin3[0], bin3[1], bin3[2] + 1)
 
-    numx = len(binx)-1
-    numy = len(biny)-1
-    numz = len(binz)-1
+    numx = len(binx) - 1
+    numy = len(biny) - 1
+    numz = len(binz) - 1
     numd = len(data_label)
 
     # create array to store all values before taking median
@@ -297,17 +297,17 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
     for i, sat in enumerate(iterator):
 
         if len(sat.data) != 0:
-            xind = np.digitize(sat.data[label1], binx)-1
+            xind = np.digitize(sat.data[label1], binx) - 1
             for xi in xarr:
                 xindex, = np.where(xind == xi)
                 if len(xindex) > 0:
                     yData = sat.data.ix[xindex]
-                    yind = np.digitize(yData[label2], biny)-1
+                    yind = np.digitize(yData[label2], biny) - 1
                     for yj in yarr:
                         yindex, = np.where(yind == yj)
                         if len(yindex) > 0:
                             zData = yData.ix[yindex]
-                            zind = np.digitize(zData[label3], binz)-1
+                            zind = np.digitize(zData[label3], binz) - 1
                             for zk in zarr:
                                 zindex, = np.where(zind == zk)
                                 if len(zindex) > 0:

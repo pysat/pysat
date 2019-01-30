@@ -60,7 +60,7 @@ basic_tag = {'dir': '/pub/data/cnofs/cindi/ivm_500ms_cdf',
 supported_tags = {'': {'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
 # support listing files currently on CDAWeb
-list_remote_files = functools.partial(cdw.list_remote_files, 
+list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 

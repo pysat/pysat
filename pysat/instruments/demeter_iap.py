@@ -59,6 +59,7 @@ download = demeter_methods.download
 # as of 04 Dec 2018 this is a placeholder
 list_remote_files = demeter_methods.list_remote_files
 
+
 def init(self):
     print("When using this data please include a version of the acknoledgement"
           + " outlined in the metadata attribute 'info.acknowledgements'.  We "
@@ -191,7 +192,7 @@ def load_experiment_data(fhandle):
         data_names.append('status_flag_{:02d}'.format(i))
         data_units[data_names[-1]] = "N/A"
 
-    data.append(demeter_methods.bytes_to_float(chunk[42:46])) # Time resolution
+    data.append(demeter_methods.bytes_to_float(chunk[42:46]))  # Time resolution
     data_names.append('time_resolution')
     data_units[data_names[-1]] = "s"
 

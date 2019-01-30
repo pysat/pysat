@@ -76,8 +76,9 @@ class TestBasics():
         dir_name = tempfile.mkdtemp()
         pysat.utils.set_data_dir(dir_name, store=False)
 
-        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                                         clean_level='clean')
+        self.testInst = \
+            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                             clean_level='clean')
         # create testing directory
         prep_dir(self.testInst)
 
@@ -96,10 +97,10 @@ class TestBasics():
                                                  uts=np.arange(0.0, len(ones),
                                                                1.0))
 
-
-        self.testInst.data = pds.DataFrame(np.array([time, self.test_angles]).transpose(),
-                                           index=time,
-                                           columns=["time", "longitude"])
+        self.testInst.data = \
+            pds.DataFrame(np.array([time, self.test_angles]).transpose(),
+                          index=time,
+                          columns=["time", "longitude"])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -125,7 +126,9 @@ class TestBasics():
         self.testInst.to_netcdf4(outfile)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
+        self.testInst.data = \
+            self.testInst.data.reindex_axis(sorted(self.testInst.data.columns),
+                                            axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
                                                axis=1)
 
@@ -148,8 +151,11 @@ class TestBasics():
         self.testInst.to_netcdf4(outfile, zlib=True)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
+        self.testInst.data = \
+            self.testInst.data.reindex_axis(sorted(self.testInst.data.columns),
+                                            axis=1)
+        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
+                                               axis=1)
 
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
@@ -171,7 +177,9 @@ class TestBasics():
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
                                                      epoch_name='Santa')
-        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
+        self.testInst.data = \
+            self.testInst.data.reindex_axis(sorted(self.testInst.data.columns),
+                                            axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
                                                axis=1)
 
@@ -192,7 +200,8 @@ class TestBasics():
         test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        test_inst.data = test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
+        test_inst.data = \
+            test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
                                                axis=1)
         prep_dir(test_inst)
@@ -245,7 +254,8 @@ class TestBasics():
         test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile, zlib=True)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        test_inst.data = test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
+        test_inst.data = \
+            test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
                                                axis=1)
         prep_dir(test_inst)
@@ -522,7 +532,9 @@ class TestBasics():
         """Test array conversion from spherical to cartesian coordinates"""
 
         arr = np.ones(shape=(10,), dtype=float)
-        x, y, z = pysat.utils.spherical_to_cartesian(45.0*arr, 30.0*arr, arr)
+        x, y, z = pysat.utils.spherical_to_cartesian(45.0 * arr,
+                                                     30.0 * arr,
+                                                     arr)
 
         assert x.shape == arr.shape
         assert y.shape == arr.shape

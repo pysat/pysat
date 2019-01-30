@@ -291,7 +291,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
     # Download the instrument data, if needed
     # Could use some improvement, for not re-downloading times that you already
     # have
-    if (stop-start).days != len(inst.files[start:stop]):
+    if (stop - start).days != len(inst.files[start:stop]):
         inst.download(start=start, stop=stop, user=user, password=password)
 
     # Cycle through the times, loading the model and instrument data as needed
@@ -359,8 +359,8 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                         matched_inst.data = inst.data[im]
                     else:
                         idata = inst[im]
-                        matched_inst.data = inst.concat_data([matched_inst.data,
-                                                              idata])
+                        matched_inst.data = \
+                            inst.concat_data([matched_inst.data, idata])
 
                     # Reset the clean flag
                     inst.clean_level = 'none'
@@ -549,7 +549,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     # Get the instrument coordinate for this cycle
                     if icycles < ncycles or icycles == 0:
                         ss = [ii if k == 0 else 0 for k in range(idims)]
-                        se = [ii+1 if k == 0 else
+                        se = [ii + 1 if k == 0 else
                               len(inst.data.coords[idim_names[k-1]])
                               for k in range(idims)]
                         xout = [cinds[ind_dims.index(k)] if k in ind_dims

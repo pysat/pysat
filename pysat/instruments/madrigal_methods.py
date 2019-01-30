@@ -225,16 +225,18 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
 
     try:
         a = subprocess.check_output(["globalDownload.py", "--verbose",
-                                     "--url="+url, '--outputDir='+data_path,
-                                     '--user_fullname='+user,
-                                     '--user_email='+password,
+                                     "--url=" + url,
+                                     '--outputDir=' + data_path,
+                                     '--user_fullname=' + user,
+                                     '--user_email=' + password,
                                      '--user_affiliation=pysat',
-                                     '--format='+file_format,
+                                     '--format=' + file_format,
                                      '--startDate=' +
                                      date_array[0].strftime('%m/%d/%Y'),
                                      '--endDate=' +
                                      date_array[-1].strftime('%m/%d/%Y'),
-                                     '--inst='+inst_code, '--kindat='+kindat])
+                                     '--inst=' + inst_code,
+                                     '--kindat=' + kindat])
         print('Feedback from openMadrigal ', a)
     except OSError as err:
         print("problem running globalDownload.py, check python path")

@@ -60,7 +60,7 @@ def geo2mag(incoord):
 
     # SOME 'constants' for location of northern mag pole
     lat = 80.08  # 79.3
-    lon = -72.211+360.  # 287.789 # or 71.41W
+    lon = -72.211 + 360.  # 287.789 or 71.41W
     r = 1.0
 
     # convert first to radians
@@ -73,9 +73,9 @@ def geo2mag(incoord):
     coord = np.vstack([glat, glon, galt])
 
     # convert to rectangular coordinates
-    x = coord[2]*cos(coord[0])*cos(coord[1])
-    y = coord[2]*cos(coord[0])*sin(coord[1])
-    z = coord[2]*sin(coord[0])
+    x = coord[2] * cos(coord[0]) * cos(coord[1])
+    y = coord[2] * cos(coord[0]) * sin(coord[1])
+    z = coord[2] * sin(coord[0])
     xyz = np.vstack((x, y, z))
 
     # computer 1st rotation matrix:
@@ -88,10 +88,10 @@ def geo2mag(incoord):
     out = dot(geo2maglon, xyz)
 
     tomaglat = np.zeros((3, 3), dtype='float64')
-    tomaglat[0, 0] = cos(.5*pi-lat)
-    tomaglat[0, 2] = -sin(.5*pi-lat)
-    tomaglat[2, 0] = sin(.5*pi-lat)
-    tomaglat[2, 2] = cos(.5*pi-lat)
+    tomaglat[0, 0] = cos(.5 * pi - lat)
+    tomaglat[0, 2] = -sin(.5 * pi - lat)
+    tomaglat[2, 0] = sin(.5 * pi - lat)
+    tomaglat[2, 2] = cos(.5 * pi - lat)
     tomaglat[1, 1] = 1.
     out = dot(tomaglat, out)
 
@@ -137,7 +137,7 @@ def addTopsideScaleHeight(cosmic):
 
     for i, profile in enumerate(cosmic['profiles']):
         profile = profile[(profile['ELEC_dens'] >=
-                          (1./np.e)*cosmic['edmax'].iloc[i]) &
+                          (1./np.e) * cosmic['edmax'].iloc[i]) &
                           (profile.index >= cosmic['edmaxalt'].iloc[i])]
         # want the first altitude where density drops below NmF2/e
         # first, resample such that we know all altitudes in between samples
@@ -147,7 +147,7 @@ def addTopsideScaleHeight(cosmic):
             i2 = profile.index[0:-1]
             modeDiff = mode(i1.values - i2.values)[0][0]
             profile = profile.reindex(np.arange(profile.index[0],
-                                                profile.index[-1]+modeDiff,
+                                                profile.index[-1] + modeDiff,
                                                 modeDiff))
             # ensure there are no gaps, if so, remove all data above gap
             idx, = np.where(profile['ELEC_dens'].isnull())
@@ -281,7 +281,8 @@ f.savefig('1D_params.png')
 for k in np.arange(6):
     f, axarr = plt.subplots(4, sharex=True, figsize=(8.5, 11))
     # iterate over a group of four sectors at a time (4 plots per page)
-    for (j, sector) in enumerate(zip(*cosmicResults['profiles']['median'])[k*4:(k+1)*4]):
+    for (j, sector) in enumerate(zip(*cosmicResults['profiles']['median'])
+                                 [k * 4:(k + 1) * 4]):
         # iterate over all local times within longitude sector
         # data is returned from the median routine in plot order, [y, x]
         # instead of [x,y]
@@ -303,7 +304,7 @@ for k in np.arange(6):
         axarr[j].set_yticks([50., 200., 350., 500., 650.])
         axarr[j].set_ylabel('Altitude (km)')
         axarr[j].set_title('Apex Longitudes %i-%i' %
-                           (4*k*15+j*15, 4*k*15+(j+1)*15))
+                           (4 * k * 15 + j * 15, 4 * k * 15 + (j + 1) * 15))
 
     axarr[-1].set_xticks([0., 6., 12., 18., 24.])
     axarr[-1].set_xlabel('Solar Local Time of Profile Maximum Density')

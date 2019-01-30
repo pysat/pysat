@@ -307,6 +307,7 @@ def list_remote_files(tag, sat_id, user=None, password=None):
 
     pass
 
+
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
              **kwargs):
     """Placeholder for PLATFORM/NAME downloads.

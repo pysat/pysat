@@ -159,7 +159,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             out = pysat.Files.from_os(data_path=data_path,
                                       format_str=format_str)
             if not out.empty:
-                out.ix[out.index[-1]+pds.DateOffset(months=1) -
+                out.ix[out.index[-1] + pds.DateOffset(months=1) -
                        pds.DateOffset(days=1)] = out.iloc[-1]
                 out = out.asfreq('D', 'pad')
                 out = out + '_' + out.index.strftime('%Y-%m-%d')

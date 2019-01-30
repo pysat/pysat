@@ -62,30 +62,31 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     fake_delta = date - pysat.datetime(2008, 1, 1)
     fake_uts_root = fake_delta.total_seconds()
 
-    data['orbit_num'] = ((fake_uts_root+num_array)/5820.).astype(int)
+    data['orbit_num'] = ((fake_uts_root + num_array) / 5820.).astype(int)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root+num_array, 6240)*(360./6240.)
+    longitude = np.mod(long_uts_root+num_array, 6240) * (360. / 6240.)
     data['longitude'] = longitude
 
     # create latitude area for testing polar orbits
-    latitude = 90.*np.cos(np.mod(uts_root+num_array, 5820)*(2.*np.pi/5820.))
+    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
+                            (2. * np.pi / 5820.))
     data['latitude'] = latitude
 
     # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds()+20, 5820)
-    data['slt'] = np.mod(uts_root+num_array, 5820)*(24./5820.)
+    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
+    data['slt'] = np.mod(uts_root + num_array, 5820) * (24. / 5820.)
 
     # create some fake data to support testing of averaging routines
     dummy1 = []
     for i in range(len(data['mlt'])):
         dummy1.append(i)
-    long_int = (data['longitude']/15.).astype(int)
+    long_int = (data['longitude'] / 15.).astype(int)
     data['dummy1'] = dummy1
-    data['string_dummy'] = ['test']*len(data)
+    data['string_dummy'] = ['test'] * len(data)
     data['unicode_dummy'] = [u'test'] * len(data)
     data['int8_dummy'] = np.ones(len(data), dtype=np.int8)
     data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
@@ -93,7 +94,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
     # print (data['string_dummy'])
 
-    index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1),
+    index = pds.date_range(data_date,
+                           data_date + pds.DateOffset(seconds=num-1),
                            freq='S')
     data.index = index[0:num]
     data.index.name = 'time'

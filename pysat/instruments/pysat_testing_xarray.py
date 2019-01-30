@@ -39,17 +39,18 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     date = pysat.datetime(yr, month, day)
     if sim_multi_file_right:
         root_date = pysat.datetime(2009, 1, 1, 12)
-        data_date = date+pds.DateOffset(hours=12)
+        data_date = date + pds.DateOffset(hours=12)
     elif sim_multi_file_left:
         root_date = pysat.datetime(2008, 12, 31, 12)
-        data_date = date-pds.DateOffset(hours=12)
+        data_date = date - pds.DateOffset(hours=12)
     else:
         root_date = pysat.datetime(2009, 1, 1)
         data_date = date
     num = 86400 if tag is '' else int(tag)
     num_array = np.arange(num)
     uts = num_array
-    index = pds.date_range(data_date, data_date+pds.DateOffset(seconds=num-1),
+    index = pds.date_range(data_date,
+                           data_date + pds.DateOffset(seconds=num-1),
                            freq='S')
 
     data = xarray.Dataset({'uts': (('time'), index)}, coords={'time': index})
@@ -57,7 +58,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
     uts_root = np.mod(time_delta.total_seconds(), 5820)
-    mlt = np.mod(uts_root+num_array, 5820)*(24./5820.)
+    mlt = np.mod(uts_root + num_array, 5820) * (24. / 5820.)
     data['mlt'] = (('time'), mlt)
 
     # fake orbit number
@@ -65,31 +66,33 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     fake_uts_root = fake_delta.total_seconds()
 
     data['orbit_num'] = (('time'),
-                         ((fake_uts_root+num_array)/5820.).astype(int))
+                         ((fake_uts_root + num_array) / 5820.).astype(int))
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root+num_array, 6240)*(360./6240.)
+    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
     data['longitude'] = (('time'), longitude)
 
     # create latitude area for testing polar orbits
-    latitude = 90.*np.cos(np.mod(uts_root+num_array, 5820)*(2.*np.pi/5820.))
+    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
+                            (2. * np.pi / 5820.))
     data['latitude'] = (('time'), latitude)
 
     # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds()+20, 5820)
-    data['slt'] = (('time'), np.mod(uts_root+num_array, 5820)*(24./5820.))
+    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
+    data['slt'] = (('time'),
+                   np.mod(uts_root + num_array, 5820) * (24. / 5820.))
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
-    long_int = (data['longitude']/15.).astype(int)
+    long_int = (data['longitude'] / 15.).astype(int)
     data['dummy1'] = (('time'), mlt_int)
     data['dummy2'] = (('time'), long_int)
-    data['dummy3'] = (('time'), mlt_int + long_int*1000.)
+    data['dummy3'] = (('time'), mlt_int + long_int * 1000.)
     data['dummy4'] = (('time'), num_array)
-    data['string_dummy'] = (('time'), ['test']*len(data.indexes['time']))
+    data['string_dummy'] = (('time'), ['test'] * len(data.indexes['time']))
     data['unicode_dummy'] = (('time'), [u'test'] * len(data.indexes['time']))
     data['int8_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
                           dtype=np.int8))

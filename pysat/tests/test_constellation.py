@@ -280,12 +280,12 @@ class TestDataMod:
         '''Test if custom function works correctly. Add function that returns
         pandas object.'''
         def custom1(inst):
-            d = 2.*inst.data.mlt
+            d = 2. * inst.data.mlt
             d.name = 'doubleMLT'
             return d
 
         self.add(custom1, 'add')
         self.testConst.load(2009, 1)
         ans = (self.testConst[0].data['doubleMLT'].values ==
-               2.*self.testConst[0].data.mlt.values).all()
+               2. * self.testConst[0].data.mlt.values).all()
         assert ans

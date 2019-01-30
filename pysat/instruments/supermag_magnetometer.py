@@ -75,9 +75,10 @@ def init(self):
 
     # reset the list_remote_files routine to include the data path
     # now conveniently included with instrument object
-    self._list_remote_rtn = functools.partial(list_remote_files,
-                                              data_path=self.files.data_path,
-                                              format_str=self.files.file_format)
+    self._list_remote_rtn = \
+        functools.partial(list_remote_files,
+                          data_path=self.files.data_path,
+                          format_str=self.files.file_format)
     return
 
 
@@ -121,7 +122,7 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
     # create a list of dates with appropriate frequency
     index = pds.period_range(pysat.datetime(1970, 1, 1), now, freq=freq)
     # pre fill in blank strings
-    remote_files = pds.Series(['']*len(index), index=index)
+    remote_files = pds.Series([''] * len(index), index=index)
 
     # pysat compares both dates and filenames when determining
     # which files it needs to download
@@ -528,24 +529,29 @@ def update_smag_metadata(col_name):
                   'AACGMLON': 'degrees', 'AACGMLAT': 'degrees',
                   'STATION_NAME': 'none',
                   'OPERATOR_NUM': 'none', 'OPERATORS': 'none'}
-    smag_name = {'IAGA': 'Station Code', 'N': 'B along local magnetic North',
+    smag_name = {'IAGA': 'Station Code',
+                 'N': 'B along local magnetic North',
                  'E': 'B along local magnetic East',
                  'Z': 'B vertically downward',
-                 'MLT': 'Magnetic Local Time', 'MLAT': 'Magnetic Latitude',
+                 'MLT': 'Magnetic Local Time',
+                 'MLAT': 'Magnetic Latitude',
                  'SZA': 'Solar Zenith Angle',
                  'IGRF_DECL': 'IGRF magnetic declination',
-                 'SMU': 'Maximum eastward auroral electrojets strength.\n'
-                 'Upper envelope of N-component for stations between 40 and '
-                 '80 degrees magnetic north.',
-                 'SML': 'Maximum westward auroral electrojets strength.\n'
-                 'Lower envelope of N-component for stations between 40 and 80'
-                 ' degrees magnetic north.', 'datetime': 'UT date and time',
+                 'SMU': ' '.join(['Maximum eastward auroral electrojets',
+                                  'strength.\nUpper envelope of N-component',
+                                  'for stations between 40 and 80 degrees'
+                                  'magnetic north.']),
+                 'SML': ' '.join(['Maximum westward auroral electrojets',
+                                  'strength.\nLower envelope of N-component',
+                                  'for stations between 40 and 80 degrees',
+                                  'magnetic north.']),
+                 'datetime': 'UT date and time',
                  'GEOLON': 'geographic longitude',
                  'GEOLAT': 'geographic latitude',
-                 'AACGMLON': 'Altitude-Adjusted Corrected Geomagnetic ' +
-                 'longitude',
-                 'AACGMLAT': 'Altitude-Adjusted Corrected Geomagnetic ' +
-                 'latitude',
+                 'AACGMLON': ' '.join(['Altitude-Adjusted Corrected',
+                                       'Geomagnetic longitude']),
+                 'AACGMLAT': ' '.join(['Altitude-Adjusted Corrected',
+                                       'Geomagnetic latitude']),
                  'STATION_NAME': 'Long form station name',
                  'OPERATOR_NUM': 'Number of station operators',
                  'OPERATORS': 'Station operator name(s)', }
@@ -823,8 +829,9 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
                 if station_year is None:
                     raise RuntimeError("unable to load station data")
 
-                stat_str = ",".join(smag_stat.data.IAGA[ireq*max_stations:
-                                                        (ireq+1)*max_stations])
+                stat_str = ",".join(smag_stat.data.IAGA[ireq * max_stations:
+                                                        (ireq + 1) *
+                                                        max_stations])
                 remoteaccess['stations'] = "stations={:s}".format(stat_str)
 
             # Format the query
@@ -948,8 +955,8 @@ def append_ascii_data(file_strings, tag):
     station_names = list()
 
     # Cycle through each additional set of file strings
-    for ff in range(len(file_strings)-1):
-        file_lines = file_strings[ff+1].split('\n')
+    for ff in range(len(file_strings) - 1):
+        file_lines = file_strings[ff + 1].split('\n')
 
         # Find the index information for the data
         head = True

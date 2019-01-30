@@ -69,7 +69,7 @@ class TestSpecificUTOrbits():
                        i*relativedelta(hours=1, minutes=37)))
             ans2.append(self.testInst.index[-1] ==
                         (pds.datetime(2009, 1, 1) +
-                        (i+1)*relativedelta(hours=1, minutes=37) -
+                        (i + 1) * relativedelta(hours=1, minutes=37) -
                         relativedelta(seconds=1)))
 
         assert np.all(ans) & np.all(ans2)
@@ -97,10 +97,10 @@ class TestSpecificUTOrbits():
         self.testInst.orbits.prev()
         assert (self.testInst.index[0] ==
                 (pds.datetime(2009, 1, 1) +
-                14*relativedelta(hours=1, minutes=37)))
+                14 * relativedelta(hours=1, minutes=37)))
         assert (self.testInst.index[-1] ==
                 (pds.datetime(2009, 1, 1) +
-                15*relativedelta(hours=1, minutes=37) -
+                15 * relativedelta(hours=1, minutes=37) -
                 relativedelta(seconds=1)))
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_next(self):
@@ -445,7 +445,8 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
                   pysat.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = pysat.datetime(2009, 1, 2)+pds.DateOffset(days=int(seconds))
+            day = pysat.datetime(2009, 1, 2) + \
+                pds.DateOffset(days=int(seconds))
             times.append([day, day +
                           pds.DateOffset(hours=1, minutes=37,
                                          seconds=int(seconds)) -
@@ -471,7 +472,8 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
                   pysat.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = pysat.datetime(2009, 1, 2)+pds.DateOffset(days=int(seconds))
+            day = pysat.datetime(2009, 1, 2) + \
+                pds.DateOffset(days=int(seconds))
             times.append([day, day +
                           pds.DateOffset(hours=1, minutes=37,
                                          seconds=int(seconds)) -

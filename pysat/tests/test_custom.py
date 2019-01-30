@@ -171,13 +171,13 @@ class TestBasics():
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         ans3 = self.testInst.meta['tripleMLT'].units == 'hours2'
         ans4 = self.testInst.meta['tripleMLT'].long_name == 'tripleMLTlong'
-        ans5 = (self.testInst['doubleMLT'] == 2.0*self.testInst['mlt']).all()
-        ans6 = (self.testInst['tripleMLT'] == 3.0*self.testInst['mlt']).all()
+        ans5 = (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
+        ans6 = (self.testInst['tripleMLT'] == 3.0 * self.testInst['mlt']).all()
         assert ans1 & ans2 & ans3 & ans4 & ans5 & ans6
 
     def test_add_series_w_meta(self):
         def custom1(inst):
-            out = pysat.Series(inst.data.mlt*2,
+            out = pysat.Series(inst.data.mlt * 2,
                                index=inst.index)
             out.name = 'doubleMLT'
             return {'data': out, 'long_name': 'doubleMLTlong',
@@ -186,7 +186,7 @@ class TestBasics():
         self.testInst.load(2009, 1)
         ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
-        ans3 = (self.testInst['doubleMLT'] == 2.0*self.testInst['mlt']).all()
+        ans3 = (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
         assert ans1 & ans2 & ans3
 
     def test_add_series_w_meta_missing_long_name(self):
@@ -200,7 +200,7 @@ class TestBasics():
         self.testInst.load(2009, 1)
         ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
         ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLT'
-        ans3 = (self.testInst['doubleMLT'] == 2.0*self.testInst['mlt']).all()
+        ans3 = (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
         assert ans1 & ans2 & ans3
 
     def test_add_series_w_meta_name_in_dict(self):
@@ -213,12 +213,12 @@ class TestBasics():
         self.testInst.load(2009, 1)
         assert self.testInst.meta['doubleMLT'].units == 'hours1'
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
-        assert (self.testInst['doubleMLT'] == 2.0*self.testInst['mlt']).all()
+        assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
 
     @raises(ValueError)
     def test_add_series_w_meta_no_name(self):
         def custom1(inst):
-            out = pysat.Series({'doubleMLT': inst.data.mlt*2},
+            out = pysat.Series({'doubleMLT': inst.data.mlt * 2},
                                index=inst.index)
             # out.name = 'doubleMLT'
             return {'data': out, 'long_name': 'doubleMLTlong',
@@ -235,12 +235,12 @@ class TestBasics():
         self.testInst.load(2009, 1)
         assert self.testInst.meta['doubleMLT'].units == 'hours1'
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
-        assert (self.testInst['doubleMLT'] == 2.0*self.testInst['mlt']).all()
+        assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
 
     @raises(ValueError)
     def test_add_numpy_array_w_meta_no_name_in_dict(self):
         def custom1(inst):
-            out = (inst.data.mlt*2).values
+            out = (inst.data.mlt * 2).values
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
         self.add(custom1, 'add')
@@ -248,14 +248,14 @@ class TestBasics():
 
     def test_add_list_w_meta_name_in_dict(self):
         def custom1(inst):
-            out = (inst.data.mlt*2).values.tolist()
+            out = (inst.data.mlt * 2).values.tolist()
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
         self.add(custom1, 'add')
         self.testInst.load(2009, 1)
         assert self.testInst.meta['doubleMLT'].units == 'hours1'
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
-        assert (self.testInst['doubleMLT'] == 2.0*self.testInst['mlt']).all()
+        assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
 
     @raises(ValueError)
     def test_add_list_w_meta_no_name_in_dict(self):
@@ -268,7 +268,7 @@ class TestBasics():
 
     def test_clear_functions(self):
         def custom1(inst):
-            out = (inst.data.mlt*2).values
+            out = (inst.data.mlt * 2).values
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
         self.add(custom1, 'add')

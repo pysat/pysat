@@ -114,7 +114,7 @@ load = cdw.load
 # combination along with the file format template
 # outer dict keyed by sat_id, inner dict keyed by tag
 basic_tag = {'dir': '/pub/data/cnofs/vefi/bfield_1sec',
-             'remote_fname': '{year:4d}/'+fname,
+             'remote_fname': '{year:4d}/' + fname,
              'local_fname': fname}
 supported_tags = {'': {'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)

@@ -146,7 +146,7 @@ class Orbits(object):
         if key < 0:
             self.load(key)
         else:
-            self.load(key+1)
+            self.load(key + 1)
 
     def _reset(self):
         # create null arrays for storing orbit info

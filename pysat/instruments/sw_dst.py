@@ -78,11 +78,11 @@ def load(fnames, tag=None, sat_id=None):
             for line in lines:
                 if len(line) > 1:
                     max_lines += 1
-            yr = np.zeros(max_lines*24, dtype=int)
-            mo = np.zeros(max_lines*24, dtype=int)
-            day = np.zeros(max_lines*24, dtype=int)
-            ut = np.zeros(max_lines*24, dtype=int)
-            dst = np.zeros(max_lines*24, dtype=int)
+            yr = np.zeros(max_lines * 24, dtype=int)
+            mo = np.zeros(max_lines * 24, dtype=int)
+            day = np.zeros(max_lines * 24, dtype=int)
+            ut = np.zeros(max_lines * 24, dtype=int)
+            dst = np.zeros(max_lines * 24, dtype=int)
             for line in lines:
                 if len(line) > 1:
                     temp_year = int(line[14:16] + line[3:5])
@@ -91,13 +91,13 @@ def load(fnames, tag=None, sat_id=None):
                     else:
                         temp_year += 2000
 
-                    yr[idx:idx+24] = temp_year
-                    mo[idx:idx+24] = int(line[5:7])
-                    day[idx:idx+24] = int(line[8:10])
-                    ut[idx:idx+24] = np.arange(24)
+                    yr[idx:idx + 24] = temp_year
+                    mo[idx:idx + 24] = int(line[5:7])
+                    day[idx:idx + 24] = int(line[8:10])
+                    ut[idx:idx + 24] = np.arange(24)
                     temp = line.strip()[20:-4]
-                    temp2 = [temp[4*i:4*(i+1)] for i in np.arange(24)]
-                    dst[idx:idx+24] = temp2
+                    temp2 = [temp[4 * i:4 * (i + 1)] for i in np.arange(24)]
+                    dst[idx:idx + 24] = temp2
                     idx += 24
 
             # f.close()
@@ -212,14 +212,14 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         try:
             print('Downloading file for '+date.strftime('%D'))
             sys.stdout.flush()
-            ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
+            ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
         except ftplib.error_perm as exception:
             # if exception[0][0:3] != '550':
             if str(exception.args[0]).split(" ", 1)[0] != '550':
                 raise
             else:
                 os.remove(saved_fname)
-                print('File not available for '+date.strftime('%D'))
+                print('File not available for ' + date.strftime('%D'))
 
     ftp.close()
     return

@@ -453,7 +453,6 @@ class Files(object):
             split_str = os.path.join(self.data_path, '')
             return inp.apply(lambda x: x.split(split_str)[-1])
 
-
     @classmethod
     def from_os(cls, data_path=None, format_str=None,
                 two_digit_year_break=None, delimiter=None):
@@ -591,8 +590,9 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             stored['revision'] = np.zeros(len(files))
 
         index = create_datetime_index(year=stored['year'],
-                                        month=stored['month'],
-                                        day=stored['day'], uts=stored['sec'])
+                                      month=stored['month'],
+                                      day=stored['day'],
+                                      uts=stored['sec'])
 
         # if version and revision are supplied
         # use these parameters to weed out files that have been replaced
@@ -604,11 +604,11 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             # keep the highest version/revision combo
             version = pds.Series(stored['version'], index=index)
             revision = pds.Series(stored['revision'], index=index)
-            revive = version*100000. + revision
-            frame = pds.DataFrame({'files':files, 'revive':revive,
-                                    'time':index}, index=index)
+            revive = version * 100000. + revision
+            frame = pds.DataFrame({'files': files, 'revive': revive,
+                                   'time': index}, index=index)
             frame = frame.sort_values(by=['time', 'revive'],
-                                        ascending=[True, False])
+                                      ascending=[True, False])
             frame = frame.drop_duplicates(subset='time', keep='first')
 
             return frame['files']
@@ -791,7 +791,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
         and 'revision'
-        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
+        Ex: 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
     wildcard : bool
         if True, replaces the ? sequence with a * . This option may be well
         suited when dealing with delimited filenames.

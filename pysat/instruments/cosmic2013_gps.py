@@ -99,11 +99,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         print('Estimated time:', num*1.E-5, 'seconds')
         sys.stdout.flush()
         # preallocate lists
-        year = [None]*num
-        days = [None]*num
-        hours = [None]*num
-        minutes = [None]*num
-        microseconds = [None]*num
+        year = [None] * num
+        days = [None] * num
+        hours = [None] * num
+        minutes = [None] * num
+        microseconds = [None] * num
         for i, f in enumerate(cosmicFiles):
             f2 = f.split('.')
             year[i] = f2[-6]
@@ -114,11 +114,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         year = np.array(year).astype(int)
         days = np.array(days).astype(int)
-        uts = np.array(hours).astype(int)*3600. + \
-            np.array(minutes).astype(int)*60.
+        uts = (np.array(hours).astype(int)*3600. +
+               np.array(minutes).astype(int)*60.)
         # adding microseconds to ensure each time is unique, not allowed to
         # pass 1.E-3 s
-        uts += np.mod(np.array(microseconds).astype(int)*4, 8000)*1.E-5
+        uts += np.mod(np.array(microseconds).astype(int) * 4, 8000) * 1.E-5
         index = pysat.utils.create_datetime_index(year=year, day=days, uts=uts)
         file_list = pysat.Series(cosmicFiles, index=index)
         return file_list
@@ -157,7 +157,8 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
                 keys = data.variables.keys()
                 for key in keys:
                     profile_meta[key] = {'units': data.variables[key].units,
-                                         'long_name': data.variables[key].long_name}
+                                         'long_name':
+                                         data.variables[key].long_name}
                 # ncattrsList = data.ncattrs()
                 ncattrsList = data._attributes.keys()
                 for d in ncattrsList:
@@ -182,7 +183,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     Returns a list of dicts, a dict for each file.
     '''
 
-    output = [None]*len(files)
+    output = [None] * len(files)
     drop_idx = []
     for (i, file) in enumerate(files):
         try:
@@ -200,7 +201,8 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             keys = data.variables.keys()
             for key in keys:
                 if data.variables[key][:].dtype.byteorder != '=':
-                    loadedVars[key] = data.variables[key][:].byteswap().newbyteorder()
+                    loadedVars[key] = \
+                        data.variables[key][:].byteswap().newbyteorder()
                 else:
                     loadedVars[key] = data.variables[key][:]
 
@@ -222,7 +224,8 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     if tag == 'ionprf':
         if altitude_bin is not None:
             for out in output:
-                out['profiles'].index = (out['profiles']['MSL_alt']/altitude_bin).round().values*altitude_bin
+                out['profiles'].index = \
+                    (out['profiles']['MSL_alt']/altitude_bin).round().values * altitude_bin
                 out['profiles'] = out['profiles'].groupby(out['profiles'].index.values).mean()
         else:
             for out in output:
@@ -251,7 +254,7 @@ def clean(self):
                 idx, = np.where((profile.ELEC_dens < 0) &
                                 (profile.index <= 325))
                 if len(idx) > 0:
-                    profile.iloc[0:idx[-1]+1] = np.nan
+                    profile.iloc[0:idx[-1] + 1] = np.nan
                 # take out all densities above the lowest altitude negative
                 # dens above 325
                 idx, = np.where((profile.ELEC_dens < 0) &
@@ -320,8 +323,10 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
         sys.stdout.flush()
         yr, doy = pysat.utils.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        dwnld = "http://cdaac-www.cosmic.ucar.edu/cdaac/rest/tarservice/data/cosmic2013/"
-        dwnld = dwnld+sub_dir+'/{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
+        dwnld = ''.join("http://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                        "tarservice/data/cosmic2013/")
+        dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
+                                                                 doy=doy)
         req = ulib.Request(dwnld)
         temp = '%s:%s' % (user, password)
         base64str = base64.encodestring(temp.encode()).replace('\n'.encode(),
