@@ -72,8 +72,8 @@ sat_ids = {'':['']}
 now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
-test_dates = {'':{'':pysat.datetime(2009,1,1),
-                  'forecast':today+pds.DateOffset(days=1)}}
+test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                  'forecast': today + pds.DateOffset(days=1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -240,8 +240,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             raise ValueError('Unrecognized tag name for Space Weather Index Kp')
     else:
         raise ValueError ('A data_path must be passed to the loading routine ' +
-                          'for Kp')  
-
+                          'for Kp')
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
@@ -273,7 +272,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     Only able to download current forecast data, not archived forecasts.
 
     """
-
 
     # download standard Kp data
     if tag == '':    
@@ -476,3 +474,57 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
                       meta.max_label: 9, meta.fill_label: fill_val}
 
     return
+
+def convert_3hr_kp_to_ap(kp_inst):
+    """ Calculate 3 hour ap from 3 hour Kp index
+
+    Parameters
+    ----------
+    kp_inst : (pysat.Instrument)
+        Pysat instrument containing Kp data
+
+    Returns
+    -------
+    Void : Updates kp_inst with '3hr_ap'
+
+    Notes
+    -----
+    Conversion between ap and Kp indices is described at:
+    https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html
+
+    """
+
+    # Kp are keys, where n.3 = n+ and n.6 = (n+1)-. E.g., 0.6 = 1-
+    kp_to_ap = {0: 0, 0.3: 2, 0.6: 4, 1: 4, 1.3: 5, 1.6: 6, 2: 7, 2.3: 9,
+                2.6: 12, 3: 15, 3.3: 18, 3.6: 22, 4: 27, 4.3: 32, 4.6: 39,
+                5: 48, 5.3: 56, 5.6: 67, 6: 80, 6.3: 94, 6.6: 111, 7: 132,
+                7.3: 154, 7.6: 179, 8: 207, 8.3: 236, 8.6: 300, 9: 400}
+
+    ap = lambda kk: kp_to_ap[np.floor(kk*10.0) / 10.0]
+
+    # Test the input
+    if 'Kp' not in kp_inst.data.columns:
+        raise ValueError('unable to locate Kp data')
+
+    # Convert from Kp to ap
+    fill_val = kp_inst.meta['Kp'][kp_inst.meta.fill_label]
+    ap_data = np.array([ap(kp) if kp != fill_val else fill_val
+                        for kp in kp_inst['Kp']])
+
+    # Append the output to the pysat instrument
+    kp_inst['3hr_ap'] = pds.Series(ap_data, index=kp_inst.index)
+
+    # Add metadata
+    meta_dict = {kp_inst.meta.units_label: '',
+                 kp_inst.meta.name_label: 'ap',
+                 kp_inst.meta.desc_label: "3-hour ap (equivalent range) index",
+                 kp_inst.meta.plot_label: "ap",
+                 kp_inst.meta.axis_label: "ap",
+                 kp_inst.meta.scale_label: 'linear',
+                 kp_inst.meta.min_label: 0,
+                 kp_inst.meta.max_label: 400,
+                 kp_inst.meta.fill_label: fill_val,
+                 kp_inst.meta.notes_label: 'ap converted from Kp as described '
+                 'at: https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'}
+
+    kp_inst.meta.__setitem__('3hr_ap', meta_dict)

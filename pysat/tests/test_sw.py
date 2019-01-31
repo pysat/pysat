@@ -50,6 +50,51 @@ class TestSWKp():
         del self.testInst, self.testMeta, self.combine, self.download
         del self.today
 
+    def test_convert_kp_to_ap(self):
+        """ Test conversion of Kp to ap"""
+
+        sw_kp.convert_3hr_kp_to_ap(self.testInst)
+
+        assert '3hr_ap' in self.testInst.data.columns
+        assert '3hr_ap' in self.testInst.meta.keys()
+        assert(self.testInst['3hr_ap'].min() >=
+               self.testInst.meta['3hr_ap'][self.testInst.meta.min_label])
+        assert(self.testInst['3hr_ap'].max() <=
+               self.testInst.meta['3hr_ap'][self.testInst.meta.max_label])
+
+    def test_convert_kp_to_ap_fill_val(self):
+        """ Test conversion of Kp to ap with fill values"""
+
+        # Set the first value to a fill value, then calculate ap
+        self.testInst['Kp'][0] = \
+            self.testInst.meta['Kp'][self.testInst.meta.fill_label]
+        sw_kp.convert_3hr_kp_to_ap(self.testInst)
+
+        # Test non-fill ap values
+        assert '3hr_ap' in self.testInst.data.columns
+        assert '3hr_ap' in self.testInst.meta.keys()
+        assert(self.testInst['3hr_ap'][1:].min() >=
+               self.testInst.meta['3hr_ap'][self.testInst.meta.min_label])
+        assert(self.testInst['3hr_ap'][1:].max() <=
+               self.testInst.meta['3hr_ap'][self.testInst.meta.max_label])
+
+        # Test the fill value in the data and metadata
+        if np.isnan(self.testInst['Kp'][0]):
+            assert np.isnan(self.testInst['3hr_ap'][0])
+            assert np.isnan( \
+                    self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label])
+        else:
+            assert self.testInst['Kp'][0] == self.testInst['3hr_ap'][0]
+            assert(self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label]
+                   == self.testInst.meta['Kp'][self.testInst.meta.fill_label])
+
+    def test_convert_kp_to_ap_bad_input(self):
+        """ Test conversion of Kp to ap with bad input"""
+
+        self.testInst.data.rename({"Kp": "bad"}, inplace=True)
+
+        assert_raises(ValueError, sw_kp.convert_3hr_kp_to_ap)        
+
     def test_initialize_kp_metadata(self):
         """Test default Kp metadata initialization"""
         sw_kp.initialize_kp_metadata(self.testInst.meta, 'Kp')
@@ -231,6 +276,7 @@ class TestSWKp():
                    == self.combine['fill_val']) > 0
 
         del kp_inst, combo_in
+
 
 class TestSWF107():
     def setup(self):
