@@ -412,3 +412,70 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     return f107_inst
 
+def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap'):
+    """ Calculate the daily Ap index from the 3hr ap index
+
+    Parameters
+    ----------
+    ap_inst : (pysat.Instrument)
+        pysat instrument containing 3-hourly ap data
+    ap_name : (str)
+        Column name for 3-hourly ap data (default='3hr_ap')
+    daily_name : (str)
+        Column name for daily Ap data (default='Ap')
+
+    Returns
+    -------
+    Void : updates intrument to include daily Ap index under daily_name
+
+    Notes
+    -----
+    Ap is the mean of the 3hr ap indices measured for a given day
+
+    """
+
+    # Test that the necessary data is available
+    if ap_name not in ap_inst.data.columns:
+        raise ValueError("bad 3-hourly ap column name: {:}".format(ap_name))
+
+    # Test to see that we will not be overwritting data
+    if daily_name in ap_inst.data.columns:
+        raise ValueError("daily Ap column name already exists: " + daily_name)
+
+    # Calculate the daily mean value
+    ap_mean = ap_inst[ap_name].rolling(window='1D', min_periods=8).mean()
+
+    # Resample, backfilling so that each day uses the mean for the data from
+    # that day only
+    #
+    # Pad the data so the first day will be backfilled
+    ap_pad = pds.Series(np.full(shape=(1,), fill_value=np.nan),
+                        index=[ap_mean.index[0] - pds.DateOffset(hours=3)])
+    # Extract the mean that only uses data for one day
+    ap_sel = ap_pad.combine_first(ap_mean[[i for i,tt in
+                                           enumerate(ap_mean.index)
+                                           if tt.hour == 21]])
+    # Backfill this data
+    ap_data = ap_sel.resample('3H').backfill()
+
+    # Save the output for the original time range
+    ap_inst[daily_name] = pds.Series(ap_data[1:], index=ap_data.index[1:])
+
+    
+    # Add metadata
+    meta_dict = {ap_inst.meta.units_label: '',
+                 ap_inst.meta.name_label: 'Ap',
+                 ap_inst.meta.desc_label: "daily Ap index",
+                 ap_inst.meta.plot_label: "Ap",
+                 ap_inst.meta.axis_label: "Ap",
+                 ap_inst.meta.scale_label: 'linear',
+                 ap_inst.meta.min_label: 0,
+                 ap_inst.meta.max_label: 400,
+                 ap_inst.meta.fill_label:
+                 ap_inst.meta[ap_name][ap_inst.meta.fill_label],
+                 ap_inst.meta.notes_label: 'Ap daily mean calculated from ' +
+                 '3-hourly ap indices'}
+
+    ap_inst.meta.__setitem__(daily_name, meta_dict)
+
+    return

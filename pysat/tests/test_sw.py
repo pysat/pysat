@@ -13,7 +13,7 @@ class TestSWKp():
         # Load a test instrument
         self.testInst = pysat.Instrument('pysat', 'testing', tag='12',
                                          clean_level='clean')
-        self.testInst.load(2009,1)
+        self.testInst.load(2009, 1)
 
         # Add Kp data
         self.testInst['Kp'] = pds.Series(np.arange(0, 4, 1.0/3.0),
@@ -93,7 +93,7 @@ class TestSWKp():
 
         self.testInst.data.rename({"Kp": "bad"}, inplace=True)
 
-        assert_raises(ValueError, sw_kp.convert_3hr_kp_to_ap)        
+        assert_raises(ValueError, sw_kp.convert_3hr_kp_to_ap, self.testInst)
 
     def test_initialize_kp_metadata(self):
         """Test default Kp metadata initialization"""
@@ -354,3 +354,58 @@ class TestSWF107():
         assert f107_inst.data.columns[0] == 'f107'
 
         del f107_inst
+
+
+class TestSWAp():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        # Load a test instrument with 3hr ap data
+        self.testInst = pysat.Instrument()
+        self.testInst.data = pds.DataFrame({'3hr_ap': [0, 2, 3, 4, 5, 6, 7, 9,
+                                                       12, 15]},
+                                             index=[pysat.datetime(2009, 1, 1)
+                                                    + pds.DateOffset(hours=3*i)
+                                                    for i in range(10)])
+        self.testInst.meta = pysat.Meta()
+        self.meta_dict = {self.testInst.meta.units_label: '',
+                          self.testInst.meta.name_label: 'ap',
+                          self.testInst.meta.desc_label:
+                          "3-hour ap (equivalent range) index",
+                          self.testInst.meta.plot_label: "ap",
+                          self.testInst.meta.axis_label: "ap",
+                          self.testInst.meta.scale_label: 'linear',
+                          self.testInst.meta.min_label: 0,
+                          self.testInst.meta.max_label: 400,
+                          self.testInst.meta.fill_label: np.nan,
+                          self.testInst.meta.notes_label: 'test ap'}
+        self.testInst.meta.__setitem__('3hr_ap', self.meta_dict)
+
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst, self.meta_dict
+
+    def test_calc_daily_Ap(self):
+        """ Test daily Ap calculation"""
+
+        sw_methods.calc_daily_Ap(self.testInst)
+
+        assert 'Ap' in self.testInst.data.columns
+        assert 'Ap' in self.testInst.meta.keys()
+
+        # Test unfilled values (full days)
+        assert np.all(self.testInst['Ap'][:8].min() == 4.5)
+
+        # Test fill values (partial days)
+        assert np.all(np.isnan(self.testInst['Ap'][8:]))
+
+    def test_calc_daily_Ap_bad_3hr(self):
+        """ Test daily Ap calculation with bad input key"""
+
+        assert_raises(ValueError, sw_methods.calc_daily_Ap, self.testInst, "no")
+
+    def test_calc_daily_Ap_bad_daily(self):
+        """ Test daily Ap calculation with bad output key"""
+
+        assert_raises(ValueError, sw_methods.calc_daily_Ap, self.testInst,
+                      "3hr_ap", "3hr_ap")
