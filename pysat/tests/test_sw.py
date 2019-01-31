@@ -11,13 +11,11 @@ class TestSWKp():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='12',
-                                         clean_level='clean')
-        self.testInst.load(2009, 1)
-
-        # Add Kp data
-        self.testInst['Kp'] = pds.Series(np.arange(0, 4, 1.0/3.0),
-                                         index=self.testInst.data.index)
+        self.testInst = pysat.Instrument()
+        self.testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0)},
+                                             index=[pysat.datetime(2009, 1, 1)
+                                                    + pds.DateOffset(hours=3*i)
+                                                    for i in range(10)])
 
         # Load a test Metadata
         self.testMeta = pysat.Meta()
@@ -281,6 +279,13 @@ class TestSWKp():
 class TestSWF107():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        # Load a test instrument
+        self.testInst = pysat.Instrument()
+        self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
+                                             index=[pysat.datetime(2009, 1, 1)
+                                                    + pds.DateOffset(days=i)
+                                                    for i in range(160)])
+
         # Set combination testing input
         self.today = dt.datetime.today().date()
         self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
@@ -307,6 +312,7 @@ class TestSWF107():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.combineInst, self.download, self.today, self.combineTimes
+        del self.testInst
 
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
@@ -354,6 +360,26 @@ class TestSWF107():
         assert f107_inst.data.columns[0] == 'f107'
 
         del f107_inst
+
+    def test_calc_f107a_bad_inname(self):
+        """ Test the calc_f107a with a bad input name """
+
+        assert_raises(ValueError, sw_f107.calc_f107a, self.testInst, 'bad')
+
+    def test_calc_f107a_bad_outname(self):
+        """ Test the calc_f107a with a bad output name """
+
+        assert_raises(ValueError, sw_f107.calc_f107a, self.testInst, 'f107',
+                      'f107')
+
+    def test_calc_f107a(self):
+        """ Test the calc_f107a """
+
+        sw_f107.calc_f107a(self.testInst)
+
+        assert 'f107a' in self.testInst.data.columns
+
+        #HERE AFTER CENTER IS FIXED
 
 
 class TestSWAp():

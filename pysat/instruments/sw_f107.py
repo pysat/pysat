@@ -366,7 +366,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     elif tag == 'daily':
         import requests
-        print('This routine can only download the lastest 30 day file')
+        print('This routine can only download the latest 30 day file')
 
         # download webpage
         furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
@@ -532,3 +532,59 @@ def parse_daily_solar_data(data_lines):
             values[kk].append(val)
 
     return dates, values
+
+def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
+    """ Calculate the 81 day mean F10.7
+
+    Parameters
+    ----------
+    f107_inst : (pysat.Instrument)
+        pysat Instrument holding the F10.7 data
+    f107_name : (str)
+        Data column name for the F10.7 data (default='f107')
+    f107a_name : (str)
+        Data column name for the F10.7a data (default='f107a')
+    min_pnts : (int)
+        Minimum number of points required to calculate an average (default=41)
+
+    Returns
+    -------
+    Void : Updates f107_inst with F10.7a data
+
+    Notes
+    -----
+    Will not pad data on its own
+
+    """
+
+    # Test to see that the input data is present
+    if f107_name not in f107_inst.data.columns:
+        raise ValueError("unknown input data column: " + f107_name)
+
+    # Test to see that the output data does not already exist
+    if f107a_name in f107_inst.data.columns:
+        raise ValueError("output data column already exists: " + f107a_name)
+
+    # Calculate the rolling mean
+    # HERE CENTER DOESNT WORK BUT NEEDS TO
+    f107_inst[f107a_name] = f107_inst[f107_name].rolling(window='81D',
+                                                         min_periods=min_pnts,
+                                                         center=True).mean()
+
+    # Update the metadata
+    meta_dict = {f107_inst.meta.units_label: 'SFU',
+                 f107_inst.meta.name_label: 'F10.7a',
+                 f107_inst.meta.desc_label: "81-day centered average of F10.7",
+                 f107_inst.meta.plot_label: "F$_{10.7a}$",
+                 f107_inst.meta.axis_label: "F$_{10.7a}$",
+                 f107_inst.meta.scale_label: 'linear',
+                 f107_inst.meta.min_label: 0.0,
+                 f107_inst.meta.max_label: np.nan,
+                 f107_inst.meta.fill_label:
+                 f107_inst.meta[f107_name][f107_inst.meta.fill_label],
+                 f107_inst.meta.notes_label: 'Calculated using data between ' +
+                 '{:} and {:}'.format(f107_inst.index[0], f107_inst.index[-1])}
+
+    f107_inst.meta.__setitem__(f107a_name, meta_dict)
+
+    return
