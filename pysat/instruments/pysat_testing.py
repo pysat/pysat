@@ -100,7 +100,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     day = int(parts[2][0:2])
 
     # Specify the date tag locally and determine the desired date range
-    date_tag = '' if tag not in tags
+    date_tag = '' if tag not in tags else tag
 
     date = pysat.datetime(yr, month, day)
     if sim_multi_file_right:
@@ -177,7 +177,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
 
     # Determine the appropriate date range for the fake files
-    date_tag = '' if tag not in tags
+    date_tag = '' if tag not in tags else tag
     start = test_dates[date_tag][sat_id] - pds.DateOffset(years=1)
     stop = test_dates[date_tag][sat_id] + pds.DateOffset(days=364)
     index = pds.date_range(start, stop)
