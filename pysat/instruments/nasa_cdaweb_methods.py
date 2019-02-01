@@ -265,10 +265,6 @@ def download(supported_tags, date_array, tag, sat_id,
             else:
                 print('File not available for ' + date.strftime('%x'))
         except requests.exceptions.RequestException as exception:
-            # if exception[0][0:3] != '550':
-            # if str(exception.args[0]).split(" ", 1)[0] != '550':
-            #    raise
-            # else:
             print('File not available for ' + date.strftime('%x'))
 
 
@@ -360,14 +356,11 @@ def list_remote_files(tag, sat_id,
     # Find Subdirectories if needed
     dir_split = os.path.split(format_str)
     if (len(dir_split) == 2) & (len(dir_split[0]) != 0):
-        # try:
         links = soup.find_all('a', href=True)
         dirs = []
         for link in links:
             if link['href'].count('/') == 1:
                 dirs.append(link['href'])
-        # except:
-        #     raise
         # only want to keep file portion of the string
         format_str = dir_split[-1]
     elif len(dir_split) == 2:
@@ -381,12 +374,10 @@ def list_remote_files(tag, sat_id,
         sub_path = remote_url + '/' + direct
         sub_soup = BeautifulSoup(requests.get(sub_path).content, "lxml")
         sub_links = sub_soup.find_all('a', href=True)
-        # try:
         for slink in sub_links:
             if slink['href'].count('.cdf') == 1:
                 full_files.append(slink['href'])
-        # except:
-        #     raise
+
     # parse remote filenames to get date information
     if delimiter is None:
         stored = pysat._files.parse_fixed_width_filenames(full_files,
