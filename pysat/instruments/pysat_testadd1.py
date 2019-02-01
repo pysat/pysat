@@ -55,7 +55,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
     uts_root = np.mod(time_delta.total_seconds(), 5820)
-    mlt = np.mod(uts_root+num_array, 5820)*(24./5820.)
+    mlt = np.mod(uts_root + num_array, 5820) * (24. / 5820.)
     data['mlt'] = mlt
 
     # fake orbit numbermedC1 = resultsC['dummy1']['median']

@@ -32,7 +32,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None):
     # create an artifical satellite data set
     parts = fnames[0].split('/')
-    yr = int('20'+parts[-1][0:2])
+    yr = int('20' + parts[-1][0:2])
     month = int(parts[-3])
     day = int(parts[-2])
 
