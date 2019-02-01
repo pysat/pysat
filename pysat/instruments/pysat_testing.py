@@ -99,20 +99,25 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     month = int(parts[1])
     day = int(parts[2][0:2])
 
+    # Specify the date tag locally and determine the desired date range
+    date_tag = '' if tag not in tags
+
     date = pysat.datetime(yr, month, day)
     if sim_multi_file_right:
-        root_date = root_date or test_dates[tag][sat_id] + \
+        root_date = root_date or test_dates[date_tag][sat_id] + \
             pds.DateOffset(hours=12)
         data_date = date + pds.DateOffset(hours=12)
     elif sim_multi_file_left:
-        root_date = root_date or test_dates[tag][sat_id] - \
+        root_date = root_date or test_dates[date_tag][sat_id] - \
             pds.DateOffset(hours=12)
         data_date = date - pds.DateOffset(hours=12)
     else:
-        root_date = root_date or test_dates[tag][sat_id]
+        root_date = root_date or test_dates[date_tag][sat_id]
         data_date = date
 
-    num = 86400 if tag in ['', 'ocb'] else int(tag)
+    # The tag can be used to specify the number of indexes to load, if
+    # using the default testing object
+    num = 86400 if tag in tags else int(tag)
     num_array = np.arange(num)
     uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
@@ -125,7 +130,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['mlt'] = mlt
     
     # fake orbit number
-    fake_delta = date  - (test_dates[tag][sat_id] - pds.DateOffset(years=1))
+    fake_delta = date  - (test_dates[date_tag][sat_id]-pds.DateOffset(years=1))
     fake_uts_root = fake_delta.total_seconds()
 
     data['orbit_num'] = ((fake_uts_root + num_array) / 5820.0).astype(int)
@@ -172,8 +177,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
 
     # Determine the appropriate date range for the fake files
-    start = test_dates[tag][sat_id] - pds.DateOffset(years=1)
-    stop = test_dates[tag][sat_id] + pds.DateOffset(days=364)
+    date_tag = '' if tag not in tags
+    start = test_dates[date_tag][sat_id] - pds.DateOffset(years=1)
+    stop = test_dates[date_tag][sat_id] + pds.DateOffset(days=364)
     index = pds.date_range(start, stop)
 
     # Create the list of fake filenames
