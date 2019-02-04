@@ -67,7 +67,8 @@ test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
 # support list files routine
 # use the default CDAWeb method
 fname = 'omni_hro_{tag:4s}_{year:4d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'': {'': fname}}
+supported_tags = {'': {'1min': fname,
+                       '5min': fname}}
 list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
 
@@ -80,7 +81,8 @@ load = cdw.load
 basic_tag = {'dir': '/pub/data/omni/omni_cdaweb/hro_{tag:4s}',
              'remote_fname': '{year:4d}/' + fname,
              'local_fname': fname}
-supported_tags = {'': {'': basic_tag}}
+supported_tags = {'': {'1min': basic_tag,
+                       '5min': basic_tag}}
 download = functools.partial(cdw.download, supported_tags=supported_tags,
                              fake_daily_files_from_monthly=True)
 
