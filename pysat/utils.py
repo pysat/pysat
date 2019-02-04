@@ -510,7 +510,7 @@ def calc_freq(index):
         freq_sec = del_time.total_seconds()
     except AttributeError as err:
         # Now try as numpy.timedelta64
-        if isinstance(freq_sec, np.timedelta64):
+        if isinstance(del_time, np.timedelta64):
             freq_sec = float(del_time) * 1.0e-9
         else:
             raise AttributeError("Input should be times: {:}".format(err))
