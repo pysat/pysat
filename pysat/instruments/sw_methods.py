@@ -190,8 +190,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
         notes += "{:})".format(itime.date())
 
     # Determine if the beginning or end of the time series needs to be padded
-    del_time = (np.array(kp_times[1:]) - np.array(kp_times[:-1])).min()
-    freq = "{:.0f}S".format(del_time.total_seconds())
+    freq = pysat.utils.calc_freq(kp_times)
     date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
                                 freq=freq)
 
@@ -371,8 +370,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         notes += "{:})".format(itime.date())
 
     # Determine if the beginning or end of the time series needs to be padded
-    del_time = (np.array(f107_times[1:]) - np.array(f107_times[:-1])).min()
-    freq = "{:.0f}S".format(del_time.total_seconds())
+    freq = pysat.utils.calc_freq(f107_times)
     date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
                                 freq=freq)
 
