@@ -372,14 +372,62 @@ class TestSWF107():
         assert_raises(ValueError, sw_f107.calc_f107a, self.testInst, 'f107',
                       'f107')
 
-    def test_calc_f107a(self):
-        """ Test the calc_f107a """
+    def test_calc_f107a_daily(self):
+        """ Test the calc_f107a routine with daily data"""
 
-        sw_f107.calc_f107a(self.testInst)
+        sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
 
+        # Assert that new data and metadata exist
         assert 'f107a' in self.testInst.data.columns
+        assert 'f107a' in self.testInst.meta.keys()
 
-        #HERE AFTER CENTER IS FIXED
+        # Assert the values are finite and realistic means
+        assert np.all(np.isfinite(self.testInst['f107a']))
+        assert self.testInst['f107a'].min() > self.testInst['f107'].min()
+        assert self.testInst['f107a'].max() < self.testInst['f107'].max()
+
+    def test_calc_f107a_high_rate(self):
+        """ Test the calc_f107a routine with sub-daily data"""
+        self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 3840)},
+                                             index=[pysat.datetime(2009, 1, 1)
+                                                    + pds.DateOffset(hours=i)
+                                                    for i in range(3840)])
+        sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
+
+        # Assert that new data and metadata exist
+        assert 'f107a' in self.testInst.data.columns
+        assert 'f107a' in self.testInst.meta.keys()
+
+        # Assert the values are finite and realistic means
+        assert np.all(np.isfinite(self.testInst['f107a']))
+        assert self.testInst['f107a'].min() > self.testInst['f107'].min()
+        assert self.testInst['f107a'].max() < self.testInst['f107'].max()
+
+        # Assert the same mean value is used for a day
+        assert len(np.unique(self.testInst['f107a'][:24])) == 1
+
+    def test_calc_f107a_daily_missing(self):
+        """ Test the calc_f107a routine with some daily data missing"""
+
+        self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
+                                             index=[pysat.datetime(2009, 1, 1)
+                                                    + pds.DateOffset(days=2*i+1)
+                                                    for i in range(160)])
+        sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
+
+        # Assert that new data and metadata exist
+        assert 'f107a' in self.testInst.data.columns
+        assert 'f107a' in self.testInst.meta.keys()
+
+        # Assert the finite values have realistic means
+        assert(np.nanmin(self.testInst['f107a'])
+               > np.nanmin(self.testInst['f107']))
+        assert(np.nanmax(self.testInst['f107a'])
+               < np.nanmax(self.testInst['f107']))
+
+        # Assert the expected number of fill values
+        assert(len(self.testInst['f107a'][np.isnan(self.testInst['f107a'])])
+               == 40)
 
 
 class TestSWAp():

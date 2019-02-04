@@ -565,7 +565,10 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     if f107a_name in f107_inst.data.columns:
         raise ValueError("output data column already exists: " + f107a_name)
 
-    fill_val = f107_inst.meta[f107_name][f107_inst.meta.fill_label]
+    if f107_name in f107_inst.meta:
+        fill_val = f107_inst.meta[f107_name][f107_inst.meta.fill_label]
+    else:
+        fill_val = np.nan
     
     # Calculate the rolling mean.  Since these values are centered but rolling
     # function doesn't allow temporal windows to be calculated this way, create
@@ -577,8 +580,8 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
 
     # Replace the time index with an ordinal
     time_ind = f107_fill.index
-    f107_fill['ord'] = pds.Series([tt.toordinal() for tt in time_index],
-                                  index=time_index)
+    f107_fill['ord'] = pds.Series([tt.toordinal() for tt in time_ind],
+                                  index=time_ind)
     f107_fill.set_index('ord', inplace=True)
 
     # Calculate the mean
@@ -593,23 +596,29 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     freq = pysat.utils.calc_freq(f107_inst.index)
     if freq != "86400S":
         # Resample to the desired frequency
-        f107_fill = f107_fill.data.resample(freq).pad()
+        f107_fill = f107_fill.resample(freq).pad()
+
         # Save the output in a list
         f107a = list(f107_fill[f107a_name])
 
         # Fill any dates that fall
-        time_ind = pds.date_range(f107_fill.index[-1], f107_inst.index[-1],
-                                  freq=freq)[1:]
-        for itime in time_ind:
+        time_ind = pds.date_range(f107_fill.index[0], f107_inst.index[-1],
+                                  freq=freq)
+        for itime in time_ind[f107_fill.index.shape[0]:]:
             if (itime - f107_fill.index[-1]).total_seconds() < 86400.0:
                 f107a.append(f107a[-1])
             else:
                 f107a.append(fill_val)
-    else:
-        f107a = list(f107_fill[f107a_name])
+
+        # Redefine the Series
+        f107_fill = pds.DataFrame({f107a_name: f107a}, index=time_ind)
+
+    # There may be missing days in the output data, remove these
+    if f107_inst.index.shape < f107_fill.index.shape:
+        f107_fill = f107_fill.loc[f107_inst.index]
 
     # Save the data
-    f107_inst[f107a_name] = pds.Series(f107a, index=f107_inst.index)
+    f107_inst[f107a_name] = f107_fill[f107a_name]
 
     # Update the metadata
     meta_dict = {f107_inst.meta.units_label: 'SFU',
