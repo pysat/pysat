@@ -565,11 +565,51 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     if f107a_name in f107_inst.data.columns:
         raise ValueError("output data column already exists: " + f107a_name)
 
-    # Calculate the rolling mean
-    # HERE CENTER DOESNT WORK BUT NEEDS TO
-    f107_inst[f107a_name] = f107_inst[f107_name].rolling(window='81D',
-                                                         min_periods=min_pnts,
-                                                         center=True).mean()
+    fill_val = f107_inst.meta[f107_name][f107_inst.meta.fill_label]
+    
+    # Calculate the rolling mean.  Since these values are centered but rolling
+    # function doesn't allow temporal windows to be calculated this way, create
+    # a hack for this.
+    #
+    # Ensure the data are evenly sampled at a daily frequency, since this is how
+    # often F10.7 is calculated.
+    f107_fill = f107_inst.data.resample('1D').fillna(method=None)
+
+    # Replace the time index with an ordinal
+    time_ind = f107_fill.index
+    f107_fill['ord'] = pds.Series([tt.toordinal() for tt in time_index],
+                                  index=time_index)
+    f107_fill.set_index('ord', inplace=True)
+
+    # Calculate the mean
+    f107_fill[f107a_name] = f107_fill.rolling(window=81, min_periods=min_pnts,
+                                              center=True).mean()
+
+    # Replace the ordinal index with the time
+    f107_fill['time'] = pds.Series(time_ind, index=f107_fill.index)
+    f107_fill.set_index('time', inplace=True)
+
+    # Resample to the original frequency, if it is not equal to 1 day
+    freq = pysat.utils.calc_freq(f107_inst.index)
+    if freq != "86400S":
+        # Resample to the desired frequency
+        f107_fill = f107_fill.data.resample(freq).pad()
+        # Save the output in a list
+        f107a = list(f107_fill[f107a_name])
+
+        # Fill any dates that fall
+        time_ind = pds.date_range(f107_fill.index[-1], f107_inst.index[-1],
+                                  freq=freq)[1:]
+        for itime in time_ind:
+            if (itime - f107_fill.index[-1]).total_seconds() < 86400.0:
+                f107a.append(f107a[-1])
+            else:
+                f107a.append(fill_val)
+    else:
+        f107a = list(f107_fill[f107a_name])
+
+    # Save the data
+    f107_inst[f107a_name] = pds.Series(f107a, index=f107_inst.index)
 
     # Update the metadata
     meta_dict = {f107_inst.meta.units_label: 'SFU',
@@ -580,8 +620,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
                  f107_inst.meta.scale_label: 'linear',
                  f107_inst.meta.min_label: 0.0,
                  f107_inst.meta.max_label: np.nan,
-                 f107_inst.meta.fill_label:
-                 f107_inst.meta[f107_name][f107_inst.meta.fill_label],
+                 f107_inst.meta.fill_label: fill_val,
                  f107_inst.meta.notes_label: 'Calculated using data between ' +
                  '{:} and {:}'.format(f107_inst.index[0], f107_inst.index[-1])}
 
