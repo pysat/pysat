@@ -475,6 +475,57 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
     return out_date
 
 
+def calc_freq(index):
+    """ Determine the frequency for a time index
+
+    Parameters
+    ----------
+    index : (array-like)
+        Datetime list, array, or Index
+
+    Returns
+    -------
+    freq : (str)
+       Frequency string as described in Pandas Offset Aliases
+
+    Notes
+    -----
+    Calculates the minimum time difference and sets that as the frequency.
+
+    To reduce the amount of calculations done, the returned frequency is
+    either in seconds (if no sub-second resolution is found) or nanoseconds.
+
+    """
+
+    # Test the length of the input
+    if len(index) < 2:
+        raise ValueError("insufficient data to calculate frequency")
+
+    # Calculate the minimum temporal difference
+    del_time = (np.array(index[1:]) - np.array(index[:-1])).min()
+
+    # Convert minimum to seconds
+    try:
+        # First try as timedelta
+        freq_sec = del_time.total_seconds()
+    except AttributeError as err:
+        # Now try as numpy.timedelta64
+        if isinstance(freq_sec, np.timedelta64):
+            freq_sec = float(del_time) * 1.0e-9
+        else:
+            raise AttributeError("Input should be times: {:}".format(err))
+
+    # Format output frequency
+    if np.floor(freq_sec) == freq_sec:
+        # The frequency is on the order of seconds or greater
+        freq = "{:.0f}S".format(freq_sec)
+    else:
+        # There are sub-seconds.  Go straigt to nanosec for best resoution
+        freq = "{:.0f}N".format(freq_sec * 1.0e9)
+    
+    return freq
+
+
 def season_date_range(start, stop, freq='D'):
     """
     Return array of datetime objects using input frequency from start to stop
