@@ -60,8 +60,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         list_files = functools.partial(nasa_cdaweb_methods.list_files,
                                        supported_tags=supported_tags)
 
-        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        supported_tags = {'':ivm_fname}
+        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        supported_tags = {'':fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
