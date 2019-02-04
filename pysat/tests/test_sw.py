@@ -15,7 +15,7 @@ class TestSWKp():
         self.testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0)},
                                              index=[pysat.datetime(2009, 1, 1)
                                                     + pds.DateOffset(hours=3*i)
-                                                    for i in range(10)])
+                                                    for i in range(12)])
 
         # Load a test Metadata
         self.testMeta = pysat.Meta()
@@ -323,7 +323,7 @@ class TestSWF107():
         """Test combine_f107 failure when no times are provided"""
 
         assert_raises(ValueError, sw_methods.combine_f107,
-                      [self.combineInst[''], self.combineInst['forecast']])
+                      self.combineInst[''], self.combineInst['forecast'])
 
     def test_combine_f107_inst_time(self):
         """Test combine_f107 with times provided through 'all' and 'forecast'"""
