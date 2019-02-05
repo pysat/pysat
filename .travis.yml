@@ -59,7 +59,7 @@ install:
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
       echo 'installing pyglow';
       cd ./pyglow;
-      travis_wait 50 docker build -t pyglow .;
+      travis_wait 50 docker build -t pyglow . --user >/dev/null;
       cd ..;
     fi
   # install pysat
