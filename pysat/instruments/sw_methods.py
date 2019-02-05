@@ -237,10 +237,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     ----------
     standard_inst : (pysat.Instrument or NoneType)
         Instrument object containing data for the 'sw' platform, 'f107' name,
-        and '', 'all', or 'daily' tag
+        and '', 'all', 'prelim', or 'daily' tag
     forecast_inst : (pysat.Instrument or NoneType)
         Instrument object containing data for the 'sw' platform, 'f107' name,
-        and '45day' or 'forecast' tag
+        and 'prelim', '45day' or 'forecast' tag
     start : (dt.datetime or NoneType)
         Starting time for combining data, or None to use earliest loaded
         date from the pysat Instruments (default=None)
@@ -285,6 +285,9 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         raise ValueError("must either load in Instrument objects or provide" +
                          " starting and ending times")
 
+    if start >= stop:
+        raise ValueError("date range is zero or negative")
+
     # Initialize the output instrument
     f107_inst = pysat.Instrument()
     f107_inst.platform = standard_inst.platform
@@ -299,6 +302,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     # Cycle through the desired time range
     itime = start
+
     while itime < stop and inst_flag is not None:
         # Load and save the standard data for as many times as possible
         if inst_flag == 'standard':
@@ -312,7 +316,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
             good_times = ((standard_inst.index >= itime) &
                           (standard_inst.index < stop))
-                
+
             if notes.find("standard") < 0:
                 notes += " the {:} source ({:} to ".format(inst_flag,
                                                            itime.date())
@@ -410,7 +414,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     return f107_inst
 
-def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap'):
+def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
+                  running_name=None):
     """ Calculate the daily Ap index from the 3hr ap index
 
     Parameters
@@ -421,6 +426,9 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap'):
         Column name for 3-hourly ap data (default='3hr_ap')
     daily_name : (str)
         Column name for daily Ap data (default='Ap')
+    running_name : (str or NoneType)
+        Column name for daily running average of ap, not output if None
+        (default=None)
 
     Returns
     -------
@@ -429,6 +437,9 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap'):
     Notes
     -----
     Ap is the mean of the 3hr ap indices measured for a given day
+
+    Option for running average is included since this information is used
+    by MSIS when running with sub-daily geophysical inputs
 
     """
 
@@ -442,6 +453,24 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap'):
 
     # Calculate the daily mean value
     ap_mean = ap_inst[ap_name].rolling(window='1D', min_periods=8).mean()
+
+    if running_name is not None:
+        ap_inst[running_name] = ap_mean
+
+        meta_dict = {ap_inst.meta.units_label: '',
+                     ap_inst.meta.name_label: running_name,
+                     ap_inst.meta.desc_label: "running daily Ap index",
+                     ap_inst.meta.plot_label: "24-h average ap",
+                     ap_inst.meta.axis_label: "24-h average ap",
+                     ap_inst.meta.scale_label: 'linear',
+                     ap_inst.meta.min_label: 0,
+                     ap_inst.meta.max_label: 400,
+                     ap_inst.meta.fill_label:
+                     ap_inst.meta[ap_name][ap_inst.meta.fill_label],
+                     ap_inst.meta.notes_label: '24-h running average of '
+                     + '3-hourly ap indices'}
+
+        ap_inst.meta.__setitem__(running_name, meta_dict)
 
     # Resample, backfilling so that each day uses the mean for the data from
     # that day only
@@ -471,8 +500,8 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap'):
                  ap_inst.meta.max_label: 400,
                  ap_inst.meta.fill_label:
                  ap_inst.meta[ap_name][ap_inst.meta.fill_label],
-                 ap_inst.meta.notes_label: 'Ap daily mean calculated from ' +
-                 '3-hourly ap indices'}
+                 ap_inst.meta.notes_label: 'Ap daily mean calculated from '
+                 + '3-hourly ap indices'}
 
     ap_inst.meta.__setitem__(daily_name, meta_dict)
 
