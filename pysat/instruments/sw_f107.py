@@ -492,9 +492,10 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
         r = requests.get(furl)
 
+        # Save the output
         outfile = os.path.join(data_path, 'f107_daily_' +
-                               date.strftime('%Y-%m-%d') + '.txt')
-        rewrite_daily_file(date.year, outfile, r.text)
+                               today.strftime('%Y-%m-%d') + '.txt')
+        rewrite_daily_file(today.year, outfile, r.text)
 
     elif tag == 'forecast':
         import requests
