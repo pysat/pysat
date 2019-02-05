@@ -758,8 +758,9 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     f107_fill.set_index('ord', inplace=True)
 
     # Calculate the mean
-    f107_fill[f107a_name] = f107_fill.rolling(window=81, min_periods=min_pnts,
-                                              center=True).mean()
+    f107_fill[f107a_name] = f107_fill[f107_name].rolling(window=81,
+                                                         min_periods=min_pnts,
+                                                         center=True).mean()
 
     # Replace the ordinal index with the time
     f107_fill['time'] = pds.Series(time_ind, index=f107_fill.index)
