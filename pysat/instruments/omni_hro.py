@@ -76,7 +76,7 @@ list_files = functools.partial(cdw.list_files,
 
 # support load routine
 # use the default CDAWeb method
-load = cdw.load
+load = functools.partial(cdw.load, fake_daily_files_from_monthly=True)
 
 # support download routine
 # use the default CDAWeb method
