@@ -500,7 +500,8 @@ def convert_3hr_kp_to_ap(kp_inst):
                 5: 48, 5.3: 56, 5.6: 67, 6: 80, 6.3: 94, 6.6: 111, 7: 132,
                 7.3: 154, 7.6: 179, 8: 207, 8.3: 236, 8.6: 300, 9: 400}
 
-    ap = lambda kk: kp_to_ap[np.floor(kk*10.0) / 10.0]
+    ap = lambda kk: kp_to_ap[np.floor(kk*10.0) / 10.0] \
+        if np.isfinite(kk) else np.nan
 
     # Test the input
     if 'Kp' not in kp_inst.data.columns:
