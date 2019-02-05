@@ -231,7 +231,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 # make sure things are in order and copy latest filename for
                 # all days, thus no matter which day with data the user loads
                 # they get the most recent F10.7 file
-                out = out.sort_index()                
+                out = out.sort_index()
                 out = out.asfreq('D', 'pad')
 
             return out
@@ -244,11 +244,33 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 format_str = 'f107_prelim_{year:04d}_v{version:01d}.txt'
             out = pysat.Files.from_os(data_path=data_path,
                                       format_str=format_str)
+
             if not out.empty:
-                out.ix[out.index[-1] + pds.DateOffset(months=1)
-                       - pds.DateOffset(days=1)] = out.iloc[-1]  
-                out = out.asfreq('D', 'pad')
-                out = out + '_' + out.index.strftime('%Y-%m-%d')  
+                # Set each file's valid length at a 1-day resolution
+                orig_files = out.sort_index().copy()
+                new_files = list()
+
+                for orig in orig_files.iteritems():
+                    # Version determines each file's valid length
+                    version = int(orig[1].split("_v")[1][0])
+                    doff = pds.DateOffset(years=1) if version == 4 \
+                        else pds.DateOffset(months=3)
+                    iend = orig[0] + doff - pds.DateOffset(days=1)
+
+                    # Pad the original file index
+                    out.ix[iend] = orig[1]
+                    out = out.sort_index()
+
+                    # Save the files at a daily cadence over the desired period
+                    new_files.append(out.ix[orig[0]: iend].asfreq('D', 'pad'))
+                # Add the newly indexed files to the file output
+                out = pds.concat(new_files)
+                out = out.dropna()
+                out = out.sort_index()
+
+                # Add the date to the filename
+                out = out + '_' + out.index.strftime('%Y-%m-%d')
+
             return out
 
         elif tag == 'daily':
