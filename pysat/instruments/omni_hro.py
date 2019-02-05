@@ -88,7 +88,6 @@ basic_tag5 = {'dir': '/pub/data/omni/omni_cdaweb/hro_5min',
               'local_fname': fname5}
 supported_tags = {'': {'1min': basic_tag1,
                        '5min': basic_tag5}}
-print(supported_tags)
 download = functools.partial(cdw.download,
                              supported_tags,
                              fake_daily_files_from_monthly=True)
