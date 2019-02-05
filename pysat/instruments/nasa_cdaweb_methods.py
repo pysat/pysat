@@ -198,7 +198,7 @@ def download(supported_tags, date_array, tag, sat_id,
         User password to be passed along to resource with relevant data.
         (default=None)
     fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month.This flag,
+        Some CDAWeb instrument data files are stored by month. This flag,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
 
@@ -215,9 +215,9 @@ def download(supported_tags, date_array, tag, sat_id,
         rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         ln = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         dc_b_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
-                    'remote_fname':rn,
-                    'local_fname':ln}
-        supported_tags = {'dc_b':dc_b_tag}
+                    'remote_fname': rn,
+                    'local_fname': ln}
+        supported_tags = {'dc_b': dc_b_tag}
 
         download = functools.partial(nasa_cdaweb_methods.download,
                                      supported_tags=supported_tags)
@@ -302,7 +302,7 @@ def list_remote_files(tag, sat_id,
         User password to be passed along to resource with relevant data.
         (default=None)
     fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month.This flag,
+        Some CDAWeb instrument data files are stored by month. This flag,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
     two_digit_year_break : int
@@ -322,12 +322,12 @@ def list_remote_files(tag, sat_id,
     ::
 
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-        supported_tags = {'dc_b':fname}
+        supported_tags = {'dc_b': fname}
         list_files = functools.partial(nasa_cdaweb_methods.list_files,
                                        supported_tags=supported_tags)
 
-        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        supported_tags = {'':ivm_fname}
+        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        supported_tags = {'': fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
