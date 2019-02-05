@@ -207,8 +207,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             out = pysat.Files.from_os(data_path=data_path, 
                                       format_str=format_str)
             if not out.empty:
-                out.ix[out.index[-1]+pds.DateOffset(months=1)-
-                         pds.DateOffset(days=1)] = out.iloc[-1]  
+                out.loc[out.index[-1] + pds.DateOffset(months=1)
+                        - pds.DateOffset(days=1)] = out.iloc[-1]  
                 out = out.asfreq('D', 'pad')
                 out = out + '_' + out.index.strftime('%Y-%m-%d')  
             return out
@@ -227,7 +227,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 out = out.iloc[-1:]
                 # first day of data is 2-14, ensure same file for first and
                 # most recent day
-                out.ix[pysat.datetime(1947, 2, 13)] = out.iloc[0]
+                out.loc[pysat.datetime(1947, 2, 13)] = out.iloc[0]
                 # make sure things are in order and copy latest filename for
                 # all days, thus no matter which day with data the user loads
                 # they get the most recent F10.7 file
@@ -253,23 +253,23 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 for orig in orig_files.iteritems():
                     # Version determines each file's valid length
                     version = int(orig[1].split("_v")[1][0])
-                    doff = pds.DateOffset(years=1) if version == 4 \
+                    doff = pds.DateOffset(years=1) if version == 5 \
                         else pds.DateOffset(months=3)
-                    iend = orig[0] + doff - pds.DateOffset(days=1)
+                    istart = orig[0]
+                    if version < 5 and version > 1:
+                        istart += pds.DateOffset(months=(version-1) * 3)
+                    iend = istart + doff - pds.DateOffset(days=1)
 
                     # Pad the original file index
-                    out.ix[iend] = orig[1]
+                    out.loc[iend] = orig[1]
                     out = out.sort_index()
 
                     # Save the files at a daily cadence over the desired period
-                    new_files.append(out.ix[orig[0]: iend].asfreq('D', 'pad'))
+                    new_files.append(out.loc[istart: iend].asfreq('D', 'pad'))
                 # Add the newly indexed files to the file output
                 out = pds.concat(new_files)
                 out = out.dropna()
                 out = out.sort_index()
-
-                # Add the date to the filename
-                out = out + '_' + out.index.strftime('%Y-%m-%d')
 
             return out
 
@@ -281,8 +281,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
             return files
 
         elif tag == 'forecast':
@@ -293,8 +293,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
             return files
 
         elif tag == '45day':
@@ -305,8 +305,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
             return files
 
         else:
@@ -429,7 +429,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             quar = 'Q{:d}_'.format(qnum)
             fnames = ['{:04d}{:s}DSD.txt'.format(date.year, ss)
                       for ss in ['_', quar]]
-            versions = ["4", "{:d}".format(qnum)]
+            versions = ["5", "{:d}".format(qnum)]
             downloaded = False
             rewritten = False
 
