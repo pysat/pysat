@@ -45,6 +45,7 @@ is not appropriate for 'forecast' data.
 
 import os
 import functools
+import warnings
 
 import pandas as pds
 import numpy as np
@@ -373,7 +374,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             raw_dict = json.loads(r.text)['noaa_radio_flux']
             data = pds.DataFrame.from_dict(raw_dict['samples'])
             if data.empty:
-                print("WARNING: no data for {:}".format(date))
+                warnings.warn("no data for {:}".format(date), UserWarning)
             else:
                 times = [pysat.datetime.strptime(time, '%Y %m %d')
                          for time in data.pop('time')]
