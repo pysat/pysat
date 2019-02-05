@@ -5,15 +5,18 @@ python:
 sudo: false
 
 cache: pip
-cache:		
-   directories:		
+cache:
+   directories:
       - ../pyglow_cache
- 
+
 addons:
   apt:
     packages:
     - gfortran
     - libncurses5-dev
+
+services:
+  - docker
 
 # Setup anaconda
 before_install:
@@ -48,7 +51,7 @@ install:
     fi
   - pwd
   - ls
-    
+
 
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd ..;
@@ -56,9 +59,8 @@ install:
       travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
       echo 'installing pyglow';
       cd ./pyglow;
-      travis_wait 50 make -C src/pyglow/models source >/dev/null;
-      travis_wait 50 python setup.py install --user >/dev/null;
-      cd ..; 
+      travis_wait 50 docker build -t pyglow;
+      cd ..;
     fi
   # install pysat
   - cd /home/travis/build/rstoneback/pysat
