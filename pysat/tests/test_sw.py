@@ -16,6 +16,9 @@ class TestSWKp():
                                              index=[pysat.datetime(2009, 1, 1)
                                                     + pds.DateOffset(hours=3*i)
                                                     for i in range(12)])
+        self.testInst.meta = pysat.Meta()
+        self.testInst.meta.__setitem__('Kp': {self.testInst.meta.fill_label:
+                                              np.nan})
 
         # Load a test Metadata
         self.testMeta = pysat.Meta()
