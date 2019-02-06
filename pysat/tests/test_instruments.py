@@ -46,6 +46,8 @@ def init_func_external(self):
         if name not in exclude_list:
             temp.append(name)
     instrument_names = temp
+    
+    self.instrument_names = temp
     self.instruments = []
     self.instrument_modules = []
 
@@ -85,6 +87,7 @@ def init_func_external(self):
 
 init_inst = None
 init_mod = None
+init_names = None
 
 class TestInstrumentQualifier():
 
@@ -92,14 +95,17 @@ class TestInstrumentQualifier():
         """Iterate through and create all of the test Instruments needed"""
         global init_inst
         global init_mod
+        global init_names
         if init_inst is None:
             init_func_external(self)
             init_inst = self.instruments
             init_mod = self.instrument_modules
+            init_names = self.instrument_names
 
         else:
             self.instruments = init_inst
             self.instrument_modules = init_mod
+            self.instrument_names = init_names
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -132,10 +138,10 @@ class TestInstrumentQualifier():
         assert np.all(check)
 
     def test_modules_loadable(self):
-        instrument_names = pysat.instruments.__all__
-        self.instruments = []
+        #instrument_names = pysat.instruments.__all__
+        #self.instruments = []
 
-        for name in instrument_names:
+        for name in self.instrument_names: 
             f = partial(self.check_module_importable, name)
             f.description = ' '.join(('Checking importability for module:', name))
             yield (f,)
