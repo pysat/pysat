@@ -18,9 +18,10 @@ import numpy as np
 import sys
 import importlib
 
-# module in list below are completely excluded
+# module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps',
-                'icon_euv', 'icon_ivm', 'sw_dst', 'sw_kp']
+                'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv', 'sw_dst', 
+                'sw_kp', 'demeter_iap', 'sport_ivm']
                 
 # exclude testing download functionality for specific module name, tag, sat_id 
 exclude_tags = {'': {'tag': [''], 'sat_id': ['']}}
@@ -51,6 +52,8 @@ def init_func_external(self):
         if name not in exclude_list:
             temp.append(name)
     instrument_names = temp
+    print ('The following instrument modules will be tested : ', 
+           instrument_names)
     
     self.instrument_names = temp
     self.instruments = []
@@ -83,6 +86,7 @@ def init_func_external(self):
                                   sat_id in exclude_tags[name]['sat_id']:
                             # drop out of for loop
                             # we don't want to test download for this combo
+                            print (' '.join('Excluding', name, tag, sat_id))
                             break
                     try:
                         inst = pysat.Instrument(inst_module=module,
@@ -107,6 +111,7 @@ class TestInstrumentQualifier():
         global init_inst
         global init_mod
         global init_names
+        
         if init_inst is None:
             init_func_external(self)
             init_inst = self.instruments
@@ -149,10 +154,9 @@ class TestInstrumentQualifier():
         assert np.all(check)
 
     def test_modules_loadable(self):
-        #instrument_names = pysat.instruments.__all__
-        #self.instruments = []
 
-        for name in self.instrument_names: 
+        # ensure that all modules are at minimum importable
+        for name in pysat.instruments.__all__: 
             f = partial(self.check_module_importable, name)
             f.description = ' '.join(('Checking importability for module:', name))
             yield (f,)
