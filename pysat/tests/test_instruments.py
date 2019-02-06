@@ -21,13 +21,13 @@ import importlib
 # module in list below are completely excluded
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps',
                 'icon_euv', 'icon_ivm', 'sw_dst', 'sw_kp']
-# exclude specific tag, sat_id combinations for specific modules
-# when testing download functionality
-# keyed by module name
+                
+# exclude testing download functionality for specific module name, tag, sat_id 
 exclude_tags = {'': {'tag': [''], 'sat_id': ['']}}
 
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer':['rstoneback', None]}
+
 
 if sys.version_info[0] >= 3:
     # TODO Remove when pyglow works in python 3
