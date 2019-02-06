@@ -18,8 +18,14 @@ import numpy as np
 import sys
 import importlib
 
+# module in list below are completely excluded
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps',
                 'icon_euv', 'icon_ivm', 'sw_dst', 'sw_kp']
+# exclude specific tag, sat_id combinations for specific modules
+# when testing download functionality
+# keyed by module name
+exclude_tags = {'': {'tag': [''], 'sat_id': ['']}}
+
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer':['rstoneback', None]}
 
@@ -73,6 +79,12 @@ def init_func_external(self):
                 module.test_dates = info
             for sat_id in info.keys() :
                 for tag in info[sat_id].keys():
+                    if name in exclude_tags:
+                        if tag in exclude_tags[name]['tag'] and \
+                                 sat_id in exclude_tags[name]['sat_id']:
+                            # drop out of for loop
+                            # we don't want to test download for this combo
+                            break
                     try:
                         inst = pysat.Instrument(inst_module=module,
                                                 tag=tag,
