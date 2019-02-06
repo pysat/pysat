@@ -80,7 +80,7 @@ def init_func_external(self):
                 for tag in info[sat_id].keys():
                     if name in exclude_tags:
                         if tag in exclude_tags[name]['tag'] and \
-                                 sat_id in exclude_tags[name]['sat_id']:
+                                  sat_id in exclude_tags[name]['sat_id']:
                             # drop out of for loop
                             # we don't want to test download for this combo
                             break
