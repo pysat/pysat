@@ -1,7 +1,6 @@
 language: python
 python:
   - "2.7"
-  - "3.6"
 sudo: true
 
 cache: pip
@@ -69,4 +68,3 @@ install:
 script:
   - nosetests -vs pysat/tests/test_pyglow.py
 after_success:
-  
