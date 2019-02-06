@@ -278,8 +278,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     if stop is None:
         stimes = [inst.index.max() for inst in [standard_inst, forecast_inst]
                   if len(inst.index) > 0]
-        stop = max(stimes) if len(stimes) > 0 else None
-        stop += pds.DateOffset(days=1)
+        stop = max(stimes) + pds.DateOffset(days=1) if len(stimes) > 0 else None
 
     if start is None or stop is None:
         raise ValueError("must either load in Instrument objects or provide" +
