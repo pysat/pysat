@@ -20,14 +20,10 @@ import importlib
 
 # module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps',
-<<<<<<< HEAD
                 'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv', 'sw_dst', 
                 'sw_kp', 'demeter_iap', 'sport_ivm']
                 
-=======
-                'icon_euv', 'icon_ivm', 'sw_dst', 'sw_kp']
 
->>>>>>> aebd70b14ae6b17c72187cf9a32e074ca2ba43ae
 # exclude testing download functionality for specific module name, tag, sat_id 
 exclude_tags = {'': {'tag': [''], 'sat_id': ['']}}
 
@@ -57,13 +53,11 @@ def init_func_external(self):
         if name not in exclude_list:
             temp.append(name)
     instrument_names = temp
-<<<<<<< HEAD
+    
     print ('The following instrument modules will be tested : ', 
            instrument_names)
     
-=======
 
->>>>>>> aebd70b14ae6b17c72187cf9a32e074ca2ba43ae
     self.instrument_names = temp
     self.instruments = []
     self.instrument_modules = []
@@ -164,12 +158,8 @@ class TestInstrumentQualifier():
 
     def test_modules_loadable(self):
 
-<<<<<<< HEAD
         # ensure that all modules are at minimum importable
         for name in pysat.instruments.__all__: 
-=======
-        for name in self.instrument_names:
->>>>>>> aebd70b14ae6b17c72187cf9a32e074ca2ba43ae
             f = partial(self.check_module_importable, name)
             f.description = ' '.join(('Checking importability for module:', name))
             yield (f,)
