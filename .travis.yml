@@ -56,10 +56,10 @@ install:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       cd ..;
       echo 'cloning pyglow';
-      travis_wait 50 git clone https://github.com/timduly4/pyglow.git;
+      git clone https://github.com/timduly4/pyglow.git;
       echo 'installing pyglow';
       cd ./pyglow;
-      travis_wait 50 docker build -t pyglow . >/dev/null;
+      docker build -t pyglow . >/dev/null;
       cd ..;
     fi
   # install pysat
