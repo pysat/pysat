@@ -545,7 +545,7 @@ class TestBasics():
 
         self.testInst.index.freq = pysat.utils.calc_freq(self.testInst.index)
 
-        assert set.testInst.index.freq.find("1S") == 0
+        assert self.testInst.index.freq.find("1S") == 0
 
     def test_calc_freq_ns(self):
         """Test index frequency calculation with nanosecond output"""
@@ -555,7 +555,7 @@ class TestBasics():
                                                  uts=np.arange(0.0, 0.04, .01))
         freq = pysat.utils.calc_freq(tind)
 
-        assert set.testInst.index.freq.find("10000000N") == 0
+        assert self.testInst.index.freq.find("10000000N") == 0
 
     def test_calc_freq_len_fail(self):
         """Test index frequency calculation with empty list"""
