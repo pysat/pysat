@@ -79,6 +79,9 @@ init_mod = None
 init_names = None
 
 # this environment variable is set by the TRAVIS CI folks
+print ("FTP Download check environment variable output ", os.environ.get('Travis'),
+       os.environ.get('TRAVIS'), os.environ.get('CI'))
+
 if not os.environ.get('Travis') == 'True':
     class TestFTPInstrumentQualifier(pysat.tests.test_instruments.TestInstrumentQualifier):
     
