@@ -28,7 +28,6 @@ exclude_tags = {'': {'tag': [''], 'sat_id': ['']}}
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer':['rstoneback', None]}
 
-
 if sys.version_info[0] >= 3:
     # TODO Remove when pyglow works in python 3
     exclude_list.append('pysat_sgp4')
@@ -307,11 +306,7 @@ class TestInstrumentQualifier():
                 f.description = ' '.join(('Checking load routine functionality for module with clean level "clean": ', inst.platform, inst.name, inst.tag, inst.sat_id))
                 yield (f,)
             else:
-                print ('Unable to actually download a file.')
-                # raise RuntimeWarning(' '.join(('Download for', inst.platform, inst.name, inst.tag, inst.sat_id, 'was not successful.')))
-                import warnings
-                warnings.warn(' '.join(('Download for', inst.platform, inst.name, inst.tag, inst.sat_id, 'was not successful.')))
-                #TODO need a warning!
+                raise RuntimeWarning(' '.join(('Download for', inst.platform, inst.name, inst.tag, inst.sat_id, 'was not successful.')))
 
 
     # Optional support
