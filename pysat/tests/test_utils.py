@@ -560,9 +560,9 @@ class TestBasics():
     def test_calc_freq_len_fail(self):
         """Test index frequency calculation with empty list"""
 
-       assert_raises(ValueError, pysat.utils.calc_freq, list())
+        assert_raises(ValueError, pysat.utils.calc_freq, list())
 
     def test_calc_freq_type_fail(self):
         """Test index frequency calculation with non-datetime list"""
 
-       assert_raises(AttributeError, pysat.utils.calc_freq, [1, 2, 3, 4])
+        assert_raises(AttributeError, pysat.utils.calc_freq, [1, 2, 3, 4])
