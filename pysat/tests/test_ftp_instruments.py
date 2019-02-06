@@ -82,7 +82,7 @@ init_names = None
 print ("FTP Download check environment variable output ", os.environ.get('Travis'),
        os.environ.get('TRAVIS'), os.environ.get('CI'))
 
-if not os.environ.get('Travis') == 'True':
+if not (os.environ.get('TRAVIS') == 'true'):
     class TestFTPInstrumentQualifier(pysat.tests.test_instruments.TestInstrumentQualifier):
     
         def __init__(self):
