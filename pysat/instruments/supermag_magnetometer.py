@@ -72,6 +72,12 @@ def init(self):
     
     """
 
+    # if the tag is 'indices', update data_path to reflect this
+    # both 'indices' and 'all' are stored under 'all'
+    if self.tag == "indices":
+        psplit = path.split(self.files.data_path[:-1])
+        self.files.data_path = path.join(psplit[0], "all", "")
+
     # reset the list_remote_files routine to include the data path
     # now conveniently included with instrument object
     self._list_remote_rtn = functools.partial(list_remote_files, 
@@ -687,6 +693,9 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     # Set the tag information
     if tag == "indices":
         tag = "all"
+        # modify path as 'indices' is stored under 'all'
+        psplit = path.split(data_path[:-1])
+        data_path = path.join(psplit[0], "all", "")
 
     if tag != "stations":
         remotefmt += "&{interval}&{stations}&{delta}&{baseline}&{options}"
