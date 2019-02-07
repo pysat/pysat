@@ -352,7 +352,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     if matched_inst is None:
                         matched_inst = pysat.Instrument
                         matched_inst.meta = inst.meta
-                        matched_inst.data = inst.data[im]
+                        matched_inst.data = inst[im]
                     else:
                         idata = inst[im]
                         matched_inst.data = inst.concat_data([matched_inst.data,
@@ -598,8 +598,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                 # Save the output
                 attr_name = "{:s}_{:s}".format(model_label, mdat)
                 if not attr_name in interp_data.keys():
-                    interp_data[attr_name] = \
-                        np.empty(shape=interp_shape, dtype=float) * np.nan
+                    interp_data[attr_name] = np.full(shape=interp_shape,
+                                                     fill_value=np.nan)
                 interp_data[attr_name][xout] = yi[0]
 
     # Test and ensure the instrument data doesn't already have the interpolated
