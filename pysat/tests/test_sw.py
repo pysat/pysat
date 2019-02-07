@@ -1,11 +1,12 @@
+import datetime as dt
+import numpy as np
+
+from nose.tools import assert_raises
+from nose.plugins import skip
+import pandas as pds
+
 import pysat
 from pysat.instruments import sw_kp, sw_f107, sw_methods
-import pandas as pds
-import numpy as np
-from nose.tools import assert_raises, raises
-import nose.tools
-from nose.plugins import skip
-import datetime as dt
 
 class TestSWKp():
     def setup(self):
@@ -24,7 +25,8 @@ class TestSWKp():
         self.testMeta = pysat.Meta()
 
         # Set combination testing input
-        self.today = dt.datetime.today().date()
+        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
+                                                 microsecond=0)
         self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
                         "recent_inst": pysat.Instrument("sw", "kp", "recent"),
                         "forecast_inst":
@@ -92,7 +94,7 @@ class TestSWKp():
     def test_convert_kp_to_ap_bad_input(self):
         """ Test conversion of Kp to ap with bad input"""
 
-        self.testInst.data.rename({"Kp": "bad"}, inplace=True)
+        self.testInst.data.rename(columns={"Kp": "bad"}, inplace=True)
 
         assert_raises(ValueError, sw_kp.convert_3hr_kp_to_ap, self.testInst)
 
@@ -182,19 +184,25 @@ class TestSWKp():
         combo_in['standard_inst'].load(date=self.combine['start'])
         combo_in['recent_inst'].load(date=self.today)
         combo_in['forecast_inst'].load(date=self.today)
+        combo_in['stop'] = combo_in['forecast_inst'].index[-1]
 
         kp_inst = sw_methods.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
-        assert kp_inst.index[-1] < self.combine['stop']
+        assert kp_inst.index[-1] <= self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
-        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
-               self.combine['fill_val'])
-        assert len(kp_inst['Kp'][kp_inst['Kp']] ==
-                   self.combine['fill_val']) == 0
 
-        del combo_in, kp_inst
+        fill_val = combo_in['standard_inst'].meta['Kp'][kp_inst.meta.fill_label]
+
+        if np.isnan(fill_val):
+            assert np.isnan(kp_inst.meta['Kp'][kp_inst.meta.fill_label])
+            assert len(kp_inst['Kp'][np.isnan(kp_inst['Kp'])]) == 0
+        else:
+            assert kp_inst.meta['Kp'][kp_inst.meta.fill_label] == fill_val
+            assert len(kp_inst['Kp'][kp_inst['Kp'] == fill_val]) == 0
+
+        del combo_in, kp_inst, fill_val
 
     def test_combine_kp_all(self):
         """Test combine_kp when all input is provided"""
@@ -208,10 +216,11 @@ class TestSWKp():
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
+
+        # Fill value is defined by combine
         assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
                self.combine['fill_val'])
-        assert len(kp_inst['Kp'][kp_inst['Kp']] ==
-                   self.combine['fill_val']) == 0
+        assert len(kp_inst['Kp'][kp_inst['Kp']==self.combine['fill_val']]) == 0
 
         del kp_inst
 
@@ -221,12 +230,12 @@ class TestSWKp():
         if not self.download:
             raise skip.SkipTest("test needs downloaded data")
 
-        combo_in = {kk: self.combine for kk in self.combine.keys()
+        combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'forecast_inst'}
-        kp_inst = sw_methods.combine_kp(combo_in)
+        kp_inst = sw_methods.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
-        assert kp_inst.index[-1] < self.combine['recent_inst'].index[-1]
+        assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
         assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
@@ -242,9 +251,9 @@ class TestSWKp():
         if not self.download:
             raise skip.SkipTest("test needs downloaded data")
 
-        combo_in = {kk: self.combine for kk in self.combine.keys()
+        combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'recent_inst'}
-        kp_inst = sw_methods.combine_kp(combo_in)
+        kp_inst = sw_methods.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -263,11 +272,11 @@ class TestSWKp():
         if not self.download:
             raise skip.SkipTest("test needs downloaded data")
 
-        combo_in = {kk: self.combine for kk in self.combine.keys()
+        combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'standard_inst'}
-        kp_inst = sw_methods.combine_kp(combo_in)
+        kp_inst = sw_methods.combine_kp(**combo_in)
 
-        assert kp_inst.index[0] >= self.combine['recent_inst'].index[0]
+        assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
@@ -290,7 +299,8 @@ class TestSWF107():
                                                     for i in range(160)])
 
         # Set combination testing input
-        self.today = dt.datetime.today().date()
+        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
+                                                 microsecond=0)
         self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
                             for tag in sw_f107.tags.keys()}
         self.combineTimes = {"start": self.today - dt.timedelta(days=30),
@@ -340,8 +350,8 @@ class TestSWF107():
         f107_inst = sw_methods.combine_f107(self.combineInst['all'],
                                             self.combineInst['forecast'])
 
-        assert f107_inst.index[0] >= self.combineTimes['start']
-        assert f107_inst.index[-1] < self.combineTimes['stop']
+        assert f107_inst.index[0] == dt.datetime(1947, 2, 13)
+        assert f107_inst.index[-1] <= self.combineTimes['stop']
         assert len(f107_inst.data.columns) == 1
         assert f107_inst.data.columns[0] == 'f107'
 
