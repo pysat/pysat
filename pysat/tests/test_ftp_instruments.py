@@ -1,16 +1,13 @@
 """
 tests the pysat meta object and code
 """
-import pysat
+import importlib
+import os
 import tempfile
 
-
+import pysat
 import pysat.instruments.pysat_testing
 import pysat.tests.test_instruments
-# import pysat.instruments as instruments
-import os
-
-import importlib
 
 include_list = ['sw_dst', 'sw_kp']
 # dict, keyed by pysat instrument, with a list of usernames and passwords
