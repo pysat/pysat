@@ -1,31 +1,25 @@
 """
 tests the pysat meta object and code
 """
-import pysat
-import pandas as pds
-from nose.tools import assert_raises, raises
-import nose.tools
+import importlib
 from functools import partial
+import numpy as np
+import sys
+
+import nose.tools
+import pandas as pds
 import tempfile
 
-
+import pysat
 import pysat.instruments.pysat_testing
-# import pysat.instruments as instruments
-import numpy as np
-# import os
-
-
-import sys
-import importlib
 
 # module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps',
                 'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv', 'sw_dst', 
-                'sw_kp', 'demeter_iap', 'sport_ivm']
-                
+                'sw_kp', 'demeter_iap', 'sport_ivm']                
 
 # exclude testing download functionality for specific module name, tag, sat_id 
-exclude_tags = {'': {'tag': [''], 'sat_id': ['']}}
+exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']}}
 
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer':['rstoneback', None]}
