@@ -84,7 +84,7 @@ def init_func_external(self):
                                   sat_id in exclude_tags[name]['sat_id']:
                             # drop out of for loop
                             # we don't want to test download for this combo
-                            print (' '.join('Excluding', name, tag, sat_id))
+                            print (' '.join(['Excluding', name, tag, sat_id]))
                             break
                     try:
                         inst = pysat.Instrument(inst_module=module,
@@ -250,7 +250,7 @@ class TestInstrumentQualifier():
             print("Couldn't download data, trying to find test data.")
             saved_path = safe_data_dir()
 
-            new_path = os.path.join(pysat.__path__[0],'tests', 'test_data')
+            new_path = os.path.join(pysat.__path__[0], 'tests', 'test_data')
             pysat.utils.set_data_dir(new_path, store=False)
             test_dates = inst.test_dates
             inst = pysat.Instrument(platform=inst.platform,
@@ -339,7 +339,9 @@ class TestInstrumentQualifier():
                                           inst.name, inst.tag, inst.sat_id))
                 yield (f,)
             else:
-                raise RuntimeWarning(' '.join(('Download for', inst.platform, inst.name, inst.tag, inst.sat_id, 'was not successful.')))
+                raise RuntimeWarning(' '.join(('Download for', inst.platform,
+                                               inst.name, inst.tag, inst.sat_id,
+                                               'was not successful.')))
 
 
     # Optional support
