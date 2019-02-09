@@ -44,5 +44,5 @@ install:
   - "python setup.py install"
 # command to run tests
 script:
-  - import pyglow
+  - python import pyglow
 after_success:
