@@ -11,3 +11,5 @@ def test_import_pyglow():
     """Can we load pyglow?"""
 
     import pyglow
+
+    assert (True)
