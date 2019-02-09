@@ -36,6 +36,7 @@ install:
   - git clone https://github.com/timduly4/pyglow.git >/dev/null
   - echo 'installing pyglow'
   - cd ./pyglow
+  - pwd
   - docker build -t pyglow . >/dev/null
   - cd ..
 
