@@ -44,5 +44,5 @@ install:
   - "python setup.py install"
 # command to run tests
 script:
-  - nosetests -vs pysat/tests/tes_pyglow.py
+  - nosetests -vs pysat/tests/test_pyglow.py
 after_success:
