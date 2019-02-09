@@ -40,6 +40,7 @@ install:
   - pwd
   - docker build -t pyglow . >/dev/null
   - cd ..
+  - echo $PATH
 
   # install pysat
   - cd /home/travis/build/rstoneback/pysat
