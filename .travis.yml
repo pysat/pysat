@@ -44,5 +44,5 @@ install:
   - "python setup.py install"
 # command to run tests
 script:
-  - nosetests -vs pysat/tests/test_instruments.py
+  - ls
 after_success:
