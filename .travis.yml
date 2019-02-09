@@ -16,7 +16,6 @@ addons:
 
 services:
   - docker
-  - xvfb
 
 # Setup anaconda
 before_install:
@@ -26,6 +25,11 @@ before_install:
   - pip install matplotlib
   - pip install pysatCDF >/dev/null
 
+# command to install dependencies
+install:
+  # Coverage packages are on my binstar channel
+  # - conda install --yes -c dan_blanchard python-coveralls nose-cov
+  - source activate test-environment
     # install pyglow, space science models
   - cd ..
   - echo 'cloning pyglow'
@@ -35,11 +39,6 @@ before_install:
   - docker build -t pyglow . >/dev/null
   - cd ..
 
-# command to install dependencies
-install:
-  # Coverage packages are on my binstar channel
-  # - conda install --yes -c dan_blanchard python-coveralls nose-cov
-  - source activate test-environment
   # install pysat
   - cd /home/travis/build/rstoneback/pysat
   - "python setup.py install"
