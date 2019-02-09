@@ -24,23 +24,14 @@ before_install:
   - pip install future
   - pip install pysatCDF >/dev/null
     # install pyglow, space science models
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      travis_wait 30 pip install ipdb --user;
-      cd ..;
-    fi
-  - pwd
-  - ls
 
-
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      cd ..;
-      echo 'cloning pyglow';
-      git clone https://github.com/timduly4/pyglow.git >/dev/null;
-      echo 'installing pyglow';
-      cd ./pyglow;
-      docker build -t pyglow . >/dev/null;
-      cd ..;
-    fi
+  - cd ..
+  - echo 'cloning pyglow'
+  - git clone https://github.com/timduly4/pyglow.git >/dev/null
+  - echo 'installing pyglow'
+  - cd ./pyglow
+  - docker build -t pyglow . >/dev/null
+  - cd ..
 
 # command to install dependencies
 install:
