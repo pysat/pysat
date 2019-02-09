@@ -24,8 +24,8 @@ before_install:
   - pip install future
   - pip install matplotlib
   - pip install pysatCDF >/dev/null
-    # install pyglow, space science models
 
+    # install pyglow, space science models
   - cd ..
   - echo 'cloning pyglow'
   - git clone https://github.com/timduly4/pyglow.git >/dev/null
@@ -44,5 +44,5 @@ install:
   - "python setup.py install"
 # command to run tests
 script:
-  - nosetests -vs pysat/tests/test_pyglow.py
+  - nosetests -vs pysat/tests/test_instruments.py
 after_success:
