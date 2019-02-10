@@ -9,7 +9,7 @@ import pysat
 import pysat.instruments.pysat_testing
 
 
-def test_spherical_to_cartesian_single(self):
+def test_spherical_to_cartesian_single():
     """Test conversion from spherical to cartesian coordinates"""
 
     x, y, z = pysat.coords.spherical_to_cartesian(45.0, 30.0, 1.0)
@@ -18,7 +18,7 @@ def test_spherical_to_cartesian_single(self):
     assert abs(z - 0.5) < 1.0e-6
 
 
-def test_cartesian_to_spherical_single(self):
+def test_cartesian_to_spherical_single():
     """Test conversion from cartesian to spherical coordinates"""
 
     x = 0.6123724356957946
@@ -29,7 +29,7 @@ def test_cartesian_to_spherical_single(self):
     assert abs(r - 1.0) < 1.0e-6
 
 
-def test_spherical_to_cartesian_mult(self):
+def test_spherical_to_cartesian_mult():
     """Test array conversion from spherical to cartesian coordinates"""
 
     arr = np.ones(shape=(10,), dtype=float)
@@ -42,7 +42,7 @@ def test_spherical_to_cartesian_mult(self):
     assert abs(z - 0.5).max() < 1.0e-6
 
 
-def test_cartesian_to_spherical_mult(self):
+def test_cartesian_to_spherical_mult():
     """Test array conversion from cartesian to spherical coordinates"""
 
     arr = np.ones(shape=(10,), dtype=float)
