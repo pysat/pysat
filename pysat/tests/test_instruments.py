@@ -14,15 +14,17 @@ import pysat
 import pysat.instruments.pysat_testing
 
 # module in list below are excluded from download checks
-exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps', 'cosmic2013_gps',
-                'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv', 'sw_dst', 
-                'sw_kp', 'demeter_iap', 'sport_ivm']                
+exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
+                'cosmic2013_gps', 'demeter_iap', 'sport_ivm',
+                'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv',
+                'sw_dst']
 
-# exclude testing download functionality for specific module name, tag, sat_id 
-exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']}}
+# exclude testing download functionality for specific module name, tag, sat_id
+exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
+                'sw_kp': {'tag': [''], 'sat_id': ['']}}
 
 # dict, keyed by pysat instrument, with a list of usernames and passwords
-user_download_dict = {'supermag_magnetometer':['rstoneback', None]}
+user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
 
 if sys.version_info[0] >= 3:
     # TODO Remove when pyglow works in python 3
@@ -47,10 +49,9 @@ def init_func_external(self):
         if name not in exclude_list:
             temp.append(name)
     instrument_names = temp
-    
-    print ('The following instrument modules will be tested : ', 
-           instrument_names)
-    
+
+    print('The following instrument modules will be tested : ',
+          instrument_names)
 
     self.instrument_names = temp
     self.instruments = []
@@ -66,7 +67,7 @@ def init_func_external(self):
             module = importlib.import_module(''.join(('.', name)),
                                              package='pysat.instruments')
         except ImportError:
-            print ("Couldn't import instrument module")
+            print("Couldn't import instrument module")
             pass
         else:
             # try and grab basic information about the module so we
@@ -75,16 +76,16 @@ def init_func_external(self):
                 info = module.test_dates
             except AttributeError:
                 info = {}
-                info[''] = {'':pysat.datetime(2009,1,1)}
+                info[''] = {'': pysat.datetime(2009, 1, 1)}
                 module.test_dates = info
-            for sat_id in info.keys() :
+            for sat_id in info.keys():
                 for tag in info[sat_id].keys():
                     if name in exclude_tags:
                         if tag in exclude_tags[name]['tag'] and \
                                   sat_id in exclude_tags[name]['sat_id']:
                             # drop out of for loop
                             # we don't want to test download for this combo
-                            print (' '.join(['Excluding', name, tag, sat_id]))
+                            print(' '.join(['Excluding', name, tag, sat_id]))
                             break
                     try:
                         inst = pysat.Instrument(inst_module=module,
@@ -98,9 +99,11 @@ def init_func_external(self):
                         pass
     pysat.utils.set_data_dir(saved_path, store=False)
 
+
 init_inst = None
 init_mod = None
 init_names = None
+
 
 class TestInstrumentQualifier():
 
@@ -109,7 +112,7 @@ class TestInstrumentQualifier():
         global init_inst
         global init_mod
         global init_names
-        
+
         if init_inst is None:
             init_func_external(self)
             init_inst = self.instruments
@@ -155,7 +158,7 @@ class TestInstrumentQualifier():
     def test_modules_loadable(self):
 
         # ensure that all modules are at minimum importable
-        for name in pysat.instruments.__all__: 
+        for name in pysat.instruments.__all__:
             f = partial(self.check_module_importable, name)
             f.description = ' '.join(('Checking importability for module:',
                                       name))
@@ -170,8 +173,8 @@ class TestInstrumentQualifier():
                 # try and grab basic information about the module so we
                 # can iterate over all of the options
                 f = partial(self.check_module_info, module)
-                f.description = ' '.join(('Checking module has platform, name, '
-                                          + 'tags, sat_ids. Testing module:',
+                f.description = ' '.join(('Checking module has platform, name,'
+                                          + ' tags, sat_ids. Testing module:',
                                           name))
                 yield (f,)
 
@@ -179,8 +182,8 @@ class TestInstrumentQualifier():
                     info = module.test_dates
                 except AttributeError:
                     info = {}
-                    info[''] = {'':'failsafe'}
-                for sat_id in info.keys() :
+                    info[''] = {'': 'failsafe'}
+                for sat_id in info.keys():
                     for tag in info[sat_id].keys():
                         f = partial(self.check_module_loadable, module, tag,
                                     sat_id)
@@ -189,7 +192,6 @@ class TestInstrumentQualifier():
                                                   name, 'tag:', tag, 'sat id:',
                                                   sat_id))
                         yield (f, )
-
 
     def check_load_presence(self, inst):
         _ = inst.load
@@ -340,9 +342,9 @@ class TestInstrumentQualifier():
                 yield (f,)
             else:
                 raise RuntimeWarning(' '.join(('Download for', inst.platform,
-                                               inst.name, inst.tag, inst.sat_id,
+                                               inst.name, inst.tag,
+                                               inst.sat_id,
                                                'was not successful.')))
-
 
     # Optional support
 
