@@ -44,6 +44,7 @@ class TestSWKp():
                 self.combine[kk].download(start=self.combine['start'],
                                           stop=self.combine['stop'])
             except:
+                self.download = False
                 pass
 
             if len(self.combine[kk].files.files) == 0:
