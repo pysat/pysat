@@ -49,9 +49,6 @@ class TestSWKp():
             if len(self.combine[kk].files.files) == 0:
                 self.download = False
 
-        if (os.environ.get('TRAVIS') == 'true'):
-            self.download = False
-
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.testMeta, self.combine, self.download
