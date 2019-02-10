@@ -1,5 +1,7 @@
 """
-tests the pysat meta object and code
+tests the pysat meta object and code for instruments with ftp downloads.
+
+Intended to be run locally, excluded from Travis CI
 """
 import importlib
 import os
@@ -9,15 +11,19 @@ import pysat
 import pysat.instruments.pysat_testing
 import pysat.tests.test_instruments
 
-include_list = ['sw_dst', 'sw_kp']
+include_list = ['sw_dst']
+include_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
+                'sw_kp': {'tag': [''], 'sat_id': ['']}}
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {}
+
 
 def safe_data_dir():
     saved_path = pysat.data_dir
     if saved_path is '':
         saved_path = '.'
     return saved_path
+
 
 def init_func_external(self):
     """Iterate through and create all of the test Instruments needed.
@@ -44,9 +50,10 @@ def init_func_external(self):
     for name in instrument_names:
         try:
             print(' '.join(('FTP', name)))
-            module = importlib.import_module(''.join(('.', name)), package='pysat.instruments')
+            module = importlib.import_module(''.join(('.', name)),
+                                             package='pysat.instruments')
         except ImportError:
-            print ("Couldn't import instrument module")
+            print("Couldn't import instrument module")
             pass
         else:
             # try and grab basic information about the module so we
@@ -55,9 +62,9 @@ def init_func_external(self):
                 info = module.test_dates
             except AttributeError:
                 info = {}
-                info[''] = {'':pysat.datetime(2009,1,1)}
+                info[''] = {'': pysat.datetime(2009, 1, 1)}
                 module.test_dates = info
-            for sat_id in info.keys() :
+            for sat_id in info.keys():
                 for tag in info[sat_id].keys():
                     try:
                         inst = pysat.Instrument(inst_module=module,
@@ -71,38 +78,39 @@ def init_func_external(self):
                         pass
     pysat.utils.set_data_dir(saved_path, store=False)
 
+
 init_inst = None
 init_mod = None
 init_names = None
 
 # this environment variable is set by the TRAVIS CI folks
-# print ("FTP Download check environment variable output ", os.environ.get('Travis'),
+# print ("FTP Download check environment variable output ",
+#        os.environ.get('Travis'),
 #        os.environ.get('TRAVIS'), os.environ.get('CI'))
 if not (os.environ.get('TRAVIS') == 'true'):
     class TestFTPInstrumentQualifier(pysat.tests.test_instruments.TestInstrumentQualifier):
-    
+
         def __init__(self):
             """Iterate through and create all of the test Instruments needed"""
             global init_inst
             global init_mod
             global init_names
-            
+
             if init_inst is None:
                 init_func_external(self)
                 init_inst = self.instruments
                 init_mod = self.instrument_modules
                 init_names = self.instrument_names
-    
+
             else:
                 self.instruments = init_inst
                 self.instrument_modules = init_mod
                 self.instrument_names = init_names
-    
+
         def setup(self):
             """Runs before every method to create a clean testing setup."""
             pass
-    
+
         def teardown(self):
             """Runs after every method to clean up previous testing."""
             pass
-
