@@ -86,7 +86,7 @@ def init(self):
     return
 
 
-def list_remote_files(tag, sat_id, data_path=None, format_str=None):
+def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Lists remote files available for SuperMAG.
 
     Note
@@ -99,8 +99,10 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+    tag : (string)
+        Denotes type of file to load.  Accepted types are 'indices', 'all',
+        'stations', and '' (for just magnetometer measurements).
+        (default='')
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
@@ -153,7 +155,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : (string)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements). (default='')
     sat_id : (string or NoneType)
@@ -225,7 +227,7 @@ def load(fnames, tag='', sat_id=None):
     -----------
     fnames : (list)
         List of filenames
-    tag : (str or NoneType)
+    tag : (str)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements). (default='')
     sat_id : (str or NoneType)
@@ -893,7 +895,7 @@ def append_ascii_data(file_strings, tag):
         Lists or arrays of strings, where each string contains one file of data
     tag : string
         String denoting the type of file to load, accepted values are 'indices',
-        'all', 'stations', and None (for only magnetometer data)
+        'all', 'stations', and '' (for only magnetometer data)
 
     Returns
     -------
