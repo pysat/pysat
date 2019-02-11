@@ -86,7 +86,7 @@ def init(self):
     return
 
 
-def list_remote_files(tag, sat_id, data_path=None, format_str=None):
+def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Lists remote files available for SuperMAG.
 
     Note
