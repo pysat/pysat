@@ -913,8 +913,7 @@ def append_ascii_data(file_strings, tag):
     idates = list() # Indices for the date lines
     date_list = list() # List of dates
     num_stations = list() # Number of stations for each date line
-    ind_num = 2 if tag in ['all', 'indices', ''] else 0
-    # ind_num = 2 if tag == '' else ind_num
+    ind_num = 2 if tag in ['all', 'indices'] else 0
 
     # Find the index information for the data
     for i,line in enumerate(out_lines):
