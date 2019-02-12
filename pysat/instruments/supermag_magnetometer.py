@@ -190,7 +190,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
         else:
             min_fmt = '_'.join([file_base, '{year:4d}{month:02d}{day:02d}.???'])
             doff = pds.DateOffset(days=1)
-        print(min_fmt)
+
         files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
 
         # station files are once per year but we need to
