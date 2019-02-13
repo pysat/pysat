@@ -10,4 +10,4 @@ for the pysat data directory structure.
 """
 
 from . import coords, misc, stats, time
-from .utils import set_data_dir
+from ._core import set_data_dir
