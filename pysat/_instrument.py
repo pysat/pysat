@@ -1229,32 +1229,32 @@ class Instrument(object):
 
     def remote_file_list(self):
         """List remote files for chosen instrument.
-        
+
         Returns
         -------
         Series
             pandas Series of filenames indexed by date and time
-        
+
         """
-        
+
         return self._list_remote_rtn(self.tag, self.sat_id)
 
     def remote_date_range(self):
         """Returns fist and last date for remote data.
-        
+
         Returns
         -------
         List
             First and last datetimes obtained from remote_file_list
-        
+
         """
-        
+
         files = self.remote_file_list()
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, user=None, password=None, **kwargs):
         """Grabs a list of remote files, compares to local, then downloads new files.
-        
+
         Parameters
         ----------
         user : string
@@ -1263,36 +1263,36 @@ class Instrument(object):
             password, if required by instrument data archive
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments
-        
+
         Note
         ----
         Data will be downloaded to pysat_data_dir/patform/name/tag
-        
+
         If Instrument bounds are set to defaults they are updated
         after files are downloaded.
-        
+
         """
-        
+
         # get list of remote files
         remote_files = self.remote_file_list()
         if remote_files.empty:
             print('No remote files found. Unable to download latest data.')
             return
-            
+
         # get current list of local files
         self.files.refresh()
         local_files = self.files.files
         # compare local and remote files
-        
+
         # first look for dates that are in remote but not in local
         new_dates = []
         for date in remote_files.index:
             if date not in local_files:
-                new_dates.append(date)        
-                
+                new_dates.append(date)
+
         # now compare filenames between common dates as it may
         # be a new version or revision
-        # this will have a problem with filenames that are 
+        # this will have a problem with filenames that are
         # faking daily data from monthly
         for date in local_files.index:
             if date in remote_files.index:
@@ -1301,7 +1301,7 @@ class Instrument(object):
         print ('Found ', len(new_dates), ' files that are new or updated.')
         # download date for dates in new_dates (also includes new names)
         self.download(user=user, password=password, date_array=new_dates, **kwargs)
-        
+
 
     def download(self, start=None, stop=None, freq='D', user=None, password=None,
                  date_array=None, **kwargs):
@@ -1343,7 +1343,7 @@ class Instrument(object):
                 raise
 
         if (start is None) or (stop is None) and (date_array is None):
-            # defaults for downloads are set here rather than 
+            # defaults for downloads are set here rather than
             # in the method signature since method defaults are
             # only set once! If an Instrument object persists
             # longer than a day then the download defaults would
@@ -1354,14 +1354,14 @@ class Instrument(object):
             start = self.yesterday()
             stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
-        
+
         if date_array is None:
             # create range of dates to download data for
             # make sure dates are whole days
             start = self._filter_datetime_input(start)
             stop = self._filter_datetime_input(stop)
-            date_array = utils.season_date_range(start, stop, freq=freq)
-            
+            date_array = utils.time.season_date_range(start, stop, freq=freq)
+
         if user is None:
             self._download_rtn(date_array,
                                tag=self.tag,
@@ -1448,23 +1448,24 @@ class Instrument(object):
             self._iter_type = 'date'
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
-                self._iter_list = utils.season_date_range(self._iter_start,
-                                                          self._iter_stop,
-                                                          freq=step)
+                self._iter_list = utils.time.season_date_range(self._iter_start,
+                                                               self._iter_stop,
+                                                               freq=step)
 
         elif((hasattr(start, '__iter__') and not isinstance(start, str)) and
              (hasattr(end, '__iter__') and not isinstance(end, str))):
             base = type(start[0])
             for s, t in zip(start, end):
                 if (type(s) != type(t)) or (type(s) != base):
-                    raise ValueError('Start and end items must all be of the ' +
-                                     'same type')
+                    raise ValueError('Start and end items must all be of the '
+                                     + 'same type')
             if isinstance(start[0], str):
                 self._iter_type = 'file'
                 self._iter_list = self.files.get_file_array(start, end)
             elif isinstance(start[0], pds.datetime):
                 self._iter_type = 'date'
-                self._iter_list = utils.season_date_range(start, end, freq=step)
+                self._iter_list = utils.time.season_date_range(start, end,
+                                                               freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1496,7 +1497,8 @@ class Instrument(object):
                 end = self.files.stop_date
             self._iter_start = [start]
             self._iter_stop = [end]
-            self._iter_list = utils.season_date_range(start, end, freq=step)
+            self._iter_list = utils.time.season_date_range(start, end,
+                                                           freq=step)
             self._iter_type = 'date'
         else:
             raise ValueError('Provided an invalid combination of bounds. ' +
