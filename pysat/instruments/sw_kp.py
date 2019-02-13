@@ -72,8 +72,8 @@ sat_ids = {'':['']}
 now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
-test_dates = {'':{'':pysat.datetime(2009,1,1),
-                  'forecast':today+pds.DateOffset(days=1)}}
+test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                  'forecast': today + pds.DateOffset(days=1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -102,8 +102,8 @@ def load(fnames, tag=None, sat_id=None):
     
     """
     from pysat.utils import parse_date
-    
 
+    meta = pysat.Meta()
     if tag == '':
         # Kp data stored monthly, need to return data daily
         # the daily date is attached to filename
@@ -148,20 +148,26 @@ def load(fnames, tag=None, sat_id=None):
         flag = np.array([x[1] for x in s])
     
         ind, = np.where(flag == '+')
-        first[ind] += 1./3.
+        first[ind] += 1.0 / 3.0
         ind, = np.where(flag == '-')
-        first[ind] -= 1./3.
+        first[ind] -= 1.0 / 3.0
         
-        result = pds.DataFrame(first, columns=['kp'], index=s.index)
+        result = pds.DataFrame(first, columns=['Kp'], index=s.index)
+        fill_val = np.nan
     elif tag == 'forecast':
         # load forecast data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-        
+        fill_val = -1
     elif tag == 'recent':
         # load recent Kp data
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
-           
-    return result, pysat.Meta()
+        fill_val = -1
+
+    # Initalize the meta data
+    for kk in result.keys():
+        initialize_kp_metadata(meta, kk, fill_val)
+
+    return result, meta
     
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -215,8 +221,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
-                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
-                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+                pds_off = pds.DateOffset(days=1)
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
             return files           
         elif tag == 'recent':
             format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
@@ -224,16 +231,16 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
-                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
-                files.ix[files.index[-1]+pds.DateOffset(days=1)] = files.values[-1]
+                pds_off = pds.DateOffset(days=1)
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.ix[files.index[-1] + pds_off] = files.values[-1]
             return files
 
         else:
             raise ValueError('Unrecognized tag name for Space Weather Index Kp')
     else:
         raise ValueError ('A data_path must be passed to the loading routine ' +
-                          'for Kp')  
-
+                          'for Kp')
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
@@ -265,7 +272,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     Only able to download current forecast data, not archived forecasts.
 
     """
-
 
     # download standard Kp data
     if tag == '':    
@@ -413,7 +419,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         kp_inst.load(date=sat.date, verifyPad=True)
         kpData = kp_inst
     elif kpData is None:
-        kp = pysat.Instrument('sw', 'kp', pad=pds.DateOffset(days=1))
+        kp = pysat.Instrument('sw', 'Kp', pad=pds.DateOffset(days=1))
         kp.load(date=sat.date, verifyPad=True)
         kpData = kp
         
@@ -428,7 +434,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     # date of satellite data
     date = sat.date
     selData = kpData[date-pds.DateOffset(days=1):date+pds.DateOffset(days=1)]
-    ind, = np.where(selData['kp'] >= maxKp)
+    ind, = np.where(selData['Kp'] >= maxKp)
     for lind in ind:
         sind = selData.index[lind]
         eind = sind + pds.DateOffset(hours=filterTime)
@@ -436,5 +442,90 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         sat.data = sat.data.dropna(axis=0, how='all')
 
     return
+
+def initialize_kp_metadata(meta, data_key, fill_val=-1):
+    """ Initialize the Kp meta data using our knowledge of the index
     
-    
+    Parameters
+    ----------
+    meta : (pysat._meta.Meta)
+        Pysat Metadata
+    data_key : (str)
+        String denoting the data key
+    fill_val : (int or float)
+        File-specific fill value (default=-1)
+
+    Returns
+    -------
+    Void
+
+    Updates metadata
+
+    """
+
+    data_label = data_key.replace("_", " ")
+    format_label = data_label[0].upper() + data_label[1:]
+
+    meta[data_key] = {meta.units_label: '', meta.name_label: data_key,
+                      meta.desc_label: "Planetary K-index",
+                      meta.plot_label: format_label,
+                      meta.axis_label: format_label,
+                      meta.scale_label: 'linear', meta.min_label: 0,
+                      meta.max_label: 9, meta.fill_label: fill_val}
+
+    return
+
+def convert_3hr_kp_to_ap(kp_inst):
+    """ Calculate 3 hour ap from 3 hour Kp index
+
+    Parameters
+    ----------
+    kp_inst : (pysat.Instrument)
+        Pysat instrument containing Kp data
+
+    Returns
+    -------
+    Void : Updates kp_inst with '3hr_ap'
+
+    Notes
+    -----
+    Conversion between ap and Kp indices is described at:
+    https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html
+
+    """
+
+    # Kp are keys, where n.3 = n+ and n.6 = (n+1)-. E.g., 0.6 = 1-
+    kp_to_ap = {0: 0, 0.3: 2, 0.6: 4, 1: 4, 1.3: 5, 1.6: 6, 2: 7, 2.3: 9,
+                2.6: 12, 3: 15, 3.3: 18, 3.6: 22, 4: 27, 4.3: 32, 4.6: 39,
+                5: 48, 5.3: 56, 5.6: 67, 6: 80, 6.3: 94, 6.6: 111, 7: 132,
+                7.3: 154, 7.6: 179, 8: 207, 8.3: 236, 8.6: 300, 9: 400}
+
+    ap = lambda kk: kp_to_ap[np.floor(kk*10.0) / 10.0] \
+        if np.isfinite(kk) else np.nan
+
+    # Test the input
+    if 'Kp' not in kp_inst.data.columns:
+        raise ValueError('unable to locate Kp data')
+
+    # Convert from Kp to ap
+    fill_val = kp_inst.meta['Kp'][kp_inst.meta.fill_label]
+    ap_data = np.array([ap(kp) if kp != fill_val else fill_val
+                        for kp in kp_inst['Kp']])
+
+    # Append the output to the pysat instrument
+    kp_inst['3hr_ap'] = pds.Series(ap_data, index=kp_inst.index)
+
+    # Add metadata
+    meta_dict = {kp_inst.meta.units_label: '',
+                 kp_inst.meta.name_label: 'ap',
+                 kp_inst.meta.desc_label: "3-hour ap (equivalent range) index",
+                 kp_inst.meta.plot_label: "ap",
+                 kp_inst.meta.axis_label: "ap",
+                 kp_inst.meta.scale_label: 'linear',
+                 kp_inst.meta.min_label: 0,
+                 kp_inst.meta.max_label: 400,
+                 kp_inst.meta.fill_label: fill_val,
+                 kp_inst.meta.notes_label: 'ap converted from Kp as described '
+                 'at: https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'}
+
+    kp_inst.meta.__setitem__('3hr_ap', meta_dict)
