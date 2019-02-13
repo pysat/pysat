@@ -23,20 +23,6 @@ else:
 
 
 
-#-------------------
-# basic yrdoy tests
-def test_getyrdoy_1():
-    """Test the date to year, day of year code functionality"""
-    date = pds.datetime(2009, 1, 1)
-    yr, doy = pysat.utils.getyrdoy(date)
-    assert ((yr == 2009) & (doy == 1))
-
-def test_getyrdoy_leap_year():
-    """Test the date to year, day of year code functionality (leap_year)"""
-    date = pds.datetime(2008,12,31)
-    yr, doy = pysat.utils.getyrdoy(date)
-    assert ((yr == 2008) & (doy == 366))
-
 #----------------------------------
 # test netCDF export file support
 

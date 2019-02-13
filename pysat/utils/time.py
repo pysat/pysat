@@ -8,7 +8,8 @@ seasons, and calculation of solar local time
 """
 
 import numpy as np
-
+import pandas as pds
+from pysat import DataFrame, Series, datetime
 
 def getyrdoy(date):
     """Return a tuple of year, day of year for a supplied datetime object.
