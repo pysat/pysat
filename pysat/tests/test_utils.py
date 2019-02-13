@@ -68,10 +68,6 @@ class TestBasics():
         self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
         self.test_nan = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87, np.nan]
         self.circ_kwargs = {"high":360.0, "low":0.0}
-        self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
-                          "radians", "h", "hr", "hrs", "hours"]
-        self.dist_units = ["m", "km", "cm"]
-        self.vel_units = ["m/s", "cm/s", "km/s"]
 
         # Add longitude to the test instrument
         ones = np.ones(shape=len(self.test_angles))
@@ -91,7 +87,6 @@ class TestBasics():
         except:
             pass
         del self.testInst, self.test_angles, self.test_nan, self.circ_kwargs
-        del self.deg_units, self.dist_units, self.vel_units
 
     def test_basic_writing_and_reading_netcdf4_default_format(self):
         # create a bunch of files by year and doy
@@ -425,58 +420,3 @@ class TestBasics():
 
         assert_raises(ValueError, pysat.utils.update_longitude,
                       self.testInst)
-
-    def test_scale_units_same(self):
-        """ Test scale_units when both units are the same """
-
-        scale = pysat.utils.scale_units("happy", "happy")
-
-        assert scale == 1.0
-
-    def test_scale_units_angles(self):
-        """Test scale_units for angles """
-
-        for out_unit in self.deg_units:
-            scale = pysat.utils.scale_units(out_unit, "deg")
-
-            if out_unit.find("deg") == 0:
-                assert scale == 1.0
-            elif out_unit.find("rad") == 0:
-                assert scale == np.pi / 180.0
-            else:
-                assert scale == 1.0 / 15.0
-
-    def test_scale_units_dist(self):
-        """Test scale_units for distances """
-
-        for out_unit in self.dist_units:
-            scale = pysat.utils.scale_units(out_unit, "m")
-
-            if out_unit == "m":
-                assert scale == 1.0
-            elif out_unit.find("km") == 0:
-                assert scale == 0.001
-            else:
-                assert scale == 100.0
-
-    def test_scale_units_vel(self):
-        """Test scale_units for velocities """
-
-        for out_unit in self.vel_units:
-            scale = pysat.utils.scale_units(out_unit, "m/s")
-
-            if out_unit == "m/s":
-                assert scale == 1.0
-            elif out_unit.find("km/s") == 0:
-                assert scale == 0.001
-            else:
-                assert scale == 100.0
-
-    def test_scale_units_bad(self):
-        """Test scale_units for mismatched input"""
-
-        assert_raises(ValueError, pysat.utils.scale_units, "happy", "m")
-        assert_raises(ValueError, pysat.utils.scale_units, "m", "happy")
-        assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
-        assert_raises(ValueError, pysat.utils.scale_units, "m", "deg")
-        assert_raises(ValueError, pysat.utils.scale_units, "h", "km/s")

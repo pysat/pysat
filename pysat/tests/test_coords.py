@@ -1,5 +1,5 @@
 """
-tests the pysat coords area
+tests the pysat utils.coords area
 """
 import os
 import numpy as np
@@ -14,8 +14,70 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
 
+        self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
+                          "radians", "h", "hr", "hrs", "hours"]
+        self.dist_units = ["m", "km", "cm"]
+        self.vel_units = ["m/s", "cm/s", "km/s"]
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+
+        del self.deg_units, self.dist_units, self.vel_units
+
+    def test_scale_units_same(self):
+        """ Test scale_units when both units are the same """
+
+        scale = coords.scale_units("happy", "happy")
+
+        assert scale == 1.0
+
+    def test_scale_units_angles(self):
+        """Test scale_units for angles """
+
+        for out_unit in self.deg_units:
+            scale = coords.scale_units(out_unit, "deg")
+
+            if out_unit.find("deg") == 0:
+                assert scale == 1.0
+            elif out_unit.find("rad") == 0:
+                assert scale == np.pi / 180.0
+            else:
+                assert scale == 1.0 / 15.0
+
+    def test_scale_units_dist(self):
+        """Test scale_units for distances """
+
+        for out_unit in self.dist_units:
+            scale = coords.scale_units(out_unit, "m")
+
+            if out_unit == "m":
+                assert scale == 1.0
+            elif out_unit.find("km") == 0:
+                assert scale == 0.001
+            else:
+                assert scale == 100.0
+
+    def test_scale_units_vel(self):
+        """Test scale_units for velocities """
+
+        for out_unit in self.vel_units:
+            scale = coords.scale_units(out_unit, "m/s")
+
+            if out_unit == "m/s":
+                assert scale == 1.0
+            elif out_unit.find("km/s") == 0:
+                assert scale == 0.001
+            else:
+                assert scale == 100.0
+
+    def test_scale_units_bad(self):
+        """Test scale_units for mismatched input"""
+
+        assert_raises(ValueError, coords.scale_units, "happy", "m")
+        assert_raises(ValueError, coords.scale_units, "m", "happy")
+        assert_raises(ValueError, coords.scale_units, "m", "m/s")
+        assert_raises(ValueError, coords.scale_units, "m", "deg")
+        assert_raises(ValueError, coords.scale_units, "h", "km/s")
 
     def test_geodetic_to_geocentric_single(self):
         """Test conversion from geodetic to geocentric coordinates"""
