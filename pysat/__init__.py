@@ -71,7 +71,7 @@ if data_dir == '':
           ' to top-level directory that will/does contain science data.')))
 
 from pandas import Panel, DataFrame, Series, datetime
-from . import misc, model_utils, utils
+from . import model_utils, utils
 from ._constellation import Constellation
 from ._instrument import Instrument
 from ._meta import Meta
