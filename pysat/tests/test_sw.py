@@ -8,15 +8,16 @@ import pandas as pds
 import pysat
 from pysat.instruments import sw_kp, sw_f107, sw_methods
 
+
 class TestSWKp():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         # Load a test instrument
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0)},
-                                             index=[pysat.datetime(2009, 1, 1)
-                                                    + pds.DateOffset(hours=3*i)
-                                                    for i in range(12)])
+                                           index=[pysat.datetime(2009, 1, 1)
+                                                  + pds.DateOffset(hours=3*i)
+                                                  for i in range(12)])
         self.testInst.meta = pysat.Meta()
         self.testInst.meta.__setitem__('Kp', {self.testInst.meta.fill_label:
                                               np.nan})
@@ -43,6 +44,7 @@ class TestSWKp():
                 self.combine[kk].download(start=self.combine['start'],
                                           stop=self.combine['stop'])
             except:
+                self.download = False
                 pass
 
             if len(self.combine[kk].files.files) == 0:
@@ -85,7 +87,7 @@ class TestSWKp():
         if np.isnan(self.testInst['Kp'][0]):
             assert np.isnan(self.testInst['3hr_ap'][0])
             assert np.isnan( \
-                    self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label])
+                self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label])
         else:
             assert self.testInst['Kp'][0] == self.testInst['3hr_ap'][0]
             assert(self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label]
@@ -151,7 +153,7 @@ class TestSWKp():
 
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
-        
+
         assert_raises(ValueError, sw_methods.combine_kp)
 
     def test_combine_kp_one(self):
@@ -220,7 +222,8 @@ class TestSWKp():
         # Fill value is defined by combine
         assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
                self.combine['fill_val'])
-        assert len(kp_inst['Kp'][kp_inst['Kp']==self.combine['fill_val']]) == 0
+        assert len(kp_inst['Kp'][kp_inst['Kp'] ==
+                   self.combine['fill_val']]) == 0
 
         del kp_inst
 
@@ -294,9 +297,9 @@ class TestSWF107():
         # Load a test instrument
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
-                                             index=[pysat.datetime(2009, 1, 1)
-                                                    + pds.DateOffset(days=i)
-                                                    for i in range(160)])
+                                           index=[pysat.datetime(2009, 1, 1)
+                                                  + pds.DateOffset(days=i)
+                                                  for i in range(160)])
 
         # Set combination testing input
         self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
@@ -329,7 +332,7 @@ class TestSWF107():
 
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
-        
+
         assert_raises(TypeError, sw_methods.combine_f107)
 
     def test_combine_f107_no_time(self):
@@ -402,9 +405,9 @@ class TestSWF107():
     def test_calc_f107a_high_rate(self):
         """ Test the calc_f107a routine with sub-daily data"""
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 3840)},
-                                             index=[pysat.datetime(2009, 1, 1)
-                                                    + pds.DateOffset(hours=i)
-                                                    for i in range(3840)])
+                                           index=[pysat.datetime(2009, 1, 1)
+                                                  + pds.DateOffset(hours=i)
+                                                  for i in range(3840)])
         sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
 
         # Assert that new data and metadata exist
@@ -423,9 +426,9 @@ class TestSWF107():
         """ Test the calc_f107a routine with some daily data missing"""
 
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
-                                             index=[pysat.datetime(2009, 1, 1)
-                                                    + pds.DateOffset(days=2*i+1)
-                                                    for i in range(160)])
+                                           index=[pysat.datetime(2009, 1, 1)
+                                                  + pds.DateOffset(days=2*i+1)
+                                                  for i in range(160)])
         sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
 
         # Assert that new data and metadata exist
@@ -450,9 +453,9 @@ class TestSWAp():
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'3hr_ap': [0, 2, 3, 4, 5, 6, 7, 9,
                                                        12, 15]},
-                                             index=[pysat.datetime(2009, 1, 1)
-                                                    + pds.DateOffset(hours=3*i)
-                                                    for i in range(10)])
+                                           index=[pysat.datetime(2009, 1, 1)
+                                                  + pds.DateOffset(hours=3*i)
+                                                  for i in range(10)])
         self.testInst.meta = pysat.Meta()
         self.meta_dict = {self.testInst.meta.units_label: '',
                           self.testInst.meta.name_label: 'ap',
@@ -466,7 +469,6 @@ class TestSWAp():
                           self.testInst.meta.fill_label: np.nan,
                           self.testInst.meta.notes_label: 'test ap'}
         self.testInst.meta.__setitem__('3hr_ap', self.meta_dict)
-
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -489,7 +491,8 @@ class TestSWAp():
     def test_calc_daily_Ap_bad_3hr(self):
         """ Test daily Ap calculation with bad input key"""
 
-        assert_raises(ValueError, sw_methods.calc_daily_Ap, self.testInst, "no")
+        assert_raises(ValueError, sw_methods.calc_daily_Ap, self.testInst,
+                      "no")
 
     def test_calc_daily_Ap_bad_daily(self):
         """ Test daily Ap calculation with bad output key"""
