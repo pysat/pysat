@@ -80,6 +80,7 @@ class TestBasics():
         self.testInst = pysat.Instrument(
                 inst_module=pysat.instruments.pysat_testing,
                 clean_level='clean')
+        self.testInst.pandas_format = True
         # create testing directory
         prep_dir(self.testInst)
 
