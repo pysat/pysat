@@ -483,7 +483,7 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
     # set up output arrays
     medianAns = [[None for i in xarr] for k in zarr]
     countAns = [[None for i in xarr] for k in zarr]
-    devAns = [[None for i in xarr] or k in zarr]    
+    devAns = [[None for i in xarr] for k in zarr]    
 
     # all of the loading and storing data is done
     # determine what kind of data is stored
