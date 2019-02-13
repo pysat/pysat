@@ -52,6 +52,9 @@ def remove_files(inst):
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+
+        self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
+
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -98,7 +101,7 @@ class TestBasics():
         self.testInst.load(2009,1)
         self.testInst.to_netcdf4(outfile)
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        loaded_inst, meta = pysat.utils.misc.load_netcdf4(outfile)
         self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
                                                axis=1)
@@ -121,7 +124,7 @@ class TestBasics():
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile, zlib=True)
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        loaded_inst, meta = pysat.utils.misc.load_netcdf4(outfile)
         self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
 
@@ -143,7 +146,7 @@ class TestBasics():
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile, epoch_name='Santa')
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
+        loaded_inst, meta = pysat.utils.misc.load_netcdf4(outfile,
                                                      epoch_name='Santa')
         self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
@@ -165,7 +168,7 @@ class TestBasics():
         outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
         test_inst.load(2009,1)
         test_inst.to_netcdf4(outfile)
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        loaded_inst, meta = pysat.utils.misc.load_netcdf4(outfile)
         test_inst.data = test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
                                                axis=1)
@@ -218,7 +221,7 @@ class TestBasics():
         outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
         test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile, zlib=True)
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        loaded_inst, meta = pysat.utils.misc.load_netcdf4(outfile)
         test_inst.data = test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
                                                axis=1)
@@ -267,7 +270,7 @@ class TestBasics():
     #     for format in ['NETCDF3_CLASSIC','NETCDF3_64BIT', 'NETCDF4_CLASSIC',
     #                    'NETCDF4']:
     #         self.testInst.to_netcdf4(outfile, file_format=format)
-    #         loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
+    #         loaded_inst, meta = pysat.utils.misc.load_netcdf4(outfile,
     #                                                      file_format=format)
     #         self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
     #         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)

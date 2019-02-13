@@ -993,7 +993,7 @@ class Instrument(object):
         self.date = date
         self._fid = fid
         if date is not None:
-            year, doy = utils.getyrdoy(date)
+            year, doy = utils.time.getyrdoy(date)
             self.yr = year
             self.doy = doy
             self._load_by_date = True
@@ -1204,7 +1204,7 @@ class Instrument(object):
             else:
                 temp = self.index[0]
             self.date = pds.datetime(temp.year, temp.month, temp.day)
-            self.yr, self.doy = utils.getyrdoy(self.date)
+            self.yr, self.doy = utils.time.getyrdoy(self.date)
 
         if not self.empty:
             self._default_rtn(self)
