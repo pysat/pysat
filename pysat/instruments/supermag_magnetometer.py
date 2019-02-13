@@ -72,6 +72,12 @@ def init(self):
 
     """
 
+    # if the tag is 'indices', update data_path to reflect this
+    # both 'indices' and 'all' are stored under 'all'
+    if self.tag == "indices":
+        psplit = path.split(self.files.data_path[:-1])
+        self.files.data_path = path.join(psplit[0], "all", "")
+
     # reset the list_remote_files routine to include the data path
     # now conveniently included with instrument object
     self._list_remote_rtn = functools.partial(list_remote_files,
@@ -80,7 +86,7 @@ def init(self):
     return
 
 
-def list_remote_files(tag, sat_id, data_path=None, format_str=None):
+def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Lists remote files available for SuperMAG.
 
     Note
@@ -93,8 +99,10 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+    tag : (string)
+        Denotes type of file to load.  Accepted types are 'indices', 'all',
+        'stations', and '' (for just magnetometer measurements).
+        (default='')
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
@@ -147,7 +155,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : (string)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements). (default='')
     sat_id : (string or NoneType)
@@ -182,6 +190,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
         else:
             min_fmt = '_'.join([file_base, '{year:4d}{month:02d}{day:02d}.???'])
             doff = pds.DateOffset(days=1)
+
         files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
 
         # station files are once per year but we need to
@@ -207,7 +216,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
         return files
     elif format_str is None:
         estr = 'A directory must be passed to the loading routine for SuperMAG'
-        raise ValueError (estr)
+        raise ValueError(estr)
     else:
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
@@ -219,7 +228,7 @@ def load(fnames, tag='', sat_id=None):
     -----------
     fnames : (list)
         List of filenames
-    tag : (str or NoneType)
+    tag : (str)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements). (default='')
     sat_id : (str or NoneType)
@@ -687,6 +696,9 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     # Set the tag information
     if tag == "indices":
         tag = "all"
+        # modify path as 'indices' is stored under 'all'
+        psplit = path.split(data_path[:-1])
+        data_path = path.join(psplit[0], "all", "")
 
     if tag != "stations":
         remotefmt += "&{interval}&{stations}&{delta}&{baseline}&{options}"
@@ -703,7 +715,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     remoteaccess['filefmt'] = 'fmt={:s}'.format(file_fmt)
 
     # If indices are requested, add them now.
-    if not tag in [None, 'stations']:
+    if not tag in ['', 'stations']:
         remoteaccess['options'] += "+envelope"
 
     # Add other download options (for non-station files)
@@ -733,7 +745,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
         # Set the time information and format
         remoteaccess['interval'] = "interval=23:59"
         sfmt = "%Y-%m-%dT00:00:00.000"
-        tag_str = "_" if tag is None else "_all_"
+        tag_str = "_" if tag is "" else "_all_"
         ffmt = "{:s}_{:s}{:s}%Y%m%d.{:s}".format(platform, name, tag_str,
                                                  "txt" if file_fmt == "ascii"
                                                  else file_fmt)
@@ -884,7 +896,7 @@ def append_ascii_data(file_strings, tag):
         Lists or arrays of strings, where each string contains one file of data
     tag : string
         String denoting the type of file to load, accepted values are 'indices',
-        'all', 'stations', and None (for only magnetometer data)
+        'all', 'stations', and '' (for only magnetometer data)
 
     Returns
     -------
@@ -901,8 +913,7 @@ def append_ascii_data(file_strings, tag):
     idates = list() # Indices for the date lines
     date_list = list() # List of dates
     num_stations = list() # Number of stations for each date line
-    ind_num = 2 if tag in ['all', 'indices', ''] else 0
-    # ind_num = 2 if tag == '' else ind_num
+    ind_num = 2 if tag in ['all', 'indices'] else 0
 
     # Find the index information for the data
     for i,line in enumerate(out_lines):
