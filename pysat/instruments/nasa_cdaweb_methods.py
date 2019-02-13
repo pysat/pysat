@@ -86,7 +86,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         return out
     else:
         estr = 'A directory must be passed to the loading routine for <Instrument Code>'
-        raise ValueError (estr)
+        raise ValueError(estr)
 
 def load(fnames, tag=None, sat_id=None,
          fake_daily_files_from_monthly=False,

@@ -216,7 +216,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
         return files
     elif format_str is None:
         estr = 'A directory must be passed to the loading routine for SuperMAG'
-        raise ValueError (estr)
+        raise ValueError(estr)
     else:
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
