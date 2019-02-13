@@ -125,7 +125,7 @@ def load(fnames, tag=None, sat_id=None):
             idx, = np.where((temp.index >= date) &
                             (temp.index < date + pds.DateOffset(days=1)))
             temp = temp.iloc[idx,:]
-            data = pds.concat([data,temp], axis=0)
+            data = pds.concat([data,temp], sort=True, axis=0)
 
         # drop last column as it has data I don't care about
         data = data.iloc[:,0:-1]

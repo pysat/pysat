@@ -410,7 +410,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     out = []
     for item in running_store:
         out.append(pds.DataFrame.from_records(item, index=epoch_name))
-    out = pds.concat(out, axis=0)
+    out = pds.concat(out, sort=True, axis=0)
     return out, mdata
 
 
@@ -522,7 +522,7 @@ def calc_freq(index):
     else:
         # There are sub-seconds.  Go straigt to nanosec for best resoution
         freq = "{:.0f}N".format(freq_sec * 1.0e9)
-    
+
     return freq
 
 
@@ -843,7 +843,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                                      inst.meta.min_label: 0.0,
                                      inst.meta.max_label: 24.0,
                                      inst.meta.fill_label:np.nan})
-        
+
     return
 
 
@@ -1093,7 +1093,7 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
         # Spherical coordinate system uses zenith angle (degrees from the
         # z-axis) and not the elevation angle (degrees from the x-y plane)
         zen_in = np.radians(90.0 - el_in)
-        
+
         # Spherical to Cartesian
         x_out = r_in * np.sin(zen_in) * np.cos(np.radians(az_in))
         y_out = r_in * np.sin(zen_in) * np.sin(np.radians(az_in))

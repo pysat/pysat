@@ -113,7 +113,7 @@ def load(fnames, tag=None, sat_id=None):
             idx, = np.where((new_data.index >= new_date) & (new_data.index < new_date+pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx,:]
             # add specific day to all data loaded for filenames
-            data = pds.concat([data, new_data], axis=0)
+            data = pds.concat([data, new_data], sort=True, axis=0)
 
     return data, pysat.Meta()
 
