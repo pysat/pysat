@@ -20,9 +20,9 @@ flatten_twod : bool (True)
     columns. Name mangling is used to group data, first column
     is 'name', last column is 'name_end'. In between numbers are
     appended 'name_1', 'name_2', etc. All data for a given 2D array
-    may be accessed via, data.ix[:,'item':'item_end']
+    may be accessed via, data.loc[:,'item':'item_end']
     If False, then 2D data is stored as a series of DataFrames,
-    indexed by Epoch. data.ix[0, 'item']
+    indexed by Epoch. data.loc[0, 'item']
     !!!!!!! Rewrite examples using loc, iloc !!!!!!!!!
 
 Note
@@ -66,7 +66,7 @@ basic_tag = {'dir': '/pub/data/timed/see/data/level3a_cdf',
 supported_tags = {'':{'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
 # support listing files currently on CDAWeb
-list_remote_files = functools.partial(cdw.list_remote_files, 
+list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 # support load routine
