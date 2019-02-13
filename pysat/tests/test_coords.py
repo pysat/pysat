@@ -12,9 +12,66 @@ import pysat.instruments.pysat_testing
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        from pysat.utils import coords
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+
+    def test_geodetic_to_geocentric_single(self):
+        """Test conversion from geodetic to geocentric coordinates"""
+
+        lat0 = 45.0
+        lon0 = 9.0
+
+        latx, lonx, radx = coords.geodetic_to_geocentric(lat0,
+                                                         lon_in=lon0)
+
+        assert (abs(latx - 44.807576784018046) < 1.0e-6)
+        assert (abs(lonx - lon0) < 1.0e-6)
+        assert (abs(radx - 6367.489543863465) < 1.0e-6)
+
+    def test_geocentric_to_geodetic_single(self):
+        """Test conversion from geocentric to geodetic coordinates"""
+
+        lat0 = 45.0
+        lon0 = 9.0
+
+        latx, lonx, radx = pysat.coords.geodetic_to_geocentric(lat0,
+                                                               lon_in=lon0,
+                                                               inverse=True)
+
+        assert (abs(latx - 45.192423215981954) < 1.0e-6)
+        assert (abs(lonx - lon0) < 1.0e-6)
+        assert (abs(radx - 6367.345908499981) < 1.0e-6)
+
+    def test_geodetic_to_geocentric_mult(self):
+        """Test array conversion from geodetic to geocentric coordinates"""
+
+        arr = np.ones(shape=(10,), dtype=float)
+        latx, lonx, radx = pysat.coords.geodetic_to_geocentric(45.0*arr,
+                                                               lon_in=9.0*arr)
+
+        assert latx.shape == arr.shape
+        assert lonx.shape == arr.shape
+        assert radx.shape == arr.shape
+        assert (abs(latx - 44.807576784018046).max() < 1.0e-6)
+        assert (abs(lonx - 9.0).max() < 1.0e-6)
+        assert (abs(radx - 6367.489543863465).max() < 1.0e-6)
+
+    def test_geocentric_to_geodetic_mult(self):
+        """Test array conversion from geocentric to geodetic coordinates"""
+
+        arr = np.ones(shape=(10,), dtype=float)
+        latx, lonx, radx = pysat.coords.geodetic_to_geocentric(45.0*arr,
+                                                               lon_in=9.0*arr,
+                                                               inverse=True)
+
+        assert latx.shape == arr.shape
+        assert lonx.shape == arr.shape
+        assert radx.shape == arr.shape
+        assert (abs(latx - 45.192423215981954).max() < 1.0e-6)
+        assert (abs(lonx - 9.0).max() < 1.0e-6)
+        assert (abs(radx - 6367.345908499981).max() < 1.0e-6)
 
     def test_spherical_to_cartesian_single(self):
         """Test conversion from spherical to cartesian coordinates"""
