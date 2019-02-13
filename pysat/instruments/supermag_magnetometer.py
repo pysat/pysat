@@ -17,11 +17,11 @@ Note
 Files must be downloaded from the website, and is freely available after
 registration.
 
-This material is based upon work supported by the 
-National Science Foundation under Grant Number 1259508. 
+This material is based upon work supported by the
+National Science Foundation under Grant Number 1259508.
 
-Any opinions, findings, and conclusions or recommendations expressed in this 
-material are those of the author(s) and do not necessarily reflect the views 
+Any opinions, findings, and conclusions or recommendations expressed in this
+material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
 
 
@@ -29,12 +29,12 @@ Warnings
 --------
 - Currently no cleaning routine, though the SuperMAG description indicates that
   these products are expected to be good.  More information about the processing
-  is available 
+  is available
 - Module not written by the SuperMAG team.
 
 Custom Functions
 -----------------
-                           
+
 """
 
 from __future__ import print_function, absolute_import
@@ -56,9 +56,9 @@ test_dates = {'':{kk:pysat.datetime(2009,1,1) for kk in tags.keys()}}
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
-    
+
     Runs once upon instantiation.
-    
+
     Parameters
     ----------
     self : pysat.Instrument
@@ -68,33 +68,41 @@ def init(self):
     --------
     Void : (NoneType)
         Object modified in place.
-    
-    
+
+
     """
+
+    # if the tag is 'indices', update data_path to reflect this
+    # both 'indices' and 'all' are stored under 'all'
+    if self.tag == "indices":
+        psplit = path.split(self.files.data_path[:-1])
+        self.files.data_path = path.join(psplit[0], "all", "")
 
     # reset the list_remote_files routine to include the data path
     # now conveniently included with instrument object
-    self._list_remote_rtn = functools.partial(list_remote_files, 
+    self._list_remote_rtn = functools.partial(list_remote_files,
                                                data_path=self.files.data_path,
                                                format_str=self.files.file_format)
-    return 
+    return
 
 
-def list_remote_files(tag, sat_id, data_path=None, format_str=None):
+def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Lists remote files available for SuperMAG.
-    
+
     Note
     ----
-    Given the setup of the SuperMAG system, files aren't directly 
+    Given the setup of the SuperMAG system, files aren't directly
     available as the requested data is put into files as requested.
     To enable the functionality of keeping SuperMAG up to date, we
     fake the files here such that data from 1970 through the present
     is downloaded.
-    
+
     Parameters
     ----------
-    tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+    tag : (string)
+        Denotes type of file to load.  Accepted types are 'indices', 'all',
+        'stations', and '' (for just magnetometer measurements).
+        (default='')
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
@@ -105,7 +113,7 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
         Series indexed by date that stores the filename for each date.
 
     """
-    
+
     # given the function of SuperMAG, create a fake list of files
     # starting 01 Jan 1970, through today
     now = pysat.datetime.now()
@@ -120,14 +128,14 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
     index = pds.period_range(pysat.datetime(1970,1,1), now, freq=freq)
     # pre fill in blank strings
     remote_files = pds.Series(['']*len(index), index=index)
-    
+
     # pysat compares both dates and filenames when determining
     # which files it needs to download
     # so we need to ensure that filename for dates that overlap
     # are the same or data that is already present will be redownloaded
-    
+
     # need to get a list of the current files attached to
-    # the Instrument object. In this case, the object hasn't 
+    # the Instrument object. In this case, the object hasn't
     # been passed in.....
     #   that is ok, we can just call list_files right here
     #   except we don't have the data path
@@ -137,17 +145,17 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
     # iterating directly since pandas is complaining about periods
     # between different between indexes
     local_files = list_files(tag, sat_id, data_path, format_str)
-    for time, fname in local_files.iteritems():   
+    for time, fname in local_files.iteritems():
         remote_files.loc[time] = fname
     return remote_files
-    
+
 
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen SuperMAG data
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : (string)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements). (default='')
     sat_id : (string or NoneType)
@@ -164,7 +172,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     --------
     pysat.Files.from_os : (pysat._files.Files)
         A pandas Series containing the verified available files
-        
+
     """
     if format_str is None and data_path is not None:
         file_base = 'supermag_magnetometer'
@@ -182,10 +190,11 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
         else:
             min_fmt = '_'.join([file_base, '{year:4d}{month:02d}{day:02d}.???'])
             doff = pds.DateOffset(days=1)
+
         files = pysat.Files.from_os(data_path=data_path, format_str=min_fmt)
 
         # station files are once per year but we need to
-        # create the illusion there is a file per year        
+        # create the illusion there is a file per year
         if not files.empty:
             files = files.sort_index()
 
@@ -207,10 +216,10 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
         return files
     elif format_str is None:
         estr = 'A directory must be passed to the loading routine for SuperMAG'
-        raise ValueError (estr)
+        raise ValueError(estr)
     else:
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
- 
+
 
 def load(fnames, tag='', sat_id=None):
     """ Load the SuperMAG files
@@ -219,7 +228,7 @@ def load(fnames, tag='', sat_id=None):
     -----------
     fnames : (list)
         List of filenames
-    tag : (str or NoneType)
+    tag : (str)
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements). (default='')
     sat_id : (str or NoneType)
@@ -231,7 +240,7 @@ def load(fnames, tag='', sat_id=None):
         Object containing satellite data
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
-        
+
     """
 
     # Ensure that there are files to load
@@ -293,7 +302,7 @@ def load_csv_data(fname, tag):
     --------
     data : (pandas.DataFrame)
         Pandas DataFrame
-        
+
     """
     import re
 
@@ -328,12 +337,12 @@ def load_csv_data(fname, tag):
                             ddict[dkeys[i]].append(ll)
                         else:
                             ddict[dkeys[-1]][-1] += " {:s}".format(ll)
-                            
+
         # Create a data frame for this file
         data = pds.DataFrame(ddict, index=date_list, columns=ddict.keys())
     else:
         # Define the date parser
-        def parse_smag_date(dd):                                               
+        def parse_smag_date(dd):
             return pysat.datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
 
         # Load the file into a data frame
@@ -341,7 +350,7 @@ def load_csv_data(fname, tag):
                             date_parser=parse_smag_date, index_col='datetime')
 
     return data
-            
+
 def load_ascii_data(fname, tag):
     """Load data from a self-documenting ASCII SuperMAG file
 
@@ -360,7 +369,7 @@ def load_ascii_data(fname, tag):
     baseline : (list)
         List of strings denoting the presence of a standard and file-specific
         baselines for each file.  None of not present or not applicable.
-        
+
     """
     import re
     ndata = {"indices":2, "":4, "all":4, "stations":8}
@@ -509,7 +518,7 @@ def update_smag_metadata(col_name):
     --------
     col_dict : (dict)
        Dictionary of strings detailing the units and long-form name of the data
-       
+
     """
 
     smag_units = {'IAGA':'none', 'N':'nT', 'E':'nT', 'Z':'nT', 'MLT':'hours',
@@ -536,7 +545,7 @@ def update_smag_metadata(col_name):
                  'STATION_NAME':'Long form station name',
                  'OPERATOR_NUM':'Number of station operators',
                  'OPERATORS':'Station operator name(s)',}
-    
+
     ackn = "When using this data please include the following reference:\n"
     ackn += "Gjerloev, J. W., The SuperMAG data processing technique, "
     ackn += "Geophys. Res., 117, A09213, doi:10.1029/2012JA017683, 2012\n\n"
@@ -560,7 +569,7 @@ def update_smag_metadata(col_name):
     ackn += "Vellante; BCMT, V. Lesur and A. Chambodut; Data obtained in "
     ackn += "cooperation with Geoscience Australia, PI Marina Costelloe; "
     ackn += "SuperMAG, PI Jesper W. Gjerloev."
-    
+
     col_dict = {'units':smag_units[col_name], 'long_name':smag_name[col_name],
                 'acknowledgements':ackn}
 
@@ -580,7 +589,7 @@ def format_baseline_list(baseline_list):
     ---------
     base_string : (str)
         Single string containing the relevent data
-        
+
     """
 
     uniq_base = dict()
@@ -667,11 +676,11 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
 
     Returns
     -------
-    
+
     """
     import sys
     import requests
-    
+
     global platform, name
 
     max_stations = 470
@@ -687,6 +696,9 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     # Set the tag information
     if tag == "indices":
         tag = "all"
+        # modify path as 'indices' is stored under 'all'
+        psplit = path.split(data_path[:-1])
+        data_path = path.join(psplit[0], "all", "")
 
     if tag != "stations":
         remotefmt += "&{interval}&{stations}&{delta}&{baseline}&{options}"
@@ -703,7 +715,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     remoteaccess['filefmt'] = 'fmt={:s}'.format(file_fmt)
 
     # If indices are requested, add them now.
-    if not tag in [None, 'stations']:
+    if not tag in ['', 'stations']:
         remoteaccess['options'] += "+envelope"
 
     # Add other download options (for non-station files)
@@ -733,7 +745,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
         # Set the time information and format
         remoteaccess['interval'] = "interval=23:59"
         sfmt = "%Y-%m-%dT00:00:00.000"
-        tag_str = "_" if tag is None else "_all_" 
+        tag_str = "_" if tag is "" else "_all_"
         ffmt = "{:s}_{:s}{:s}%Y%m%d.{:s}".format(platform, name, tag_str,
                                                  "txt" if file_fmt == "ascii"
                                                  else file_fmt)
@@ -867,7 +879,7 @@ def append_data(file_strings, file_fmt, tag):
     -------
     out_string : string
         String with all data, ready for output to a file
-        
+
     """
     # Determine the right appending routine for the file type
     if file_fmt.lower() == "csv":
@@ -884,16 +896,16 @@ def append_ascii_data(file_strings, tag):
         Lists or arrays of strings, where each string contains one file of data
     tag : string
         String denoting the type of file to load, accepted values are 'indices',
-        'all', 'stations', and None (for only magnetometer data)
+        'all', 'stations', and '' (for only magnetometer data)
 
     Returns
     -------
     out_string : string
         String with all data, ready for output to a file
-        
+
     """
     import re
-    
+
     # Start with data from the first list element
     out_lines = file_strings[0].split('\n')
     iparam = -1 # Index for the parameter line
@@ -901,8 +913,7 @@ def append_ascii_data(file_strings, tag):
     idates = list() # Indices for the date lines
     date_list = list() # List of dates
     num_stations = list() # Number of stations for each date line
-    ind_num = 2 if tag in ['all', 'indices', ''] else 0
-    # ind_num = 2 if tag == '' else ind_num
+    ind_num = 2 if tag in ['all', 'indices'] else 0
 
     # Find the index information for the data
     for i,line in enumerate(out_lines):
@@ -926,7 +937,7 @@ def append_ascii_data(file_strings, tag):
 
     # Initialize a list of station names
     station_names = list()
-    
+
     # Cycle through each additional set of file strings
     for ff in range(len(file_strings)-1):
         file_lines = file_strings[ff+1].split('\n')
@@ -997,7 +1008,7 @@ def append_csv_data(file_strings):
     -------
     out_string : string
         String with all data, ready for output to a file
-        
+
     """
     # Start with data from the first list element
     out_lines = list()
