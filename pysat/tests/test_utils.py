@@ -342,36 +342,3 @@ class TestBasics():
             pass
 
         assert True
-
-
-    def test_adjust_cyclic_data_default(self):
-        """ Test adjust_cyclic_data with default range """
-
-        test_in = np.radians(self.test_angles) - np.pi
-        test_angles = pysat.utils.adjust_cyclic_data(test_in)
-
-        assert test_angles.max() < 2.0 * np.pi
-        assert test_angles.min() >= 0.0
-
-    def test_adjust_cyclic_data_custom(self):
-        """ Test adjust_cyclic_data with a custom range """
-
-        test_angles = pysat.utils.adjust_cyclic_data(self.test_angles,
-                                                     high=180.0, low=-180.0)
-
-        assert test_angles.max() < 180.0
-        assert test_angles.min() >= -180.0
-
-    def test_update_longitude(self):
-        """Test update_longitude """
-
-        pysat.utils.update_longitude(self.testInst, lon_name="longitude")
-
-        assert np.all(self.testInst.data['longitude'] < 180.0)
-        assert np.all(self.testInst.data['longitude'] >= -180.0)
-
-    def test_bad_lon_name_update_longitude(self):
-        """Test update_longitude with a bad longitude name"""
-
-        assert_raises(ValueError, pysat.utils.update_longitude,
-                      self.testInst)

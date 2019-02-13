@@ -9,6 +9,71 @@ functions used throughout the pysat package.
 import numpy as np
 
 
+def adjust_cyclic_data(samples, high=2.0*np.pi, low=0.0):
+    """Adjust cyclic values such as longitude to a different scale
+
+    Parameters
+    -----------
+    samples : array_like
+        Input array
+    high: float or int
+        Upper boundary for circular standard deviation range (default=2 pi)
+    low : float or int
+        Lower boundary for circular standard deviation range (default=0)
+    axis : int or NoneType
+        Axis along which standard deviations are computed.  The default is to
+        compute the standard deviation of the flattened array
+
+    Returns
+    --------
+    out_samples : float
+        Circular standard deviation
+
+    """
+
+    out_samples = np.asarray(samples)
+    sample_range = high - low
+    out_samples[out_samples >= high] -= sample_range
+    out_samples[out_samples < low] += sample_range
+
+    return out_samples
+
+
+def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
+    """ Update longitude to the desired range
+
+    Parameters
+    ------------
+    inst : pysat.Instrument instance
+        instrument object to be updated
+    lon_name : string
+        name of the longtiude data
+    high : float
+        Highest allowed longitude value (default=180.0)
+    low : float
+        Lowest allowed longitude value (default=-180.0)
+
+    Returns
+    ---------
+    updates instrument data in column 'lon_name'
+
+    """
+    from pysat.utils.coords import adjust_cyclic_data
+
+    if lon_name not in inst.data.keys():
+        raise ValueError('uknown longitude variable name')
+
+    new_lon = adjust_cyclic_data(inst[lon_name], high=high, low=low)
+
+    # Update based on data type
+    if inst.pandas_format:
+        inst[lon_name] = new_lon
+    else:
+        inst[lon_name].data = new_lon
+
+    return
+
+
 def scale_units(out_unit, in_unit):
     """ Determine the scaling factor between two units
 

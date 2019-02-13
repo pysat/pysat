@@ -3,6 +3,8 @@ tests the pysat utils.coords area
 """
 import os
 import numpy as np
+import pandas as pds
+import tempfile
 import nose.tools
 from nose.tools import assert_raises, raises
 import pysat
@@ -10,19 +12,103 @@ import pysat.instruments.pysat_testing
 from pysat.utils import coords
 
 
+def prep_dir(inst=None):
+    import os
+    import shutil
+
+    if inst is None:
+        inst = pysat.Instrument(platform='pysat', name='testing')
+    # create data directories
+    try:
+        os.makedirs(inst.files.data_path)
+        #print ('Made Directory')
+    except OSError:
+        pass
+
+def remove_files(inst):
+    # remove any files
+    dir = inst.files.data_path
+    for the_file in os.listdir(dir):
+        if (the_file[0:13] == 'pysat_testing') & (the_file[-19:] ==
+                                                  '.pysat_testing_file'):
+            file_path = os.path.join(dir, the_file)
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+
+
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
 
+        self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
         self.vel_units = ["m/s", "cm/s", "km/s"]
 
+        # store current pysat directory
+        self.data_path = pysat.data_dir
+
+        # create temporary directory
+        dir_name = tempfile.mkdtemp()
+        pysat.utils.set_data_dir(dir_name, store=False)
+
+        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                                         clean_level='clean')
+        # create testing directory
+        prep_dir(self.testInst)
+        # Add longitude to the test instrument
+        ones = np.ones(shape=len(self.test_angles))
+        time = pysat.utils.time.create_datetime_index(year=ones*2001,
+                                                      month=ones,
+                                                      uts=np.arange(0.0,
+                                                                    len(ones),
+                                                                    1.0))
+
+
+        test_dat = np.array([time, self.test_angles]).transpose()
+        self.testInst.data = pds.DataFrame(test_dat,
+                                           index=time,
+                                           columns=["time", "longitude"])
+
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
 
-        del self.deg_units, self.dist_units, self.vel_units
+        del self.test_angles, self.deg_units, self.dist_units, self.vel_units
+        del self.testInst
+
+    def test_adjust_cyclic_data_default(self):
+        """ Test adjust_cyclic_data with default range """
+
+        test_in = np.radians(self.test_angles) - np.pi
+        test_angles = coords.adjust_cyclic_data(test_in)
+
+        assert test_angles.max() < 2.0 * np.pi
+        assert test_angles.min() >= 0.0
+
+    def test_adjust_cyclic_data_custom(self):
+        """ Test adjust_cyclic_data with a custom range """
+
+        test_angles = coords.adjust_cyclic_data(self.test_angles,
+                                                high=180.0, low=-180.0)
+
+        assert test_angles.max() < 180.0
+        assert test_angles.min() >= -180.0
+
+    def test_update_longitude(self):
+        """Test update_longitude """
+
+        coords.update_longitude(self.testInst, lon_name="longitude")
+
+        assert np.all(self.testInst.data['longitude'] < 180.0)
+        assert np.all(self.testInst.data['longitude'] >= -180.0)
+
+    def test_bad_lon_name_update_longitude(self):
+        """Test update_longitude with a bad longitude name"""
+
+        assert_raises(ValueError, coords.update_longitude,
+                      self.testInst)
 
     def test_scale_units_same(self):
         """ Test scale_units when both units are the same """
