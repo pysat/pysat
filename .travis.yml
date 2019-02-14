@@ -21,6 +21,7 @@ before_install:
   - pip install coveralls
   - pip install future
   - pip install matplotlib
+  - pip install netCDF4
   - pip install pysatCDF >/dev/null
   # install pyglow, space science models
   - cd ..
