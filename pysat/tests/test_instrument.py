@@ -249,6 +249,11 @@ class TestBasics():
         assert np.all(self.testInst[0:10, 'uts'] ==
                       self.testInst.data['uts'].values[0:10])
 
+    def test_data_access_by_row_slicing_w_ndarray_and_name(self):
+        self.testInst.load(2009,1)
+        assert np.all(self.testInst[np.arange(0, 10), 'uts'] ==
+                      self.testInst.data['uts'].values[0:10])
+
     def test_data_access_by_row_and_name(self):
         self.testInst.load(2009,1)
         assert np.all(self.testInst[0, 'uts'] ==
@@ -313,7 +318,7 @@ class TestBasics():
         assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
 
     def test_setting_partial_data(self):
-        self.testInst.load(2009,1)
+        self.testInst.load(2009, 1)
         cloneInst = self.testInst
         if self.testInst.pandas_format:
             self.testInst[0:3] = 0
@@ -391,6 +396,14 @@ class TestBasics():
     def test_getting_all_data_by_index(self):
         self.testInst.load(2009,1)
         a = self.testInst[[0,1,2,3,4]]
+        if self.testInst.pandas_format:
+            assert len(a) == 5
+        else:
+            assert a.sizes['time'] == 5
+
+    def test_getting_all_data_by_numpy_array_of_int(self):
+        self.testInst.load(2009, 1)
+        a = self.testInst[np.array([0, 1, 2, 3, 4])]
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
