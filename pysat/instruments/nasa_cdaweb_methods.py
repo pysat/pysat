@@ -60,8 +60,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         list_files = functools.partial(nasa_cdaweb_methods.list_files,
                                        supported_tags=supported_tags)
 
-        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        supported_tags = {'':ivm_fname}
+        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        supported_tags = {'':fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
@@ -86,7 +86,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         return out
     else:
         estr = 'A directory must be passed to the loading routine for <Instrument Code>'
-        raise ValueError (estr)
+        raise ValueError(estr)
 
 def load(fnames, tag=None, sat_id=None,
          fake_daily_files_from_monthly=False,
@@ -198,7 +198,7 @@ def download(supported_tags, date_array, tag, sat_id,
         User password to be passed along to resource with relevant data.
         (default=None)
     fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month.This flag,
+        Some CDAWeb instrument data files are stored by month. This flag,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
 
@@ -215,9 +215,9 @@ def download(supported_tags, date_array, tag, sat_id,
         rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         ln = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         dc_b_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
-                    'remote_fname':rn,
-                    'local_fname':ln}
-        supported_tags = {'dc_b':dc_b_tag}
+                    'remote_fname': rn,
+                    'local_fname': ln}
+        supported_tags = {'dc_b': dc_b_tag}
 
         download = functools.partial(nasa_cdaweb_methods.download,
                                      supported_tags=supported_tags)
@@ -265,10 +265,6 @@ def download(supported_tags, date_array, tag, sat_id,
             else:
                 print('File not available for ' + date.strftime('%x'))
         except requests.exceptions.RequestException as exception:
-            # if exception[0][0:3] != '550':
-            # if str(exception.args[0]).split(" ", 1)[0] != '550':
-            #    raise
-            # else:
             print('File not available for ' + date.strftime('%x'))
 
 
@@ -306,7 +302,7 @@ def list_remote_files(tag, sat_id,
         User password to be passed along to resource with relevant data.
         (default=None)
     fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month.This flag,
+        Some CDAWeb instrument data files are stored by month. This flag,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
     two_digit_year_break : int
@@ -326,12 +322,12 @@ def list_remote_files(tag, sat_id,
     ::
 
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-        supported_tags = {'dc_b':fname}
+        supported_tags = {'dc_b': fname}
         list_files = functools.partial(nasa_cdaweb_methods.list_files,
                                        supported_tags=supported_tags)
 
-        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        supported_tags = {'':ivm_fname}
+        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        supported_tags = {'': fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
@@ -360,14 +356,11 @@ def list_remote_files(tag, sat_id,
     # Find Subdirectories if needed
     dir_split = os.path.split(format_str)
     if (len(dir_split) == 2) & (len(dir_split[0]) != 0):
-        # try:
         links = soup.find_all('a', href=True)
         dirs = []
         for link in links:
             if link['href'].count('/') == 1:
                 dirs.append(link['href'])
-        # except:
-        #     raise
         # only want to keep file portion of the string
         format_str = dir_split[-1]
     elif len(dir_split) == 2:
@@ -381,12 +374,10 @@ def list_remote_files(tag, sat_id,
         sub_path = remote_url + '/' + direct
         sub_soup = BeautifulSoup(requests.get(sub_path).content, "lxml")
         sub_links = sub_soup.find_all('a', href=True)
-        # try:
         for slink in sub_links:
             if slink['href'].count('.cdf') == 1:
                 full_files.append(slink['href'])
-        # except:
-        #     raise
+
     # parse remote filenames to get date information
     if delimiter is None:
         stored = pysat._files.parse_fixed_width_filenames(full_files,
