@@ -1,25 +1,28 @@
 """
 tests the pysat meta object and code
 """
-import pysat
-import pandas as pds
-from nose.tools import assert_raises, raises
-import nose.tools
+import importlib
 from functools import partial
+import numpy as np
+import sys
+
+import nose.tools
+import pandas as pds
 import tempfile
 
-
+import pysat
 import pysat.instruments.pysat_testing
-# import pysat.instruments as instruments
-import numpy as np
-# import os
 
-
-import sys
-import importlib
-
+# module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
-                'cosmic2013_gps', 'icon_euv', 'icon_ivm']
+                'cosmic2013_gps', 'demeter_iap', 'sport_ivm',
+                'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv',
+                'sw_dst', 'ucar_tiegcm']
+
+# exclude testing download functionality for specific module name, tag, sat_id
+exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
+                'sw_kp': {'tag': [''], 'sat_id': ['']}}
+
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
 
@@ -48,6 +51,11 @@ def init_func_external(self):
         if name not in exclude_list:
             temp.append(name)
     instrument_names = temp
+
+    print('The following instrument modules will be tested : ',
+          instrument_names)
+
+    self.instrument_names = temp
     self.instruments = []
     self.instrument_modules = []
 
@@ -74,6 +82,13 @@ def init_func_external(self):
                 module.test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
+                    if name in exclude_tags:
+                        if tag in exclude_tags[name]['tag'] and \
+                                  sat_id in exclude_tags[name]['sat_id']:
+                            # drop out of for loop
+                            # we don't want to test download for this combo
+                            print(' '.join(['Excluding', name, tag, sat_id]))
+                            break
                     try:
                         inst = pysat.Instrument(inst_module=module,
                                                 tag=tag,
@@ -89,6 +104,7 @@ def init_func_external(self):
 
 init_inst = None
 init_mod = None
+init_names = None
 
 
 class TestInstrumentQualifier():
@@ -97,14 +113,18 @@ class TestInstrumentQualifier():
         """Iterate through and create all of the test Instruments needed"""
         global init_inst
         global init_mod
+        global init_names
+
         if init_inst is None:
             init_func_external(self)
             init_inst = self.instruments
             init_mod = self.instrument_modules
+            init_names = self.instrument_names
 
         else:
             self.instruments = init_inst
             self.instrument_modules = init_mod
+            self.instrument_names = init_names
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -138,10 +158,9 @@ class TestInstrumentQualifier():
         assert np.all(check)
 
     def test_modules_loadable(self):
-        instrument_names = pysat.instruments.__all__
-        self.instruments = []
 
-        for name in instrument_names:
+        # ensure that all modules are at minimum importable
+        for name in pysat.instruments.__all__:
             f = partial(self.check_module_importable, name)
             f.description = ' '.join(('Checking importability for module:',
                                       name))

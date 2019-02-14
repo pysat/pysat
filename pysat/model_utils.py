@@ -356,7 +356,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                     if matched_inst is None:
                         matched_inst = pysat.Instrument
                         matched_inst.meta = inst.meta
-                        matched_inst.data = inst.data[im]
+                        matched_inst.data = inst[im]
                     else:
                         idata = inst[im]
                         matched_inst.data = \
@@ -522,9 +522,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
             while get_coords:
                 if inst.pandas_format:
                     # This data iterates only by time
-                    xind = ii
-                    xi = [inst_coord[kk][xind]
-                          for kk in dims if kk in mod_name]
+                    xout = ii
+                    xi = [inst_coord[kk][ii] for kk in dims if kk in mod_name]
                     get_coords = False
                 else:
                     # This data may have additional dimensions
@@ -536,7 +535,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                         # Find relevent dimensions for cycling and slicing
                         ind_dims = [k for k, kk in enumerate(inst_name)
                                     if kk in idim_names]
-                        imod_dims = [k for k in ind_dims if mod_name[k] in dims]
+                        imod_dims = [k for k in ind_dims
+                                     if mod_name[k] in dims]
                         ind_dims = [inst.data.coords.keys().index(inst_name[k])
                                     for k in imod_dims]
 
@@ -607,8 +607,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                 # Save the output
                 attr_name = "{:s}_{:s}".format(model_label, mdat)
                 if attr_name not in interp_data.keys():
-                    interp_data[attr_name] = \
-                        np.empty(shape=interp_shape, dtype=float) * np.nan
+                    interp_data[attr_name] = np.full(shape=interp_shape,
+                                                     fill_value=np.nan)
                 interp_data[attr_name][xout] = yi[0]
 
     # Test and ensure the instrument data doesn't already have the interpolated

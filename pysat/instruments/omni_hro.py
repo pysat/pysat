@@ -49,6 +49,8 @@ import os
 import sys
 import functools
 
+from . import nasa_cdaweb_methods as cdw
+
 import pandas as pds
 import numpy as np
 
@@ -58,74 +60,37 @@ platform = 'omni'
 name = 'hro'
 tags = {'1min': '1-minute time averaged data',
         '5min': '5-minute time averaged data'}
-sat_ids = {'': ['1min', '5min']}
+sat_ids = {'': ['5min']}
 test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
                    '5min': pysat.datetime(2009, 1, 1)}}
 
+# support list files routine
+# use the default CDAWeb method
+fname1 = 'omni_hro_1min_{year:4d}{month:02d}{day:02d}_v01.cdf'
+fname5 = 'omni_hro_5min_{year:4d}{month:02d}{day:02d}_v01.cdf'
+supported_tags = {'': {'1min': fname1,
+                       '5min': fname5}}
+list_files = functools.partial(cdw.list_files,
+                               supported_tags=supported_tags,
+                               fake_daily_files_from_monthly=True)
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data
+# support load routine
+# use the default CDAWeb method
+load = functools.partial(cdw.load, fake_daily_files_from_monthly=True)
 
-    Parameters
-    -----------
-    tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are '1min' and '5min'.
-        (default=None)
-    sat_id : (string or NoneType)
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : (string or NoneType)
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
-        User specified file format.  If None is specified, the default
-        formats associated with the supplied tags are used. (default=None)
-
-    Returns
-    --------
-    pysat.Files.from_os : (pysat._files.Files)
-        A class containing the verified available files
-    """
-    if format_str is None and data_path is not None:
-        if (tag == '1min') | (tag == '5min'):
-            min_fmt = ''.join(['omni_hro_', tag,
-                               '{year:4d}{month:02d}{day:02d}_v01.cdf'])
-            files = pysat.Files.from_os(data_path=data_path,
-                                        format_str=min_fmt)
-            # files are by month, just add date to monthly filename for
-            # each day of the month. load routine will use date to select out
-            # appropriate data
-            if not files.empty:
-                files.ix[files.index[-1] + pds.DateOffset(months=1) -
-                         pds.DateOffset(days=1)] = files.iloc[-1]
-                files = files.asfreq('D', 'pad')
-                # add the date to the filename
-                files = files + '_' + files.index.strftime('%Y-%m-%d')
-            return files
-        else:
-            raise ValueError('Unknown tag')
-    elif format_str is None:
-        estr = 'A directory must be passed to the loading routine for OMNI HRO'
-        raise ValueError(estr)
-    else:
-        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
-
-
-def load(fnames, tag=None, sat_id=None):
-    import pysatCDF
-
-    if len(fnames) <= 0:
-        return pysat.DataFrame(None), None
-    else:
-        # pull out date appended to filename
-        fname = fnames[0][0:-11]
-        date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
-        with pysatCDF.CDF(fname) as cdf:
-            data, meta = cdf.to_pysat()
-            # pick out data for date
-            data = data.ix[date:date+pds.DateOffset(days=1) -
-                           pds.DateOffset(microseconds=1)]
-            return data, meta
+# support download routine
+# use the default CDAWeb method
+basic_tag1 = {'dir': '/pub/data/omni/omni_cdaweb/hro_1min',
+              'remote_fname': '{year:4d}/' + fname1,
+              'local_fname': fname1}
+basic_tag5 = {'dir': '/pub/data/omni/omni_cdaweb/hro_5min',
+              'remote_fname': '{year:4d}/' + fname5,
+              'local_fname': fname5}
+supported_tags = {'': {'1min': basic_tag1,
+                       '5min': basic_tag5}}
+download = functools.partial(cdw.download,
+                             supported_tags,
+                             fake_daily_files_from_monthly=True)
 
 
 def clean(omni):
@@ -186,60 +151,6 @@ def time_shift_to_magnetic_poles(inst):
     inst.data.index = new_index
     inst.data = inst.data.sort_index()
 
-    return
-
-
-def download(date_array, tag, sat_id='', data_path=None, user=None,
-             password=None):
-    """ download OMNI data, layout consistent with pysat
-
-    Parameters
-    -----------
-    data_array : np.array
-    tag : string
-        String denoting the type of file to load, accepted values are '1min'
-        and '5min'
-    sat_id : string
-        Not used (default='')
-    data_path : string or NoneType
-        Data path to save downloaded files to (default=None)
-    user : string or NoneType
-        Not used, CDAWeb allows anonymous users (default=None)
-    password : string or NoneType
-        Not used, CDAWeb provides password (default=None)
-    """
-    import os
-    import ftplib
-
-    ftp = ftplib.FTP('cdaweb.gsfc.nasa.gov')   # connect to host, default port
-    ftp.login()               # user anonymous, passwd anonymous@
-
-    if (tag == '1min') | (tag == '5min'):
-        ftp.cwd('/pub/data/omni/omni_cdaweb/hro_'+tag)
-
-        for date in date_array:
-            fname = '{year1:4d}/omni_hro_' + tag + \
-                    '_{year2:4d}{month:02d}{day:02d}_v01.cdf'
-            fname = fname.format(year1=date.year, year2=date.year,
-                                 month=date.month, day=date.day)
-            local_fname = ''.join(['omni_hro_', tag, \
-            '_{year:4d}{month:02d}{day:02d}_v01.cdf']).format(year=date.year,
-                                                              month=date.month,
-                                                              day=date.day)
-            saved_fname = os.path.join(data_path, local_fname)
-            try:
-                print('Downloading file for '+date.strftime('%D'))
-                sys.stdout.flush()
-                ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
-            except ftplib.error_perm as exception:
-                # if exception[0][0:3] != '550':
-                if str(exception.args[0]).split(" ", 1)[0] != '550':
-                    raise
-                else:
-                    os.remove(saved_fname)
-                    print('File not available for ' + date.strftime('%D'))
-    ftp.close()
-    # ftp.quit()
     return
 
 
@@ -307,8 +218,9 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     circ_kwargs = {'high': 360.0, 'low': 0.0}
     ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
     ca_std = inst['clock_angle'].rolling(min_periods=min_wnum,
-                                         window=steady_window, \
-                center=True).apply(pysat.utils.nan_circstd, kwargs=circ_kwargs)
+                                         window=steady_window,
+                                         center=True).apply(pysat.utils.nan_circstd,
+                                                            kwargs=circ_kwargs)
     inst['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
 
     # Determine how long the clock angle and IMF magnitude are steady

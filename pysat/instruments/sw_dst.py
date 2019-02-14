@@ -153,10 +153,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # each day of the month. The load routine will load a month of
             # data and use the appended date to select out appropriate data.
             if format_str is None:
-                format_str = 'dst{year:2d}.txt'
+                format_str = 'dst{year:4d}.txt'
             out = pysat.Files.from_os(data_path=data_path,
-                                      format_str=format_str,
-                                      two_digit_year_break=94)
+                                      format_str=format_str)
             if not out.empty:
                 out.ix[out.index[-1]+pds.DateOffset(years=1) -
                        pds.DateOffset(days=1)] = out.iloc[-1]

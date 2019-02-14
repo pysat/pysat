@@ -556,3 +556,31 @@ class TestBasics():
         assert abs(az - 45.0).max() < 1.0e-6
         assert abs(el - 30.0).max() < 1.0e-6
         assert abs(r - 1.0).max() < 1.0e-6
+
+    def test_calc_freq(self):
+        """Test index frequency calculation"""
+
+        self.testInst.load(2009, 1)
+        self.testInst.index.freq = pysat.utils.calc_freq(self.testInst.index)
+
+        assert self.testInst.index.freq.freqstr.find("S") == 0
+
+    def test_calc_freq_ns(self):
+        """Test index frequency calculation with nanosecond output"""
+
+        tind = pysat.utils.create_datetime_index(year=np.ones(shape=(4,))*2001,
+                                                 month=np.ones(shape=(4,)),
+                                                 uts=np.arange(0.0, 0.04, .01))
+        freq = pysat.utils.calc_freq(tind)
+
+        assert freq.find("10000000N") == 0
+
+    def test_calc_freq_len_fail(self):
+        """Test index frequency calculation with empty list"""
+
+        assert_raises(ValueError, pysat.utils.calc_freq, list())
+
+    def test_calc_freq_type_fail(self):
+        """Test index frequency calculation with non-datetime list"""
+
+        assert_raises(AttributeError, pysat.utils.calc_freq, [1, 2, 3, 4])

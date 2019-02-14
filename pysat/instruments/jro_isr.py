@@ -41,6 +41,7 @@ import pysat
 from . import madrigal_methods as mad_meth
 from . import nasa_cdaweb_methods as cdw
 
+
 platform = 'jro'
 name = 'isr'
 tags = {'drifts': 'Drifts and wind', 'drifts_ave': 'Averaged drifts',
@@ -93,7 +94,7 @@ load = functools.partial(mad_meth.load, xarray_coords=['gdalt'])
 # To ensure this function is always applied first, we set the filter
 # function as the default function for (JRO).
 # Default function is run first by the nanokernel on every load call.
-default = pysat.instruments.madrigal_methods.filter_data_single_date
+default = mad_meth.filter_data_single_date
 
 
 def init(self):

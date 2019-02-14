@@ -58,13 +58,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     ::
 
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-        supported_tags = {'dc_b':fname}
+        supported_tags = {'dc_b': fname}
         list_files = functools.partial(nasa_cdaweb_methods.list_files,
                                        supported_tags=supported_tags)
 
-        ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}' +
-            '_v01.cdf'
-        supported_tags = {'':ivm_fname}
+        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        supported_tags = {'': fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
@@ -171,7 +170,7 @@ def load(fnames, tag=None, sat_id=None,
 
 
 def download(supported_tags, date_array, tag, sat_id,
-             ftp_site='cdaweb.gsfc.nasa.gov',
+             remote_site='https://cdaweb.gsfc.nasa.gov',
              data_path=None, user=None, password=None,
              fake_daily_files_from_monthly=False):
     """Routine to download NASA CDAWeb CDF data.
@@ -191,6 +190,9 @@ def download(supported_tags, date_array, tag, sat_id,
         tag or None (default=None)
     sat_id : (str or NoneType)
         satellite id or None (default=None)
+    remote_site : (string or NoneType)
+        Remote site to download data from
+        (default='https://cdaweb.gsfc.nasa.gov')
     data_path : (string or NoneType)
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
@@ -201,7 +203,7 @@ def download(supported_tags, date_array, tag, sat_id,
         User password to be passed along to resource with relevant data.
         (default=None)
     fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month.This flag,
+        Some CDAWeb instrument data files are stored by month. This flag,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
 
@@ -219,9 +221,9 @@ def download(supported_tags, date_array, tag, sat_id,
             '_v05.cdf'
         ln = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         dc_b_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
-                    'remote_fname':rn,
-                    'local_fname':ln}
-        supported_tags = {'dc_b':dc_b_tag}
+                    'remote_fname': rn,
+                    'local_fname': ln}
+        supported_tags = {'dc_b': dc_b_tag}
 
         download = functools.partial(nasa_cdaweb_methods.download,
                                      supported_tags=supported_tags)
@@ -229,28 +231,23 @@ def download(supported_tags, date_array, tag, sat_id,
     """
 
     import os
-    import ftplib
-
-    # connect to CDAWeb default port
-    ftp = ftplib.FTP(ftp_site)
-    # user anonymous, passwd anonymous@
-    ftp.login()
+    import requests
 
     try:
-        ftp_dict = supported_tags[sat_id][tag]
+        inst_dict = supported_tags[sat_id][tag]
     except KeyError:
         raise ValueError('Tag name unknown.')
 
     # path to relevant file on CDAWeb
-    ftp.cwd(ftp_dict['dir'])
+    remote_url = remote_site + inst_dict['dir']
 
     # naming scheme for files on the CDAWeb server
-    remote_fname = ftp_dict['remote_fname']
+    remote_fname = inst_dict['remote_fname']
 
     # naming scheme for local files, should be closely related
     # to CDAWeb scheme, though directory structures may be reduced
     # if desired
-    local_fname = ftp_dict['local_fname']
+    local_fname = inst_dict['local_fname']
 
     for date in date_array:
         # format files for specific dates and download location
@@ -266,21 +263,19 @@ def download(supported_tags, date_array, tag, sat_id,
         try:
             print('Attempting to download file for '+date.strftime('%x'))
             sys.stdout.flush()
-            ftp.retrbinary('RETR '+formatted_remote_fname,
-                           open(saved_local_fname, 'wb').write)
-            print('Finished.')
-        except ftplib.error_perm as exception:
-            # if exception[0][0:3] != '550':
-            if str(exception.args[0]).split(" ", 1)[0] != '550':
-                raise
+            remote_path = '/'.join((remote_url, formatted_remote_fname))
+            r = requests.get(remote_path)
+            if r.status_code != 404:
+                open(saved_local_fname, 'wb').write(r.content)
+                print('Finished.')
             else:
-                os.remove(saved_local_fname)
                 print('File not available for ' + date.strftime('%x'))
-    ftp.close()
+        except requests.exceptions.RequestException as exception:
+            print('File not available for ' + date.strftime('%x'))
 
 
 def list_remote_files(tag, sat_id,
-                      ftp_site='cdaweb.gsfc.nasa.gov',
+                      remote_site='https://cdaweb.gsfc.nasa.gov',
                       supported_tags=None,
                       user=None, password=None,
                       fake_daily_files_from_monthly=False,
@@ -299,8 +294,9 @@ def list_remote_files(tag, sat_id,
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    ftp_site : (string or NoneType)
-        FTP site to download data from (default='cdaweb.gsfc.nasa.gov')
+    remote_site : (string or NoneType)
+        Remote site to download data from
+        (default='https://cdaweb.gsfc.nasa.gov')
     supported_tags : dict
         dict of dicts. Keys are supported tag names for download. Value is
         a dict with 'dir', 'remote_fname', 'local_fname'. Inteded to be
@@ -312,7 +308,7 @@ def list_remote_files(tag, sat_id,
         User password to be passed along to resource with relevant data.
         (default=None)
     fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month.This flag,
+        Some CDAWeb instrument data files are stored by month. This flag,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
     two_digit_year_break : int
@@ -332,74 +328,68 @@ def list_remote_files(tag, sat_id,
     ::
 
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-        supported_tags = {'dc_b':fname}
+        supported_tags = {'dc_b': fname}
         list_files = functools.partial(nasa_cdaweb_methods.list_files,
                                        supported_tags=supported_tags)
 
         fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        supported_tags = {'':fname}
+        supported_tags = {'': fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
     """
 
     import os
-    import ftplib
-
-    # connect to CDAWeb default port
-    ftp = ftplib.FTP(ftp_site)
-    # user anonymous, passwd anonymous@
-    ftp.login()
+    import requests
+    from bs4 import BeautifulSoup
 
     try:
-        ftp_dict = supported_tags[sat_id][tag]
+        inst_dict = supported_tags[sat_id][tag]
     except KeyError:
         raise ValueError('Tag name unknown.')
 
     # path to relevant file on CDAWeb
-    ftp.cwd(ftp_dict['dir'])
+    remote_url = remote_site + inst_dict['dir']
 
     # naming scheme for files on the CDAWeb server
-    format_str = ftp_dict['remote_fname']
-    # started from https://stackoverflow.com/questions/111954/using-pythons-ftplib-to-get-a-directory-listing-portably
+    format_str = inst_dict['remote_fname']
 
     # get a listing of all files
     # determine if we need to walk directories
+
+    soup = BeautifulSoup(requests.get(remote_url).content, "lxml")
+
+    # Find Subdirectories if needed
     dir_split = os.path.split(format_str)
     if (len(dir_split) == 2) & (len(dir_split[0]) != 0):
-        try:
-            dirs = ftp.nlst()
-        except ftplib.error_perm as resp:
-            if str(resp) == "550 No files found":
-                print("No files in this directory")
-            else:
-                raise
+        links = soup.find_all('a', href=True)
+        dirs = []
+        for link in links:
+            if link['href'].count('/') == 1:
+                dirs.append(link['href'])
         # only want to keep file portion of the string
         format_str = dir_split[-1]
     elif len(dir_split) == 2:
         # no extra directories
         dirs = ['']
     else:
-        raise ValueError('Only travereses one extra level of directory.')
+        raise ValueError('Only traverses one extra level of directory.')
 
     full_files = []
     for direct in dirs:
-        ftp.cwd(ftp_dict['dir']+'/'+direct)
-        try:
-            files = ftp.nlst()
-            full_files.extend(files)
-        except ftplib.error_perm as resp:
-            if str(resp) == "550 No files found":
-                print("No files in this directory")
-            else:
-                raise
-    ftp.close()
+        sub_path = remote_url + '/' + direct
+        sub_soup = BeautifulSoup(requests.get(sub_path).content, "lxml")
+        sub_links = sub_soup.find_all('a', href=True)
+        for slink in sub_links:
+            if slink['href'].count('.cdf') == 1:
+                full_files.append(slink['href'])
+
     # parse remote filenames to get date information
     if delimiter is None:
         stored = pysat._files.parse_fixed_width_filenames(full_files,
                                                           format_str)
     else:
-        stored = pysat._files.parse_delimited_filenames(full_files, format_str,
-                                                        delimiter)
+        stored = pysat._files.parse_delimited_filenames(full_files,
+                                                        format_str, delimiter)
     # process the parsed filenames and return a properly formatted Series
     return pysat._files.process_parsed_filenames(stored, two_digit_year_break)
