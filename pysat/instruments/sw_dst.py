@@ -113,7 +113,7 @@ def load(fnames, tag=None, sat_id=None):
             idx, = np.where((new_data.index >= new_date) & (new_data.index < new_date+pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx,:]
             # add specific day to all data loaded for filenames
-            data = pds.concat([data, new_data], axis=0)
+            data = pds.concat([data, new_data], sort=True, axis=0)
 
     return data, pysat.Meta()
 
@@ -152,10 +152,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # each day of the month. The load routine will load a month of
             # data and use the appended date to select out appropriate data.
             if format_str is None:
-                format_str = 'dst{year:2d}.txt'
+                format_str = 'dst{year:4d}.txt'
             out = pysat.Files.from_os(data_path=data_path,
-                format_str=format_str,
-                two_digit_year_break=94)
+                                      format_str=format_str)
             if not out.empty:
                 out.loc[out.index[-1] + pds.DateOffset(years=1) -
                         pds.DateOffset(days=1)] = out.iloc[-1]

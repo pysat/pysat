@@ -410,7 +410,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     out = []
     for item in running_store:
         out.append(pds.DataFrame.from_records(item, index=epoch_name))
-    out = pds.concat(out, axis=0)
+    out = pds.concat(out, sort=True, axis=0)
     return out, mdata
 
 
@@ -473,6 +473,57 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
                             int(str_min), int(str_sec))
 
     return out_date
+
+
+def calc_freq(index):
+    """ Determine the frequency for a time index
+
+    Parameters
+    ----------
+    index : (array-like)
+        Datetime list, array, or Index
+
+    Returns
+    -------
+    freq : (str)
+       Frequency string as described in Pandas Offset Aliases
+
+    Notes
+    -----
+    Calculates the minimum time difference and sets that as the frequency.
+
+    To reduce the amount of calculations done, the returned frequency is
+    either in seconds (if no sub-second resolution is found) or nanoseconds.
+
+    """
+
+    # Test the length of the input
+    if len(index) < 2:
+        raise ValueError("insufficient data to calculate frequency")
+
+    # Calculate the minimum temporal difference
+    del_time = (np.array(index[1:]) - np.array(index[:-1])).min()
+
+    # Convert minimum to seconds
+    try:
+        # First try as timedelta
+        freq_sec = del_time.total_seconds()
+    except AttributeError as err:
+        # Now try as numpy.timedelta64
+        if isinstance(del_time, np.timedelta64):
+            freq_sec = float(del_time) * 1.0e-9
+        else:
+            raise AttributeError("Input should be times: {:}".format(err))
+
+    # Format output frequency
+    if np.floor(freq_sec) == freq_sec:
+        # The frequency is on the order of seconds or greater
+        freq = "{:.0f}S".format(freq_sec)
+    else:
+        # There are sub-seconds.  Go straigt to nanosec for best resoution
+        freq = "{:.0f}N".format(freq_sec * 1.0e9)
+
+    return freq
 
 
 def season_date_range(start, stop, freq='D'):
@@ -792,7 +843,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                                      inst.meta.min_label: 0.0,
                                      inst.meta.max_label: 24.0,
                                      inst.meta.fill_label:np.nan})
-        
+
     return
 
 
@@ -1042,7 +1093,7 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
         # Spherical coordinate system uses zenith angle (degrees from the
         # z-axis) and not the elevation angle (degrees from the x-y plane)
         zen_in = np.radians(90.0 - el_in)
-        
+
         # Spherical to Cartesian
         x_out = r_in * np.sin(zen_in) * np.cos(np.radians(az_in))
         y_out = r_in * np.sin(zen_in) * np.sin(np.radians(az_in))
