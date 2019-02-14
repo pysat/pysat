@@ -3,9 +3,9 @@
 Loads and downloads data from the COSMIC satellite.
 
 The Constellation Observing System for Meteorology, Ionosphere, and Climate
-(COSMIC) is comprised of six satellites in LEO with GPS receivers. The occultation
-of GPS signals by the atmosphere provides a measurement of atmospheric
-parameters. Data downloaded from the COSMIC Data Analaysis and
+(COSMIC) is comprised of six satellites in LEO with GPS receivers. The
+occultation of GPS signals by the atmosphere provides a measurement of
+atmospheric parameters. Data downloaded from the COSMIC Data Analaysis and
 Archival Center.
 
 Parameters
