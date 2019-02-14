@@ -510,6 +510,30 @@ class TestBasics():
         assert_raises(ValueError, pysat.utils.scale_units, "m", "deg")
         assert_raises(ValueError, pysat.utils.scale_units, "h", "km/s")
 
+    def test_geodetic_to_geocentric_single(self):
+        """Test conversion from geodetic to geocentric coordinates"""
+
+        lat, lon, rad = pysat.utils.geodetic_to_geocentric(45.0,
+                                                           lon_in=9.0)
+
+        assert (abs(lat - 44.807576784018046) < 1.0e-6)
+        assert (abs(lon - 9.0) < 1.0e-6)
+        assert (abs(rad - 6367.489543863465) < 1.0e-6)
+
+    def test_geodetic_to_geocentric_mult(self):
+        """Test array conversion from geodetic to geocentric coordinates"""
+
+        arr = np.ones(shape=(10,), dtype=float)
+        lat, lon, rad = pysat.utils.geodetic_to_geocentric(45.0*arr,
+                                                           lon_in=9.0*arr)
+
+        assert lat.shape == arr.shape
+        assert lon.shape == arr.shape
+        assert rad.shape == arr.shape
+        assert (abs(lat - 44.807576784018046).max() < 1.0e-6)
+        assert (abs(lon - 9.0).max() < 1.0e-6)
+        assert (abs(rad - 6367.489543863465).max() < 1.0e-6)
+
     def test_spherical_to_cartesian_single(self):
         """Test conversion from spherical to cartesian coordinates"""
 
