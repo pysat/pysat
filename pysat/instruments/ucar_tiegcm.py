@@ -152,7 +152,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     use by the end user. Arguments are provided by pysat.
     
     Multiple data levels may be supported via the 'tag' input string.
-    Currently defaults to level-2 data, or L2 in the filename.
 
     Parameters
     ----------
@@ -190,7 +189,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     the returned files are up to pysat specifications.
     
     """
-    format_str = 'tiegcm_icon_merg2.0_totTgcm.s_{day:03d}_{year:4d}.nc'
+    
+    if format_str is None:
+        # default file naming
+        format_str = 'tiegcm_icon_merg2.0_totTgcm.s_{day:03d}_{year:4d}.nc'
+        
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
