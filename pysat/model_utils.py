@@ -19,6 +19,31 @@ import numpy as np
 import pandas as pds
 import xarray as xr
 
+def satellite_view_through_model(sat, tie, scoords, tlabels):
+    """Interpolates model values onto satellite orbital path.
+    
+    """
+    
+    # tiegcm is in pressure levels, need in altitude, but on regular
+    # grid
+    import scipy.interpolate as interpolate
+    
+    # create input array using satellite time/position
+    coords = [sat[coord] for coord in scoords]
+    coords.insert(0, sat.index.values.astype(int))
+    sat_pts = [inp for inp in zip(*coords)]
+    
+    interp = {}
+    for label in tlabels:
+        points = [tie.data.coords[dim].values if dim != 'time' else 
+                  tie.data.coords[dim].values.astype(int) 
+                  for dim in tie[label].dims]
+        interp[label] = interpolate.RegularGridInterpolator(points, 
+                                                            tie[label].values,
+                                                            bounds_error=False,
+                                                            fill_value=None)
+        sat[''.join(('model_', label))] = interp[label](sat_pts)    
+
 
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                            methods=['all']):
