@@ -1,7 +1,6 @@
 """
 tests the pysat coords area
 """
-import os
 import numpy as np
 import pandas as pds
 import nose.tools
