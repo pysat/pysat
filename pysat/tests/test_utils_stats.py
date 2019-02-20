@@ -31,7 +31,7 @@ class TestBasics():
 
         assert ans1
 
-    def test_circstd_nan(self):
+    def test_circmean_nan(self):
         """ Test custom circular mean with NaN."""
         from scipy import stats as scistats
 
