@@ -8,7 +8,6 @@ import nose.tools
 from nose.tools import assert_raises, raises
 import tempfile
 import pysat
-import pysat.instruments.pysat_testing
 
 import sys
 if sys.version_info[0] >= 3:
@@ -53,9 +52,72 @@ def remove_files(inst):
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        # store current pysat directory
+        self.data_path = pysat.data_dir
 
-        self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
 
+    #######################
+    # test pysat data dir options
+    def test_set_data_dir(self):
+        saved_dir = self.data_path
+        # update data_dir
+        pysat.utils.set_data_dir('.')
+        check1 = (pysat.data_dir == '.')
+        if saved_dir is not '':
+            pysat.utils.set_data_dir(saved_dir)
+            check2 = (pysat.data_dir == saved_dir)
+        else:
+            check2 = True
+        assert check1 & check2
+
+    def test_set_data_dir_no_store(self):
+        saved_dir = self.data_path
+        # update data_dir
+        pysat.utils.set_data_dir('.', store=False)
+        check1 = (pysat.data_dir == '.')
+        pysat._files = re_load(pysat._files)
+        pysat._instrument = re_load(pysat._instrument)
+        re_load(pysat)
+
+        check2 = (pysat.data_dir == saved_dir)
+        if saved_dir is not '':
+            pysat.utils.set_data_dir(saved_dir, store=False)
+            check3 = (pysat.data_dir == saved_dir)
+        else:
+            check3 = True
+
+        assert check1 & check2 & check3
+
+    def test_initial_pysat_load(self):
+        import shutil
+        saved = False
+        try:
+            root = os.path.join(os.getenv('HOME'), '.pysat')
+            new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+            shutil.move(root, new_root)
+            saved = True
+        except:
+            pass
+
+        re_load(pysat)
+
+        try:
+            if saved:
+                # remove directory, trying to be careful
+                os.remove(os.path.join(root, 'data_path.txt'))
+                os.rmdir(root)
+                shutil.move(new_root, root)
+        except:
+            pass
+
+        assert True
+
+
+class TestBasicNetCDF4():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -65,22 +127,9 @@ class TestBasics():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
-                                         # inst_module=pysat.instruments.pysat_testing,
                                          clean_level='clean')
         # create testing directory
         prep_dir(self.testInst)
-
-        # Add longitude to the test instrument
-        ones = np.ones(shape=len(self.test_angles))
-        time = pysat.utils.time.create_datetime_index(year=ones*2001,
-                                                      month=ones,
-                                                      uts=np.arange(0.0,
-                                                                    len(ones),
-                                                                    1.0))
-
-        self.testInst.data = \
-            pds.DataFrame(np.array([time, self.test_angles]).transpose(),
-                          index=time, columns=["time", "longitude"])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -91,7 +140,7 @@ class TestBasics():
             pass
         del self.testInst
 
-    def test_basic_writing_and_reading_netcdf4_default_format(self):
+    def test_basic_write_and_read_netcdf4_default_format(self):
         # create a bunch of files by year and doy
         from unittest.case import SkipTest
         try:
@@ -116,7 +165,7 @@ class TestBasics():
             assert(np.all(self.testInst[key] == loaded_inst[key]))
         # assert(np.all(self.testInst.data == loaded_inst))
 
-    def test_basic_writing_and_reading_netcdf4_default_format_w_compression(self):
+    def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
         from unittest.case import SkipTest
         try:
@@ -141,7 +190,7 @@ class TestBasics():
             assert (np.all(self.testInst[key] == loaded_inst[key]))
             # assert(np.all(self.testInst.data == loaded_inst))
 
-    def test_basic_writing_and_reading_netcdf4_default_format_w_weird_epoch_name(self):
+    def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
         from unittest.case import SkipTest
         try:
@@ -155,7 +204,7 @@ class TestBasics():
         self.testInst.to_netcdf4(outfile, epoch_name='Santa')
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
-                                                          epoch_name='Santa')
+                                                     epoch_name='Santa')
         self.testInst.data = \
             self.testInst.data.reindex(sorted(self.testInst.data.columns),
                                        axis=1)
@@ -166,13 +215,14 @@ class TestBasics():
             print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
 
-    def test_basic_writing_and_reading_netcdf4_default_format_higher_order(self):
+    def test_write_and_read_netcdf4_default_format_higher_order(self):
         # create a bunch of files by year and doy
         from unittest.case import SkipTest
         try:
             import netCDF4
         except ImportError:
             raise SkipTest
+
         test_inst = pysat.Instrument('pysat', 'testing2d')
         prep_dir(test_inst)
         outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
@@ -205,21 +255,13 @@ class TestBasics():
                                   loaded_inst['series_profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
 
-        # Debugging statements
-        # print(test_inst['series_profiles'][0],
-        #       loaded_inst['series_profiles'][0])
-        # print(type(test_inst['series_profiles'][0]),
-        #       type(loaded_inst['series_profiles'][0]))
-        # print((test_inst['series_profiles'][0]) ==
-        #       (loaded_inst['series_profiles'][0]))
-
         loaded_inst.drop('series_profiles', inplace=True, axis=1)
         test_inst.data.drop('series_profiles', inplace=True, axis=1)
 
         assert(np.all((test_inst.data == loaded_inst).all()))
         assert np.all(test_list)
 
-    def test_basic_writing_and_reading_netcdf4_default_format_higher_order_w_Compression(self):
+    def test_write_and_read_netcdf4_default_format_higher_order_w_zlib(self):
         # create a bunch of files by year and doy
         from unittest.case import SkipTest
         try:
@@ -266,93 +308,3 @@ class TestBasics():
         assert (np.all((test_inst.data == loaded_inst).all()))
         # print (test_list)
         assert np.all(test_list)
-
-    # def test_basic_writing_and_reading_netcdf4_multiple_formats(self):
-    #     # create a bunch of files by year and doy
-    #     from unittest.case import SkipTest
-    #     try:
-    #         import netCDF4
-    #     except ImportError:
-    #         raise SkipTest
-    #
-    #     outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
-    #     self.testInst.load(2009,1)
-    #     check = []
-    #     for format in ['NETCDF3_CLASSIC','NETCDF3_64BIT', 'NETCDF4_CLASSIC',
-    #                    'NETCDF4']:
-    #         self.testInst.to_netcdf4(outfile, file_format=format)
-    #         loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
-    #                                                      file_format=format)
-    #         self.testInst.data = self.testInst.data.reindex(sorted(self.testInst.data.columns), axis=1)
-    #         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
-    #         check.append(np.all(self.testInst.data == loaded_inst))
-    #         print(loaded_inst['string_dummy'])
-    #
-    #     assert(np.all(check))
-
-    #######################
-    # test pysat data dir options
-    def test_set_data_dir(self):
-        saved_dir = self.data_path
-        # update data_dir
-        pysat.utils.set_data_dir('.')
-        check1 = (pysat.data_dir == '.')
-        if saved_dir is not '':
-            pysat.utils.set_data_dir(saved_dir)
-            check2 = (pysat.data_dir == saved_dir)
-        else:
-            check2 = True
-        assert check1 & check2
-
-    def test_set_data_dir_no_store(self):
-        import sys
-        if sys.version_info[0] >= 3:
-            if sys.version_info[1] < 4:
-                import imp
-                re_load = imp.reload
-            else:
-                import importlib
-                re_load = importlib.reload
-        else:
-            re_load = reload
-
-        saved_dir = self.data_path
-        # update data_dir
-        pysat.utils.set_data_dir('.', store=False)
-        check1 = (pysat.data_dir == '.')
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
-
-        check2 = (pysat.data_dir == saved_dir)
-        if saved_dir is not '':
-            pysat.utils.set_data_dir(saved_dir, store=False)
-            check3 = (pysat.data_dir == saved_dir)
-        else:
-            check3 = True
-
-        assert check1 & check2 & check3
-
-    def test_initial_pysat_load(self):
-        import shutil
-        saved = False
-        try:
-            root = os.path.join(os.getenv('HOME'), '.pysat')
-            new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
-            shutil.move(root, new_root)
-            saved = True
-        except:
-            pass
-
-        re_load(pysat)
-
-        try:
-            if saved:
-                # remove directory, trying to be careful
-                os.remove(os.path.join(root, 'data_path.txt'))
-                os.rmdir(root)
-                shutil.move(new_root, root)
-        except:
-            pass
-
-        assert True

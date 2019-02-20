@@ -1,14 +1,11 @@
 """
 tests the pysat utils.stats area
 """
-import os
 import numpy as np
 import pandas as pds
 import nose.tools
 from nose.tools import assert_raises, raises
-import tempfile
 import pysat
-import pysat.instruments.pysat_testing
 from pysat.utils import stats as pystats
 
 
