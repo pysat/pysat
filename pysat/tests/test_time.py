@@ -23,7 +23,7 @@ def test_getyrdoy_leap_year():
     assert ((yr == 2008) & (doy == 366))
 
 
-def test_calc_freq(self):
+def test_calc_freq():
     """Test index frequency calculation"""
 
     tind = pytime.create_datetime_index(year=np.ones(shape=(4,))*2001,
@@ -34,7 +34,7 @@ def test_calc_freq(self):
     assert freq.find("1S") == 0
 
 
-def test_calc_freq_ns(self):
+def test_calc_freq_ns():
     """Test index frequency calculation with nanosecond output"""
 
     tind = pytime.create_datetime_index(year=np.ones(shape=(4,))*2001,
@@ -45,13 +45,13 @@ def test_calc_freq_ns(self):
     assert freq.find("10000000N") == 0
 
 
-def test_calc_freq_len_fail(self):
+def test_calc_freq_len_fail():
     """Test index frequency calculation with empty list"""
 
     assert_raises(ValueError, pytime.calc_freq, list())
 
 
-def test_calc_freq_type_fail(self):
+def test_calc_freq_type_fail():
     """Test index frequency calculation with non-datetime list"""
 
     assert_raises(AttributeError, pytime.calc_freq, [1, 2, 3, 4])
