@@ -75,6 +75,66 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     return
 
 
+def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
+    """ Append solar local time to an instrument object
+
+    Parameters
+    ------------
+    inst : pysat.Instrument instance
+        instrument object to be updated
+    lon_name : string
+        name of the longtiude data key (assumes data are in degrees)
+    slt_name : string
+        name of the output solar local time data key (default='slt')
+
+    Returns
+    ---------
+    updates instrument data in column specified by slt_name
+
+    """
+    import datetime as dt
+
+    if lon_name not in inst.data.keys():
+        raise ValueError('uknown longitude variable name')
+
+    # Convert from numpy epoch nanoseconds to UT seconds of day
+    utsec = list()
+    for nptime in inst.index.values.astype(int):
+        # Numpy times come out in nanoseconds and timestamp converts
+        # from seconds
+        dtime = dt.datetime.fromtimestamp(nptime * 1.0e-9)
+        utsec.append((dtime.hour * 3600.0 + dtime.minute * 60.0 +
+                      dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
+
+    # Calculate solar local time
+    slt = np.array([t + inst[lon_name][i] / 15.0 for i, t in enumerate(utsec)])
+
+    # Ensure that solar local time falls between 0 and 24 hours
+    slt[slt >= 24.0] -= 24.0
+    slt[slt < 0.0] += 24.0
+
+    # Add the solar local time to the instrument
+    if inst.pandas_format:
+        inst[slt_name] = pds.Series(slt, index=inst.data.index)
+    else:
+        data = inst.data.assign(pysat_slt=(inst.data.coords.keys(), slt))
+        data.rename({"pysat_slt": slt_name}, inplace=True)
+        inst.data = data
+
+    # Add units to the metadata
+    inst.meta.__setitem__(slt_name, {inst.meta.units_label: 'h',
+                                     inst.meta.name_label: "Solar Local Time",
+                                     inst.meta.desc_label: "Solar local time",
+                                     inst.meta.plot_label: "SLT",
+                                     inst.meta.axis_label: "SLT",
+                                     inst.meta.scale_label: "linear",
+                                     inst.meta.min_label: 0.0,
+                                     inst.meta.max_label: 24.0,
+                                     inst.meta.fill_label: np.nan})
+
+    return
+
+
 def scale_units(out_unit, in_unit):
     """ Determine the scaling factor between two units
 
@@ -490,63 +550,3 @@ def local_horizontal_to_global_geo(az, el, dist, lat_orig, lon_orig, alt_orig,
         rad_pnt = rearth + rad_pnt - 6371.0
 
     return lat_pnt, lon_pnt, rad_pnt
-
-
-def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
-    """ Append solar local time to an instrument object
-
-    Parameters
-    ------------
-    inst : pysat.Instrument instance
-        instrument object to be updated
-    lon_name : string
-        name of the longtiude data key (assumes data are in degrees)
-    slt_name : string
-        name of the output solar local time data key (default='slt')
-
-    Returns
-    ---------
-    updates instrument data in column specified by slt_name
-
-    """
-    import datetime as dt
-
-    if lon_name not in inst.data.keys():
-        raise ValueError('uknown longitude variable name')
-
-    # Convert from numpy epoch nanoseconds to UT seconds of day
-    utsec = list()
-    for nptime in inst.index.values.astype(int):
-        # Numpy times come out in nanoseconds and timestamp converts
-        # from seconds
-        dtime = dt.datetime.fromtimestamp(nptime * 1.0e-9)
-        utsec.append((dtime.hour * 3600.0 + dtime.minute * 60.0 +
-                      dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
-
-    # Calculate solar local time
-    slt = np.array([t + inst[lon_name][i] / 15.0 for i, t in enumerate(utsec)])
-
-    # Ensure that solar local time falls between 0 and 24 hours
-    slt[slt >= 24.0] -= 24.0
-    slt[slt < 0.0] += 24.0
-
-    # Add the solar local time to the instrument
-    if inst.pandas_format:
-        inst[slt_name] = pds.Series(slt, index=inst.data.index)
-    else:
-        data = inst.data.assign(pysat_slt=(inst.data.coords.keys(), slt))
-        data.rename({"pysat_slt": slt_name}, inplace=True)
-        inst.data = data
-
-    # Add units to the metadata
-    inst.meta.__setitem__(slt_name, {inst.meta.units_label: 'h',
-                                     inst.meta.name_label: "Solar Local Time",
-                                     inst.meta.desc_label: "Solar local time",
-                                     inst.meta.plot_label: "SLT",
-                                     inst.meta.axis_label: "SLT",
-                                     inst.meta.scale_label: "linear",
-                                     inst.meta.min_label: 0.0,
-                                     inst.meta.max_label: 24.0,
-                                     inst.meta.fill_label: np.nan})
-
-    return
