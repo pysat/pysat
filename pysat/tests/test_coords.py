@@ -13,9 +13,11 @@ import pysat.instruments.pysat_testing
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        del self.test_angles
 
     def test_adjust_cyclic_data_default(self):
         """ Test adjust_cyclic_data with default range """
@@ -30,7 +32,7 @@ class TestBasics():
         """ Test adjust_cyclic_data with a custom range """
 
         test_angles = coords.adjust_cyclic_data(self.test_angles,
-                                                     high=180.0, low=-180.0)
+                                                high=180.0, low=-180.0)
 
         assert test_angles.max() < 180.0
         assert test_angles.min() >= -180.0
@@ -215,8 +217,8 @@ class TestBasics():
                                                           lon_in=lon1,
                                                           inverse=False)
         lat3, lon3, rad_e = coords.geodetic_to_geocentric(lat2,
-                                                                lon_in=lon2,
-                                                                inverse=True)
+                                                          lon_in=lon2,
+                                                          inverse=True)
         assert (abs(lon1-lon3) < 1.0e-6)
         assert (abs(lat1-lat3) < 1.0e-6)
 
