@@ -39,6 +39,9 @@ class TestBasics():
         del self.test_angles, self.testInst
         del self.deg_units, self.dist_units, self.vel_units
 
+    #####################################
+    # Cyclic data conversions
+
     def test_adjust_cyclic_data_default(self):
         """ Test adjust_cyclic_data with default range """
 
@@ -57,6 +60,9 @@ class TestBasics():
         assert test_angles.max() < 180.0
         assert test_angles.min() >= -180.0
 
+    #####################################
+    # Update Longitude
+
     def test_update_longitude(self):
         """Test update_longitude """
 
@@ -70,6 +76,9 @@ class TestBasics():
 
         assert_raises(ValueError, coords.update_longitude,
                       self.testInst)
+
+    #####################################
+    # Scale units
 
     def test_scale_units_same(self):
         """ Test scale_units when both units are the same """
@@ -125,6 +134,9 @@ class TestBasics():
         assert_raises(ValueError, coords.scale_units, "m", "m/s")
         assert_raises(ValueError, coords.scale_units, "m", "deg")
         assert_raises(ValueError, coords.scale_units, "h", "km/s")
+
+    #####################################
+    # Geodetic / Geocentric conversions
 
     def test_geodetic_to_geocentric_single(self):
         """Test conversion from geodetic to geocentric coordinates"""
@@ -182,6 +194,49 @@ class TestBasics():
         assert (abs(lonx - 8.0).max() < 1.0e-6)
         assert (abs(radx - 6367.345908499981).max() < 1.0e-6)
 
+    def test_geodetic_to_geocentric_inverse(self):
+        """Tests the reversibility of geodetic to geocentric conversions"""
+
+        lat1 = 37.5
+        lon1 = 117.3
+        lat2, lon2, rad_e = coords.geodetic_to_geocentric(lat1,
+                                                          lon_in=lon1,
+                                                          inverse=False)
+        lat3, lon3, rad_e = coords.geodetic_to_geocentric(lat2,
+                                                          lon_in=lon2,
+                                                          inverse=True)
+        assert (abs(lon1-lon3) < 1.0e-6)
+        assert (abs(lat1-lat3) < 1.0e-6)
+
+    ###############################################
+    # Geodetic / Geocentric Horizontal conversions
+
+    def test_geodetic_to_geocentric_horizontal_inverse(self):
+        """Tests the reversibility of geodetic to geocentric horiz conversions
+
+        Note:  inverse of az and el angles currently non-functional"""
+
+        lat1 = -17.5
+        lon1 = 187.3
+        az1 = 52.0
+        el1 = 63.0
+        lat2, lon2, rad_e, az2, el2 = \
+            coords.geodetic_to_geocentric_horizontal(lat1, lon1,
+                                                     az1, el1,
+                                                     inverse=False)
+        lat3, lon3, rad_e, az3, el3 = \
+            coords.geodetic_to_geocentric_horizontal(lat2, lon2,
+                                                     az2, el2,
+                                                     inverse=True)
+
+        assert (abs(lon1-lon3) < 1.0e-6)
+        assert (abs(lat1-lat3) < 1.0e-6)
+        assert (abs(az1-az3) < 1.0e-6)
+        assert (abs(el1-el3) < 1.0e-6)
+
+    ####################################
+    # Spherical / Cartesian conversions
+
     def test_spherical_to_cartesian_single(self):
         """Test conversion from spherical to cartesian coordinates"""
 
@@ -228,43 +283,6 @@ class TestBasics():
         assert abs(el - 30.0).max() < 1.0e-6
         assert abs(r - 1.0).max() < 1.0e-6
 
-    def test_geodetic_to_geocentric_inverse(self):
-        """Tests the reversibility of geodetic to geocentric conversions"""
-
-        lat1 = 37.5
-        lon1 = 117.3
-        lat2, lon2, rad_e = coords.geodetic_to_geocentric(lat1,
-                                                          lon_in=lon1,
-                                                          inverse=False)
-        lat3, lon3, rad_e = coords.geodetic_to_geocentric(lat2,
-                                                          lon_in=lon2,
-                                                          inverse=True)
-        assert (abs(lon1-lon3) < 1.0e-6)
-        assert (abs(lat1-lat3) < 1.0e-6)
-
-    def test_geodetic_to_geocentric_horizontal_inverse(self):
-        """Tests the reversibility of geodetic to geocentric horiz conversions
-
-        Note:  inverse of az and el angles currently non-functional"""
-
-        lat1 = -17.5
-        lon1 = 187.3
-        az1 = 52.0
-        el1 = 63.0
-        lat2, lon2, rad_e, az2, el2 = \
-            coords.geodetic_to_geocentric_horizontal(lat1, lon1,
-                                                     az1, el1,
-                                                     inverse=False)
-        lat3, lon3, rad_e, az3, el3 = \
-            coords.geodetic_to_geocentric_horizontal(lat2, lon2,
-                                                     az2, el2,
-                                                     inverse=True)
-
-        assert (abs(lon1-lon3) < 1.0e-6)
-        assert (abs(lat1-lat3) < 1.0e-6)
-        assert (abs(az1-az3) < 1.0e-6)
-        assert (abs(el1-el3) < 1.0e-6)
-
     def test_spherical_to_cartesian_inverse(self):
         """Tests the reversibility of spherical to cartesian conversions"""
 
@@ -279,6 +297,9 @@ class TestBasics():
         assert (abs(x1-x2) < 1.0e-6)
         assert (abs(y1-y2) < 1.0e-6)
         assert (abs(z1-z2) < 1.0e-6)
+
+    ########################################
+    # Global / Local Cartesian conversions
 
     def test_global_to_local_cartesian_inverse(self):
         """Tests the reversibility of the global to loc cartesian transform"""
@@ -298,6 +319,9 @@ class TestBasics():
         assert (abs(x1-x3) < 1.0e-6)
         assert (abs(y1-y3) < 1.0e-6)
         assert (abs(z1-z3) < 1.0e-6)
+
+    ########################################
+    # Local Horizontal / Global conversions
 
     def test_local_horizontal_to_global_geo(self):
         """Tests the conversion of the local horizontal to global geo"""
