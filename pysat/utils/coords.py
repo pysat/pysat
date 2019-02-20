@@ -7,6 +7,7 @@ functions used throughout the pysat package.
 """
 
 import numpy as np
+import pandas as pds
 
 
 def adjust_cyclic_data(samples, high=2.0*np.pi, low=0.0):

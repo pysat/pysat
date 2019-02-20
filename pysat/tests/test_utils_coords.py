@@ -71,11 +71,30 @@ class TestBasics():
         assert np.all(self.testInst.data['longitude'] < 180.0)
         assert np.all(self.testInst.data['longitude'] >= -180.0)
 
+    @raises(ValueError)
     def test_bad_lon_name_update_longitude(self):
         """Test update_longitude with a bad longitude name"""
 
-        assert_raises(ValueError, coords.update_longitude,
-                      self.testInst)
+        coords.update_longitude(self.testInst, lon_name="not longitude")
+
+    #########################
+    # calc_solar_local_time
+
+    def test_calc_solar_local_time(self):
+
+        coords.calc_solar_local_time(self.testInst, lon_name="longitude",
+                                     slt_name='slt')
+        target = [17.666667, 18.200278, 18.927222,
+                  19.034167, 19.334444, 19.659389]
+
+        assert (np.abs(self.testInst['slt'] - target)).max() < 1.0e-6
+
+    @raises(ValueError)
+    def test_bad_lon_name_calc_solar_local_time(self):
+        """Test calc_solar_local_time with a bad longitude name"""
+
+        coords.calc_solar_local_time(self.testInst, lon_name="not longitude",
+                                     slt_name='slt')
 
     #####################################
     # Scale units
@@ -340,12 +359,3 @@ class TestBasics():
         assert (abs(latx - 50.419037572472625) < 1.0e-6)
         assert (abs(lonx + 7.694008395350697) < 1.0e-6)
         assert (abs(radx - 7172.15486518744) < 1.0e-6)
-
-    #########################
-    # calc_solar_local_time
-
-    def test_calc_solar_local_time(self):
-
-        pytime.calc_solar_local_time(inst, lon_name=None, slt_name='slt')
-
-        assert True
