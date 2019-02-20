@@ -17,6 +17,93 @@ class TestBasics():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
 
+    def test_adjust_cyclic_data_default(self):
+        """ Test adjust_cyclic_data with default range """
+
+        test_in = np.radians(self.test_angles) - np.pi
+        test_angles = coords.adjust_cyclic_data(test_in)
+
+        assert test_angles.max() < 2.0 * np.pi
+        assert test_angles.min() >= 0.0
+
+    def test_adjust_cyclic_data_custom(self):
+        """ Test adjust_cyclic_data with a custom range """
+
+        test_angles = coords.adjust_cyclic_data(self.test_angles,
+                                                     high=180.0, low=-180.0)
+
+        assert test_angles.max() < 180.0
+        assert test_angles.min() >= -180.0
+
+    def test_update_longitude(self):
+        """Test update_longitude """
+
+        coords.update_longitude(self.testInst, lon_name="longitude")
+
+        assert np.all(self.testInst.data['longitude'] < 180.0)
+        assert np.all(self.testInst.data['longitude'] >= -180.0)
+
+    def test_bad_lon_name_update_longitude(self):
+        """Test update_longitude with a bad longitude name"""
+
+        assert_raises(ValueError, coords.update_longitude,
+                      self.testInst)
+
+    def test_scale_units_same(self):
+        """ Test scale_units when both units are the same """
+
+        scale = coords.scale_units("happy", "happy")
+
+        assert scale == 1.0
+
+    def test_scale_units_angles(self):
+        """Test scale_units for angles """
+
+        for out_unit in self.deg_units:
+            scale = coords.scale_units(out_unit, "deg")
+
+            if out_unit.find("deg") == 0:
+                assert scale == 1.0
+            elif out_unit.find("rad") == 0:
+                assert scale == np.pi / 180.0
+            else:
+                assert scale == 1.0 / 15.0
+
+    def test_scale_units_dist(self):
+        """Test scale_units for distances """
+
+        for out_unit in self.dist_units:
+            scale = coords.scale_units(out_unit, "m")
+
+            if out_unit == "m":
+                assert scale == 1.0
+            elif out_unit.find("km") == 0:
+                assert scale == 0.001
+            else:
+                assert scale == 100.0
+
+    def test_scale_units_vel(self):
+        """Test scale_units for velocities """
+
+        for out_unit in self.vel_units:
+            scale = coords.scale_units(out_unit, "m/s")
+
+            if out_unit == "m/s":
+                assert scale == 1.0
+            elif out_unit.find("km/s") == 0:
+                assert scale == 0.001
+            else:
+                assert scale == 100.0
+
+    def test_scale_units_bad(self):
+        """Test scale_units for mismatched input"""
+
+        assert_raises(ValueError, coords.scale_units, "happy", "m")
+        assert_raises(ValueError, coords.scale_units, "m", "happy")
+        assert_raises(ValueError, coords.scale_units, "m", "m/s")
+        assert_raises(ValueError, coords.scale_units, "m", "deg")
+        assert_raises(ValueError, coords.scale_units, "h", "km/s")
+
     def test_geodetic_to_geocentric_single(self):
         """Test conversion from geodetic to geocentric coordinates"""
 
@@ -165,7 +252,7 @@ class TestBasics():
         az, el, r = coords.spherical_to_cartesian(x1, y1, z1,
                                                   inverse=True)
         x2, y2, z2 = coords.spherical_to_cartesian(az, el, r,
-                                                  inverse=False)
+                                                   inverse=False)
 
         assert (abs(x1-x2) < 1.0e-6)
         assert (abs(y1-y2) < 1.0e-6)
