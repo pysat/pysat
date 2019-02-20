@@ -1,15 +1,12 @@
 """
 tests the pysat utils.time area
 """
-import os
 import numpy as np
 import pandas as pds
 import nose.tools
 from nose.tools import assert_raises, raises
-import tempfile
 import pysat
 from pysat.utils import time as pytime
-import pysat.instruments.pysat_testing
 
 
 def test_getyrdoy_1():
@@ -34,20 +31,23 @@ def test_calc_freq(self):
 
     assert self.testInst.index.freq.freqstr.find("S") == 0
 
+
 def test_calc_freq_ns(self):
     """Test index frequency calculation with nanosecond output"""
 
     tind = pytime.create_datetime_index(year=np.ones(shape=(4,))*2001,
-                                             month=np.ones(shape=(4,)),
-                                             uts=np.arange(0.0, 0.04, .01))
+                                        month=np.ones(shape=(4,)),
+                                        uts=np.arange(0.0, 0.04, .01))
     freq = pytime.calc_freq(tind)
 
     assert freq.find("10000000N") == 0
+
 
 def test_calc_freq_len_fail(self):
     """Test index frequency calculation with empty list"""
 
     assert_raises(ValueError, pytime.calc_freq, list())
+
 
 def test_calc_freq_type_fail(self):
     """Test index frequency calculation with non-datetime list"""
