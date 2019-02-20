@@ -10,7 +10,7 @@ name : string
 tag : string
     '' Standard Kp data
     'forecast' Grab forecast data from SWPC (next 3 days)
-    'recent' Grab last 30 days of Kp data from SWPC 
+    'recent' Grab last 30 days of Kp data from SWPC
 
 Note
 ----
@@ -43,13 +43,13 @@ and multi_file_day feature available from the pyast.Instrument object
 is not appropriate for Kp 'forecast' data.
 
 
-This material is based upon work supported by the 
-National Science Foundation under Grant Number 1259508. 
+This material is based upon work supported by the
+National Science Foundation under Grant Number 1259508.
 
-Any opinions, findings, and conclusions or recommendations expressed in this 
-material are those of the author(s) and do not necessarily reflect the views 
+Any opinions, findings, and conclusions or recommendations expressed in this
+material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
-       
+
 """
 
 import os
@@ -98,10 +98,10 @@ def load(fnames, tag=None, sat_id=None):
     Notes
     -----
     Called by pysat. Not intended for direct use by user.
-    
-    
+
+
     """
-    from pysat.utils import parse_date
+    from pysat.utils.time import parse_date
 
     meta = pysat.Meta()
     if tag == '':
@@ -118,7 +118,7 @@ def load(fnames, tag=None, sat_id=None):
             # desired day
             fname = filename[0:-11]
             date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
-    
+
             temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,
                                 header=None, parse_dates=[[0,1,2]],
                                 date_parser=parse_date, index_col='0_1_2')
@@ -126,32 +126,32 @@ def load(fnames, tag=None, sat_id=None):
                             (temp.index < date + pds.DateOffset(days=1)))
             temp = temp.iloc[idx,:]
             data = pds.concat([data,temp], axis=0)
-            
+
         # drop last column as it has data I don't care about
         data = data.iloc[:,0:-1]
-        
+
         # each column increments UT by three hours
         # produce a single data series that has Kp value monotonically
         # increasing in time with appropriate datetime indices
         s = pds.Series()
         for i in np.arange(8):
-            temp = pds.Series(data.iloc[:,i].values, 
+            temp = pds.Series(data.iloc[:,i].values,
                               index=data.index+pds.DateOffset(hours=int(3*i)))
-            s = s.append(temp) 
+            s = s.append(temp)
         s = s.sort_index()
         s.index.name = 'time'
-        
+
         # now, Kp comes in non-user friendly values
         # 2-, 2o, and 2+ relate to 1.6, 2.0, 2.3
         # will convert for user friendliness
         first = np.array([float(x[0]) for x in s])
         flag = np.array([x[1] for x in s])
-    
+
         ind, = np.where(flag == '+')
         first[ind] += 1.0 / 3.0
         ind, = np.where(flag == '-')
         first[ind] -= 1.0 / 3.0
-        
+
         result = pds.DataFrame(first, columns=['Kp'], index=s.index)
         fill_val = np.nan
     elif tag == 'forecast':
@@ -168,7 +168,7 @@ def load(fnames, tag=None, sat_id=None):
         initialize_kp_metadata(meta, kk, fill_val)
 
     return result, meta
-    
+
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
@@ -194,9 +194,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Notes
     -----
-    Called by pysat. Not intended for direct use by user.   
-     
-    
+    Called by pysat. Not intended for direct use by user.
+
+
     """
 
     if data_path is not None:
@@ -206,14 +206,14 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # data and use the appended date to select out appropriate data.
             if format_str is None:
                 format_str = 'kp{year:2d}{month:02d}.tab'
-            out = pysat.Files.from_os(data_path=data_path, 
+            out = pysat.Files.from_os(data_path=data_path,
                 format_str=format_str,
                 two_digit_year_break=94)
             if not out.empty:
                 out.ix[out.index[-1]+pds.DateOffset(months=1)-
-                         pds.DateOffset(days=1)] = out.iloc[-1]  
+                         pds.DateOffset(days=1)] = out.iloc[-1]
                 out = out.asfreq('D', 'pad')
-                out = out + '_' + out.index.strftime('%Y-%m-%d')  
+                out = out + '_' + out.index.strftime('%Y-%m-%d')
             return out
         elif tag == 'forecast':
             format_str = 'kp_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
@@ -224,7 +224,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 pds_off = pds.DateOffset(days=1)
                 files.ix[files.index[-1] + pds_off] = files.values[-1]
                 files.ix[files.index[-1] + pds_off] = files.values[-1]
-            return files           
+            return files
         elif tag == 'recent':
             format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
@@ -262,11 +262,11 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     --------
     Void : (NoneType)
         data downloaded to disk, if available.
-    
+
     Note
     ----
     Called by pysat. Not intended for direct use by user.
-    
+
     Warnings
     --------
     Only able to download current forecast data, not archived forecasts.
@@ -274,26 +274,26 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """
 
     # download standard Kp data
-    if tag == '':    
+    if tag == '':
         import ftplib
         from ftplib import FTP
         import sys
         ftp = FTP('ftp.gfz-potsdam.de')   # connect to host, default port
         ftp.login()               # user anonymous, passwd anonymous@
         ftp.cwd('/pub/home/obs/kp-ap/tab')
-    
+
         for date in date_array:
             fname = 'kp{year:02d}{month:02d}.tab'
             fname = fname.format(year=(date.year - date.year//100*100),
                                  month=date.month)
             local_fname = fname
-            saved_fname = os.path.join(data_path,local_fname) 
+            saved_fname = os.path.join(data_path,local_fname)
             try:
                 print('Downloading file for '+date.strftime('%x'))
                 sys.stdout.flush()
                 ftp.retrbinary('RETR '+fname, open(saved_fname,'wb').write)
             except ftplib.error_perm as exception:
-                
+
                 if str(exception.args[0]).split(" ", 1)[0] != '550':
                     raise
                 else:
@@ -301,9 +301,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                     # then continue on
                     os.remove(saved_fname)
                     print('File not available for '+date.strftime('%x'))
-        
+
         ftp.close()
-        
+
     elif tag == 'forecast':
         import requests
         print('This routine can only download the current forecast, ' +
@@ -357,7 +357,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         raw_data = r.text.split('#  Date ')[-1]
         # keep only the middle bits that matter
         raw_data = raw_data.split('\n')[1:-1]
-        
+
         # hold times from the file
         kp_time = []
         # holds Kp value for each station
@@ -366,7 +366,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         for line in raw_data:
             # print (line)
             kp_time.append(pysat.datetime.strptime(line[0:10], '%Y %m %d'))
-            # pick out Kp values for each of the three columns    
+            # pick out Kp values for each of the three columns
             sub_lines = [line[17:33], line[40:56], line[63:]]
             for sub_line, sub_kp in zip(sub_lines, sub_kps):
                 for i in np.arange(8):
@@ -376,13 +376,13 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # put into DataFrame
         data = pds.DataFrame({'mid_lat_Kp':sub_kps[0],
                               'high_lat_Kp':sub_kps[1],
-                              'Kp':sub_kps[2]}, index=times)         
+                              'Kp':sub_kps[2]}, index=times)
         # write out as a file
         data.to_csv(os.path.join(data_path, 'kp_recent_' +
                                  date.strftime('%Y-%m-%d') + '.txt'))
-        
-    return        
-    
+
+    return
+
 def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
                     kp_inst=None):
     """Filters pysat.Instrument data for given time after Kp drops below gate.
@@ -400,7 +400,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         Kp pysat.Instrument object with data already loaded
     kp_inst : pysat.Instrument (optional)
         Kp pysat.Instrument object ready to load Kp data.Overrides kpData.
-        
+
     Returns
     -------
     None : NoneType
@@ -410,10 +410,10 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     -----
     Loads Kp data for the same timeframe covered by sat and sets sat.data to
     NaN for times when Kp > maxKp and for filterTime after Kp drops below maxKp.
-    
+
     This routine is written for standard Kp data, not the forecast or recent
     data.
-        
+
     """
     if kp_inst is not None:
         kp_inst.load(date=sat.date, verifyPad=True)
@@ -422,14 +422,14 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         kp = pysat.Instrument('sw', 'Kp', pad=pds.DateOffset(days=1))
         kp.load(date=sat.date, verifyPad=True)
         kpData = kp
-        
-    
+
+
     if maxKp is None:
         maxKp = 3+ 1./3.
-        
+
     if filterTime is None:
         filterTime = 24
-        
+
     # now the defaults are ensured, let's do some filtering
     # date of satellite data
     date = sat.date
@@ -445,7 +445,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
 
 def initialize_kp_metadata(meta, data_key, fill_val=-1):
     """ Initialize the Kp meta data using our knowledge of the index
-    
+
     Parameters
     ----------
     meta : (pysat._meta.Meta)

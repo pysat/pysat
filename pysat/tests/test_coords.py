@@ -6,13 +6,13 @@ import numpy as np
 import nose.tools
 from nose.tools import assert_raises, raises
 import pysat
+from pysat.utils import coords
 import pysat.instruments.pysat_testing
 
 
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        from pysat.utils import coords
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
