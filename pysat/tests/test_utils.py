@@ -91,20 +91,6 @@ class TestBasics():
             pass
         del self.testInst
 
-    def test_update_longitude(self):
-        """Test update_longitude """
-
-        coords.update_longitude(self.testInst, lon_name="longitude")
-
-        assert np.all(self.testInst.data['longitude'] < 180.0)
-        assert np.all(self.testInst.data['longitude'] >= -180.0)
-
-    def test_bad_lon_name_update_longitude(self):
-        """Test update_longitude with a bad longitude name"""
-
-        assert_raises(ValueError, coords.update_longitude,
-                      self.testInst)
-
     def test_basic_writing_and_reading_netcdf4_default_format(self):
         # create a bunch of files by year and doy
         from unittest.case import SkipTest

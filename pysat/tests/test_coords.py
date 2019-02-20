@@ -15,9 +15,25 @@ class TestBasics():
         """Runs before every method to create a clean testing setup."""
         self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
 
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing',
+                                         clean_level='clean')
+        # Add longitude to the test instrument
+        ones = np.ones(shape=len(self.test_angles))
+        time = pysat.utils.time.create_datetime_index(year=ones*2001,
+                                                      month=ones,
+                                                      uts=np.arange(0.0,
+                                                                    len(ones),
+                                                                    1.0))
+
+        self.testInst.data = \
+            pds.DataFrame(np.array([time, self.test_angles]).transpose(),
+                          index=time, columns=["time", "longitude"])
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.test_angles
+        del self.testInst
 
     def test_adjust_cyclic_data_default(self):
         """ Test adjust_cyclic_data with default range """
