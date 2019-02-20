@@ -26,10 +26,12 @@ def test_getyrdoy_leap_year():
 def test_calc_freq(self):
     """Test index frequency calculation"""
 
-    self.testInst.load(2009, 1)
-    self.testInst.index.freq = pytime.calc_freq(self.testInst.index)
+    tind = pytime.create_datetime_index(year=np.ones(shape=(4,))*2001,
+                                        month=np.ones(shape=(4,)),
+                                        uts=np.arange(0.0, 4.0, 1.0))
+    freq = pytime.calc_freq(tind)
 
-    assert self.testInst.index.freq.freqstr.find("S") == 0
+    assert freq.find("1S") == 0
 
 
 def test_calc_freq_ns(self):
