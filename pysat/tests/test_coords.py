@@ -3,11 +3,11 @@ tests the pysat coords area
 """
 import os
 import numpy as np
+import pandas as pds
 import nose.tools
 from nose.tools import assert_raises, raises
 import pysat
 from pysat.utils import coords
-import pysat.instruments.pysat_testing
 
 
 class TestBasics():
@@ -30,10 +30,15 @@ class TestBasics():
             pds.DataFrame(np.array([time, self.test_angles]).transpose(),
                           index=time, columns=["time", "longitude"])
 
+        self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
+                          "radians", "h", "hr", "hrs", "hours"]
+        self.dist_units = ["m", "km", "cm"]
+        self.vel_units = ["m/s", "cm/s", "km/s"]
+
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.test_angles
-        del self.testInst
+        del self.test_angles, self.testInst
+        del self.deg_units, self.dist_units, self.vel_units
 
     def test_adjust_cyclic_data_default(self):
         """ Test adjust_cyclic_data with default range """
