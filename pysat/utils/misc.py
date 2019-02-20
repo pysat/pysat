@@ -259,11 +259,13 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     new_index_name = index_name
                 else:
                     # using integer indexing
-                    new_index = np.arange(loop_lim*step_size, dtype=int) % step_size
+                    new_index = np.arange(loop_lim*step_size,
+                                          dtype=int) % step_size
                     new_index_name = 'index'
                 # load all data into frame
                 if len(loop_dict.keys()) > 1:
-                    loop_frame = pds.DataFrame(loop_dict, columns=clean_var_keys)
+                    loop_frame = pds.DataFrame(loop_dict,
+                                               columns=clean_var_keys)
                     if obj_key_name in loop_frame:
                         del loop_frame[obj_key_name]
                     # break massive frame into bunch of smaller frames
@@ -300,7 +302,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # store attributes in metadata
                     meta_dict = {}
                     for nc_key in data.variables[obj_key_name].ncattrs():
-                        meta_dict[nc_key] = data.variables[obj_key_name].getncattr(nc_key)
+                        meta_dict[nc_key] = \
+                            data.variables[obj_key_name].getncattr(nc_key)
                     mdata[obj_key_name] = meta_dict
 
                     # iterate over all variables with this dimension and store data
@@ -308,14 +311,17 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     loop_dict = {}
                     # list holds a series of slices, parsed from dict above
                     loop_list = []
-                    loop_dict[obj_key_name] = data.variables[obj_key_name][:, :, :]
+                    loop_dict[obj_key_name] = \
+                        data.variables[obj_key_name][:, :, :]
                     # number of values in time
                     loop_lim = data.variables[obj_key_name].shape[0]
                     # number of values per time
                     step_size_x = len(data.variables[obj_key_name][0, :, 0])
                     step_size_y = len(data.variables[obj_key_name][0, 0, :])
                     step_size = step_size_x
-                    loop_dict[obj_key_name] = loop_dict[obj_key_name].reshape((loop_lim*step_size_x, step_size_y))
+                    loop_dict[obj_key_name] = \
+                        loop_dict[obj_key_name].reshape((loop_lim*step_size_x,
+                                                         step_size_y))
                     # check if there is an index we should use
                     if not (index_key_name is None):
                         # an index was found
@@ -330,7 +336,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         new_index_name = index_name
                     else:
                         # using integer indexing
-                        new_index = np.arange(loop_lim*step_size, dtype=int) % step_size
+                        new_index = np.arange(loop_lim*step_size,
+                                              dtype=int) % step_size
                         new_index_name = 'index'
                     # load all data into frame
                     loop_frame = pds.DataFrame(loop_dict[obj_key_name])
