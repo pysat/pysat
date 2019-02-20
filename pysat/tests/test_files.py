@@ -68,7 +68,7 @@ def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
         root_fname = 'pysat_testing_junk_{year:04d}_gold_{day:03d}_stuff.pysat_testing_file'
     # create empty file
     for date in dates:
-        yr, doy = pysat.utils.getyrdoy(date)
+        yr, doy = pysat.utils.time.getyrdoy(date)
         if use_doy:
             doy = doy
         else:
@@ -540,7 +540,7 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D', use_doy=True,
     for date in dates:
         for version in versions:
             for revision in revisions:
-                yr, doy = pysat.utils.getyrdoy(date)
+                yr, doy = pysat.utils.time.getyrdoy(date)
                 if use_doy:
                     doy = doy
                 else:
