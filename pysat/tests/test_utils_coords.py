@@ -340,3 +340,12 @@ class TestBasics():
         assert (abs(latx - 50.419037572472625) < 1.0e-6)
         assert (abs(lonx + 7.694008395350697) < 1.0e-6)
         assert (abs(radx - 7172.15486518744) < 1.0e-6)
+
+    #########################
+    # calc_solar_local_time
+
+    def test_calc_solar_local_time(self):
+
+        pytime.calc_solar_local_time(inst, lon_name=None, slt_name='slt')
+
+        assert True
