@@ -11,13 +11,14 @@ import pysat
 import pysat.instruments.pysat_testing
 from pysat.utils import stats as pystats
 
+
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Add testing data for circular statistics
         self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
         self.test_nan = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87, np.nan]
-        self.circ_kwargs = {"high":360.0, "low":0.0}
+        self.circ_kwargs = {"high": 360.0, "low": 0.0}
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
