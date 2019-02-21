@@ -67,8 +67,8 @@ else:
         data_dir = f.readline()
 
 if data_dir == '':
-    print(''.join(('Run pysat.utils.set_data_dir to set the path',
-          ' to top-level directory that will/does contain science data.')))
+    print(''.join(('Run pysat.utils.set_data_dir to set the path to top-level',
+                   ' directory that will/does contain science data.')))
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
