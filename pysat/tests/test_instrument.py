@@ -401,6 +401,14 @@ class TestBasics():
         else:
             assert a.sizes['time'] == 5
 
+    def test_getting_all_data_by_numpy_array_of_int(self):
+        self.testInst.load(2009, 1)
+        a = self.testInst[np.array([0, 1, 2, 3, 4])]
+        if self.testInst.pandas_format:
+            assert len(a) == 5
+        else:
+            assert a.sizes['time'] == 5
+
 # check iteration behavior
     @raises(StopIteration)
     def test_left_bounds_with_prev(self):
