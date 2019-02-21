@@ -97,9 +97,9 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                     'MdSymAcc': 'medSymAccuracy'}
 
     # Grouped methods for things that don't have convenience functions
-    grouped_methods = {"all_bias":["bias", "meanPercentageError",
-                                   "medianLogAccuracy", "symmetricSignedBias"],
-                       "all":list(method_rout.keys())}
+    grouped_methods = {"all_bias": ["bias", "meanPercentageError",
+                                    "medianLogAccuracy", "symmetricSignedBias"],
+                       "all": list(method_rout.keys())}
 
     # Replace any group method keys with the grouped methods
     for gg in [(i,mm) for i,mm in enumerate(methods)
@@ -136,8 +136,8 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                                                       known_methods))
 
     # Initialize the output
-    stat_dict = {iname:dict() for iname in inst_name}
-    data_units = {iname:pairs.data_vars[iname].units for iname in inst_name}
+    stat_dict = {iname: dict() for iname in inst_name}
+    data_units = {iname: pairs.data_vars[iname].units for iname in inst_name}
 
     # Cycle through all of the data types
     for i,iname in enumerate(inst_name):
@@ -495,7 +495,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     interp_data = dict()
     interp_shape = inst.index.shape if inst.pandas_format else \
         inst.data.data_vars.items()[0][1].shape
-    inst_coord = {kk:getattr(inst.data, inst_name[i]).values * inst_scale[i]
+    inst_coord = {kk: getattr(inst.data, inst_name[i]).values * inst_scale[i]
                   for i,kk in enumerate(mod_name)}
     for i,ii in enumerate(iind):
         # Cycle through each model data type, since it may not depend on
@@ -610,14 +610,13 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     # Update the instrument object and attach units to the metadata
     for mdat in interp_data.keys():
         attr_name = mdat.split("{:s}_".format(model_label))[-1]
-        inst.meta.__setitem__(mdat, {inst.meta.units_label:
-                                     model.data_vars[attr_name].units})
+        inst.meta[mdat] = {inst.units_label: model.data_vars[attr_name].units}
 
         if inst.pandas_format:
             inst[mdat] = pds.Series(interp_data[mdat], index=inst.index)
         else:
             inst.data = inst.data.assign(interp_key=(inst.data.coords.keys(),
                                                      interp_data[mdat]))
-            inst.data.rename({"interp_key":mdat}, inplace=True)
+            inst.data.rename({"interp_key": mdat}, inplace=True)
 
     return interp_data.keys()
