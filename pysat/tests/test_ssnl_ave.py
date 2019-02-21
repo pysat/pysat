@@ -153,48 +153,41 @@ class TestSeriesProfileAverages():
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
                                 pysat.datetime(2008, 2, 1))
+        self.dname = 'series_profiles'
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst
+        del self.testInst, self.dname
 
     def test_basic_seasonal_median2D(self):
         """ Test basic seasonal 2D median"""
         results = avg.median2D(self.testInst, [0., 360., 24.], 'longitude',
-                               [0., 24, 24], 'mlt', ['series_profiles'])
-
-        dummy_val = results['series_profiles']['median']
-        dummy_dev = results['series_profiles']['avg_abs_dev']
+                               [0., 24, 24], 'mlt', [self.dname])
 
         # iterate over all 
         # no variation in the median, all values should be the same
         test_vals = np.arange(50) * 1.2
-        for i, row in enumerate(dummy_val):
+        for i, row in enumerate(results[self.dname]['median']):
             for j, item in enumerate(row):
                 assert np.all(item == test_vals)
                 
-        for i, row in enumerate(dummy_dev):
+        for i, row in enumerate(results[self.dname]['avg_abs_dev']):
             for j, item in enumerate(row):
                 assert np.all(item == 0)
 
     def test_basic_seasonal_median1D(self):
         """ Test basic seasonal 1D median"""
         results = avg.median1D(self.testInst, [0., 24, 24], 'mlt',
-                               ['series_profiles'])
-
-        dummy_val = results['series_profiles']['median']
-        dummy_dev = results['series_profiles']['avg_abs_dev']
+                               [self.dname])
 
         # iterate over all 
         # no variation in the median, all values should be the same
         test_vals = np.arange(50) * 1.2
-        for i, row in enumerate(dummy_val):
-            for j, item in enumerate(row):
-                assert np.all(item == test_vals)
+        for i, row in enumerate(results[self.dname]['median']):
+            assert np.all(row == test_vals)
                 
-        for i, row in enumerate(dummy_dev):
-            for j, item in enumerate(row):
-                assert np.all(item == 0)
+        for i, row in enumerate(results[self.dname]['avg_abs_dev']):
+            assert np.all(row == 0)
 
 class TestConstellation:
     def setup(self):
@@ -315,8 +308,8 @@ class TestHeterogenousConstellation:
         # no variation in the median, all values should be the same
         check = []
         for i, x in enumerate(results['dummy1']['bin_x'][:-1]):
-            check.append(np.all(dummy_val[i, :] == x.astype(int)))
-            check.append(np.all(dummy_dev[i, :] == 0))
+            check.append(np.all(dummy_val[i] == x.astype(int)))
+            check.append(np.all(dummy_dev[i] == 0))
 
         assert np.all(check)
 
@@ -355,7 +348,7 @@ class Test2DConstellation:
         for i in self.testC.instruments:
             i.bounds = self.bounds
         
-        results = avg.median2D(self.testC, [0., 24, 24], 'slt', ['uts'])
+        results = avg.median1D(self.testC, [0., 24, 24], 'slt', ['uts'])
         dummy_val = results['uts']['median']
         dummy_dev = results['uts']['avg_abs_dev']
 
@@ -365,8 +358,8 @@ class Test2DConstellation:
         # no variation in the median, all values should be the same
         check = []
         for i, x in enumerate(dummy_x[:-1]):
-            check.append(np.all(dummy_val[i, :] == x.astype(int)))
-            check.append(np.all(dummy_dev[i, :] == 0))
+            check.append(np.all(dummy_val[i] == x.astype(int)))
+            check.append(np.all(dummy_dev[i] == 0))
 
 class TestSeasonalAverageUnevenBins:
     def setup(self):
