@@ -453,7 +453,6 @@ class Files(object):
             split_str = os.path.join(self.data_path, '')
             return inp.apply(lambda x: x.split(split_str)[-1])
 
-
     @classmethod
     def from_os(cls, data_path=None, format_str=None,
                 two_digit_year_break=None, delimiter=None):
@@ -494,7 +493,8 @@ class Files(object):
         """
 
         if data_path is None:
-            raise ValueError("Must supply instrument directory path (dir_path)")
+            raise ValueError("Must supply instrument directory path " +
+                             "(dir_path)")
 
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
@@ -590,8 +590,9 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             stored['revision'] = np.zeros(len(files))
 
         index = create_datetime_index(year=stored['year'],
-                                        month=stored['month'],
-                                        day=stored['day'], uts=stored['sec'])
+                                      month=stored['month'],
+                                      day=stored['day'],
+                                      uts=stored['sec'])
 
         # if version and revision are supplied
         # use these parameters to weed out files that have been replaced
@@ -603,11 +604,11 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             # keep the highest version/revision combo
             version = pds.Series(stored['version'], index=index)
             revision = pds.Series(stored['revision'], index=index)
-            revive = version*100000. + revision
-            frame = pds.DataFrame({'files':files, 'revive':revive,
-                                    'time':index}, index=index)
+            revive = version * 100000. + revision
+            frame = pds.DataFrame({'files': files, 'revive': revive,
+                                   'time': index}, index=index)
             frame = frame.sort_values(by=['time', 'revive'],
-                                        ascending=[True, False])
+                                      ascending=[True, False])
             frame = frame.drop_duplicates(subset='time', keep='first')
 
             return frame['files']
@@ -644,9 +645,14 @@ def parse_fixed_width_filenames(files, format_str):
 
     # create storage for data to be parsed from filenames
     stored = collections.OrderedDict()
-    stored['year'] = []; stored['month'] = []; stored['day'] = [];
-    stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
-    stored['version'] = []; stored['revision'] = [];
+    stored['year'] = []
+    stored['month'] = []
+    stored['day'] = []
+    stored['hour'] = []
+    stored['min'] = []
+    stored['sec'] = []
+    stored['version'] = []
+    stored['revision'] = []
 
     if len(files) == 0:
         stored['files'] = []
@@ -660,12 +666,12 @@ def parse_fixed_width_filenames(files, format_str):
     lengths = search_dict['lengths']
     keys = search_dict['keys']
 
-    # determine the locations the date/version information in a filename is stored
-    # use these indices to slice out date from filenames
+    # determine the locations the date/version information in a filename is
+    # stored use these indices to slice out date from filenames
     idx = 0
     begin_key = []
     end_key = []
-    for i,snip in enumerate(snips):
+    for i, snip in enumerate(snips):
         idx += len(snip)
         if i < (len(lengths)):
             begin_key.append(idx)
@@ -674,17 +680,17 @@ def parse_fixed_width_filenames(files, format_str):
     max_len = idx
     # setting up negative indexing to pick out filenames
     key_str_idx = [np.array(begin_key, dtype=int) - max_len,
-                    np.array(end_key, dtype=int) - max_len]
+                   np.array(end_key, dtype=int) - max_len]
     # need to parse out dates for datetime index
-    for i,temp in enumerate(files):
-        for j,key in enumerate(keys):
+    for i, temp in enumerate(files):
+        for j, key in enumerate(keys):
             val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
             stored[key].append(val)
     # convert to numpy arrays
     for key in stored.keys():
         stored[key] = np.array(stored[key]).astype(int)
         if len(stored[key]) == 0:
-            stored[key]=None
+            stored[key] = None
     # include files in output
     stored['files'] = files
     # include format string as convenience for later functions
@@ -721,7 +727,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'min', 'sec',
                     'version', 'revision']
-    stored = collections.OrderedDict({kk:list() for kk in ordered_keys})
+    stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
     # exit early if there are no files
     if len(files) == 0:
@@ -765,7 +771,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     for key in stored.keys():
         stored[key] = np.array(stored[key]).astype(int)
         if len(stored[key]) == 0:
-            stored[key]=None
+            stored[key] = None
     # include files in output
     stored['files'] = files
     # include format string as convenience for later functions
@@ -785,7 +791,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
         and 'revision'
-        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
+        Ex: 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
     wildcard : bool
         if True, replaces the ? sequence with a * . This option may be well
         suited when dealing with delimited filenames.
@@ -798,10 +804,10 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         'lengths' string length for data to be parsed
         'string_blocks' the filenames are broken down into fixed width
             segments and '' strings are placed in locations where data will
-            eventually be parsed from a list of filenames. A standards compliant
-            filename can be constructed by starting with string_blocks,
-            adding keys in order, and replacing the '' locations with data
-            of length length.
+            eventually be parsed from a list of filenames. A standards
+            compliant filename can be constructed by starting with
+            string_blocks, adding keys in order, and replacing the '' locations
+            with data of length length.
 
     Note
     ----
@@ -850,10 +856,10 @@ def construct_searchstring_from_format(format_str, wildcard=False):
             else:
                 raise ValueError("Couldn't determine formatting width")
 
-    return {'search_string':search_str,
-            'keys':keys,
-            'lengths':lengths,
-            'string_blocks':snips}
+    return {'search_string': search_str,
+            'keys': keys,
+            'lengths': lengths,
+            'string_blocks': snips}
 
 
 def search_local_system_formatted_filename(data_path, search_str):

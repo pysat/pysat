@@ -40,7 +40,6 @@ The 'forecast' F10.7 data loads three days at a time. The data padding feature
 and multi_file_day feature available from the pyast.Instrument object
 is not appropriate for 'forecast' data.
 
-
 """
 
 import os
@@ -61,19 +60,19 @@ tags = {'': 'Daily LASP value of F10.7',
         'forecast': 'SWPC Forecast F107 data next (3 days)',
         '45day': 'Air Force 45-day Forecast'}
 # dict keyed by sat_id that lists supported tags for each sat_id
-sat_ids = {'':['', 'all', 'prelim', 'daily', 'forecast', '45day']}
+sat_ids = {'': ['', 'all', 'prelim', 'daily', 'forecast', '45day']}
 # dict keyed by sat_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
 now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
 # set test dates
-test_dates = {'':{'': pysat.datetime(2009,1,1),
-                  'all': pysat.datetime(2009,1,1),
-                  'prelim': pysat.datetime(2009,1,1),
-                  'daily': tomorrow,
-                  'forecast': tomorrow,
-                  '45day': tomorrow}}
+test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                   'all': pysat.datetime(2009, 1, 1),
+                   'prelim': pysat.datetime(2009, 1, 1),
+                   'daily': tomorrow,
+                   'forecast': tomorrow,
+                   '45day': tomorrow}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -104,12 +103,13 @@ def load(fnames, tag=None, sat_id=None):
     if tag == '':
         # f107 data stored monthly, need to return data daily
         # the daily date is attached to filename
-        # parse off the last date, load month of data, downselect to desired day
+        # parse off the last date, load month of data, downselect to desired
+        # day
         date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
         data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True)
         idx, = np.where((data.index >= date) &
                         (data.index < date+pds.DateOffset(days=1)))
-        result = data.iloc[idx,:]
+        result = data.iloc[idx, :]
     elif tag == 'all':
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
     elif tag == 'daily' or tag == 'prelim':
@@ -166,8 +166,8 @@ def load(fnames, tag=None, sat_id=None):
                             meta.desc_label: '3-class Optical Flares',
                             meta.fill_label: -1}
 
-
     return result, meta
+
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for F10.7 data
@@ -219,7 +219,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             if format_str is None:
                 format_str = 'f107_1947_to_{year:04d}-{month:02d}-{day:02d}.txt'
             out = pysat.Files.from_os(data_path=data_path,
-                                    format_str=format_str)
+                                      format_str=format_str)
             # load the same data (all), regardless of which day a user selects
             # resample file list to provide the same filename for every day
             # of f107 data
@@ -277,7 +277,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         elif tag == 'daily':
             format_str = 'f107_daily_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
-                                       format_str=format_str)
+                                        format_str=format_str)
 
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
@@ -289,8 +289,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         elif tag == 'forecast':
             format_str = 'f107_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
-                                       format_str=format_str)
-
+                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
@@ -348,7 +347,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     """
 
-
     # download standard F107 data
     if tag == '':
         # download from LASP, by month
@@ -381,7 +379,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 data.index = times
                 # replace fill with NaNs
                 idx, = np.where(data['f107'] == -99999.0)
-                data.iloc[idx,:] = np.nan
+                data.iloc[idx, :] = np.nan
                 # create file
                 data.to_csv(os.path.join(data_path, 'f107_monthly_' +
                                          date.strftime('%Y-%m') + '.txt'))
@@ -408,7 +406,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.index = times
         # replace fill with NaNs
         idx, = np.where(data['f107'] == -99999.0)
-        data.iloc[idx,:] = np.nan
+        data.iloc[idx, :] = np.nan
         # create file
         data.to_csv(os.path.join(data_path, 'f107_1947_to_' +
                                  now.strftime('%Y-%m-%d') + '.txt'))
@@ -563,8 +561,10 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     return
 
+
 def parse_45day_block(block_lines):
-    """ Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast file
+    """ Parse the data blocks used in the 45-day Ap and F10.7 Flux Forecast
+    file
 
     Parameters
     ----------
@@ -597,6 +597,7 @@ def parse_45day_block(block_lines):
         values.extend([int(vv) for vv in split_line[1::2]])
 
     return dates, values
+
 
 def rewrite_daily_file(year, outfile, lines):
     """ Rewrite the SWPC Daily Solar Data files
@@ -645,6 +646,7 @@ def rewrite_daily_file(year, outfile, lines):
 
     return
 
+
 def parse_daily_solar_data(data_lines, year, optical):
     """ Parse the data in the SWPC daily solar index file
 
@@ -686,7 +688,7 @@ def parse_daily_solar_data(data_lines, year, optical):
 
         # Format the data values
         j = 0
-        for i,kk in enumerate(val_keys):
+        for i, kk in enumerate(val_keys):
             if year == 1994 and kk == 'new_reg':
                 # New regions only in files after 1994
                 val = -999
@@ -706,6 +708,7 @@ def parse_daily_solar_data(data_lines, year, optical):
             values[kk].append(val)
 
     return dates, values
+
 
 def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     """ Calculate the 81 day mean F10.7
@@ -748,8 +751,8 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     # function doesn't allow temporal windows to be calculated this way, create
     # a hack for this.
     #
-    # Ensure the data are evenly sampled at a daily frequency, since this is how
-    # often F10.7 is calculated.
+    # Ensure the data are evenly sampled at a daily frequency, since this is
+    # how often F10.7 is calculated.
     f107_fill = f107_inst.data.resample('1D').fillna(method=None)
 
     # Replace the time index with an ordinal

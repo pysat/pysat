@@ -215,7 +215,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     inst['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
 
     # Calculate the running circular standard deviation of the clock angle
-    circ_kwargs = {'high':360.0, 'low':0.0}
+    circ_kwargs = {'high': 360.0, 'low': 0.0}
     ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
     ca_std = inst['clock_angle'].rolling(min_periods=min_wnum,
                                          window=steady_window, \
@@ -227,7 +227,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     imf_steady = np.zeros(shape=inst.data.index.shape)
 
     steady = False
-    for i,cv in enumerate(inst.data['BYZ_CV']):
+    for i, cv in enumerate(inst.data['BYZ_CV']):
         if steady:
             del_min = int((inst.data.index[i] -
                            inst.data.index[i-1]).total_seconds() / 60.0)
@@ -246,6 +246,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 
     inst['IMF_Steady'] = pds.Series(imf_steady, index=inst.data.index)
     return
+
 
 def calculate_dayside_reconnection(inst):
     """ Calculate the dayside reconnection rate (Milan et al. 2014)

@@ -63,17 +63,17 @@ import pysat
 
 platform = 'sw'
 name = 'kp'
-tags = {'':'',
-        'forecast':'SWPC Forecast data next (3 days)',
-        'recent':'SWPC provided Kp for past 30 days'}
-sat_ids = {'':['']}
+tags = {'': '',
+        'forecast': 'SWPC Forecast data next (3 days)',
+        'recent': 'SWPC provided Kp for past 30 days'}
+sat_ids = {'': ['']}
 
 # generate todays date to support loading forecast data
 now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
 test_dates = {'': {'': pysat.datetime(2009, 1, 1),
-                  'forecast': today + pds.DateOffset(days=1)}}
+                   'forecast': today + pds.DateOffset(days=1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -107,11 +107,12 @@ def load(fnames, tag=None, sat_id=None):
     if tag == '':
         # Kp data stored monthly, need to return data daily
         # the daily date is attached to filename
-        # parse off the last date, load month of data, downselect to desired day
+        # parse off the last date, load month of data, downselect to desired
+        # day
         data = pds.DataFrame()
-        #set up fixed width format for these files
-        colspec = [(0,2), (2,4), (4,6), (7,10), (10,13), (13,16), (16,19),
-                   (19,23), (23,26), (26,29), (29,32), (32,50)]
+        # set up fixed width format for these files
+        colspec = [(0, 2), (2, 4), (4, 6), (7, 10), (10, 13), (13, 16),
+                   (16, 19), (19, 23), (23, 26), (26, 29), (29, 32), (32, 50)]
         for filename in fnames:
             # the daily date is attached to filename
             # parse off the last date, load month of data, downselect to the
@@ -120,22 +121,22 @@ def load(fnames, tag=None, sat_id=None):
             date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
 
             temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,
-                                header=None, parse_dates=[[0,1,2]],
+                                header=None, parse_dates=[[0, 1, 2]],
                                 date_parser=parse_date, index_col='0_1_2')
             idx, = np.where((temp.index >= date) &
                             (temp.index < date + pds.DateOffset(days=1)))
-            temp = temp.iloc[idx,:]
-            data = pds.concat([data,temp], axis=0)
+            temp = temp.iloc[idx, :]
+            data = pds.concat([data, temp], axis=0)
 
         # drop last column as it has data I don't care about
-        data = data.iloc[:,0:-1]
+        data = data.iloc[:, 0:-1]
 
         # each column increments UT by three hours
         # produce a single data series that has Kp value monotonically
         # increasing in time with appropriate datetime indices
         s = pds.Series()
         for i in np.arange(8):
-            temp = pds.Series(data.iloc[:,i].values,
+            temp = pds.Series(data.iloc[:, i].values,
                               index=data.index+pds.DateOffset(hours=int(3*i)))
             s = s.append(temp)
         s = s.sort_index()
@@ -168,6 +169,7 @@ def load(fnames, tag=None, sat_id=None):
         initialize_kp_metadata(meta, kk, fill_val)
 
     return result, meta
+
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -207,18 +209,18 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             if format_str is None:
                 format_str = 'kp{year:2d}{month:02d}.tab'
             out = pysat.Files.from_os(data_path=data_path,
-                format_str=format_str,
-                two_digit_year_break=94)
+                                      format_str=format_str,
+                                      two_digit_year_break=94)
             if not out.empty:
-                out.ix[out.index[-1]+pds.DateOffset(months=1)-
-                         pds.DateOffset(days=1)] = out.iloc[-1]
+                out.ix[out.index[-1]+pds.DateOffset(months=1) -
+                       pds.DateOffset(days=1)] = out.iloc[-1]
                 out = out.asfreq('D', 'pad')
                 out = out + '_' + out.index.strftime('%Y-%m-%d')
             return out
         elif tag == 'forecast':
             format_str = 'kp_forecast_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
-                                       format_str=format_str)
+                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
@@ -228,7 +230,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         elif tag == 'recent':
             format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
             files = pysat.Files.from_os(data_path=data_path,
-                                       format_str=format_str)
+                                        format_str=format_str)
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
@@ -237,10 +239,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             return files
 
         else:
-            raise ValueError('Unrecognized tag name for Space Weather Index Kp')
+            raise ValueError('Unrecognized tag name for Space Weather Index ' +
+                             'Kp')
     else:
-        raise ValueError ('A data_path must be passed to the loading routine ' +
-                          'for Kp')
+        raise ValueError('A data_path must be passed to the loading routine ' +
+                         'for Kp')
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
@@ -287,11 +290,11 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             fname = fname.format(year=(date.year - date.year//100*100),
                                  month=date.month)
             local_fname = fname
-            saved_fname = os.path.join(data_path,local_fname)
+            saved_fname = os.path.join(data_path, local_fname)
             try:
                 print('Downloading file for '+date.strftime('%x'))
                 sys.stdout.flush()
-                ftp.retrbinary('RETR '+fname, open(saved_fname,'wb').write)
+                ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
             except ftplib.error_perm as exception:
 
                 if str(exception.args[0]).split(" ", 1)[0] != '550':
@@ -374,14 +377,15 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # create times on 3 hour cadence
         times = pds.date_range(kp_time[0], periods=8*30, freq='3H')
         # put into DataFrame
-        data = pds.DataFrame({'mid_lat_Kp':sub_kps[0],
-                              'high_lat_Kp':sub_kps[1],
-                              'Kp':sub_kps[2]}, index=times)
+        data = pds.DataFrame({'mid_lat_Kp': sub_kps[0],
+                              'high_lat_Kp': sub_kps[1],
+                              'Kp': sub_kps[2]}, index=times)
         # write out as a file
         data.to_csv(os.path.join(data_path, 'kp_recent_' +
                                  date.strftime('%Y-%m-%d') + '.txt'))
 
     return
+
 
 def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
                     kp_inst=None):
@@ -409,7 +413,8 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     Notes
     -----
     Loads Kp data for the same timeframe covered by sat and sets sat.data to
-    NaN for times when Kp > maxKp and for filterTime after Kp drops below maxKp.
+    NaN for times when Kp > maxKp and for filterTime after Kp drops below
+    maxKp.
 
     This routine is written for standard Kp data, not the forecast or recent
     data.
@@ -423,9 +428,8 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         kp.load(date=sat.date, verifyPad=True)
         kpData = kp
 
-
     if maxKp is None:
-        maxKp = 3+ 1./3.
+        maxKp = 3 + 1./3.
 
     if filterTime is None:
         filterTime = 24
@@ -442,6 +446,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         sat.data = sat.data.dropna(axis=0, how='all')
 
     return
+
 
 def initialize_kp_metadata(meta, data_key, fill_val=-1):
     """ Initialize the Kp meta data using our knowledge of the index
@@ -474,6 +479,7 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
                       meta.max_label: 9, meta.fill_label: fill_val}
 
     return
+
 
 def convert_3hr_kp_to_ap(kp_inst):
     """ Calculate 3 hour ap from 3 hour Kp index
