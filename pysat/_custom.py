@@ -137,7 +137,8 @@ class Custom(object):
                         # process different types of data returned by the
                         # function if a dict is returned, data in 'data'
                         if isinstance(newData, dict):
-                            # if DataFrame returned, add Frame to existing frame
+                            # if DataFrame returned, add Frame to existing
+                            # frame
                             if isinstance(newData['data'], pds.DataFrame):
                                 sat[newData['data'].columns] = newData
                             # if a series is returned, add it as a column

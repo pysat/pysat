@@ -517,7 +517,8 @@ class Instrument(object):
                     # input is a list_like of frames
                     # this is higher order data
                     # this process ensures
-                    if ('meta' not in new) and (key not in self.meta.keys_nD()):
+                    if ('meta' not in new) and \
+                            (key not in self.meta.keys_nD()):
                         # create an empty Meta instance but with variable names
                         # this will ensure the correct defaults for all
                         # subvariables.  Meta can filter out empty metadata as
@@ -601,9 +602,9 @@ class Instrument(object):
                     if isinstance(in_data, tuple):
                         self.data[key] = in_data
                     else:
-                        raise ValueError('Must provide dimensions for xarray ' +
-                                         'multidimensional data using input ' +
-                                         'tuple.')
+                        raise ValueError('Must provide dimensions for xarray' +
+                                         ' multidimensional data using input' +
+                                         ' tuple.')
 
             elif hasattr(key, '__iter__'):
                 # multiple input strings (keys) are provided, but not in tuple
@@ -774,10 +775,10 @@ class Instrument(object):
 
         output_str = '\npysat Instrument object\n'
         output_str += '-----------------------\n'
-        output_str += 'Platform: '+self.platform+'\n'
-        output_str += 'Name: '+self.name+'\n'
-        output_str += 'Tag: '+self.tag+'\n'
-        output_str += 'Satellite id: '+self.sat_id+'\n'
+        output_str += 'Platform: ' + self.platform + '\n'
+        output_str += 'Name: ' + self.name + '\n'
+        output_str += 'Tag: ' + self.tag + '\n'
+        output_str += 'Satellite id: ' + self.sat_id + '\n'
 
         output_str += '\nData Processing\n'
         output_str += '---------------\n'
@@ -893,7 +894,7 @@ class Instrument(object):
 
         """
 
-        return self.today()+pds.DateOffset(days=1)
+        return self.today() + pds.DateOffset(days=1)
 
     def yesterday(self):
         """Returns yesterday's date, with no hour, minute, second, etc.
@@ -909,7 +910,7 @@ class Instrument(object):
 
         """
 
-        return self.today()-pds.DateOffset(days=1)
+        return self.today() - pds.DateOffset(days=1)
 
     def _load_data(self, date=None, fid=None):
         """
@@ -1100,7 +1101,8 @@ class Instrument(object):
 
         self.orbits._reset()
         # if pad  or multi_file_day is true, need to have a three day/file load
-        loop_pad = self.pad if self.pad is not None else pds.DateOffset(seconds=0)
+        loop_pad = self.pad if self.pad is not None \
+            else pds.DateOffset(seconds=0)
         if (self.pad is not None) | self.multi_file_day:
             if self._empty(self._next_data) & self._empty(self._prev_data):
                 # data has not already been loaded for previous and next days
@@ -1128,7 +1130,8 @@ class Instrument(object):
                     self._curr_data = self._prev_data
                     self._curr_meta = self._prev_meta
                     self._prev_data, self._prev_meta = self._load_prev()
-                # jumped in time / switched from filebased to date based access
+                # jumped in time/or switched from filebased to date based
+                # access
                 else:
                     del self._prev_data
                     del self._curr_data
@@ -1289,7 +1292,8 @@ class Instrument(object):
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, user=None, password=None, **kwargs):
-        """Grabs a list of remote files, compares to local, then downloads new files.
+        """Grabs a list of remote files, compares to local, then downloads new
+        files.
 
         Parameters
         ----------
@@ -1334,13 +1338,13 @@ class Instrument(object):
             if date in remote_files.index:
                 if remote_files[date] != local_files[date]:
                     new_dates.append(date)
-        print ('Found ', len(new_dates), ' files that are new or updated.')
+        print('Found ', len(new_dates), ' files that are new or updated.')
         # download date for dates in new_dates (also includes new names)
-        self.download(user=user, password=password, date_array=new_dates, **kwargs)
+        self.download(user=user, password=password, date_array=new_dates,
+                      **kwargs)
 
-
-    def download(self, start=None, stop=None, freq='D', user=None, password=None,
-                 date_array=None, **kwargs):
+    def download(self, start=None, stop=None, freq='D', user=None,
+                 password=None, date_array=None, **kwargs):
         """Download data for given Instrument object from start to stop.
 
         Parameters
@@ -1385,8 +1389,8 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            print ('Downloading the most recent data by default. ',
-                   '(yesterday through tomorrow)')
+            print('Downloading the most recent data by default. ',
+                  '(yesterday through tomorrow)')
             start = self.yesterday()
             stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
@@ -1597,11 +1601,12 @@ class Instrument(object):
                 if (len(idx) == 0):
                     raise StopIteration(''.join(('File list is empty. ',
                                                  'Nothing to be done.')))
-                elif idx[-1]+1 >= len(self._iter_list):
+                elif idx[-1] + 1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx += 1
-                    self.load(date=self._iter_list[idx[0]], verifyPad=verifyPad)
+                    self.load(date=self._iter_list[idx[0]],
+                              verifyPad=verifyPad)
             else:
                 self.load(date=self._iter_list[0], verifyPad=verifyPad)
 
@@ -1612,7 +1617,7 @@ class Instrument(object):
                 if (self._fid < first) | (self._fid+1 > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    self.load(fname=self._iter_list[self._fid+1-first],
+                    self.load(fname=self._iter_list[self._fid + 1 - first],
                               verifyPad=verifyPad)
             else:
                 self.load(fname=self._iter_list[0], verifyPad=verifyPad)
@@ -1640,7 +1645,8 @@ class Instrument(object):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     idx -= 1
-                    self.load(date=self._iter_list[idx[0]], verifyPad=verifyPad)
+                    self.load(date=self._iter_list[idx[0]],
+                              verifyPad=verifyPad)
             else:
                 self.load(date=self._iter_list[-1], verifyPad=verifyPad)
 
@@ -1779,7 +1785,7 @@ class Instrument(object):
                 mdata_dict[key] = int(mdata_dict[key])
         # Should use isinstance here
         if (coltype == type(' ')) or (coltype == type(u' ')):
-        # if isinstance(coltype, str):
+            # if isinstance(coltype, str):
             remove = True
         # print ('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
@@ -1846,18 +1852,21 @@ class Instrument(object):
                 export_dict[key] = {}
             for ho_key in meta_to_translate.ho_data[key].data.index:
                 if translation_table is None:
-                    export_dict[key+'_'+ho_key] = \
+                    export_dict[key + '_' + ho_key] = \
                         meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
                 else:
                     # Translate each key if a translation is provided
                     export_dict[key+'_'+ho_key] = {}
-                    meta_dict = meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
+                    meta_dict = \
+                        meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
                     for original_key in meta_dict:
                         if original_key in translation_table:
                             for translated_key in translation_table[original_key]:
-                                export_dict[key+'_'+ho_key][translated_key] = meta_dict[original_key]
+                                export_dict[key + '_' + ho_key][translated_key] = \
+                                    meta_dict[original_key]
                         else:
-                            export_dict[key+'_'+ho_key][original_key] = meta_dict[original_key]
+                            export_dict[key+'_'+ho_key][original_key] = \
+                                meta_dict[original_key]
         return export_dict
 
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
@@ -1910,7 +1919,8 @@ class Instrument(object):
         # base_instrument used to define the standard attributes attached
         # to the instrument object. Any additional attributes added
         # to the main input Instrument will be written to the netCDF4
-        base_instrument = Instrument() if base_instrument is None else base_instrument
+        base_instrument = Instrument() if base_instrument is None \
+            else base_instrument
 
         # begin processing metadata for writing to the file
         # look to see if user supplied a list of export keys
@@ -1965,17 +1975,21 @@ class Instrument(object):
             for export_name_label in export_name_labels:
                 if export_name_label not in new_dict:
                     new_dict[export_name_label] = epoch_name
+
             for export_units_label in export_units_labels:
                 if export_units_label not in new_dict:
                     new_dict[export_units_label] = \
                         'Milliseconds since 1970-1-1 00:00:00'
+
             for export_desc_label in export_desc_labels:
                 if export_desc_label not in new_dict:
                     new_dict[export_desc_label] = \
                         'Milliseconds since 1970-1-1 00:00:00'
+
             for export_notes_label in export_notes_labels:
                 if export_notes_label not in new_dict:
                     new_dict[export_notes_label] = ''
+
             new_dict['calendar'] = 'standard'
             new_dict['Format'] = 'i8'
             new_dict['Var_Type'] = 'data'
@@ -2063,7 +2077,8 @@ class Instrument(object):
                             new_dict['Var_Type'] = 'data'
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict,
-                                                        coltype, remove=True)
+                                                                     coltype,
+                                                                     remove=True)
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
@@ -2129,67 +2144,85 @@ class Instrument(object):
                         # stored name is variable_subvariable
                         for col in iterable:
                             if is_frame:
-                                # we are working with a dataframe
-                                # so multiple subvariables stored under a
-                                # single main variable heading
-                                data, coltype, _ = self._get_data_info(self[key].iloc[good_data_loc][col], file_format)
-                                cdfkey = out_data.createVariable(key + '_' + col,
-                                                                 coltype,
-                                                                 dimensions=var_dim,
-                                                                 zlib=zlib,
-                                                                 complevel=complevel,
-                                                                 shuffle=shuffle)
+                                # we are working with a dataframe so
+                                # multiple subvariables stored under a single
+                                # main variable heading
+                                data, coltype, _ = \
+                                    self._get_data_info(self[key].iloc[good_data_loc][col],
+                                                        file_format)
+                                cdfkey = \
+                                    out_data.createVariable(key + '_' + col,
+                                                            coltype,
+                                                            dimensions=var_dim,
+                                                            zlib=zlib,
+                                                            complevel=complevel,
+                                                            shuffle=shuffle)
                                 # attach any meta data
                                 try:
                                     new_dict = export_meta[key+'_'+col]
                                     new_dict['Depend_0'] = epoch_name
                                     new_dict['Depend_1'] = obj_dim_names[-1]
                                     new_dict['Display_Type'] = 'Spectrogram'
-                                    new_dict['Format'] = self._get_var_type_code(coltype)
+                                    new_dict['Format'] = \
+                                        self._get_var_type_code(coltype)
                                     new_dict['Var_Type'] = 'data'
-                                    # print('Frame Writing ', key, col, export_meta[key].children[col])
-                                    new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                                    # print('Frame Writing ', key, col,
+                                    # export_meta[key].children[col])
+                                    new_dict = \
+                                        self._filter_netcdf4_metadata(new_dict,
+                                                                      coltype)
                                     # print ('mid2 ', new_dict)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError:
-                                    print(', '.join(('Unable to find MetaData for', key, col)))
+                                    print(' '.join(('Unable to find MetaData',
+                                                    'for', ', '.join((key,
+                                                                      col)))))
                                 # attach data
                                 # it may be slow to repeatedly call the store
                                 # method as well astype method below collect
                                 # data into a numpy array, then write the full
                                 # array in one go
                                 # print(coltype, dims)
-                                temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
+                                temp_cdf_data = \
+                                    np.zeros((num, dims[0])).astype(coltype)
                                 for i in range(num):
-                                    temp_cdf_data[i, :] = self[key].iloc[i][col].values
+                                    temp_cdf_data[i, :] = \
+                                        self[key].iloc[i][col].values
                                 # write data
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
 
                             else:
                                 # we are dealing with a Series
-                                # get information about information within series
-                                data, coltype, _ = self._get_data_info(self[key].iloc[good_data_loc], file_format)
-                                cdfkey = out_data.createVariable(key + '_data',
-                                                                coltype,
-                                                                dimensions=var_dim,
-                                                                zlib=zlib,
-                                                                complevel=complevel,
-                                                                shuffle=shuffle)
-                                                                # , chunksizes=1)
+                                # get information about information within
+                                # series
+                                data, coltype, _ = \
+                                    self._get_data_info(self[key].iloc[good_data_loc], file_format)
+                                cdfkey = \
+                                    out_data.createVariable(key + '_data',
+                                                            coltype,
+                                                            dimensions=var_dim,
+                                                            zlib=zlib,
+                                                            complevel=complevel,
+                                                            shuffle=shuffle)
+                                                            # , chunksizes=1)
                                 # attach any meta data
                                 try:
                                     new_dict = export_meta[key]
                                     new_dict['Depend_0'] = epoch_name
                                     new_dict['Depend_1'] = obj_dim_names[-1]
                                     new_dict['Display_Type'] = 'Spectrogram'
-                                    new_dict['Format'] = self._get_var_type_code(coltype)
+                                    new_dict['Format'] = \
+                                        self._get_var_type_code(coltype)
                                     new_dict['Var_Type'] = 'data'
-                                    new_dict = self._filter_netcdf4_metadata(new_dict, coltype)
+                                    new_dict = \
+                                        self._filter_netcdf4_metadata(new_dict,
+                                                                      coltype)
                                     # really attach metadata now
                                     # print ('mid3 ', new_dict)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError:
-                                    print(', '.join(('Unable to find MetaData for', key)))
+                                    print(' '.join(('Unable to find MetaData',
+                                                    'for,', key)))
                                 # attach data
                                 temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
                                 for i in range(num):
@@ -2197,15 +2230,18 @@ class Instrument(object):
                                 # write data
                                 cdfkey[:, :] = temp_cdf_data.astype(coltype)
 
-                        # we are done storing the actual data for the given higher
-                        # order variable, now we need to store the index for all
-                        # of that fancy data
+                        # we are done storing the actual data for the given
+                        # higher order variable, now we need to store the index
+                        # for all of that fancy data
 
                         # get index information
-                        data, coltype, datetime_flag = self._get_data_info(self[key].iloc[good_data_loc].index, file_format)
-                        # create dimension variable for to store index in netCDF4
-                        cdfkey = out_data.createVariable(key,
-                                                         coltype, dimensions=var_dim,
+                        data, coltype, datetime_flag = \
+                            self._get_data_info(self[key].iloc[good_data_loc].index,
+                                                file_format)
+                        # create dimension variable for to store index in
+                        # netCDF4
+                        cdfkey = out_data.createVariable(key, coltype,
+                                                         dimensions=var_dim,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
@@ -2222,7 +2258,8 @@ class Instrument(object):
                             for export_name_label in export_name_labels:
                                 new_dict[export_name_label] = epoch_name
                             for export_units_label in export_units_labels:
-                                new_dict[export_units_label] = 'Milliseconds since 1970-1-1 00:00:00'
+                                new_dict[export_units_label] = \
+                                    'Milliseconds since 1970-1-1 00:00:00'
                             new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                      coltype)
                             # set metadata dict
@@ -2238,7 +2275,8 @@ class Instrument(object):
                         else:
                             if self[key].iloc[data_loc].index.name is not None:
                                 for export_name_label in export_name_labels:
-                                    new_dict[export_name_label] = self[key].iloc[data_loc].index.name
+                                    new_dict[export_name_label] = \
+                                        self[key].iloc[data_loc].index.name
                             else:
                                 for export_name_label in export_name_labels:
                                     new_dict[export_name_label] = key
@@ -2247,9 +2285,11 @@ class Instrument(object):
                             # assign metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
-                            temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
+                            temp_cdf_data = \
+                                np.zeros((num, dims[0])).astype(coltype)
                             for i in range(num):
-                                temp_cdf_data[i, :] = self[key].iloc[i].index.to_native_types()
+                                temp_cdf_data[i, :] = \
+                                    self[key].iloc[i].index.to_native_types()
                             cdfkey[:, :] = temp_cdf_data.astype(coltype)
 
             # store any non standard attributes
@@ -2276,12 +2316,17 @@ class Instrument(object):
             if 'Text_Supplement' not in adict:
                 adict['Text_Supplement'] = ''
 
-            adict['Date_Start'] = pysat.datetime.strftime(self.index[0],
-                                    '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
-            adict['Date_End'] = pysat.datetime.strftime(self.index[-1],
-                                    '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['Date_Start'] = \
+                pysat.datetime.strftime(self.index[0],
+                                        '%a, %d %b %Y,  ' +
+                                        '%Y-%m-%dT%H:%M:%S.%f UTC')
+            adict['Date_End'] = \
+                pysat.datetime.strftime(self.index[-1],
+                                        '%a, %d %b %Y,  ' +
+                                        '%Y-%m-%dT%H:%M:%S.%f UTC')
             adict['File'] = os.path.split(fname)
-            adict['Generation_Date'] = pysat.datetime.utcnow().strftime('%Y%m%d')
+            adict['Generation_Date'] = \
+                pysat.datetime.utcnow().strftime('%Y%m%d')
             adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
             # check for binary types
             for key in adict.keys():

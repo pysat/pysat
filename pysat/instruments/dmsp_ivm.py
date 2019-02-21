@@ -51,37 +51,37 @@ from . import nasa_cdaweb_methods as cdw
 
 platform = 'dmsp'
 name = 'ivm'
-tags = {'utd':'UTDallas DMSP data processing', '':'Level 1 data processing'}
-sat_ids = {'f11':['utd', ''], 'f12':['utd', ''], 'f13':['utd', ''],
-           'f14':['utd', ''], 'f15':['utd', ''], 'f16':[''], 'f17':[''],
-           'f18':['']}
-test_dates = {'f11':{'utd':pysat.datetime(1998,1,2)},
-              'f12':{'utd':pysat.datetime(1998,1,2)},
-              'f13':{'utd':pysat.datetime(1998,1,2)},
-              'f14':{'utd':pysat.datetime(1998,1,2)},
-              'f15':{'utd':pysat.datetime(2017,12,30)}}
+tags = {'utd': 'UTDallas DMSP data processing', '': 'Level 1 data processing'}
+sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
+           'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
+           'f18': ['']}
+test_dates = {'f11': {'utd': pysat.datetime(1998, 1, 2)},
+              'f12': {'utd': pysat.datetime(1998, 1, 2)},
+              'f13': {'utd': pysat.datetime(1998, 1, 2)},
+              'f14': {'utd': pysat.datetime(1998, 1, 2)},
+              'f15': {'utd': pysat.datetime(2017, 12, 30)}}
 
 
 # support list files routine
 # use the default CDAWeb method
-dmsp_fname1 = {'utd':'dms_ut_{year:4d}{month:02d}{day:02d}_',
-               '':'dms_{year:4d}{month:02d}{day:02d}_'}
-dmsp_fname2 = {'utd':'.{version:03d}.hdf5', '':'s?.{version:03d}.hdf5'}
-supported_tags = {ss:{kk:dmsp_fname1[kk] + ss[1:] + dmsp_fname2[kk]
-                      for kk in sat_ids[ss]} for ss in sat_ids.keys()}
+dmsp_fname1 = {'utd': 'dms_ut_{year:4d}{month:02d}{day:02d}_',
+               '': 'dms_{year:4d}{month:02d}{day:02d}_'}
+dmsp_fname2 = {'utd': '.{version:03d}.hdf5', '': 's?.{version:03d}.hdf5'}
+supported_tags = {ss: {kk: dmsp_fname1[kk] + ss[1:] + dmsp_fname2[kk]
+                       for kk in sat_ids[ss]} for ss in sat_ids.keys()}
 list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
 
 # madrigal tags
 madrigal_inst_code = 8100
-madrigal_tag = {'f11':{'utd':10241, '':10111},
-                'f12':{'utd':10242, '':10112},
-                'f13':{'utd':10243, '':10113},
-                'f14':{'utd':10244, '':10114},
-                'f15':{'utd':10245, '':10115},
-                'f16':{'':10116},
-                'f17':{'':10117},
-                'f18':{'':10118},}
+madrigal_tag = {'f11': {'utd': 10241, '': 10111},
+                'f12': {'utd': 10242, '': 10112},
+                'f13': {'utd': 10243, '': 10113},
+                'f14': {'utd': 10244, '': 10114},
+                'f15': {'utd': 10245, '': 10115},
+                'f16': {'': 10116},
+                'f17': {'': 10117},
+                'f18': {'': 10118}, }
 
 # support listing files currently available on remote server (Madrigal)
 list_remote_files = functools.partial(mad_meth.list_remote_files,
@@ -97,6 +97,7 @@ pandas_format = True
 
 # support load routine
 load = mad_meth.load
+
 
 def init(self):
     """Initializes the Instrument object with values specific to DMSP IVM
@@ -118,6 +119,7 @@ def init(self):
 
     print(mad_meth.cedar_rules())
     return
+
 
 def download(date_array, tag='', sat_id='', data_path=None, user=None,
              password=None):
@@ -157,7 +159,8 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     The password field should be the user's email address. These parameters
     are passed to Madrigal when downloading.
 
-    The affiliation field is set to pysat to enable tracking of pysat downloads.
+    The affiliation field is set to pysat to enable tracking of pysat
+    downloads.
 
     """
     mad_meth.download(date_array, inst_code=str(madrigal_inst_code),
@@ -219,6 +222,7 @@ def clean(ivm):
 
     return
 
+
 def smooth_ram_drifts(ivm, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
     """ Smooth the ram drifts using a rolling mean
 
@@ -241,8 +245,9 @@ def smooth_ram_drifts(ivm, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
     else:
         rpa_idx = list()
 
-    ivm[rpa_idx,rpa_vel_key] = ivm[rpa_idx,rpa_vel_key].rolling(15, 5).mean()
+    ivm[rpa_idx, rpa_vel_key] = ivm[rpa_idx, rpa_vel_key].rolling(15, 5).mean()
     return
+
 
 def update_DMSP_ephemeris(ivm, ephem=None):
     """Updates DMSP instrument data with DMSP ephemeris
@@ -285,13 +290,14 @@ def update_DMSP_ephemeris(ivm, ephem=None):
 
     return
 
+
 def add_drift_unit_vectors(ivm):
     """ Add unit vectors for the satellite velocity
 
     Returns
     ---------
-    Adds unit vectors in cartesian and polar coordinates for RAM and cross-track
-    directions
+    Adds unit vectors in cartesian and polar coordinates for RAM and
+    cross-track directions
         - 'unit_ram_x', 'unit_ram_y', 'unit_ram_r', 'unit_ram_theta'
         - 'unit_cross_x', 'unit_cross_y', 'unit_cross_r', 'unit_cross_theta'
 
@@ -333,6 +339,7 @@ def add_drift_unit_vectors(ivm):
         ivm['unit_cross_y'] * np.cos(theta)
     return
 
+
 def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
                              rpa_vel_key='ion_v_sat_for',
                              cross_vel_key='ion_v_sat_left'):
@@ -355,7 +362,8 @@ def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
 
     Notes
     -------
-    Polar cap drifts assume there is no vertical component to the X-Y velocities
+    Polar cap drifts assume there is no vertical component to the X-Y
+    velocities
     """
 
     # Get the good RPA data, if available
@@ -369,7 +377,7 @@ def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
     iv_x[rpa_idx] = 0.0
 
     # Check to see if unit vectors have been created
-    if not 'unit_ram_y' in list(ivm.data.keys()):
+    if 'unit_ram_y' not in list(ivm.data.keys()):
         add_drift_unit_vectors(ivm)
 
     # Calculate the velocities

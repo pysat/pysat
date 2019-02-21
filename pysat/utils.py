@@ -289,32 +289,39 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     if time_index_flag:
                         # create datetime index from data
                         if file_format == 'NETCDF4':
-                            time_var = pds.to_datetime(1E6*time_var)
+                            time_var = pds.to_datetime(1E6 * time_var)
                         else:
-                            time_var = pds.to_datetime(1E6*time_var)
+                            time_var = pds.to_datetime(1E6 * time_var)
                     new_index = time_var
                     new_index_name = index_name
                 else:
                     # using integer indexing
-                    new_index = np.arange(loop_lim*step_size, dtype=int) % step_size
+                    new_index = np.arange(loop_lim*step_size,
+                                          dtype=int) % step_size
                     new_index_name = 'index'
                 # load all data into frame
                 if len(loop_dict.keys()) > 1:
-                    loop_frame = pds.DataFrame(loop_dict, columns=clean_var_keys)
+                    loop_frame = pds.DataFrame(loop_dict,
+                                               columns=clean_var_keys)
                     if obj_key_name in loop_frame:
                         del loop_frame[obj_key_name]
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1), :])
-                        loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size*i:
+                                                         step_size*(i+1),
+                                                         :])
+                        loop_list[-1].index = new_index[step_size*i:
+                                                        step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
                 else:
                     loop_frame = pds.Series(loop_dict[clean_var_keys[0]],
                                             name=obj_var_keys[0])
                     # break massive series into bunch of smaller series
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1)])
-                        loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size*i:
+                                                         step_size*(i+1)])
+                        loop_list[-1].index = new_index[step_size*i:
+                                                        step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
                 # print (loop_frame.columns)
 
@@ -337,22 +344,27 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # store attributes in metadata
                     meta_dict = {}
                     for nc_key in data.variables[obj_key_name].ncattrs():
-                        meta_dict[nc_key] = data.variables[obj_key_name].getncattr(nc_key)
+                        meta_dict[nc_key] = \
+                            data.variables[obj_key_name].getncattr(nc_key)
                     mdata[obj_key_name] = meta_dict
 
-                    # iterate over all variables with this dimension and store data
+                    # iterate over all variables with this dimension and store
+                    # data
                     # data storage, whole shebang
                     loop_dict = {}
                     # list holds a series of slices, parsed from dict above
                     loop_list = []
-                    loop_dict[obj_key_name] = data.variables[obj_key_name][:, :, :]
+                    loop_dict[obj_key_name] = \
+                        data.variables[obj_key_name][:, :, :]
                     # number of values in time
                     loop_lim = data.variables[obj_key_name].shape[0]
                     # number of values per time
                     step_size_x = len(data.variables[obj_key_name][0, :, 0])
                     step_size_y = len(data.variables[obj_key_name][0, 0, :])
                     step_size = step_size_x
-                    loop_dict[obj_key_name] = loop_dict[obj_key_name].reshape((loop_lim*step_size_x, step_size_y))
+                    loop_dict[obj_key_name] = \
+                        loop_dict[obj_key_name].reshape((loop_lim * step_size_x,
+                                                         step_size_y))
                     # check if there is an index we should use
                     if not (index_key_name is None):
                         # an index was found
@@ -360,26 +372,30 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         if time_index_flag:
                             # create datetime index from data
                             if file_format == 'NETCDF4':
-                                time_var = pds.to_datetime(1E6*time_var)
+                                time_var = pds.to_datetime(1E6 * time_var)
                             else:
-                                time_var = pds.to_datetime(1E6*time_var)
+                                time_var = pds.to_datetime(1E6 * time_var)
                         new_index = time_var
                         new_index_name = index_name
                     else:
                         # using integer indexing
-                        new_index = np.arange(loop_lim*step_size, dtype=int) % step_size
+                        new_index = np.arange(loop_lim * step_size,
+                                              dtype=int) % step_size
                         new_index_name = 'index'
                     # load all data into frame
                     loop_frame = pds.DataFrame(loop_dict[obj_key_name])
                     # del loop_frame['dimension_1']
                     # break massive frame into bunch of smaller frames
                     for i in np.arange(loop_lim, dtype=int):
-                        loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1), :])
-                        loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
+                        loop_list.append(loop_frame.iloc[step_size * i:
+                                                         step_size * (i + 1),
+                                                         :])
+                        loop_list[-1].index = new_index[step_size * i:
+                                                        step_size * (i + 1)]
                         loop_list[-1].index.name = new_index_name
 
-                    # add 2D object data, all based on a unique dimension within netCDF,
-                    # to loaded data dictionary
+                    # add 2D object data, all based on a unique dimension
+                    # within netCDF, to loaded data dictionary
                     loadedVars[obj_key_name] = loop_list
                     del loop_list
 
@@ -390,11 +406,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             # no leap)
             # time_var = convert_gps_to_unix_seconds(time_var)
             if file_format == 'NETCDF4':
-                loadedVars[epoch_name] = pds.to_datetime((1E6 *
-                                                          time_var).astype(int))
+                loadedVars[epoch_name] = \
+                    pds.to_datetime((1E6 * time_var).astype(int))
             else:
-                loadedVars[epoch_name] = pds.to_datetime((time_var *
-                                                          1E6).astype(int))
+                loadedVars[epoch_name] = \
+                    pds.to_datetime((time_var * 1E6).astype(int))
             # loadedVars[epoch_name] = pds.to_datetime((time_var*1E6).astype(int))
             running_store.append(loadedVars)
             running_idx += len(loadedVars[epoch_name])
@@ -613,7 +629,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     uts_del = uts.copy().astype(float)
     # determine where there are changes in year and month that need to be
     # accounted for
-    _, idx = np.unique(year*100.+month, return_index=True)
+    _, idx = np.unique(year * 100. + month, return_index=True)
     # create another index array for faster algorithm below
     idx2 = np.hstack((idx, len(year) + 1))
     # computes UTC seconds offset for each unique set of year and month
@@ -623,7 +639,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (day-1)*86400
+    uts_del += (day - 1) * 86400
     # add in seconds since unix epoch to first day
     uts_del += (datetime(year[0], month[0], 1) -
                 datetime(1970, 1, 1)).total_seconds()
@@ -842,7 +858,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                                      inst.meta.scale_label: "linear",
                                      inst.meta.min_label: 0.0,
                                      inst.meta.max_label: 24.0,
-                                     inst.meta.fill_label:np.nan})
+                                     inst.meta.fill_label: np.nan})
 
     return
 
@@ -1005,7 +1021,8 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
     Returns
     -------
     lat_out : float
-        latitude in degrees of the converted horizontal coordinate system center
+        latitude in degrees of the converted horizontal coordinate system
+        center
     lon_out : float
         longitude in degrees of the converted horizontal coordinate system
         center
@@ -1085,10 +1102,10 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     if inverse:
         # Cartesian to Spherical
         xy_sq = az_in**2 + el_in**2
-        z_out = np.sqrt(xy_sq + r_in**2) # This is r
-        y_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in)) # This is zenith
-        y_out = 90.0 - y_out # This is the elevation
-        x_out = np.degrees(np.arctan2(el_in, az_in)) # This is azimuth
+        z_out = np.sqrt(xy_sq + r_in**2)  # This is r
+        y_out = np.degrees(np.arctan2(np.sqrt(xy_sq), r_in))  # This is zenith
+        y_out = 90.0 - y_out  # This is the elevation
+        x_out = np.degrees(np.arctan2(el_in, az_in))  # This is azimuth
     else:
         # Spherical coordinate system uses zenith angle (degrees from the
         # z-axis) and not the elevation angle (degrees from the x-y plane)
@@ -1119,7 +1136,8 @@ def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
     lon_cent : float
         geocentric longitude in degrees of local cartesian system origin
     rad_cent : float
-        distance from center of the Earth in km of local cartesian system origin
+        distance from center of the Earth in km of local cartesian system
+        origin
     inverse : bool
         False to convert from global to local cartesian coodiantes, and True
         for the inverse (default=False)

@@ -462,9 +462,11 @@ class Meta(object):
                 if key not in ['children', 'meta']:
                     for i, name in enumerate(names):
                         to_be_set = input_data[key][i]
-                        if hasattr(to_be_set, '__iter__') and not isinstance(to_be_set, basestring):
+                        if hasattr(to_be_set, '__iter__') and \
+                                not isinstance(to_be_set, basestring):
                             if isinstance(to_be_set[0], basestring):
-                                self._data.loc[name, key] = '\n\n'.join(to_be_set)
+                                self._data.loc[name, key] = \
+                                    '\n\n'.join(to_be_set)
                             else:
                                 warnings.warn(' '.join(('Array elements are',
                                                         ' disallowed in meta.',
@@ -477,7 +479,8 @@ class Meta(object):
                     # process higher order stuff. Meta inputs could be part of
                     # larger multiple parameter assignment
                     # so not all names may actually have 'meta' to add
-                    for j, (item, val) in enumerate(zip(names, input_data['meta'])):
+                    for j, (item, val) in enumerate(zip(names,
+                                                        input_data['meta'])):
                         if val is not None:
                             # assign meta data, recursive call....
                             # heads to if Meta instance call
@@ -1022,8 +1025,7 @@ class Meta(object):
                 if attr not in attrs2:
                     return False
             # now check the values of all elements now that we know all
-            # variable
-            # and attribute names are the same
+            # variable and attribute names are the same
             for key in self.keys():
                 for attr in self.attrs():
                     if not (self[key, attr] == other[key, attr]):
@@ -1071,7 +1073,10 @@ class Meta(object):
                         if not (self[key].children[key2, attr] ==
                                 other[key].children[key2, attr]):
                             try:
-                                if not (np.isnan(self[key].children[key2, attr]) and np.isnan(other[key].children[key2, attr])):
+                                if not (np.isnan(self[key].children[key2,
+                                                                    attr]) and
+                                        np.isnan(other[key].children[key2,
+                                                                     attr])):
                                     return False
                             except TypeError:
                                 # comparison above gets unhappy with string
