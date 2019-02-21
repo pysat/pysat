@@ -248,6 +248,11 @@ class TestBasics():
         assert np.all(self.testInst[0:10, 'uts'] ==
                       self.testInst.data['uts'].values[0:10])
 
+    def test_data_access_by_row_slicing_w_ndarray_and_name(self):
+        self.testInst.load(2009, 1)
+        assert np.all(self.testInst[np.arange(0, 10), 'uts'] ==
+                      self.testInst.data['uts'].values[0:10])
+
     def test_data_access_by_row_and_name(self):
         self.testInst.load(2009, 1)
         assert np.all(self.testInst[0, 'uts'] ==
@@ -261,20 +266,21 @@ class TestBasics():
 
     def test_data_access_by_datetime_and_name(self):
         self.testInst.load(2009, 1)
-        assert np.all(self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0), 'uts']
-                      == self.testInst.data['uts'].values[0])
+        ind = pysat.datetime(2009, 1, 1, 0, 0, 0)
+        assert np.all(self.testInst[ind, 'uts'] ==
+                      self.testInst.data['uts'].values[0])
 
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
-        assert np.all(self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0):
-                                    pysat.datetime(2009, 1, 1, 0, 0, 10),
-                                    'uts']
-                      == self.testInst.data['uts'].values[0:11])
+        start = pysat.datetime(2009, 1, 1, 0, 0, 0)
+        stop = pysat.datetime(2009, 1, 1, 0, 0, 10)
+        assert np.all(self.testInst[start:stop, 'uts'] ==
+                      self.testInst.data['uts'].values[0:11])
 
     def test_setting_data_by_name(self):
         self.testInst.load(2009, 1)
-        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
-        assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
+        assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
 
     def test_setting_series_data_by_name(self):
         self.testInst.load(2009, 1)
@@ -311,33 +317,78 @@ class TestBasics():
         assert self.testInst.meta['doubleMLT'].units == 'hours'
         assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
 
+    def test_setting_partial_data(self):
+        self.testInst.load(2009, 1)
+        cloneInst = self.testInst
+        if self.testInst.pandas_format:
+            self.testInst[0:3] = 0
+            assert (np.all(self.testInst[3:] == cloneInst[3:]) &
+                    np.all(self.testInst[0:3] == 0))
+        else:
+            # This command does not work for xarray
+            assert True
+
     def test_setting_partial_data_by_name(self):
         self.testInst.load(2009, 1)
-        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[0, 'doubleMLT'] = 0
         assert np.all(self.testInst[1:, 'doubleMLT'] ==
-                      2.*self.testInst[1:, 'mlt']) & \
-            (self.testInst[0, 'doubleMLT'] == 0)
+                      2. * self.testInst[1:, 'mlt'])
+        assert self.testInst[0, 'doubleMLT'] == 0
 
     def test_setting_partial_data_by_integer_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
         self.testInst[[0, 1, 2, 3], 'doubleMLT'] = 0
         assert np.all(self.testInst[4:, 'doubleMLT'] ==
-                      2.*self.testInst[4:, 'mlt']) & \
-            np.all(self.testInst[[0, 1, 2, 3], 'doubleMLT'] == 0)
+                      2. * self.testInst[4:, 'mlt'])
+        assert np.all(self.testInst[[0, 1, 2, 3], 'doubleMLT'] == 0)
 
-    def test_setting_partial_slice_data_by_name(self):
+    def test_setting_partial_data_by_slice_and_name(self):
         self.testInst.load(2009, 1)
-        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[0:10, 'doubleMLT'] = 0
         assert np.all(self.testInst[10:, 'doubleMLT'] ==
-                      2.*self.testInst[10:, 'mlt']) & \
-            np.all(self.testInst[0:10, 'doubleMLT'] == 0)
+                      2. * self.testInst[10:, 'mlt'])
+        assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
+
+    def test_setting_partial_data_by_index_and_name(self):
+        self.testInst.load(2009, 1)
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
+        self.testInst[self.testInst.index[0:10], 'doubleMLT'] = 0
+        assert np.all(self.testInst[10:, 'doubleMLT'] ==
+                      2. * self.testInst[10:, 'mlt'])
+        assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
+
+    def test_setting_partial_data_by_numpy_array_and_name(self):
+        self.testInst.load(2009, 1)
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
+        self.testInst[np.array([0, 1, 2, 3]), 'doubleMLT'] = 0
+        assert np.all(self.testInst[4:, 'doubleMLT'] ==
+                      2. * self.testInst[4:, 'mlt'])
+        assert np.all(self.testInst[0:4, 'doubleMLT'] == 0)
+
+    def test_setting_partial_data_by_datetime_and_name(self):
+        self.testInst.load(2009, 1)
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
+        self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0), 'doubleMLT'] = 0
+        assert np.all(self.testInst[0, 'doubleMLT'] ==
+                      2. * self.testInst[0, 'mlt'])
+        assert np.all(self.testInst[0, 'doubleMLT'] == 0)
+
+    def test_setting_partial_data_by_datetime_slicing_and_name(self):
+        self.testInst.load(2009, 1)
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
+        self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0):
+                      pysat.datetime(2009, 1, 1, 0, 0, 10),
+                      'doubleMLT'] = 0
+        assert np.all(self.testInst[11:, 'doubleMLT'] ==
+                      2. * self.testInst[11:, 'mlt'])
+        assert np.all(self.testInst[0:11, 'doubleMLT'] == 0)
 
     def test_modifying_data_inplace(self):
         self.testInst.load(2009, 1)
-        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
         assert np.all(self.testInst['doubleMLT'] ==
                       2.*self.testInst['mlt'] + 100)
@@ -618,9 +669,9 @@ class TestDataPaddingbyFile():
         self.rawInst.load(fid=1)
         # print(self.testInst.index)
         # print(new_inst.data.index)
-        assert (self.testInst.index[0] == self.rawInst.index[0]) & \
-            (self.testInst.index[-1] == self.rawInst.index[-1]) & \
-            (len(self.rawInst.data) == len(self.testInst.data))
+        assert self.testInst.index[0] == self.rawInst.index[0]
+        assert self.testInst.index[-1] == self.rawInst.index[-1]
+        assert len(self.rawInst.data) == len(self.testInst.data)
 
 
 class TestDataPaddingbyFileXarray():
@@ -782,10 +833,11 @@ class TestDataPadding():
     def test_data_padding_jump(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.load(2009, 11, verifyPad=True)
-        assert ((self.testInst.index[0] == self.testInst.date -
-                 pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] == self.testInst.date +
-                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
+        assert ((self.testInst.index[0] ==
+                 self.testInst.date - pds.DateOffset(minutes=5)) &
+                (self.testInst.index[-1] ==
+                 self.testInst.date +
+                 pds.DateOffset(hours=23,minutes=59,seconds=59) +
                  pds.DateOffset(minutes=5)))
 
     def test_data_padding_uniqueness(self):

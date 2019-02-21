@@ -112,7 +112,8 @@ def load(fnames, tag=None, sat_id=None):
     # Serie at each time, numeric data only
     series_profiles = []
     # frame indexed by date times
-    frame = pds.DataFrame({'density': data.ix[0:50, 'mlt'].values.copy(),
+    frame = pds.DataFrame({'density': data.loc[data.index[0:50],
+                                               'mlt'].values.copy(),
                            'dummy_str': ['test'] * 50,
                            'dummy_ustr': [u'test'] * 50},
                           index=data.index[0:50],

@@ -363,24 +363,44 @@ class Instrument(object):
             inst[datetime1:datetime1, 'name1':'name2']
 
         """
+        from numpy import ndarray
+
         if self.pandas_format:
-            if isinstance(key, tuple):
-                # support slicing
-                return self.data.ix[key[0], key[1]]
+            if isinstance(key, str):
+                return self.data[key]
+            elif isinstance(key, tuple):
+                try:
+                    # Pass keys directly through
+                    return self.data.loc[key[0], key[1]]
+                except (KeyError, TypeError):
+                    # TypeError for single integer
+                    # KeyError for list, array, slice of integers
+                    try:
+                        # Assume key[0] is integer (including list or slice)
+                        return self.data.loc[self.data.index[key[0]], key[1]]
+                    except KeyError:
+                        try:
+                            # Try to force as integer (eg, if ndarray)
+                            idx = self.data.index[key[0].astype(int)]
+                            return self.data.loc[idx, key[1]]
+                        except ValueError:
+                            estring = '\n'.join(("Unable to sort out data.",
+                                                 "Instrument has data : " +
+                                                 str(not self.empty),
+                                                 "Requested key : ", str(key)))
+                            raise ValueError(estring)
             else:
                 try:
                     # integer based indexing
                     return self.data.iloc[key]
                 except:
                     try:
-                        # let pandas sort it out, presumption is key is
-                        # a variable name, or iterable of variables
                         return self.data[key]
-                    except:
+                    except ValueError:
                         estring = '\n'.join(("Unable to sort out data access.",
                                              "Instrument has data : " +
                                              str(not self.empty),
-                                             "Requested key : ", key))
+                                             "Requested key : ", str(key)))
                         raise ValueError(estring)
         else:
             return self.__getitem_xarray__(key)
@@ -461,11 +481,25 @@ class Instrument(object):
 
         """
 
+        import numpy as np
+
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
         if self.pandas_format:
             if isinstance(key, tuple):
-                self.data.ix[key[0], key[1]] = new
+                try:
+                    # Pass directly through to loc
+                    self.data.loc[key[0], key[1]] = new
+                except (KeyError, TypeError):
+                    # TypeError for single integer
+                    # KeyError for list, array, slice of integers
+                    try:
+                        # Assume key[0] is integer (including list or slice)
+                        self.data.loc[self.data.index[key[0]], key[1]] = new
+                    except KeyError:
+                        # Try to force conversion to integer
+                        idx = self.data.index[key[0].astype(int)]
+                        self.data.loc[idx, key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -488,7 +522,7 @@ class Instrument(object):
                         # create an empty Meta instance but with variable names
                         # this will ensure the correct defaults for all
                         # subvariables.  Meta can filter out empty metadata as
-                        # needed, the check above reducesthe need to create
+                        # needed, the check above reduces the need to create
                         # Meta instances
                         ho_meta = _meta.Meta(units_label=self.units_label,
                                              name_label=self.name_label,
@@ -654,7 +688,7 @@ class Instrument(object):
         """Concats data1 and data2 for xarray or pandas as needed"""
 
         if self.pandas_format:
-            return pds.concat(data, *args, **kwargs)
+            return pds.concat(data, sort=True, *args, **kwargs)
         else:
             return xr.concat(data, dim='time')
 
@@ -964,7 +998,7 @@ class Instrument(object):
     def _load_next(self):
         """Load the next days data (or file) without incrementing the date.
         Repeated calls will not advance date/file and will produce the same
-        data
+        data.
 
         Uses info stored in object to either increment the date,
         or the file. Looks for self._load_by_date flag.
@@ -1067,7 +1101,8 @@ class Instrument(object):
 
         self.orbits._reset()
         # if pad  or multi_file_day is true, need to have a three day/file load
-        loop_pad = self.pad if self.pad is not None else pds.DateOffset(seconds=0)
+        loop_pad = self.pad if self.pad is not None \
+            else pds.DateOffset(seconds=0)
         if (self.pad is not None) | self.multi_file_day:
             if self._empty(self._next_data) & self._empty(self._prev_data):
                 # data has not already been loaded for previous and next days
@@ -1508,10 +1543,11 @@ class Instrument(object):
                                                            freq=step)
             self._iter_type = 'date'
         else:
-            raise ValueError('Provided an invalid combination of bounds. ' +
-                             'if specifying by file, both bounds must be by ' +
-                             'file. Other combinations of datetime objects ' +
-                             'and None are allowed.')
+            raise ValueError(''.join(('Provided an invalid combination of',
+                                      ' bounds. if specifying by file, both',
+                                      ' bounds must be by file. Other ',
+                                      'combinations of datetime objects ',
+                                      'and None are allowed.')))
 
     def __iter__(self):
         """Iterates instrument object by loading subsequent days or files.
@@ -1565,8 +1601,8 @@ class Instrument(object):
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
                 if (len(idx) == 0):
-                    raise StopIteration('File list is empty. Nothing to be ' +
-                                        'done.')
+                    raise StopIteration(''.join(('File list is empty. ',
+                                                 'Nothing to be done.')))
                 elif idx[-1] + 1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
@@ -1605,8 +1641,8 @@ class Instrument(object):
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
                 if len(idx) == 0:
-                    raise StopIteration('File list is empty. Nothing to be ' +
-                                        'done.')
+                    raise StopIteration(''.join(('File list is empty. ',
+                                                 'Nothing to be done.')))
                 elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
@@ -1994,7 +2030,6 @@ class Instrument(object):
                                                      zlib=zlib,
                                                      complevel=complevel,
                                                      shuffle=shuffle)
-#                                                     , chunksizes=1)
                     # attach any meta data, after filtering for standards
                     try:
                         # attach dimension metadata
@@ -2039,7 +2074,8 @@ class Instrument(object):
                             new_dict = export_meta[key]
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Display_Type'] = 'Time Series'
-                            new_dict['Format'] = self._get_var_type_code(coltype)
+                            new_dict['Format'] = \
+                                self._get_var_type_code(coltype)
                             new_dict['Var_Type'] = 'data'
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict,

@@ -127,6 +127,7 @@ class TestBasicNetCDF4():
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
                                          clean_level='clean')
+        self.testInst.pandas_format = True
         # create testing directory
         prep_dir(self.testInst)
 
@@ -156,8 +157,7 @@ class TestBasicNetCDF4():
         self.testInst.data = \
             self.testInst.data.reindex(sorted(self.testInst.data.columns),
                                        axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
-                                          axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
@@ -181,8 +181,7 @@ class TestBasicNetCDF4():
         self.testInst.data = \
             self.testInst.data.reindex(sorted(self.testInst.data.columns),
                                        axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
-                                          axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
@@ -207,8 +206,7 @@ class TestBasicNetCDF4():
         self.testInst.data = \
             self.testInst.data.reindex(sorted(self.testInst.data.columns),
                                        axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
-                                          axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
@@ -230,8 +228,7 @@ class TestBasicNetCDF4():
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
         test_inst.data = test_inst.data.reindex(sorted(test_inst.data.columns),
                                                 axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
-                                          axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
         prep_dir(test_inst)
 
         # test Series of DataFrames
@@ -275,8 +272,7 @@ class TestBasicNetCDF4():
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
         test_inst.data = test_inst.data.reindex(sorted(test_inst.data.columns),
                                                 axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
-                                          axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
         prep_dir(test_inst)
 
         # test Series of DataFrames
