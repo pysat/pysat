@@ -79,11 +79,12 @@ class TestBasics():
     # calc_solar_local_time
 
     def test_calc_solar_local_time(self):
+        """Test calc_solar_local_time"""
 
         coords.calc_solar_local_time(self.testInst, lon_name="longitude",
                                      slt_name='slt')
-        target = [17.666667, 18.200278, 18.927222,
-                  19.034167, 19.334444, 19.659389]
+        target = np.array([17.666667, 18.200278, 18.927222,
+                           19.034167, 19.334444, 19.659389])
 
         assert (abs(self.testInst['slt'] - target)).max() < 1.0e-6
 
