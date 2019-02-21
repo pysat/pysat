@@ -21,9 +21,9 @@ with open(os.path.join(here, version_filename)) as version_file:
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-install_requires=['xarray', 'pandas>=0.19.2', 'numpy>=1.12',  'sgp4', 'pyEphem', 'requests',     
-                  'pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 
-                  'madrigalWeb', 'h5py', 'PyForecastTools']
+install_requires = ['xarray', 'pandas>=0.19.2', 'numpy>=1.12',  'sgp4',
+                    'pyEphem', 'requests', 'pysatCDF', 'apexpy', 'aacgmv2',
+                    'pysatMagVect', 'madrigalWeb', 'h5py', 'PyForecastTools']
 
 # keep pyglow out of requirements until pip installable
 # if sys.version_info[0] < 3:

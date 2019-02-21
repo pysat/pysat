@@ -22,8 +22,7 @@ else:
     re_load = reload
 
 
-
-#-------------------
+# -------------------
 # basic yrdoy tests
 def test_getyrdoy_1():
     """Test the date to year, day of year code functionality"""
@@ -31,13 +30,15 @@ def test_getyrdoy_1():
     yr, doy = pysat.utils.getyrdoy(date)
     assert ((yr == 2009) & (doy == 1))
 
+
 def test_getyrdoy_leap_year():
     """Test the date to year, day of year code functionality (leap_year)"""
-    date = pds.datetime(2008,12,31)
+    date = pds.datetime(2008, 12, 31)
     yr, doy = pysat.utils.getyrdoy(date)
-    assert ((yr == 2008) & (doy == 366)) 
+    assert ((yr == 2008) & (doy == 366))
 
-#----------------------------------
+
+# ----------------------------------
 # test netCDF export file support
 
 def prep_dir(inst=None):
@@ -49,9 +50,10 @@ def prep_dir(inst=None):
     # create data directories
     try:
         os.makedirs(inst.files.data_path)
-        #print ('Made Directory')
+        # print ('Made Directory')
     except OSError:
         pass
+
 
 def remove_files(inst):
     # remove any files
@@ -63,25 +65,29 @@ def remove_files(inst):
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
+
 class TestBasics():
     def setup(self):
-        """Runs before every method to create a clean testing setup."""        
+        """Runs before every method to create a clean testing setup."""
         # store current pysat directory
         self.data_path = pysat.data_dir
-        
-        # create temporary directory  
+
+        # create temporary directory
         dir_name = tempfile.mkdtemp()
         pysat.utils.set_data_dir(dir_name, store=False)
 
-        self.testInst = pysat.Instrument(inst_module=pysat.instruments.pysat_testing, 
-                                        clean_level='clean')
+        self.testInst = pysat.Instrument(
+                inst_module=pysat.instruments.pysat_testing,
+                clean_level='clean')
+        self.testInst.pandas_format = True
+
         # create testing directory
         prep_dir(self.testInst)
 
         # Add testing data for circular statistics
         self.test_angles = np.array([340.0, 348.0, 358.9, 0.5, 5.0, 9.87])
         self.test_nan = [340.0, 348.0, 358.9, 0.5, 5.0, 9.87, np.nan]
-        self.circ_kwargs = {"high":360.0, "low":0.0}
+        self.circ_kwargs = {"high": 360.0, "low": 0.0}
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
@@ -93,9 +99,10 @@ class TestBasics():
                                                  uts=np.arange(0.0, len(ones),
                                                                1.0))
 
-
-        self.testInst.data = pds.DataFrame(np.array([time, self.test_angles]).transpose(), index=time, columns=["time", "longitude"])
-
+        self.testInst.data = \
+            pds.DataFrame(np.array([time, self.test_angles]).transpose(),
+                          index=time,
+                          columns=["time", "longitude"])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -106,7 +113,7 @@ class TestBasics():
             pass
         del self.testInst, self.test_angles, self.test_nan, self.circ_kwargs
         del self.deg_units, self.dist_units, self.vel_units
-    
+
     def test_basic_writing_and_reading_netcdf4_default_format(self):
         # create a bunch of files by year and doy
         from unittest.case import SkipTest
@@ -114,16 +121,16 @@ class TestBasics():
             import netCDF4
         except ImportError:
             raise SkipTest
-  
-        prep_dir(self.testInst)            
+
+        prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
-        self.testInst.load(2009,1)
+        self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
-                                               axis=1)
+        self.testInst.data = self.testInst.data.reindex(
+                sorted(self.testInst.data.columns), axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
@@ -144,8 +151,10 @@ class TestBasics():
         self.testInst.to_netcdf4(outfile, zlib=True)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
+        self.testInst.data = \
+            self.testInst.data.reindex(sorted(self.testInst.data.columns),
+                                       axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
@@ -167,9 +176,10 @@ class TestBasics():
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
                                                      epoch_name='Santa')
-        self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
-                                               axis=1)
+        self.testInst.data = \
+            self.testInst.data.reindex(sorted(self.testInst.data.columns),
+                                       axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
@@ -182,25 +192,25 @@ class TestBasics():
             import netCDF4
         except ImportError:
             raise SkipTest
-        test_inst = pysat.Instrument('pysat', 'testing2d')    
+        test_inst = pysat.Instrument('pysat', 'testing2d')
         prep_dir(test_inst)
         outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
-        test_inst.load(2009,1)
+        test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        test_inst.data = test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
-                                               axis=1)
+        test_inst.data = \
+            test_inst.data.reindex(sorted(test_inst.data.columns), axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
         prep_dir(test_inst)
-        
+
         # test Series of DataFrames
         test_list = []
-        #print (loaded_inst.columns)
+        # print (loaded_inst.columns)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
-        loaded_inst.drop('profiles', inplace=True, axis=1) 
-        test_inst.data.drop('profiles', inplace=True, axis=1)   
+        loaded_inst.drop('profiles', inplace=True, axis=1)
+        test_inst.data.drop('profiles', inplace=True, axis=1)
 
         # second series of frames
         for frame1, frame2 in zip(test_inst.data['alt_profiles'],
@@ -224,7 +234,7 @@ class TestBasics():
 
         loaded_inst.drop('series_profiles', inplace=True, axis=1)
         test_inst.data.drop('series_profiles', inplace=True, axis=1)
-        
+
         assert(np.all((test_inst.data == loaded_inst).all()))
         assert np.all(test_list)
 
@@ -241,9 +251,9 @@ class TestBasics():
         test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile, zlib=True)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-        test_inst.data = test_inst.data.reindex_axis(sorted(test_inst.data.columns), axis=1)
-        loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns),
-                                               axis=1)
+        test_inst.data = test_inst.data.reindex(sorted(test_inst.data.columns),
+                                                axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
         prep_dir(test_inst)
 
         # test Series of DataFrames
@@ -255,7 +265,7 @@ class TestBasics():
             test_list.append(np.all((frame1 == frame2).all()))
         loaded_inst.drop('profiles', inplace=True, axis=1)
         test_inst.data.drop('profiles', inplace=True, axis=1)
-        
+
         # second series of frames
         for frame1, frame2 in zip(test_inst.data['alt_profiles'],
                                   loaded_inst['alt_profiles']):
@@ -270,11 +280,11 @@ class TestBasics():
             # print frame1, frame2
         loaded_inst.drop('series_profiles', inplace=True, axis=1)
         test_inst.data.drop('series_profiles', inplace=True, axis=1)
-        
+
         assert (np.all((test_inst.data == loaded_inst).all()))
         # print (test_list)
         assert np.all(test_list)
-        
+
     # def test_basic_writing_and_reading_netcdf4_multiple_formats(self):
     #     # create a bunch of files by year and doy
     #     from unittest.case import SkipTest
@@ -291,15 +301,16 @@ class TestBasics():
     #         self.testInst.to_netcdf4(outfile, file_format=format)
     #         loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
     #                                                      file_format=format)
-    #         self.testInst.data = self.testInst.data.reindex_axis(sorted(self.testInst.data.columns), axis=1)
-    #         loaded_inst = loaded_inst.reindex_axis(sorted(loaded_inst.columns), axis=1)
+    #         self.testInst.data = self.testInst.data.reindex(sorted(self.testInst.data.columns), axis=1)
+    #         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
+    #                                           axis=1)
     #         check.append(np.all(self.testInst.data == loaded_inst))
     #         print(loaded_inst['string_dummy'])
     #
     #     assert(np.all(check))
 
     #######################
-    ### test pysat data dir options
+    # test pysat data dir options
     def test_set_data_dir(self):
         saved_dir = self.data_path
         # update data_dir
@@ -339,8 +350,8 @@ class TestBasics():
         else:
             check3 = True
 
-        assert check1 & check2 & check3        
-                        
+        assert check1 & check2 & check3
+
     def test_initial_pysat_load(self):
         import shutil
         saved = False
@@ -351,9 +362,9 @@ class TestBasics():
             saved = True
         except:
             pass
-            
+
         re_load(pysat)
-        
+
         try:
             if saved:
                 # remove directory, trying to be careful
@@ -364,7 +375,7 @@ class TestBasics():
             pass
 
         assert True
-    
+
     def test_circmean(self):
         """ Test custom circular mean."""
         from scipy import stats
@@ -392,7 +403,8 @@ class TestBasics():
         from scipy import stats
 
         ref_std = stats.circstd(self.test_angles, **self.circ_kwargs)
-        test_std = pysat.utils.nan_circstd(self.test_angles, **self.circ_kwargs)
+        test_std = pysat.utils.nan_circstd(self.test_angles,
+                                           **self.circ_kwargs)
         ans1 = ref_std == test_std
 
         assert ans1
@@ -462,7 +474,7 @@ class TestBasics():
 
     def test_scale_units_dist(self):
         """Test scale_units for distances """
-        
+
         for out_unit in self.dist_units:
             scale = pysat.utils.scale_units(out_unit, "m")
 
@@ -475,7 +487,7 @@ class TestBasics():
 
     def test_scale_units_vel(self):
         """Test scale_units for velocities """
-        
+
         for out_unit in self.vel_units:
             scale = pysat.utils.scale_units(out_unit, "m/s")
 
@@ -494,6 +506,30 @@ class TestBasics():
         assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
         assert_raises(ValueError, pysat.utils.scale_units, "m", "deg")
         assert_raises(ValueError, pysat.utils.scale_units, "h", "km/s")
+
+    def test_geodetic_to_geocentric_single(self):
+        """Test conversion from geodetic to geocentric coordinates"""
+
+        lat, lon, rad = pysat.utils.geodetic_to_geocentric(45.0,
+                                                           lon_in=9.0)
+
+        assert (abs(lat - 44.807576784018046) < 1.0e-6)
+        assert (abs(lon - 9.0) < 1.0e-6)
+        assert (abs(rad - 6367.489543863465) < 1.0e-6)
+
+    def test_geodetic_to_geocentric_mult(self):
+        """Test array conversion from geodetic to geocentric coordinates"""
+
+        arr = np.ones(shape=(10,), dtype=float)
+        lat, lon, rad = pysat.utils.geodetic_to_geocentric(45.0*arr,
+                                                           lon_in=9.0*arr)
+
+        assert lat.shape == arr.shape
+        assert lon.shape == arr.shape
+        assert rad.shape == arr.shape
+        assert (abs(lat - 44.807576784018046).max() < 1.0e-6)
+        assert (abs(lon - 9.0).max() < 1.0e-6)
+        assert (abs(rad - 6367.489543863465).max() < 1.0e-6)
 
     def test_spherical_to_cartesian_single(self):
         """Test conversion from spherical to cartesian coordinates"""
@@ -517,7 +553,9 @@ class TestBasics():
         """Test array conversion from spherical to cartesian coordinates"""
 
         arr = np.ones(shape=(10,), dtype=float)
-        x, y, z = pysat.utils.spherical_to_cartesian(45.0*arr, 30.0*arr, arr)
+        x, y, z = pysat.utils.spherical_to_cartesian(45.0 * arr,
+                                                     30.0 * arr,
+                                                     arr)
 
         assert x.shape == arr.shape
         assert y.shape == arr.shape
