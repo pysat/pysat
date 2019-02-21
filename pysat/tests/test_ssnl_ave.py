@@ -1,7 +1,6 @@
 """
 tests the pysat averaging code
 """
-import datetime as dt
 import numpy as np
 import sys
 
@@ -92,7 +91,7 @@ class TestBasics():
 
     def test_basic_file_mean(self):
         """Test basic file mean"""
-        index = pds.date_range(self.bounds1) 
+        index = pds.date_range(*self.bounds1) 
         names = [date.strftime('%Y-%m-%d')+'.nofile' for date in index]
         self.testInst.bounds = (names[0], names[-1])
         ans = avg.mean_by_file(self.testInst, 'dummy4')
@@ -105,30 +104,28 @@ class TestFrameProfileAverages():
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
                                 pysat.datetime(2008, 2, 1))
+        self.dname = 'alt_profiles'
+        self.test_vals = np.arange(50) * 1.2
+        self.test_fracs = np.arange(50) / 50.0
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst
+        del self.testInst, self.dname, self.test_vals, self.test_fracs
 
     def test_basic_seasonal_2Dmedian(self):
         """ Test the basic seasonal 2D median"""
 
         results = avg.median2D(self.testInst, [0., 360., 24.], 'longitude',
-                               [0., 24, 24], 'mlt', ['alt_profiles'])
-        
-        dummy_val = results['alt_profiles']['median']
-        dummy_dev = results['alt_profiles']['avg_abs_dev']
+                               [0., 24, 24], 'mlt', [self.dname])
 
         # iterate over all 
         # no variation in the median, all values should be the same
-        test_vals = np.arange(50) * 1.2
-        test_fracs = np.arange(50) / 50.0
-        for i, row in enumerate(dummy_val):
+        for i, row in enumerate(results[self.dname]['median']):
             for j, item in enumerate(row):
-                assert np.all(item['density'] == test_vals)
-                assert np.all(item['fraction'] == test_fracs)
+                assert np.all(item['density'] == self.test_vals)
+                assert np.all(item['fraction'] == self.test_fracs)
                 
-        for i, row in enumerate(dummy_dev):
+        for i, row in enumerate(results[self.dname]['avg_abs_dev']):
             for j, item in enumerate(row):
                 assert np.all(item['density'] == 0)
                 assert np.all(item['fraction'] == 0)
@@ -137,24 +134,17 @@ class TestFrameProfileAverages():
         """ Test the basic seasonal 1D median"""
         
         results = avg.median1D(self.testInst, [0., 24, 24], 'mlt',
-                               ['alt_profiles'])
-                                          
-        dummy_val = results['alt_profiles']['median']
-        dummy_dev = results['alt_profiles']['avg_abs_dev']
+                               [self.dname])
 
         # iterate over all 
         # no variation in the median, all values should be the same
-        test_vals = np.arange(50) * 1.2
-        test_fracs = np.arange(50) / 50.0
-        for i, row in enumerate(dummy_val):
-            for j, item in enumerate(row):
-                assert np.all(item['density'] == test_vals)
-                assert np.all(item['fraction'] == test_fracs)
+        for i, row in enumerate(results[self.dname]['median']):
+            assert np.all(row['density'] == self.test_vals)
+            assert np.all(row['fraction'] == self.test_fracs)
                 
-        for i, row in enumerate(dummy_dev):
-            for j, item in enumerate(row):
-                assert np.all(item['density'] == 0)
-                assert np.all(item['fraction'] == 0)
+        for i, row in enumerate(results[self.dname]['avg_abs_dev']):
+            assert np.all(row['density'] == 0)
+            assert np.all(row['fraction'] == 0)
 
 class TestSeriesProfileAverages():
     def setup(self):
@@ -315,26 +305,18 @@ class TestHeterogenousConstellation:
         """ Test the seasonal 1D median of a heterogeneous constellation """
         for inst in self.testC:
             inst.bounds = self.bounds
-        results = avg.median1D(self.testC, [0., 24, 24], 'mlt',
-                               ['dummy1', 'dummy2', 'dummy3'])
+        results = avg.median1D(self.testC, [0., 24, 24], 'mlt', ['dummy1'])
+
+        # Extract the results
         dummy_val = results['dummy1']['median']
         dummy_dev = results['dummy1']['avg_abs_dev']
-
-        dummy2_val = results['dummy2']['median']
-        dummy2_dev = results['dummy2']['avg_abs_dev']
-
-        dummy3_val = results['dummy3']['median']
-        dummy3_dev = results['dummy3']['avg_abs_dev']
         
-        dummy_x = results['dummy1']['bin_x']
-        
-        # iterate over all y rows, value should be equal to integer value of mlt
+        # iterate over all x rows, value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
-        for i, x in enumerate(dummy_x[:-1]):
-            check.append(np.all(dummy2_val[:, i] == x/15.0))
-            check.append(np.all(dummy2_dev[:, i] == 0))
-            check.append(np.all(dummy3_dev[:, i] == 0))
+        for i, x in enumerate(results['dummy1']['bin_x'][:-1]):
+            check.append(np.all(dummy_val[i, :] == x.astype(int)))
+            check.append(np.all(dummy_dev[i, :] == 0))
 
         assert np.all(check)
 
@@ -440,8 +422,7 @@ class TestSeasonalAverageUnevenBins:
 
     @raises(ValueError)
     def test_nonmonotonic_bins(self):
-        """If provided with a non-monotonic bins then numpy.digitize should 
-           raise a ValueError
+        """Test 2D median failure when provided with a non-monotonic bins
         """
         avg.median2D(self.testInst, np.array([0., 300., 100.]), 'longitude',
                      np.array([0., 24., 13.]), 'mlt',
@@ -449,16 +430,14 @@ class TestSeasonalAverageUnevenBins:
                                     
     @raises(TypeError)
     def test_bin_data_depth(self):
-        """If an array-like of length 1 is given to median2D len() 
-           should raise an exception 
+        """Test failure when an array-like of length 1 is given to median2D
         """
         avg.median2D(self.testInst, 1, 'longitude', 24, 'mlt', 
                      ['dummy1', 'dummy2', 'dummy3'], auto_bin=False)
 
     @raises(TypeError)
     def test_bin_data_type(self):
-        """If a non array-like is given to median2D numpy.digitize should
-           raise an exception 
+        """Test failure when a non array-like is given to median2D
         """
         avg.median2D(self.testInst, ['1', 'a', '23', '10'], 'longitude',
                      ['0', 'd', '24', 'c'], 'mlt',
@@ -469,8 +448,8 @@ class TestInstMed1D():
         """Runs before every method to create a clean testing setup"""
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean', update_files=True)
-        self.testInst.bounds = [dt.datetime(2008, 1, 1),
-                                dt.datetime(2008, 1, 31)]
+        self.testInst.bounds = (pysat.datetime(2008, 1, 1),
+                                pysat.datetime(2008, 1, 31))
         self.test_bins = [0, 24, 24]
         self.test_label = 'slt'
         self.test_data = ['dummy1', 'dummy2']
@@ -541,24 +520,21 @@ class TestInstMed1D():
 
     @raises(ValueError)
     def test_nonmonotonic_bins(self):
-        """If provided with a non-monotonic bins then numpy.digitize should
-           raise a ValueError
+        """Test median1D failure when provided with a non-monotonic bins
         """
-        avg.median1D(self.testInst, self.test_bins, self.test_label,
+        avg.median1D(self.testInst, [0, 13, 5], self.test_label,
                      self.test_data, auto_bin=False)
                                     
     @raises(TypeError)
     def test_bin_data_depth(self):
-        """If an array-like of length 1 is given to median1D len() 
-           should raise an exception 
+        """Test failure when array-like of length 1 is given to median1D
         """
         avg.median1D(self.testInst, 24, self.test_label, self.test_data, 
                      auto_bin=False)
 
     @raises(TypeError)
     def test_bin_data_type(self):
-        """If a non array-like is given to median1D numpy.digitize should
-           raise an exception 
+        """Test failure when median 1D is given non array-like bins
         """
         pysat.ssnl.avg.median2D(self.testInst, ['0', 'd', '24', 'c'],
                                 self.test_label, self.test_data, auto_bin=False)
