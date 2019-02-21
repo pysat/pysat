@@ -137,7 +137,8 @@ class Custom(object):
                         # process different types of data returned by the
                         # function if a dict is returned, data in 'data'
                         if isinstance(newData, dict):
-                            # if DataFrame returned, add Frame to existing frame
+                            # if DataFrame returned, add Frame to existing
+                            # frame
                             if isinstance(newData['data'], pds.DataFrame):
                                 sat[newData['data'].columns] = newData
                             # if a series is returned, add it as a column
@@ -166,8 +167,8 @@ class Custom(object):
                                     name = newData.pop('name')
                                     sat[name] = newData
                                 else:
-                                    raise ValueError('Must include "name" in ' +
-                                                     'returned dictionary.')
+                                    raise ValueError('Must include "name" ' +
+                                                     'in returned dictionary.')
 
                         # bare DataFrame is returned
                         elif isinstance(newData, pds.DataFrame):
@@ -203,8 +204,8 @@ class Custom(object):
                                             # from before
                                             sat[name] = data
                         else:
-                            raise ValueError("kernel doesn't know what to do " +
-                                             "with returned data.")
+                            raise ValueError("kernel doesn't know what to " +
+                                             "do with returned data.")
 
                     # modifying loaded data
                     if kind == 'modify':
@@ -212,9 +213,10 @@ class Custom(object):
                         if t is not None:
                             raise ValueError('Modify functions should not ' +
                                              'return any information via ' +
-                                             'return. Information may only be' +
-                                             ' propagated back by modifying ' +
-                                             'supplied pysat object.')
+                                             'return. Information may only ' +
+                                             'be propagated back by  ' +
+                                             'modifying supplied pysat ' +
+                                             'object.')
 
                     # pass function (function runs, no data allowed back)
                     if kind == 'pass':

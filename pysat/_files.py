@@ -106,7 +106,7 @@ class Files(object):
             instrument list_files routine. (default=None)
         write_to_disk : boolean
             If true, the list of Instrument files will be written to disk.
-            Setting this to False prevents a rare condition when running 
+            Setting this to False prevents a rare condition when running
             multiple pysat processes.
         """
 
@@ -150,7 +150,7 @@ class Files(object):
             self.data_path = self.data_path[:-1]
         elif self.data_path[-1] != os.path.sep:
             self.data_path = os.path.join(self.data_path, '')
-        
+
         # store write to disk preference
         self.write_to_disk = write_to_disk
         if self.write_to_disk is False:
@@ -452,16 +452,15 @@ class Files(object):
         if inp is not None:
             split_str = os.path.join(self.data_path, '')
             return inp.apply(lambda x: x.split(split_str)[-1])
-            
 
-    @classmethod    
-    def from_os(cls, data_path=None, format_str=None, 
+    @classmethod
+    def from_os(cls, data_path=None, format_str=None,
                 two_digit_year_break=None, delimiter=None):
         """
         Produces a list of files and and formats it for Files class.
 
         Requires fixed_width or delimited filename
-        
+
         Parameters
         ----------
         data_path : string
@@ -481,7 +480,7 @@ class Files(object):
         delimiter : string (None)
             If set, then filename will be processed using delimiter rather
             than assuming a fixed width
-          
+
         Note
         ----
         Does not produce a Files instance, but the proper output
@@ -490,11 +489,12 @@ class Files(object):
         The '?' may be used to indicate a set number of spaces for a variable
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
-        
+
         """
-        
+
         if data_path is None:
-            raise ValueError("Must supply instrument directory path (dir_path)")
+            raise ValueError("Must supply instrument directory path " +
+                             "(dir_path)")
 
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
@@ -503,12 +503,12 @@ class Files(object):
             wildcard = False
         else:
             wildcard = True
-        search_dict = construct_searchstring_from_format(format_str, 
+        search_dict = construct_searchstring_from_format(format_str,
                                                          wildcard=wildcard)
         search_str = search_dict['search_string']
         # perform local file search
-        files = search_local_system_formatted_filename(data_path, search_str)          
-        # we have a list of files, now we need to extract the information        
+        files = search_local_system_formatted_filename(data_path, search_str)
+        # we have a list of files, now we need to extract the information
         # pull of data from the areas identified by format_str
         if delimiter is None:
             stored = parse_fixed_width_filenames(files, format_str)
@@ -521,11 +521,11 @@ class Files(object):
 def process_parsed_filenames(stored, two_digit_year_break=None):
     """Accepts dict with data parsed from filenames and creates
     a pandas Series object formatted for the Files class.
-    
+
     Parameters
     ----------
     stored : orderedDict
-        Dict produced by parse_fixed_width_filenames or 
+        Dict produced by parse_fixed_width_filenames or
         parse_delimited_filenames
     two_digit_year_break : int
         If filenames only store two digits for the year, then
@@ -536,21 +536,21 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     -------
     pandas.Series
         Series, indexed by datetime, with file strings
-        
+
     Note
     ----
         If two files have the same date and time information in the
         filename then the file with the higher version/revision is used.
         Series returned only has one file der datetime. Version is required
         for this filtering, revision is optional.
-        
+
     """
 
     from pysat.utils import create_datetime_index
-    
+
     search_dict = construct_searchstring_from_format(stored['format_str'])
     keys = search_dict['keys']
-    
+
     if len(stored['files']) > 0:
         # deal with the possibility of two digit years
         # years above or equal to break are considered to be 1900+
@@ -560,7 +560,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
                             two_digit_year_break)
             stored['year'][idx] = stored['year'][idx] + 1900
             idx, = np.where(np.array(stored['year']) < two_digit_year_break)
-            stored['year'][idx] = stored['year'][idx] + 2000 
+            stored['year'][idx] = stored['year'][idx] + 2000
 
         # need to sort the information for things to work
         rec_arr = [stored[key] for key in keys]
@@ -571,15 +571,15 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
         val_keys = keys + ['files']
         rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
         rec_arr.sort(order=val_keys, axis=0)
-        
+
         # pull out sorted info
         for key in keys:
             stored[key] = rec_arr[key]
         files = rec_arr['files']
-        
+
         # add hour and minute information to 'sec'
         if stored['sec'] is None:
-            stored['sec'] = np.zeros(len(files))                
+            stored['sec'] = np.zeros(len(files))
         if stored['hour'] is not None:
             stored['sec'] += 3600 * stored['hour']
         if stored['min'] is not None:
@@ -590,8 +590,9 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             stored['revision'] = np.zeros(len(files))
 
         index = create_datetime_index(year=stored['year'],
-                                        month=stored['month'], 
-                                        day=stored['day'], uts=stored['sec'])
+                                      month=stored['month'],
+                                      day=stored['day'],
+                                      uts=stored['sec'])
 
         # if version and revision are supplied
         # use these parameters to weed out files that have been replaced
@@ -603,52 +604,57 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             # keep the highest version/revision combo
             version = pds.Series(stored['version'], index=index)
             revision = pds.Series(stored['revision'], index=index)
-            revive = version*100000. + revision
-            frame = pds.DataFrame({'files':files, 'revive':revive,
-                                    'time':index}, index=index)
+            revive = version * 100000. + revision
+            frame = pds.DataFrame({'files': files, 'revive': revive,
+                                   'time': index}, index=index)
             frame = frame.sort_values(by=['time', 'revive'],
-                                        ascending=[True, False])
+                                      ascending=[True, False])
             frame = frame.drop_duplicates(subset='time', keep='first')
 
             return frame['files']
         else:
             return pds.Series(files, index=index)
     else:
-        return pds.Series(None) 
-    
+        return pds.Series(None)
+
 
 def parse_fixed_width_filenames(files, format_str):
     """Parses list of files, extracting data identified by format_str
-    
+
     Parameters
     ----------
     files : list
         List of files
     format_str : string with python format codes
-        Provides the naming pattern of the instrument files and the 
+        Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
         and 'revision'
         Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-    
+
     Returns
     -------
     OrderedDict
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'min', 'sec', 'version', 'revision'
         'files' - input list of files
-        
+
     """
- 
+
     import collections
 
     # create storage for data to be parsed from filenames
     stored = collections.OrderedDict()
-    stored['year'] = []; stored['month'] = []; stored['day'] = [];
-    stored['hour'] = []; stored['min'] = []; stored['sec'] = [];
-    stored['version'] = []; stored['revision'] = [];
-    
-    if len(files) == 0:  
+    stored['year'] = []
+    stored['month'] = []
+    stored['day'] = []
+    stored['hour'] = []
+    stored['min'] = []
+    stored['sec'] = []
+    stored['version'] = []
+    stored['revision'] = []
+
+    if len(files) == 0:
         stored['files'] = []
         # include format string as convenience for later functions
         stored['format_str'] = format_str
@@ -659,13 +665,13 @@ def parse_fixed_width_filenames(files, format_str):
     snips = search_dict['string_blocks']
     lengths = search_dict['lengths']
     keys = search_dict['keys']
-    
-    # determine the locations the date/version information in a filename is stored
-    # use these indices to slice out date from filenames
+
+    # determine the locations the date/version information in a filename is
+    # stored use these indices to slice out date from filenames
     idx = 0
     begin_key = []
     end_key = []
-    for i,snip in enumerate(snips):
+    for i, snip in enumerate(snips):
         idx += len(snip)
         if i < (len(lengths)):
             begin_key.append(idx)
@@ -673,58 +679,58 @@ def parse_fixed_width_filenames(files, format_str):
             end_key.append(idx)
     max_len = idx
     # setting up negative indexing to pick out filenames
-    key_str_idx = [np.array(begin_key, dtype=int) - max_len, 
-                    np.array(end_key, dtype=int) - max_len]
+    key_str_idx = [np.array(begin_key, dtype=int) - max_len,
+                   np.array(end_key, dtype=int) - max_len]
     # need to parse out dates for datetime index
-    for i,temp in enumerate(files):
-        for j,key in enumerate(keys):
+    for i, temp in enumerate(files):
+        for j, key in enumerate(keys):
             val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
             stored[key].append(val)
     # convert to numpy arrays
     for key in stored.keys():
         stored[key] = np.array(stored[key]).astype(int)
         if len(stored[key]) == 0:
-            stored[key]=None
+            stored[key] = None
     # include files in output
     stored['files'] = files
     # include format string as convenience for later functions
     stored['format_str'] = format_str
-    
+
     return stored
 
 
 def parse_delimited_filenames(files, format_str, delimiter):
     """Parses list of files, extracting data identified by format_str
-    
+
     Parameters
     ----------
     files : list
         List of files
     format_str : string with python format codes
-        Provides the naming pattern of the instrument files and the 
+        Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
         and 'revision'
         Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-    
+
     Returns
     -------
     OrderedDict
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'min', 'sec', 'version', 'revision'
         'files' - input list of files
-        
+
     """
- 
+
     import collections
 
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'min', 'sec',
                     'version', 'revision']
-    stored = collections.OrderedDict({kk:list() for kk in ordered_keys})
+    stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
-    # exit early if there are no files    
-    if len(files) == 0:  
+    # exit early if there are no files
+    if len(files) == 0:
         stored['files'] = []
         # include format string as convenience for later functions
         stored['format_str'] = format_str
@@ -734,7 +740,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     search_dict = construct_searchstring_from_format(format_str, wildcard=True)
     snips = search_dict['string_blocks']
     keys = search_dict['keys']
-    
+
     # going to parse string on delimiter
     # it is possible that other regions have the delimiter but aren't
     # going to be parsed out
@@ -746,7 +752,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
             if _[0] == '':
                 _ = _[1:]
             if _[-1] == '':
-                _ = _[:-1]                
+                _ = _[:-1]
             pblock.extend(_)
         pblock.append('')
     parsed_block = pblock[:-1]
@@ -756,23 +762,23 @@ def parse_delimited_filenames(files, format_str, delimiter):
         idx = 0
         for sname, bname in zip(split_name, parsed_block):
             if bname == '':
-                # areas with data to be parsed are indicated with a 
+                # areas with data to be parsed are indicated with a
                 # '' in parsed_block
                 stored[keys[idx]].append(sname)
                 idx += 1
-                
+
     # convert to numpy arrays
     for key in stored.keys():
         stored[key] = np.array(stored[key]).astype(int)
         if len(stored[key]) == 0:
-            stored[key]=None
+            stored[key] = None
     # include files in output
     stored['files'] = files
     # include format string as convenience for later functions
     stored['format_str'] = format_str
-    
+
     return stored
-   
+
 
 def construct_searchstring_from_format(format_str, wildcard=False):
     """
@@ -781,15 +787,15 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     Parameters
     ----------
     format_str : string with python format codes
-        Provides the naming pattern of the instrument files and the 
+        Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
         and 'revision'
-        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
+        Ex: 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
     wildcard : bool
         if True, replaces the ? sequence with a * . This option may be well
         suited when dealing with delimited filenames.
-        
+
     Returns
     -------
     dict
@@ -797,23 +803,23 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         'keys' keys for data to be parsed
         'lengths' string length for data to be parsed
         'string_blocks' the filenames are broken down into fixed width
-            segments and '' strings are placed in locations where data will 
-            eventually be parsed from a list of filenames. A standards compliant
-            filename can be constructed by starting with string_blocks,
-            adding keys in order, and replacing the '' locations with data
-            of length length.
-        
+            segments and '' strings are placed in locations where data will
+            eventually be parsed from a list of filenames. A standards
+            compliant filename can be constructed by starting with
+            string_blocks, adding keys in order, and replacing the '' locations
+            with data of length length.
+
     Note
     ----
         The '?' may be used to indicate a set number of spaces for a variable
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
-        
+
     """
 
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
-    
+
     # parse format string to figure out how to construct the search string
     # to identify files in the filesystem
     search_str = ''
@@ -849,11 +855,11 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                         break
             else:
                 raise ValueError("Couldn't determine formatting width")
-                
-    return {'search_string':search_str,
-            'keys':keys,
-            'lengths':lengths,
-            'string_blocks':snips}
+
+    return {'search_string': search_str,
+            'keys': keys,
+            'lengths': lengths,
+            'string_blocks': snips}
 
 
 def search_local_system_formatted_filename(data_path, search_str):
@@ -866,29 +872,28 @@ def search_local_system_formatted_filename(data_path, search_str):
         Top level directory to search files for. This directory
         is provided by pysat to the instrument_module.list_files
         functions as data_path.
-    search_str : string 
+    search_str : string
         String to search local file system for
         Ex: 'cnofs_cindi_ivm_500ms_????????_v??.cdf'
             'cnofs_cinfi_ivm_500ms_*_v??.cdf'
-        
+
     Returns
     -------
     list
         list of files matching the format_str
-    
+
     Note
     ----
     The use of ?s (1 ? per character) rather than the full wildcard *
     provides a more specific filename search string that limits the
     false positive rate.
-        
+
     """
 
     # perform local file search
     abs_search_str = os.path.join(data_path, search_str)
-    files = glob.glob(abs_search_str) 
+    files = glob.glob(abs_search_str)
     # remove data_path portion
-    files = [sfile.split(data_path)[-1] for sfile in files]   
+    files = [sfile.split(data_path)[-1] for sfile in files]
     # return info
     return files
-
