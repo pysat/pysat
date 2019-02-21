@@ -63,7 +63,7 @@ def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
         start = pysat.datetime(2009, 1, 1)
     if stop is None:
         stop = pysat.datetime(2013, 12, 31)
-    dates = pysat.utils.season_date_range(start, stop, freq=freq)
+    dates = pysat.utils.time.season_date_range(start, stop, freq=freq)
 
     if root_fname is None:
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
