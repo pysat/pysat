@@ -268,7 +268,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                     # Save the files at a daily cadence over the desired period
                     new_files.append(out.loc[istart: iend].asfreq('D', 'pad'))
                 # Add the newly indexed files to the file output
-                out = pds.concat(new_files)
+                out = pds.concat(new_files, sort=True)
                 out = out.dropna()
                 out = out.sort_index()
 

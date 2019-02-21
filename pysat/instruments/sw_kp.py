@@ -212,8 +212,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                       format_str=format_str,
                                       two_digit_year_break=94)
             if not out.empty:
-                out.ix[out.index[-1]+pds.DateOffset(months=1) -
-                       pds.DateOffset(days=1)] = out.iloc[-1]
+                pds_off = pds.DateOffset(months=1) - pds.DateOffset(days=1)
+                out.loc[out.index[-1] + pds_off] = out.iloc[-1]
                 out = out.asfreq('D', 'pad')
                 out = out + '_' + out.index.strftime('%Y-%m-%d')
             return out
@@ -224,8 +224,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
             return files
         elif tag == 'recent':
             format_str = 'kp_recent_{year:04d}-{month:02d}-{day:02d}.txt'
@@ -234,8 +234,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # pad list of files data to include most recent file under tomorrow
             if not files.empty:
                 pds_off = pds.DateOffset(days=1)
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
-                files.ix[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
+                files.loc[files.index[-1] + pds_off] = files.values[-1]
             return files
 
         else:
@@ -447,6 +447,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
 
     return
 
+
 def initialize_kp_metadata(meta, data_key, fill_val=-1):
     """ Initialize the Kp meta data using our knowledge of the index
 
@@ -478,6 +479,7 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
                       meta.max_label: 9, meta.fill_label: fill_val}
 
     return
+
 
 def convert_3hr_kp_to_ap(kp_inst):
     """ Calculate 3 hour ap from 3 hour Kp index

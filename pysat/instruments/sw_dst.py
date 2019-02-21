@@ -113,7 +113,7 @@ def load(fnames, tag=None, sat_id=None):
                             (new_data.index < new_date+pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx, :]
             # add specific day to all data loaded for filenames
-            data = pds.concat([data, new_data], axis=0)
+            data = pds.concat([data, new_data], sort=True, axis=0)
 
     return data, pysat.Meta()
 
@@ -157,17 +157,17 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             out = pysat.Files.from_os(data_path=data_path,
                                       format_str=format_str)
             if not out.empty:
-                out.ix[out.index[-1]+pds.DateOffset(years=1) -
-                       pds.DateOffset(days=1)] = out.iloc[-1]
+                out.loc[out.index[-1] + pds.DateOffset(years=1)
+                        - pds.DateOffset(days=1)] = out.iloc[-1]
                 out = out.asfreq('D', 'pad')
                 out = out + '_' + out.index.strftime('%Y-%m-%d')
             return out
         else:
-            raise ValueError('Unrecognized tag name for Space Weather ' +
-                             'Dst Index')
+            raise ValueError(''.join(('Unrecognized tag name for Space ',
+                                      'Weather Dst Index')))
     else:
-        raise ValueError('A data_path must be passed to the loading routine ' +
-                         'for Dst')
+        raise ValueError(''.join(('A data_path must be passed to the loading ',
+                                  'routine for Dst')))
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):

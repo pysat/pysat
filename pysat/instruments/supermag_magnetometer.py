@@ -206,11 +206,11 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
                 new_files = []
                 # Assigns the validity of each station file to be 1 year
                 for orig in orig_files.iteritems():
-                    files.ix[orig[0] + doff - pds.DateOffset(days=1)] = orig[1]
+                    files.loc[orig[0] + doff - pds.DateOffset(days=1)] = orig[1]
                     files = files.sort_index()
-                    new_files.append(files.ix[orig[0]: orig[0] + doff - \
+                    new_files.append(files.loc[orig[0]: orig[0] + doff - \
                             pds.DateOffset(days=1)].asfreq('D', method='pad'))
-                files = pds.concat(new_files)
+                files = pds.concat(new_files, sort = True)
 
                 files = files.dropna()
                 files = files.sort_index()
@@ -275,7 +275,7 @@ def load(fnames, tag='', sat_id=None):
 
         # Save the loaded data in the output data structure
         if len(temp.columns) > 0:
-            data = pds.concat([data, temp], axis=0)
+            data = pds.concat([data, temp], sort=True, axis=0)
         del temp
 
     # If data was loaded, update the meta data

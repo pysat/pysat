@@ -426,7 +426,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     out = []
     for item in running_store:
         out.append(pds.DataFrame.from_records(item, index=epoch_name))
-    out = pds.concat(out, axis=0)
+    out = pds.concat(out, sort=True, axis=0)
     return out, mdata
 
 
@@ -538,7 +538,7 @@ def calc_freq(index):
     else:
         # There are sub-seconds.  Go straigt to nanosec for best resoution
         freq = "{:.0f}N".format(freq_sec * 1.0e9)
-    
+
     return freq
 
 
@@ -573,9 +573,10 @@ def median1D(self, bin_params, bin_label, data_label):
     ind = np.digitize(self.data[bin_label], bins)
 
     for i in xrange(bins.size-1):
-        index, = np.where(ind == (i + 1))
-        if len(index) > 0:
-            ans[i] = self.data.ix[index, data_label].median()
+        index, = np.where(ind==(i+1))
+        if len(index)>0:
+            idx = self.data.index[index.astype(int)]
+            ans[i] = self.data.loc[idx, data_label].median()
 
     return ans
 

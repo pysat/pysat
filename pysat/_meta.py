@@ -198,9 +198,9 @@ class Meta(object):
                 # make sure defaults are taken care of for required metadata
                 self.accept_default_labels(self)
             else:
-                raise ValueError("Input must be a pandas DataFrame type. " +
-                                 "See other constructors for alternate " +
-                                 "inputs.")
+                raise ValueError(''.join(('Input must be a pandas DataFrame',
+                                          'type. See other constructors for',
+                                          ' alternate inputs.')))
         else:
             self._data = DataFrame(None, columns=[self._units_label,
                                                   self._name_label,
@@ -424,6 +424,9 @@ class Meta(object):
                 names = [names]
                 for key in input_data:
                     input_data[key] = [input_data[key]]
+            elif isinstance(names, slice) and (names.step is None):
+                # Check for instrument[indx,:] or instrument[idx] usage
+                names = list(self.data.keys())
             # make sure the variable names are in good shape
             # Meta object is case insensitive but case preserving
             # convert given names into ones Meta has already seen
@@ -441,13 +444,13 @@ class Meta(object):
             # make sure number of inputs matches number of metadata inputs
             for key in input_data:
                 if len(names) != len(input_data[key]):
-                    raise ValueError('Length of names and inputs must be ' +
-                                     'equal.')
+                    raise ValueError(''.join(('Length of names and inputs',
+                                              ' must be equal.')))
             # make sure the attribute names are in good shape
             # check name of attributes against existing attribute names
             # if attribute name exists somewhere, then case of existing
-            # attribute will be enforced upon new data by default for
-            # consistency
+            # attribute
+            # will be enforced upon new data by default for consistency
             keys = [i for i in input_data]
             for name in keys:
                 new_name = self.attr_case_name(name)
@@ -465,10 +468,10 @@ class Meta(object):
                                 self._data.loc[name, key] = \
                                     '\n\n'.join(to_be_set)
                             else:
-                                warnings.warn(' '.join(('Array elements' +
-                                                        'are disallowed in' +
-                                                        'meta. Dropping' +
-                                                        'input :', key)))
+                                warnings.warn(' '.join(('Array elements are',
+                                                        ' disallowed in meta.',
+                                                        ' Dropping input :',
+                                                        key)))
                         else:
                             self._data.loc[name, key] = to_be_set
                 else:
@@ -585,7 +588,7 @@ class Meta(object):
                 return meta_row
                 # else:
                 #     return pds.Series([self.ho_data[new_key].copy()],
-                #      index=['children'])
+                #                       index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
 
@@ -864,13 +867,15 @@ class Meta(object):
         if strict:
             for key in other.keys():
                 if key in mdata:
-                    raise RuntimeError('Duplicated keys (variable names) ' +
-                                       'across Meta objects in keys().')
+                    raise RuntimeError(''.join(('Duplicated keys (variable ',
+                                                'names) across Meta ',
+                                                'objects in keys().')))
             for key in other.keys_nD():
                 if key in mdata:
 
-                    raise RuntimeError('Duplicated keys (variable names) '
-                                       'across Meta objects in keys_nD().')
+                    raise RuntimeError(''.join(('Duplicated keys (variable ',
+                                                'names) across Meta '
+                                                'objects in keys_nD().')))
 
         # make sure labels between the two objects are the same
         other_updated = self.apply_default_labels(other)
@@ -977,10 +982,12 @@ class Meta(object):
                         # new_name = 'pysat_attr_'+key
                         inst.__setattr__(key, adict[key])
                     else:
-                        raise RuntimeError('Attribute ' + key +
-                                           'attached to Meta object can not ' +
-                                           'be transferred as it already ' +
-                                           'exists in the Instrument object.')
+                        raise RuntimeError(''.join(('Attribute ', key,
+                                                    ' attached to Meta object',
+                                                    ' can not be transferred',
+                                                    ' as it already exists in',
+                                                    ' the Instrument object.'
+                                                    )))
         # return inst
 
     def __eq__(self, other):
@@ -1146,5 +1153,6 @@ class Meta(object):
     #
     # @classmethod
     # def from_dict():
-    #    """not implemented yet, load metadata from dict of items/list types"""
+    #     """not implemented yet, load metadata from dict of items/list types
+    #     """
     #     pass

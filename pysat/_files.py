@@ -193,7 +193,7 @@ class Files(object):
                 print(files_info.index[files_info.index.duplicated()].unique())
 
                 idx = np.unique(files_info.index, return_index=True)
-                files_info = files_info.ix[idx[1]]
+                files_info = files_info.iloc[idx[1]]
                 # raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
@@ -386,7 +386,12 @@ class Files(object):
     def __getitem__(self, key):
         if isinstance(key, slice):
             try:
-                out = self.files.ix[key]
+                try:
+                    # Assume key is integer (including list or slice)
+                    out = self.files.iloc[key]
+                except:
+                    # Assume key is something else
+                    out = self.files.loc[key]
             except IndexError:
                 raise IndexError('Date requested outside file bounds.')
             if isinstance(key.start, pds.datetime):
@@ -407,7 +412,10 @@ class Files(object):
                 # not a datetime
                 return out
         else:
-            return self.files.ix[key]
+            try:
+                return self.files.iloc[key]
+            except:
+                return self.files.loc[key]
             # raise ValueError('Not implemented yet.')
         # if isinstance(key, tuple):
         #    if len(key) == 2:
