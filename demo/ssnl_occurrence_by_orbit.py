@@ -6,7 +6,6 @@ the occurrent probability of an event occurring.
 import os
 import pysat
 import matplotlib.pyplot as plt
-import pandas as pds
 import numpy as np
 
 # set the directory to save plots to
@@ -19,7 +18,7 @@ vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                         clean_level=None, orbit_info=orbit_info)
 
 
-# define functino to remove flagged values
+# define function to remove flagged values
 def filter_vefi(inst):
     idx, = np.where(vefi['B_flag'] == 0)
     vefi.data = vefi.data.iloc[idx]
@@ -28,8 +27,8 @@ def filter_vefi(inst):
 
 vefi.custom.add(filter_vefi, 'modify')
 # set limits on dates analysis will cover, inclusive
-start = pds.datetime(2010, 5, 9)
-stop = pds.datetime(2010, 5, 15)
+start = pysat.datetime(2010, 5, 9)
+stop = pysat.datetime(2010, 5, 15)
 
 # if there is no vefi dc magnetometer data on your system, then run command
 # below where start and stop are pandas datetimes (from above)
@@ -60,13 +59,13 @@ axarr[0].set_ylim((ans['bin_y'][0], ans['bin_y'][-1]))
 plt.colorbar(im, ax=axarr[0], label='Occurrence Probability')
 
 im = axarr[1].pcolor(ans['bin_x'], ans['bin_y'], ans['count'])
+axarr[1].set_title('Number of Orbits in Bin')
 axarr[1].set_xlabel('Longitude')
 axarr[1].set_xticks((0, 60, 120, 180, 240, 300, 360))
 axarr[1].set_xlim((ans['bin_x'][0], ans['bin_x'][-1]))
 axarr[1].set_ylabel('Latitude')
-axarr[1].set_title('Number of Orbits in Bin')
-
 plt.colorbar(im, ax=axarr[1], label='Counts')
+
 f.tight_layout()
-plt.show()
 plt.savefig(os.path.join(results_dir, 'ssnl_occurrence_by_orbit_demo'))
+plt.close()

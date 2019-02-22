@@ -6,7 +6,6 @@ results.
 import os
 import pysat
 import matplotlib.pyplot as plt
-import pandas as pds
 
 # set the directory to save plots to
 results_dir = ''
@@ -18,8 +17,8 @@ vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                         clean_level=None, orbit_info=orbit_info)
 
 # set limits on dates analysis will cover, inclusive
-start = pds.datetime(2010, 5, 9)
-stop = pds.datetime(2010, 5, 12)
+start = pysat.datetime(2010, 5, 9)
+stop = pysat.datetime(2010, 5, 12)
 
 # if there is no vefi dc magnetometer data on your system, then run command
 # below where start and stop are pandas datetimes (from above)
@@ -79,5 +78,6 @@ for orbit_count, vefi in enumerate(vefi.orbits):
     ax[6].set_xlim((0, 360))
 
     f.tight_layout()
-    plt.savefig(os.path.join(results_dir, 'orbit_%05i.png' % orbit_count))
+    plt.savefig(os.path.join(results_dir,
+                             'orbit_{num:05}.png').format(num=orbit_count))
     plt.close()
