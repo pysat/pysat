@@ -3,7 +3,6 @@ tests the pysat utils.time area
 """
 import numpy as np
 import pandas as pds
-import nose.tools
 from nose.tools import assert_raises, raises
 import pysat
 from pysat.utils import time as pytime

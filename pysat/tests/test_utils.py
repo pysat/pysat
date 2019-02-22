@@ -1,11 +1,11 @@
 """
 tests the pysat utils area
 """
-import os
 import numpy as np
+import os
+import tempfile
 import nose.tools
 from nose.tools import assert_raises, raises
-import tempfile
 import pysat
 
 import sys

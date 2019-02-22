@@ -167,6 +167,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     Leap seconds have no meaning here.
 
     """
+
     # need a timeseries index for storing satellite data in pandas but
     # creating a datetime object for everything is too slow
     # so I calculate the number of nanoseconds elapsed since first sample,
@@ -204,7 +205,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
-    uts_del += (day-1)*86400
+    uts_del += (day - 1) * 86400
     # add in seconds since unix epoch to first day
     uts_del += (datetime(year[0], month[0], 1) -
                 datetime(1970, 1, 1)).total_seconds()

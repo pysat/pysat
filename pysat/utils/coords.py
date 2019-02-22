@@ -59,6 +59,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     updates instrument data in column 'lon_name'
 
     """
+
     from pysat.utils.coords import adjust_cyclic_data
 
     if lon_name not in inst.data.keys():
@@ -92,6 +93,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     updates instrument data in column specified by slt_name
 
     """
+
     import datetime as dt
 
     if lon_name not in inst.data.keys():
@@ -311,6 +313,7 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
     Based on J.M. Ruohoniemi's geopack and R.J. Barnes radar.pro
 
     """
+    
     az = np.radians(az_in)
     el = np.radians(el_in)
 

@@ -15,8 +15,9 @@ def set_data_dir(path=None, store=None):
     store : bool
         if True, store data directory for future runs
     """
-    import sys
+
     import os
+    import sys
     import pysat
     if sys.version_info[0] >= 3:
         if sys.version_info[1] < 4:
@@ -27,8 +28,10 @@ def set_data_dir(path=None, store=None):
             re_load = importlib.reload
     else:
         re_load = reload
+
     if store is None:
         store = True
+
     if os.path.isdir(path):
         if store:
             with open(os.path.join(os.path.expanduser('~'), '.pysat',
@@ -117,15 +120,15 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     mdata : pysat._meta.Meta
         Meta data
     """
-    import pandas as pds
-    import netCDF4
-    import string
+
     import copy
+    import netCDF4
+    import pandas as pds
+    import string
     import pysat
     try:
         basestring
     except NameError:
-        # print ('setting basestring')
         basestring = str
 
     if fnames is None:
