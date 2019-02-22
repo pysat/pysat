@@ -132,7 +132,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                            inst.meta.scale_label: "linear",
                            inst.meta.min_label: 0.0,
                            inst.meta.max_label: 24.0,
-                           inst.meta.fill_label: np.nan})
+                           inst.meta.fill_label: np.nan}
 
     return
 
