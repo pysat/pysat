@@ -444,7 +444,7 @@ class TestBasics():
     ########################################
     # Local Horizontal / Global conversions
 
-    def test_local_horizontal_to_global_geo(self):
+    def test_local_horizontal_to_global_geo_geodetic(self):
         """Tests the conversion of the local horizontal to global geo"""
 
         az = 30.0
@@ -461,3 +461,22 @@ class TestBasics():
         assert abs(lat - 50.419037572472625) < 1.0e-6
         assert abs(lon + 7.694008395350697) < 1.0e-6
         assert abs(rad - 7172.15486518744) < 1.0e-6
+
+    def test_local_horizontal_to_global_geo(self):
+        """Tests the conversion of the local horizontal to global geo"""
+
+        az = 30.0
+        el = 45.0
+        dist = 1000.0
+        lat0 = 45.0
+        lon0 = 0.0
+        alt0 = 400.0
+
+        lat, lon, rad = \
+            coords.local_horizontal_to_global_geo(az, el, dist,
+                                                  lat0, lon0, alt0,
+                                                  geodetic=False)
+
+        assert abs(lat - 50.414315865044202) < 1.0e-6
+        assert abs(lon + 7.6855551809119502) < 1.0e-6
+        assert abs(rad - 7185.6983665760772) < 1.0e-6
