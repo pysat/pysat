@@ -86,7 +86,7 @@ class TestBasics():
         target = np.array([17.66666667, 18.20027778, 18.92722222,
                            19.03416667, 19.33444444, 19.65938889])
 
-        assert (abs(self.testInst['slt'] - target)).max() < 1.0
+        assert (abs(self.testInst['slt'] - target)).max() > 1.0
 
     @raises(ValueError)
     def test_bad_lon_name_calc_solar_local_time(self):
