@@ -73,7 +73,7 @@ This routine outputs a dict indexed by data_label. In this case, which looks at 
 
 Now we can plot!
 
-..code:: python
+.. code:: python
 
   f, axarr = plt.subplots(2, 1, sharex=True, sharey=True)
   masked = np.ma.array(ans['prob'], mask=np.isnan(ans['prob']))
