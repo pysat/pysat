@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Provides default routines for integrating NASA CDAWeb instruments into pysat.
-Adding new CDAWeb datasets should only require mininal user intervention.
+"""Provides default routines for integrating NASA CDAWeb instruments into
+pysat. Adding new CDAWeb datasets should only require mininal user
+intervention.
 
 """
 
@@ -23,7 +24,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     Parameters
     -----------
     tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+        Denotes type of file to load.  Accepted types are <tag strings>.
+        (default=None)
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
@@ -56,12 +58,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     ::
 
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-        supported_tags = {'dc_b':fname}
+        supported_tags = {'dc_b': fname}
         list_files = functools.partial(nasa_cdaweb_methods.list_files,
                                        supported_tags=supported_tags)
 
         fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        supported_tags = {'':fname}
+        supported_tags = {'': fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
@@ -77,16 +79,18 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                                   format_str=format_str)
 
         if (not out.empty) and fake_daily_files_from_monthly:
-            out.ix[out.index[-1] + pds.DateOffset(months=1) -
-                                   pds.DateOffset(days=1)] = out.iloc[-1]
+            out.loc[out.index[-1] + pds.DateOffset(months=1)
+                    - pds.DateOffset(days=1)] = out.iloc[-1]
             out = out.asfreq('D', 'pad')
             out = out + '_' + out.index.strftime('%Y-%m-%d')
             return out
 
         return out
     else:
-        estr = 'A directory must be passed to the loading routine for <Instrument Code>'
+        estr = ''.join(('A directory must be passed to the loading routine ',
+                        'for <Instrument Code>'))
         raise ValueError(estr)
+
 
 def load(fnames, tag=None, sat_id=None,
          fake_daily_files_from_monthly=False,
@@ -138,15 +142,15 @@ def load(fnames, tag=None, sat_id=None,
 
     import pysatCDF
 
-    if len(fnames) <= 0 :
+    if len(fnames) <= 0:
         return pysat.DataFrame(None), None
     else:
         # going to use pysatCDF to load the CDF and format
         # data and metadata for pysat using some assumptions.
         # Depending upon your needs the resulting pandas DataFrame may
         # need modification
-        # currently only loads one file, which handles more situations via pysat
-        # than you may initially think
+        # currently only loads one file, which handles more situations via
+        # pysat than you may initially think
 
         if fake_daily_files_from_monthly:
             # parse out date from filename
@@ -156,7 +160,8 @@ def load(fnames, tag=None, sat_id=None,
                 # convert data to pysat format
                 data, meta = cdf.to_pysat(flatten_twod=flatten_twod)
                 # select data from monthly
-                data = data.ix[date:date+pds.DateOffset(days=1) - pds.DateOffset(microseconds=1),:]
+                data = data.loc[date:date+pds.DateOffset(days=1)
+                                - pds.DateOffset(microseconds=1), :]
                 return data, meta
         else:
             # basic data return
@@ -212,7 +217,8 @@ def download(supported_tags, date_array, tag, sat_id,
     ::
 
         # download support added to cnofs_vefi.py using code below
-        rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
+        rn = '{year:4d}/cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}'+
+            '_v05.cdf'
         ln = 'cnofs_vefi_bfield_1sec_{year:4d}{month:02d}{day:02d}_v05.cdf'
         dc_b_tag = {'dir':'/pub/data/cnofs/vefi/bfield_1sec',
                     'remote_fname': rn,

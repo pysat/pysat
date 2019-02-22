@@ -5,8 +5,8 @@ Loads and downloads data from the COSMIC satellite.
 The Constellation Observing System for Meteorology, Ionosphere, and Climate
 (COSMIC) is comprised of six satellites in LEO with GPS receivers. The
 occultation of GPS signals by the atmosphere provides a measurement of
-atmospheric parameters. Data downloaded from the COSMIC Data Analaysis and
-Archival Center.
+atmospheric parameters. Data downloaded from the COSMIC Data Analaysis
+and Archival Center.
 
 Parameters
 ----------
@@ -89,7 +89,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # need to get date and time from filename to generate index
     num = len(cosmicFiles)
     if num != 0:
-        print('Estimated time:', num*1.E-5, 'seconds')
+        print('Estimated time:', num * 1.E-5, 'seconds')
         sys.stdout.flush()
         # preallocate lists
         year = [None] * num
@@ -107,7 +107,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         year = np.array(year).astype(int)
         days = np.array(days).astype(int)
-        uts = np.array(hours).astype(int)*3600+np.array(minutes).astype(int)*60
+        uts = np.array(hours).astype(int) * 3600. + \
+            np.array(minutes).astype(int) * 60.
         # adding microseconds to ensure each time is unique, not allowed to
         # pass 1.E-3 s
         uts += np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
@@ -132,12 +133,11 @@ def load(cosmicFiles, tag=None, sat_id=None):
         # multiprocessor load, not included and only benefits about 20%
         output = pysat.DataFrame(load_files(cosmicFiles, tag=tag,
                                             sat_id=sat_id))
+        utsec = output.hour * 3600. + output.minute * 60. + output.second
         output.index = pysat.utils.create_datetime_index(year=output.year,
                                                          month=output.month,
                                                          day=output.day,
-                                                         uts=output.hour*3600.
-                                                         + output.minute*60.
-                                                         + output.second)
+                                                         uts=utsec)
         # make sure UTS strictly increasing
         output.sort_index(inplace=True)
         # use the first available file to pick out meta information
@@ -174,7 +174,7 @@ def load_files(files, tag=None, sat_id=None):
     Returns a list of dicts, a dict for each file.
     '''
 
-    output = [None]*len(files)
+    output = [None] * len(files)
     drop_idx = []
     for (i, file) in enumerate(files):
         try:
@@ -308,13 +308,9 @@ def download(date_array, tag, sat_id, data_path=None,
 
     return
 
-
-
-
-
-    ## mean altitude profiles over bin size, make a pandas Series for each
-    #altBin = 3
-    #roundMSL_alt = np.round(loadedVars['MSL_alt']/altBin)*altBin
-    #profiles = pds.DataFrame(loadedVars, index=roundMSL_alt)
-    #profiles = profiles.groupby(profiles.index.values).mean()
-    #del loadedVars
+    # mean altitude profiles over bin size, make a pandas Series for each
+    # altBin = 3
+    # roundMSL_alt = np.round(loadedVars['MSL_alt']/altBin)*altBin
+    # profiles = pds.DataFrame(loadedVars, index=roundMSL_alt)
+    # profiles = profiles.groupby(profiles.index.values).mean()
+    # del loadedVars
