@@ -112,8 +112,9 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     slt = np.array([t + inst[lon_name][i] / 15.0 for i, t in enumerate(utsec)])
 
     # Ensure that solar local time falls between 0 and 24 hours
-    slt[slt >= 24.0] -= 24.0
-    slt[slt < 0.0] += 24.0
+    # slt[slt >= 24.0] -= 24.0
+    # slt[slt < 0.0] += 24.0
+    slt = np.mod(slt, 24.0)
 
     # Add the solar local time to the instrument
     if inst.pandas_format:
