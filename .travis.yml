@@ -41,6 +41,6 @@ install:
   - python setup.py install
 # command to run tests
 script:
- - nosetests -vs --with-coverage --cover-package=pysat
+ - nosetests -vs pysat/tests/test_utils_coords.py
 after_success:
  - coveralls
