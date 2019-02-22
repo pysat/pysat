@@ -42,8 +42,7 @@ def set_data_dir(path=None, store=None):
 
 def computational_form(data):
     """
-    Input Series of numbers, Series, or DataFrames repackaged
-    for calculation.
+    Repackages numbers, Series, or DataFrames
 
     Parameters
     ----------
