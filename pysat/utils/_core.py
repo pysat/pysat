@@ -20,12 +20,8 @@ def set_data_dir(path=None, store=None):
     import sys
     import pysat
     if sys.version_info[0] >= 3:
-        if sys.version_info[1] < 4:
-            import imp
-            re_load = imp.reload
-        else:
-            import importlib
-            re_load = importlib.reload
+        import importlib
+        re_load = importlib.reload
     else:
         re_load = reload
 
