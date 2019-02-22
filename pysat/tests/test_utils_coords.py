@@ -83,10 +83,10 @@ class TestBasics():
 
         coords.calc_solar_local_time(self.testInst, lon_name="longitude",
                                      slt_name='slt')
-        target = np.array([17.666667, 18.200278, 18.927222,
-                           19.034167, 19.334444, 19.659389])
+        target = np.array([17.66666667, 18.20027778, 18.92722222,
+                           19.03416667, 19.33444444, 19.65938889])
 
-        assert (abs(self.testInst['slt'] - target)).max() < 1.0e-5
+        assert (abs(self.testInst['slt'] - target)).max() < 1.0e-6
 
     @raises(ValueError)
     def test_bad_lon_name_calc_solar_local_time(self):
