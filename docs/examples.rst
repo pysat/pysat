@@ -21,6 +21,7 @@ How often does a particular thing occur on a orbit-by-orbit basis? Let's find ou
 First select the vefi dc magnetometer data.  We'll use longitude to determine where there are changes in the orbit, since local time info not in file.
 
 .. code:: python
+
   orbit_info = {'index': 'longitude', 'kind': 'longitude'}
   vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                           clean_level=None, orbit_info=orbit_info)
@@ -29,6 +30,7 @@ First select the vefi dc magnetometer data.  We'll use longitude to determine wh
 We can define a custom function to remove flagged values.  In this case, the values are determined by the instrument's quality flags.
 
 .. code:: python
+
   def filter_vefi(inst):
       idx, = np.where(inst['B_flag'] == 0)
       inst.data = inst.data.iloc[idx]
@@ -39,15 +41,20 @@ We can define a custom function to remove flagged values.  In this case, the val
 Pysat includes datetime objects that can be used to define the range that analysis will cover.
 
 .. code:: python
+
   start = pysat.datetime(2010, 5, 9)
   stop = pysat.datetime(2010, 5, 15)
 
 Note: if there is no vefi dc magnetometer data on your system, then run
+
 .. code:: python
+
   vefi.download(start, stop)
 
 If you already have a lot of vefi dc magnetometer data on your system, you can limit your analysis with the bounds command.  Note that leaving bounds undefined will use all available data by default.
+
 .. code:: python
+
   vefi.bounds = (start, stop)
 
 # perform occurrence probability calculation
