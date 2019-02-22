@@ -268,7 +268,6 @@ def download(date_array, tag, sat_id, data_path=None,
              user=None, password=None):
     import requests
     from requests.auth import HTTPBasicAuth
-    import base64
     import os
     import tarfile
     import shutil
@@ -288,15 +287,15 @@ def download(date_array, tag, sat_id, data_path=None,
         print('Downloading COSMIC data for ' + date.strftime('%D'))
         yr, doy = pysat.utils.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        dwnld = ''.join("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
-                        "tarservice/data/cosmic2013/")
+        dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                         "tarservice/data/cosmic2013/"))
         dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
                                                                  doy=doy)
         req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
         with open(fname, "wb") as local_file:
-            local_file.write(result.read())
+            local_file.write(req.content)
             local_file.close()
             # uncompress files
             tar = tarfile.open(fname)
