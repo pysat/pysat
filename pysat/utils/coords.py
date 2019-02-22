@@ -100,16 +100,15 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
         raise ValueError('uknown longitude variable name')
 
     # Convert from numpy epoch nanoseconds to UT seconds of day
-    utsec = list()
+    ut_hr = list()
     for nptime in inst.index.values.astype(int):
         # Numpy times come out in nanoseconds and timestamp converts
         # from seconds
-        dtime = dt.datetime.fromtimestamp(nptime * 1.0e-9)
-        utsec.append((dtime.hour * 3600.0 + dtime.minute * 60.0 +
+        dtime = dt.datetime.utcfromtimestamp(nptime * 1.0e-9)
+        ut_hr.append((dtime.hour * 3600.0 + dtime.minute * 60.0 +
                       dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
-
     # Calculate solar local time
-    slt = np.array([t + inst[lon_name][i] / 15.0 for i, t in enumerate(utsec)])
+    slt = np.array([t + inst[lon_name][i] / 15.0 for i, t in enumerate(ut_hr)])
 
     # Ensure that solar local time falls between 0 and 24 hours
     slt = np.mod(slt, 24.0)
