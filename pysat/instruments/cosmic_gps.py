@@ -107,8 +107,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         year = np.array(year).astype(int)
         days = np.array(days).astype(int)
-        uts = np.array(hours).astype(int)*3600. + \
-            np.array(minutes).astype(int)*60.
+        uts = np.array(hours).astype(int) * 3600. + \
+            np.array(minutes).astype(int) * 60.
         # adding microseconds to ensure each time is unique, not allowed to
         # pass 1.E-3 s
         uts += np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
@@ -214,8 +214,8 @@ def clean(self):
         # ionosphere density profiles
         if self.clean_level == 'clean':
             # try and make sure all data is good
-            # filter out profiles where source provider processing doesn't get
-            # max dens and max dens alt
+            # filter out profiles where source provider processing doesn't
+            # get max dens and max dens alt
             self.data = self.data[((self['edmaxalt'] != -999.) &
                                    (self['edmax'] != -999.))]
             # make sure edmaxalt in "reasonable" range
@@ -240,7 +240,7 @@ def clean(self):
                 # cycle slips
                 densDiff = profile.ELEC_dens.diff()
                 altDiff = profile.MSL_alt.diff()
-                normGrad = (densDiff/(altDiff*profile.ELEC_dens)).abs()
+                normGrad = (densDiff / (altDiff * profile.ELEC_dens)).abs()
                 idx, = np.where((normGrad > 1.) & normGrad.notnull())
                 if len(idx) > 0:
                     self[i, 'edmaxalt'] = np.nan
@@ -264,11 +264,10 @@ def clean(self):
     return
 
 
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    import ftplib
-    import urllib2
-    import base64
+def download(date_array, tag, sat_id, data_path=None,
+             user=None, password=None):
+    import requests
+    from requests.auth import HTTPBasicAuth
     import os
     import tarfile
     import shutil
@@ -285,19 +284,18 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
         raise ValueError('Unknown cosmic_gps tag')
 
     for date in date_array:
-        print('Downloading COSMIC data for '+date.strftime('%D'))
+        print('Downloading COSMIC data for ' + date.strftime('%D'))
         yr, doy = pysat.utils.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        dwnld = "http://cdaac-www.cosmic.ucar.edu/cdaac/rest/tarservice/data/cosmic2013/"
-        dwnld = dwnld+sub_dir+'/{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        req = urllib2.Request(dwnld)
-        base64str = base64.encodestring('%s:%s' %
-                                        (user, password)).replace('\n', '')
-        req.add_header("Authorization", "Basic %s" % base64str)
-        result = urllib2.urlopen(req)
-        fname = os.path.join(data_path, 'cosmic_'+sub_dir+'_'+yrdoystr+'.tar')
+        dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                         "tarservice/data/cosmic2013/"))
+        dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
+                                                                 doy=doy)
+        req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+        fname = os.path.join(data_path,
+                             'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
         with open(fname, "wb") as local_file:
-            local_file.write(result.read())
+            local_file.write(req.content)
             local_file.close()
             # uncompress files
             tar = tarfile.open(fname)
