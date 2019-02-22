@@ -9,21 +9,40 @@ functions used throughout the pysat package.
 import numpy as np
 
 
-# determine the median in 1 dimension
 def median1D(self, bin_params, bin_label, data_label):
+    """Calculates the median for a series of binned data.
+
+    ** Will be remvoed in a future version now that ssnl.avgs has a
+    similar function
+
+    Parameters
+    ----------
+    bin_params : array_like
+        Input array defining the bins in which the median is calculated
+    bin_label : string
+        Name of data parameter which the bins cover
+    data_level : string
+        Name of data parameter to take the median of in each bin
+
+    Returns
+    -------
+    medians : array_like
+        The median data value in each bin
+
+    """
 
     bins = np.arange(bin_params[0], bin_params[1] + bin_params[2],
                      bin_params[2])
-    ans = 0.*bins[0:-1]
+    medians = 0. * bins[0:-1]
     ind = np.digitize(self.data[bin_label], bins)
 
     for i in xrange(bins.size-1):
         index, = np.where(ind == (i + 1))
         if len(index) > 0:
-            idx = self.data.index[index.astype(int)]
-            ans[i] = self.data.loc[idx, data_label].median()
+             idx = self.data.index[index.astype(int)]
+             medians[i] = self.data.loc[idx, data_label].median()
 
-    return ans
+    return medians
 
 
 def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
