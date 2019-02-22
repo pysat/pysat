@@ -89,6 +89,18 @@ class TestBasics():
     #
     #     assert (abs(self.testInst['slt'] - target)).max() < 1.0e-6
 
+    def test_calc_solar_local_time_w_update_longitude(self):
+        """Test calc_solar_local_time with update_longitude"""
+
+        coords.calc_solar_local_time(self.testInst, lon_name="longitude",
+                                     slt_name='slt')
+        coords.update_longitude(self.testInst, lon_name="longitude")
+        coords.calc_solar_local_time(self.testInst, lon_name="longitude",
+                                     slt_name='slt2')
+
+        assert (abs(self.testInst['slt']
+                    - self.testInst['slt2'])).max() < 1.0e-6
+
     @raises(ValueError)
     def test_bad_lon_name_calc_solar_local_time(self):
         """Test calc_solar_local_time with a bad longitude name"""
