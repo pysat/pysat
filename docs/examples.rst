@@ -10,10 +10,10 @@ How often does a particular thing occur on a orbit-by-orbit basis? Let's find ou
 
 .. code:: python
 
+  import numpy as np
+  import matplotlib.pyplot as plt
   import os
   import pysat
-  import matplotlib.pyplot as plt
-  import numpy as np
 
   # set the directory to save plots to
   results_dir = ''
