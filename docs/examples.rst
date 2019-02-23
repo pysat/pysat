@@ -18,7 +18,7 @@ How often does a particular thing occur on a orbit-by-orbit basis? Let's find ou
   # set the directory to save plots to
   results_dir = ''
 
-First select the vefi dc magnetometer data.  We'll use longitude to determine where there are changes in the orbit, since local time info not in file.
+First select the VEFI DC magnetometer data.  We'll use longitude to determine where there are changes in the orbit, since local time info not in file.
 
 .. code:: python
 
@@ -51,7 +51,7 @@ Note: if there is no vefi dc magnetometer data on your system, then run
 
   vefi.download(start, stop)
 
-If you already have a lot of vefi dc magnetometer data on your system, you can limit your analysis with the bounds command.  Note that leaving bounds undefined will use all available downloaded data by default.
+If you already have a lot of VEFI magnetometer data on your system, you can limit your analysis with the bounds command.  Note that leaving bounds undefined will use all available downloaded data by default.
 
 .. code:: python
 
