@@ -343,8 +343,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame(day, index=times, columns=['Kp'])
         # write out as a file
         data.to_csv(os.path.join(data_path, 'kp_forecast_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'),
-                    header=False)
+                                 date.strftime('%Y-%m-%d') + '.txt'))
 
     elif tag == 'recent':
         import requests
@@ -383,8 +382,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                               'Kp': sub_kps[2]}, index=times)
         # write out as a file
         data.to_csv(os.path.join(data_path, 'kp_recent_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'),
-                    header=False)
+                                 date.strftime('%Y-%m-%d') + '.txt'))
 
     return
 
