@@ -8,7 +8,7 @@ Adding a New Instrument
 
 pysat works by calling modules written for specific instruments
 that load and process the data consistent with the pysat standard. The name
-of the module corresponds to the combination 'platform_name' provided when initializing a pysat instrument object. The module should be placed in the pysat instruments directory or in the user specified location (via mechanism to be added) for automatic discovery. A compatible module may also be supplied directly to pysat.Instrument(inst_module=input module) if it also contains attributes platform and name. 
+of the module corresponds to the combination 'platform_name' provided when initializing a pysat instrument object. The module should be placed in the pysat instruments directory or in the user specified location (via mechanism to be added) for automatic discovery. A compatible module may also be supplied directly to pysat.Instrument(inst_module=input module) if it also contains attributes platform and name.
 
 Some data repositories have pysat templates prepared to assist in integrating a new instrument. See Supported Templates for more.
 
@@ -28,16 +28,24 @@ where tag indicates a specific subset of the available data from cnofs_vefi.
 
 See pysat.utils.time.create_datetime_index for creating a datetime index for an array of irregularly sampled times.
 
-Pysat will store data in pysat_data_dir/platform/name/tag, helpfully provided in data_path, where pysat_data_dir is specified by user in pysat settings.
+Pysat will store data in pysat_data_dir/platform/name/tag, helpfully provided in data_path, where pysat_data_dir is specified by using `pysat.utils.set_data_dir(pysat_data_dir)`.
 
-pysat.Files.from_os is a convenience constructor provided for filenames that include time information in the filename and utilize a constant field width. The location and format of the time information is specified using standard python formatting and keywords year, month, day, hour, minute, second. A complete list_files routine could be as simple as
+`pysat.Files.from_os` is a convenience constructor provided for filenames that include time information in the filename and utilize a constant field width. The location and format of the time information is specified using standard python formatting and keywords year, month, day, hour, minute, second. A complete list_files routine could be as simple as
 
 .. code:: python
 
    def list_files(tag=None, data_path=None):
-       return pysat.Files.from_os(data_path=data_path, 
+       return pysat.Files.from_os(data_path=data_path,
                     format_str='cindi-{year:4d}{day:03d}-ivm.hdf')
-                                
+
+The list_files function can be invoked from within ipython by calling
+
+.. code:: python
+
+  instrument.files.files
+
+where instrument is the name of the instrument object.
+
 
 Load Data
 ---------
@@ -50,18 +58,18 @@ Loading is a fundamental pysat activity, this routine enables the user to consid
        return data, meta
 
 - The load routine should return a tuple with (data, pysat metadata object).
-- data is a pandas DataFrame, column names are the data labels, rows are 
+- data is a pandas DataFrame, column names are the data labels, rows are
   indexed by datetime objects.
-- pysat.utils.create_datetime_index provides for quick generation of an  
+- pysat.utils.create_datetime_index provides for quick generation of an
   appropriate datetime index for irregulary sampled data set with gaps
 - pysat meta object obtained from pysat.Meta(). Use pandas DataFrame indexed
-  by name with columns for 'units' and 'long_name'. Additional arbitrary 
-  columns allowed. See pysat.Meta for more information on creating the   
+  by name with columns for 'units' and 'long_name'. Additional arbitrary
+  columns allowed. See pysat.Meta for more information on creating the
   initial metadata.
-- If metadata is already stored with the file, creating the Meta object is   
-  trivial. If this isn't the case, it can be tedious to fill out all  
-  information if there are many data parameters. In this case it is easier to 
-  fill out a text file. A convenience function is provided for this 
+- If metadata is already stored with the file, creating the Meta object is
+  trivial. If this isn't the case, it can be tedious to fill out all
+  information if there are many data parameters. In this case it is easier to
+  fill out a text file. A convenience function is provided for this
   situation. See pysat.Meta.from_csv for more information.
 
 
@@ -90,7 +98,7 @@ Optional Routines
 **Initialize**
 
 
-Initialize any specific instrument info. Runs once. 
+Initialize any specific instrument info. Runs once.
 
 .. code:: python
 
@@ -102,7 +110,7 @@ inst is a pysat.Instrument() instance. init should modify inst in-place as neede
 **Default**
 
 
-First custom function applied, once per instrument load. 
+First custom function applied, once per instrument load.
 
 .. code:: python
 
@@ -114,7 +122,7 @@ inst is a pysat.Instrument() instance. default should modify inst in-place as ne
 **Clean Data**
 
 
-Cleans instrument for levels supplied in inst.clean_level. 
+Cleans instrument for levels supplied in inst.clean_level.
   * 'clean' : expectation of good data
   * 'dusty' : probably good data, use with caution
   * 'dirty' : minimal cleaning, only blatant instrument errors removed
@@ -137,9 +145,9 @@ The following attributes must be defined.
    * platform : platform name
    * name : instrument name
    * tags : dictionary of all tags supported by routine with a description
-   * sat_ids : dictionaary of sat_ids, with a list of tags supported by each id
+   * sat_ids : dictionary of sat_ids, with a list of tags supported by each id
    * test_dates : dictionary of sat_ids, containing dictionary of tags, with date to download for testing
-   
+
 Note that platform and name must match those used to name the file, platform_name.py
 
 Example code from dmsp_ivm.py. The attributes are set at the top level simply
@@ -179,7 +187,7 @@ Using the CDAWeb template the equivalent action is
 
 .. code:: python
 
-   download = functools.partial(nasa_cdaweb_methods.download, 
+   download = functools.partial(nasa_cdaweb_methods.download,
                                 supported_tags)
 
 where supported_tags is defined as dictated by the download function. See the routines for cnofs_vefi and cnofs_ivm for practical uses of the NASA CDAWeb support code.
@@ -187,7 +195,4 @@ where supported_tags is defined as dictated by the download function. See the ro
 
 
 .. automodule:: pysat.instruments.nasa_cdaweb_methods
-   :members: 
-
-
-
+   :members:
