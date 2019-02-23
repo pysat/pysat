@@ -253,15 +253,21 @@ def download(supported_tags, date_array, tag, sat_id,
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year,
                                                      month=date.month,
-                                                     day=date.day)
+                                                     day=date.day,
+                                                     hour=date.hour,
+                                                     min=date.minute,
+                                                     sec=date.second)
         formatted_local_fname = local_fname.format(year=date.year,
                                                    month=date.month,
-                                                   day=date.day)
+                                                   day=date.day,
+                                                   hour=date.hour,
+                                                   min=date.minute,
+                                                   sec=date.second)
         saved_local_fname = os.path.join(data_path, formatted_local_fname)
 
         # perform download
         try:
-            print('Attempting to download file for '+date.strftime('%x'))
+            print('Attempting to download file for ' + date.strftime('%x'))
             sys.stdout.flush()
             remote_path = '/'.join((remote_url, formatted_remote_fname))
             req = requests.get(remote_path)
