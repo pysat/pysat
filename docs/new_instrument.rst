@@ -26,7 +26,7 @@ Pysat maintains a list of files to enable data management functionality. It need
 
 where tag indicates a specific subset of the available data from cnofs_vefi.
 
-See pysat.utils.create_datetime_index for creating a datetime index for an array of irregularly sampled times.
+See pysat.utils.time.create_datetime_index for creating a datetime index for an array of irregularly sampled times.
 
 Pysat will store data in pysat_data_dir/platform/name/tag, helpfully provided in data_path, where pysat_data_dir is specified by user in pysat settings.
 
