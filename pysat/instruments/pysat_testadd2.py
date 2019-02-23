@@ -31,7 +31,7 @@ def init(self):
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None):
     # create an artifical satellite data set
-    parts = fnames[0].split('/')
+    parts = fnames[0].split('-')
     yr = int('20' + parts[-1][0:2])
     month = int(parts[-3])
     day = int(parts[-2])
@@ -107,7 +107,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     index = pds.date_range(pysat.datetime(2008, 1, 1),
                            pysat.datetime(2010, 12, 31))
-    names = [data_path + date.strftime('%D') + '.nofile' for date in index]
+    names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
+             for date in index]
     return pysat.Series(names, index=index)
 
 
