@@ -7,10 +7,10 @@ intervention.
 
 from __future__ import absolute_import, division, print_function
 
-import pandas as pds
 import numpy as np
-import pysat
+import pandas as pds
 import sys
+import pysat
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,

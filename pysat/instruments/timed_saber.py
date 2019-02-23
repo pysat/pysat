@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
-"""This is a template for a pysat.Instrument support file that
-utilizes CDAWeb methods. Copy and modify this file as needed when adding a
-new Instrument to pysat.
+"""Supports the SABER instrument on TIMED.
 
-This is a good area to introduce the instrument, provide background
-on the mission, operations, instrumenation, and measurements.
 
-Also a good place to provide contact information. This text will
-be included in the pysat API documentation.
 
 Parameters
 ----------
 platform : string
-    *List platform string here*
+    'timed'
 name : string
-    *List name string here*
-sat_id : string
-    *List supported sat_ids here*
+    'saber'
 tag : string
-    *List supported tag strings here*
+    ''
 
 Note
 ----
@@ -52,12 +44,11 @@ from . import nasa_cdaweb_methods as cdw
 # these attributes will be copied over to the Instrument object by pysat
 # the strings used here should also be used to name this file
 # platform_name.py
-platform = ''
-name = ''
+platform = 'timed'
+name = 'saber'
 
 # dictionary of data 'tags' and corresponding description
-tags = {'': 'description 1',  # this is the default
-        'tag_string': 'description 2'}
+tags = {'': ''}
 
 # Let pysat know if there are multiple satellite platforms supported
 # by these routines
@@ -86,7 +77,7 @@ test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 # you can use format keywords year, month, day, hour, min, sec,
 # version and revision
 # see code docstring for latest
-fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
+fname = 'timed_l2av20_saber_{year:04d}{month:02d}{day:02d}{hour:02d}{minute:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
 # the command below presets some of the methods inputs, leaving
