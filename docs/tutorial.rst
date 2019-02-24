@@ -82,7 +82,7 @@ Data is loaded into vefi using the .load method using year, day of year; date; o
 
 .. code:: python
 
-   vefi.load(2009,126)
+   vefi.load(2009, 126)
    vefi.load(date=start)
    vefi.load(fname='cnofs_vefi_bfield_1sec_20090506_v05.cdf')
 
@@ -376,7 +376,7 @@ Check the instrument independence using a different instrument. Whatever instrum
 
 .. code:: python
 
-   cosmic = pysat.Instrument('cosmic2013','gps', tag='ionprf', clean_level='clean', altitude_bin=3)
+   cosmic = pysat.Instrument('cosmic2013', 'gps', tag='ionprf', clean_level='clean', altitude_bin=3)
 
    def filter_cosmic(inst):
        inst.data = inst[(inst['edmaxlat'] > -15) & (inst['edmaxlat'] < 15)]
@@ -414,7 +414,7 @@ daily_mean now works for any instrument, as long as the data to be averaged is 1
                data = inst[data_label]
                if isinstance(data.iloc[0], pandas.DataFrame):
 	           # 3D data, 2D data at every time
-                   data_panel = pandas.Panel.from_dict(dict([(i,data.iloc[i]) for i in xrange(len(data))]))
+                   data_panel = pandas.Panel.from_dict(dict([(i, data.iloc[i]) for i in xrange(len(data))]))
                    mean_val[inst.date] = data_panel.abs().mean(axis=0,skipna=True)
                elif isinstance(data.iloc[0], pandas.Series):
 	           # 2D data, 1D data for each time
@@ -584,7 +584,7 @@ Orbit determination acts upon data loaded in the ivm object, so to begin we must
 
 Orbits may be selected directly from the attached .orbit class. The data for the orbit is stored in .data.
 
-.. code:: ipython
+.. code:: python
 
    In [50]: ivm.orbits[1]
    Out[50]:
