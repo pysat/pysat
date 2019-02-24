@@ -31,6 +31,36 @@ def init(self):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None):
+    """ Loads the test files
+
+    Parameters
+    ----------
+    fnames : (list)
+        List of filenames
+    tag : (str or NoneType)
+        Instrument tag (accepts '' or a number (i.e., '10'), which specifies
+        the number of times to include in the test instrument)
+    sat_id : (str or NoneType)
+        Instrument satellite ID (accepts '')
+    sim_multi_file_right : (boolean)
+        Adjusts date range to be 12 hours in the future or twelve hours beyond
+        root_date (default=False)
+    sim_multi_file_left : (boolean)
+        Adjusts date range to be 12 hours in the past or twelve hours before
+        root_date (default=False)
+    root_date : (NoneType)
+        Optional central date, uses test_dates if not specified.
+        (default=None)
+
+    Returns
+    -------
+    data : (pds.DataFrame)
+        Testing data
+    meta : (pysat.Meta)
+        Metadataxs
+
+    """
+
     # create an artifical satellite data set
     parts = fnames[0].split('-')
     yr = int('20' + parts[-1][0:2])

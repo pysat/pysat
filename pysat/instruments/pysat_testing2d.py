@@ -42,6 +42,27 @@ def init(self):
 
 
 def load(fnames, tag=None, sat_id=None):
+    """ Loads the test files
+
+    Parameters
+    ----------
+    fnames : (list)
+        List of filenames
+    tag : (str or NoneType)
+        Instrument tag (accepts '' or a number (i.e., '10'), which specifies
+        the number of times to include in the test instrument)
+    sat_id : (str or NoneType)
+        Instrument satellite ID (accepts '')
+
+    Returns
+    -------
+    data : (pds.DataFrame)
+        Testing data
+    meta : (pysat.Meta)
+        Metadataxs
+
+    """
+
     # create an artifical satellite data set
     parts = os.path.split(fnames[0])[-1].split('-')
     yr = int(parts[0])
