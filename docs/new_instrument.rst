@@ -175,7 +175,7 @@ as a tag to delineate that the data contains the UTD developed quality flags.
                  'f13': {'utd': pysat.datetime(1998, 1, 2)},
                  'f14': {'utd': pysat.datetime(1998, 1, 2)},
                  'f15': {'utd': pysat.datetime(2017, 12, 30)}}
-                 
+
     # support load routine
     def load(fnames, tag=None, sat_id=None):
         # code normally follows, example terminates here
@@ -206,4 +206,5 @@ where supported_tags is defined as dictated by the download function. See the ro
 
 
 .. automodule:: pysat.instruments.nasa_cdaweb_methods
+
    :members:
