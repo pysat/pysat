@@ -225,7 +225,8 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
         if altitude_bin is not None:
             for out in output:
                 out['profiles'].index = \
-                    (out['profiles']['MSL_alt']/altitude_bin).round().values * altitude_bin
+                    (out['profiles']['MSL_alt']/altitude_bin).round().values \
+                    * altitude_bin
                 out['profiles'] = out['profiles'].groupby(out['profiles'].index.values).mean()
         else:
             for out in output:
@@ -292,14 +293,8 @@ def clean(self):
 
 def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
-    import ftplib
-    try:
-        import urllib2
-        ulib = urllib2
-    except:
-        import urllib
-        ulib = urllib.request
-    import base64
+    import requests
+    from requests.auth import HTTPBasicAuth
     import os
     import tarfile
     import shutil
@@ -323,19 +318,15 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
         sys.stdout.flush()
         yr, doy = pysat.utils.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        dwnld = ''.join("http://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
-                        "tarservice/data/cosmic2013/")
+        dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                         "tarservice/data/cosmic2013/"))
         dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
                                                                  doy=doy)
-        req = ulib.Request(dwnld)
-        temp = '%s:%s' % (user, password)
-        base64str = base64.encodestring(temp.encode()).replace('\n'.encode(),
-                                                               ''.encode())
-        req.add_header("Authorization", "Basic %s" % base64str)
-        result = ulib.urlopen(req)
-        fname = os.path.join(data_path, 'cosmic_'+sub_dir+'_'+yrdoystr+'.tar')
-        with open(fname, "w") as local_file:
-            local_file.write(result.read())
+        req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+        fname = os.path.join(data_path,
+                             'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
+        with open(fname, "wb") as local_file:
+            local_file.write(req.content)
             local_file.close()
             # uncompress files
             tar = tarfile.open(fname)
