@@ -64,7 +64,7 @@ def geo2mag(incoord):
     r = 1.0
 
     # convert first to radians
-    lon, lat = [x*pi/180 for x in lon, lat]
+    lon, lat = [x*pi/180 for x in [lon, lat]]
 
     glat = incoord[0] * pi / 180.0
     glon = incoord[1] * pi / 180.0
