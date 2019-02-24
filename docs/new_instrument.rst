@@ -160,7 +160,7 @@ Note that platform and name must match those used to name the file, platform_nam
 
 Example code from dmsp_ivm.py. The attributes are set at the top level simply
 by defining variable names with the proper info. The various satellites within
-DMSP, F11, F12, F13 are separated out using the sat_id parameter. 'UTD' is used
+DMSP, F11, F12, F13 are separated out using the sat_id parameter. 'utd' is used
 as a tag to delineate that the data contains the UTD developed quality flags.
 
 .. code:: python
@@ -175,6 +175,7 @@ as a tag to delineate that the data contains the UTD developed quality flags.
                  'f13': {'utd': pysat.datetime(1998, 1, 2)},
                  'f14': {'utd': pysat.datetime(1998, 1, 2)},
                  'f15': {'utd': pysat.datetime(2017, 12, 30)}}
+                 
     # support load routine
     def load(fnames, tag=None, sat_id=None):
         # code normally follows, example terminates here
