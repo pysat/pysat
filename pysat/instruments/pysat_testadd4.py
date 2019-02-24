@@ -5,6 +5,7 @@ Adapted from existing pysat testing instrument, but changes the data in
 dummy1 to ascending integers and deletes dummy2-4
 """
 
+import os
 import numpy as np
 import pandas as pds
 
