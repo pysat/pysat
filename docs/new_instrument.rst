@@ -206,5 +206,4 @@ where supported_tags is defined as dictated by the download function. See the ro
 
 
 .. automodule:: pysat.instruments.nasa_cdaweb_methods
-
    :members:
