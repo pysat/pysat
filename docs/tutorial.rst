@@ -65,10 +65,13 @@ Let's download some data. VEFI data is hosted by the NASA Coordinated Data Analy
    stop = pysat.datetime(2009,5,9)
    vefi.download(start, stop)
 
-   # download COSMIC data, which requires username and password
-   cosmic.download(start, stop, user=user, password=password)
-
 The data is downloaded to pysat_data_dir/platform/name/tag/, in this case pysat_data_dir/cnofs/vefi/dc_b/. At the end of the download, pysat will update the list of files associated with VEFI.
+
+Note that some datasets, like COSMIC, require registration with a username and password.  Pysat supports this as well.
+.. code:: python
+
+  # download COSMIC data, which requires username and password
+  cosmic.download(start, stop, user=user, password=password)
 
 
 **Load Data**
@@ -107,14 +110,16 @@ To load data over a season, pysat provides a convenience function that returns a
 
 .. code:: python
 
-   import pandas
    import matplotlib.pyplot as plt
    import numpy as np
+   import pandas
 
    # create empty series to hold result
    mean_dB = pandas.Series()
+
    # get list of dates between start and stop
-   date_array = pysat.utils.season_date_range(start, stop)
+   date_array = pysat.utils.time.season_date_range(start, stop)
+
    # iterate over season, calculate the mean absolute perturbation in
    # meridional magnetic field
    for date in date_array:
@@ -125,6 +130,7 @@ To load data over a season, pysat provides a convenience function that returns a
 	    vefi.data = vefi.data.iloc[idx]
             # compute mean absolute db_Mer using pandas functions and store
             mean_dB[vefi.date] = vefi['dB_mer'].abs().mean(skipna=True)
+
    # plot the result using pandas functionality
    mean_dB.plot(title='Mean Absolute Perturbation in Meridional Magnetic Field')
    plt.ylabel('Mean Absolute Perturbation ('+vefi.meta['dB_mer'].units+')')
@@ -175,14 +181,19 @@ Metadata is also stored along with the main science data.
 
    # all metadata
    vefi.meta.data
+
    # dB_mer metadata
    vefi.meta['dB_mer']
+
    # units
    vefi.meta['dB_mer'].units
+
    # update units for dB_mer
    vefi.meta['dB_mer'] = {'units':'new_units'}
+
    # update display name, long_name
    vefi.meta['dB_mer'] = {'long_name':'Fancy Name'}
+
    # add new meta data
    vefi.meta['new'] = {'units':'fake', 'long_name':'Display'}
 
@@ -199,21 +210,24 @@ The same activities may be performed for other instruments in the same manner. I
    # assignment with metadata
    ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='')
    ivm.load(date=date)
-   ivm['double_mlt'] = {'data':2.*inst['mlt'], 'long_name':'Double MLT',
-                        'units':'hours'}
+   ivm['double_mlt'] = {'data': 2.*inst['mlt'], 'long_name': 'Double MLT',
+                        'units': 'hours'}
 
 .. code:: python
 
-   cosmic = pysat.Instrument('cosmic2013','gps', tag='ionprf',  clean_level='clean')
-   start = pysat.datetime(2009,1,2)
-   stop = pysat.datetime(2009,1,3)
+   cosmic = pysat.Instrument('cosmic2013', 'gps', tag='ionprf',  clean_level='clean')
+   start = pysat.datetime(2009, 1, 2)
+   stop = pysat.datetime(2009, 1, 3)
+
    # requires CDAAC account
    cosmic.download(start, stop, user='', password='')
    cosmic.load(date=start)
+
    # the profiles column has a DataFrame in each element which stores
    # all relevant profile information indexed by altitude
    # print part of the first profile, selection by integer location
    print(cosmic[0,'profiles'].iloc[55:60, 0:3])
+
    # print part of profile, selection by altitude value
    print(cosmic[0,'profiles'].iloc[196:207, 0:3])
 
@@ -241,7 +255,7 @@ Science analysis is built upon custom data processing. To simplify this task and
 .. code:: python
 
    def custom_func_modify(inst, optional_param=False):
-       inst['double_mlt'] = 2.*inst['mlt']
+       inst['double_mlt'] = 2.0 * inst['mlt']
 
 **Add Functions**
 
@@ -250,25 +264,25 @@ Science analysis is built upon custom data processing. To simplify this task and
 .. code:: python
 
    def custom_func_add(inst, optional_param=False):
-       return 2.*inst['mlt']
+       return 2.0 * inst['mlt']
 
 **Add Function Including Metadata**
 
 .. code:: python
 
    def custom_func_add(inst, optional_param1=False, optional_param2=False):
-       return {'data':2.*inst['mlt'], 'name':'double_mlt',
-               'long_name':'doubledouble', 'units':'hours'}
+       return {'data': 2.*inst['mlt'], 'name': 'double_mlt',
+               'long_name': 'doubledouble', 'units': 'hours'}
 
 **Attaching Custom Function**
 
 .. code:: python
 
    ivm.custom.add(custom_func_modify, 'modify', optional_param2=True)
-   ivm.load(2009,1)
-   print (ivm['double_mlt'])
+   ivm.load(2009, 1)
+   print(ivm['double_mlt'])
    ivm.custom.add(custom_func_add, 'add', optional_param2=True)
-   ivm.bounds = (start,stop)
+   ivm.bounds = (start, stop)
    custom_complicated_analysis_over_season(ivm)
 
 The output of custom_func_modify will always be available from instrument object, regardless of what level the science analysis is performed.
@@ -277,24 +291,27 @@ We can repeat the earlier VEFI example, this time using nano-kernel functionalit
 
 .. code:: python
 
-   import pandas
    import matplotlib.pyplot as plt
    import numpy as np
+   import pandas
 
    vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
 
    def filter_vefi(inst):
        # select data near geographic equator
-       idx, = np.where((vefi['latitude'] < 5) & (vefi['latitude'] > -5))
-       vefi.data = vefi.data.iloc[idx]
+       idx, = np.where((inst['latitude'] < 5) & (inst['latitude'] > -5))
+       inst.data = inst.data.iloc[idx]
        return
+
    # attach filter to vefi object, function is run upon every load
-   vefi.custom.add(filter_ivm, 'modify')
+   vefi.custom.add(filter_vefi, 'modify')
 
    # create empty series to hold result
    mean_dB = pandas.Series()
+
    # get list of dates between start and stop
-   date_array = pysat.utils.season_date_range(start, stop)
+   date_array = pysat.utils.time.season_date_range(start, stop)
+
    # iterate over season, calculate the mean absolute perturbation in
    # meridional magnetic field
    for date in date_array:
@@ -302,9 +319,10 @@ We can repeat the earlier VEFI example, this time using nano-kernel functionalit
 	if not vefi.data.empty:
             # compute mean absolute db_Mer using pandas functions and store
             mean_dB[vefi.date] = vefi['dB_mer'].abs().mean(skipna=True)
+
    # plot the result using pandas functionality
    mean_dB.plot(title='Mean Absolute Perturbation in Meridional Magnetic Field')
-   plt.ylabel('Mean Absolute Perturbation ('+vefi.meta['dB_mer'].units+')')
+   plt.ylabel('Mean Absolute Perturbation (' + vefi.meta['dB_mer'].units + ')')
 
 Note the same result is obtained. The VEFI instrument object and analysis are performed at the same level, so there is no strict gain by using the pysat nano-kernel in this simple demonstration. However, we can  use the nano-kernel to translate this daily mean into an versatile instrument independent function.
 
@@ -312,16 +330,18 @@ Note the same result is obtained. The VEFI instrument object and analysis are pe
 
 .. code:: python
 
-   import pandas
    import matplotlib.pyplot as plt
    import numpy as np
+   import pandas
 
    def daily_mean(inst, start, stop, data_label):
 
       # create empty series to hold result
       mean_val = pandas.Series()
+
       # get list of dates between start and stop
-      date_array = pysat.utils.season_date_range(start, stop)
+      date_array = pysat.utils.time.season_date_range(start, stop)
+
       # iterate over season, calculate the mean
       for date in date_array:
 	   inst.load(date=date)
@@ -334,11 +354,12 @@ Note the same result is obtained. The VEFI instrument object and analysis are pe
 
    def filter_vefi(inst):
        # select data near geographic equator
-       idx, = np.where((vefi['latitude'] < 5) & (vefi['latitude'] > -5))
-       vefi.data = vefi.data.iloc[idx]
+       idx, = np.where((inst['latitude'] < 5) & (inst['latitude'] > -5))
+       inst.data = inst.data.iloc[idx]
        return
+
    # attach filter to vefi object, function is run upon every load
-   vefi.custom.add(filter_ivm, 'modify')
+   vefi.custom.add(filter_vefi, 'modify')
 
    # make a plot of daily dB_mer
    mean_dB = daily_mean(vefi, start, stop, 'dB_mer')
@@ -346,7 +367,7 @@ Note the same result is obtained. The VEFI instrument object and analysis are pe
    # plot the result using pandas functionality
    mean_dB.plot(title='Absolute Daily Mean of '
    	        + vefi.meta['dB_mer'].long_name)
-   plt.ylabel('Absolute Daily Mean ('+vefi.meta['dB_mer'].units+')')
+   plt.ylabel('Absolute Daily Mean (' + vefi.meta['dB_mer'].units + ')')
 
 
 The pysat nano-kernel lets you modify any data set as needed so that you can get the daily mean you desire, without having to modify the daily_mean function.
@@ -358,7 +379,7 @@ Check the instrument independence using a different instrument. Whatever instrum
    cosmic = pysat.Instrument('cosmic2013','gps', tag='ionprf', clean_level='clean', altitude_bin=3)
 
    def filter_cosmic(inst):
-       cosmic.data = cosmic[(cosmic['edmaxlat'] > -15) & (cosmic['edmaxlat'] < 15)]
+       inst.data = inst[(inst['edmaxlat'] > -15) & (inst['edmaxlat'] < 15)]
        return
 
    cosmic.custom.add(filter_cosmic, 'modify')
@@ -367,7 +388,7 @@ Check the instrument independence using a different instrument. Whatever instrum
 
    # plot the result using pandas functionality
    mean_max_dens.plot(title='Absolute Daily Mean of ' + cosmic.meta[data_label].long_name)
-   plt.ylabel('Absolute Daily Mean ('+cosmic.meta[data_label].units+')')
+   plt.ylabel('Absolute Daily Mean (' + cosmic.meta[data_label].units + ')')
 
 daily_mean now works for any instrument, as long as the data to be averaged is 1D. This can be fixed.
 
@@ -383,7 +404,7 @@ daily_mean now works for any instrument, as long as the data to be averaged is 1
        # create empty series to hold result
        mean_val = pandas.Series()
        # get list of dates between start and stop
-       date_array = pysat.utils.season_date_range(start, stop)
+       date_array = pysat.utils.time.season_date_range(start, stop)
        # iterate over season, calculate the mean
        for date in date_array:
            inst.load(date=date)
@@ -418,7 +439,7 @@ This code works for 1D, 2D, and 3D datasets, regardless of instrument platform, 
        # create empty series to hold result
        mean_val = pandas.Series()
        # get list of dates between start and stop
-       date_array = pysat.utils.season_date_range(start, stop)
+       date_array = pysat.utils.time.season_date_range(start, stop)
        # iterate over season, calculate the mean
        for date in date_array:
            inst.load(date=date)
@@ -445,17 +466,17 @@ The seasonal analysis loop is repeated commonly:
 
 .. code:: python
 
-   date_array = pysat.utils.season_date_range(start,stop)
+   date_array = pysat.utils.time.season_date_range(start,stop)
    for date in date_array:
        vefi.load(date=date)
-       print 'Maximum meridional magnetic perturbation ', vefi['dB_mer'].max()
+       print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
 Iteration support is built into the Instrument object to support this and similar cases. The whole VEFI data set may be iterated over on a daily basis using
 
 .. code:: python
 
     for vefi in vefi:
-	print 'Maximum meridional magnetic perturbation ', vefi['dB_mer'].max()
+	print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
 Each loop of the python for iteration initiates a vefi.load() for the next date, starting with the first available date. By default the instrument instance will iterate over all available data. To control the range, set the instrument bounds,
 
@@ -467,7 +488,7 @@ Each loop of the python for iteration initiates a vefi.load() for the next date,
    vefi.bounds = (start, stop)
    # iterate over custom season
    for vefi in vefi:
-       print 'Maximum meridional magnetic perturbation ', vefi['dB_mer'].max()
+       print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
 The output is,
 
@@ -488,7 +509,7 @@ So far, the iteration support has only saved a single line of code, the .load li
 
    vefi.bounds( 'filename1', 'filename2')
    for vefi in vefi:
-       print 'Maximum meridional magnetic perturbation ', vefi['dB_mer'].max()
+       print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
 For VEFI there is only one file per day so there is no practical difference between the previous example. However, for instruments that have more than one file a day, there is a difference.
 
@@ -552,7 +573,7 @@ This section of pysat is still under development.
 
 .. code:: python
 
-   info = {'index':'mlt', 'kind':'local time'}
+   info = {'index': 'mlt', 'kind': 'local time'}
    ivm = pysat.Instrument(platform='cnofs', name='ivm', orbit_info=info, clean_level='None')
 
 Orbit determination acts upon data loaded in the ivm object, so to begin we must load some data.
@@ -563,7 +584,7 @@ Orbit determination acts upon data loaded in the ivm object, so to begin we must
 
 Orbits may be selected directly from the attached .orbit class. The data for the orbit is stored in .data.
 
-.. code:: python
+.. code:: ipython
 
    In [50]: ivm.orbits[1]
    Out[50]:
@@ -602,7 +623,7 @@ Let's go back an orbit.
    Returning cnofs ivm  data for 12/27/12
    Loaded Orbit:15
 
-   In [54]: ivm[-5:,'mlt']
+   In [54]: ivm[-5:, 'mlt']
    Out[54]:
    2012-12-27 23:05:09.584000    23.982796
    2012-12-27 23:05:10.584000    23.986725
@@ -630,7 +651,7 @@ eventually the next day will be loaded to try and form a complete orbit. You can
 
 .. code:: ipython
 
-   In[72] : ivm[:5,'mlt']
+   In[72] : ivm[:5, 'mlt']
    Out[72]:
    2012-12-28 23:03:34.160000    0.003109
    2012-12-28 23:03:35.152000    0.007052
@@ -639,7 +660,7 @@ eventually the next day will be loaded to try and form a complete orbit. You can
    2012-12-28 23:03:38.160000    0.018884
    Name: mlt, dtype: float32
 
-   In[73] : ivm[-5:,'mlt']
+   In[73] : ivm[-5:, 'mlt']
    Out[73]:
    2012-12-29 00:40:13.119000    23.982937
    2012-12-29 00:40:14.119000    23.986605
@@ -667,8 +688,8 @@ Orbit iteration is built into ivm.orbits just like iteration by day is built int
 
 .. code:: python
 
-   start = [pandas.datetime(2009,1,1), pandas.datetime(2010,1,1)]
-   stop = [pandas.datetime(2009,4,1), pandas.datetime(2010,4,1)]
+   start = [pandas.datetime(2009, 1, 1), pandas.datetime(2010, 1, 1)]
+   stop = [pandas.datetime(2009, 4, 1), pandas.datetime(2010, 4, 1)]
    ivm.bounds = (start, stop)
    for ivm in ivm.orbits:
        print 'next available orbit ', ivm.data
