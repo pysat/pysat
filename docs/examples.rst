@@ -179,53 +179,47 @@ Note the same averaging routine is used for both COSMIC and IVM, and that both 1
 
 .. code:: python
 
-   # create IVM Object
-   ivm = pysat.Instrument(platform='cnofs', name='ivm', clean_level='clean')
+  # instantiate IVM Object
+  ivm = pysat.Instrument(platform='cnofs',
+                         name='ivm', tag='',
+                         clean_level='clean')
+  # restrict meausurements to those near geomagnetic equator
+  ivm.custom.add(restrictMLAT, 'modify', maxMLAT=25.)
+  # perform seasonal average
+  ivm.bounds = (startDate, stopDate)
+  ivmResults = pysat.ssnl.avg.median2D(ivm, [0, 360, 24], 'alon',
+                                       [0, 24, 24], 'mlt', ['ionVelmeridional'])
 
-   # define function to restrict magnetic latitude
-   def restrictMLAT(inst, maxMLAT):
-       idx, = np.where(np.abs(inst['mlat']) <= maxMLAT)
-       inst.data = inst.data.iloc[idx]
-       return
+  # create COSMIC instrument object
+  cosmic = pysat.Instrument(platform='cosmic2013',
+                            name='gps', tag='ionprf',
+                            clean_level='clean',
+                            altitude_bin=3)
 
-   # restrict measurements to those near geomagnetic equator
-   ivm.custom.add(restrictMLAT, 'modify', maxMLAT=25.)
+  # apply custom functions to all data that is loaded through cosmic
+  cosmic.custom.add(addApexLong, 'add')
 
-   # perform seasonal average
-   startDate = pysat.datetime(2009, 6, 1)
-   stopDate = pysat.datetime(2009, 8, 31)
-   ivm.bounds = (startDate, stopDate)
-   ivmResults = pysat.ssnl.avg.median2D(ivm,
-                                        [0, 360, 24], 'apex_long',
-                                        [0, 24, 24], 'mlt',
-                                        ['iv_mer'])
+  # select locations near the magnetic equator
+  cosmic.custom.add(filterMLAT, 'modify', mlatRange=(0., 10.))
 
-   # create CODMIC instrument object
-   cosmic = pysat.Instrument(platform='cosmic2013', name='gps', tag='ionprf',
-		                         clean_level='clean', altitude_bin=3)
+  # take the log of NmF2 and add to the dataframe
+  cosmic.custom.add(addlogNm, 'add')
 
-   # apply custom functions to all data that is loaded through cosmic
-   cosmic.custom.add(addApexLong, 'add')
+  # calculates the height above hmF2 to reach Ne < NmF2/e
+  cosmic.custom.add(addTopsideScaleHeight, 'add')
 
-   # select locations near the magnetic equator
-   cosmic.custom.add(filterMLAT, 'modify', mlatRange=(0., 10.))
+  # do an average of multiple COSMIC data products
+  # from startDate through stopDate
+  # a mixture of 1D and 2D data is averaged
+  cosmic.bounds = (startDate, stopDate)
+  cosmicResults = pysat.ssnl.avg.median2D(cosmic, [0, 360, 24], 'apex_long',
+                                          [0, 24, 24], 'edmaxlct',
+                                          ['profiles', 'edmaxalt',
+                                           'lognm', 'thf2'])
 
-   # take the log of NmF2 and add to the dataframe
-   cosmic.custom.add(addlogNm, 'add')
 
-   # calculates the height above hmF2 to reach Ne < NmF2/e
-   cosmic.custom.add(addTopsideScaleHeight, 'add')
+  # the work is done, plot the results
 
-   # do an average of multiple COSMIC data products from startDate
-   # through stopDate
-   # Note that a mixture of 1D and 2D data is averaged
-   cosmic.bounds(startDate, stopDate)
-   cosmicResults = pysat.ssnl.avg.median2D(cosmic, [0,360,24], 'apex_long',
-	                                         [0,24,24],'edmaxlct',
-                                           ['profiles', 'edmaxalt',
-                                            'lognm', 'thf2'])
-
-   # the work is done, plot the results
 
 .. image:: ./images/ssnl_median_ivm_cosmic_1d.png
    :align: center
