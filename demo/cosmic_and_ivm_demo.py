@@ -281,7 +281,7 @@ f.savefig('ssnl_median_ivm_cosmic_1d.png')
 for k in np.arange(6):
     f, axarr = plt.subplots(4, sharex=True, figsize=(8.5, 11))
     # iterate over a group of four sectors at a time (4 plots per page)
-    for (j, sector) in enumerate(zip(*cosmicResults['profiles']['median'])
+    for (j, sector) in enumerate(list(zip(*cosmicResults['profiles']['median']))
                                  [k * 4:(k + 1) * 4]):
         # iterate over all local times within longitude sector
         # data is returned from the median routine in plot order, [y, x]
@@ -309,4 +309,4 @@ for k in np.arange(6):
     axarr[-1].set_xticks([0., 6., 12., 18., 24.])
     axarr[-1].set_xlabel('Solar Local Time of Profile Maximum Density')
     f.tight_layout()
-    f.savefig('cosmic_part%i' % (k))
+    f.savefig('cosmic_part{}.png'.format(k))
