@@ -594,9 +594,9 @@ Orbits may be selected directly from the attached .orbit class. The data for the
 
 Note that getting the first orbit caused pysat to load the day previous, and then back to the current day. Orbits are one indexed though this will change. Pysat is checking here if the first orbit for 12/28/2012 actually started on 12/27/2012. In this case it does.
 
-.. code:: ipython
+.. code:: python
 
-   In [51]: ivm[0:5,'mlt']
+   In [51]: ivm[0:5, 'mlt']
    Out[51]:
    2012-12-27 23:05:14.584000    0.002449
    2012-12-27 23:05:15.584000    0.006380
@@ -605,7 +605,7 @@ Note that getting the first orbit caused pysat to load the day previous, and the
    2012-12-27 23:05:18.584000    0.018178
    Name: mlt, dtype: float32
 
-   In [52]: ivm[-5:,'mlt']
+   In [52]: ivm[-5:, 'mlt']
    Out[52]:
    2012-12-28 00:41:50.563000    23.985415
    2012-12-28 00:41:51.563000    23.989031
@@ -616,7 +616,7 @@ Note that getting the first orbit caused pysat to load the day previous, and the
 
 Let's go back an orbit.
 
-.. code:: ipython
+.. code:: python
 
    In [53]: ivm.orbits.prev()
    Out[53]:
@@ -642,14 +642,14 @@ If we continue to iterate orbits using
 
 eventually the next day will be loaded to try and form a complete orbit. You can skip the iteration and just go for the last orbit of a day,
 
-.. code:: ipython
+.. code:: python
 
    In[] : ivm.orbits[-1]
    Out[]:
    Returning cnofs ivm  data for 12/29/12
    Loaded Orbit:1
 
-.. code:: ipython
+.. code:: python
 
    In[72] : ivm[:5, 'mlt']
    Out[72]:
@@ -671,14 +671,14 @@ eventually the next day will be loaded to try and form a complete orbit. You can
 
 Pysat loads the next day of data to see if the last orbit on 12/28/12 extends into 12/29/12, which it does. Note that the last orbit of 12/28/12 is the same as the first orbit of 12/29/12. Thus, if we ask for the next orbit,
 
-.. code:: ipython
+.. code:: python
 
    In[] : ivm.orbits.next()
    Loaded Orbit:2
 
 pysat will indicate it is the second orbit of the day. Going back an orbit gives us orbit 16, but referenced to a different day. Earlier, the same orbit was labeled orbit 1.
 
-.. code:: ipython
+.. code:: python
 
    In[] : ivm.orbits.prev()
    Returning cnofs ivm  data for 12/28/12
