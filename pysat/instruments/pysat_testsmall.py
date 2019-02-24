@@ -3,6 +3,7 @@
 Produces fake instrument data for testing.
 """
 
+import os
 import numpy as np
 import pandas as pds
 
