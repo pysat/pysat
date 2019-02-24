@@ -273,7 +273,7 @@ cbar = f.colorbar(cax[3], ax=axarr[3])
 cbar.set_label('Scale Height (km)')
 axarr[3].set_xlabel('Apex Longitude')
 f.tight_layout()
-f.savefig('1D_params.png')
+f.savefig('ssnl_median_ivm_cosmic_1d.png')
 
 
 # make COSMIC profile plots
