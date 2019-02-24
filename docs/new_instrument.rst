@@ -150,16 +150,11 @@ tested when pyast code is tested. To support testing all of the required routine
 additional information is required by pysat.
 
 The following attributes must be defined.
-   * platform : platform name
-   * name : instrument name
-   * tags : dictionary of all tags supported by routine with a description.
-   Typically these will include different available data products.
-   * sat_ids : dictionary of sat_ids, with a list of tags supported by each id.
-   The sat_ids may refer to a specific platform within a multi-satellite
-   constellation, or to a specific instrument for a single satellite with
-   multiple copies of the same instrument looking in different directions.
-   * test_dates : dictionary of sat_ids, containing dictionary of available tags
-   for each sat_id, along with a date to download for testing
+   - platform : platform name
+   - name : instrument name
+   - tags : dictionary of all tags supported by routine with a description. Typically these will include different available data products.
+   - sat_ids : dictionary of sat_ids, with a list of tags supported by each id. The sat_ids may refer to a specific platform within a multi-satellite constellation, or to a specific instrument for a single satellite with multiple copies of the same instrument looking in different directions.
+   - test_dates : dictionary of sat_ids, containing dictionary of available tags for each sat_id, along with a date to download for testing
 
 Note that platform and name must match those used to name the file, platform_name.py
 
