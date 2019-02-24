@@ -7,8 +7,8 @@ from __future__ import absolute_import
 import functools
 import os
 
-import pandas as pds
 import numpy as np
+import pandas as pds
 
 import pysat
 

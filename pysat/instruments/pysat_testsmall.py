@@ -3,8 +3,9 @@
 Produces fake instrument data for testing.
 """
 
-import pandas as pds
 import numpy as np
+import pandas as pds
+
 import pysat
 
 # pysat required parameters

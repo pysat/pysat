@@ -5,8 +5,9 @@ Adapted from existing pysat testing instrument, but changes the data in
 dummy1 to negative integers descending from 0 and deletes dummy2-4
 """
 
-import pandas as pds
 import numpy as np
+import pandas as pds
+
 import pysat
 
 # pysat required parameters

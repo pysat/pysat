@@ -4,11 +4,11 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-
 import os
 
-import pandas as pds
 import numpy as np
+import pandas as pds
+
 import pysat
 
 platform = 'pysat'
