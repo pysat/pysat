@@ -8,11 +8,18 @@ Adding a New Instrument
 
 pysat works by calling modules written for specific instruments
 that load and process the data consistent with the pysat standard. The name
-of the module corresponds to the combination 'platform_name' provided when initializing a pysat instrument object. The module should be placed in the pysat instruments directory or in the user specified location (via mechanism to be added) for automatic discovery. A compatible module may also be supplied directly to pysat.Instrument(inst_module=input module) if it also contains attributes platform and name.
+of the module corresponds to the combination 'platform_name' provided when
+initializing a pysat instrument object. The module should be placed in the
+pysat instruments directory or in the user specified location (via
+mechanism to be added) for automatic discovery. A compatible module may
+also be supplied directly to pysat.Instrument(inst_module=input module) if
+it also contains attributes platform and name.
 
-Some data repositories have pysat templates prepared to assist in integrating a new instrument. See Supported Templates for more.
+Some data repositories have pysat templates prepared to assist in integrating
+a new instrument. See Supported Templates for more.
 
-Three functions are required by pysat for operation, with supporting information for testing:
+Three functions are required by pysat for operation, with supporting
+information for testing:
 
 List Files
 ----------
@@ -58,19 +65,20 @@ Loading is a fundamental pysat activity, this routine enables the user to consid
        return data, meta
 
 - The load routine should return a tuple with (data, pysat metadata object).
-- data is a pandas DataFrame, column names are the data labels, rows are
-  indexed by datetime objects.
-- pysat.utils.create_datetime_index provides for quick generation of an
-  appropriate datetime index for irregulary sampled data set with gaps
-- pysat meta object obtained from pysat.Meta(). Use pandas DataFrame indexed
+- `data` is a pandas DataFrame, column names are the data labels, rows are
+  indexed by datetime objects.  For multi-dimensional data, an xarray can be
+  used.
+- `pysat.utils.create_datetime_index` provides for quick generation of an
+  appropriate datetime index for irregularly sampled data set with gaps
+- pysat meta object obtained from `pysat.Meta()`. Use pandas DataFrame indexed
   by name with columns for 'units' and 'long_name'. Additional arbitrary
-  columns allowed. See pysat.Meta for more information on creating the
+  columns allowed. See `pysat.Meta` for more information on creating the
   initial metadata.
 - If metadata is already stored with the file, creating the Meta object is
   trivial. If this isn't the case, it can be tedious to fill out all
   information if there are many data parameters. In this case it is easier to
   fill out a text file. A convenience function is provided for this
-  situation. See pysat.Meta.from_csv for more information.
+  situation. See `pysat.Meta.from_csv` for more information.
 
 
 
@@ -144,9 +152,14 @@ additional information is required by pysat.
 The following attributes must be defined.
    * platform : platform name
    * name : instrument name
-   * tags : dictionary of all tags supported by routine with a description
-   * sat_ids : dictionary of sat_ids, with a list of tags supported by each id
-   * test_dates : dictionary of sat_ids, containing dictionary of tags, with date to download for testing
+   * tags : dictionary of all tags supported by routine with a description.
+   Typically these will include different available data products.
+   * sat_ids : dictionary of sat_ids, with a list of tags supported by each id.
+   The sat_ids may refer to a specific platform within a multi-satellite
+   constellation, or to a specific instrument for a single satellite with
+   multiple copies of the same instrument looking in different directions.
+   * test_dates : dictionary of sat_ids, containing dictionary of available tags
+   for each sat_id, along with a date to download for testing
 
 Note that platform and name must match those used to name the file, platform_name.py
 
