@@ -170,11 +170,11 @@ as a tag to delineate that the data contains the UTD developed quality flags.
    tags = {'utd': 'UTDallas DMSP data processing'}
    sat_ids = {'f11': ['utd'], 'f12': ['utd'], 'f13': ['utd'],
               'f14': ['utd'], 'f15': ['utd']}
-   test_dates = {'f11': {'utd': pysat.datetime(1998,1,2)},
-                 'f12': {'utd': pysat.datetime(1998,1,2)},
-                 'f13': {'utd': pysat.datetime(1998,1,2)},
-                 'f14': {'utd': pysat.datetime(1998,1,2)},
-                 'f15': {'utd': pysat.datetime(2017,12,30)}}
+   test_dates = {'f11': {'utd': pysat.datetime(1998, 1, 2)},
+                 'f12': {'utd': pysat.datetime(1998, 1, 2)},
+                 'f13': {'utd': pysat.datetime(1998, 1, 2)},
+                 'f14': {'utd': pysat.datetime(1998, 1, 2)},
+                 'f15': {'utd': pysat.datetime(2017, 12, 30)}}
     # support load routine
     def load(fnames, tag=None, sat_id=None):
         # code normally follows, example terminates here
