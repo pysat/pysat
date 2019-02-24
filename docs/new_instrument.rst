@@ -164,6 +164,7 @@ DMSP, F11, F12, F13 are separated out using the sat_id parameter. 'UTD' is used
 as a tag to delineate that the data contains the UTD developed quality flags.
 
 .. code:: python
+
    platform = 'dmsp'
    name = 'ivm'
    tags = {'utd': 'UTDallas DMSP data processing'}
