@@ -1,7 +1,7 @@
-'''
+"""
 Demonstrates iterating over an instrument data set by orbit and plotting the
 results.
-'''
+"""
 
 import os
 import pysat
