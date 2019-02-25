@@ -7,8 +7,8 @@ from __future__ import absolute_import
 import functools
 import os
 
-import pandas as pds
 import numpy as np
+import pandas as pds
 
 import pysat
 
@@ -99,8 +99,8 @@ def init(self):
     if 'file_date_range' in self.kwargs:
         # set list files routine to desired date range
         # attach to the instrument object
-        self._list_rtn = functools.partial(list_files, \
-                                file_date_range=self.kwargs['file_date_range'])
+        fdr = self.kwargs['file_date_range']
+        self._list_rtn = functools.partial(list_files, file_date_range=fdr)
         self.files.refresh()
 
 
@@ -139,6 +139,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         Metadataxs
 
     """
+
     # create an artifical satellite data set
     parts = os.path.split(fnames[0])[-1].split('-')
     yr = int(parts[0])

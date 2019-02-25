@@ -264,9 +264,9 @@ def download(supported_tags, date_array, tag, sat_id,
             print('Attempting to download file for '+date.strftime('%x'))
             sys.stdout.flush()
             remote_path = '/'.join((remote_url, formatted_remote_fname))
-            r = requests.get(remote_path)
-            if r.status_code != 404:
-                open(saved_local_fname, 'wb').write(r.content)
+            req = requests.get(remote_path)
+            if req.status_code != 404:
+                open(saved_local_fname, 'wb').write(req.content)
                 print('Finished.')
             else:
                 print('File not available for ' + date.strftime('%x'))

@@ -619,7 +619,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     # Update the instrument object and attach units to the metadata
     for mdat in interp_data.keys():
         attr_name = mdat.split("{:s}_".format(model_label))[-1]
-        inst.meta.data.units[mdat] = model.data_vars[attr_name].units
+        inst.meta[mdat] = {inst.units_label: model.data_vars[attr_name].units}
 
         if inst.pandas_format:
             inst[mdat] = pds.Series(interp_data[mdat], index=inst.index)

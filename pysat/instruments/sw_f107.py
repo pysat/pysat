@@ -46,8 +46,8 @@ import os
 import functools
 import warnings
 
-import pandas as pds
 import numpy as np
+import pandas as pds
 
 import pysat
 
@@ -73,7 +73,6 @@ test_dates = {'': {'': pysat.datetime(2009, 1, 1),
                    'daily': tomorrow,
                    'forecast': tomorrow,
                    '45day': tomorrow}}
-
 
 def load(fnames, tag=None, sat_id=None):
     """Load F10.7 index files
@@ -421,6 +420,11 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
         bad_fname = list()
 
+        # Get the local files, to ensure that the most recent file is
+        # downloaded again since it will have more data
+        local_files = list_files(tag, sat_id, data_path)
+        got_today = False
+
         for date in date_array:
             # The file name changes, depending on how recent the requested
             # data is
@@ -446,8 +450,16 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
                 if os.path.isfile(outfile):
                     downloaded = True
-                    rewritten = True
-                    break
+
+                    # Check the date to see if this should be rewritten
+                    checkfile = os.path.split(outfile)[-1]
+                    has_file = local_files == checkfile
+                    if np.any(has_file):
+                        if has_file[has_file].index[-1] < today or got_today:
+                            rewritten = True
+                            break
+                        else:
+                            got_today = True
 
                 try:
                     print('Downloading file for ' + date.strftime('%x'))
@@ -457,6 +469,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                     downloaded = True
 
                 except ftplib.error_perm as exception:
+                    # Signal that we don't have today's file
+                    got_today = False
+                    
                     # Test for an error
                     if str(exception.args[0]).split(" ", 1)[0] != '550':
                         raise RuntimeError(exception)
@@ -472,7 +487,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                     break
 
             if not downloaded:
-                print('File not available for ' + date.strftime('%x'))
+                print('File not available for {:}'.format(date.strftime('%x')))
             elif not rewritten:
                 with open(saved_fname, 'r') as fprelim:
                     lines = fprelim.read()
@@ -743,7 +758,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
         raise ValueError("output data column already exists: " + f107a_name)
 
     if f107_name in f107_inst.meta:
-        fill_val = f107_inst.meta[f107_name][f107_inst.meta.fill_label]
+        fill_val = f107_inst.meta[f107_name][f107_inst.fill_label]
     else:
         fill_val = np.nan
 
@@ -799,18 +814,18 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     f107_inst[f107a_name] = f107_fill[f107a_name]
 
     # Update the metadata
-    meta_dict = {f107_inst.meta.units_label: 'SFU',
-                 f107_inst.meta.name_label: 'F10.7a',
-                 f107_inst.meta.desc_label: "81-day centered average of F10.7",
-                 f107_inst.meta.plot_label: "F$_{10.7a}$",
-                 f107_inst.meta.axis_label: "F$_{10.7a}$",
-                 f107_inst.meta.scale_label: 'linear',
-                 f107_inst.meta.min_label: 0.0,
-                 f107_inst.meta.max_label: np.nan,
-                 f107_inst.meta.fill_label: fill_val,
-                 f107_inst.meta.notes_label: 'Calculated using data between ' +
+    meta_dict = {f107_inst.units_label: 'SFU',
+                 f107_inst.name_label: 'F10.7a',
+                 f107_inst.desc_label: "81-day centered average of F10.7",
+                 f107_inst.plot_label: "F$_{10.7a}$",
+                 f107_inst.axis_label: "F$_{10.7a}$",
+                 f107_inst.scale_label: 'linear',
+                 f107_inst.min_label: 0.0,
+                 f107_inst.max_label: np.nan,
+                 f107_inst.fill_label: fill_val,
+                 f107_inst.notes_label: 'Calculated using data between ' +
                  '{:} and {:}'.format(f107_inst.index[0], f107_inst.index[-1])}
 
-    f107_inst.meta.__setitem__(f107a_name, meta_dict)
+    f107_inst.meta[f107a_name] = meta_dict
 
     return
