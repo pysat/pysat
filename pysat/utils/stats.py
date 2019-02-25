@@ -31,6 +31,11 @@ def median1D(self, bin_params, bin_label, data_label):
 
     """
 
+    warnings.warn(
+            "utils.stats.median1D is deprecated, use ssnl.avg.median1D instead",
+            DeprecationWarning
+        )
+
     bins = np.arange(bin_params[0], bin_params[1] + bin_params[2],
                      bin_params[2])
     medians = 0. * bins[0:-1]
