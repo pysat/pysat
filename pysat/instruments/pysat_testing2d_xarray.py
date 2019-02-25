@@ -37,7 +37,7 @@ def load(fnames, tag=None, sat_id=None):
 
     Returns
     -------
-    data : (pds.DataFrame)
+    data : (xr.Dataset)
         Testing data
     meta : (pysat.Meta)
         Metadataxs

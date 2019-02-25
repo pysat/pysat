@@ -49,7 +49,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     Returns
     -------
-    data : (pds.DataFrame)
+    data : (xr.Dataset)
         Testing data
     meta : (pysat.Meta)
         Metadataxs
