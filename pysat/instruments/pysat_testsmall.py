@@ -3,8 +3,10 @@
 Produces fake instrument data for testing.
 """
 
-import pandas as pds
+import os
 import numpy as np
+import pandas as pds
+
 import pysat
 
 # pysat required parameters
@@ -28,11 +30,41 @@ def init(self):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None):
+    """ Loads the test files
+
+    Parameters
+    ----------
+    fnames : (list)
+        List of filenames
+    tag : (str or NoneType)
+        Instrument tag (accepts '' or a number (i.e., '10'), which specifies
+        the number of times to include in the test instrument)
+    sat_id : (str or NoneType)
+        Instrument satellite ID (accepts '')
+    sim_multi_file_right : (boolean)
+        Adjusts date range to be 12 hours in the future or twelve hours beyond
+        root_date (default=False)
+    sim_multi_file_left : (boolean)
+        Adjusts date range to be 12 hours in the past or twelve hours before
+        root_date (default=False)
+    root_date : (NoneType)
+        Optional central date, uses test_dates if not specified.
+        (default=None)
+
+    Returns
+    -------
+    data : (pds.DataFrame)
+        Testing data
+    meta : (pysat.Meta)
+        Metadataxs
+
+    """
+
     # create an artifical satellite data set
-    parts = fnames[0].split('/')
-    yr = int('20' + parts[-1][0:2])
-    month = int(parts[-3])
-    day = int(parts[-2])
+    parts = os.path.split(fnames[0])[-1].split('-')
+    yr = int(parts[0])
+    month = int(parts[1])
+    day = int(parts[2][0:2])
 
     date = pysat.datetime(yr, month, day)
     if sim_multi_file_right:
@@ -106,7 +138,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     index = pds.date_range(pysat.datetime(2008, 1, 1),
                            pysat.datetime(2010, 12, 31))
-    names = [data_path + date.strftime('%D') + '.nofile' for date in index]
+    names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
+             for date in index]
     return pysat.Series(names, index=index)
 
 
