@@ -147,7 +147,7 @@ inst is a pysat.Instrument() instance. clean should modify inst in-place as need
 
 Returns a list of available files on the remote server.
 
-.. code:: ipython
+.. code:: python
 
     def list_remote_files(inst):
         return list_like
