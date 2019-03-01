@@ -143,6 +143,16 @@ Cleans instrument for levels supplied in inst.clean_level.
 
 inst is a pysat.Instrument() instance. clean should modify inst in-place as needed; equivalent to a 'modify' custom routine.
 
+**List Remote Files**
+
+Returns a list of available files on the remote server.
+
+.. code:: python
+
+    def list_remote_files(inst):
+        return list_like
+
+
 Testing Support
 ---------------
 All modules defined in the __init__.py for pysat/instruments are automatically
@@ -181,6 +191,12 @@ as a tag to delineate that the data contains the UTD developed quality flags.
         # code normally follows, example terminates here
 
 
+Data Acknowledgements
+=====================
+
+Acknowledging the source of data is key for scientific collaboration.  This can generally be put in the `init` function of each instrument.  Relevant citations should be included in the instrument docstring.
+
+
 Supported Data Templates
 ========================
 
@@ -207,3 +223,43 @@ where supported_tags is defined as dictated by the download function. See the ro
 
 .. automodule:: pysat.instruments.nasa_cdaweb_methods
    :members:
+
+
+   Madrigal
+   -----------
+
+   A template for Madrigal pysat support is provided. Several of the routines within are intended to be used with functools.partial in the new instrument support code. When writing custom routines with a new instrument file download support would be added via
+
+   .. code:: python
+
+      def download(.....)
+
+   Using the Madrigal template the equivalent action is
+
+   .. code:: python
+
+     def download(date_array, tag='', sat_id='', data_path=None, user=None,
+                  password=None):
+         madrigal_methods.download(date_array, inst_code=str(madrigal_inst_code),
+                                   kindat=str(madrigal_tag[sat_id][tag]),
+                                   data_path=data_path, user=user,
+                                   password=password)
+
+   See the routines for `dmsp_ivm` and `jro_isr` for practical uses of the Madrigal support code.
+
+   Additionally, use of the madrigal_methods class should acknowledge the CEDAR rules of the road.  This can be done by Adding
+
+   .. code:: python
+
+     def init(self):
+
+         print(madrigal_methods.cedar_rules())
+         return
+
+   to each routine that uses Madrigal data access.
+
+   |br|
+
+
+   .. automodule:: pysat.instruments.madrigal_methods
+      :members:

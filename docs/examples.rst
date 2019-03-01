@@ -10,10 +10,10 @@ How often does a particular thing occur on a orbit-by-orbit basis? Let's find ou
 
 .. code:: python
 
-  '''
+  """
   Demonstrates iterating over an instrument data set by orbit and determining
   the occurrent probability of an event occurring.
-  '''
+  """
 
   import os
   import pysat

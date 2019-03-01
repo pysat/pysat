@@ -1,7 +1,7 @@
-'''
+"""
 Demonstrates iterating over an instrument data set by orbit and determining
 the occurrent probability of an event occurring.
-'''
+"""
 
 import os
 import pysat
