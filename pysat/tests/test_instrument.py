@@ -541,7 +541,8 @@ class TestBasics():
 
     @raises(AttributeError)
     def test_supplying_instrument_module_requires_name_and_platform(self):
-        class Dummy: pass
+        class Dummy:
+            pass
         Dummy.name = 'help'
 
         temp = pysat.Instrument(inst_module=Dummy)
@@ -827,9 +828,9 @@ class TestDataPadding():
         assert ((self.testInst.index[0] ==
                  self.testInst.date - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
-                 self.testInst.date +
-                 pds.DateOffset(hours=23,minutes=59,seconds=59) +
-                 pds.DateOffset(minutes=5)))
+                 self.testInst.date
+                 + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                 + pds.DateOffset(minutes=5)))
 
     def test_data_padding_uniqueness(self):
         self.testInst.load(2009, 1, verifyPad=True)

@@ -17,7 +17,8 @@ if sys.version_info[0] >= 3:
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat','testing', clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean')
         self.bounds1 = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
         self.bounds2 = (pysat.datetime(2009, 1, 1), pysat.datetime(2009, 1, 2))
 
@@ -39,10 +40,10 @@ class TestBasics():
 
         dummy3_val = results['dummy3']['median']
         dummy3_dev = results['dummy3']['avg_abs_dev']
-        
+
         dummy_x = results['dummy1']['bin_x']
         dummy_y = results['dummy1']['bin_y']
-        
+
         # iterate over all y rows, value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
@@ -58,8 +59,8 @@ class TestBasics():
             check.append(np.all(dummy3_val[:, i] == x/15.0 * 1000.0
                                 + dummy_y[:-1]))
             check.append(np.all(dummy3_dev[:, i] == 0))
-                            
-        # holds here because there are 32 days, no data is discarded, 
+
+        # holds here because there are 32 days, no data is discarded,
         # each day holds same amount of data
         assert(self.testInst.data['dummy1'].size*32 ==
                sum([sum(i) for i in results['dummy1']['count']]))
@@ -71,13 +72,13 @@ class TestBasics():
         self.testInst.bounds = self.bounds1
         ans = avg.mean_by_day(self.testInst, 'dummy4')
         assert np.all(ans == 86399/2.0)
-        
+
     def test_basic_orbit_mean(self):
         """Test basic orbital mean"""
         orbit_info = {'kind':'local time', 'index':'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
-                                         orbit_info=orbit_info)      
+                                         orbit_info=orbit_info)
         self.testInst.bounds = self.bounds2
         ans = avg.mean_by_orbit(self.testInst, 'mlt')
         # note last orbit is incomplete thus not expected to satisfy relation
@@ -85,7 +86,7 @@ class TestBasics():
 
     def test_basic_file_mean(self):
         """Test basic file mean"""
-        index = pds.date_range(*self.bounds1) 
+        index = pds.date_range(*self.bounds1)
         names = [date.strftime('%Y-%m-%d')+'.nofile' for date in index]
         self.testInst.bounds = (names[0], names[-1])
         ans = avg.mean_by_file(self.testInst, 'dummy4')
@@ -112,13 +113,13 @@ class TestFrameProfileAverages():
         results = avg.median2D(self.testInst, [0., 360., 24.], 'longitude',
                                [0., 24, 24], 'mlt', [self.dname])
 
-        # iterate over all 
+        # iterate over all
         # no variation in the median, all values should be the same
         for i, row in enumerate(results[self.dname]['median']):
             for j, item in enumerate(row):
                 assert np.all(item['density'] == self.test_vals)
                 assert np.all(item['fraction'] == self.test_fracs)
-                
+
         for i, row in enumerate(results[self.dname]['avg_abs_dev']):
             for j, item in enumerate(row):
                 assert np.all(item['density'] == 0)
@@ -126,16 +127,16 @@ class TestFrameProfileAverages():
 
     def test_basic_seasonal_1Dmedian(self):
         """ Test the basic seasonal 1D median"""
-        
+
         results = avg.median1D(self.testInst, [0., 24, 24], 'mlt',
                                [self.dname])
 
-        # iterate over all 
+        # iterate over all
         # no variation in the median, all values should be the same
         for i, row in enumerate(results[self.dname]['median']):
             assert np.all(row['density'] == self.test_vals)
             assert np.all(row['fraction'] == self.test_fracs)
-                
+
         for i, row in enumerate(results[self.dname]['avg_abs_dev']):
             assert np.all(row['density'] == 0)
             assert np.all(row['fraction'] == 0)
@@ -158,13 +159,13 @@ class TestSeriesProfileAverages():
         results = avg.median2D(self.testInst, [0., 360., 24.], 'longitude',
                                [0., 24, 24], 'mlt', [self.dname])
 
-        # iterate over all 
+        # iterate over all
         # no variation in the median, all values should be the same
         test_vals = np.arange(50) * 1.2
         for i, row in enumerate(results[self.dname]['median']):
             for j, item in enumerate(row):
                 assert np.all(item == test_vals)
-                
+
         for i, row in enumerate(results[self.dname]['avg_abs_dev']):
             for j, item in enumerate(row):
                 assert np.all(item == 0)
@@ -174,12 +175,12 @@ class TestSeriesProfileAverages():
         results = avg.median1D(self.testInst, [0., 24, 24], 'mlt',
                                [self.dname])
 
-        # iterate over all 
+        # iterate over all
         # no variation in the median, all values should be the same
         test_vals = np.arange(50) * 1.2
         for i, row in enumerate(results[self.dname]['median']):
             assert np.all(row == test_vals)
-                
+
         for i, row in enumerate(results[self.dname]['avg_abs_dev']):
             assert np.all(row == 0)
 
@@ -213,7 +214,7 @@ class TestConstellation:
         medI2 = resultsI['dummy2']['median']
         medC3 = resultsC['dummy3']['median']
         medI3 = resultsI['dummy3']['median']
-        
+
         assert np.array_equal(medC1, medI1)
         assert np.array_equal(medC2, medI2)
         assert np.array_equal(medC3, medI3)
@@ -233,7 +234,7 @@ class TestConstellation:
         medI2 = resultsI['dummy2']['median']
         medC3 = resultsC['dummy3']['median']
         medI3 = resultsI['dummy3']['median']
-        
+
         assert np.array_equal(medC1, medI1)
         assert np.array_equal(medC2, medI2)
         assert np.array_equal(medC3, medI3)
@@ -266,10 +267,10 @@ class TestHeterogenousConstellation:
 
         dummy3_val = results['dummy3']['median']
         dummy3_dev = results['dummy3']['avg_abs_dev']
-        
+
         dummy_x = results['dummy1']['bin_x']
         dummy_y = results['dummy1']['bin_y']
-        
+
         # iterate over all y rows, value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
@@ -297,7 +298,7 @@ class TestHeterogenousConstellation:
         # Extract the results
         dummy_val = results['dummy1']['median']
         dummy_dev = results['dummy1']['avg_abs_dev']
-        
+
         # iterate over all x rows, value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
@@ -321,7 +322,7 @@ class Test2DConstellation:
         """ Test a 2D median calculation with a constellation"""
         for i in self.testC.instruments:
             i.bounds = self.bounds
-        
+
         results = avg.median2D(self.testC, [0., 360., 24], 'longitude',
                                [0., 24, 24], 'slt', ['uts'])
         dummy_val = results['uts']['median']
@@ -341,7 +342,7 @@ class Test2DConstellation:
         """ Test a 1D median calculation with a constellation"""
         for i in self.testC.instruments:
             i.bounds = self.bounds
-        
+
         results = avg.median1D(self.testC, [0., 24, 24], 'slt', ['uts'])
         dummy_val = results['uts']['median']
         dummy_dev = results['uts']['avg_abs_dev']
@@ -360,7 +361,7 @@ class TestSeasonalAverageUnevenBins:
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
-        self.testInst.bounds = (pysat.datetime(2008, 1, 1), 
+        self.testInst.bounds = (pysat.datetime(2008, 1, 1),
                                 pysat.datetime(2008, 2, 1))
 
     def teardown(self):
@@ -380,10 +381,10 @@ class TestSeasonalAverageUnevenBins:
 
         dummy3_val = results['dummy3']['median']
         dummy3_dev = results['dummy3']['avg_abs_dev']
-        
+
         dummy_x = results['dummy1']['bin_x']
         dummy_y = results['dummy1']['bin_y']
-        
+
         # iterate over all y rows, value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
@@ -399,8 +400,8 @@ class TestSeasonalAverageUnevenBins:
             check.append(np.all(dummy3_val[:, i] == x/15.0 * 1000.0
                                 + dummy_y[:-1]))
             check.append(np.all(dummy3_dev[:, i] == 0))
-                            
-        # holds here because there are 32 days, no data is discarded, 
+
+        # holds here because there are 32 days, no data is discarded,
         # each day holds same amount of data
         assert(self.testInst.data['dummy1'].size*32 ==
                sum([sum(i) for i in results['dummy1']['count']]))
@@ -414,12 +415,12 @@ class TestSeasonalAverageUnevenBins:
         avg.median2D(self.testInst, np.array([0., 300., 100.]), 'longitude',
                      np.array([0., 24., 13.]), 'mlt',
                      ['dummy1', 'dummy2', 'dummy3'], auto_bin=False)
-                                    
+
     @raises(TypeError)
     def test_bin_data_depth(self):
         """Test failure when an array-like of length 1 is given to median2D
         """
-        avg.median2D(self.testInst, 1, 'longitude', 24, 'mlt', 
+        avg.median2D(self.testInst, 1, 'longitude', 24, 'mlt',
                      ['dummy1', 'dummy2', 'dummy3'], auto_bin=False)
 
     @raises(TypeError)
@@ -511,12 +512,12 @@ class TestInstMed1D():
         """
         avg.median1D(self.testInst, [0, 13, 5], self.test_label,
                      self.test_data, auto_bin=False)
-                                    
+
     @raises(TypeError)
     def test_bin_data_depth(self):
         """Test failure when array-like of length 1 is given to median1D
         """
-        avg.median1D(self.testInst, 24, self.test_label, self.test_data, 
+        avg.median1D(self.testInst, 24, self.test_label, self.test_data,
                      auto_bin=False)
 
     @raises(TypeError)
@@ -525,4 +526,3 @@ class TestInstMed1D():
         """
         pysat.ssnl.avg.median2D(self.testInst, ['0', 'd', '24', 'c'],
                                 self.test_label, self.test_data, auto_bin=False)
-        
