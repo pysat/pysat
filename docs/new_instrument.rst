@@ -230,13 +230,13 @@ where supported_tags is defined as dictated by the download function. See the ro
 
    A template for Madrigal pysat support is provided. Several of the routines within are intended to be used with functools.partial in the new instrument support code. When writing custom routines with a new instrument file download support would be added via
 
-   .. code:: python
+.. code:: python
 
-      def download(.....)
+    def download(.....)
 
-   Using the Madrigal template the equivalent action is
+Using the Madrigal template the equivalent action is
 
-   .. code:: python
+.. code:: python
 
      def download(date_array, tag='', sat_id='', data_path=None, user=None,
                   password=None):
@@ -245,18 +245,18 @@ where supported_tags is defined as dictated by the download function. See the ro
                                    data_path=data_path, user=user,
                                    password=password)
 
-   See the routines for `dmsp_ivm` and `jro_isr` for practical uses of the Madrigal support code.
+See the routines for `dmsp_ivm` and `jro_isr` for practical uses of the Madrigal support code.
 
-   Additionally, use of the madrigal_methods class should acknowledge the CEDAR rules of the road.  This can be done by Adding
+Additionally, use of the madrigal_methods class should acknowledge the CEDAR rules of the road.  This can be done by Adding
 
-   .. code:: python
+.. code:: python
 
      def init(self):
 
          print(madrigal_methods.cedar_rules())
          return
 
-   to each routine that uses Madrigal data access.
+to each routine that uses Madrigal data access.
 
    |br|
 
