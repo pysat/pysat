@@ -13,14 +13,7 @@ import glob
 
 import sys
 if sys.version_info[0] >= 3:
-    if sys.version_info[1] < 4:
-        import imp
-        re_load = imp.reload
-    else:
-        import importlib
-        re_load = importlib.reload
-else:
-    re_load = reload
+    from importlib import reload
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -300,7 +293,7 @@ class TestBasics():
         pysat.instruments.pysat_testing.list_files = list_files
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         assert(inst.files.files.empty)
 
     def test_instrument_has_files(self):
@@ -318,7 +311,7 @@ class TestBasics():
         pysat.instruments.pysat_testing.list_files = list_files
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         assert (np.all(inst.files.files.index == dates))
 
 
@@ -344,7 +337,7 @@ class TestInstrumentWithFiles():
 
         # create a test instrument, make sure it is getting files from
         # filesystem
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         pysat.instruments.pysat_testing.list_files = list_files
         # create a bunch of files by year and doy
         self.testInst = \
@@ -370,8 +363,8 @@ class TestInstrumentWithFiles():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         del self.testInst
-        re_load(pysat.instruments.pysat_testing)
-        re_load(pysat.instruments)
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list, no files
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
@@ -644,7 +637,7 @@ class TestInstrumentWithVersionedFiles():
 
         # create a test instrument, make sure it is getting files from
         # filesystem
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         # self.stored_files_fcn = pysat.instruments.pysat_testing.list_files
         pysat.instruments.pysat_testing.list_files = list_versioned_files
         # create a bunch of files by year and doy
@@ -671,8 +664,8 @@ class TestInstrumentWithVersionedFiles():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         del self.testInst
-        re_load(pysat.instruments.pysat_testing)
-        re_load(pysat.instruments)
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list, no files
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,

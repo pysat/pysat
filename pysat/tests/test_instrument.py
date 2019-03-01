@@ -8,12 +8,7 @@ import nose.tools
 import pysat.instruments.pysat_testing
 import numpy as np
 if sys.version_info[0] >= 3:
-    if sys.version_info[1] < 4:
-        import imp
-        reload = imp.reload
-    else:
-        import importlib
-        reload = importlib.reload
+    from importlib import reload
 
 
 class TestBasics():

@@ -12,14 +12,7 @@ import pysat.instruments.pysat_testing
 
 import sys
 if sys.version_info[0] >= 3:
-    if sys.version_info[1] < 4:
-        import imp
-        re_load = imp.reload
-    else:
-        import importlib
-        re_load = importlib.reload
-else:
-    re_load = reload
+        from importlib import reload
 
 
 # -------------------
@@ -324,24 +317,24 @@ class TestBasics():
         assert check1 & check2
 
     def test_set_data_dir_no_store(self):
-        import sys
-        if sys.version_info[0] >= 3:
-            if sys.version_info[1] < 4:
-                import imp
-                re_load = imp.reload
-            else:
-                import importlib
-                re_load = importlib.reload
-        else:
-            re_load = reload
+        # import sys
+        # if sys.version_info[0] >= 3:
+        #     if sys.version_info[1] < 4:
+        #         import imp
+        #         reload = imp.reload
+        #     else:
+        #         import importlib
+        #         reload = importlib.reload
+        # else:
+        #     reload = reload
 
         saved_dir = self.data_path
         # update data_dir
         pysat.utils.set_data_dir('.', store=False)
         check1 = (pysat.data_dir == '.')
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat._files = reload(pysat._files)
+        pysat._instrument = reload(pysat._instrument)
+        reload(pysat)
 
         check2 = (pysat.data_dir == saved_dir)
         if saved_dir is not '':
@@ -363,7 +356,7 @@ class TestBasics():
         except:
             pass
 
-        re_load(pysat)
+        reload(pysat)
 
         try:
             if saved:

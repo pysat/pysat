@@ -66,14 +66,7 @@ def set_data_dir(path=None, store=None):
     import os
     import pysat
     if sys.version_info[0] >= 3:
-        if sys.version_info[1] < 4:
-            import imp
-            re_load = imp.reload
-        else:
-            import importlib
-            re_load = importlib.reload
-    else:
-        re_load = reload
+        from importlib import reload
     if store is None:
         store = True
     if os.path.isdir(path):
@@ -82,8 +75,8 @@ def set_data_dir(path=None, store=None):
                                    'data_path.txt'), 'w') as f:
                 f.write(path)
         pysat.data_dir = path
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
+        pysat._files = reload(pysat._files)
+        pysat._instrument = reload(pysat._instrument)
     else:
         raise ValueError('Path %s does not lead to a valid directory.' % path)
 
