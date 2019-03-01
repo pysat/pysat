@@ -11,7 +11,9 @@ import pysat
 from pysat.ssnl import avg
 
 if sys.version_info[0] >= 3:
-    from importlib import reload
+    from importlib import reload as re_load
+else:
+    re_load = reload
 
 
 class TestBasics():
