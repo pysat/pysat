@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 # Test some of the basic _core functions
+import numpy as np
 import sys
-import pysat
-import pandas as pds
+
 from nose.tools import assert_raises, raises
 import nose.tools
+import pandas as pds
+
+import pysat
 import pysat.instruments.pysat_testing
-import numpy as np
 if sys.version_info[0] >= 3:
     from importlib import reload
 
