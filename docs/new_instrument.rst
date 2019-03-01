@@ -225,10 +225,10 @@ where supported_tags is defined as dictated by the download function. See the ro
    :members:
 
 
-   Madrigal
-   -----------
+Madrigal
+-----------
 
-   A template for Madrigal pysat support is provided. Several of the routines within are intended to be used with functools.partial in the new instrument support code. When writing custom routines with a new instrument file download support would be added via
+A template for Madrigal pysat support is provided. Several of the routines within are intended to be used with functools.partial in the new instrument support code. When writing custom routines with a new instrument file download support would be added via
 
 .. code:: python
 
@@ -261,5 +261,5 @@ to each routine that uses Madrigal data access.
    |br|
 
 
-   .. automodule:: pysat.instruments.madrigal_methods
-      :members:
+.. automodule:: pysat.instruments.madrigal_methods
+  :members:
