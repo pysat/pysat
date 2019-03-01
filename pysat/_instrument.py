@@ -941,12 +941,26 @@ class Instrument(object):
 
         if len(fname) > 0:
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
-            data, mdata = self._load_rtn(load_fname, tag=self.tag,
-                                         sat_id=self.sat_id, **self.kwargs)
-
-            # ensure units and name are named consistently in new Meta
-            # object as specified by user upon Instrument instantiation
-            mdata.accept_default_labels(self)
+            try:
+                data, mdata = self._load_rtn(load_fname, tag=self.tag,
+                                             sat_id=self.sat_id, **self.kwargs)
+                # ensure units and name are named consistently in new Meta
+                # object as specified by user upon Instrument instantiation
+                mdata.accept_default_labels(self)
+                bad_data = False
+            except pds.errors.OutOfBoundsDatetime:
+                bad_data = True
+                data = self._null_data.copy()
+                mdata = _meta.Meta(units_label=self.units_label,
+                                   name_label=self.name_label,
+                                   notes_label=self.notes_label,
+                                   desc_label=self.desc_label,
+                                   plot_label=self.plot_label,
+                                   axis_label=self.axis_label,
+                                   scale_label=self.scale_label,
+                                   min_label=self.min_label,
+                                   max_label=self.max_label,
+                                   fill_label=self.fill_label)
 
         else:
             data = self._null_data.copy()
@@ -988,8 +1002,12 @@ class Instrument(object):
                                            fname[-1]))
         else:
             # no data signal
-            output_str = ' '.join(('No', output_str, 'data for',
-                                   date.strftime('%d %B %Y')))
+            if bad_data:
+                output_str = ' '.join(('Bad datetime for', output_str,
+                                       date.strftime('%d %B %Y')))
+            else:
+                output_str = ' '.join(('No', output_str, 'data for',
+                                       date.strftime('%d %B %Y')))
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         print(output_str)
