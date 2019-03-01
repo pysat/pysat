@@ -554,7 +554,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     """
 
-    from pysat.utils import create_datetime_index
+    from pysat.utils.time import create_datetime_index
 
     search_dict = construct_searchstring_from_format(stored['format_str'])
     keys = search_dict['keys']

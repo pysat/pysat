@@ -1030,7 +1030,7 @@ class Instrument(object):
         self.date = date
         self._fid = fid
         if date is not None:
-            year, doy = utils.getyrdoy(date)
+            year, doy = utils.time.getyrdoy(date)
             self.yr = year
             self.doy = doy
             self._load_by_date = True
@@ -1243,7 +1243,7 @@ class Instrument(object):
             else:
                 temp = self.index[0]
             self.date = pds.datetime(temp.year, temp.month, temp.day)
-            self.yr, self.doy = utils.getyrdoy(self.date)
+            self.yr, self.doy = utils.time.getyrdoy(self.date)
 
         if not self.empty:
             self._default_rtn(self)
@@ -1400,7 +1400,7 @@ class Instrument(object):
             # make sure dates are whole days
             start = self._filter_datetime_input(start)
             stop = self._filter_datetime_input(stop)
-            date_array = utils.season_date_range(start, stop, freq=freq)
+            date_array = utils.time.season_date_range(start, stop, freq=freq)
 
         if user is None:
             self._download_rtn(date_array,
@@ -1488,24 +1488,25 @@ class Instrument(object):
             self._iter_type = 'date'
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
-                self._iter_list = utils.season_date_range(self._iter_start,
-                                                          self._iter_stop,
-                                                          freq=step)
+                self._iter_list = \
+                    utils.time.season_date_range(self._iter_start,
+                                                 self._iter_stop,
+                                                 freq=step)
 
         elif((hasattr(start, '__iter__') and not isinstance(start, str)) and
              (hasattr(end, '__iter__') and not isinstance(end, str))):
             base = type(start[0])
             for s, t in zip(start, end):
                 if (type(s) != type(t)) or (type(s) != base):
-                    raise ValueError(''.join(('Start and end items must all',
-                                              ' be of the same type')))
+                    raise ValueError(' '.join(('Start and end items must all',
+                                               'be of the same type')))
             if isinstance(start[0], str):
                 self._iter_type = 'file'
                 self._iter_list = self.files.get_file_array(start, end)
             elif isinstance(start[0], pds.datetime):
                 self._iter_type = 'date'
-                self._iter_list = utils.season_date_range(start, end,
-                                                          freq=step)
+                self._iter_list = utils.time.season_date_range(start, end,
+                                                               freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1538,7 +1539,8 @@ class Instrument(object):
                 end = self.files.stop_date
             self._iter_start = [start]
             self._iter_stop = [end]
-            self._iter_list = utils.season_date_range(start, end, freq=step)
+            self._iter_list = utils.time.season_date_range(start, end,
+                                                           freq=step)
             self._iter_type = 'date'
         else:
             raise ValueError(''.join(('Provided an invalid combination of',

@@ -396,7 +396,6 @@ class TestBasics():
         else:
             assert a.sizes['time'] == 5
 
-#######################
 # check iteration behavior
     @raises(StopIteration)
     def test_left_bounds_with_prev(self):

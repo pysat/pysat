@@ -786,7 +786,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     f107_fill.set_index('time', inplace=True)
 
     # Resample to the original frequency, if it is not equal to 1 day
-    freq = pysat.utils.calc_freq(f107_inst.index)
+    freq = pysat.utils.time.calc_freq(f107_inst.index)
     if freq != "86400S":
         # Resample to the desired frequency
         f107_fill = f107_fill.resample(freq).pad()
