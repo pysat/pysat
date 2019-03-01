@@ -223,10 +223,8 @@ Using the CDAWeb template the equivalent action is
 where supported_tags is defined as dictated by the download function. See the routines for cnofs_vefi and cnofs_ivm for practical uses of the NASA CDAWeb support code.
 |br|
 
-
 .. automodule:: pysat.instruments.nasa_cdaweb_methods
    :members:
-
 
 Madrigal
 -----------
@@ -260,9 +258,7 @@ Additionally, use of the madrigal_methods class should acknowledge the CEDAR rul
          return
 
 to each routine that uses Madrigal data access.
-
 |br|
-
 
 .. automodule:: pysat.instruments.madrigal_methods
   :members:
