@@ -211,11 +211,11 @@ def clean(ivm):
             idx, = np.where((ivm['rpa_flag_ut'] <= 3) &
                             (ivm['idm_flag_ut'] <= 3))
         else:
-            idx = []
+            idx = slice(0, ivm.index.shape[0])
     else:
         if ivm.clean_level in ['clean', 'dusty', 'dirty']:
             print('WARNING: this level 1 data has no quality flags')
-        idx = []
+        idx = slice(0, ivm.index.shape[0])
 
     # downselect data based upon cleaning conditions above
     ivm.data = ivm[idx]
