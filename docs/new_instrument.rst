@@ -261,7 +261,7 @@ Additionally, use of the madrigal_methods class should acknowledge the CEDAR rul
 
 to each routine that uses Madrigal data access.
 
-   |br|
+|br|
 
 
 .. automodule:: pysat.instruments.madrigal_methods
