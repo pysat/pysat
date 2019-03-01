@@ -51,7 +51,10 @@ The list_files function can be invoked from within ipython by calling
 
   instrument.files.files
 
-where instrument is the name of the instrument object.
+where instrument is the name of the instrument object.  Likewise, files can be directly listed when instantiating an instrument object by adding `update_files=True`.
+
+.. code:: python
+    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
 
 Load Data
