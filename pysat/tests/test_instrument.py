@@ -189,19 +189,6 @@ class TestBasics():
         """Test if init function supplied by instrument can modify object"""
         assert self.testInst.new_thing is True
 
-#     def test_getyrdoy_1(self):
-#         """Test the date to year, day of year code functionality"""
-#         date = pds.datetime(2009,1,1)
-#         yr, doy = pysat.utils.getyrdoy(date)
-#         assert ((yr == 2009) & (doy == 1))
-#
-#     def test_getyrdoy_leap_year(self):
-#         """Test the date to year, day of year code functionality
-#         (leap_year)"""
-#         date = pds.datetime(2008,12,31)
-#         yr, doy = pysat.utils.getyrdoy(date)
-#         assert ((yr == 2008) & (doy == 366))
-
     def test_custom_instrument_load(self):
         """
         Test if the correct day is being loaded (End-to-End),
