@@ -10,11 +10,6 @@ import pandas as pds
 import pysat
 from pysat.ssnl import avg
 
-if sys.version_info[0] >= 3:
-    from importlib import reload as re_load
-else:
-    re_load = reload
-
 
 class TestBasics():
     def setup(self):
@@ -46,7 +41,8 @@ class TestBasics():
         dummy_x = results['dummy1']['bin_x']
         dummy_y = results['dummy1']['bin_y']
 
-        # iterate over all y rows, value should be equal to integer value of mlt
+        # iterate over all y rows
+        # value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
         for i, y in enumerate(dummy_y[:-1]):
@@ -77,7 +73,7 @@ class TestBasics():
 
     def test_basic_orbit_mean(self):
         """Test basic orbital mean"""
-        orbit_info = {'kind':'local time', 'index':'mlt'}
+        orbit_info = {'kind': 'local time', 'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=orbit_info)
@@ -93,6 +89,7 @@ class TestBasics():
         self.testInst.bounds = (names[0], names[-1])
         ans = avg.mean_by_file(self.testInst, 'dummy4')
         assert np.all(ans == 86399/2.0)
+
 
 class TestFrameProfileAverages():
     def setup(self):
@@ -143,6 +140,7 @@ class TestFrameProfileAverages():
             assert np.all(row['density'] == 0)
             assert np.all(row['fraction'] == 0)
 
+
 class TestSeriesProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -186,11 +184,12 @@ class TestSeriesProfileAverages():
         for i, row in enumerate(results[self.dname]['avg_abs_dev']):
             assert np.all(row == 0)
 
+
 class TestConstellation:
     def setup(self):
         insts = []
         for i in range(5):
-            insts.append(pysat.Instrument('pysat','testing',
+            insts.append(pysat.Instrument('pysat', 'testing',
                                           clean_level='clean'))
         self.testC = pysat.Constellation(instruments=insts)
         self.testI = pysat.Instrument('pysat', 'testing', clean_level='clean')
@@ -241,13 +240,15 @@ class TestConstellation:
         assert np.array_equal(medC2, medI2)
         assert np.array_equal(medC3, medI3)
 
+
 class TestHeterogenousConstellation:
     def setup(self):
         insts = []
         for i in range(2):
-            insts.append(pysat.Instrument('pysat','testing',
+            r_date = pysat.datetime(2009, 1, i+1)
+            insts.append(pysat.Instrument('pysat', 'testing',
                                           clean_level='clean',
-                                          root_date=pysat.datetime(2009,1,i+1)))
+                                          root_date=r_date))
         self.testC = pysat.Constellation(instruments=insts)
         self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
 
@@ -273,7 +274,8 @@ class TestHeterogenousConstellation:
         dummy_x = results['dummy1']['bin_x']
         dummy_y = results['dummy1']['bin_y']
 
-        # iterate over all y rows, value should be equal to integer value of mlt
+        # iterate over all y rows
+        # value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
         for i, y in enumerate(dummy_y[:-1]):
@@ -301,7 +303,8 @@ class TestHeterogenousConstellation:
         dummy_val = results['dummy1']['median']
         dummy_dev = results['dummy1']['avg_abs_dev']
 
-        # iterate over all x rows, value should be equal to integer value of mlt
+        # iterate over all x rows
+        # value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
         for i, x in enumerate(results['dummy1']['bin_x'][:-1]):
@@ -310,10 +313,12 @@ class TestHeterogenousConstellation:
 
         assert np.all(check)
 
+
 class Test2DConstellation:
     def setup(self):
         insts = []
-        insts.append(pysat.Instrument('pysat','testing2d', clean_level='clean'))
+        insts.append(pysat.Instrument('pysat', 'testing2d',
+                     clean_level='clean'))
         self.testC = pysat.Constellation(insts)
         self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
 
@@ -333,7 +338,8 @@ class Test2DConstellation:
         dummy_x = results['uts']['bin_x']
         dummy_y = results['uts']['bin_y']
 
-        # iterate over all y rows, value should be equal to integer value of mlt
+        # iterate over all y rows
+        # value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
         for i, y in enumerate(dummy_y[:-1]):
@@ -351,12 +357,14 @@ class Test2DConstellation:
 
         dummy_x = results['uts']['bin_x']
 
-        # iterate over all x rows, value should be equal to integer value of slt
+        # iterate over all x rows
+        # value should be equal to integer value of slt
         # no variation in the median, all values should be the same
         check = []
         for i, x in enumerate(dummy_x[:-1]):
             check.append(np.all(dummy_val[i] == x.astype(int)))
             check.append(np.all(dummy_dev[i] == 0))
+
 
 class TestSeasonalAverageUnevenBins:
     def setup(self):
@@ -387,7 +395,8 @@ class TestSeasonalAverageUnevenBins:
         dummy_x = results['dummy1']['bin_x']
         dummy_y = results['dummy1']['bin_y']
 
-        # iterate over all y rows, value should be equal to integer value of mlt
+        # iterate over all y rows
+        # value should be equal to integer value of mlt
         # no variation in the median, all values should be the same
         check = []
         for i, y in enumerate(dummy_y[:-1]):
@@ -433,11 +442,13 @@ class TestSeasonalAverageUnevenBins:
                      ['0', 'd', '24', 'c'], 'mlt',
                      ['dummy1', 'dummy2', 'dummy3'], auto_bin=False)
 
+
 class TestInstMed1D():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         self.testInst = pysat.Instrument('pysat', 'testing',
-                                         clean_level='clean', update_files=True)
+                                         clean_level='clean',
+                                         update_files=True)
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
                                 pysat.datetime(2008, 1, 31))
         self.test_bins = [0, 24, 24]
@@ -445,18 +456,20 @@ class TestInstMed1D():
         self.test_data = ['dummy1', 'dummy2']
         self.out_keys = ['count', 'avg_abs_dev', 'median', 'bin_x']
         self.out_data = {'dummy1':
-                         {'count': [111780., 111320., 111780., 111320., 111780.,
-                                    111320., 111780., 111320., 111780., 111320.,
-                                    111780., 111320., 111780., 111320., 111918.,
-                                    111562., 112023., 111562., 112023., 111412.,
+                         {'count': [111780., 111320., 111780., 111320.,
+                                    111780., 111320., 111780., 111320.,
+                                    111780., 111320., 111780., 111320.,
+                                    111780., 111320., 111918., 111562.,
+                                    112023., 111562., 112023., 111412.,
                                     111780., 111320., 111780., 111320.],
                           'avg_abs_dev': np.zeros(shape=24),
                           'median': np.linspace(0.0, 23.0, 24.0)},
                          'dummy2':
-                         {'count': [111780., 111320., 111780., 111320., 111780.,
-                                    111320., 111780., 111320., 111780., 111320.,
-                                    111780., 111320., 111780., 111320., 111918.,
-                                    111562., 112023., 111562., 112023., 111412.,
+                         {'count': [111780., 111320., 111780., 111320.,
+                                    111780., 111320., 111780., 111320.,
+                                    111780., 111320., 111780., 111320.,
+                                    111780., 111320., 111918., 111562.,
+                                    112023., 111562., 112023., 111412.,
                                     111780., 111320., 111780., 111320.],
                           'avg_abs_dev': np.zeros(shape=24) + 6.0,
                           'median': [11., 12., 11., 11., 12., 11., 12., 11.,
@@ -527,4 +540,5 @@ class TestInstMed1D():
         """Test failure when median 1D is given non array-like bins
         """
         pysat.ssnl.avg.median2D(self.testInst, ['0', 'd', '24', 'c'],
-                                self.test_label, self.test_data, auto_bin=False)
+                                self.test_label, self.test_data,
+                                auto_bin=False)
