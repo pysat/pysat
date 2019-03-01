@@ -4,12 +4,12 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-
 import os
 
+import numpy as np
 import pandas as pds
 import xarray as xr
-import numpy as np
+
 import pysat
 
 platform = 'pysat'
@@ -23,6 +23,26 @@ def init(self):
 
 
 def load(fnames, tag=None, sat_id=None):
+    """ Loads the test files
+
+    Parameters
+    ----------
+    fnames : (list)
+        List of filenames
+    tag : (str or NoneType)
+        Instrument tag (accepts '' or a number (i.e., '10'), which specifies
+        the number of times to include in the test instrument)
+    sat_id : (str or NoneType)
+        Instrument satellite ID (accepts '')
+
+    Returns
+    -------
+    data : (xr.Dataset)
+        Testing data
+    meta : (pysat.Meta)
+        Metadataxs
+
+    """
 
     # create an artifical satellite data set
     parts = os.path.split(fnames[0])[-1].split('-')
