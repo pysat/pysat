@@ -269,7 +269,7 @@ def update_DMSP_ephemeris(ivm, ephem=None):
         ivm.data = pds.DataFrame(None)
         return
 
-    if ephem.sat_id != dmsp.sat_id:
+    if ephem.sat_id != ivm.sat_id:
         raise ValueError('ephemera provided for the wrong satellite')
 
     if ephem.date != ivm.date:
