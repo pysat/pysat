@@ -25,11 +25,6 @@ install_requires = ['xarray', 'pandas>=0.19.2', 'numpy>=1.12',  'sgp4',
                     'pyEphem', 'requests', 'pysatCDF', 'apexpy', 'aacgmv2',
                     'pysatMagVect', 'madrigalWeb', 'h5py', 'PyForecastTools']
 
-# keep pyglow out of requirements until pip installable
-# if sys.version_info[0] < 3:
-#     # TODO Remove when pyglow works in python 3
-#     install_requires.append('pyglow')
-
 # all packages after pysatCDF are excluded if on ReadTheDocs
 if on_rtd:
     # read the docs doesn't do Fortran
