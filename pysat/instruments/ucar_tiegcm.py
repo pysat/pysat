@@ -236,5 +236,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
 
     """
 
-    print('Not implemented.')
+    import warnings
+
+    warnings.warn('Not implemented in this version.')
     return
