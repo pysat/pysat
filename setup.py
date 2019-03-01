@@ -30,7 +30,7 @@ install_requires = ['xarray', 'pandas>=0.19.2', 'numpy>=1.12',  'sgp4',
 if on_rtd:
     # read the docs doesn't do Fortran
     # remove pysatCDF through h5py
-    install_requires = install_requires[:-7]
+    install_requires = install_requires[:-8]
 
 setup(
     name='pysat',
