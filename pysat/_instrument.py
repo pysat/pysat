@@ -947,9 +947,9 @@ class Instrument(object):
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
                 mdata.accept_default_labels(self)
-                bad_data = False
+                bad_datetime = False
             except pds.errors.OutOfBoundsDatetime:
-                bad_data = True
+                bad_datetime = True
                 data = self._null_data.copy()
                 mdata = _meta.Meta(units_label=self.units_label,
                                    name_label=self.name_label,
@@ -963,6 +963,7 @@ class Instrument(object):
                                    fill_label=self.fill_label)
 
         else:
+            bad_datetime = False
             data = self._null_data.copy()
             mdata = _meta.Meta(units_label=self.units_label,
                                name_label=self.name_label,
@@ -1002,7 +1003,7 @@ class Instrument(object):
                                            fname[-1]))
         else:
             # no data signal
-            if bad_data:
+            if bad_datetime:
                 output_str = ' '.join(('Bad datetime for', output_str,
                                        date.strftime('%d %B %Y')))
             else:
