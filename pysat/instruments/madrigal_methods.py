@@ -118,12 +118,12 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
         raise ValueError("unable to construct time index, missing " +
                          "{:}".format(time_keys))
 
-    time = pysat.utils.create_datetime_index(year=data.loc[:, 'year'],
-                                             month=data.loc[:, 'month'],
-                                             day=data.loc[:, 'day'],
-                                             uts=3600.0 * data.loc[:, 'hour'] +
-                                             60.0 * data.loc[:, 'min'] +
-                                             data.loc[:, 'sec'])
+    uts = 3600.0 * data.loc[:, 'hour'] + 60.0 * data.loc[:, 'min'] \
+        + data.loc[:, 'sec']
+    time = pysat.utils.time.create_datetime_index(year=data.loc[:, 'year'],
+                                                  month=data.loc[:, 'month'],
+                                                  day=data.loc[:, 'day'],
+                                                  uts=uts)
     # Declare index or recast as xarray
     if len(xarray_coords) > 0:
         if not np.all([xkey.lower() in data.columns
