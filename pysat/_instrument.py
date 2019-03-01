@@ -378,17 +378,17 @@ class Instrument(object):
                     try:
                         # Assume key[0] is integer (including list or slice)
                         return self.data.loc[self.data.index[key[0]], key[1]]
-                    except KeyError:
-                        try:
-                            # Try to force as integer (eg, if ndarray)
-                            idx = self.data.index[key[0].astype(int)]
-                            return self.data.loc[idx, key[1]]
-                        except ValueError:
-                            estring = '\n'.join(("Unable to sort out data.",
-                                                 "Instrument has data : " +
-                                                 str(not self.empty),
-                                                 "Requested key : ", str(key)))
-                            raise ValueError(estring)
+                    # except KeyError:
+                    #     try:
+                    #         # Try to force as integer (eg, if ndarray)
+                    #         idx = self.data.index[key[0].astype(int)]
+                    #         return self.data.loc[idx, key[1]]
+                    except ValueError:
+                        estring = '\n'.join(("Unable to sort out data.",
+                                             "Instrument has data : " +
+                                             str(not self.empty),
+                                             "Requested key : ", str(key)))
+                        raise ValueError(estring)
             else:
                 try:
                     # integer based indexing
@@ -496,10 +496,16 @@ class Instrument(object):
                     try:
                         # Assume key[0] is integer (including list or slice)
                         self.data.loc[self.data.index[key[0]], key[1]] = new
-                    except KeyError:
-                        # Try to force conversion to integer
-                        idx = self.data.index[key[0].astype(int)]
-                        self.data.loc[idx, key[1]] = new
+                    # except KeyError:
+                    #     # Try to force conversion to integer
+                    #     idx = self.data.index[key[0].astype(int)]
+                    #     self.data.loc[idx, key[1]] = new
+                    except ValueError:
+                        estring = '\n'.join(("Unable to sort out data access.",
+                                             "Instrument has data : " +
+                                             str(not self.empty),
+                                             "Requested key : ", str(key)))
+                        raise ValueError(estring)
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
