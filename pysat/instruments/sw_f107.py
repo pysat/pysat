@@ -74,6 +74,7 @@ test_dates = {'': {'': pysat.datetime(2009, 1, 1),
                    'forecast': tomorrow,
                    '45day': tomorrow}}
 
+
 def load(fnames, tag=None, sat_id=None):
     """Load F10.7 index files
 
@@ -107,7 +108,7 @@ def load(fnames, tag=None, sat_id=None):
         date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
         data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True)
         idx, = np.where((data.index >= date) &
-                        (data.index < date+pds.DateOffset(days=1)))
+                        (data.index < date + pds.DateOffset(days=1)))
         result = data.iloc[idx, :]
     elif tag == 'all':
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
@@ -216,7 +217,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         elif tag == 'all':
             # files are by year
             if format_str is None:
-                format_str = 'f107_1947_to_{year:04d}-{month:02d}-{day:02d}.txt'
+                format_str = ''.join(('f107_1947_to_{year:04d}-{month:02d}-',
+                                      '{day:02d}.txt'))
             out = pysat.Files.from_os(data_path=data_path,
                                       format_str=format_str)
             # load the same data (all), regardless of which day a user selects
