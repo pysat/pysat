@@ -31,7 +31,7 @@ class TestBasics():
         """Runs a basic probability routine daily 2D"""
         ans = occur_prob.daily2D(self.testInst, [0, 360, 3], 'longitude',
                                  [-30, 30, 3], 'latitude', ['slt'], [12.])
-        assert abs(ans['slt']['prob'] - 0.5).max() < 1.0e-2
+        assert abs(ans['slt']['prob'] - 1.0).max() < 1.0e-2
         assert (ans['slt']['prob']).shape == (3, 3)
 
     def test_occur_prob_by_orbit_2D(self):
