@@ -10,8 +10,7 @@ import pysat
 
 import sys
 if sys.version_info[0] >= 3:
-    import importlib
-    re_load = importlib.reload
+    from importlib import reload as re_load
 else:
     re_load = reload
 

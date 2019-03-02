@@ -1,24 +1,21 @@
 """
 tests the pysat meta object and code
 """
-import pysat
-import pandas as pds
-from nose.tools import assert_raises, raises
-import nose.tools
-import pysat.instruments.pysat_testing
+import glob
 import numpy as np
 import os
-import tempfile
-import glob
-
 import sys
+
+from nose.tools import assert_raises, raises
+import nose.tools
+import pandas as pds
+import tempfile
+
+import pysat
+import pysat.instruments.pysat_testing
+
 if sys.version_info[0] >= 3:
-    if sys.version_info[1] < 4:
-        import imp
-        re_load = imp.reload
-    else:
-        import importlib
-        re_load = importlib.reload
+    from importlib import reload as re_load
 else:
     re_load = reload
 
