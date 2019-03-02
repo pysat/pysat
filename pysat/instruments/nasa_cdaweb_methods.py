@@ -280,6 +280,8 @@ def download(supported_tags, date_array, tag, sat_id,
         else:
             print('Attempting to download files for ' + date.strftime('%x'))
             sys.stdout.flush()
+
+            # Get remote info for relevant year
             remote_dirs = '/'.join((formatted_remote_fname.split('/')[:-1]))
             str_fname = formatted_remote_fname.split('/')[-1]
             remote_path = '/'.join((remote_url, remote_dirs))
