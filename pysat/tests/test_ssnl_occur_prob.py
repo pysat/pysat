@@ -5,11 +5,12 @@ tests the pysat occur_prob object and code
 import numpy as np
 import sys
 
-import nose.tools
+from nose.tools import assert_raises, raises
 import pandas as pds
 import tempfile
 
 import pysat
+from pysat.ssnl import occur_prob
 
 
 class TestBasics():
@@ -26,12 +27,16 @@ class TestBasics():
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
-    def test_basic_thing(self):
+    def test_occur_prob_daily_2D(self):
+        """Runs a basic probability routine daily 2D"""
+        ans = occur_prob.daily2D(self.testInst, [0, 360, 3], 'longitude',
+                                 [-30, 30, 3], 'latitude', ['slt'], [12.])
+        assert abs(ans['slt']['prob'] - 0.5).max() < 1.0e-2
+        assert (ans['slt']['prob']).shape == (3, 3)
+
+    def test_occur_prob_by_orbit_2D(self):
         """Runs a basic probability routine by orbit 2D"""
-        ans = pysat.ssnl.occur_prob.by_orbit2D(self.testInst,
-                                               [0, 360, 3], 'longitude',
-                                               [-30, 30, 3], 'latitude',
-                                               ['slt'], [12.],
-                                               returnBins=True)
-        assert abs(ans['slt']['prob'] - 0.5).max() < 1.0e-3
-        assert (ans['slt']['prob']).shape() = (3, 3)
+        ans = occur_prob.by_orbit2D(self.testInst, [0, 360, 3], 'longitude',
+                                    [-30, 30, 3], 'latitude', ['slt'], [12.])
+        assert abs(ans['slt']['prob'] - 0.5).max() < 1.0e-2
+        assert (ans['slt']['prob']).shape == (3, 3)
