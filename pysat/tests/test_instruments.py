@@ -27,7 +27,6 @@ exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
 user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
 
 
-
 def safe_data_dir():
     saved_path = pysat.data_dir
     if saved_path is '':

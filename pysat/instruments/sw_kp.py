@@ -101,7 +101,7 @@ def load(fnames, tag=None, sat_id=None):
 
 
     """
-    from pysat.utils import parse_date
+    from pysat.utils.time import parse_date
 
     meta = pysat.Meta()
     if tag == '':

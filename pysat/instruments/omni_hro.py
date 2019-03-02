@@ -218,9 +218,9 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     circ_kwargs = {'high': 360.0, 'low': 0.0}
     ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
     ca_std = inst['clock_angle'].rolling(min_periods=min_wnum,
-                                         window=steady_window,
-                                         center=True).apply(pysat.utils.nan_circstd,
-                                                            kwargs=circ_kwargs)
+                                         window=steady_window, \
+                center=True).apply(pysat.utils.stats.nan_circstd,
+                                   kwargs=circ_kwargs)
     inst['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
 
     # Determine how long the clock angle and IMF magnitude are steady

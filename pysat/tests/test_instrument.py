@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 # Test some of the basic _core functions
+import numpy as np
 import sys
-import pysat
-import pandas as pds
+
 from nose.tools import assert_raises, raises
 import nose.tools
+import pandas as pds
+
+import pysat
 import pysat.instruments.pysat_testing
-import numpy as np
+
 if sys.version_info[0] >= 3:
-    if sys.version_info[1] < 4:
-        import imp
-        reload = imp.reload
-    else:
-        import importlib
-        reload = importlib.reload
+    from importlib import reload as re_load
+else:
+    re_load = reload
 
 
 class TestBasics():
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '10',
                                          clean_level='clean',
@@ -188,19 +188,6 @@ class TestBasics():
     def test_instrument_init(self):
         """Test if init function supplied by instrument can modify object"""
         assert self.testInst.new_thing is True
-
-#     def test_getyrdoy_1(self):
-#         """Test the date to year, day of year code functionality"""
-#         date = pds.datetime(2009,1,1)
-#         yr, doy = pysat.utils.getyrdoy(date)
-#         assert ((yr == 2009) & (doy == 1))
-#
-#     def test_getyrdoy_leap_year(self):
-#         """Test the date to year, day of year code functionality
-#         (leap_year)"""
-#         date = pds.datetime(2008,12,31)
-#         yr, doy = pysat.utils.getyrdoy(date)
-#         assert ((yr == 2008) & (doy == 366))
 
     def test_custom_instrument_load(self):
         """
@@ -409,7 +396,6 @@ class TestBasics():
         else:
             assert a.sizes['time'] == 5
 
-#######################
 # check iteration behavior
     @raises(StopIteration)
     def test_left_bounds_with_prev(self):
@@ -559,7 +545,8 @@ class TestBasics():
 
     @raises(AttributeError)
     def test_supplying_instrument_module_requires_name_and_platform(self):
-        class Dummy: pass
+        class Dummy:
+            pass
         Dummy.name = 'help'
 
         temp = pysat.Instrument(inst_module=Dummy)
@@ -567,7 +554,7 @@ class TestBasics():
 
 class TestBasicsXarray(TestBasics):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', '10',
                                          clean_level='clean',
@@ -580,7 +567,7 @@ class TestBasicsXarray(TestBasics):
 
 class TestDataPaddingbyFile():
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
@@ -685,7 +672,7 @@ class TestDataPaddingbyFile():
 
 class TestDataPaddingbyFileXarray():
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
@@ -706,7 +693,7 @@ class TestDataPaddingbyFileXarray():
 
 class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
@@ -723,7 +710,7 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
 
 class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
@@ -740,7 +727,7 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
 
 class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
@@ -757,7 +744,7 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
 
 class TestDataPadding():
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
@@ -845,9 +832,9 @@ class TestDataPadding():
         assert ((self.testInst.index[0] ==
                  self.testInst.date - pds.DateOffset(minutes=5)) &
                 (self.testInst.index[-1] ==
-                 self.testInst.date +
-                 pds.DateOffset(hours=23,minutes=59,seconds=59) +
-                 pds.DateOffset(minutes=5)))
+                 self.testInst.date
+                 + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                 + pds.DateOffset(minutes=5)))
 
     def test_data_padding_uniqueness(self):
         self.testInst.load(2009, 1, verifyPad=True)
@@ -869,7 +856,7 @@ class TestDataPadding():
 
 class TestDataPaddingXarray(TestDataPadding):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
@@ -879,7 +866,7 @@ class TestDataPaddingXarray(TestDataPadding):
 
 class TestMultiFileRightDataPaddingBasics(TestDataPadding):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
@@ -895,7 +882,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
 
 class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
@@ -911,7 +898,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
 
 class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '',
                                          clean_level='clean',
@@ -927,7 +914,7 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
 
 class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', '',
                                          clean_level='clean',
