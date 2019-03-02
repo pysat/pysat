@@ -24,6 +24,16 @@ of the ion drift velocity; the ion and electron concentration irregularity
 spectrum; and the concentration of H+, He+, O+, and Fe+, and of molecular ions
 near perigee.
 
+It includes the DUCT portion of the high resolutiondata from the Dynamics
+Explorer 2 (DE-2) Retarding Potential Analyzer (RPA) for the whole DE-2 mission
+time period in ASCII format. This version was generated at NSSDC from the
+PI-provided binary data (SPIO-00232). The DUCT files include RPA measurements
+ofthe total ion concentration every 64 times per second. Due to a failure in
+the instrument memory system RPA data are not available from 81317 06:26:40 UT
+to 82057 13:16:00 UT. This data set is based on the revised version of the RPA
+files that was submitted by the PI team in June of 1995. The revised RPA data
+include a correction to the spacecraft potential.
+
 References
 ----------
 W. B. Hanson, R. A. Heelis, R. A. Power, C. R. Lippincott, D. R. Zuccaro,
@@ -37,7 +47,7 @@ platform : string
 name : string
     Supports 'rpa'
 sat_id : string
-    None Supported
+    Supports '' and 'duct'
 tag : string
     None Supported
 
@@ -77,20 +87,23 @@ platform = 'de2'
 name = 'rpa'
 
 # dictionary of data 'tags' and corresponding description
-tags = {'': 'description 1',  # this is the default
-        'tag_string': 'description 2'}
+tags = {'': '2 sec cadence RPA data',  # this is the default
+        'duct': '16 ms cadence DUCT data'}
 
 # Let pysat know if there are multiple satellite platforms supported
 # by these routines
 # define a dictionary keyed by satellite ID, each with a list of
 # corresponding tags
 # sat_ids = {'a':['L1', 'L0'], 'b':['L1', 'L2'], 'c':['L1', 'L3']}
-sat_ids = {'': ['']}
+sat_ids = {'': ['', 'duct']}
 
-test_dates = {'': {'': pysat.datetime(1983, 1, 1)}}
+test_dates = {'': {'': pysat.datetime(1983, 1, 1),
+                   'duct': pysat.datetime(1983, 1, 1)}}
 
 fname = 'de2_ion2s_rpa_{year:04d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'': {'': fname}}
+fname_duct = 'de2_duct16ms_rpa_{year:04d}{month:02d}{day:02d}_v01.cdf'
+supported_tags = {'': {'': fname,
+                       'duct': fname_duct}}
 
 # use the CDAWeb methods list files routine
 list_files = functools.partial(cdw.list_files,
@@ -107,7 +120,11 @@ load = cdw.load
 basic_tag = {'dir': '/pub/data/de/de2/plasma_rpa/ion2s_cdaweb',
              'remote_fname': '{year:4d}/' + fname,
              'local_fname': fname}
-supported_tags = {'': {'': basic_tag}}
+duct_tag = {'dir': '/pub/data/de/de2/plasma_rpa/rpa16ms_cdaweb',
+            'remote_fname': '{year:4d}/' + fname_duct,
+            'local_fname': fname_duct}
+supported_tags = {'': {'': basic_tag,
+                       'duct': duct_tag}}
 download = functools.partial(cdw.download, supported_tags)
 
 # support listing files currently on CDAWeb
