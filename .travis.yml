@@ -23,6 +23,7 @@ before_install:
   - pip install matplotlib
   - pip install netCDF4
   - pip install beautifulsoup4
+  - pip install lxml
   - pip install pysatCDF >/dev/null
   # install pyglow, space science models
   - cd ..
