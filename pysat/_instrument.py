@@ -196,11 +196,10 @@ class Instrument(object):
                 self.name = inst_module.name.lower()
                 self.platform = inst_module.platform.lower()
             except AttributeError:
-                raise AttributeError(string.join(('A name and platform ',
-                                                  'attribute for the ',
-                                                  'instrument is required if ',
-                                                  'supplying routine module ',
-                                                  'directly.')))
+                raise AttributeError(' '.join(('A name and platform attribute',
+                                               'for the instrument is',
+                                               'required if supplying routine',
+                                               'module directly.')))
             # look to module for instrument functions and defaults
             self._assign_funcs(inst_module=inst_module)
 
@@ -946,7 +945,7 @@ class Instrument(object):
 
             # ensure units and name are named consistently in new Meta
             # object as specified by user upon Instrument instantiation
-            mdata.accept_default_labels(self)
+            mdata.accept_default_labels(parse_delimited_filenames)
 
         else:
             data = self._null_data.copy()

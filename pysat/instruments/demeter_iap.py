@@ -23,6 +23,8 @@ name : string
     'iap'
 tag : string
     'survey' or 'burst'
+sat_id : string
+    None supported
 
 Example
 -------
@@ -44,7 +46,8 @@ from . import demeter_methods
 
 platform = 'demeter'
 name = 'iap'
-tags = {'survey': 'Survey mode', 'burst': 'Burst mode'}
+tags = {'survey': 'Survey mode',
+        'burst': 'Burst mode'}
 sat_ids = {'': list(tags.keys())}
 test_dates = {'': {'survey': pysat.datetime(2010, 1, 1)}}
 
@@ -61,11 +64,12 @@ list_remote_files = demeter_methods.list_remote_files
 
 
 def init(self):
-    print("When using this data please include a version of the acknoledgement"
-          + " outlined in the metadata attribute 'info.acknowledgements'.  We "
-          + "recommend that data users contact the experiment PI early in "
-          + " their study.  Experiment reference information is available in "
-          + "the metadata attribute 'info.reference'")
+    print(' '.join(("When using this data please include a version of the,"
+                    "acknowledgement outlined in the metadata attribute",
+                    "'info.acknowledgements'.  We recommend that data users",
+                    "contact the experiment PI early in their study. ",
+                    "Experiment reference information is available in the",
+                    "metadata attribute 'info.reference'")))
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,

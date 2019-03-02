@@ -352,7 +352,6 @@ class TestInstrumentQualifier():
                 warnings.warn(' '.join(('Download for', inst.platform,
                                         inst.name, inst.tag, inst.sat_id,
                                         'was not successful.')))
-                # TODO need a warning!
 
     # Optional support
 

@@ -5,6 +5,20 @@ of the Coupled Ion Netural Dynamics Investigation (CINDI). Downloads
 data from the NASA Coordinated Data Analysis Web (CDAWeb) in CDF
 format.
 
+The IVM is comprised of the Retarding Potential Analyzer (RPA) and
+Drift Meter (DM). The RPA measures the energy of plasma along the
+direction of satellite motion. By fitting these measurements
+to a theoretical description of plasma the number density, plasma
+composition, plasma temperature, and plasma motion may be determined.
+The DM directly measures the arrival angle of plasma. Using the reported
+motion of the satellite the angle is converted into ion motion along
+two orthogonal directions, perpendicular to the satellite track.
+
+A brief discussion of the C/NOFS mission and instruments can be found at
+de La Beaujardière, O., et al. (2004), C/NOFS: A mission to forecast
+scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
+doi:10.1016/j.jastp.2004.07.030.
+
 Parameters
 ----------
 platform : string
@@ -12,6 +26,8 @@ platform : string
 name : string
     'ivm'
 tag : string
+    None supported
+sat_id : string
     None supported
 
 Warnings
@@ -27,11 +43,10 @@ from __future__ import absolute_import
 
 import functools
 
-import pandas as pds
 import numpy as np
+import pandas as pds
 
 import pysat
-
 from . import nasa_cdaweb_methods as cdw
 
 platform = 'cnofs'
@@ -55,7 +70,7 @@ load = cdw.load
 # support download routine
 # use the default CDAWeb method
 basic_tag = {'dir': '/pub/data/cnofs/cindi/ivm_500ms_cdf',
-             'remote_fname': '{year:4d}/'+ivm_fname,
+             'remote_fname': '{year:4d}/' + ivm_fname,
              'local_fname': ivm_fname}
 supported_tags = {'': {'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
