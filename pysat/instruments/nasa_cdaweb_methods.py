@@ -173,7 +173,8 @@ def load(fnames, tag=None, sat_id=None,
 def download(supported_tags, date_array, tag, sat_id,
              remote_site='https://cdaweb.gsfc.nasa.gov',
              data_path=None, user=None, password=None,
-             fake_daily_files_from_monthly=False):
+             fake_daily_files_from_monthly=False,
+             multi_file_day=False):
     """Routine to download NASA CDAWeb CDF data.
 
     This routine is intended to be used by pysat instrument modules supporting
@@ -234,6 +235,8 @@ def download(supported_tags, date_array, tag, sat_id,
     import os
     import requests
 
+    from bs4 import BeautifulSoup
+
     try:
         inst_dict = supported_tags[sat_id][tag]
     except KeyError:
@@ -254,32 +257,61 @@ def download(supported_tags, date_array, tag, sat_id,
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year,
                                                      month=date.month,
-                                                     day=date.day,
-                                                     hour=date.hour,
-                                                     min=date.minute,
-                                                     sec=date.second)
+                                                     day=date.day)
         formatted_local_fname = local_fname.format(year=date.year,
                                                    month=date.month,
-                                                   day=date.day,
-                                                   hour=date.hour,
-                                                   min=date.minute,
-                                                   sec=date.second)
+                                                   day=date.day)
         saved_local_fname = os.path.join(data_path, formatted_local_fname)
 
         # perform download
-        try:
-            print('Attempting to download file for ' + date.strftime('%x'))
-            sys.stdout.flush()
-            remote_path = '/'.join((remote_url, formatted_remote_fname))
-            print(remote_path)
-            req = requests.get(remote_path)
-            if req.status_code != 404:
-                open(saved_local_fname, 'wb').write(req.content)
-                print('Finished.')
-            else:
+        if not multi_file_day:
+            try:
+                print('Attempting to download file for ' + date.strftime('%x'))
+                sys.stdout.flush()
+                remote_path = '/'.join((remote_url, formatted_remote_fname))
+                req = requests.get(remote_path)
+                if req.status_code != 404:
+                    open(saved_local_fname, 'wb').write(req.content)
+                    print('Finished.')
+                else:
+                    print('File not available for ' + date.strftime('%x'))
+            except requests.exceptions.RequestException as exception:
                 print('File not available for ' + date.strftime('%x'))
-        except requests.exceptions.RequestException as exception:
-            print('File not available for ' + date.strftime('%x'))
+        else:
+            print('Attempting to download files for ' + date.strftime('%x'))
+            sys.stdout.flush()
+            remote_dirs = '/'.join((formatted_remote_fname.split('/')[:-1]))
+            str_fname = formatted_remote_fname.split('/')[-1]
+            remote_path = '/'.join((remote_url, remote_dirs))
+            soup = BeautifulSoup(requests.get(remote_path).content, "lxml")
+
+            # Find non-wildcard file name characters
+            targets = []
+            for str in str_fname.split('?'):
+                if len(str) > 0:
+                    targets.append(str)
+
+            # Build a list of files using each filename target as a goal
+            remote_files = []
+            links = soup.find_all('a', href=True)
+            for link in links:
+                add_file = True
+                for target in targets:
+                    if link['href'].count(target) == 0:
+                        add_file = False
+                if add_file:
+                    remote_files.append(link['href'])
+
+            # Get the files
+            for remote_file in remote_files:
+                remote_file_path = '/'.join((remote_path, remote_file))
+                saved_local_fname = os.path.join(data_path, remote_file)
+                req = requests.get(remote_file_path)
+                if req.status_code != 404:
+                    open(saved_local_fname, 'wb').write(req.content)
+                    print('Finished.')
+                else:
+                    print('File not available for ' + date.strftime('%x'))
 
 
 def list_remote_files(tag, sat_id,

@@ -100,7 +100,7 @@ test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 # version and revision
 # see code docstring for latest
 fname = ''.join(('timed_l2av20_saber_{year:04d}{month:02d}{day:02d}',
-                 '{hour:02d}{min:02d}_v01.cdf'))
+                 '????_v01.cdf'))
 supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
 # the command below presets some of the methods inputs, leaving
