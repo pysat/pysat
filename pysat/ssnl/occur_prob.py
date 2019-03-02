@@ -322,7 +322,6 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
                                             if len(idx) > 0:
                                                 hits[di, zk, yj, xi] += 1
 
-
     # all of the loading and storing data is done
     # prob = np.zeros((numz, numy, numx))
     prob = hits/total
