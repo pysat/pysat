@@ -6,10 +6,11 @@ intervention.
 """
 
 from __future__ import absolute_import, division, print_function
+import sys
 
 import numpy as np
 import pandas as pds
-import sys
+
 import pysat
 
 
@@ -270,6 +271,7 @@ def download(supported_tags, date_array, tag, sat_id,
             print('Attempting to download file for ' + date.strftime('%x'))
             sys.stdout.flush()
             remote_path = '/'.join((remote_url, formatted_remote_fname))
+            print(remote_path)
             req = requests.get(remote_path)
             if req.status_code != 404:
                 open(saved_local_fname, 'wb').write(req.content)
@@ -381,6 +383,8 @@ def list_remote_files(tag, sat_id,
     else:
         raise ValueError('Only traverses one extra level of directory.')
 
+    # TODO: Directory discovery fails when files are not in the right place,
+    # ie, TIMED/SABER 2012 data.  Need to adapt based on remote_file strucutre
     full_files = []
     for direct in dirs:
         sub_path = remote_url + '/' + direct
