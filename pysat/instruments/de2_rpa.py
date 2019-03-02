@@ -2,6 +2,8 @@
 """Supports the Retarding Potential Analyzer (RPA) instrument on
 Dynamics Explorer 2 (DE2).
 
+From CDAWeb:
+
 The Retarding Potential Analyzer (RPA) measured the bulk ion velocity in the
 direction of the spacecraft motion, the constituent ion concentrations, and the
 ion temperature along the satellite path. These parameters were derived from a
@@ -33,7 +35,7 @@ Parameters
 platform : string
     Supports 'de2'
 name : string
-    *List name string here*
+    Supports 'rpa'
 sat_id : string
     None Supported
 tag : string
