@@ -1,0 +1,4 @@
+[report]
+omit =
+  */instruments/template_instrument.py
+  */instruments/template_cdaweb_instrument.py
