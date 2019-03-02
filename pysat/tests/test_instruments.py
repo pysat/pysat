@@ -15,7 +15,7 @@ import pysat.instruments.pysat_testing
 
 # module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
-                'cosmic2013_gps', 'demeter_iap', 'sport_ivm',
+                'cosmic2013_gps', 'de2_idm', 'demeter_iap', 'sport_ivm',
                 'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv',
                 'sw_dst', 'ucar_tiegcm']
 
