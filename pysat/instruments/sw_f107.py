@@ -381,7 +381,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 data.iloc[idx, :] = np.nan
                 # create file
                 data.to_csv(os.path.join(data_path, 'f107_monthly_' +
-                                         date.strftime('%Y-%m') + '.txt'))
+                                         date.strftime('%Y-%m') + '.txt'),
+                            header=True)
 
     elif tag == 'all':
         # download from LASP, by year
@@ -408,7 +409,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.iloc[idx, :] = np.nan
         # create file
         data.to_csv(os.path.join(data_path, 'f107_1947_to_' +
-                                 now.strftime('%Y-%m-%d') + '.txt'))
+                                 now.strftime('%Y-%m-%d') + '.txt'),
+                    header=True)
 
     elif tag == 'prelim':
         import ftplib
@@ -538,7 +540,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])
         # write out as a file
         data.to_csv(os.path.join(data_path, 'f107_forecast_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'))
+                                 date.strftime('%Y-%m-%d') + '.txt'),
+                    header=True)
 
     elif tag == '45day':
         import requests
@@ -572,7 +575,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data['ap'] = ap
         # write out as a file
         data.to_csv(os.path.join(data_path, 'f107_45day_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'))
+                                 date.strftime('%Y-%m-%d') + '.txt'),
+                    header=True)
 
     return
 
@@ -657,7 +661,7 @@ def rewrite_daily_file(year, outfile, lines):
                          columns=data_dict.keys())
 
     # write out as a file
-    data.to_csv(outfile)
+    data.to_csv(outfile, header=True)
 
     return
 
