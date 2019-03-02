@@ -72,7 +72,7 @@ Note
 
 Warnings
 --------
-
+NEEDS TO INCORPORATE Epoch_velZ as epoch name
 
 Authors
 -------
