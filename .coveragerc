@@ -1,4 +1,6 @@
 [report]
 omit =
-  */instruments/template_instrument.py
+  */instruments/madrigal_pandas.py
+  */instruments/netcdf_pands.py
   */instruments/template_cdaweb_instrument.py
+  */instruments/template_instrument.py
