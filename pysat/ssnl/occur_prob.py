@@ -333,7 +333,7 @@ def _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
         if returnBins:
             output[label]['bin_x'] = binx
             output[label]['bin_y'] = biny
-            output[label]['bin_z'] = biny
+            output[label]['bin_z'] = binz
     # clean up
     del iterator
     return output
