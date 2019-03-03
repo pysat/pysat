@@ -29,84 +29,84 @@ class TestBasics():
 
     def test_occur_prob_daily_2D_w_bins(self):
         """Runs a basic probability routine daily 2D w/ bins"""
-        ans = occur_prob.daily2D(self.testInst, [0, 360, 3], 'longitude',
-                                 [-30, 30, 3], 'latitude', ['slt'], [12.],
+        ans = occur_prob.daily2D(self.testInst, [0, 360, 4], 'longitude',
+                                 [-60, 60, 3], 'latitude', ['slt'], [12.],
                                  returnBins=True)
         assert abs(ans['slt']['prob'] - 1.0).max() < 1.0e-2
-        assert (ans['slt']['prob']).shape == (3, 3)
-        assert abs(ans['slt']['bin_x'] - [0, 120, 240, 360]).max() < 1.0e-6
-        assert abs(ans['slt']['bin_y'] - [-30, -10, 10, 30]).max() < 1.0e-6
+        assert (ans['slt']['prob']).shape == (3, 4)
+        assert abs(ans['slt']['bin_x'] - [0, 90, 180, 270, 360]).max() < 1.0e-6
+        assert abs(ans['slt']['bin_y'] - [-60, -20, 20, 60]).max() < 1.0e-6
 
     @raises(ValueError)
     def test_occur_prob_daily_2D_w_bad_data_label(self):
         """Catch a data_label that is not list-like"""
-        ans = occur_prob.daily2D(self.testInst, [0, 360, 3], 'longitude',
-                                 [-30, 30, 3], 'latitude', 'slt', [12.])
+        ans = occur_prob.daily2D(self.testInst, [0, 360, 4], 'longitude',
+                                 [-60, 60, 3], 'latitude', 'slt', [12.])
 
     @raises(ValueError)
     def test_occur_prob_daily_2D_w_bad_gate(self):
         """Catch a gate that is not list-like"""
-        ans = occur_prob.daily2D(self.testInst, [0, 360, 3], 'longitude',
-                                 [-30, 30, 3], 'latitude', ['slt'], 12.)
+        ans = occur_prob.daily2D(self.testInst, [0, 360, 4], 'longitude',
+                                 [-60, 60, 3], 'latitude', ['slt'], 12.)
 
     @raises(ValueError)
     def test_occur_prob_daily_2D_w_mismatched_gate_and_data_label(self):
         """Catch a gate that does not match the data_label"""
-        ans = occur_prob.daily2D(self.testInst, [0, 360, 3], 'longitude',
-                                 [-30, 30, 3], 'latitude', ['slt'], [12., 18.])
+        ans = occur_prob.daily2D(self.testInst, [0, 360, 4], 'longitude',
+                                 [-60, 60, 3], 'latitude', ['slt'], [12., 18.])
 
     def test_occur_prob_by_orbit_2D_w_bins(self):
         """Runs a basic probability routine by orbit 2D"""
-        ans = occur_prob.by_orbit2D(self.testInst, [0, 360, 3], 'longitude',
-                                    [-30, 30, 3], 'latitude', ['slt'], [12.],
+        ans = occur_prob.by_orbit2D(self.testInst, [0, 360, 4], 'longitude',
+                                    [-60, 60, 3], 'latitude', ['slt'], [12.],
                                     returnBins=True)
         assert abs(ans['slt']['prob'] - 0.5).max() < 1.0e-2
-        assert (ans['slt']['prob']).shape == (3, 3)
-        assert abs(ans['slt']['bin_x'] - [0, 120, 240, 360]).max() < 1.0e-6
-        assert abs(ans['slt']['bin_y'] - [-30, -10, 10, 30]).max() < 1.0e-6
+        assert (ans['slt']['prob']).shape == (3, 4)
+        assert abs(ans['slt']['bin_x'] - [0, 90, 180, 270, 360]).max() < 1.0e-6
+        assert abs(ans['slt']['bin_y'] - [-60, -20, 20, 60]).max() < 1.0e-6
 
     def test_occur_prob_daily_3D_w_bins(self):
         """Runs a basic probability routine daily 3D"""
-        ans = occur_prob.daily3D(self.testInst, [0, 360, 3], 'longitude',
-                                 [-30, 30, 3], 'latitude', [0, 24, 2], 'slt',
+        ans = occur_prob.daily3D(self.testInst, [0, 360, 4], 'longitude',
+                                 [-60, 60, 3], 'latitude', [0, 24, 2], 'slt',
                                  ['slt'], [12.], returnBins=True)
-        assert abs(ans['slt']['prob'][0, :, :] - 0.0).max() < 1.0e-2
-        assert abs(ans['slt']['prob'][-1, :, :] - 1.0).max() < 1.0e-2
-        assert (ans['slt']['prob']).shape == (2, 3, 3)
-        assert abs(ans['slt']['bin_x'] - [0, 120, 240, 360]).max() < 1.0e-6
-        assert abs(ans['slt']['bin_y'] - [-30, -10, 10, 30]).max() < 1.0e-6
+        assert abs(ans['slt']['prob'][0, :, :] - 0.0).max() < 1.0e-6
+        assert abs(ans['slt']['prob'][-1, :, :] - 1.0).max() < 1.0e-6
+        assert (ans['slt']['prob']).shape == (2, 3, 4)
+        assert abs(ans['slt']['bin_x'] - [0, 90, 180, 270, 360]).max() < 1.0e-6
+        assert abs(ans['slt']['bin_y'] - [-60, -20, 20, 60]).max() < 1.0e-6
         assert abs(ans['slt']['bin_z'] - [0, 12, 24]).max() < 1.0e-6
 
     @raises(ValueError)
     def test_occur_prob_daily_3D_w_bad_data_label(self):
         """Catch a data_label that is not list-like"""
-        ans = occur_prob.daily3D(self.testInst, [0, 360, 3], 'longitude',
-                                 [-30, 30, 3], 'latitude', [0, 24, 2], 'slt',
+        ans = occur_prob.daily3D(self.testInst, [0, 360, 4], 'longitude',
+                                 [-60, 60, 3], 'latitude', [0, 24, 2], 'slt',
                                  'slt', [12.])
 
     @raises(ValueError)
     def test_occur_prob_daily_3D_w_bad_gate(self):
         """Catch a gate that is not list-like"""
-        ans = occur_prob.daily3D(self.testInst, [0, 360, 3], 'longitude',
-                                 [-30, 30, 3], 'latitude', [0, 24, 2], 'slt',
+        ans = occur_prob.daily3D(self.testInst, [0, 360, 4], 'longitude',
+                                 [-60, 60, 3], 'latitude', [0, 24, 2], 'slt',
                                  ['slt'], 12.)
 
     @raises(ValueError)
     def test_occur_prob_daily_3D_w_mismatched_gate_and_data_label(self):
         """Catch a gate that does not match the data_label"""
-        ans = occur_prob.daily3D(self.testInst, [0, 360, 3], 'longitude',
-                                 [-30, 30, 3], 'latitude', [0, 24, 2], 'slt',
+        ans = occur_prob.daily3D(self.testInst, [0, 360, 4], 'longitude',
+                                 [-60, 60, 3], 'latitude', [0, 24, 2], 'slt',
                                  ['slt'], [12., 18.])
 
     def test_occur_prob_by_orbit_3D_w_bins(self):
         """Runs a basic probability routine by orbit 3D"""
-        ans = occur_prob.by_orbit3D(self.testInst, [0, 360, 3], 'longitude',
-                                    [-30, 30, 3], 'latitude',
+        ans = occur_prob.by_orbit3D(self.testInst, [0, 360, 4], 'longitude',
+                                    [-60, 60, 3], 'latitude',
                                     [0, 24, 2], 'slt', ['slt'], [12.],
                                     returnBins=True)
-        assert abs(ans['slt']['prob'][0, :, :] - 0.0).max() < 1.0e-2
-        assert abs(ans['slt']['prob'][-1, :, :] - 1.0).max() < 1.0e-2
-        assert (ans['slt']['prob']).shape == (2, 3, 3)
-        assert abs(ans['slt']['bin_x'] - [0, 120, 240, 360]).max() < 1.0e-6
-        assert abs(ans['slt']['bin_y'] - [-30, -10, 10, 30]).max() < 1.0e-6
+        assert abs(ans['slt']['prob'][0, :, :] - 0.0).max() < 1.0e-6
+        assert abs(ans['slt']['prob'][-1, :, :] - 1.0).max() < 1.0e-6
+        assert (ans['slt']['prob']).shape == (2, 3, 4)
+        assert abs(ans['slt']['bin_x'] - [0, 90, 180, 270, 360]).max() < 1.0e-6
+        assert abs(ans['slt']['bin_y'] - [-60, -20, 20, 60]).max() < 1.0e-6
         assert abs(ans['slt']['bin_z'] - [0, 12, 24]).max() < 1.0e-6
