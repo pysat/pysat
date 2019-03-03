@@ -47,13 +47,13 @@ class TestBasics():
                                  [-30, 30, 3], 'latitude', [0, 24, 2], ['slt'],
                                  ['slt'], [12.])
         assert abs(ans['slt']['prob'] - 1.0).max() < 1.0e-2
-        assert (ans['slt']['prob']).shape == (3, 3, 2)
+        assert (ans['slt']['prob']).shape == (2, 3, 3)
 
     def test_occur_prob_by_orbit_3D(self):
         """Runs a basic probability routine by orbit 3D"""
         ans = occur_prob.by_orbit3D(self.testInst, [0, 360, 3], 'longitude',
                                     [-30, 30, 3], 'latitude',
                                     [0, 24, 2], ['slt'], ['slt'], [12.])
-        assert abs(ans['slt']['prob'][:, :, 0] - 0.0).max() < 1.0e-2
-        assert abs(ans['slt']['prob'][:, :, -1] - 1.0).max() < 1.0e-2
-        assert (ans['slt']['prob']).shape == (3, 3, 2)
+        assert abs(ans['slt']['prob'][0, :, :] - 0.0).max() < 1.0e-2
+        assert abs(ans['slt']['prob'][0, :, :] - 1.0).max() < 1.0e-2
+        assert (ans['slt']['prob']).shape == (2, 3, 3)
