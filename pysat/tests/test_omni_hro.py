@@ -1,9 +1,11 @@
-import pysat
-import pandas as pds
-import numpy as np
+import datetime as dt
+
 from nose.tools import assert_raises, raises
 import nose.tools
-import datetime as dt
+import numpy as np
+import pandas as pds
+
+import pysat
 
 
 class TestOMNICustom():
@@ -54,6 +56,12 @@ class TestOMNICustom():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
+    # def test_time_shift_to_magnetic_poles(self):
+    #     """Test time shift of OMNI data"""
+    #     pysat.instruments.omni_hro.time_shift_to_magnetic_poles(self.testInst)
+    #
+    #     assert True
 
     def test_clock_angle(self):
         """ Test clock angle."""

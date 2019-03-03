@@ -934,7 +934,7 @@ class Instrument(object):
             # get filename based off of index value
             fname = self.files[fid:fid+1]
         elif date is not None:
-            fname = self.files[date: date+pds.DateOffset(days=1)]
+            fname = self.files[date:date+pds.DateOffset(days=1)]
         else:
             raise ValueError('Must supply either a date or file id number.')
 
