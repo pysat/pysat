@@ -21,7 +21,8 @@ exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
 
 # exclude testing download functionality for specific module name, tag, sat_id
 exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
-                'sw_kp': {'tag': [''], 'sat_id': ['']}}
+                'sw_kp': {'tag': [''], 'sat_id': ['']},
+                'de2_rpa': {'tag': ['duct'], 'sat_id': ['']}}
 
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
