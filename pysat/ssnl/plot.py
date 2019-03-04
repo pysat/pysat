@@ -59,6 +59,7 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
     # norm method so that data may be scaled to colors appropriately
     norm = colors.Normalize(vmin=datalim[0], vmax=datalim[1])
     p = [i for i in np.arange(len(figs))]
+    q = [i for i in np.arange(len(figs))]
     for i, inst in enumerate(inst):
         for j, (fig, ax) in enumerate(zip(figs, axs)):
             if len(inst.data) > 0:
@@ -70,10 +71,9 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
                                          inst.data[data_label[j]], zdir='z',
                                          c=inst.data[data_label[j]], norm=norm,
                                          linewidth=0, edgecolors=None)
-                    ax[1].scatter(inst.data[labelx], inst.data[labely],
-                                  c=inst.data[data_label[j]],
-                                  norm=norm,
-                                  alpha=0.5, edgecolor=None)
+                    q[j] = ax[1].scatter(inst.data[labelx], inst.data[labely],
+                                         c=inst.data[data_label[j]],
+                                         norm=norm, alpha=0.5, edgecolor=None)
 
     for j, (fig, ax) in enumerate(zip(figs, axs)):
         try:
