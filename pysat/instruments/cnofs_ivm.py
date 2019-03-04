@@ -59,7 +59,7 @@ test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 # support list files routine
 # use the default CDAWeb method
 fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'': {'': ivm_fname}}
+supported_tags = {'': {'': fname}}
 list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
 
