@@ -136,6 +136,33 @@ class TestBasics():
             pass
         del self.testInst
 
+    def test_parse_delimited_filename(self):
+        """Check ability to parse delimited files"""
+        fname = ''.join(('test_{year:4d}_{month:02d}_{day:02d}_{hour:02d}',
+                         '_{min:02d}_{sec:02d}_v01_r02.cdf'))
+        year = np.ones(6)*2009
+        month = np.ones(6)*12
+        day = np.array([12, 15, 17, 19, 22, 24])
+        hour = np.array([8, 10, 6, 18, 3, 23])
+        min = np.array([8, 10, 6, 18, 3, 59])
+        sec = np.array([58, 11, 26, 2, 18, 59])
+        list_files = []
+        for i in range(6):
+            list_files.append(fname.format(year=year[i].astype(int),
+                                           month=month[i].astype(int),
+                                           day=day[i], hour=hour[i],
+                                           min=min[i], sec=sec[i]))
+
+        dict = pysat._files.parse_delimited_filenames(list_files, fname, '_')
+        assert np.all(dict['year'] == year)
+        assert np.all(dict['month'] == month)
+        assert np.all(dict['day'] == day)
+        assert np.all(dict['hour'] == hour)
+        assert np.all(dict['min'] == min)
+        assert np.all(dict['day'] == day)
+        assert (dict['version'] is None)
+        assert (dict['revision'] is None)
+
     def test_year_doy_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
         start = pysat.datetime(2008, 1, 1)
