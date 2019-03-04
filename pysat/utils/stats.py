@@ -7,6 +7,7 @@ functions used throughout the pysat package.
 """
 
 import numpy as np
+import warnings
 
 
 def median1D(self, bin_params, bin_label, data_label):
