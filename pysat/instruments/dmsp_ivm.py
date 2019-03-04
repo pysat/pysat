@@ -243,7 +243,7 @@ def smooth_ram_drifts(ivm, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
     if rpa_flag_key in list(ivm.data.keys()):
         rpa_idx, = np.where(inst[rpa_flag_key] == 1)
     else:
-        rpa_idx = list()
+        rpa_idx = slice(0, ivm.index.shape[0])
 
     ivm[rpa_idx, rpa_vel_key] = ivm[rpa_idx, rpa_vel_key].rolling(15, 5).mean()
     return
@@ -370,7 +370,7 @@ def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
     if rpa_flag_key in list(ivm.data.keys()):
         rpa_idx, = np.where(inst[rpa_flag_key] != 1)
     else:
-        rpa_idx = []
+        rpa_idx = slice(0, ivm.index.shape[0])
 
     # Use the cartesian unit vectors to calculate the desired velocities
     iv_x = inst[rpa_vel_key].copy()
