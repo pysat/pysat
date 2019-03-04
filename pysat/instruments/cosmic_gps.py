@@ -16,6 +16,8 @@ name : string
     'gps' for Radio Occultation profiles
 tag : string
     Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
+sat_id : string
+    None supported
 
 Note
 ----
@@ -29,12 +31,15 @@ Warnings
 - Routine was not produced by COSMIC team
 
 """
+
 from __future__ import print_function
 from __future__ import absolute_import
 import glob
 import os
-import pandas as pds
+
 import numpy as np
+import pandas as pds
+
 import pysat
 
 platform = 'cosmic'
@@ -306,10 +311,3 @@ def download(date_array, tag, sat_id, data_path=None,
             shutil.move(ext_dir, os.path.join(data_path, yrdoystr))
 
     return
-
-    # mean altitude profiles over bin size, make a pandas Series for each
-    # altBin = 3
-    # roundMSL_alt = np.round(loadedVars['MSL_alt']/altBin)*altBin
-    # profiles = pds.DataFrame(loadedVars, index=roundMSL_alt)
-    # profiles = profiles.groupby(profiles.index.values).mean()
-    # del loadedVars

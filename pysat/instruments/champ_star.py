@@ -11,6 +11,8 @@ name : string
     'star'
 tag : string
     None supported
+sat_id : string
+    None supported
 
 Warnings
 --------
@@ -22,8 +24,9 @@ Angeline G. Burrell, Feb 22, 2016, University of Leicester
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import sys
 import os
+import sys
+import warnings
 
 import pandas as pds
 import numpy as np
@@ -123,10 +126,10 @@ def load(fnames, tag=None, sat_id=None):
                     "nrlmsis_ndens",
                     'Uncertainty in Neutral Density (kg/m^3)': "ndens_err",
                     'Number of Data Points in Current Averaging Bin': "npnts",
-    'Number of Points in Current Averaging Bin that Required Interpolation':
-                     "npnts_interp",
-    'Average Coefficient of Drag Used in Current Averaging Bin':
-                     "avg_drag_coeff", }
+                    ' '.join(('Number of Points in Current Averaging Bin that',
+                              'Required Interpolation')): "npnts_interp",
+                    ' '.join(('Average Coefficient of Drag Used in Current',
+                              'Averaging Bin')): "avg_drag_coeff", }
 
     champ_dtypes = {'year': np.int32, 'doy': np.int32, 'sod': float,
                     'bin_lat': float, 'sat_glat': float, 'sat_lon': float,
@@ -213,6 +216,8 @@ def clean(inst):
     No cleaning currently available for CHAMP
     """
 
+    warnings.warn("No cleaning currently available for CHAMP")
+
     return None
 
 
@@ -234,5 +239,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     --------
     No data download currently available for CHAMP
     """
+
+    warnings.warn("No data download currently available for CHAMP")
 
     return None

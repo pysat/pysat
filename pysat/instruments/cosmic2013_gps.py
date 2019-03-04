@@ -19,6 +19,8 @@ name : string
     'gps' for Radio Occultation profiles
 tag : string
     Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
+sat_id : string
+    None supported
 
 Note
 ----
@@ -32,14 +34,17 @@ Warnings
 - Routine was not produced by COSMIC team
 
 """
+
 from __future__ import print_function
 from __future__ import absolute_import
 import glob
 import os
 import sys
-from scipy.io.netcdf import netcdf_file
-import pandas as pds
+
 import numpy as np
+import pandas as pds
+from scipy.io.netcdf import netcdf_file
+
 import pysat
 
 platform = 'cosmic2013'
@@ -227,7 +232,8 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
                 out['profiles'].index = \
                     (out['profiles']['MSL_alt']/altitude_bin).round().values \
                     * altitude_bin
-                out['profiles'] = out['profiles'].groupby(out['profiles'].index.values).mean()
+                out['profiles'] = \
+                    out['profiles'].groupby(out['profiles'].index.values).mean()
         else:
             for out in output:
                 out['profiles'].index = out['profiles']['MSL_alt']
@@ -337,10 +343,3 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
             shutil.move(ext_dir, os.path.join(data_path, yrdoystr))
 
     return
-
-    # mean altitude profiles over bin size, make a pandas Series for each
-    # altBin = 3
-    # roundMSL_alt = np.round(loadedVars['MSL_alt']/altBin)*altBin
-    # profiles = pysat.DataFrame(loadedVars, index=roundMSL_alt)
-    # profiles = profiles.groupby(profiles.index.values).mean()
-    # del loadedVars
