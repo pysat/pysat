@@ -1282,7 +1282,7 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def remote_file_list(self):
+    def remote_file_list(self, **kwargs):
         """List remote files for chosen instrument.
 
         Returns
@@ -1292,7 +1292,7 @@ class Instrument(object):
 
         """
 
-        return self._list_remote_rtn(self.tag, self.sat_id)
+        return self._list_remote_rtn(self.tag, self.sat_id, **kwargs)
 
     def remote_date_range(self):
         """Returns fist and last date for remote data.
@@ -1304,7 +1304,7 @@ class Instrument(object):
 
         """
 
-        files = self.remote_file_list()
+        files = self.remote_file_list(**kwargs)
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, user=None, password=None, **kwargs):
