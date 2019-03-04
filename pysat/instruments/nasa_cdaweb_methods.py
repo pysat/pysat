@@ -266,7 +266,8 @@ def download(supported_tags, date_array, tag, sat_id,
             try:
                 print('Attempting to download file for ' + date.strftime('%x'))
                 sys.stdout.flush()
-                remote_path = '/'.join((remote_url, formatted_remote_fname))
+                remote_path = '/'.join((remote_url.strip('/'),
+                                        formatted_remote_fname))
                 req = requests.get(remote_path)
                 if req.status_code != 404:
                     open(saved_local_fname, 'wb').write(req.content)
@@ -289,7 +290,8 @@ def download(supported_tags, date_array, tag, sat_id,
                 # Get the files
                 for remote_file in remote_files.values:
                     remote_dir = os.path.split(formatted_remote_fname)[0]
-                    remote_file_path = '/'.join((remote_url, remote_dir,
+                    remote_file_path = '/'.join((remote_url.stip('/'),
+                                                 remote_dir.strip('/'),
                                                  remote_file))
                     saved_local_fname = os.path.join(data_path, remote_file)
                     req = requests.get(remote_file_path)
@@ -424,13 +426,16 @@ def list_remote_files(tag, sat_id,
         # Check for formatted subdirectories if user input is specified
         for subdir in subdirs:
             if (year is not None) and (subdir.find('year') != -1):
-                remote_url = '/'.join((remote_url, subdir.format(year=year)))
+                remote_url = '/'.join((remote_url.strip('/'),
+                                       subdir.format(year=year)))
                 n_layers -= 1
             if (month is not None) and (subdir.find('month') != -1):
-                remote_url = '/'.join((remote_url, subdir.format(month=month)))
+                remote_url = '/'.join((remote_url.strip('/'),
+                                       subdir.format(month=month)))
                 n_layers -= 1
             if (day is not None) and (subdir.find('day') != -1):
-                remote_url = '/'.join((remote_url, subdir.format(day=day)))
+                remote_url = '/'.join((remote_url.strip('/'),
+                                       subdir.format(day=day)))
                 n_layers -= 1
 
     # Find filename extension required by format_str
@@ -450,7 +455,7 @@ def list_remote_files(tag, sat_id,
     full_files = []
     for level in range(n_layers + 1):
         for directory in remote_dirs[level]:
-            temp_url = '/'.join((remote_url, directory))
+            temp_url = '/'.join((remote_url.strip('/'), directory))
             soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
             links = soup.find_all('a', href=True)
             for link in links:
