@@ -945,7 +945,7 @@ class Instrument(object):
 
             # ensure units and name are named consistently in new Meta
             # object as specified by user upon Instrument instantiation
-            mdata.accept_default_labels(parse_delimited_filenames)
+            mdata.accept_default_labels(self)
 
         else:
             data = self._null_data.copy()
