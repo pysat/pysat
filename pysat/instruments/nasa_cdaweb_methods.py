@@ -290,7 +290,7 @@ def download(supported_tags, date_array, tag, sat_id,
                 # Get the files
                 for remote_file in remote_files.values:
                     remote_dir = os.path.split(formatted_remote_fname)[0]
-                    remote_file_path = '/'.join((remote_url.stip('/'),
+                    remote_file_path = '/'.join((remote_url.strip('/'),
                                                  remote_dir.strip('/'),
                                                  remote_file))
                     saved_local_fname = os.path.join(data_path, remote_file)
