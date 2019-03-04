@@ -10,6 +10,7 @@ import pandas as pds
 import numpy as np
 import pysat
 
+
 def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                start=None, stop=None, fill_val=np.nan):
     """ Combine the output from the different Kp sources for a range of dates
@@ -130,9 +131,10 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
             if len(recent_inst.index) == 0:
                 files = np.unique(recent_inst.files.files[itime:stop])
             else:
-                files = [None] # No load needed, if already initialized
+                files = [None]  # No load needed, if already initialized
 
-            # Cycle through all possible files of interest, saving relevant data
+            # Cycle through all possible files of interest, saving relevant
+            # data
             for filename in files:
                 if filename is not None:
                     recent_inst.load(fname=filename)
@@ -161,9 +163,10 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
             if len(forecast_inst.index) == 0:
                 files = np.unique(forecast_inst.files.files[itime:stop])
             else:
-                files = [None] # No load needed, if already initialized
+                files = [None]  # No load needed, if already initialized
 
-            # Cycle through all possible files of interest, saving relevant data
+            # Cycle through all possible files of interest, saving relevant
+            # data
             for filename in files:
                 if filename is not None:
                     forecast_inst.load(fname=filename)
@@ -195,7 +198,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                                 freq=freq)
 
     if date_range[0] < kp_times[0]:
-        # Extend the time and value arrays from their beginning with fill values
+        # Extend the time and value arrays from their beginning with fill
+        # values
         itime = abs(date_range - kp_times[0]).argmin()
         kp_times.reverse()
         kp_values.reverse()
@@ -339,9 +343,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
             if len(forecast_inst.index) == 0:
                 files = np.unique(forecast_inst.files.files[itime:stop])
             else:
-                files = [None] # No load needed, if already initialized
+                files = [None]  # No load needed, if already initialized
 
-            # Cycle through all possible files of interest, saving relevant data
+            # Cycle through all possible files of interest, saving relevant
+            # data
             for filename in files:
                 if filename is not None:
                     forecast_inst.load(fname=filename)
@@ -378,7 +383,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                                 freq=freq)
 
     if date_range[0] < f107_times[0]:
-        # Extend the time and value arrays from their beginning with fill values
+        # Extend the time and value arrays from their beginning with fill
+        # values
         itime = abs(date_range - f107_times[0]).argmin()
         f107_times.reverse()
         f107_values.reverse()
@@ -412,6 +418,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     f107_inst.meta.__setitem__('f107', {f107_inst.meta.notes_label: notes})
 
     return f107_inst
+
 
 def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
                   running_name=None):
@@ -478,7 +485,7 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
     ap_pad = pds.Series(np.full(shape=(1,), fill_value=np.nan),
                         index=[ap_mean.index[0] - pds.DateOffset(hours=3)])
     # Extract the mean that only uses data for one day
-    ap_sel = ap_pad.combine_first(ap_mean[[i for i,tt in
+    ap_sel = ap_pad.combine_first(ap_mean[[i for i, tt in
                                            enumerate(ap_mean.index)
                                            if tt.hour == 21]])
     # Backfill this data
@@ -486,7 +493,6 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
 
     # Save the output for the original time range
     ap_inst[daily_name] = pds.Series(ap_data[1:], index=ap_data.index[1:])
-
 
     # Add metadata
     meta_dict = {ap_inst.meta.units_label: '',
