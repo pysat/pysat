@@ -28,9 +28,8 @@ class TestBasics():
 
         ref_mean = scistats.circmean(self.test_angles, **self.circ_kwargs)
         test_mean = pystats.nan_circmean(self.test_angles, **self.circ_kwargs)
-        ans1 = ref_mean == test_mean
 
-        assert ans1
+        assert ref_mean == test_mean
 
     def test_circmean_nan(self):
         """ Test custom circular mean with NaN."""
@@ -47,9 +46,8 @@ class TestBasics():
 
         ref_std = scistats.circstd(self.test_angles, **self.circ_kwargs)
         test_std = pystats.nan_circstd(self.test_angles, **self.circ_kwargs)
-        ans1 = ref_std == test_std
 
-        assert ans1
+        assert ref_std == test_std
 
     def test_circstd_nan(self):
         """ Test custom circular std with NaN."""
