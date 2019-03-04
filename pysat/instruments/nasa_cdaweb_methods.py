@@ -447,13 +447,16 @@ def list_remote_files(tag, sat_id,
         remote_dirs.append([])
     remote_dirs[0] = ['']
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    #     Currently only works for one layer of subdirectories
-    #  Works fine for TIMED/SABER as long as year is specified
-
     # Build a list of files using each filename target as a goal
+    if n_layers > 1:
+        n_loops = 2
+        warnings.warn(' '.join(('Current implementation only goes down one',
+                                'level of subdirectories.  Try specifying',
+                                'a year for more accurate results.')))
+    else:
+        n_loops = n_layers + 1
     full_files = []
-    for level in range(n_layers + 1):
+    for level in range(n_loops):
         for directory in remote_dirs[level]:
             temp_url = '/'.join((remote_url.strip('/'), directory))
             soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
