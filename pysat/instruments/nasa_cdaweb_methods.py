@@ -264,7 +264,8 @@ def download(supported_tags, date_array, tag, sat_id,
         # perform download
         if not multi_file_day:
             try:
-                print('Attempting to download file for ' + date.strftime('%x'))
+                print(' '.join(('Attempting to download file for',
+                                date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_path = '/'.join((remote_url.strip('/'),
                                         formatted_remote_fname))
@@ -273,15 +274,16 @@ def download(supported_tags, date_array, tag, sat_id,
                     open(saved_local_fname, 'wb').write(req.content)
                     print('Finished.')
                 else:
-                    print('File not available for ' + date.strftime('%x'))
+                    print(' '.join(('File not available for',
+                                    date.strftime('%d %B %Y'))))
             except requests.exceptions.RequestException as exception:
                 print(' '.join((exception, '- File not available for',
-                                date.strftime('%x'))))
+                                date.strftime('%d %B %Y'))))
 
         else:
             try:
-                print('Attempting to download files for '
-                      + date.strftime('%x'))
+                print(' '.join(('Attempting to download files for',
+                                date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_files = list_remote_files(tag=tag, sat_id=sat_id,
                                                  supported_tags=supported_tags,
@@ -303,11 +305,12 @@ def download(supported_tags, date_array, tag, sat_id,
                         open(saved_local_fname, 'wb').write(req.content)
                         i += 1
                     else:
-                        print('File not available for ' + date.strftime('%x'))
+                        print(' '.join(('File not available for',
+                                        date.strftime('%d %B %Y'))))
                 print('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
             except requests.exceptions.RequestException as exception:
                 print(' '.join((exception, '- Files not available for',
-                                date.strftime('%x'))))
+                                date.strftime('%d %B %Y'))))
 
 
 def list_remote_files(tag, sat_id,
@@ -426,8 +429,10 @@ def list_remote_files(tag, sat_id,
     # Find Subdirectories and modify remote_url if user input is specified
     dir_split = os.path.split(format_str)
     if len(dir_split[0]) != 0:
-        subdirs = dir_split[0].split('/')  # Get all subdirectories
-        format_str = dir_split[-1]  # only keep file portion of format
+        # Get all subdirectories
+        subdirs = dir_split[0].split('/')
+        # only keep file portion of format
+        format_str = dir_split[-1]
         n_layers = len(subdirs)
         # Check for formatted subdirectories if user input is specified
         for subdir in subdirs:
