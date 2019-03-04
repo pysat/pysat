@@ -21,7 +21,7 @@ class TestBasics():
                                          clean_level='clean',
                                          orbit_info=orbit_info)
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
-                                pysat.datetime(2008, 3, 31))
+                                pysat.datetime(2008, 1, 31))
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -60,7 +60,7 @@ class TestBasics():
         ans = occur_prob.by_orbit2D(self.testInst, [0, 360, 4], 'longitude',
                                     [-60, 60, 3], 'latitude', ['slt'], [12.],
                                     returnBins=True)
-        assert abs(ans['slt']['prob'] - 0.5).max() < 1.0e-2
+        assert abs(ans['slt']['prob'] - 0.5).max() < 2.0e-2
         assert (ans['slt']['prob']).shape == (3, 4)
         assert abs(ans['slt']['bin_x'] - [0, 90, 180, 270, 360]).max() < 1.0e-6
         assert abs(ans['slt']['bin_y'] - [-60, -20, 20, 60]).max() < 1.0e-6
