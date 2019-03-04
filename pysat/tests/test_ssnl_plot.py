@@ -24,8 +24,21 @@ class TestBasics():
         del self.testInst
 
     def test_scatterplot(self):
+        """Check if scatterplot generates"""
         figs = plot.scatterplot(self.testInst, 'longitude', 'latitude',
-                                ['slt'], [0.0, 24.0])
+                                'slt', [0.0, 24.0])
 
         axes = figs[0].get_axes()
+        assert len(figs) == 1
         assert len(axes) == 3
+
+    def test_multiple_scatterplots(self):
+        """Check if multiple scatterplots generate"""
+        figs = plot.scatterplot(self.testInst, 'longitude', 'latitude',
+                                ['slt', 'mlt'], [0.0, 24.0])
+
+        axes = figs[0].get_axes()
+        axes2 = figs[1].get_axes()
+        assert len(figs) == 2
+        assert len(axes) == 3
+        assert len(axes2) == 3
