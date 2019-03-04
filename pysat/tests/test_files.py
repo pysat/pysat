@@ -138,8 +138,8 @@ class TestBasics():
 
     def test_parse_delimited_filename(self):
         """Check ability to parse delimited files"""
-        fname = ''.join(('test_{year:4d}_{month:02d}_{day:02d}_{hour:02d}',
-                         '_{min:02d}_{sec:02d}_v01_r02.cdf'))
+        fname = ''.join(('test_{year:4d}_{month:2d}_{day:2d}_{hour:2d}',
+                         '_{min:2d}_{sec:2d}_v01_r02.cdf'))
         year = np.ones(6)*2009
         month = np.ones(6)*12
         day = np.array([12, 15, 17, 19, 22, 24])
