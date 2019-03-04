@@ -288,6 +288,8 @@ def download(supported_tags, date_array, tag, sat_id,
                                                  day=date.day)
 
                 # Get the files
+                i = 0
+                n = len(remote_files.values)
                 for remote_file in remote_files.values:
                     remote_dir = os.path.split(formatted_remote_fname)[0]
                     remote_file_path = '/'.join((remote_url.strip('/'),
@@ -297,9 +299,10 @@ def download(supported_tags, date_array, tag, sat_id,
                     req = requests.get(remote_file_path)
                     if req.status_code != 404:
                         open(saved_local_fname, 'wb').write(req.content)
-                        print('Finished.')
+                        i += 1
                     else:
                         print('File not available for ' + date.strftime('%x'))
+                print('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
             except requests.exceptions.RequestException as exception:
                 print('Files not available for ' + date.strftime('%x'))
 
