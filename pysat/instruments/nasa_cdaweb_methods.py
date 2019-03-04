@@ -275,7 +275,9 @@ def download(supported_tags, date_array, tag, sat_id,
                 else:
                     print('File not available for ' + date.strftime('%x'))
             except requests.exceptions.RequestException as exception:
-                print('File not available for ' + date.strftime('%x'))
+                print(' '.join((exception, '- File not available for',
+                                date.strftime('%x'))))
+
         else:
             try:
                 print('Attempting to download files for '
@@ -304,7 +306,8 @@ def download(supported_tags, date_array, tag, sat_id,
                         print('File not available for ' + date.strftime('%x'))
                 print('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
             except requests.exceptions.RequestException as exception:
-                print('Files not available for ' + date.strftime('%x'))
+                print(' '.join((exception, '- Files not available for',
+                                date.strftime('%x'))))
 
 
 def list_remote_files(tag, sat_id,
