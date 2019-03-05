@@ -271,7 +271,7 @@ def clean(iap):
                 # Select times with at least two ion species
                 idx, = np.where(nions > 1)
     else:
-        idx = []
+        idx = slice(0, iap.index.shape[0])
 
     iap.data = iap[idx]
 
