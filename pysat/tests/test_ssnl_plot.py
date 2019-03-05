@@ -4,6 +4,7 @@ tests the pysat averaging code
 import numpy as np
 import sys
 
+import matplotlib.pyplot as plt
 from nose.tools import assert_raises, raises
 import pandas as pds
 
@@ -22,6 +23,7 @@ class TestBasics():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+        plt.close()
 
     def test_scatterplot(self):
         """Check if scatterplot generates"""
