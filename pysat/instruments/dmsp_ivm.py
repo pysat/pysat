@@ -211,11 +211,11 @@ def clean(ivm):
             idx, = np.where((ivm['rpa_flag_ut'] <= 3) &
                             (ivm['idm_flag_ut'] <= 3))
         else:
-            idx = []
+            idx = slice(0, ivm.index.shape[0])
     else:
         if ivm.clean_level in ['clean', 'dusty', 'dirty']:
             print('WARNING: this level 1 data has no quality flags')
-        idx = []
+        idx = slice(0, ivm.index.shape[0])
 
     # downselect data based upon cleaning conditions above
     ivm.data = ivm[idx]
@@ -269,7 +269,7 @@ def update_DMSP_ephemeris(ivm, ephem=None):
         ivm.data = pds.DataFrame(None)
         return
 
-    if ephem.sat_id != dmsp.sat_id:
+    if ephem.sat_id != ivm.sat_id:
         raise ValueError('ephemera provided for the wrong satellite')
 
     if ephem.date != ivm.date:
@@ -370,7 +370,7 @@ def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
     if rpa_flag_key in list(ivm.data.keys()):
         rpa_idx, = np.where(inst[rpa_flag_key] != 1)
     else:
-        rpa_idx = []
+        rpa_idx = list()
 
     # Use the cartesian unit vectors to calculate the desired velocities
     iv_x = inst[rpa_vel_key].copy()
