@@ -25,35 +25,9 @@ class TestSWKp():
         # Load a test Metadata
         self.testMeta = pysat.Meta()
 
-        # Set combination testing input
-        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
-                                                 microsecond=0)
-        self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
-                        "recent_inst": pysat.Instrument("sw", "kp", "recent"),
-                        "forecast_inst":
-                        pysat.Instrument("sw", "kp", "forecast"),
-                        "start": self.today - dt.timedelta(days=30),
-                        "stop": self.today + dt.timedelta(days=3),
-                        "fill_val": -1}
-
-        # Download combination testing input
-        self.download = True
-        # Load the instrument objects
-        for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
-            try:
-                self.combine[kk].download(start=self.combine['start'],
-                                          stop=self.combine['stop'])
-            except:
-                self.download = False
-                pass
-
-            if len(self.combine[kk].files.files) == 0:
-                self.download = False
-
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst, self.testMeta, self.combine, self.download
-        del self.today
+        del self.testInst, self.testMeta
 
     def test_convert_kp_to_ap(self):
         """ Test conversion of Kp to ap"""
@@ -151,6 +125,39 @@ class TestSWKp():
                'High lat Kp')
         del dkey
 
+
+class TestSwKpCombined():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        # Set combination testing input
+        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
+                                                 microsecond=0)
+        self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
+                        "recent_inst": pysat.Instrument("sw", "kp", "recent"),
+                        "forecast_inst":
+                        pysat.Instrument("sw", "kp", "forecast"),
+                        "start": self.today - dt.timedelta(days=30),
+                        "stop": self.today + dt.timedelta(days=3),
+                        "fill_val": -1}
+
+        # Download combination testing input
+        self.download = True
+        # Load the instrument objects
+        for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
+            try:
+                self.combine[kk].download(start=self.combine['start'],
+                                          stop=self.combine['stop'])
+            except:
+                self.download = False
+                pass
+
+            if len(self.combine[kk].files.files) == 0:
+                self.download = False
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.combine, self.download, self.today
+
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
 
@@ -159,10 +166,20 @@ class TestSWKp():
     def test_combine_kp_one(self):
         """ Test combine_kp failure when only one instrument is provided"""
 
-        combo_in = {"standard_inst": self.testInst}
+        # Load a test instrument
+        testInst = pysat.Instrument()
+        testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0)},
+                                      index=[pysat.datetime(2009, 1, 1)
+                                             + pds.DateOffset(hours=3*i)
+                                             for i in range(12)])
+        testInst.meta = pysat.Meta()
+        testInst.meta.__setitem__('Kp', {testInst.meta.fill_label:
+                                         np.nan})
+
+        combo_in = {"standard_inst": testInst}
         assert_raises(ValueError, sw_methods.combine_kp, combo_in)
 
-        del combo_in
+        del combo_in, testInst
 
     def test_combine_kp_no_time(self):
         """Test combine_kp failure when no times are provided"""
@@ -301,81 +318,9 @@ class TestSWF107():
                                                   + pds.DateOffset(days=i)
                                                   for i in range(160)])
 
-        # Set combination testing input
-        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
-                                                 microsecond=0)
-        self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
-                            for tag in sw_f107.tags.keys()}
-        self.combineTimes = {"start": self.today - dt.timedelta(days=30),
-                             "stop": self.today + dt.timedelta(days=3)}
-
-        # Download combination testing input
-        self.download = True
-        # Load the instrument objects
-        for kk in self.combineInst.keys():
-            try:
-                if kk == '':
-                    self.combineInst[kk].download(self.combineTimes['start'],
-                                                  freq='MS')
-                else:
-                    self.combineInst[kk].download(**self.combineTimes)
-            except:
-                pass
-
-            if len(self.combineInst[kk].files.files) == 0:
-                self.download = False
-
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.combineInst, self.download, self.today, self.combineTimes
         del self.testInst
-
-    def test_combine_f107_none(self):
-        """ Test combine_f107 failure when no input is provided"""
-
-        assert_raises(TypeError, sw_methods.combine_f107)
-
-    def test_combine_f107_no_time(self):
-        """Test combine_f107 failure when no times are provided"""
-
-        assert_raises(ValueError, sw_methods.combine_f107,
-                      self.combineInst[''], self.combineInst['forecast'])
-
-    def test_combine_f107_inst_time(self):
-        """Test combine_f107 with times provided through 'all' and 'forecast'"""
-
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
-
-        self.combineInst['all'].load(date=self.combineTimes['start'])
-        self.combineInst['forecast'].load(date=self.today)
-
-        f107_inst = sw_methods.combine_f107(self.combineInst['all'],
-                                            self.combineInst['forecast'])
-
-        assert f107_inst.index[0] == dt.datetime(1947, 2, 13)
-        assert f107_inst.index[-1] <= self.combineTimes['stop']
-        assert len(f107_inst.data.columns) == 1
-        assert f107_inst.data.columns[0] == 'f107'
-
-        del f107_inst
-
-    def test_combine_f107_all(self):
-        """Test combine_f107 when all input is provided with '' and '45day'"""
-
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
-
-        f107_inst = sw_methods.combine_f107(self.combineInst[''],
-                                            self.combineInst['45day'],
-                                            **self.combineTimes)
-
-        assert f107_inst.index[0] >= self.combineTimes['start']
-        assert f107_inst.index[-1] < self.combineTimes['stop']
-        assert len(f107_inst.data.columns) == 1
-        assert f107_inst.data.columns[0] == 'f107'
-
-        del f107_inst
 
     def test_calc_f107a_bad_inname(self):
         """ Test the calc_f107a with a bad input name """
@@ -444,6 +389,85 @@ class TestSWF107():
         # Assert the expected number of fill values
         assert(len(self.testInst['f107a'][np.isnan(self.testInst['f107a'])])
                == 40)
+
+
+class TestSWF107Combined():
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        # Set combination testing input
+        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
+                                                 microsecond=0)
+        self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
+                            for tag in sw_f107.tags.keys()}
+        self.combineTimes = {"start": self.today - dt.timedelta(days=30),
+                             "stop": self.today + dt.timedelta(days=3)}
+
+        # Download combination testing input
+        self.download = True
+        # Load the instrument objects
+        for kk in self.combineInst.keys():
+            try:
+                if kk == '':
+                    self.combineInst[kk].download(self.combineTimes['start'],
+                                                  freq='MS')
+                else:
+                    self.combineInst[kk].download(**self.combineTimes)
+            except:
+                pass
+
+            if len(self.combineInst[kk].files.files) == 0:
+                self.download = False
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.combineInst, self.download, self.today, self.combineTimes
+
+    def test_combine_f107_none(self):
+        """ Test combine_f107 failure when no input is provided"""
+
+        assert_raises(TypeError, sw_methods.combine_f107)
+
+    def test_combine_f107_no_time(self):
+        """Test combine_f107 failure when no times are provided"""
+
+        assert_raises(ValueError, sw_methods.combine_f107,
+                      self.combineInst[''], self.combineInst['forecast'])
+
+    def test_combine_f107_inst_time(self):
+        """Test combine_f107 with times provided through 'all' and 'forecast'"""
+
+        if not self.download:
+            raise skip.SkipTest("test needs downloaded data")
+
+        self.combineInst['all'].load(date=self.combineTimes['start'])
+        self.combineInst['forecast'].load(date=self.today)
+
+        f107_inst = sw_methods.combine_f107(self.combineInst['all'],
+                                            self.combineInst['forecast'])
+
+        assert f107_inst.index[0] == dt.datetime(1947, 2, 13)
+        assert f107_inst.index[-1] <= self.combineTimes['stop']
+        assert len(f107_inst.data.columns) == 1
+        assert f107_inst.data.columns[0] == 'f107'
+
+        del f107_inst
+
+    def test_combine_f107_all(self):
+        """Test combine_f107 when all input is provided with '' and '45day'"""
+
+        if not self.download:
+            raise skip.SkipTest("test needs downloaded data")
+
+        f107_inst = sw_methods.combine_f107(self.combineInst[''],
+                                            self.combineInst['45day'],
+                                            **self.combineTimes)
+
+        assert f107_inst.index[0] >= self.combineTimes['start']
+        assert f107_inst.index[-1] < self.combineTimes['stop']
+        assert len(f107_inst.data.columns) == 1
+        assert f107_inst.data.columns[0] == 'f107'
+
+        del f107_inst
 
 
 class TestSWAp():
