@@ -1,24 +1,37 @@
 # -*- coding: utf-8 -*-
-"""This is a template for a pysat.Instrument support file that
-utilizes CDAWeb methods. Copy and modify this file as needed when adding a
-new Instrument to pysat.
+"""Supports the Sounding of the Atmosphere using Broadband Emission Radiometry
+(SABER) instrument on the Thermosphere Ionosphere Mesosphere Energetics
+Dynamics (TIMED) satellite.
 
-This is a good area to introduce the instrument, provide background
-on the mission, operations, instrumenation, and measurements.
+SABER "Rules of the Road" for DATA USE
+Users of SABER data are asked to respect the following guidelines
 
-Also a good place to provide contact information. This text will
-be included in the pysat API documentation.
+    - Mission scientific and model results are open to all.
+    - Guest investigators, and other members of the scientific community or
+    general public should contact the PI or designated team member early in an
+    analysis project to discuss the appropriate use of the data.
+    - Users that wish to publish the results derived from SABER data should
+    normally offer co-authorship to the PI, Associate PI or designated team
+    members. Co-authorship may be declined. Appropriate acknowledgement of
+    institutions, personnel, and funding agencies should be given.
+    - Users should heed the caveats of SABER team members as to the
+    interpretation and limitations of the data. SABER team members may insist
+    that such caveats be published, even if co-authorship is declined. Data
+    and model version numbers should also be specified.
+    - Pre-prints of publications and conference abstracts should be widely
+    distributed to interested parties within the mission and related projects.
+    - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
 
 Parameters
 ----------
 platform : string
-    *List platform string here*
+    'timed'
 name : string
-    *List name string here*
-sat_id : string
-    *List supported sat_ids here*
+    'saber'
 tag : string
-    *List supported tag strings here*
+    None supported
+sat_id : string
+    None supported
 
 Note
 ----
@@ -28,22 +41,23 @@ Note
 
 Warnings
 --------
-
+- Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
 
 Authors
 -------
-
+J. Klenzing, 4 March 2019
 """
 
 from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-import numpy as np
 import sys
-import pandas as pds
-import pysat
 
+import numpy as np
+import pandas as pds
+
+import pysat
 # CDAWeb methods prewritten for pysat
 from . import nasa_cdaweb_methods as cdw
 
@@ -52,12 +66,11 @@ from . import nasa_cdaweb_methods as cdw
 # these attributes will be copied over to the Instrument object by pysat
 # the strings used here should also be used to name this file
 # platform_name.py
-platform = ''
-name = ''
+platform = 'timed'
+name = 'saber'
 
 # dictionary of data 'tags' and corresponding description
-tags = {'': 'description 1',  # this is the default
-        'tag_string': 'description 2'}
+tags = {'': ''}
 
 # Let pysat know if there are multiple satellite platforms supported
 # by these routines
@@ -86,13 +99,21 @@ test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 # you can use format keywords year, month, day, hour, min, sec,
 # version and revision
 # see code docstring for latest
-fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
+fname = ''.join(('timed_l2av20_saber_{year:04d}{month:02d}{day:02d}',
+                 '????_v01.cdf'))
 supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
 # the command below presets some of the methods inputs, leaving
 # those provided by pysat available when invoked
 list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
+
+# let pysat know that data is spread across more than one file
+multi_file_day = True
+
+# Set to False to specify using xarray (not using pandas)
+# Set to True if data will be returned via a pandas DataFrame
+pandas_format = True
 
 #
 # support load routine
@@ -113,11 +134,11 @@ load = cdw.load
 # a dictionary needs to be created for each sat_id and tag
 # combination along with the file format template
 # outer dict keyed by sat_id, inner dict keyed by tag
-basic_tag = {'dir': '/pub/data/cnofs/vefi/bfield_1sec',
-             'remote_fname': '{year:4d}/' + fname,
+basic_tag = {'dir': '/pub/data/timed/saber/version2_0/level2a_cdf',
+             'remote_fname': '{year:4d}/{month:02d}/' + fname,
              'local_fname': fname}
 supported_tags = {'': {'': basic_tag}}
-download = functools.partial(cdw.download, supported_tags)
+download = functools.partial(cdw.download, supported_tags, multi_file_day=True)
 
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files,
