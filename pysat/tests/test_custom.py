@@ -120,9 +120,7 @@ class TestBasics():
             return ('doubleMLT', 2.0 * inst.data.mlt.values[0:-5])
         self.testInst.custom.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        if self.testInst.pandas_format:
-            pass
-        else:
+        if not self.testInst.pandas_format:
             print("Warning! Xarray doesn't enforce the same number of " +
                   "elements on all parameters in dataset.")
             raise ValueError
@@ -136,9 +134,7 @@ class TestBasics():
             return ('doubleMLT', np.arange(2.0 * len(inst.data.mlt)))
         self.testInst.custom.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        if self.testInst.pandas_format:
-            pass
-        else:
+        if not self.testInst.pandas_format:
             print("Warning! Xarray doesn't enforce the same number of " +
                   "elements on all parameters in dataset.")
             raise ValueError
@@ -151,11 +147,11 @@ class TestBasics():
             return out
         self.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        ans = (((self.testInst.data['doubleMLT'] == 2.0 *
-                 self.testInst['mlt']).all()) &
-               ((self.testInst.data['tripleMLT'] == 3.0 *
-                 self.testInst['mlt']).all()))
-        assert ans
+        ans1 = (self.testInst.data['doubleMLT'] == 2.0 *
+                self.testInst['mlt']).all()
+        ans2 = (self.testInst.data['tripleMLT'] == 3.0 *
+                self.testInst['mlt']).all()
+        assert ans1 & ans2
 
     def test_add_dataframe_w_meta(self):
         def custom1(inst):
