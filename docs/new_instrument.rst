@@ -155,6 +155,13 @@ Returns a list of available files on the remote server.
     def list_remote_files(inst):
         return list_like
 
+This method is called by several internal `pysat` functions, and can be directly called by the user through the `inst.remote_file_list` command.  The user can search for subsets of files through optional keywords, such as
+
+.. code:: python
+
+    inst.remote_file_list(year=2019)
+    inst.remote_file_list(year=2019, month=1, day=1)
+
 
 Testing Support
 ---------------
