@@ -98,7 +98,7 @@ def test_calc_freq_len_fail():
     pytime.calc_freq(list())
 
 
-@raises(AttributionError)
+@raises(AttributeError)
 def test_calc_freq_type_fail():
     """Test index frequency calculation with non-datetime list"""
 
