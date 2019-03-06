@@ -2,9 +2,10 @@
 tests the pysat utils.stats area
 """
 import numpy as np
+
 import pandas as pds
 from scipy import stats as scistats
-from nose.tools import assert_raises, raises
+
 import pysat
 from pysat.utils import stats as pystats
 

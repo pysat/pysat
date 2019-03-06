@@ -1,10 +1,10 @@
-import pysat
-import pandas as pds
-import numpy as np
-from nose.tools import assert_raises, raises
-import nose.tools
 import datetime as dt
+import numpy as np
 
+from nose.tools import raises
+import pandas as pds
+
+import pysat
 
 class TestOMNICustom():
     def setup(self):

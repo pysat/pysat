@@ -6,8 +6,7 @@ import os
 import tempfile
 
 import netCDF4
-import nose.tools
-from nose.tools import assert_raises, raises
+from nose.tools import raises
 import pysat
 
 import sys

@@ -5,7 +5,7 @@ import numpy as np
 import sys
 
 import matplotlib.pyplot as plt
-from nose.tools import assert_raises, raises
+from nose.tools import raises
 import pandas as pds
 
 import pysat

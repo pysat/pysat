@@ -3,8 +3,7 @@ tests the pysat meta object and code
 """
 import pysat
 import pandas as pds
-from nose.tools import assert_raises, raises
-import nose.tools
+from nose.tools import raises
 import pysat.instruments.pysat_testing
 import numpy as np
 

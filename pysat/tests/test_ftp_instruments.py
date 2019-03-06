@@ -3,7 +3,7 @@ tests the pysat meta object and code for instruments with ftp downloads.
 
 Intended to be run locally, excluded from Travis CI
 """
-import importlib
+from importlib import import_module
 import os
 import tempfile
 
@@ -48,8 +48,8 @@ def init_func_external(self):
     for name in instrument_names:
         try:
             print(' '.join(('FTP', name)))
-            module = importlib.import_module(''.join(('.', name)),
-                                             package='pysat.instruments')
+            module = import_module(''.join(('.', name)),
+                                   package='pysat.instruments')
         except ImportError:
             print("Couldn't import instrument module")
             pass

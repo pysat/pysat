@@ -5,7 +5,7 @@ tests the pysat occur_prob object and code
 import numpy as np
 import sys
 
-from nose.tools import assert_raises, raises
+from nose.tools import raises
 import pandas as pds
 
 import pysat

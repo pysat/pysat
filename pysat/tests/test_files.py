@@ -6,8 +6,7 @@ import numpy as np
 import os
 import sys
 
-from nose.tools import assert_raises, raises
-import nose.tools
+from nose.tools import raises
 import pandas as pds
 import tempfile
 
@@ -130,9 +129,9 @@ class TestBasics():
         file_list = []
         for i in range(6):
             file_list.append(fname.format(year=year[i].astype(int),
-                                           month=month[i].astype(int),
-                                           day=day[i], hour=hour[i],
-                                           min=min[i], sec=sec[i]))
+                                          month=month[i].astype(int),
+                                          day=day[i], hour=hour[i],
+                                          min=min[i], sec=sec[i]))
 
         dict = pysat._files.parse_delimited_filenames(file_list, fname, '_')
         assert np.all(dict['year'] == year)

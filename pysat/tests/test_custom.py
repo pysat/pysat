@@ -1,8 +1,9 @@
-import pysat
-import pandas as pds
 import numpy as np
-from nose.tools import assert_raises, raises
-import nose.tools
+
+from nose.tools import raises
+import pandas as pds
+
+import pysat
 
 
 class TestBasics():
