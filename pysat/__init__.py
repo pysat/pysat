@@ -56,19 +56,20 @@ pysat_dir = os.path.join(home_dir, '.pysat')
 if not os.path.isdir(pysat_dir):
     # create directory
     os.mkdir(pysat_dir)
-    # create file
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
-        f.write('')
     print('Created .pysat directory in user home directory to store settings.')
-    data_dir = ''
+    # create file with default data directory
+    data_dir = os.path.join(home_dir, 'pysatData')
+    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
+        f.write(data_dir)
+
+    print(''.join(("\nHi there!  Pysat will nominally store data in the "
+                   "'pysatData' directory at the user's home directory level. "
+                   "Run pysat.utils.set_data_dir to specify a different "
+                   "top-level directory to store science data.")))
 else:
     # load up stored data path
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
         data_dir = f.readline()
-
-if data_dir == '':
-    print(''.join(('Run pysat.utils.set_data_dir to set the path to top-level',
-                   ' directory that will/does contain science data.')))
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
