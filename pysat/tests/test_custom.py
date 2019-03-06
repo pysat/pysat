@@ -267,7 +267,7 @@ class TestBasics():
             out = (inst.data.mlt * 2).values
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
-        self.add(custom1, 'add')
+        self.testInst.custom.add(custom1, 'add')
         self.testInst.custom.clear()
         check1 = self.testInst.custom._functions == []
         check2 = self.testInst.custom._kind == []
@@ -277,7 +277,7 @@ class TestBasics():
         def custom1(inst):
             out = (inst.data.mlt * 2).values
             return
-        self.add(custom1, 'pass')
+        self.testInst.custom.add(custom1, 'pass')
         self.testInst.load(2009, 1)
 
         assert True
@@ -288,10 +288,8 @@ class TestBasics():
             out = (inst.data.mlt * 2).values
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
-        self.add(custom1, 'pass')
+        self.testInst.custom.add(custom1, 'pass')
         self.testInst.load(2009, 1)
-
-        assert True
 
     @raises(AttributeError)
     def test_add_multiple_functions_one_not_at_end(self):
@@ -309,11 +307,11 @@ class TestBasics():
             out = (inst.data.tripleMLT * 2).values
             return {'data': out, 'long_name': 'quadMLTlong',
                     'units': 'hours1', 'name': 'quadMLT'}
-        self.add(custom1, 'add')
-        self.add(custom2, 'add')
+        self.testInst.custom.add(custom1, 'add')
+        self.testInst.custom.add(custom2, 'add')
         # if this runs correctly, an error will be thrown
         # since the data required by custom3 won't be present yet
-        self.add(custom3, 'add', at_pos=1)
+        self.testInst.custom.add(custom3, 'add', at_pos=1)
         self.testInst.load(2009, 1)
 
 
