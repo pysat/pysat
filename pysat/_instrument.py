@@ -1282,8 +1282,28 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def remote_file_list(self, **kwargs):
-        """List remote files for chosen instrument.
+    def remote_file_list(self, year=None, month=None, day=None):
+        """List remote files for chosen instrument.  Default behaviour is
+        to return all files.  User may additionally specify a given year,
+        year/month, or year/month/day combination to return a subset of
+        available files.
+
+        Keywords
+        --------
+        year : int or NoneType
+            Selected year to return remote files.  A None value will return
+            all available files.
+            (default=None)
+        month : int or NoneType
+            Selected month to return remote files.  A year must be specified.
+            A None value will return all available files for the year, if year
+            is specified.
+            (default=None)
+        day : int or NoneType
+            Selected day to return remote files.  A year and month must be
+            specified. A None value will return all available files for the
+            year or month, if keywords are specified.
+            (default=None)
 
         Returns
         -------
@@ -1292,10 +1312,31 @@ class Instrument(object):
 
         """
 
-        return self._list_remote_rtn(self.tag, self.sat_id, **kwargs)
+        return self._list_remote_rtn(self.tag, self.sat_id,
+                                     year=year, month=month, day=day)
 
-    def remote_date_range(self):
-        """Returns fist and last date for remote data.
+    def remote_date_range(self, year=None, month=None, day=None):
+        """Returns fist and last date for remote data.  Default behaviour is
+        to search all files.  User may additionally specify a given year,
+        year/month, or year/month/day combination to return a subset of
+        available files.
+
+        Keywords
+        --------
+        year : int or NoneType
+            Selected year to return remote files.  A None value will return
+            all available files.
+            (default=None)
+        month : int or NoneType
+            Selected month to return remote files.  A year must be specified.
+            A None value will return all available files for the year, if year
+            is specified.
+            (default=None)
+        day : int or NoneType
+            Selected day to return remote files.  A year and month must be
+            specified. A None value will return all available files for the
+            year or month, if keywords are specified.
+            (default=None)
 
         Returns
         -------
@@ -1304,7 +1345,7 @@ class Instrument(object):
 
         """
 
-        files = self.remote_file_list(**kwargs)
+        files = self.remote_file_list(year=year, month=month, day=day)
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, user=None, password=None, **kwargs):
