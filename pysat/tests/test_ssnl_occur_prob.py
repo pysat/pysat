@@ -7,7 +7,6 @@ import sys
 
 from nose.tools import assert_raises, raises
 import pandas as pds
-import tempfile
 
 import pysat
 from pysat.ssnl import occur_prob

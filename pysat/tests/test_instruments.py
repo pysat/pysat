@@ -1,7 +1,7 @@
 """
 tests the pysat meta object and code
 """
-import importlib
+from importlib import import_module
 from functools import partial
 import numpy as np
 import sys
@@ -62,8 +62,8 @@ def init_func_external(self):
 
     for name in instrument_names:
         try:
-            module = importlib.import_module(''.join(('.', name)),
-                                             package='pysat.instruments')
+            module = import_module(''.join(('.', name)),
+                                   package='pysat.instruments')
         except ImportError:
             print("Couldn't import instrument module")
             pass
@@ -135,8 +135,8 @@ class TestInstrumentQualifier():
         assert True
 
     def check_module_importable(self, name):
-        module = importlib.import_module(''.join(('.', name)),
-                                         package='pysat.instruments')
+        module = import_module(''.join(('.', name)),
+                               package='pysat.instruments')
         assert True
 
     def check_module_info(self, module):
@@ -163,8 +163,8 @@ class TestInstrumentQualifier():
             yield (f,)
 
             try:
-                module = importlib.import_module(''.join(('.', name)),
-                                                 package='pysat.instruments')
+                module = import_module(''.join(('.', name)),
+                                       package='pysat.instruments')
             except ImportError:
                 pass
             else:
