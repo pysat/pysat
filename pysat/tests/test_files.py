@@ -21,9 +21,6 @@ else:
 
 
 def create_dir(inst=None, temporary_file_list=False):
-    import os
-    import tempfile
-
     if inst is None:
         # create instrument
         inst = pysat.Instrument(platform='pysat', name='testing',
@@ -38,7 +35,6 @@ def create_dir(inst=None, temporary_file_list=False):
 
 
 def remove_files(inst=None):
-    import os
     import shutil
 
     # remove any files
@@ -52,14 +48,10 @@ def remove_files(inst=None):
 
 
 # create year doy file set
-def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
+def create_files(inst, start=pysat.datetime(2009, 1, 1),
+                 stop=pysat.datetime(2013, 12, 31), freq='1D', use_doy=True,
                  root_fname=None):
 
-    # create a bunch of files
-    if start is None:
-        start = pysat.datetime(2009, 1, 1)
-    if stop is None:
-        stop = pysat.datetime(2013, 12, 31)
     dates = pysat.utils.time.season_date_range(start, stop, freq=freq)
 
     if root_fname is None:
@@ -77,16 +69,7 @@ def create_files(inst, start=None, stop=None, freq='1D', use_doy=True,
                              day=doy, month=date.month, hour=date.hour,
                              min=date.minute, sec=date.second))
         with open(fname, 'w') as f:
-            pass        # f.close()
-
-
-def list_year_doy_files(tag=None, data_path=None, format_str=None):
-    if data_path is not None:
-        return pysat.Files.from_os(data_path=data_path,
-                                   format_str='pysat_testing_junk_{year:04d}' +
-                                   '_gold_{day:03d}_stuff.pysat_testing_file')
-    else:
-        raise ValueError('A directory must be passed to the loading routine.')
+            pass
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -146,14 +129,14 @@ class TestBasics():
         hour = np.array([8, 10, 6, 18, 3, 23])
         min = np.array([8, 10, 6, 18, 3, 59])
         sec = np.array([58, 11, 26, 2, 18, 59])
-        list_files = []
+        file_list = []
         for i in range(6):
-            list_files.append(fname.format(year=year[i].astype(int),
+            file_list.append(fname.format(year=year[i].astype(int),
                                            month=month[i].astype(int),
                                            day=day[i], hour=hour[i],
                                            min=min[i], sec=sec[i]))
 
-        dict = pysat._files.parse_delimited_filenames(list_files, fname, '_')
+        dict = pysat._files.parse_delimited_filenames(file_list, fname, '_')
         assert np.all(dict['year'] == year)
         assert np.all(dict['month'] == month)
         assert np.all(dict['day'] == day)
@@ -678,7 +661,6 @@ class TestInstrumentWithVersionedFiles():
         # create a test instrument, make sure it is getting files from
         # filesystem
         re_load(pysat.instruments.pysat_testing)
-        # self.stored_files_fcn = pysat.instruments.pysat_testing.list_files
         pysat.instruments.pysat_testing.list_files = list_versioned_files
         # create a bunch of files by year and doy
         self.testInst = \
