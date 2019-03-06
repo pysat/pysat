@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import numpy as np
 
 
-def set_data_dir(path=None, store=None):
+def set_data_dir(path=None, store=True):
     """
     Set the top level directory pysat uses to look for data and reload.
 
@@ -20,13 +20,9 @@ def set_data_dir(path=None, store=None):
     import sys
     import pysat
     if sys.version_info[0] >= 3:
-        import importlib
-        re_load = importlib.reload
+        from importlib import reload as re_load
     else:
         re_load = reload
-
-    if store is None:
-        store = True
 
     if os.path.isdir(path):
         if store:
