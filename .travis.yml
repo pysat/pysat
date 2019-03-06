@@ -41,11 +41,14 @@ install:
   # install pysat
   - cd /home/travis/build/rstoneback/pysat
   - python setup.py install
-# command to run tests
+
+# Set up a display for plot tests
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - sleep 3  # give xvfb some time to start
+
+# command to run tests
 script:
  - nosetests -vs --with-coverage --cover-package=pysat
 after_success:
