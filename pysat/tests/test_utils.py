@@ -36,8 +36,7 @@ def remove_files(inst):
     # remove any files
     dir = inst.files.data_path
     for the_file in os.listdir(dir):
-        if (the_file[0:13] == 'pysat_testing') & (the_file[-19:] ==
-                                                  '.pysat_testing_file'):
+        if (the_file == 'test_ncdf.nc'):
             file_path = os.path.join(dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
@@ -152,7 +151,6 @@ class TestBasicNetCDF4():
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key]))
-        # assert(np.all(self.testInst.data == loaded_inst))
 
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
