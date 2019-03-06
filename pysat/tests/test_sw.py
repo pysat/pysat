@@ -126,7 +126,7 @@ class TestSWKp():
         del dkey
 
 
-class TestSwKpCombined():
+class TestSwKpCombine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         # Set combination testing input
@@ -391,7 +391,7 @@ class TestSWF107():
                == 40)
 
 
-class TestSWF107Combined():
+class TestSWF107Combine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
         # Set combination testing input

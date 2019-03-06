@@ -118,6 +118,8 @@ class TestBasics():
 
     def test_parse_delimited_filename(self):
         """Check ability to parse delimited files"""
+        # Note: Can be removed if future instrument that uses delimited
+        # filenames is added to routine travis end-to-end testing
         fname = ''.join(('test_{year:4d}_{month:2d}_{day:2d}_{hour:2d}',
                          '_{min:2d}_{sec:2d}_v01_r02.cdf'))
         year = np.ones(6)*2009
