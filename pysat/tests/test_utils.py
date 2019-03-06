@@ -4,6 +4,8 @@ tests the pysat utils area
 import numpy as np
 import os
 import tempfile
+
+import netCDF4
 import nose.tools
 from nose.tools import assert_raises, raises
 import pysat
@@ -19,8 +21,6 @@ else:
 # test netCDF export file support
 
 def prep_dir(inst=None):
-    import os
-    import shutil
 
     if inst is None:
         inst = pysat.Instrument(platform='pysat', name='testing')
@@ -138,7 +138,6 @@ class TestBasicNetCDF4():
 
     def test_basic_write_and_read_netcdf4_default_format(self):
         # create a bunch of files by year and doy
-        import netCDF4
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
         self.testInst.load(2009, 1)
@@ -157,7 +156,6 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
-        import netCDF4
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
         self.testInst.load(2009, 1)
@@ -176,7 +174,6 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
-        import netCDF4
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
         self.testInst.load(2009, 1)
@@ -195,7 +192,6 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):
         # create a bunch of files by year and doy
-        import netCDF4
         test_inst = pysat.Instrument('pysat', 'testing2d')
         prep_dir(test_inst)
         outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
@@ -235,7 +231,6 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_higher_order_w_zlib(self):
         # create a bunch of files by year and doy
-        import netCDF4
         test_inst = pysat.Instrument('pysat', 'testing2d')
         prep_dir(test_inst)
         outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
