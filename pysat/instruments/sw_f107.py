@@ -74,6 +74,7 @@ test_dates = {'': {'': pysat.datetime(2009, 1, 1),
                    'forecast': tomorrow,
                    '45day': tomorrow}}
 
+
 def load(fnames, tag=None, sat_id=None):
     """Load F10.7 index files
 
@@ -107,7 +108,7 @@ def load(fnames, tag=None, sat_id=None):
         date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
         data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True)
         idx, = np.where((data.index >= date) &
-                        (data.index < date+pds.DateOffset(days=1)))
+                        (data.index < date + pds.DateOffset(days=1)))
         result = data.iloc[idx, :]
     elif tag == 'all':
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
@@ -216,7 +217,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         elif tag == 'all':
             # files are by year
             if format_str is None:
-                format_str = 'f107_1947_to_{year:04d}-{month:02d}-{day:02d}.txt'
+                format_str = ''.join(('f107_1947_to_{year:04d}-{month:02d}-',
+                                      '{day:02d}.txt'))
             out = pysat.Files.from_os(data_path=data_path,
                                       format_str=format_str)
             # load the same data (all), regardless of which day a user selects
@@ -381,7 +383,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 data.iloc[idx, :] = np.nan
                 # create file
                 data.to_csv(os.path.join(data_path, 'f107_monthly_' +
-                                         date.strftime('%Y-%m') + '.txt'))
+                                         date.strftime('%Y-%m') + '.txt'),
+                            header=True)
 
     elif tag == 'all':
         # download from LASP, by year
@@ -408,7 +411,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.iloc[idx, :] = np.nan
         # create file
         data.to_csv(os.path.join(data_path, 'f107_1947_to_' +
-                                 now.strftime('%Y-%m-%d') + '.txt'))
+                                 now.strftime('%Y-%m-%d') + '.txt'),
+                    header=True)
 
     elif tag == 'prelim':
         import ftplib
@@ -471,7 +475,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 except ftplib.error_perm as exception:
                     # Signal that we don't have today's file
                     got_today = False
-                    
+
                     # Test for an error
                     if str(exception.args[0]).split(" ", 1)[0] != '550':
                         raise RuntimeError(exception)
@@ -538,7 +542,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])
         # write out as a file
         data.to_csv(os.path.join(data_path, 'f107_forecast_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'))
+                                 date.strftime('%Y-%m-%d') + '.txt'),
+                    header=True)
 
     elif tag == '45day':
         import requests
@@ -572,7 +577,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data['ap'] = ap
         # write out as a file
         data.to_csv(os.path.join(data_path, 'f107_45day_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'))
+                                 date.strftime('%Y-%m-%d') + '.txt'),
+                    header=True)
 
     return
 
@@ -657,7 +663,7 @@ def rewrite_daily_file(year, outfile, lines):
                          columns=data_dict.keys())
 
     # write out as a file
-    data.to_csv(outfile)
+    data.to_csv(outfile, header=True)
 
     return
 
@@ -786,7 +792,7 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
     f107_fill.set_index('time', inplace=True)
 
     # Resample to the original frequency, if it is not equal to 1 day
-    freq = pysat.utils.calc_freq(f107_inst.index)
+    freq = pysat.utils.time.calc_freq(f107_inst.index)
     if freq != "86400S":
         # Resample to the desired frequency
         f107_fill = f107_fill.resample(freq).pad()

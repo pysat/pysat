@@ -232,9 +232,11 @@ class Files(object):
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path,
                                                  'previous_'+name),
-                                    date_format='%Y-%m-%d %H:%M:%S.%f')
+                                    date_format='%Y-%m-%d %H:%M:%S.%f',
+                                    header=False)
                 self.files.to_csv(os.path.join(self.home_path, name),
-                                  date_format='%Y-%m-%d %H:%M:%S.%f')
+                                  date_format='%Y-%m-%d %H:%M:%S.%f',
+                                  header=False)
             else:
                 self._previous_file_list = stored_files
                 self._current_file_list = self.files.copy()
@@ -554,7 +556,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     """
 
-    from pysat.utils import create_datetime_index
+    from pysat.utils.time import create_datetime_index
 
     search_dict = construct_searchstring_from_format(stored['format_str'])
     keys = search_dict['keys']

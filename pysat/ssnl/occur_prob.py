@@ -259,7 +259,7 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
                          by_orbit=True)
 
 
-def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
+def _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
                   data_label, gate, returnBins=False, by_orbit=False):
 
     if not hasattr(data_label, '__iter__'):
@@ -308,7 +308,7 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
                         yindex, = np.where(yind == yj)
                         if len(yindex) > 0:
                             zData = yData.iloc[yindex]
-                            zind = np.digitize(zData[label3], binz)-1
+                            zind = np.digitize(zData[label3], binz) - 1
                             for zk in zarr:
                                 zindex, = np.where(zind == zk)
                                 if len(zindex) > 0:
@@ -322,7 +322,6 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
                                             if len(idx) > 0:
                                                 hits[di, zk, yj, xi] += 1
 
-
     # all of the loading and storing data is done
     # prob = np.zeros((numz, numy, numx))
     prob = hits/total
@@ -334,7 +333,7 @@ def _occurrence3D(inst, start, stop, bin1, label1, bin2, label2, bin3, label3,
         if returnBins:
             output[label]['bin_x'] = binx
             output[label]['bin_y'] = biny
-            output[label]['bin_z'] = biny
+            output[label]['bin_z'] = binz
     # clean up
     del iterator
     return output

@@ -101,7 +101,7 @@ def load(fnames, tag=None, sat_id=None):
 
 
     """
-    from pysat.utils import parse_date
+    from pysat.utils.time import parse_date
 
     meta = pysat.Meta()
     if tag == '':
@@ -343,7 +343,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame(day, index=times, columns=['Kp'])
         # write out as a file
         data.to_csv(os.path.join(data_path, 'kp_forecast_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'))
+                                 date.strftime('%Y-%m-%d') + '.txt'),
+                    header=True)
 
     elif tag == 'recent':
         import requests
@@ -382,7 +383,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                               'Kp': sub_kps[2]}, index=times)
         # write out as a file
         data.to_csv(os.path.join(data_path, 'kp_recent_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'))
+                                 date.strftime('%Y-%m-%d') + '.txt'),
+                    header=True)
 
     return
 
@@ -506,7 +508,7 @@ def convert_3hr_kp_to_ap(kp_inst):
                 5: 48, 5.3: 56, 5.6: 67, 6: 80, 6.3: 94, 6.6: 111, 7: 132,
                 7.3: 154, 7.6: 179, 8: 207, 8.3: 236, 8.6: 300, 9: 400}
 
-    ap = lambda kk: kp_to_ap[np.floor(kk*10.0) / 10.0] \
+    def ap(kk): return kp_to_ap[np.floor(kk*10.0) / 10.0] \
         if np.isfinite(kk) else np.nan
 
     # Test the input

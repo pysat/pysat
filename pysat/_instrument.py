@@ -377,17 +377,12 @@ class Instrument(object):
                     try:
                         # Assume key[0] is integer (including list or slice)
                         return self.data.loc[self.data.index[key[0]], key[1]]
-                    except KeyError:
-                        try:
-                            # Try to force as integer (eg, if ndarray)
-                            idx = self.data.index[key[0].astype(int)]
-                            return self.data.loc[idx, key[1]]
-                        except ValueError:
-                            estring = '\n'.join(("Unable to sort out data.",
-                                                 "Instrument has data : " +
-                                                 str(not self.empty),
-                                                 "Requested key : ", str(key)))
-                            raise ValueError(estring)
+                    except ValueError:
+                        estring = '\n'.join(("Unable to sort out data.",
+                                             "Instrument has data : " +
+                                             str(not self.empty),
+                                             "Requested key : ", str(key)))
+                        raise ValueError(estring)
             else:
                 try:
                     # integer based indexing
@@ -495,10 +490,12 @@ class Instrument(object):
                     try:
                         # Assume key[0] is integer (including list or slice)
                         self.data.loc[self.data.index[key[0]], key[1]] = new
-                    except KeyError:
-                        # Try to force conversion to integer
-                        idx = self.data.index[key[0].astype(int)]
-                        self.data.loc[idx, key[1]] = new
+                    except ValueError:
+                        estring = '\n'.join(("Unable to sort out data access.",
+                                             "Instrument has data : " +
+                                             str(not self.empty),
+                                             "Requested key : ", str(key)))
+                        raise ValueError(estring)
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -940,14 +937,29 @@ class Instrument(object):
 
         if len(fname) > 0:
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
-            data, mdata = self._load_rtn(load_fname, tag=self.tag,
-                                         sat_id=self.sat_id, **self.kwargs)
-
-            # ensure units and name are named consistently in new Meta
-            # object as specified by user upon Instrument instantiation
-            mdata.accept_default_labels(self)
+            try:
+                data, mdata = self._load_rtn(load_fname, tag=self.tag,
+                                             sat_id=self.sat_id, **self.kwargs)
+                # ensure units and name are named consistently in new Meta
+                # object as specified by user upon Instrument instantiation
+                mdata.accept_default_labels(self)
+                bad_datetime = False
+            except pds.errors.OutOfBoundsDatetime:
+                bad_datetime = True
+                data = self._null_data.copy()
+                mdata = _meta.Meta(units_label=self.units_label,
+                                   name_label=self.name_label,
+                                   notes_label=self.notes_label,
+                                   desc_label=self.desc_label,
+                                   plot_label=self.plot_label,
+                                   axis_label=self.axis_label,
+                                   scale_label=self.scale_label,
+                                   min_label=self.min_label,
+                                   max_label=self.max_label,
+                                   fill_label=self.fill_label)
 
         else:
+            bad_datetime = False
             data = self._null_data.copy()
             mdata = _meta.Meta(units_label=self.units_label,
                                name_label=self.name_label,
@@ -987,8 +999,12 @@ class Instrument(object):
                                            fname[-1]))
         else:
             # no data signal
-            output_str = ' '.join(('No', output_str, 'data for',
-                                   date.strftime('%d %B %Y')))
+            if bad_datetime:
+                output_str = ' '.join(('Bad datetime for', output_str,
+                                       date.strftime('%d %B %Y')))
+            else:
+                output_str = ' '.join(('No', output_str, 'data for',
+                                       date.strftime('%d %B %Y')))
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         print(output_str)
@@ -1029,7 +1045,7 @@ class Instrument(object):
         self.date = date
         self._fid = fid
         if date is not None:
-            year, doy = utils.getyrdoy(date)
+            year, doy = utils.time.getyrdoy(date)
             self.yr = year
             self.doy = doy
             self._load_by_date = True
@@ -1242,7 +1258,7 @@ class Instrument(object):
             else:
                 temp = self.index[0]
             self.date = pds.datetime(temp.year, temp.month, temp.day)
-            self.yr, self.doy = utils.getyrdoy(self.date)
+            self.yr, self.doy = utils.time.getyrdoy(self.date)
 
         if not self.empty:
             self._default_rtn(self)
@@ -1265,8 +1281,28 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def remote_file_list(self):
-        """List remote files for chosen instrument.
+    def remote_file_list(self, year=None, month=None, day=None):
+        """List remote files for chosen instrument.  Default behaviour is
+        to return all files.  User may additionally specify a given year,
+        year/month, or year/month/day combination to return a subset of
+        available files.
+
+        Keywords
+        --------
+        year : int or NoneType
+            Selected year to return remote files.  A None value will return
+            all available files.
+            (default=None)
+        month : int or NoneType
+            Selected month to return remote files.  A year must be specified.
+            A None value will return all available files for the year, if year
+            is specified.
+            (default=None)
+        day : int or NoneType
+            Selected day to return remote files.  A year and month must be
+            specified. A None value will return all available files for the
+            year or month, if keywords are specified.
+            (default=None)
 
         Returns
         -------
@@ -1275,10 +1311,31 @@ class Instrument(object):
 
         """
 
-        return self._list_remote_rtn(self.tag, self.sat_id)
+        return self._list_remote_rtn(self.tag, self.sat_id,
+                                     year=year, month=month, day=day)
 
-    def remote_date_range(self):
-        """Returns fist and last date for remote data.
+    def remote_date_range(self, year=None, month=None, day=None):
+        """Returns fist and last date for remote data.  Default behaviour is
+        to search all files.  User may additionally specify a given year,
+        year/month, or year/month/day combination to return a subset of
+        available files.
+
+        Keywords
+        --------
+        year : int or NoneType
+            Selected year to return remote files.  A None value will return
+            all available files.
+            (default=None)
+        month : int or NoneType
+            Selected month to return remote files.  A year must be specified.
+            A None value will return all available files for the year, if year
+            is specified.
+            (default=None)
+        day : int or NoneType
+            Selected day to return remote files.  A year and month must be
+            specified. A None value will return all available files for the
+            year or month, if keywords are specified.
+            (default=None)
 
         Returns
         -------
@@ -1287,7 +1344,7 @@ class Instrument(object):
 
         """
 
-        files = self.remote_file_list()
+        files = self.remote_file_list(year=year, month=month, day=day)
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, user=None, password=None, **kwargs):
@@ -1399,7 +1456,7 @@ class Instrument(object):
             # make sure dates are whole days
             start = self._filter_datetime_input(start)
             stop = self._filter_datetime_input(stop)
-            date_array = utils.season_date_range(start, stop, freq=freq)
+            date_array = utils.time.season_date_range(start, stop, freq=freq)
 
         if user is None:
             self._download_rtn(date_array,
@@ -1487,24 +1544,25 @@ class Instrument(object):
             self._iter_type = 'date'
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
-                self._iter_list = utils.season_date_range(self._iter_start,
-                                                          self._iter_stop,
-                                                          freq=step)
+                self._iter_list = \
+                    utils.time.season_date_range(self._iter_start,
+                                                 self._iter_stop,
+                                                 freq=step)
 
         elif((hasattr(start, '__iter__') and not isinstance(start, str)) and
              (hasattr(end, '__iter__') and not isinstance(end, str))):
             base = type(start[0])
             for s, t in zip(start, end):
                 if (type(s) != type(t)) or (type(s) != base):
-                    raise ValueError(''.join(('Start and end items must all',
-                                              ' be of the same type')))
+                    raise ValueError(' '.join(('Start and end items must all',
+                                               'be of the same type')))
             if isinstance(start[0], str):
                 self._iter_type = 'file'
                 self._iter_list = self.files.get_file_array(start, end)
             elif isinstance(start[0], pds.datetime):
                 self._iter_type = 'date'
-                self._iter_list = utils.season_date_range(start, end,
-                                                          freq=step)
+                self._iter_list = utils.time.season_date_range(start, end,
+                                                               freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1537,7 +1595,8 @@ class Instrument(object):
                 end = self.files.stop_date
             self._iter_start = [start]
             self._iter_stop = [end]
-            self._iter_list = utils.season_date_range(start, end, freq=step)
+            self._iter_list = utils.time.season_date_range(start, end,
+                                                           freq=step)
             self._iter_type = 'date'
         else:
             raise ValueError(''.join(('Provided an invalid combination of',
