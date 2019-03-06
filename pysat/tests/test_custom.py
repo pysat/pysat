@@ -324,3 +324,22 @@ class TestBasicsXarray(TestBasics):
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
+
+class ConstellationTestBasics(TestBasics):
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        insts = []
+        for i in range(5):
+            insts.append(pysat.Instrument('pysat', 'testing', tag='10',
+                                          clean_level='clean'))
+
+        self.testConst = pysat.Constellation(insts)
+
+    def teardown(self):
+        """ Runs after every method to clean up previous testing"""
+        del self.testConst
+
+    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
+        """ Add a function to the object's custom queue"""
+        self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
