@@ -6,11 +6,12 @@ intervention.
 """
 
 from __future__ import absolute_import, division, print_function
-
-import pandas as pds
-import numpy as np
-import pysat
 import sys
+
+import numpy as np
+import pandas as pds
+
+import pysat
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
@@ -172,7 +173,8 @@ def load(fnames, tag=None, sat_id=None,
 def download(supported_tags, date_array, tag, sat_id,
              remote_site='https://cdaweb.gsfc.nasa.gov',
              data_path=None, user=None, password=None,
-             fake_daily_files_from_monthly=False):
+             fake_daily_files_from_monthly=False,
+             multi_file_day=False):
     """Routine to download NASA CDAWeb CDF data.
 
     This routine is intended to be used by pysat instrument modules supporting
@@ -260,18 +262,55 @@ def download(supported_tags, date_array, tag, sat_id,
         saved_local_fname = os.path.join(data_path, formatted_local_fname)
 
         # perform download
-        try:
-            print('Attempting to download file for '+date.strftime('%x'))
-            sys.stdout.flush()
-            remote_path = '/'.join((remote_url, formatted_remote_fname))
-            req = requests.get(remote_path)
-            if req.status_code != 404:
-                open(saved_local_fname, 'wb').write(req.content)
-                print('Finished.')
-            else:
-                print('File not available for ' + date.strftime('%x'))
-        except requests.exceptions.RequestException as exception:
-            print('File not available for ' + date.strftime('%x'))
+        if not multi_file_day:
+            try:
+                print(' '.join(('Attempting to download file for',
+                                date.strftime('%d %B %Y'))))
+                sys.stdout.flush()
+                remote_path = '/'.join((remote_url.strip('/'),
+                                        formatted_remote_fname))
+                req = requests.get(remote_path)
+                if req.status_code != 404:
+                    open(saved_local_fname, 'wb').write(req.content)
+                    print('Finished.')
+                else:
+                    print(' '.join(('File not available for',
+                                    date.strftime('%d %B %Y'))))
+            except requests.exceptions.RequestException as exception:
+                print(' '.join((exception, '- File not available for',
+                                date.strftime('%d %B %Y'))))
+
+        else:
+            try:
+                print(' '.join(('Attempting to download files for',
+                                date.strftime('%d %B %Y'))))
+                sys.stdout.flush()
+                remote_files = list_remote_files(tag=tag, sat_id=sat_id,
+                                                 supported_tags=supported_tags,
+                                                 year=date.year,
+                                                 month=date.month,
+                                                 day=date.day)
+
+                # Get the files
+                i = 0
+                n = len(remote_files.values)
+                for remote_file in remote_files.values:
+                    remote_dir = os.path.split(formatted_remote_fname)[0]
+                    remote_file_path = '/'.join((remote_url.strip('/'),
+                                                 remote_dir.strip('/'),
+                                                 remote_file))
+                    saved_local_fname = os.path.join(data_path, remote_file)
+                    req = requests.get(remote_file_path)
+                    if req.status_code != 404:
+                        open(saved_local_fname, 'wb').write(req.content)
+                        i += 1
+                    else:
+                        print(' '.join(('File not available for',
+                                        date.strftime('%d %B %Y'))))
+                print('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
+            except requests.exceptions.RequestException as exception:
+                print(' '.join((exception, '- Files not available for',
+                                date.strftime('%d %B %Y'))))
 
 
 def list_remote_files(tag, sat_id,
@@ -279,8 +318,8 @@ def list_remote_files(tag, sat_id,
                       supported_tags=None,
                       user=None, password=None,
                       fake_daily_files_from_monthly=False,
-                      two_digit_year_break=None,
-                      delimiter=None):
+                      two_digit_year_break=None, delimiter=None,
+                      year=None, month=None, day=None):
     """Return a Pandas Series of every file for chosen remote data.
 
     This routine is intended to be used by pysat instrument modules supporting
@@ -311,12 +350,27 @@ def list_remote_files(tag, sat_id,
         Some CDAWeb instrument data files are stored by month. This flag,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
-    two_digit_year_break : int
+        (default=False)
+    two_digit_year_break : (int or NoneType)
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
-    delimiter : string
+        (default=None)
+    delimiter : (string or NoneType)
         If filename is delimited, then provide delimiter alone e.g. '_'
+        (default=None)
+    year : (int or NoneType)
+        Selects a given year to return remote files for.  None returns all
+        years.
+        (default=None)
+    month : (int or NoneType)
+        Selects a given month to return remote files for.  None returns all
+        months.  Requires year to be defined.
+        (default=None)
+    day : (int or NoneType)
+        Selects a given day to return remote files for.  None returns all
+        days.  Requires year and month to be defined.
+        (default=None)
 
     Returns
     --------
@@ -329,20 +383,27 @@ def list_remote_files(tag, sat_id,
 
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
         supported_tags = {'dc_b': fname}
-        list_files = functools.partial(nasa_cdaweb_methods.list_files,
-                                       supported_tags=supported_tags)
+        list_remote_files = \
+            functools.partial(nasa_cdaweb_methods.list_remote_files,
+                              supported_tags=supported_tags)
 
         fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
         supported_tags = {'': fname}
-        list_files = functools.partial(cdw.list_files,
-                                       supported_tags=supported_tags)
+        list_remote_files = \
+            functools.partial(cdw.list_remote_files,
+                              supported_tags=supported_tags)
 
     """
 
     import os
     import requests
+    import warnings
     from bs4 import BeautifulSoup
 
+    if tag is None:
+        tag = ''
+    if sat_id is None:
+        sat_id = ''
     try:
         inst_dict = supported_tags[sat_id][tag]
     except KeyError:
@@ -354,35 +415,76 @@ def list_remote_files(tag, sat_id,
     # naming scheme for files on the CDAWeb server
     format_str = inst_dict['remote_fname']
 
+    # Check for appropriate combination of kwargs.  Warn and continue if not.
+    if (year is None) and (month is not None):
+        warnings.warn("Month keyword requires year.  Ignoring month.")
+        month = None
+    if ((year is None) or (month is None)) and (day is not None):
+        warnings.warn("Day keyword requires year and month.  Ignoring day.")
+        day = None
+
     # get a listing of all files
     # determine if we need to walk directories
 
-    soup = BeautifulSoup(requests.get(remote_url).content, "lxml")
-
-    # Find Subdirectories if needed
+    # Find Subdirectories and modify remote_url if user input is specified
     dir_split = os.path.split(format_str)
-    if (len(dir_split) == 2) & (len(dir_split[0]) != 0):
-        links = soup.find_all('a', href=True)
-        dirs = []
-        for link in links:
-            if link['href'].count('/') == 1:
-                dirs.append(link['href'])
-        # only want to keep file portion of the string
+    if len(dir_split[0]) != 0:
+        # Get all subdirectories
+        subdirs = dir_split[0].split('/')
+        # only keep file portion of format
         format_str = dir_split[-1]
-    elif len(dir_split) == 2:
-        # no extra directories
-        dirs = ['']
-    else:
-        raise ValueError('Only traverses one extra level of directory.')
+        n_layers = len(subdirs)
+        # Check for formatted subdirectories if user input is specified
+        for subdir in subdirs:
+            if (year is not None) and (subdir.find('year') != -1):
+                remote_url = '/'.join((remote_url.strip('/'),
+                                       subdir.format(year=year)))
+                n_layers -= 1
+            if (month is not None) and (subdir.find('month') != -1):
+                remote_url = '/'.join((remote_url.strip('/'),
+                                       subdir.format(month=month)))
+                n_layers -= 1
+            if (day is not None) and (subdir.find('day') != -1):
+                remote_url = '/'.join((remote_url.strip('/'),
+                                       subdir.format(day=day)))
+                n_layers -= 1
 
+    # Find filename extension required by format_str
+    # Storing as list to be extendable to other search targets in future
+    targets = ['.' + format_str.split('.')[-1]]
+
+    remote_dirs = []
+    for level in range(n_layers + 1):
+        remote_dirs.append([])
+    remote_dirs[0] = ['']
+
+    # Build a list of files using each filename target as a goal
+    if n_layers > 1:
+        n_loops = 2
+        warnings.warn(' '.join(('Current implementation only goes down one',
+                                'level of subdirectories.  Try specifying',
+                                'a year for more accurate results.')))
+    else:
+        n_loops = n_layers + 1
     full_files = []
-    for direct in dirs:
-        sub_path = remote_url + '/' + direct
-        sub_soup = BeautifulSoup(requests.get(sub_path).content, "lxml")
-        sub_links = sub_soup.find_all('a', href=True)
-        for slink in sub_links:
-            if slink['href'].count('.cdf') == 1:
-                full_files.append(slink['href'])
+    for level in range(n_loops):
+        for directory in remote_dirs[level]:
+            temp_url = '/'.join((remote_url.strip('/'), directory))
+            soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
+            links = soup.find_all('a', href=True)
+            for link in links:
+                if level < n_layers:
+                    # If there is room to go down, look for directories
+                    if link['href'].count('/') == 1:
+                        remote_dirs[level+1].append(link['href'])
+                else:
+                    # If at the endpoint, add matching files to list
+                    add_file = True
+                    for target in targets:
+                        if link['href'].count(target) == 0:
+                            add_file = False
+                    if add_file:
+                        full_files.append(link['href'])
 
     # parse remote filenames to get date information
     if delimiter is None:
@@ -391,5 +493,17 @@ def list_remote_files(tag, sat_id,
     else:
         stored = pysat._files.parse_delimited_filenames(full_files,
                                                         format_str, delimiter)
+
     # process the parsed filenames and return a properly formatted Series
-    return pysat._files.process_parsed_filenames(stored, two_digit_year_break)
+    stored_list = pysat._files.process_parsed_filenames(stored,
+                                                        two_digit_year_break)
+
+    # Downselect to user-specified dates, if needed
+    if year is not None:
+        mask = (stored_list.index.year == year)
+        if month is not None:
+            mask = mask & (stored_list.index.month == month)
+            if day is not None:
+                mask = mask & (stored_list.index.day == day)
+
+    return stored_list[mask]
