@@ -35,8 +35,6 @@ def create_dir(inst=None, temporary_file_list=False):
 
 
 def remove_files(inst=None):
-    import shutil
-
     # remove any files
     dir = inst.files.data_path
     for the_file in os.listdir(dir):
