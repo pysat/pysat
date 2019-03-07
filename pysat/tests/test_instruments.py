@@ -4,6 +4,7 @@ tests the pysat meta object and code
 from importlib import import_module
 from functools import partial
 import numpy as np
+import os
 import sys
 
 import nose.tools
@@ -32,6 +33,18 @@ def safe_data_dir():
     if saved_path is '':
         saved_path = '.'
     return saved_path
+
+
+def remove_files(inst):
+    # remove any files
+    dir = inst.files.data_path
+    target = [inst.files.files.values[0].split('.')[-1]]
+    target.append(inst.platform)
+    for the_file in os.listdir(dir):
+        if (the_file.find(target[0]) != -1) & (the_file.find(target[1]) != -1):
+            file_path = os.path.join(dir, the_file)
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
 
 
 def init_func_external(self):
@@ -344,6 +357,8 @@ class TestInstrumentQualifier():
                                           inst.platform, inst.name, inst.tag,
                                           inst.sat_id))
                 yield (f,)
+
+                remove_files(inst)
             else:
                 print('Unable to actually download a file.')
                 # raise RuntimeWarning(' '.join(('Download for', inst.platform,
