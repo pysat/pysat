@@ -38,11 +38,15 @@ before_install:
 # command to install dependencies
 install:
   - source activate test-environment
+  # set up data directory
+  - mkdir /home/travis/build/rstoneback/pysatData
   # install pysat
   - cd /home/travis/build/rstoneback/pysat
   - python setup.py install
+
 # command to run tests
 script:
  - nosetests -vs --with-coverage --cover-package=pysat
+
 after_success:
  - coveralls
