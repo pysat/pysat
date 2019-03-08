@@ -35,7 +35,7 @@ def remove_files(inst):
     # remove any files
     dir = inst.files.data_path
     for the_file in os.listdir(dir):
-        if (the_file == 'test_ncdf.nc'):
+        if (the_file == 'pysat_test_ncdf.nc'):
             file_path = os.path.join(dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
@@ -134,7 +134,8 @@ class TestBasicNetCDF4():
     def test_basic_write_and_read_netcdf4_default_format(self):
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile)
 
@@ -151,7 +152,8 @@ class TestBasicNetCDF4():
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile, zlib=True)
 
@@ -169,7 +171,8 @@ class TestBasicNetCDF4():
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile, epoch_name='Santa')
 
@@ -188,7 +191,7 @@ class TestBasicNetCDF4():
         # create a bunch of files by year and doy
         test_inst = pysat.Instrument('pysat', 'testing2d')
         prep_dir(test_inst)
-        outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(test_inst.files.data_path, 'pysat_test_ncdf.nc')
         test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
@@ -227,7 +230,7 @@ class TestBasicNetCDF4():
         # create a bunch of files by year and doy
         test_inst = pysat.Instrument('pysat', 'testing2d')
         prep_dir(test_inst)
-        outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(test_inst.files.data_path, 'pysat_test_ncdf.nc')
         test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile, zlib=True)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)

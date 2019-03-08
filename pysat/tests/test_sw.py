@@ -173,8 +173,7 @@ class TestSwKpCombine():
                                              + pds.DateOffset(hours=3*i)
                                              for i in range(12)])
         testInst.meta = pysat.Meta()
-        testInst.meta.__setitem__('Kp', {testInst.meta.fill_label:
-                                         np.nan})
+        testInst.meta['Kp'] = {testInst.meta.fill_label: np.nan}
 
         combo_in = {"standard_inst": testInst}
         assert_raises(ValueError, sw_methods.combine_kp, combo_in)

@@ -480,7 +480,7 @@ class Files(object):
         format_str : string with python format codes
             Provides the naming pattern of the instrument files and the
             locations of date information so an ordered list may be produced.
-            Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
+            Supports 'year', 'month', 'day', 'hour', 'mins', 'sec', 'version',
             and 'revision'
             Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
         two_digit_year_break : int
@@ -592,8 +592,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             stored['sec'] = np.zeros(len(files))
         if stored['hour'] is not None:
             stored['sec'] += 3600 * stored['hour']
-        if stored['min'] is not None:
-            stored['sec'] += 60 * stored['min']
+        if stored['mins'] is not None:
+            stored['sec'] += 60 * stored['mins']
         # version shouldn't be set to zero
         # version is required to remove duplicate datetimes
         if stored['revision'] is None:
@@ -638,7 +638,7 @@ def parse_fixed_width_filenames(files, format_str):
     format_str : string with python format codes
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
+        Supports 'year', 'month', 'day', 'hour', 'mins', 'sec', 'version',
         and 'revision'
         Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
 
@@ -646,7 +646,7 @@ def parse_fixed_width_filenames(files, format_str):
     -------
     OrderedDict
         Information parsed from filenames
-        'year', 'month', 'day', 'hour', 'min', 'sec', 'version', 'revision'
+        'year', 'month', 'day', 'hour', 'mins', 'sec', 'version', 'revision'
         'files' - input list of files
 
     """
@@ -659,7 +659,7 @@ def parse_fixed_width_filenames(files, format_str):
     stored['month'] = []
     stored['day'] = []
     stored['hour'] = []
-    stored['min'] = []
+    stored['mins'] = []
     stored['sec'] = []
     stored['version'] = []
     stored['revision'] = []
@@ -719,7 +719,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     format_str : string with python format codes
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
+        Supports 'year', 'month', 'day', 'hour', 'mins', 'sec', 'version',
         and 'revision'
         Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
 
@@ -727,7 +727,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     -------
     OrderedDict
         Information parsed from filenames
-        'year', 'month', 'day', 'hour', 'min', 'sec', 'version', 'revision'
+        'year', 'month', 'day', 'hour', 'mins', 'sec', 'version', 'revision'
         'files' - input list of files
 
     """
@@ -735,7 +735,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
     import collections
 
     # create storage for data to be parsed from filenames
-    ordered_keys = ['year', 'month', 'day', 'hour', 'min', 'sec',
+    ordered_keys = ['year', 'month', 'day', 'hour', 'mins', 'sec',
                     'version', 'revision']
     stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
@@ -799,7 +799,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
     format_str : string with python format codes
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
-        Supports 'year', 'month', 'day', 'hour', 'min', 'sec', 'version',
+        Supports 'year', 'month', 'day', 'hour', 'mins', 'sec', 'version',
         and 'revision'
         Ex: 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
     wildcard : bool

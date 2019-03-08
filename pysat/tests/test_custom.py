@@ -44,9 +44,8 @@ class TestBasics():
 
         self.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        ans = (self.testInst['doubleMLT'].values == 2.0 *
-               self.testInst['mlt'].values).all()
-        assert ans
+        assert (self.testInst['doubleMLT'].values == 2.0 *
+                self.testInst['mlt'].values).all()
 
     def test_single_adding_custom_function_wrong_times(self):
         """Only the data at the correct time should be accepted, otherwise it
@@ -57,7 +56,6 @@ class TestBasics():
             d = pds.Series(2.0 * inst['mlt'], index=new_index)
             d.name = 'doubleMLT'
             print(new_index)
-            # d.index += pds.DateOffset(microseconds=10)
             return d
 
         self.add(custom1, 'add')
@@ -81,9 +79,8 @@ class TestBasics():
 
         self.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        ans = (self.testInst.data['doubleMLT'] == 2.0 *
-               self.testInst['mlt']).all()
-        assert ans
+        assert (self.testInst.data['doubleMLT'] == 2.0 *
+                self.testInst['mlt']).all()
 
     def test_add_function_tuple_return_style(self):
         """Test if custom function works correctly. Add function that returns
@@ -106,11 +103,10 @@ class TestBasics():
                                                  3.0 * inst.data.mlt.values])
         self.testInst.custom.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        ans = (((self.testInst.data['doubleMLT'] == 2.0 *
-                 self.testInst['mlt']).all()) &
-               ((self.testInst.data['tripleMLT'] == 3.0 *
-                 self.testInst['mlt']).all()))
-        assert ans
+        assert (self.testInst.data['doubleMLT'] == 2.0 *
+                self.testInst['mlt']).all()
+        assert (self.testInst.data['tripleMLT'] == 3.0 *
+                self.testInst['mlt']).all()
 
     @raises(ValueError)
     def test_add_function_tuple_return_style_too_few_elements(self):
@@ -148,11 +144,10 @@ class TestBasics():
             return out
         self.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        ans1 = (self.testInst.data['doubleMLT'] == 2.0 *
+        assert (self.testInst.data['doubleMLT'] == 2.0 *
                 self.testInst['mlt']).all()
-        ans2 = (self.testInst.data['tripleMLT'] == 3.0 *
+        assert (self.testInst.data['tripleMLT'] == 3.0 *
                 self.testInst['mlt']).all()
-        assert ans1 & ans2
 
     def test_add_dataframe_w_meta(self):
         def custom1(inst):
@@ -164,13 +159,12 @@ class TestBasics():
                     'units': ['hours1', 'hours2']}
         self.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
-        ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
-        ans3 = self.testInst.meta['tripleMLT'].units == 'hours2'
-        ans4 = self.testInst.meta['tripleMLT'].long_name == 'tripleMLTlong'
-        ans5 = (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
-        ans6 = (self.testInst['tripleMLT'] == 3.0 * self.testInst['mlt']).all()
-        assert ans1 & ans2 & ans3 & ans4 & ans5 & ans6
+        assert self.testInst.meta['doubleMLT'].units == 'hours1'
+        assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
+        assert self.testInst.meta['tripleMLT'].units == 'hours2'
+        assert self.testInst.meta['tripleMLT'].long_name == 'tripleMLTlong'
+        assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
+        assert (self.testInst['tripleMLT'] == 3.0 * self.testInst['mlt']).all()
 
     def test_add_series_w_meta(self):
         def custom1(inst):
@@ -181,10 +175,9 @@ class TestBasics():
                     'units': 'hours1'}
         self.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
-        ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
-        ans3 = (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
-        assert ans1 & ans2 & ans3
+        assert self.testInst.meta['doubleMLT'].units == 'hours1'
+        assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
+        assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
 
     def test_add_series_w_meta_missing_long_name(self):
         def custom1(inst):
@@ -195,10 +188,9 @@ class TestBasics():
                     'units': 'hours1'}
         self.add(custom1, 'add')
         self.testInst.load(2009, 1)
-        ans1 = self.testInst.meta['doubleMLT'].units == 'hours1'
-        ans2 = self.testInst.meta['doubleMLT'].long_name == 'doubleMLT'
-        ans3 = (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
-        assert ans1 & ans2 & ans3
+        assert self.testInst.meta['doubleMLT'].units == 'hours1'
+        assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLT'
+        assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
 
     def test_add_series_w_meta_name_in_dict(self):
         def custom1(inst):
@@ -270,9 +262,8 @@ class TestBasics():
                     'units': 'hours1', 'name': 'doubleMLT'}
         self.testInst.custom.add(custom1, 'add')
         self.testInst.custom.clear()
-        check1 = self.testInst.custom._functions == []
-        check2 = self.testInst.custom._kind == []
-        assert check1 & check2
+        assert self.testInst.custom._functions == []
+        assert self.testInst.custom._kind == []
 
     def test_pass_functions(self):
         def custom1(inst):

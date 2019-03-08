@@ -37,12 +37,12 @@ def safe_data_dir():
 
 def remove_files(inst):
     # remove any files
-    dir = inst.files.data_path
+    temp_dir = inst.files.data_path
     # search for files with instrument file extension
     target = ''.join(('.', inst.files.files.values[0].split('.')[-1]))
-    for the_file in os.listdir(dir):
+    for the_file in os.listdir(temp_dir):
         if (the_file.find(target) != -1):
-            file_path = os.path.join(dir, the_file)
+            file_path = os.path.join(temp_dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
