@@ -16,6 +16,8 @@ def remove_files(inst):
     temp_dir = inst.files.data_path
     if not inst.empty:
         for the_file in list(inst.files.files.values):
+            if the_file.rfind('_') > the_file.rfind('.'):
+                the_file = the_file[:the_file.rfind('_')]
             file_path = os.path.join(temp_dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
@@ -258,8 +260,7 @@ class TestSwKpCombine():
         # Fill value is defined by combine
         assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
                self.combine['fill_val'])
-        assert len(kp_inst['Kp'][kp_inst['Kp'] ==
-                   self.combine['fill_val']]) == 0
+        assert (kp_inst['Kp'] != self.combine['fill_val']).all()
 
         del kp_inst
 

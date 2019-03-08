@@ -32,6 +32,8 @@ def remove_files(inst):
     # remove any files downloaded as part of the unit tests
     temp_dir = inst.files.data_path
     for the_file in list(inst.files.files.values):
+        if the_file.rfind('_') > the_file.rfind('.'):
+            the_file = the_file[:the_file.rfind('_')]
         file_path = os.path.join(temp_dir, the_file)
         if os.path.isfile(file_path):
             os.unlink(file_path)
