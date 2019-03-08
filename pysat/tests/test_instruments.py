@@ -36,15 +36,12 @@ def safe_data_dir():
 
 
 def remove_files(inst):
-    # remove any files
+    # remove any files downloaded as part of the unit tests
     temp_dir = inst.files.data_path
-    # search for files with instrument file extension
-    target = ''.join(('.', inst.files.files.values[0].split('.')[-1]))
-    for the_file in os.listdir(temp_dir):
-        if (the_file.find(target) != -1):
-            file_path = os.path.join(temp_dir, the_file)
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
+    for the_file in list(inst.files.files.values):
+        file_path = os.path.join(temp_dir, the_file)
+        if os.path.isfile(file_path):
+            os.unlink(file_path)
 
 
 def init_func_external(self):
