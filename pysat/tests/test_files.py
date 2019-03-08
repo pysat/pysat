@@ -45,10 +45,10 @@ def remove_files(inst=None):
 
 
 # create year doy file set
-def create_files(inst, start=pysat.datetime(2009, 1, 1),
-                 stop=pysat.datetime(2013, 12, 31), freq='1D', use_doy=True,
-                 root_fname=None):
+def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None):
 
+    if freq is None:
+        freq = '1D'
     dates = pysat.utils.time.season_date_range(start, stop, freq=freq)
 
     if root_fname is None:
