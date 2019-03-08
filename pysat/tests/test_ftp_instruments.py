@@ -16,13 +16,6 @@ include_list = ['sw_dst']
 user_download_dict = {}
 
 
-def safe_data_dir():
-    saved_path = pysat.data_dir
-    if saved_path is '':
-        saved_path = '.'
-    return saved_path
-
-
 def init_func_external(self):
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
@@ -42,7 +35,7 @@ def init_func_external(self):
 
     # create temporary directory
     dir_name = tempfile.mkdtemp()
-    saved_path = safe_data_dir()
+    saved_path = pysat.data_dir
     pysat.utils.set_data_dir(dir_name, store=False)
 
     for name in instrument_names:
