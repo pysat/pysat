@@ -1,12 +1,24 @@
 import datetime as dt
 import numpy as np
+import os
 
 from nose.tools import assert_raises
 from nose.plugins import skip
 import pandas as pds
+import tempfile
 
 import pysat
 from pysat.instruments import sw_kp, sw_f107, sw_methods
+
+
+def remove_files(inst):
+    # remove any files downloaded as part of the unit tests
+    temp_dir = inst.files.data_path
+    if not inst.empty:
+        for the_file in list(inst.files.files.values):
+            file_path = os.path.join(temp_dir, the_file)
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
 
 
 class TestSWKp():
@@ -129,6 +141,11 @@ class TestSWKp():
 class TestSwKpCombine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        # create temporary directory
+        dir_name = tempfile.mkdtemp()
+        self.saved_path = pysat.data_dir
+        pysat.utils.set_data_dir(dir_name, store=False)
+
         # Set combination testing input
         self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
                                                  microsecond=0)
@@ -156,7 +173,10 @@ class TestSwKpCombine():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.combine, self.download, self.today
+        for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
+            remove_files(self.combine[kk])
+        pysat.utils.set_data_dir(self.saved_path)
+        del self.combine, self.download, self.today, self.saved_path
 
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
@@ -393,6 +413,11 @@ class TestSWF107():
 class TestSWF107Combine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        # create temporary directory
+        dir_name = tempfile.mkdtemp()
+        self.saved_path = pysat.data_dir
+        pysat.utils.set_data_dir(dir_name, store=False)
+
         # Set combination testing input
         self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
                                                  microsecond=0)
@@ -419,6 +444,9 @@ class TestSWF107Combine():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        for kk in self.combineInst.keys():
+            remove_files(self.combineInst[kk])
+        pysat.utils.set_data_dir(self.saved_path)
         del self.combineInst, self.download, self.today, self.combineTimes
 
     def test_combine_f107_none(self):
