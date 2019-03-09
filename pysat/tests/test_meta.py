@@ -560,16 +560,6 @@ class TestBasics():
         meta2['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
         meta3 = pysat.Meta()
         meta3['higher'] = meta2
-        # print ('meta3', meta3)
-        # print ('self.meta', self.meta)
-        # for key in meta3.keys():
-        #     print ('meta3 key', meta3[key])
-        #     print ('self key', self.meta[key])
-        # for key in meta3.keys_nD():
-        #     for key2 in meta3[key].keys():
-        #
-        #         print (meta3[key].children[key2])
-        #         print (self.meta[key].children[key2])
 
         assert not (meta3 == self.meta)
         assert not (self.meta == meta3)
@@ -586,17 +576,6 @@ class TestBasics():
         meta2['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
         meta3 = pysat.Meta()
         meta3['higher'] = meta2
-
-        # print ('meta3', meta3)
-        # print ('self.meta', self.meta)
-        # for key in meta3.keys():
-        #     print ('meta3 key', meta3[key])
-        #     print ('self key', self.meta[key])
-        # for key in meta3.keys_nD():
-        #     for key2 in meta3[key].keys():
-        #
-        #         print (meta3[key].children[key2])
-        #         print (self.meta[key].children[key2])
 
         assert not (meta3 == self.meta)
         assert not (self.meta == meta3)
@@ -655,8 +634,6 @@ class TestBasics():
              'value_min': [0, 0, 0],
              'value_max': [1, 1, 1]}
         meta2 = pysat.Meta(metadata=self.meta.data)
-        # print (meta2['lower'])
-        # print (self.meta['lower'])
         m1 = meta2['lower']
         m2 = self.meta['lower']
         assert m1['children'] is None
@@ -955,7 +932,6 @@ class TestBasics():
         self.meta.date = None
         self.meta.transfer_attributes_to_instrument(self.testInst)
         self.testInst._yo_yo == 'yo yo'
-        assert True
 
     # ensure leading hyphens are dropped
     @raises(AttributeError)
@@ -965,7 +941,6 @@ class TestBasics():
         self.meta.date = None
         self.meta.transfer_attributes_to_instrument(self.testInst)
         self.testInst.__yo_yo == 'yo yo'
-        assert True
 
     # ensure meta attributes aren't transfered
     @raises(AttributeError)
@@ -975,7 +950,6 @@ class TestBasics():
         self.meta.date = None
         self.meta.transfer_attributes_to_instrument(self.testInst)
         self.testInst.ho_data
-        assert True
 
     @raises(RuntimeError)
     def test_transfer_attributes_to_instrument_strict_names(self):
@@ -989,4 +963,15 @@ class TestBasics():
         self.meta.transfer_attributes_to_instrument(self.testInst,
                                                     strict_names=True)
 
-        assert True
+    def test_merge_meta(self):
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        meta2 = pysat.Meta()
+        meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
+                          'YoYoYO': 'yolo'}
+        self.meta.merge(meta2)
+
+        assert (self.meta['new'].units == 'hey')
+        assert (self.meta['new'].long_name == 'boo')
+        assert (self.meta['NEW21'].units == 'hey2')
+        assert (self.meta['NEW21'].long_name == 'boo2')
+        assert (self.meta['NEW21'].YoYoYO == 'yolo')
