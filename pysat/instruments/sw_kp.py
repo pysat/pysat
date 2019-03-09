@@ -52,11 +52,11 @@ of the National Science Foundation.
 
 """
 
-import os
 import functools
+import numpy as np
+import os
 
 import pandas as pds
-import numpy as np
 
 import pysat
 
