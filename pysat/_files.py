@@ -418,13 +418,6 @@ class Files(object):
                 return self.files.iloc[key]
             except:
                 return self.files.loc[key]
-            # raise ValueError('Not implemented yet.')
-        # if isinstance(key, tuple):
-        #    if len(key) == 2:
-        #        start = key[0]
-        #        end = key[1]
-        #    else:
-        #        raise ValueError('Must input 2 and only 2 items/iterables')
 
     def get_file_array(self, start, end):
         """Return a list of filenames between and including start and end.
@@ -480,8 +473,8 @@ class Files(object):
         format_str : string with python format codes
             Provides the naming pattern of the instrument files and the
             locations of date information so an ordered list may be produced.
-            Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-            and 'revision'
+            Supports 'year', 'month', 'day', 'hour', 'minute', 'second',
+            'version', and 'revision'
             Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
         two_digit_year_break : int
             If filenames only store two digits for the year, then
@@ -646,7 +639,8 @@ def parse_fixed_width_filenames(files, format_str):
     -------
     OrderedDict
         Information parsed from filenames
-        'year', 'month', 'day', 'hour', 'minute', 'second', 'version', 'revision'
+        'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
+        'revision'
         'files' - input list of files
 
     """
