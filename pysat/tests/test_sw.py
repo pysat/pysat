@@ -28,7 +28,7 @@ def remove_files(inst):
             if os.path.isfile(file_path):
                 os.unlink(file_path)
     else:
-        warning.warn(''.join(('Files > 20.  Not deleted.  Please check to ',
+        warnings.warn(''.join(('Files > 20.  Not deleted.  Please check to ',
                               'ensure temp directory is used')))
 
 
