@@ -622,10 +622,7 @@ class Instrument(object):
         if self.pandas_format:
             return self.data.empty
         else:
-            if 'time' in self.data.indexes:
-                return len(self.data.indexes['time']) == 0
-            else:
-                return True
+            return len(self.data.variables) == 0
 
     def _empty(self, data=None):
         """Boolean flag reflecting lack of data.
@@ -985,7 +982,7 @@ class Instrument(object):
             raise TypeError('Metadata returned must be a pysat.Meta object')
 
         # let user know if data was returned or not
-        if len(data) > 0:
+        if not data.empty:
             if date is not None:
                 output_str = ' '.join(('Returning', output_str, 'data for',
                                        date.strftime('%d %B %Y')))
