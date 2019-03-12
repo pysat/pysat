@@ -922,7 +922,7 @@ class Instrument(object):
 
         Returns
         --------
-        data : (pds.DataFrame)
+        data : (pds.DataFrame or xr.Dataset)
             pysat data
         meta : (pysat.Meta)
             pysat meta data
