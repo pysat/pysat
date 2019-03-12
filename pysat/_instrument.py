@@ -622,7 +622,10 @@ class Instrument(object):
         if self.pandas_format:
             return self.data.empty
         else:
-            return len(self.data.variables) == 0
+            if 'time' in self.data.indexes:
+                return len(self.data.indexes['time']) == 0
+            else:
+                return True
 
     def _empty(self, data=None):
         """Boolean flag reflecting lack of data.
