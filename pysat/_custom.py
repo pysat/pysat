@@ -126,7 +126,8 @@ class Custom(object):
         if len(self._functions) > 0:
             for func, arg, kwarg, kind in zip(self._functions, self._args,
                                               self._kwargs, self._kind):
-                if len(sat.data) > 0:
+                ind = sat.data.index if sat.pandas_format else sat.data.indexes
+                if len(ind) > 0:
                     if kind == 'add':
                         # apply custom functions that add data to the
                         # instrument object
