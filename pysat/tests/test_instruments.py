@@ -6,6 +6,7 @@ from functools import partial
 import numpy as np
 import os
 import sys
+import warnings
 
 import nose.tools
 import pandas as pds
