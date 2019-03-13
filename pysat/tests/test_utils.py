@@ -51,38 +51,35 @@ class TestBasics():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
+        pysat.utils.set_data_dir(self.data_path)
 
     #######################
     # test pysat data dir options
     def test_set_data_dir(self):
-        saved_dir = self.data_path
-        # update data_dir
+        """update data_dir"""
         pysat.utils.set_data_dir('.')
         check1 = (pysat.data_dir == '.')
-        if saved_dir is not '':
-            pysat.utils.set_data_dir(saved_dir)
-            check2 = (pysat.data_dir == saved_dir)
-        else:
-            check2 = True
-        assert check1 & check2
 
-    def test_set_data_dir_no_store(self):
-        saved_dir = self.data_path
-        # update data_dir
-        pysat.utils.set_data_dir('.', store=False)
-        check1 = (pysat.data_dir == '.')
+        # Check if next load of pysat remembers the change
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
         re_load(pysat)
+        check2 = (pysat.data_dir == '.')
 
-        check2 = (pysat.data_dir == saved_dir)
-        if saved_dir is not '':
-            pysat.utils.set_data_dir(saved_dir, store=False)
-            check3 = (pysat.data_dir == saved_dir)
-        else:
-            check3 = True
+        assert check1 & check2
 
-        assert check1 & check2 & check3
+    def test_set_data_dir_no_store(self):
+        """update data_dir without storing"""
+        pysat.utils.set_data_dir('.', store=False)
+        check1 = (pysat.data_dir == '.')
+
+        # Check if next load of pysat remembers old settings
+        pysat._files = re_load(pysat._files)
+        pysat._instrument = re_load(pysat._instrument)
+        re_load(pysat)
+        check2 = (pysat.data_dir == self.data_path)
+
+        assert check1 & check2
 
     def test_initial_pysat_load(self):
         import shutil

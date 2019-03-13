@@ -921,7 +921,7 @@ class Instrument(object):
 
         Returns
         --------
-        data : (pds.DataFrame)
+        data : (pds.DataFrame or xr.Dataset)
             pysat data
         meta : (pysat.Meta)
             pysat meta data
@@ -984,7 +984,8 @@ class Instrument(object):
             raise TypeError('Metadata returned must be a pysat.Meta object')
 
         # let user know if data was returned or not
-        if len(data) > 0:
+        ind = data.index if self.pandas_format else data.indexes
+        if len(ind) > 0:
             if date is not None:
                 output_str = ' '.join(('Returning', output_str, 'data for',
                                        date.strftime('%d %B %Y')))
