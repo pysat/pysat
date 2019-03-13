@@ -28,13 +28,6 @@ exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
 user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
 
 
-def safe_data_dir():
-    saved_path = pysat.data_dir
-    if saved_path is '':
-        saved_path = '.'
-    return saved_path
-
-
 def init_func_external(self):
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
@@ -58,7 +51,7 @@ def init_func_external(self):
 
     # create temporary directory
     dir_name = tempfile.mkdtemp()
-    saved_path = safe_data_dir()
+    saved_path = pysat.data_dir
     pysat.utils.set_data_dir(dir_name, store=False)
 
     for name in instrument_names:
@@ -249,7 +242,7 @@ class TestInstrumentQualifier():
         except Exception as e:
             # couldn't run download, try to find test data instead
             print("Couldn't download data, trying to find test data.")
-            saved_path = safe_data_dir()
+            saved_path = pysat.data_dir
 
             new_path = os.path.join(pysat.__path__[0], 'tests', 'test_data')
             pysat.utils.set_data_dir(new_path, store=False)

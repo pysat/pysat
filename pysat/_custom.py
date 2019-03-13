@@ -126,7 +126,7 @@ class Custom(object):
         if len(self._functions) > 0:
             for func, arg, kwarg, kind in zip(self._functions, self._args,
                                               self._kwargs, self._kind):
-                if len(sat.data) > 0:
+                if not sat.empty:
                     if kind == 'add':
                         # apply custom functions that add data to the
                         # instrument object
