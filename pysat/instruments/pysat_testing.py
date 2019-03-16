@@ -17,10 +17,18 @@ platform = 'pysat'
 name = 'testing'
 
 # dictionary of data 'tags' and corresponding description
-tags = {'': 'Regular testing data set'}
+tags = {'': 'Regular testing data set',
+        'ascend': 'Ascending Integers from 0 testing data set',
+        'descend': 'Descending Integers from 0 testing data set',
+        'plus10': 'Ascending Integers from 10 testing data set',
+        'five': 'All 5s testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
-sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'five']}
+test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                   'ascend': pysat.datetime(2009, 1, 1),
+                   'descend': pysat.datetime(2009, 1, 1),
+                   'plus10': pysat.datetime(2009, 1, 1),
+                   'five': pysat.datetime(2009, 1, 1)}}
 
 meta = pysat.Meta()
 meta['uts'] = {'units': 's',
@@ -198,7 +206,16 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.0).astype(int)
-    data['dummy1'] = mlt_int
+    if tag == 'ascend':
+        data['dummy1'] = [i for i in range(len(data['mlt']))]
+    elif tag == 'descend':
+        data['dummy1'] = [-i for i in range(len(data['mlt']))]
+    elif tag == 'plus10':
+        data['dummy1'] = [i + 10 for i in range(len(data['mlt']))]
+    elif tag == 'five':
+        data['dummy1'] = [5 for i in range(len(data['mlt']))]
+    else:
+        data['dummy1'] = mlt_int
     data['dummy2'] = long_int
     data['dummy3'] = mlt_int + long_int * 1000.0
     data['dummy4'] = num_array

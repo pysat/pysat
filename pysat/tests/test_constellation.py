@@ -101,8 +101,8 @@ class TestAdditionIdenticalInstruments:
 class TestAdditionOppositeInstruments:
     def setup(self):
         """
-        The data in testadd['A']['dummy1'] is just ascending integers 0 to the
-        length of the other data, testadd['B'] has the same data but negative.
+        The data in ascend['dummy1'] is just ascending integers 0 to the
+        length of the other data, descend has the same data but negative.
         The addition of these two signals should be zero everywhere.
         """
         self.testC = pysat.Constellation(name='test_add_opposite')
@@ -131,12 +131,13 @@ class TestAdditionSimilarInstruments:
     def setup(self):
         """
         All the data in dummy1 of 'plus10' is the data in default + 10
-        So the addition of testadd[''] and testadd['plus10'] should be no more
-        than 10 off from the addition of just testadd['A']
+        So the addition of 'ascend' and 'plus10' should be no
+        more than 10 off from the addition of just 'ascend'
         TODO: actually check the math on this
         """
         self.testC = pysat.Constellation(name='test_add_similar')
-        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd',
+        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testing',
+                                                          tag='ascend',
                                                           clean_level='clean')])
 
     def teardown(self):
@@ -174,7 +175,7 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        self.testInst = pysat.Instrument('pysat', 'testadd', 'five',
+        self.testInst = pysat.Instrument('pysat', 'testing', 'five',
                                          clean_level='clean')
         insts.append(self.testInst)
         self.testConst = pysat.Constellation(insts)
