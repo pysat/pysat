@@ -84,7 +84,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     else:
         root_date = root_date or pysat.datetime(2009, 1, 1)
         data_date = date
-    num = int(tag) if tag.isdigit() else 86400
+    num = 86400 if tag in tags.keys() else int(tag)
     num_array = np.arange(num)
     uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
