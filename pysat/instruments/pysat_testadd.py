@@ -2,7 +2,7 @@
 """
 Produces fake instrument data for testing.
 Adapted from existing pysat testing instrument, but changes the data in
-dummy1 to negative integers descending from 0 and deletes dummy2-4
+dummy1 to ascending integers and deletes dummy2-4
 """
 
 import os
@@ -13,12 +13,18 @@ import pysat
 
 # pysat required parameters
 platform = 'pysat'
-name = 'testing'
+name = 'testadd1'
 # dictionary of data 'tags' and corresponding description
-tags = {'': 'Regular testing data set'}
+tags = {'A': 'Ascending Integers from 0 testing data set',
+        'B': 'Descending Integers from 0 testing data set',
+        'C': 'Ascending Integers from 10 testing data set',
+        'D': 'All 5s testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
-sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+sat_ids = {'': ['A', 'B', 'C', 'D']}
+test_dates = {'': {'A': pysat.datetime(2009, 1, 1),
+                   'B': pysat.datetime(2009, 1, 1),
+                   'C': pysat.datetime(2009, 1, 1),
+                   'D': pysat.datetime(2009, 1, 1)}}
 
 meta = pysat.Meta()
 meta['uts'] = {'units': 's', 'long_name': 'Universal Time', 'custom': False}
@@ -71,26 +77,26 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     date = pysat.datetime(yr, month, day)
     if sim_multi_file_right:
         root_date = root_date or pysat.datetime(2009, 1, 1, 12)
-        data_date = date+pds.DateOffset(hours=12)
+        data_date = date + pds.DateOffset(hours=12)
     elif sim_multi_file_left:
         root_date = root_date or pysat.datetime(2008, 12, 31, 12)
-        data_date = date-pds.DateOffset(hours=12)
+        data_date = date - pds.DateOffset(hours=12)
     else:
         root_date = root_date or pysat.datetime(2009, 1, 1)
         data_date = date
-    num = 86400 if tag is '' else int(tag)
+    num = int(tag) if tag.isdigit() else 86400
     num_array = np.arange(num)
     uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit
-    # at 2009,1, 0 UT. 14.84 orbits per day
+    # at 2009, 1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
     uts_root = np.mod(time_delta.total_seconds(), 5820)
     mlt = np.mod(uts_root + num_array, 5820) * (24. / 5820.)
     data['mlt'] = mlt
 
-    # fake orbit number
+    # fake orbit numbermedC1 = resultsC['dummy1']['median']
     fake_delta = date - pysat.datetime(2008, 1, 1)
     fake_uts_root = fake_delta.total_seconds()
 
@@ -100,7 +106,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
+    longitude = np.mod(long_uts_root+num_array, 6240) * (360. / 6240.)
     data['longitude'] = longitude
 
     # create latitude area for testing polar orbits
@@ -113,9 +119,17 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['slt'] = np.mod(uts_root + num_array, 5820) * (24. / 5820.)
 
     # create some fake data to support testing of averaging routines
-    dummy1 = []
-    for i in range(len(data['mlt'])):
-        dummy1.append(-i)
+    print(len(tag))
+    if tag == 'a':
+        dummy1 = [i for i in range(len(data['mlt']))]
+    elif tag == 'b':
+        dummy1 = [-i for i in range(len(data['mlt']))]
+    elif tag == 'c':
+        dummy1 = [i + 10 for i in range(len(data['mlt']))]
+    elif tag == 'd':
+        dummy1 = [5 for i in range(len(data['mlt']))]
+    else:
+        dummy1 = [0 for i in range(len(data['mlt']))]
     long_int = (data['longitude'] / 15.).astype(int)
     data['dummy1'] = dummy1
     data['string_dummy'] = ['test'] * len(data)
