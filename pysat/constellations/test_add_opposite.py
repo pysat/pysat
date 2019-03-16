@@ -5,7 +5,7 @@ Creates an instrument used to test the constellation class's addition function.
 The result of adding the dummy1 signals from this instrument should always be 0
 """
 
-instruments = [pysat.Instrument('pysat', 'testadd', tag='A',
+instruments = [pysat.Instrument('pysat', 'testadd',
                                 clean_level='clean'),
-               pysat.Instrument('pysat', 'testadd', tag='B',
+               pysat.Instrument('pysat', 'testadd', tag='negative',
                                 clean_level='clean')]

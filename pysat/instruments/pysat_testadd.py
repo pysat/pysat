@@ -15,16 +15,16 @@ import pysat
 platform = 'pysat'
 name = 'testadd1'
 # dictionary of data 'tags' and corresponding description
-tags = {'A': 'Ascending Integers from 0 testing data set',
-        'B': 'Descending Integers from 0 testing data set',
-        'C': 'Ascending Integers from 10 testing data set',
-        'D': 'All 5s testing data set'}
+tags = {'': 'Ascending Integers from 0 testing data set',
+        'negative': 'Descending Integers from 0 testing data set',
+        'plus10': 'Ascending Integers from 10 testing data set',
+        'five': 'All 5s testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
-sat_ids = {'': ['A', 'B', 'C', 'D']}
-test_dates = {'': {'A': pysat.datetime(2009, 1, 1),
-                   'B': pysat.datetime(2009, 1, 1),
-                   'C': pysat.datetime(2009, 1, 1),
-                   'D': pysat.datetime(2009, 1, 1)}}
+sat_ids = {'': ['', 'negative', 'plus10', 'five']}
+test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                   'negative': pysat.datetime(2009, 1, 1),
+                   'plus10': pysat.datetime(2009, 1, 1),
+                   'five': pysat.datetime(2009, 1, 1)}}
 
 meta = pysat.Meta()
 meta['uts'] = {'units': 's', 'long_name': 'Universal Time', 'custom': False}
@@ -119,17 +119,14 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['slt'] = np.mod(uts_root + num_array, 5820) * (24. / 5820.)
 
     # create some fake data to support testing of averaging routines
-    print(len(tag))
-    if tag == 'a':
-        dummy1 = [i for i in range(len(data['mlt']))]
-    elif tag == 'b':
+    if tag == 'negative':
         dummy1 = [-i for i in range(len(data['mlt']))]
-    elif tag == 'c':
+    elif tag == 'plus10':
         dummy1 = [i + 10 for i in range(len(data['mlt']))]
-    elif tag == 'd':
+    elif tag == 'five':
         dummy1 = [5 for i in range(len(data['mlt']))]
     else:
-        dummy1 = [0 for i in range(len(data['mlt']))]
+        dummy1 = [i for i in range(len(data['mlt']))]
     long_int = (data['longitude'] / 15.).astype(int)
     data['dummy1'] = dummy1
     data['string_dummy'] = ['test'] * len(data)

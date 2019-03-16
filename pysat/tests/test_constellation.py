@@ -130,14 +130,13 @@ class TestAdditionOppositeInstruments:
 class TestAdditionSimilarInstruments:
     def setup(self):
         """
-        All the data in dummy1 of testadd['C'] is the data in testadd['A'] + 10
-        So the addition of testadd['A'] and testadd['C'] should be no more than
-        10 off from the addition of just testadd['A']
+        All the data in dummy1 of 'plus10' is the data in default + 10
+        So the addition of testadd[''] and testadd['plus10'] should be no more
+        than 10 off from the addition of just testadd['A']
         TODO: actually check the math on this
         """
         self.testC = pysat.Constellation(name='test_add_similar')
         self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd',
-                                                          'A',
                                                           clean_level='clean')])
 
     def teardown(self):
@@ -175,7 +174,7 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        self.testInst = pysat.Instrument('pysat', 'testadd', 'D',
+        self.testInst = pysat.Instrument('pysat', 'testadd', 'five',
                                          clean_level='clean')
         insts.append(self.testInst)
         self.testConst = pysat.Constellation(insts)
