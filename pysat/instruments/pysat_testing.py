@@ -21,14 +21,14 @@ tags = {'': 'Regular testing data set',
         'ascend': 'Ascending Integers from 0 testing data set',
         'descend': 'Descending Integers from 0 testing data set',
         'plus10': 'Ascending Integers from 10 testing data set',
-        'five': 'All 5s testing data set'}
+        'fives': 'All 5s testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
-sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'five']}
+sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives']}
 test_dates = {'': {'': pysat.datetime(2009, 1, 1),
                    'ascend': pysat.datetime(2009, 1, 1),
                    'descend': pysat.datetime(2009, 1, 1),
                    'plus10': pysat.datetime(2009, 1, 1),
-                   'five': pysat.datetime(2009, 1, 1)}}
+                   'fives': pysat.datetime(2009, 1, 1)}}
 
 meta = pysat.Meta()
 meta['uts'] = {'units': 's',
@@ -212,7 +212,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         data['dummy1'] = [-i for i in range(len(data['mlt']))]
     elif tag == 'plus10':
         data['dummy1'] = [i + 10 for i in range(len(data['mlt']))]
-    elif tag == 'five':
+    elif tag == 'fives':
         data['dummy1'] = [5 for i in range(len(data['mlt']))]
     else:
         data['dummy1'] = mlt_int

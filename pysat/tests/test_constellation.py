@@ -175,7 +175,7 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        self.testInst = pysat.Instrument('pysat', 'testing', 'five',
+        self.testInst = pysat.Instrument('pysat', 'testing', 'fives',
                                          clean_level='clean')
         insts.append(self.testInst)
         self.testConst = pysat.Constellation(insts)
