@@ -83,9 +83,27 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
-    uts_root = np.mod(time_delta.total_seconds(), 5820)
-    mlt = np.mod(uts_root + num_array, 5820) * (24. / 5820.)
+    mlt = _fake_data(time_delta.total_seconds(), num_array,
+                     period=5820, data_range=24.0)
     data['mlt'] = (('time'), mlt)
+
+    # do slt, 20 second offset from mlt
+    slt = _fake_data(time_delta.total_seconds()+20, num_array,
+                     period=5280, data_range=24.0)
+    data['slt'] = (('time'), slt)
+
+    # create a fake longitude, resets every 6240 seconds
+    # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
+    # to go around full longitude
+    longitude = _fake_data(time_delta.total_seconds(), num_array,
+                           period=6240, data_range=360.0)
+    data['longitude'] = (('time'), longitude)
+
+    # create latitude area for testing polar orbits
+    latitude = 90.0 * np.cos(_fake_data(time_delta.total_seconds(),
+                                        num_array, period=5280,
+                                        data_range=2.0*np.pi))
+    data['latitude'] = (('time'), latitude)
 
     # fake orbit number
     fake_delta = date - pysat.datetime(2008, 1, 1)
@@ -93,23 +111,6 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     data['orbit_num'] = (('time'),
                          ((fake_uts_root + num_array) / 5820.).astype(int))
-
-    # create a fake longitude, resets every 6240 seconds
-    # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
-    # to go around full longitude
-    long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
-    data['longitude'] = (('time'), longitude)
-
-    # create latitude area for testing polar orbits
-    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
-                            (2. * np.pi / 5820.))
-    data['latitude'] = (('time'), latitude)
-
-    # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
-    data['slt'] = (('time'),
-                   np.mod(uts_root + num_array, 5820) * (24. / 5820.))
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
@@ -145,6 +146,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
     pass
+
+
+def _fake_data(t0, num_array, period=5280, data_range=24.0):
+    """Generates fake periodic data over a given range"""
+    uts_root = np.mod(t0, period)
+    return np.mod(uts_root + num_array, period) * (data_range / period)
 
 
 meta = pysat.Meta()

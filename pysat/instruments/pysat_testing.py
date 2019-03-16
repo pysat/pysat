@@ -177,31 +177,29 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
     time_delta = date - root_date
-    uts_root = np.mod(time_delta.total_seconds(), 5820)
-    mlt = np.mod(uts_root + num_array, 5820) * (24.0 / 5820.0)
-    data['mlt'] = mlt
+    data['mlt'] = _fake_data(time_delta.total_seconds(), num_array,
+                             period=5820, data_range=24.0)
+
+    # do slt, 20 second offset from mlt
+    data['slt'] = _fake_data(time_delta.total_seconds()+20, num_array,
+                             period=5280, data_range=24.0)
+
+    # create a fake longitude, resets every 6240 seconds
+    # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
+    # to go around full longitude
+    data['longitude'] = _fake_data(time_delta.total_seconds(), num_array,
+                                   period=6240, data_range=360.0)
+
+    # create latitude area for testing polar orbits
+    data['latitude'] = 90.0 * np.cos(_fake_data(time_delta.total_seconds(),
+                                                num_array, period=5280,
+                                                data_range=2.0*np.pi))
 
     # fake orbit number
     fake_delta = date - (test_dates[''][''] - pds.DateOffset(years=1))
     fake_uts_root = fake_delta.total_seconds()
 
     data['orbit_num'] = ((fake_uts_root + num_array) / 5820.0).astype(int)
-
-    # create a fake longitude, resets every 6240 seconds
-    # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
-    # to go around full longitude
-    long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root + num_array, 6240) * (360.0 / 6240.0)
-    data['longitude'] = longitude
-
-    # create latitude area for testing polar orbits
-    latitude = 90.0 * np.cos(np.mod(uts_root + num_array, 5820) *
-                             (2.0 * np.pi / 5820.0))
-    data['latitude'] = latitude
-
-    # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
-    data['slt'] = np.mod(uts_root + num_array, 5820) * (24.0 / 5820.0)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
@@ -278,3 +276,9 @@ def download(date_array, tag, sat_id, data_path=None,
              user=None, password=None):
     """ Download routine, not used since files are created locally"""
     pass
+
+
+def _fake_data(t0, num_array, period=5280, data_range=24.0):
+    """Generates fake periodic data over a given range"""
+    uts_root = np.mod(t0, period)
+    return np.mod(uts_root + num_array, period) * (data_range / period)

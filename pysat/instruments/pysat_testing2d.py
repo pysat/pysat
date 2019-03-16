@@ -86,27 +86,23 @@ def load(fnames, tag=None, sat_id=None):
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
     time_delta = date - pysat.datetime(2009, 1, 1)
-    # root start
-    uts_root = np.mod(time_delta.total_seconds(), 5820)
     # mlt runs 0-24 each orbit.
-    mlt = np.mod(uts_root+np.arange(num)*scalar, 5820) * (24./5820.)
-    data['mlt'] = mlt
+    data['mlt'] = _fake_data(time_delta.total_seconds(),
+                             np.arange(num)*scalar,
+                             period=5820, data_range=24.0)
     # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
-    data['slt'] = np.mod(uts_root + np.arange(num) * scalar,
-                         5820) * (24./5820.)
-
+    data['slt'] = _fake_data(time_delta.total_seconds()+20,
+                             np.arange(num)*scalar,
+                             period=5280, data_range=24.0)
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
-    data['longitude'] = longitude
-
+    data['longitude'] = _fake_data(time_delta.total_seconds(), num_array,
+                                   period=6240, data_range=360.0)
     # create latitude signal for testing polar orbits
-    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
-                            (2. * np.pi / 5820.))
-    data['latitude'] = latitude
+    data['latitude'] = 90.0 * np.cos(_fake_data(time_delta.total_seconds(),
+                                                num_array, period=5280,
+                                                data_range=2.0*np.pi))
 
     # create real UTC time signal
     index = pds.date_range(date,
@@ -174,3 +170,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
     pass
+
+
+def _fake_data(t0, num_array, period=5280, data_range=24.0):
+    """Generates fake periodic data over a given range"""
+    uts_root = np.mod(t0, period)
+    return np.mod(uts_root + num_array, period) * (data_range / period)
