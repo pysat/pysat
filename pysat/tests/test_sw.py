@@ -423,41 +423,21 @@ class TestSWF107():
 class TestSWF107Combine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        # create temporary directory
-        dir_name = tempfile.mkdtemp()
+        # Switch to test_data directory
         self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(dir_name, store=False)
+        pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
-                                                 microsecond=0)
+        self.today = pysat.datetime(2019, 3, 16)
         self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
                             for tag in sw_f107.tags.keys()}
         self.combineTimes = {"start": self.today - dt.timedelta(days=30),
                              "stop": self.today + dt.timedelta(days=3)}
 
-        # Download combination testing input
-        self.download = True
-        # Load the instrument objects
-        for kk in self.combineInst.keys():
-            try:
-                if kk == '':
-                    self.combineInst[kk].download(self.combineTimes['start'],
-                                                  freq='MS')
-                else:
-                    self.combineInst[kk].download(**self.combineTimes)
-            except:
-                pass
-
-            if len(self.combineInst[kk].files.files) == 0:
-                self.download = False
-
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        for kk in self.combineInst.keys():
-            remove_files(self.combineInst[kk])
         pysat.utils.set_data_dir(self.saved_path)
-        del self.combineInst, self.download, self.today, self.combineTimes
+        del self.combineInst, self.today, self.combineTimes
 
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
@@ -471,10 +451,7 @@ class TestSWF107Combine():
                       self.combineInst[''], self.combineInst['forecast'])
 
     def test_combine_f107_inst_time(self):
-        """Test combine_f107 with times provided through 'all' and 'forecast'"""
-
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
+        """Test combine_f107 with times provided through datasets"""
 
         self.combineInst['all'].load(date=self.combineTimes['start'])
         self.combineInst['forecast'].load(date=self.today)
@@ -491,9 +468,6 @@ class TestSWF107Combine():
 
     def test_combine_f107_all(self):
         """Test combine_f107 when all input is provided with '' and '45day'"""
-
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
 
         f107_inst = sw_methods.combine_f107(self.combineInst[''],
                                             self.combineInst['45day'],
