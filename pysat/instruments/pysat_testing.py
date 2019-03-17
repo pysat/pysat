@@ -182,7 +182,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     # do slt, 20 second offset from mlt
     data['slt'] = _fake_data(time_delta.total_seconds()+20, num_array,
-                             period=5280, data_range=24.0)
+                             period=5820, data_range=24.0)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
@@ -281,4 +281,4 @@ def download(date_array, tag, sat_id, data_path=None,
 def _fake_data(t0, num_array, period=5280, data_range=24.0):
     """Generates fake periodic data over a given range"""
     uts_root = np.mod(t0, period)
-    return np.mod(uts_root + num_array, period) * (data_range / period)
+    return np.mod(uts_root + num_array, period) * (data_range / float(period))
