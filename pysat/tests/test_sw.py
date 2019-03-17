@@ -6,7 +6,6 @@ import warnings
 from nose.tools import assert_raises
 from nose.plugins import skip
 import pandas as pds
-import tempfile
 
 import pysat
 from pysat.instruments import sw_kp, sw_f107, sw_methods
@@ -152,14 +151,12 @@ class TestSWKp():
 class TestSwKpCombine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        # create temporary directory
-        dir_name = tempfile.mkdtemp()
+        # Switch to test_data directory
         self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(dir_name, store=False)
+        pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
-                                                 microsecond=0)
+        self.today = pysat.datetime(2019, 3, 16)
         self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
                         "recent_inst": pysat.Instrument("sw", "kp", "recent"),
                         "forecast_inst":
@@ -168,26 +165,10 @@ class TestSwKpCombine():
                         "stop": self.today + dt.timedelta(days=3),
                         "fill_val": -1}
 
-        # Download combination testing input
-        self.download = True
-        # Load the instrument objects
-        for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
-            try:
-                self.combine[kk].download(start=self.combine['start'],
-                                          stop=self.combine['stop'])
-            except:
-                self.download = False
-                pass
-
-            if len(self.combine[kk].files.files) == 0:
-                self.download = False
-
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
-            remove_files(self.combine[kk])
         pysat.utils.set_data_dir(self.saved_path)
-        del self.combine, self.download, self.today, self.saved_path
+        del self.combine, self.today, self.saved_path
 
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
@@ -224,8 +205,8 @@ class TestSwKpCombine():
     def test_combine_kp_inst_time(self):
         """Test combine_kp when times are provided through the instruments"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
+        # TODO: Remove skip when recent kp is fixed
+        raise skip.SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
@@ -256,8 +237,8 @@ class TestSwKpCombine():
     def test_combine_kp_all(self):
         """Test combine_kp when all input is provided"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
+        # TODO: Remove skip when recent kp is fixed
+        raise skip.SkipTest("test needs downloaded data")
 
         kp_inst = sw_methods.combine_kp(**self.combine)
 
@@ -276,8 +257,8 @@ class TestSwKpCombine():
     def test_combine_kp_no_forecast(self):
         """Test combine_kp when forecasted data is not provided"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
+        # TODO: Remove skip when recent kp is fixed
+        raise skip.SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'forecast_inst'}
@@ -297,9 +278,6 @@ class TestSwKpCombine():
     def test_combine_kp_no_recent(self):
         """Test combine_kp when recent data is not provided"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
-
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'recent_inst'}
         kp_inst = sw_methods.combine_kp(**combo_in)
@@ -318,8 +296,8 @@ class TestSwKpCombine():
     def test_combine_kp_no_standard(self):
         """Test combine_kp when standard data is not provided"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
+        # TODO: Remove skip when recent kp is fixed
+        raise skip.SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'standard_inst'}
