@@ -1,7 +1,6 @@
 import datetime as dt
 import numpy as np
 import os
-import warnings
 
 from nose.tools import assert_raises
 from nose.plugins import skip
@@ -9,26 +8,6 @@ import pandas as pds
 
 import pysat
 from pysat.instruments import sw_kp, sw_f107, sw_methods
-
-
-def remove_files(inst):
-    # remove any files downloaded as part of the unit tests
-    temp_dir = inst.files.data_path
-    # Check if there are less than 20 files to ensure this is the testing
-    # directory
-    if len(inst.files.files.values) < 20:
-        for the_file in list(inst.files.files.values):
-            # Check if filename is appended with date for fake_daily data
-            # ie, does an underscore exist to the right of the file extension?
-            if the_file.rfind('_') > the_file.rfind('.'):
-                # If so, trim the appendix to get the original filename
-                the_file = the_file[:the_file.rfind('_')]
-            file_path = os.path.join(temp_dir, the_file)
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-    else:
-        warnings.warn(''.join(('Files > 20.  Not deleted.  Please check to ',
-                              'ensure temp directory is used')))
 
 
 class TestSWKp():
