@@ -89,7 +89,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     # do slt, 20 second offset from mlt
     slt = _fake_data(time_delta.total_seconds()+20, num_array,
-                     period=5280, data_range=24.0)
+                     period=5820, data_range=24.0)
     data['slt'] = (('time'), slt)
 
     # create a fake longitude, resets every 6240 seconds
@@ -101,7 +101,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     # create latitude area for testing polar orbits
     latitude = 90.0 * np.cos(_fake_data(time_delta.total_seconds(),
-                                        num_array, period=5280,
+                                        num_array, period=5820,
                                         data_range=2.0*np.pi))
     data['latitude'] = (('time'), latitude)
 
@@ -150,6 +150,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
 def _fake_data(t0, num_array, period=5280, data_range=24.0):
     """Generates fake periodic data over a given range"""
+
     uts_root = np.mod(t0, period)
     return np.mod(uts_root + num_array, period) * (data_range / period)
 
