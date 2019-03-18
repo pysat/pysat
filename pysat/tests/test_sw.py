@@ -135,19 +135,19 @@ class TestSwKpCombine():
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.today = pysat.datetime(2019, 3, 18)
+        self.test_day = pysat.datetime(2019, 3, 18)
         self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
                         "recent_inst": pysat.Instrument("sw", "kp", "recent"),
                         "forecast_inst":
                         pysat.Instrument("sw", "kp", "forecast"),
-                        "start": self.today - dt.timedelta(days=30),
-                        "stop": self.today + dt.timedelta(days=3),
+                        "start": self.test_day - dt.timedelta(days=30),
+                        "stop": self.test_day + dt.timedelta(days=3),
                         "fill_val": -1}
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.utils.set_data_dir(self.saved_path)
-        del self.combine, self.today, self.saved_path
+        del self.combine, self.test_day, self.saved_path
 
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
@@ -188,8 +188,8 @@ class TestSwKpCombine():
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
         combo_in['standard_inst'].load(date=self.combine['start'])
-        combo_in['recent_inst'].load(date=self.today)
-        combo_in['forecast_inst'].load(date=self.today)
+        combo_in['recent_inst'].load(date=self.test_day)
+        combo_in['forecast_inst'].load(date=self.test_day)
         combo_in['stop'] = combo_in['forecast_inst'].index[-1]
 
         kp_inst = sw_methods.combine_kp(**combo_in)
@@ -323,7 +323,8 @@ class TestSWF107():
 
     def test_calc_f107a_high_rate(self):
         """ Test the calc_f107a routine with sub-daily data"""
-        self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 3840)},
+        self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200,
+                                                                3840)},
                                            index=[pysat.datetime(2009, 1, 1)
                                                   + pds.DateOffset(hours=i)
                                                   for i in range(3840)])
@@ -373,16 +374,16 @@ class TestSWF107Combine():
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.today = pysat.datetime(2019, 3, 16)
+        self.test_day = pysat.datetime(2019, 3, 16)
         self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
                             for tag in sw_f107.tags.keys()}
-        self.combineTimes = {"start": self.today - dt.timedelta(days=30),
-                             "stop": self.today + dt.timedelta(days=3)}
+        self.combineTimes = {"start": self.test_day - dt.timedelta(days=30),
+                             "stop": self.test_day + dt.timedelta(days=3)}
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.utils.set_data_dir(self.saved_path)
-        del self.combineInst, self.today, self.combineTimes
+        del self.combineInst, self.test_day, self.combineTimes
 
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
@@ -399,7 +400,7 @@ class TestSWF107Combine():
         """Test combine_f107 with times provided through datasets"""
 
         self.combineInst['all'].load(date=self.combineTimes['start'])
-        self.combineInst['forecast'].load(date=self.today)
+        self.combineInst['forecast'].load(date=self.test_day)
 
         f107_inst = sw_methods.combine_f107(self.combineInst['all'],
                                             self.combineInst['forecast'])
