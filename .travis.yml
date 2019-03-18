@@ -20,7 +20,6 @@ before_install:
   #- apt-get update
   - pip install coveralls
   - pip install future
-  - pip install xarray==0.11.0
   - pip install matplotlib
   - pip install netCDF4
   - pip install beautifulsoup4
