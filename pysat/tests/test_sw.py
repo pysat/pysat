@@ -156,7 +156,7 @@ class TestSwKpCombine():
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.today = pysat.datetime(2019, 3, 16)
+        self.today = pysat.datetime(2019, 3, 18)
         self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
                         "recent_inst": pysat.Instrument("sw", "kp", "recent"),
                         "forecast_inst":
@@ -219,7 +219,7 @@ class TestSwKpCombine():
         kp_inst = sw_methods.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
-        assert kp_inst.index[-1] <= self.combine['stop']
+        assert kp_inst.index[-1].date() <= self.combine['stop'].date()
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
 
@@ -257,9 +257,6 @@ class TestSwKpCombine():
     def test_combine_kp_no_forecast(self):
         """Test combine_kp when forecasted data is not provided"""
 
-        # TODO: Remove skip when recent kp is fixed
-        raise skip.SkipTest("test needs downloaded data")
-
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'forecast_inst'}
         kp_inst = sw_methods.combine_kp(**combo_in)
@@ -286,8 +283,8 @@ class TestSwKpCombine():
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
-        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
-               self.combine['fill_val'])
+        assert (kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
+                self.combine['fill_val'])
         assert len(kp_inst['Kp'][kp_inst['Kp']]
                    == self.combine['fill_val']) > 0
 
@@ -295,9 +292,6 @@ class TestSwKpCombine():
 
     def test_combine_kp_no_standard(self):
         """Test combine_kp when standard data is not provided"""
-
-        # TODO: Remove skip when recent kp is fixed
-        raise skip.SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'standard_inst'}
