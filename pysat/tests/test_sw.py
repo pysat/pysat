@@ -205,9 +205,6 @@ class TestSwKpCombine():
     def test_combine_kp_inst_time(self):
         """Test combine_kp when times are provided through the instruments"""
 
-        # TODO: Remove skip when recent kp is fixed
-        raise skip.SkipTest("test needs downloaded data")
-
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
@@ -236,9 +233,6 @@ class TestSwKpCombine():
 
     def test_combine_kp_all(self):
         """Test combine_kp when all input is provided"""
-
-        # TODO: Remove skip when recent kp is fixed
-        raise skip.SkipTest("test needs downloaded data")
 
         kp_inst = sw_methods.combine_kp(**self.combine)
 
