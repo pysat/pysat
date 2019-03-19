@@ -87,22 +87,24 @@ def load(fnames, tag=None, sat_id=None):
     # going to presume there are 5820 seconds per orbit (97 minute period)
     time_delta = date - pysat.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
-    data['mlt'] = _fake_data(time_delta.total_seconds(),
-                             np.arange(num)*scalar,
-                             period=5820, data_range=24.0)
+    data['mlt'] = _generate_fake_data(time_delta.total_seconds(),
+                                      np.arange(num)*scalar,
+                                      period=5820, data_range=24.0)
     # do slt, 20 second offset from mlt
-    data['slt'] = _fake_data(time_delta.total_seconds()+20,
-                             np.arange(num)*scalar,
-                             period=5820, data_range=24.0)
+    data['slt'] = _generate_fake_data(time_delta.total_seconds()+20,
+                                      np.arange(num)*scalar,
+                                      period=5820, data_range=24.0)
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    data['longitude'] = _fake_data(time_delta.total_seconds(), num_array,
-                                   period=6240, data_range=360.0)
+    data['longitude'] = _generate_fake_data(time_delta.total_seconds(),
+                                            num_array, period=6240,
+                                            data_range=360.0)
     # create latitude signal for testing polar orbits
-    data['latitude'] = 90.0 * np.cos(_fake_data(time_delta.total_seconds(),
-                                                num_array, period=5820,
-                                                data_range=2.0*np.pi))
+    angle = _generate_fake_data(time_delta.total_seconds(),
+                                num_array, period=5820,
+                                data_range=2.0*np.pi)
+    data['latitude'] = 90.0 * np.cos(angle)
 
     # create real UTC time signal
     index = pds.date_range(date,
@@ -172,8 +174,14 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     pass
 
 
-def _fake_data(t0, num_array, period=5280, data_range=24.0):
-    """Generates fake periodic data over a given range"""
+def _generate_fake_data(t0, num_array, period=5280, data_range=24.0):
+    """Generates fake data over a given range"""
 
-    uts_root = np.mod(t0, period)
-    return np.mod(uts_root + num_array, period) * (data_range / period)
+    if periodic:
+        uts_root = np.mod(t0, period)
+        data = (np.mod(uts_root + num_array, period)
+                * (data_range / float(period)))
+    else:
+        data = ((t0 + num_array) / period).astype(int)
+
+    return data

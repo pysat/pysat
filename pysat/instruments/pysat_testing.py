@@ -176,29 +176,31 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
     time_delta = date - root_date
-    data['mlt'] = _fake_data(time_delta.total_seconds(), num_array,
-                             period=5820, data_range=24.0)
+    data['mlt'] = _generate_fake_data(time_delta.total_seconds(), num_array,
+                                      period=5820, data_range=24.0)
 
     # do slt, 20 second offset from mlt
-    data['slt'] = _fake_data(time_delta.total_seconds()+20, num_array,
-                             period=5820, data_range=24.0)
+    data['slt'] = _generate_fake_data(time_delta.total_seconds()+20, num_array,
+                                      period=5820, data_range=24.0)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    data['longitude'] = _fake_data(time_delta.total_seconds(), num_array,
-                                   period=6240, data_range=360.0)
+    data['longitude'] = _generate_fake_data(time_delta.total_seconds(),
+                                            num_array, period=6240,
+                                            data_range=360.0)
 
     # create latitude area for testing polar orbits
-    data['latitude'] = 90.0 * np.cos(_fake_data(time_delta.total_seconds(),
-                                                num_array, period=5820,
-                                                data_range=2.0*np.pi))
+    angle = _generate_fake_data(time_delta.total_seconds(),
+                                num_array, period=5820,
+                                data_range=2.0*np.pi)
+    data['latitude'] = 90.0 * np.cos(angle)
 
     # fake orbit number
     fake_delta = date - (test_dates[''][''] - pds.DateOffset(years=1))
-    fake_uts_root = fake_delta.total_seconds()
-
-    data['orbit_num'] = ((fake_uts_root + num_array) / 5820.0).astype(int)
+    data['orbit_num'] = _generate_fake_data(fake_delta.total_seconds(),
+                                            num_array, period=5280,
+                                            periodic=False)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
@@ -279,8 +281,15 @@ def download(date_array, tag, sat_id, data_path=None,
     pass
 
 
-def _fake_data(t0, num_array, period=5280, data_range=24.0):
-    """Generates fake periodic data over a given range"""
+def _generate_fake_data(t0, num_array, period=5280, data_range=24.0,
+                        periodic=True):
+    """Generates fake data over a given range"""
 
-    uts_root = np.mod(t0, period)
-    return np.mod(uts_root + num_array, period) * (data_range / float(period))
+    if periodic:
+        uts_root = np.mod(t0, period)
+        data = (np.mod(uts_root + num_array, period)
+                * (data_range / float(period)))
+    else:
+        data = ((t0 + num_array) / period).astype(int)
+
+    return data
