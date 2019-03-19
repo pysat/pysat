@@ -25,6 +25,7 @@ tags = {'': 'Regular testing data set',
         'fives': 'All 5s testing data set',
         'mlt_offset': 'dummy1 is offset by five from regular testing set'}
 # dictionary of satellite IDs, list of corresponding tags
+# a numeric string can be used in sat_id to change the number of points per day
 sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
 test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
