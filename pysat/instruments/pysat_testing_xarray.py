@@ -72,7 +72,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     else:
         root_date = pysat.datetime(2009, 1, 1)
         data_date = date
-    num = 86400 if tag is '' else int(tag)
+    num = 86400 if sat_id is '' else int(sat_id)
     num_array = np.arange(num)
     uts = num_array
     index = pds.date_range(data_date,
