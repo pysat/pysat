@@ -33,10 +33,10 @@ def prep_dir(inst=None):
 
 def remove_files(inst):
     # remove any files
-    dir = inst.files.data_path
-    for the_file in os.listdir(dir):
+    temp_dir = inst.files.data_path
+    for the_file in os.listdir(temp_dir):
         if (the_file == 'pysat_test_ncdf.nc'):
-            file_path = os.path.join(dir, the_file)
+            file_path = os.path.join(temp_dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
