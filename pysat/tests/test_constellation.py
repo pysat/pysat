@@ -256,7 +256,8 @@ class TestDataMod:
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
         self.testConst = \
-            pysat.Constellation([pysat.Instrument('pysat', 'testing', tag='10',
+            pysat.Constellation([pysat.Instrument('pysat', 'testing',
+                                                  sat_id='10',
                                                   clean_level='clean')])
 
     def teardown(self):
