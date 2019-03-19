@@ -17,18 +17,16 @@ platform = 'pysat'
 name = 'testing'
 
 # dictionary of data 'tags' and corresponding description
+# tags are used to choose the behaviour of dummy1
 tags = {'': 'Regular testing data set',
         'ascend': 'Ascending Integers from 0 testing data set',
         'descend': 'Descending Integers from 0 testing data set',
         'plus10': 'Ascending Integers from 10 testing data set',
-        'fives': 'All 5s testing data set'}
+        'fives': 'All 5s testing data set',
+        'mlt_offset': 'dummy1 is offset by five from regular testing set'}
 # dictionary of satellite IDs, list of corresponding tags
-sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives']}
-test_dates = {'': {'': pysat.datetime(2009, 1, 1),
-                   'ascend': pysat.datetime(2009, 1, 1),
-                   'descend': pysat.datetime(2009, 1, 1),
-                   'plus10': pysat.datetime(2009, 1, 1),
-                   'fives': pysat.datetime(2009, 1, 1)}}
+sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
+test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 meta = pysat.Meta()
 meta['uts'] = {'units': 's',
@@ -167,9 +165,9 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         root_date = root_date or test_dates['']['']
         data_date = date
 
-    # The tag can be used to specify the number of indexes to load, if
+    # The sat_id can be used to specify the number of indexes to load, if
     # using the default testing object
-    num = 86400 if tag in tags.keys() else int(tag)
+    num = 86400 if sat_id is '' else int(sat_id)
     num_array = np.arange(num)
     uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
@@ -212,6 +210,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         data['dummy1'] = [i + 10 for i in range(len(data['mlt']))]
     elif tag == 'fives':
         data['dummy1'] = [5 for i in range(len(data['mlt']))]
+    elif tag == 'mlt_offset':
+        data['dummy1'] = mlt_int + 5
     else:
         data['dummy1'] = mlt_int
     data['dummy2'] = long_int

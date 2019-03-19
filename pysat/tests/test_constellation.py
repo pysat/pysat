@@ -122,9 +122,8 @@ class TestAdditionOppositeInstruments:
         data_label = 'dummy1'
         results = self.testC.add(bounds1, label1, bounds2, label2, bins3,
                                  label3, data_label)
-        med = results['dummy1']['median']
-        for i in med:
-            assert i == 0
+        med = np.array(results['dummy1']['median'])
+        assert abs(med).max() == 0
 
 
 class TestAdditionSimilarInstruments:
@@ -160,11 +159,11 @@ class TestAdditionSimilarInstruments:
                                  label3, data_label)
         refresults = self.refC.add(bounds1, label1, bounds2, label2, bins3,
                                    label3, data_label)
-        med = results['dummy1']['median']
-        refmed = refresults['dummy1']['median']
-        diff = [med[i] - refmed[i] for i in range(len(med))]
-        for i in diff:
-            assert i <= 10 and i >= 0
+        med = np.array(results['dummy1']['median'])
+        refmed = np.array(refresults['dummy1']['median'])
+        diff = med - refmed
+        assert diff.min() >= 0
+        assert diff.max() <= 10
 
 
 class TestAdditionSingleInstrument:
@@ -204,12 +203,12 @@ class TestAdditionSingleInstrument:
 
 class TestDifferenceSameInstrument:
     def setup(self):
-        self.const = pysat.Constellation(name='test_diff')
+        self.const = pysat.Constellation(name='test_diff_same')
 
     def teardown(self):
         del self.const
 
-    def test_diff(self):
+    def test_diff_same_instruments(self):
         self.const.load(date=pysat.datetime(2008, 1, 1))
         bounds = [('longitude', 'longitude', 0, 360, .5),
                   ('latitude', 'latitude', -90, 90, .5),
@@ -221,20 +220,13 @@ class TestDifferenceSameInstrument:
         dist = results['dist']
         # the instruments are identical, so the difference should be 0
         # everywhere
-        for i in diff:
-            assert i == 0
-        for i in dist:
-            assert i == 0
-
-
-class TestDifferenceSmallInstruments(TestDifferenceSameInstrument):
-    def setup(self):
-        self.const = pysat.Constellation(name='test_diff_small')
+        assert abs(diff).max() == 0
+        assert abs(dist).max() == 0
 
 
 class TestDifferenceSimilarInstruments:
     def setup(self):
-        self.const = pysat.Constellation(name='test_diff2')
+        self.const = pysat.Constellation(name='test_diff_similar')
 
     def teardown(self):
         del self.const
@@ -249,8 +241,7 @@ class TestDifferenceSimilarInstruments:
                                         cost_function)
         diff = results['dummy1']
         dist = results['dist']
-        for i in diff:
-            assert i == 5
+        assert abs(diff - 5).max() == 0
 
 
 # test cost function for testing difference
