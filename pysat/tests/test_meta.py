@@ -987,3 +987,14 @@ class TestBasics():
         assert (self.meta['NEW21'].units == 'hey2')
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+    def test_keep_meta(self):
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
+                              'YoYoYO': 'yolo'}
+        self.meta.keep(['NEW21'])
+
+        assert not ('new' in self.meta.data.index)
+        assert (self.meta['NEW21'].units == 'hey2')
+        assert (self.meta['NEW21'].long_name == 'boo2')
+        assert (self.meta['NEW21'].YoYoYO == 'yolo')
