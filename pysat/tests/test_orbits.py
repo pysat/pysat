@@ -1,10 +1,10 @@
-import numpy as np
-import pysat
-import pandas as pds
-from nose.tools import assert_raises, raises
-import nose.tools
-
 from dateutil.relativedelta import relativedelta as relativedelta
+import numpy as np
+
+from nose.tools import raises
+import pandas as pds
+
+import pysat
 
 
 class TestSpecificUTOrbits():

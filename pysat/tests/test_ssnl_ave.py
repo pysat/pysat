@@ -4,7 +4,7 @@ tests the pysat averaging code
 import numpy as np
 import sys
 
-from nose.tools import assert_raises, raises
+from nose.tools import raises
 import pandas as pds
 
 import pysat
@@ -509,17 +509,19 @@ class TestInstMed1D():
                                                           self.test_bins[2]+1))
         del med_dict, kk, jj
 
+    @raises(KeyError)
     def test_median1D_bad_data(self):
         """Test failure of median1D with string data instead of list"""
 
-        assert_raises(KeyError, avg.median1D, self.testInst, self.test_bins,
-                      self.test_label, self.test_data[0])
+        avg.median1D(self.testInst, self.test_bins, self.test_label,
+                     self.test_data[0])
 
+    @raises(KeyError)
     def test_median1D_bad_label(self):
         """Test failure of median1D with unknown label"""
 
-        assert_raises(KeyError, avg.median1D, self.testInst, self.test_bins,
-                      "bad_label", self.test_data)
+        avg.median1D(self.testInst, self.test_bins, "bad_label",
+                     self.test_data)
 
     @raises(ValueError)
     def test_nonmonotonic_bins(self):

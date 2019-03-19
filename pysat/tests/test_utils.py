@@ -4,8 +4,9 @@ tests the pysat utils area
 import numpy as np
 import os
 import tempfile
-import nose.tools
-from nose.tools import assert_raises, raises
+
+import netCDF4
+from nose.tools import raises
 import pysat
 
 import sys
@@ -19,8 +20,6 @@ else:
 # test netCDF export file support
 
 def prep_dir(inst=None):
-    import os
-    import shutil
 
     if inst is None:
         inst = pysat.Instrument(platform='pysat', name='testing')
@@ -34,11 +33,10 @@ def prep_dir(inst=None):
 
 def remove_files(inst):
     # remove any files
-    dir = inst.files.data_path
-    for the_file in os.listdir(dir):
-        if (the_file[0:13] == 'pysat_testing') & (the_file[-19:] ==
-                                                  '.pysat_testing_file'):
-            file_path = os.path.join(dir, the_file)
+    temp_dir = inst.files.data_path
+    for the_file in os.listdir(temp_dir):
+        if (the_file == 'pysat_test_ncdf.nc'):
+            file_path = os.path.join(temp_dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
 
@@ -120,6 +118,7 @@ class TestBasicNetCDF4():
                                          name='testing',
                                          clean_level='clean')
         self.testInst.pandas_format = True
+
         # create testing directory
         prep_dir(self.testInst)
 
@@ -134,14 +133,9 @@ class TestBasicNetCDF4():
 
     def test_basic_write_and_read_netcdf4_default_format(self):
         # create a bunch of files by year and doy
-        from unittest.case import SkipTest
-        try:
-            import netCDF4
-        except ImportError:
-            raise SkipTest
-
         prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile)
 
@@ -154,18 +148,12 @@ class TestBasicNetCDF4():
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key]))
-        # assert(np.all(self.testInst.data == loaded_inst))
 
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
-        from unittest.case import SkipTest
-        try:
-            import netCDF4
-        except ImportError:
-            raise SkipTest
-
         prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile, zlib=True)
 
@@ -182,14 +170,9 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
-        from unittest.case import SkipTest
-        try:
-            import netCDF4
-        except ImportError:
-            raise SkipTest
-
         prep_dir(self.testInst)
-        outfile = os.path.join(self.testInst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile, epoch_name='Santa')
 
@@ -206,15 +189,9 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):
         # create a bunch of files by year and doy
-        from unittest.case import SkipTest
-        try:
-            import netCDF4
-        except ImportError:
-            raise SkipTest
-
         test_inst = pysat.Instrument('pysat', 'testing2d')
         prep_dir(test_inst)
-        outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(test_inst.files.data_path, 'pysat_test_ncdf.nc')
         test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
@@ -251,14 +228,9 @@ class TestBasicNetCDF4():
 
     def test_write_and_read_netcdf4_default_format_higher_order_w_zlib(self):
         # create a bunch of files by year and doy
-        from unittest.case import SkipTest
-        try:
-            import netCDF4
-        except ImportError:
-            raise SkipTest
         test_inst = pysat.Instrument('pysat', 'testing2d')
         prep_dir(test_inst)
-        outfile = os.path.join(test_inst.files.data_path, 'test_ncdf.nc')
+        outfile = os.path.join(test_inst.files.data_path, 'pysat_test_ncdf.nc')
         test_inst.load(2009, 1)
         test_inst.to_netcdf4(outfile, zlib=True)
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)

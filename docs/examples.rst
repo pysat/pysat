@@ -32,8 +32,8 @@ How often does a particular thing occur on a orbit-by-orbit basis? Let's find ou
 
   # define function to remove flagged values
   def filter_vefi(inst):
-      idx, = np.where(vefi['B_flag'] == 0)
-      vefi.data = vefi.data.iloc[idx]
+      idx, = np.where(inst['B_flag'] == 0)
+      inst.data = inst.data.iloc[idx]
       return
 
 
@@ -60,6 +60,7 @@ How often does a particular thing occur on a orbit-by-orbit basis? Let's find ou
   # a dict indexed by data_label is returned
   # in this case, only one, we'll pull it out
   ans = ans['dB_mer']
+
   # plot occurrence probability
   f, axarr = plt.subplots(2, 1, sharex=True, sharey=True)
   masked = np.ma.array(ans['prob'], mask=np.isnan(ans['prob']))
@@ -183,7 +184,7 @@ Note the same averaging routine is used for both COSMIC and IVM, and that both 1
   ivm = pysat.Instrument(platform='cnofs',
                          name='ivm', tag='',
                          clean_level='clean')
-  # restrict meausurements to those near geomagnetic equator
+  # restrict measurements to those near geomagnetic equator
   ivm.custom.add(restrictMLAT, 'modify', maxMLAT=25.)
   # perform seasonal average
   ivm.bounds = (startDate, stopDate)
