@@ -46,8 +46,8 @@ class TestSWKp():
         """ Test conversion of Kp to ap with fill values"""
 
         # Set the first value to a fill value, then calculate ap
-        self.testInst['Kp'][0] = \
-            self.testInst.meta['Kp'][self.testInst.meta.fill_label]
+        fill_label = self.testInst.meta.fill_label
+        self.testInst['Kp'][0] = self.testInst.meta['Kp'][fill_label]
         sw_kp.convert_3hr_kp_to_ap(self.testInst)
 
         # Test non-fill ap values
@@ -59,14 +59,10 @@ class TestSWKp():
                self.testInst.meta['3hr_ap'][self.testInst.meta.max_label])
 
         # Test the fill value in the data and metadata
-        if np.isnan(self.testInst['Kp'][0]):
-            assert np.isnan(self.testInst['3hr_ap'][0])
-            assert np.isnan( \
-                self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label])
-        else:
-            assert self.testInst['Kp'][0] == self.testInst['3hr_ap'][0]
-            assert(self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label]
-                   == self.testInst.meta['Kp'][self.testInst.meta.fill_label])
+        assert np.isnan(self.testInst['3hr_ap'][0])
+        assert np.isnan(self.testInst.meta['3hr_ap'][fill_label])
+
+        del fill_label
 
     def test_convert_kp_to_ap_bad_input(self):
         """ Test conversion of Kp to ap with bad input"""
@@ -199,16 +195,10 @@ class TestSwKpCombine():
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
 
-        fill_val = combo_in['standard_inst'].meta['Kp'][kp_inst.meta.fill_label]
+        assert np.isnan(kp_inst.meta['Kp'][kp_inst.meta.fill_label])
+        assert len(kp_inst['Kp'][np.isnan(kp_inst['Kp'])]) == 0
 
-        if np.isnan(fill_val):
-            assert np.isnan(kp_inst.meta['Kp'][kp_inst.meta.fill_label])
-            assert len(kp_inst['Kp'][np.isnan(kp_inst['Kp'])]) == 0
-        else:
-            assert kp_inst.meta['Kp'][kp_inst.meta.fill_label] == fill_val
-            assert len(kp_inst['Kp'][kp_inst['Kp'] == fill_val]) == 0
-
-        del combo_in, kp_inst, fill_val
+        del combo_in, kp_inst
 
     def test_combine_kp_all(self):
         """Test combine_kp when all input is provided"""
