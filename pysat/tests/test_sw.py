@@ -191,6 +191,7 @@ class TestSwKpCombine():
         kp_inst = sw_methods.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
+        # kp_inst contains times up to 21:00:00, coombine['stop'] is midnight
         assert kp_inst.index[-1].date() <= self.combine['stop'].date()
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
