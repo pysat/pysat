@@ -12,7 +12,7 @@ class TestSpecificUTOrbits():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'mlt'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -128,7 +128,7 @@ class TestGeneralOrbitsMLT():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'mlt'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -279,7 +279,7 @@ class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'mlt'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -293,7 +293,7 @@ class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'longitude', 'kind': 'longitude'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -307,7 +307,7 @@ class TestGeneralOrbitsLongxarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'longitude', 'kind': 'longitude'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -321,7 +321,7 @@ class TestGeneralOrbitsOrbitNumber(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'orbit_num', 'kind': 'orbit'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -335,7 +335,7 @@ class TestGeneralOrbitsOrbitNumberXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'orbit_num', 'kind': 'orbit'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -349,7 +349,7 @@ class TestGeneralOrbitsLatitude(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'latitude', 'kind': 'polar'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -363,7 +363,7 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'latitude', 'kind': 'polar'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
@@ -409,7 +409,7 @@ class TestOrbitsGappyData(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'mlt'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
         self.testInst.custom.add(filter_data, 'modify')
@@ -423,7 +423,7 @@ class TestOrbitsGappyDataXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'mlt'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
         self.testInst.custom.add(filter_data, 'modify')
@@ -436,7 +436,7 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'mlt'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info)
         times = [[pysat.datetime(2008, 12, 31, 4),
@@ -463,7 +463,7 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'mlt'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info)
         times = [[pysat.datetime(2008, 12, 31, 4),
@@ -490,7 +490,7 @@ class TestOrbitsGappyLongData(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'longitude', 'kind': 'longitude'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
@@ -504,7 +504,7 @@ class TestOrbitsGappyLongDataXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'longitude', 'kind': 'longitude'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
@@ -518,7 +518,7 @@ class TestOrbitsGappyOrbitNumData(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'orbit_num', 'kind': 'orbit'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
@@ -532,7 +532,7 @@ class TestOrbitsGappyOrbitNumDataXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'orbit_num', 'kind': 'orbit'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
@@ -546,7 +546,7 @@ class TestOrbitsGappyOrbitLatData(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'latitude', 'kind': 'polar'}
-        self.testInst = pysat.Instrument('pysat', 'testing', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
@@ -560,7 +560,7 @@ class TestOrbitsGappyOrbitLatDataXarray(TestGeneralOrbitsMLT):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         info = {'index': 'latitude', 'kind': 'polar'}
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '86400',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info)
         self.testInst.custom.add(filter_data, 'modify')
