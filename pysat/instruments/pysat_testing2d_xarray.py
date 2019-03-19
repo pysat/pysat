@@ -151,7 +151,8 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     pass
 
 
-def _generate_fake_data(t0, num_array, period=5280, data_range=24.0):
+def _generate_fake_data(t0, num_array, period=5280, data_range=24.0,
+                        periodic=True):
     """Generates fake data over a given range"""
 
     if periodic:
