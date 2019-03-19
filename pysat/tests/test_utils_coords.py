@@ -2,8 +2,10 @@
 tests the pysat coords area
 """
 import numpy as np
-import pandas as pds
+
 from nose.tools import assert_raises, raises
+import pandas as pds
+
 import pysat
 from pysat.utils import coords, time
 

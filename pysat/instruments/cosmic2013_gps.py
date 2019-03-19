@@ -119,7 +119,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         # adding microseconds to ensure each time is unique, not allowed to
         # pass 1.E-3 s
         uts += np.mod(np.array(microseconds).astype(int) * 4, 8000) * 1.E-5
-        index = pysat.utils.create_datetime_index(year=year, day=days, uts=uts)
+        index = pysat.utils.time.create_datetime_index(year=year, day=days,
+                                                       uts=uts)
         file_list = pysat.Series(cosmicFiles, index=index)
         return file_list
     else:
@@ -139,11 +140,12 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
         output = pysat.DataFrame(load_files(cosmicFiles, tag=tag,
                                             sat_id=sat_id,
                                             altitude_bin=altitude_bin))
-        utsec = output.hour*3600.+output.minute*60.+output.second
-        output.index = pysat.utils.create_datetime_index(year=output.year,
-                                                         month=output.month,
-                                                         day=output.day,
-                                                         uts=utsec)
+        utsec = output.hour * 3600. + output.minute * 60. + output.second
+        output.index = \
+            pysat.utils.time.create_datetime_index(year=output.year,
+                                                   month=output.month,
+                                                   day=output.day,
+                                                   uts=utsec)
         # make sure UTS strictly increasing
         output.sort_index(inplace=True)
         # use the first available file to pick out meta information
@@ -227,7 +229,8 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
                 out['profiles'].index = \
                     (out['profiles']['MSL_alt']/altitude_bin).round().values \
                     * altitude_bin
-                out['profiles'] = out['profiles'].groupby(out['profiles'].index.values).mean()
+                out['profiles'] = \
+                    out['profiles'].groupby(out['profiles'].index.values).mean()
         else:
             for out in output:
                 out['profiles'].index = out['profiles']['MSL_alt']
@@ -316,7 +319,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     for date in date_array:
         print('Downloading COSMIC data for '+date.strftime('%D'))
         sys.stdout.flush()
-        yr, doy = pysat.utils.getyrdoy(date)
+        yr, doy = pysat.utils.time.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
         dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
                          "tarservice/data/cosmic2013/"))

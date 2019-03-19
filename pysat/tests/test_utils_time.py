@@ -2,8 +2,10 @@
 tests the pysat utils.time area
 """
 import numpy as np
+
+from nose.tools import raises
 import pandas as pds
-from nose.tools import assert_raises, raises
+
 import pysat
 from pysat.utils import time as pytime
 
@@ -60,6 +62,7 @@ def test_parse_date_4_digit_year():
 @raises(ValueError)
 def test_parse_date_bad_input():
     """Test the ability to idenitfy a non-physical date"""
+
     date = pytime.parse_date('194', '15', '31')
 
 
@@ -88,16 +91,18 @@ def test_calc_freq_ns():
     assert freq.find("10000000N") == 0
 
 
+@raises(ValueError)
 def test_calc_freq_len_fail():
     """Test index frequency calculation with empty list"""
 
-    assert_raises(ValueError, pytime.calc_freq, list())
+    pytime.calc_freq(list())
 
 
+@raises(AttributeError)
 def test_calc_freq_type_fail():
     """Test index frequency calculation with non-datetime list"""
 
-    assert_raises(AttributeError, pytime.calc_freq, [1, 2, 3, 4])
+    pytime.calc_freq([1, 2, 3, 4])
 
 
 ####################

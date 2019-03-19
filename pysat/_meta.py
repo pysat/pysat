@@ -279,40 +279,6 @@ class Meta(object):
                 drop_names.append(name)
         self.drop(drop_names)
 
-#     def default_labels_and_values(self, name):
-#         """Returns dictionary of default meta labels and values for name
-#         variable.
-#
-#         Metadata is automatically tracked for various properties, name,
-#         long_name, units, description, etc. Each of these values (labels)
-#         corresponds to a given string (values).
-#
-#         Parameters
-#         ----------
-#         name : list_like of str
-#             variable names to get default metadata parameters for
-#
-#         Returns
-#         -------
-#         dict
-#             keys are metadata labels used within Meta object, values are the
-#             default values assigned if data is never specified by user
-#
-#         """
-#         num = len(name)
-#         default_str = [''] * num
-#         default_nan = [np.NaN] * num
-#         return {self.units_label: default_str,
-#                 self.name_label: name,
-#                 self.notes_label: default_str,
-#                 self.desc_label: default_str,
-#                 self.plot_label: name,
-#                 self.axis_label: name,
-#                 self.scale_label: ['linear'] * num,
-#                 self.min_label: default_nan,
-#                 self.max_label: default_nan,
-#                 self.fill_label: default_nan}
-
     def apply_default_labels(self, other):
         """Applies labels for default meta labels from self onto other.
 

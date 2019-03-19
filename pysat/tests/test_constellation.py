@@ -1,7 +1,7 @@
 from nose.tools import raises
 import numpy as np
+
 import pysat
-import pandas as pds
 
 
 class TestConstellation:
@@ -263,10 +263,9 @@ class TestDataMod:
     """Test adapted from test_custom.py."""
     def setup(self):
         '''Runs before every method to create a clean testing setup.'''
-        self.testConst = pysat.Constellation([pysat.Instrument('pysat',
-                                                               'testing',
-                                                               tag='10',
-                                                               clean_level='clean')])
+        self.testConst = \
+            pysat.Constellation([pysat.Instrument('pysat', 'testing', tag='10',
+                                                  clean_level='clean')])
 
     def teardown(self):
         '''Runs after every method to clean up previous testing.'''

@@ -1765,7 +1765,7 @@ class Instrument(object):
                 raise TypeError('Unknown Variable Type' + str(coltype))
 
     def _get_data_info(self, data, file_format):
-        """Support file writing by determiniing data type and other options
+        """Support file writing by determining data type and other options
 
         Parameters
         ----------

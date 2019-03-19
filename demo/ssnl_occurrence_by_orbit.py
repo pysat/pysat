@@ -20,8 +20,8 @@ vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
 
 # define function to remove flagged values
 def filter_vefi(inst):
-    idx, = np.where(vefi['B_flag'] == 0)
-    vefi.data = vefi.data.iloc[idx]
+    idx, = np.where(inst['B_flag'] == 0)
+    inst.data = inst.data.iloc[idx]
     return
 
 
