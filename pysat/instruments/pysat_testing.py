@@ -199,7 +199,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # fake orbit number
     fake_delta = date - (test_dates[''][''] - pds.DateOffset(years=1))
     data['orbit_num'] = _generate_fake_data(fake_delta.total_seconds(),
-                                            num_array, period=5280,
+                                            num_array, period=5820,
                                             cyclic=False)
 
     # create some fake data to support testing of averaging routines

@@ -108,7 +108,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # fake orbit number
     fake_delta = date - pysat.datetime(2008, 1, 1)
     orbit_num = _generate_fake_data(fake_delta.total_seconds(),
-                                    num_array, period=5280,
+                                    num_array, period=5820,
                                     cyclic=False)
 
     data['orbit_num'] = (('time'), orbit_num)
