@@ -48,11 +48,13 @@ install:
   - cd /home/travis/build/rstoneback/pysat
   - python setup.py install
 
-# Set up a display for plot tests
+# Set up a display for plot tests for python 2.7.  Automatically done for 3.x
 before_script:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - sleep 3  # give xvfb some time to start
+  - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
+      export DISPLAY=:99.0
+      sh -e /etc/init.d/xvfb start
+      sleep 3  # give xvfb some time to start
+    fi
 
 # command to run tests
 script:
