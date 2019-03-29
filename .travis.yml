@@ -1,9 +1,15 @@
 language: python
-python:
-  - 2.7
-  - 3.7
-dist: xenial
-sudo: false
+matrix:
+  include:
+    - python: 2.7
+      export DISPLAY=:99.0
+      sh -e /etc/init.d/xvfb start
+      sleep 3  # give xvfb some time to start
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7
+      dist: xenial
+      sudo: true
 
 cache: pip
 cache:
@@ -44,15 +50,6 @@ install:
   # install pysat
   - cd /home/travis/build/rstoneback/pysat
   - python setup.py install
-
-# Set up a display for plot tests for python 2.7.  Automatically done for 3.x
-before_script:
-  - |
-    if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
-      export DISPLAY=:99.0
-      sh -e /etc/init.d/xvfb start
-      sleep 3  # give xvfb some time to start
-    fi
 
 # command to run tests
 script:
