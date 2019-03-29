@@ -1,12 +1,9 @@
 language: python
-# Enable 3.7 without globally enabling sudo and dist: xenial for other build jobs
-matrix:
-  include:
-    - python: 2.7
-      sudo: false
-    - python: 3.7
-      dist: xenial
-      sudo: true
+python:
+  - 2.7
+  - 3.7
+dist: xenial
+sudo: false
 
 cache: pip
 cache:
@@ -50,7 +47,8 @@ install:
 
 # Set up a display for plot tests for python 2.7.  Automatically done for 3.x
 before_script:
-  - if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
+  - |
+    if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
       export DISPLAY=:99.0
       sh -e /etc/init.d/xvfb start
       sleep 3  # give xvfb some time to start
