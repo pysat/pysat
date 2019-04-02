@@ -1,9 +1,6 @@
 language: python
 dist: xenial
-services:
-  - xvfb
-  - gfortran
-  - libncurses5-dev
+services: xvfb
 matrix:
   include:
     - python: 2.7
@@ -13,6 +10,12 @@ cache: pip
 cache:
    directories:
       - ../pyglow_cache
+
+addons:
+  apt:
+    packages:
+    - gfortran
+    - libncurses5-dev
 
 # Setup anaconda
 before_install:
@@ -48,6 +51,7 @@ before_script:
 
 # command to run tests
 script:
+ - xvfb-run make test
  - nosetests -vs pysat/tests/test_ssnl_plot.py
 
 after_success:
