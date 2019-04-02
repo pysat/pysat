@@ -56,7 +56,7 @@ before_script:
 
 # command to run tests
 script:
- - nosetests -vs pysat/tests/test_ssnl_plot.py
+ - nosetests -vs --with-coverage --cover-package=pysat
 
 after_success:
  - coveralls
