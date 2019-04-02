@@ -1,6 +1,9 @@
 language: python
 dist: xenial
-services: xvfb
+services:
+  - xvfb
+  - gfortran
+  - libncurses5-dev
 matrix:
   include:
     - python: 2.7
@@ -10,12 +13,6 @@ cache: pip
 cache:
    directories:
       - ../pyglow_cache
-
-addons:
-  apt:
-    packages:
-    - gfortran
-    - libncurses5-dev
 
 # Setup anaconda
 before_install:
