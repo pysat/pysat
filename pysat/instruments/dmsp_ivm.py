@@ -247,7 +247,8 @@ def smooth_ram_drifts(inst, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
     else:
         rpa_idx = list()
 
-    inst[rpa_idx, rpa_vel_key] = inst[rpa_idx, rpa_vel_key].rolling(15, 5).mean()
+    inst[rpa_idx, rpa_vel_key] = \
+        inst[rpa_idx, rpa_vel_key].rolling(15, 5).mean()
     return
 
 
