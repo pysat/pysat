@@ -2,7 +2,6 @@
 tests the pysat averaging code
 """
 import numpy as np
-import sys
 
 from nose.tools import raises
 import pandas as pds
@@ -335,7 +334,6 @@ class Test2DConstellation:
         dummy_val = results['uts']['median']
         dummy_dev = results['uts']['avg_abs_dev']
 
-        dummy_x = results['uts']['bin_x']
         dummy_y = results['uts']['bin_y']
 
         # iterate over all y rows

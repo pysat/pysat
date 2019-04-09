@@ -9,7 +9,7 @@ import tempfile
 
 import pysat
 import pysat.instruments.pysat_testing
-import pysat.tests.test_instruments
+import pysat.tests.test_instruments as test_inst
 
 include_list = ['sw_dst']
 # dict, keyed by pysat instrument, with a list of usernames and passwords
@@ -79,7 +79,7 @@ init_names = None
 #        os.environ.get('Travis'),
 #        os.environ.get('TRAVIS'), os.environ.get('CI'))
 if not (os.environ.get('TRAVIS') == 'true'):
-    class TestFTPInstrumentQualifier(pysat.tests.test_instruments.TestInstrumentQualifier):
+    class TestFTPInstrumentQualifier(test_inst.TestInstrumentQualifier):
 
         def __init__(self):
             """Iterate through and create all of the test Instruments needed"""
