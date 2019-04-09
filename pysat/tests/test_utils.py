@@ -5,8 +5,6 @@ import numpy as np
 import os
 import tempfile
 
-import netCDF4
-from nose.tools import raises
 import pysat
 
 import sys

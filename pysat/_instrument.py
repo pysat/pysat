@@ -20,8 +20,7 @@ from . import _files
 from . import _orbits
 from . import _meta
 from . import utils
-from pysat import data_dir
-from pysat import DataFrame, Series
+from pysat import DataFrame
 
 
 # main class for users
