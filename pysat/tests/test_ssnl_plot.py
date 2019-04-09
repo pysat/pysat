@@ -1,12 +1,8 @@
 """
 tests the pysat averaging code
 """
-import numpy as np
-import sys
 
 import matplotlib.pyplot as plt
-from nose.tools import raises
-import pandas as pds
 
 import pysat
 from pysat.ssnl import plot

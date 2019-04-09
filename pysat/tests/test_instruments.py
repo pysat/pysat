@@ -5,10 +5,8 @@ from importlib import import_module
 from functools import partial
 import numpy as np
 import os
-import sys
 import warnings
 
-import nose.tools
 import pandas as pds
 import tempfile
 
@@ -146,12 +144,12 @@ class TestInstrumentQualifier():
         pass
 
     def check_module_loadable(self, module, tag, sat_id):
-        a = pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
+        _ = pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
         assert True
 
     def check_module_importable(self, name):
-        module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
+        _ = import_module(''.join(('.', name)),
+                          package='pysat.instruments')
         assert True
 
     def check_module_info(self, module):

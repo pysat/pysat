@@ -334,23 +334,6 @@ class Files(object):
         new_files = new_info[-new_info.isin(old_info)]
         return new_files
 
-    # def mark_as_new(self, files):
-    #     """Set list of files as new.
-    #
-    #     """
-    #     pass
-        # stored_info = self._load()
-        # if not stored_info.empty: # is not False:
-        #     new_info = self._sat._list_rtn(tag = self._sat.tag,
-        #                                    data_path=self.data_path,
-        #                                    format_str=self.file_format)
-        #     new_info = self._remove_data_dir_path(new_info)
-        #     new_files = new_info[~new_info.isin(stored_info) ]
-        #     return new_files
-        # else:
-        #     print('No previously stored files that we may compare to.')
-        #     return pds.Series([], dtype='a') #False
-
     def get_index(self, fname):
         """Return index for a given filename.
 
@@ -371,7 +354,6 @@ class Files(object):
         if len(idx) == 0:
             # filename not in index, try reloading files from disk
             self.refresh()
-            # print("DEBUG get_index:", fname, self.files)
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
@@ -721,8 +703,10 @@ def parse_delimited_filenames(files, format_str, delimiter):
     -------
     OrderedDict
         Information parsed from filenames
-        'year', 'month', 'day', 'hour', 'minute', 'second', 'version', 'revision'
+        'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
+        'revision'
         'files' - input list of files
+        'format_str' - formatted string from input
 
     """
 

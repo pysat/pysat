@@ -5,7 +5,7 @@ import functools
 
 import numpy as np
 import pandas as pds
-from pysat import Series, DataFrame
+from pysat import Series
 
 
 class Orbits(object):
