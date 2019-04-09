@@ -35,10 +35,10 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import glob
-import netCDF4
+import numpy as np
 import os
 
-import numpy as np
+import netCDF4
 
 import pysat
 
