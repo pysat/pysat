@@ -42,7 +42,6 @@ import os
 import sys
 
 import numpy as np
-import pandas as pds
 from scipy.io.netcdf import netcdf_file
 
 import pysat
@@ -97,9 +96,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     # number of files may be large
     # only select file that are the cosmic data files and end with _nc
-    cosmicFiles = glob.glob(os.path.join(data_path, '*/*_nc'))
+    fnames = glob.glob(os.path.join(data_path, '*/*_nc'))
     # need to get date and time from filename to generate index
-    num = len(cosmicFiles)
+    num = len(fnames)
     if num != 0:
         print('Estimated time:', num*1.E-5, 'seconds')
         sys.stdout.flush()
@@ -109,7 +108,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         hours = [None] * num
         minutes = [None] * num
         microseconds = [None] * num
-        for i, f in enumerate(cosmicFiles):
+        for i, f in enumerate(fnames):
             f2 = f.split('.')
             year[i] = f2[-6]
             days[i] = f2[-5]
@@ -126,24 +125,38 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         uts += np.mod(np.array(microseconds).astype(int) * 4, 8000) * 1.E-5
         index = pysat.utils.time.create_datetime_index(year=year, day=days,
                                                        uts=uts)
-        file_list = pysat.Series(cosmicFiles, index=index)
+        file_list = pysat.Series(fnames, index=index)
         return file_list
     else:
         print('Found no files, check your path or download them.')
         return pysat.Series(None)
 
 
-def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
+def load(fnames, tag=None, sat_id=None, altitude_bin=None):
+    """Load COSMIC GPS files, 2013 reprocessing.
+
+    Parameters
+    ------------
+    fnames : (pandas.Series)
+        Series of filenames
+    tag : (str or NoneType)
+        tag or None (default=None)
+    sat_id : (str or NoneType)
+        satellite id or None (default=None)
+
+    Returns
+    ---------
+    data : (pandas.DataFrame)
+        Object containing satellite data
+    meta : (pysat.Meta)
+        Object containing metadata such as column names and units
     """
-    cosmic data load routine, called by pysat
-    """
-    num = len(cosmicFiles)
+    num = len(fnames)
     # make sure there are files to read
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pysat.DataFrame(load_files(cosmicFiles, tag=tag,
-                                            sat_id=sat_id,
+        output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id,
                                             altitude_bin=altitude_bin))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
         output.index = \
@@ -160,7 +173,7 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
         repeat = True
         while repeat:
             try:
-                data = netcdf_file(cosmicFiles[ind], mode='r', mmap=False)
+                data = netcdf_file(fnames[ind], mode='r', mmap=False)
                 keys = data.variables.keys()
                 for key in keys:
                     profile_meta[key] = {'units': data.variables[key].units,
@@ -185,10 +198,10 @@ def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
 def load_files(files, tag=None, sat_id=None, altitude_bin=None):
-    '''Loads a list of COSMIC data files, supplied by user.
+    """Loads a list of COSMIC data files, supplied by user.
 
     Returns a list of dicts, a dict for each file.
-    '''
+    """
 
     output = [None] * len(files)
     drop_idx = []
@@ -243,7 +256,90 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     return output
 
 
+def download(date_array, tag, sat_id, data_path=None, user=None,
+             password=None):
+    """Routine to download COSMIC GPS data, 2013 reprocessing.
+
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Returns
+    --------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Notes
+    --------
+
+    """
+    import requests
+    from requests.auth import HTTPBasicAuth
+    import os
+    import tarfile
+    import shutil
+
+    if tag == 'ionprf':
+        sub_dir = 'ionPrf'
+    elif tag == 'sonprf':
+        sub_dir = 'sonPrf'
+    elif tag == 'wetprf':
+        sub_dir = 'wetPrf'
+    elif tag == 'atmPrf':
+        sub_dir = 'atmPrf'
+    else:
+        raise ValueError('Unknown cosmic_gps tag')
+
+    if (user is None) or (password is None):
+        raise ValueError('CDAAC user account information must be provided.')
+
+    for date in date_array:
+        print('Downloading COSMIC data for '+date.strftime('%D'))
+        sys.stdout.flush()
+        yr, doy = pysat.utils.time.getyrdoy(date)
+        yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
+        dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                         "tarservice/data/cosmic2013/"))
+        dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
+                                                                 doy=doy)
+        req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+        fname = os.path.join(data_path,
+                             'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
+        with open(fname, "wb") as local_file:
+            local_file.write(req.content)
+            local_file.close()
+            # uncompress files
+            tar = tarfile.open(fname)
+            tar.extractall(path=data_path)
+            tar.close()
+            # move files
+            ext_dir = os.path.join(data_path, 'cosmic2013', sub_dir, yrdoystr)
+            shutil.move(ext_dir, os.path.join(data_path, yrdoystr))
+
+    return
+
+
 def clean(self):
+    """Routine to return COSMIC GPS data cleaned to the specified level
+
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Returns
+    --------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Notes
+    --------
+    Supports 'clean', 'dusty', 'dirty'
+
+    """
 
     if self.tag == 'ionprf':
         # ionosphere density profiles
@@ -295,53 +391,5 @@ def clean(self):
             # work
             self.data = self.data[((self['alttp_s4max'] != -999.) &
                                    (self['s4max9sec'] != -999.))]
-
-    return
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    import requests
-    from requests.auth import HTTPBasicAuth
-    import os
-    import tarfile
-    import shutil
-
-    if tag == 'ionprf':
-        sub_dir = 'ionPrf'
-    elif tag == 'sonprf':
-        sub_dir = 'sonPrf'
-    elif tag == 'wetprf':
-        sub_dir = 'wetPrf'
-    elif tag == 'atmPrf':
-        sub_dir = 'atmPrf'
-    else:
-        raise ValueError('Unknown cosmic_gps tag')
-
-    if (user is None) or (password is None):
-        raise ValueError('CDAAC user account information must be provided.')
-
-    for date in date_array:
-        print('Downloading COSMIC data for '+date.strftime('%D'))
-        sys.stdout.flush()
-        yr, doy = pysat.utils.time.getyrdoy(date)
-        yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
-                         "tarservice/data/cosmic2013/"))
-        dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
-                                                                 doy=doy)
-        req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
-        fname = os.path.join(data_path,
-                             'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
-        with open(fname, "wb") as local_file:
-            local_file.write(req.content)
-            local_file.close()
-            # uncompress files
-            tar = tarfile.open(fname)
-            tar.extractall(path=data_path)
-            tar.close()
-            # move files
-            ext_dir = os.path.join(data_path, 'cosmic2013', sub_dir, yrdoystr)
-            shutil.move(ext_dir, os.path.join(data_path, yrdoystr))
 
     return

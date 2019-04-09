@@ -36,8 +36,6 @@ Example
 
 from __future__ import print_function, absolute_import
 
-import sys
-import functools
 import pandas as pds
 import numpy as np
 
@@ -196,7 +194,8 @@ def load_experiment_data(fhandle):
         data_names.append('status_flag_{:02d}'.format(i))
         data_units[data_names[-1]] = "N/A"
 
-    data.append(demeter_methods.bytes_to_float(chunk[42:46]))  # Time resolution
+    # Add time resolution
+    data.append(demeter_methods.bytes_to_float(chunk[42:46]))
     data_names.append('time_resolution')
     data_units[data_names[-1]] = "s"
 

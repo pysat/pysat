@@ -5,7 +5,7 @@ of the Coupled Ion Netural Dynamics Investigation (CINDI). Downloads
 data from the NASA Coordinated Data Analysis Web (CDAWeb) in CDF
 format.
 
-The IVM is comprised of the Retarding Potential Analyzer (RPA) and
+The IVM is composed of the Retarding Potential Analyzer (RPA) and
 Drift Meter (DM). The RPA measures the energy of plasma along the
 direction of satellite motion. By fitting these measurements
 to a theoretical description of plasma the number density, plasma
@@ -44,7 +44,6 @@ from __future__ import absolute_import
 import functools
 
 import numpy as np
-import pandas as pds
 
 import pysat
 from . import nasa_cdaweb_methods as cdw
@@ -83,7 +82,7 @@ def default(ivm):
     ivm.sample_rate = 1.0 if ivm.date >= pysat.datetime(2010, 7, 29) else 2.0
 
 
-def clean(self):
+def clean(inst):
     """Routine to return C/NOFS IVM data cleaned to the specified level
 
     Parameters
@@ -104,46 +103,46 @@ def clean(self):
     """
 
     # cleans cindi data
-    if self.clean_level == 'clean':
+    if inst.clean_level == 'clean':
         # choose areas below 550km
-        # self.data = self.data[self.data.alt <= 550]
-        idx, = np.where(self.data.altitude <= 550)
-        self.data = self[idx, :]
+        # inst.data = inst.data[inst.data.alt <= 550]
+        idx, = np.where(inst.data.altitude <= 550)
+        inst.data = inst[idx, :]
 
     # make sure all -999999 values are NaN
-    self.data.replace(-999999., np.nan, inplace=True)
+    inst.data.replace(-999999., np.nan, inplace=True)
 
-    if (self.clean_level == 'clean') | (self.clean_level == 'dusty'):
+    if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
         try:
-            idx, = np.where(np.abs(self.data.ionVelmeridional) < 10000.)
-            self.data = self[idx, :]
+            idx, = np.where(np.abs(inst.data.ionVelmeridional) < 10000.)
+            inst.data = inst[idx, :]
         except AttributeError:
             pass
 
-        if self.clean_level == 'dusty':
+        if inst.clean_level == 'dusty':
             # take out all values where RPA data quality is > 1
-            idx, = np.where(self.data.RPAflag <= 1)
-            self.data = self[idx, :]
+            idx, = np.where(inst.data.RPAflag <= 1)
+            inst.data = inst[idx, :]
             # IDM quality flags
-            self.data = self.data[(self.data.driftMeterflag <= 3)]
+            inst.data = inst.data[(inst.data.driftMeterflag <= 3)]
         else:
             # take out all values where RPA data quality is > 0
-            idx, = np.where(self.data.RPAflag <= 0)
-            self.data = self[idx, :]
+            idx, = np.where(inst.data.RPAflag <= 0)
+            inst.data = inst[idx, :]
             # IDM quality flags
-            self.data = self.data[(self.data.driftMeterflag <= 0)]
-    if self.clean_level == 'dirty':
+            inst.data = inst.data[(inst.data.driftMeterflag <= 0)]
+    if inst.clean_level == 'dirty':
         # take out all values where RPA data quality is > 4
-        idx, = np.where(self.data.RPAflag <= 4)
-        self.data = self[idx, :]
+        idx, = np.where(inst.data.RPAflag <= 4)
+        inst.data = inst[idx, :]
         # IDM quality flags
-        self.data = self.data[(self.data.driftMeterflag <= 6)]
+        inst.data = inst.data[(inst.data.driftMeterflag <= 6)]
 
     # basic quality check on drifts and don't let UTS go above 86400.
-    idx, = np.where(self.data.time <= 86400.)
-    self.data = self[idx, :]
+    idx, = np.where(inst.data.time <= 86400.)
+    inst.data = inst[idx, :]
 
     # make sure MLT is between 0 and 24
-    idx, = np.where((self.data.mlt >= 0) & (self.data.mlt <= 24.))
-    self.data = self[idx, :]
+    idx, = np.where((inst.data.mlt >= 0) & (inst.data.mlt <= 24.))
+    inst.data = inst[idx, :]
     return

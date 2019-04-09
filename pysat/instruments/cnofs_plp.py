@@ -54,10 +54,8 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import functools
-import sys
 
 import numpy as np
-import pandas as pds
 
 import pysat
 from . import nasa_cdaweb_methods as cdw
@@ -92,6 +90,25 @@ list_remote_files = functools.partial(cdw.list_remote_files,
 
 
 def clean(inst):
+    """Routine to return C/NOFS PLP data cleaned to the specified level
+
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Returns
+    --------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Notes
+    --------
+    Basic cleaning to find valid Epoch values
+
+    """
+
     for key in inst.data.columns:
         if key != 'Epoch':
             idx, = np.where(inst[key] == inst.meta[key, inst.fill_label])

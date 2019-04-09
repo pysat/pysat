@@ -45,6 +45,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
+import numpy as np
+import pandas as pds
+
 import pysat
 from . import madrigal_methods as mad_meth
 from . import nasa_cdaweb_methods as cdw
@@ -198,7 +201,6 @@ def clean(ivm):
     Supports 'clean', 'dusty', 'dirty'
 
     """
-    import numpy as np
 
     if ivm.tag == 'utd':
         if ivm.clean_level == 'clean':
@@ -241,7 +243,7 @@ def smooth_ram_drifts(ivm, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
     """
 
     if rpa_flag_key in list(ivm.data.keys()):
-        rpa_idx, = np.where(inst[rpa_flag_key] == 1)
+        rpa_idx, = np.where(ivm[rpa_flag_key] == 1)
     else:
         rpa_idx = list()
 
@@ -276,7 +278,7 @@ def update_DMSP_ephemeris(ivm, ephem=None):
         ephem.load(date=ivm.date, verifyPad=True)
 
         if ephem.data.empty:
-            print('unable to load ephemera for {:}'.format(date))
+            print('unable to load ephemera for {:}'.format(ivm.date))
             ivm.data = pds.DataFrame(None)
             return
 
@@ -308,7 +310,7 @@ def add_drift_unit_vectors(ivm):
     """
     # Calculate theta and R in radians from MLT and MLat, respectively
     theta = ivm['mlt'] * (np.pi / 12.0) - np.pi * 0.5
-    r = np.radians(90.0 - dmsp['mlat'].abs())
+    r = np.radians(90.0 - ivm['mlat'].abs())
 
     # Determine the positions in cartesian coordinates
     pos_x = r * np.cos(theta)
@@ -368,12 +370,12 @@ def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
 
     # Get the good RPA data, if available
     if rpa_flag_key in list(ivm.data.keys()):
-        rpa_idx, = np.where(inst[rpa_flag_key] != 1)
+        rpa_idx, = np.where(ivm[rpa_flag_key] != 1)
     else:
         rpa_idx = list()
 
     # Use the cartesian unit vectors to calculate the desired velocities
-    iv_x = inst[rpa_vel_key].copy()
+    iv_x = ivm[rpa_vel_key].copy()
     iv_x[rpa_idx] = 0.0
 
     # Check to see if unit vectors have been created

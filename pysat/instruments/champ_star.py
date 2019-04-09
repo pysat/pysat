@@ -24,8 +24,6 @@ Angeline G. Burrell, Feb 22, 2016, University of Leicester
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import os
-import sys
 import warnings
 
 import pandas as pds
@@ -168,7 +166,6 @@ def load(fnames, tag=None, sat_id=None):
     # The header is formatted differently from the rest of the file, read it in
     # first to obtain the necessary meta data
     f = open(fnames[0], "r")
-    vdata = re.split(";|\n", f.readline())
     hdata = re.split(";|\n", f.readline())
     f.close()
     try:
@@ -197,30 +194,6 @@ def load(fnames, tag=None, sat_id=None):
     return data, meta
 
 
-def clean(inst):
-    """Routine to return CHAMP STAR data cleaned to the specified level
-
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    --------
-    No cleaning currently available for CHAMP
-    """
-
-    warnings.warn("No cleaning currently available for CHAMP")
-
-    return None
-
-
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """Routine to download CHAMP STAR data
 
@@ -241,5 +214,29 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """
 
     warnings.warn("No data download currently available for CHAMP")
+
+    return None
+
+
+def clean(inst):
+    """Routine to return CHAMP STAR data cleaned to the specified level
+
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Returns
+    --------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Notes
+    --------
+    No cleaning currently available for CHAMP
+    """
+
+    warnings.warn("No cleaning currently available for CHAMP")
 
     return None

@@ -55,10 +55,8 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import functools
-import sys
 
 import numpy as np
-import pandas as pds
 
 import pysat
 from . import nasa_cdaweb_methods as cdw
@@ -96,7 +94,7 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    self : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
