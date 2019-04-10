@@ -168,7 +168,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     # The sat_id can be used to specify the number of indexes to load for
     # any of the testing objects
-    num = 86400 if sat_id is '' else int(sat_id)
+    num = 86400 if sat_id == '' else int(sat_id)
     num_array = np.arange(num)
     uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
