@@ -12,6 +12,8 @@ name : string
     'hro'
 tag : string
     Select time between samples, one of {'1min', '5min'}
+sat_id : string
+    None supported
 
 Note
 ----
@@ -45,16 +47,14 @@ calculate_dayside_reconnection : Calculate the dayside reconnection rate
 
 from __future__ import print_function
 from __future__ import absolute_import
-import os
-import sys
+
 import functools
-
-from . import nasa_cdaweb_methods as cdw
-
-import pandas as pds
 import numpy as np
+import pandas as pds
 
 import pysat
+
+from . import nasa_cdaweb_methods as cdw
 
 platform = 'omni'
 name = 'hro'
@@ -218,6 +218,9 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 
     # Calculate the running circular standard deviation of the clock angle
     circ_kwargs = {'high': 360.0, 'low': 0.0}
+
+    # !!!!!!!!!!!!!!!!
+    # ca unused !!!!!!
     ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
     ca_std = \
         inst['clock_angle'].rolling(min_periods=min_wnum,

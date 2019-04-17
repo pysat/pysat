@@ -12,6 +12,8 @@ name : string
     'tiegcm'
 tag : string
     None supported
+sat_id : string
+    None supported
 
 Note
 ----

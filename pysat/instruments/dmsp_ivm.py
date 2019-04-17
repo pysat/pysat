@@ -23,7 +23,9 @@ platform : string
 name : string
     'ivm'
 tag : string
-    'utd'
+    'utd', None
+sat_id : string
+    ['f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18']
 
 Example
 -------

@@ -52,10 +52,6 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-import sys
-
-import numpy as np
-import pandas as pds
 
 import pysat
 # CDAWeb methods prewritten for pysat

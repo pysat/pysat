@@ -15,6 +15,8 @@ name : string
     'see'
 tag : string
     None
+sat_id : string
+    None supported
 flatten_twod : bool (True)
     If True, then two dimensional data is flattened across
     columns. Name mangling is used to group data, first column

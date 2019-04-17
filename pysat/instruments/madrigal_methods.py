@@ -238,7 +238,7 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
                                      '--inst=' + inst_code,
                                      '--kindat=' + kindat])
         print('Feedback from openMadrigal ', a)
-    except OSError as err:
+    except OSError:
         print("problem running globalDownload.py, check python path")
 
 
