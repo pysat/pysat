@@ -479,6 +479,10 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                             yesterday = today - pds.DateOffset(days=1)
                             if has_file[has_file].index[-1] < yesterday:
                                 rewritten = True
+                else:
+                    # The file does not exist, if it can be downloaded, it
+                    # should be 'rewritten'
+                    rewritten = True
 
                 # Attempt to download if the file does not exist or if the
                 # file has been updated
