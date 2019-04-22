@@ -260,14 +260,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                     doff = pds.DateOffset(years=1) if version == 2 \
                         else pds.DateOffset(months=3)
                     istart = orig[0]
-                    #if version < 5 and version > 1:
-                    #    istart += pds.DateOffset(months=(version-1) * 3)
                     iend = istart + doff - pds.DateOffset(days=1)
 
                     # Ensure the end time does not extend past the number of
                     # possible days included based on the file's download time
                     fname = os.path.join(data_path, orig[1])
-                    dend = pds.datetime.fromtimestamp(os.path.getctime(fname))
+                    dend = pds.datetime.utcfromtimestamp(os.path.getctime(fname))
                     dend = dend - pds.DateOffset(days=1)
                     if dend < iend:
                         iend = dend
@@ -504,6 +502,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                             os.remove(saved_fname)
 
                             # Save this so we don't try again
+                            # Because there are two possible filenames for
+                            # each time, it's ok if one isn't there.  We just
+                            # don't want to keep looking for it.
                             bad_fname.append(fname)
 
                 # If the first file worked, don't try again
