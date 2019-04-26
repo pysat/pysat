@@ -388,7 +388,7 @@ def filter_data_single_date(self):
     pysat instrument file to this one.
 
     within platform_name.py set
-        default = pysat.instruments.madrigal.filter_data_single_date
+        default = pysat.instruments.methods.madrigal.filter_data_single_date
     at the top level
 
     """

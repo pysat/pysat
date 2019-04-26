@@ -224,13 +224,13 @@ Using the CDAWeb template the equivalent action is
 
 .. code:: python
 
-   download = functools.partial(nasa_cdaweb.download,
+   download = functools.partial(methods.nasa_cdaweb.download,
                                 supported_tags)
 
 where supported_tags is defined as dictated by the download function. See the routines for cnofs_vefi and cnofs_ivm for practical uses of the NASA CDAWeb support code.
 |br|
 
-.. automodule:: pysat.instruments.nasa_cdaweb
+.. automodule:: pysat.instruments.methods.nasa_cdaweb
    :members:
 
 Madrigal
@@ -248,7 +248,7 @@ Using the Madrigal template the equivalent action is
 
      def download(date_array, tag='', sat_id='', data_path=None, user=None,
                   password=None):
-         madrigal.download(date_array, inst_code=str(madrigal_inst_code),
+         methods.madrigal.download(date_array, inst_code=str(madrigal_inst_code),
                                    kindat=str(madrigal_tag[sat_id][tag]),
                                    data_path=data_path, user=user,
                                    password=password)
@@ -267,5 +267,5 @@ Additionally, use of the madrigal class should acknowledge the CEDAR rules of th
 to each routine that uses Madrigal data access.
 |br|
 
-.. automodule:: pysat.instruments.madrigal
+.. automodule:: pysat.instruments.methods.madrigal
   :members:

@@ -17,7 +17,7 @@ to pysat by importing this module and using the functools.partial methods
 to attach these functions to the new instrument model. See
 pysat/instruments/cnofs_ivm.py for more.
 NASA CDAWeb datasets, such as C/NOFS IVM, use the methods within
-pysat/instruments/nasa_cdaweb.py to make adding new CDAWeb instruments
+pysat/instruments/methods/nasa_cdaweb.py to make adding new CDAWeb instruments
 easy.
 
 """
@@ -159,10 +159,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     format_str based upon inputs, then calls this routine passing both
     data_path and format_str.
 
-    Alternately, the list_files routine in nasa_cdaweb may also be
+    Alternately, the list_files routine in methods.nasa_cdaweb may also be
     used and has more built in functionality. Supported tages and format
     strings may be defined within the new instrument module and passed as
-    arguments to nasa_cdaweb.list_files . For an example on using
+    arguments to methods.nasa_cdaweb.list_files . For an example on using
     this routine, see pysat/instrument/cnofs_ivm.py or cnofs_vefi, cnofs_plp,
     omni_hro, timed_see, etc.
 

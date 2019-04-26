@@ -3,7 +3,7 @@
 
 To use this routine, you need to know both the Madrigal Instrument code
 as well as the data tag numbers that Madrigal uses to uniquely identify
-data sets. Using these codes, the madrigal.py routines will
+data sets. Using these codes, the methods.madrigal.py routines will
 be used to support downloading and loading of data.
 
 Downloads data from the Madrigal Database.
