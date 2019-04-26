@@ -255,13 +255,13 @@ Using the Madrigal template the equivalent action is
 
 See the routines for `dmsp_ivm` and `jro_isr` for practical uses of the Madrigal support code.
 
-Additionally, use of the madrigal class should acknowledge the CEDAR rules of the road.  This can be done by Adding
+Additionally, use of the methods.madrigal class should acknowledge the CEDAR rules of the road.  This can be done by Adding
 
 .. code:: python
 
      def init(self):
 
-         print(madrigal.cedar_rules())
+         print(methods.madrigal.cedar_rules())
          return
 
 to each routine that uses Madrigal data access.
