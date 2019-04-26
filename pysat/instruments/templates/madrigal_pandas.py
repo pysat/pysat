@@ -3,7 +3,7 @@
 
 To use this routine, you need to know both the Madrigal Instrument code
 as well as the data tag numbers that Madrigal uses to uniquely identify
-data sets. Using these codes, the madrigal_methods.py routines will
+data sets. Using these codes, the madrigal.py routines will
 be used to support downloading and loading of data.
 
 Downloads data from the Madrigal Database.
@@ -80,8 +80,8 @@ from __future__ import absolute_import
 
 import functools
 import pysat
-from . import madrigal_methods as mad_meth
-from . import nasa_cdaweb_methods as cdw
+from .methods import madrigal as mad_meth
+from .methods import nasa_cdaweb as cdw
 
 platform = 'madrigal'
 name = 'pandas'

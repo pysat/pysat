@@ -9,7 +9,8 @@ import pandas as pds
 import tempfile
 
 import pysat
-from pysat.instruments import sw_kp, sw_f107, sw_methods
+from pysat.instruments import sw_kp, sw_f107
+from pysat.instruments.methods import sw as sw_meth
 
 
 def remove_files(inst):
@@ -192,7 +193,7 @@ class TestSwKpCombine():
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
 
-        assert_raises(ValueError, sw_methods.combine_kp)
+        assert_raises(ValueError, sw_meth.combine_kp)
 
     def test_combine_kp_one(self):
         """ Test combine_kp failure when only one instrument is provided"""
@@ -207,7 +208,7 @@ class TestSwKpCombine():
         testInst.meta['Kp'] = {testInst.meta.fill_label: np.nan}
 
         combo_in = {"standard_inst": testInst}
-        assert_raises(ValueError, sw_methods.combine_kp, combo_in)
+        assert_raises(ValueError, sw_meth.combine_kp, combo_in)
 
         del combo_in, testInst
 
@@ -217,7 +218,7 @@ class TestSwKpCombine():
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
-        assert_raises(ValueError, sw_methods.combine_kp, combo_in)
+        assert_raises(ValueError, sw_meth.combine_kp, combo_in)
 
         del combo_in
 
@@ -235,7 +236,7 @@ class TestSwKpCombine():
         combo_in['forecast_inst'].load(date=self.today)
         combo_in['stop'] = combo_in['forecast_inst'].index[-1]
 
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] <= self.combine['stop']
@@ -259,7 +260,7 @@ class TestSwKpCombine():
         if not self.download:
             raise skip.SkipTest("test needs downloaded data")
 
-        kp_inst = sw_methods.combine_kp(**self.combine)
+        kp_inst = sw_meth.combine_kp(**self.combine)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -281,7 +282,7 @@ class TestSwKpCombine():
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'forecast_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -302,7 +303,7 @@ class TestSwKpCombine():
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'recent_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -323,7 +324,7 @@ class TestSwKpCombine():
 
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'standard_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -462,16 +463,16 @@ class TestSWF107Combine():
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
 
-        assert_raises(TypeError, sw_methods.combine_f107)
+        assert_raises(TypeError, sw_meth.combine_f107)
 
     def test_combine_f107_no_time(self):
         """Test combine_f107 failure when no times are provided"""
 
-        assert_raises(ValueError, sw_methods.combine_f107,
+        assert_raises(ValueError, sw_meth.combine_f107,
                       self.combineInst[''], self.combineInst['forecast'])
 
     def test_combine_f107_inst_time(self):
-        """Test combine_f107 with times provided through 'all' and 'forecast'"""
+        """Test combine_f107 with times provided thru 'all' and 'forecast'"""
 
         if not self.download:
             raise skip.SkipTest("test needs downloaded data")
@@ -479,8 +480,8 @@ class TestSWF107Combine():
         self.combineInst['all'].load(date=self.combineTimes['start'])
         self.combineInst['forecast'].load(date=self.today)
 
-        f107_inst = sw_methods.combine_f107(self.combineInst['all'],
-                                            self.combineInst['forecast'])
+        f107_inst = sw_meth.combine_f107(self.combineInst['all'],
+                                         self.combineInst['forecast'])
 
         assert f107_inst.index[0] == dt.datetime(1947, 2, 13)
         assert f107_inst.index[-1] <= self.combineTimes['stop']
@@ -495,9 +496,9 @@ class TestSWF107Combine():
         if not self.download:
             raise skip.SkipTest("test needs downloaded data")
 
-        f107_inst = sw_methods.combine_f107(self.combineInst[''],
-                                            self.combineInst['45day'],
-                                            **self.combineTimes)
+        f107_inst = sw_meth.combine_f107(self.combineInst[''],
+                                         self.combineInst['45day'],
+                                         **self.combineTimes)
 
         assert f107_inst.index[0] >= self.combineTimes['start']
         assert f107_inst.index[-1] < self.combineTimes['stop']
@@ -538,7 +539,7 @@ class TestSWAp():
     def test_calc_daily_Ap(self):
         """ Test daily Ap calculation"""
 
-        sw_methods.calc_daily_Ap(self.testInst)
+        sw_meth.calc_daily_Ap(self.testInst)
 
         assert 'Ap' in self.testInst.data.columns
         assert 'Ap' in self.testInst.meta.keys()
@@ -552,11 +553,11 @@ class TestSWAp():
     def test_calc_daily_Ap_bad_3hr(self):
         """ Test daily Ap calculation with bad input key"""
 
-        assert_raises(ValueError, sw_methods.calc_daily_Ap, self.testInst,
+        assert_raises(ValueError, sw_meth.calc_daily_Ap, self.testInst,
                       "no")
 
     def test_calc_daily_Ap_bad_daily(self):
         """ Test daily Ap calculation with bad output key"""
 
-        assert_raises(ValueError, sw_methods.calc_daily_Ap, self.testInst,
+        assert_raises(ValueError, sw_meth.calc_daily_Ap, self.testInst,
                       "3hr_ap", "3hr_ap")

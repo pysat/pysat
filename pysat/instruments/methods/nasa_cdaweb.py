@@ -60,7 +60,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
         supported_tags = {'dc_b': fname}
-        list_files = functools.partial(nasa_cdaweb_methods.list_files,
+        list_files = functools.partial(nasa_cdaweb.list_files,
                                        supported_tags=supported_tags)
 
         fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
@@ -227,7 +227,7 @@ def download(supported_tags, date_array, tag, sat_id,
                     'local_fname': ln}
         supported_tags = {'dc_b': dc_b_tag}
 
-        download = functools.partial(nasa_cdaweb_methods.download,
+        download = functools.partial(nasa_cdaweb.download,
                                      supported_tags=supported_tags)
 
     """
@@ -384,7 +384,7 @@ def list_remote_files(tag, sat_id,
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
         supported_tags = {'dc_b': fname}
         list_remote_files = \
-            functools.partial(nasa_cdaweb_methods.list_remote_files,
+            functools.partial(nasa_cdaweb.list_remote_files,
                               supported_tags=supported_tags)
 
         fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
