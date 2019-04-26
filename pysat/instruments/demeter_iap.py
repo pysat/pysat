@@ -143,7 +143,7 @@ def load(fnames, tag='survey', sat_id=''):
     data = list()
     for fname in fnames:
         fdata, fmeta = demeter.load_binary_file(fname,
-                                                        load_experiment_data)
+                                                load_experiment_data)
         data.extend(fdata)
 
     data = np.vstack(data)
