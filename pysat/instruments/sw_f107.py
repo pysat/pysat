@@ -368,7 +368,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 raise ValueError('The Download routine must be invoked with ' +
                                  'a freq="MS" option.')
             # download webpage
-            dstr = 'http://lasp.colorado.edu/lisird/latis/'
+            dstr = 'http://lasp.colorado.edu/lisird/latis/dap/'
             dstr += 'noaa_radio_flux.json?time%3E='
             dstr += date.strftime('%Y-%m-%d')
             dstr += 'T00:00:00.000Z&time%3C='
@@ -400,7 +400,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         import json
 
         # download webpage
-        dstr = 'http://lasp.colorado.edu/lisird/latis/'
+        dstr = 'http://lasp.colorado.edu/lisird/latis/dap/'
         dstr += 'noaa_radio_flux.json?time%3E='
         dstr += pysat.datetime(1947, 2, 13).strftime('%Y-%m-%d')
         dstr += 'T00:00:00.000Z&time%3C='
