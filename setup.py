@@ -22,9 +22,9 @@ with open(os.path.join(here, version_filename)) as version_file:
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if sys.version_info.major == 2:
-    install_requires = ['xarray<0.12', 'pandas>=0.19.2, <0.25', 'numpy>=1.12',
-                        'scipy<1.3', 'sgp4', 'pyEphem', 'requests',
-                        'beautifulsoup4',
+    install_requires = ['xarray<0.12', 'pandas>=0.19.2, <0.25',
+                        'numpy>=1.12, <1.17', 'scipy<1.3', 'sgp4',
+                        'pyEphem', 'requests', 'beautifulsoup4',
                         'lxml', 'pysatCDF', 'apexpy', 'aacgmv2',
                         'pysatMagVect', 'madrigalWeb', 'h5py',
                         'PyForecastTools', 'pyglow']
