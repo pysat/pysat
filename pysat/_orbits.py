@@ -5,7 +5,7 @@ import functools
 
 import numpy as np
 import pandas as pds
-from pysat import Series, DataFrame
+from pysat import Series
 
 
 class Orbits(object):
@@ -787,7 +787,6 @@ class Orbits(object):
                                 'Talk to someone about this fundamental ' +
                                 'failure.')
             # includes hack to appear to be zero indexed
-            # print('Loaded Orbit:%i' % (self._current - 1))
         else:
             # no data
             while self.sat.empty:
@@ -817,18 +816,9 @@ class Orbits(object):
         while self.sat.empty:
             self.sat.next()
 
-        # if self.sat._iter_type == 'file':
-        #     for fname in self.sat._iter_list:
-        #         self.sat.load(fname=fname)
-        #         break
-        #
-        # elif self.sat._iter_type == 'date':
-        #     for date in self.sat._iter_list:
-        #         self.sat.load(date=date)
-        #         break
-        # else:
-        #     raise ValueError('Iteration type not set')
-
         while True:
-            self.next()
-            yield self.sat
+            try:
+                self.next()
+                yield self.sat
+            except StopIteration:
+                return

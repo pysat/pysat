@@ -12,12 +12,9 @@ Main Features
 from __future__ import print_function
 from __future__ import absolute_import
 
-import functools
-
 import datetime as dt
 import numpy as np
 import pandas as pds
-import xarray as xr
 
 
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],

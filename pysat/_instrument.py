@@ -20,8 +20,7 @@ from . import _files
 from . import _orbits
 from . import _meta
 from . import utils
-from pysat import data_dir
-from pysat import DataFrame, Series
+from pysat import DataFrame
 
 
 # main class for users
@@ -363,7 +362,6 @@ class Instrument(object):
             inst[datetime1:datetime1, 'name1':'name2']
 
         """
-        from numpy import ndarray
 
         if self.pandas_format:
             if isinstance(key, str):
@@ -1912,7 +1910,7 @@ class Instrument(object):
                 export_dict[key] = {}
             for ho_key in meta_to_translate.ho_data[key].data.index:
                 if translation_table is None:
-                    export_dict[key + '_' + ho_key] = \
+                    export_dict[key+'_'+ho_key] = \
                         meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
                 else:
                     # Translate each key if a translation is provided
@@ -1922,7 +1920,7 @@ class Instrument(object):
                     for original_key in meta_dict:
                         if original_key in translation_table:
                             for translated_key in translation_table[original_key]:
-                                export_dict[key + '_' + ho_key][translated_key] = \
+                                export_dict[key+'_'+ho_key][translated_key] = \
                                     meta_dict[original_key]
                         else:
                             export_dict[key+'_'+ho_key][original_key] = \
@@ -2207,11 +2205,11 @@ class Instrument(object):
                                 # we are working with a dataframe so
                                 # multiple subvariables stored under a single
                                 # main variable heading
+                                idx = self[key].iloc[good_data_loc][col]
                                 data, coltype, _ = \
-                                    self._get_data_info(self[key].iloc[good_data_loc][col],
-                                                        file_format)
+                                    self._get_data_info(idx, file_format)
                                 cdfkey = \
-                                    out_data.createVariable(key + '_' + col,
+                                    out_data.createVariable(key+'_'+col,
                                                             coltype,
                                                             dimensions=var_dim,
                                                             zlib=zlib,
@@ -2255,8 +2253,9 @@ class Instrument(object):
                                 # we are dealing with a Series
                                 # get information about information within
                                 # series
+                                idx = self[key].iloc[good_data_loc]
                                 data, coltype, _ = \
-                                    self._get_data_info(self[key].iloc[good_data_loc], file_format)
+                                    self._get_data_info(idx, file_format)
                                 cdfkey = \
                                     out_data.createVariable(key + '_data',
                                                             coltype,
@@ -2264,7 +2263,6 @@ class Instrument(object):
                                                             zlib=zlib,
                                                             complevel=complevel,
                                                             shuffle=shuffle)
-                                                            # , chunksizes=1)
                                 # attach any meta data
                                 try:
                                     new_dict = export_meta[key]
@@ -2284,7 +2282,8 @@ class Instrument(object):
                                     print(' '.join(('Unable to find MetaData',
                                                     'for,', key)))
                                 # attach data
-                                temp_cdf_data = np.zeros((num, dims[0])).astype(coltype)
+                                temp_cdf_data = \
+                                    np.zeros((num, dims[0])).astype(coltype)
                                 for i in range(num):
                                     temp_cdf_data[i, :] = self[i, key].values
                                 # write data
@@ -2295,8 +2294,9 @@ class Instrument(object):
                         # for all of that fancy data
 
                         # get index information
+                        idx = good_data_loc
                         data, coltype, datetime_flag = \
-                            self._get_data_info(self[key].iloc[good_data_loc].index,
+                            self._get_data_info(self[key].iloc[idx].index,
                                                 file_format)
                         # create dimension variable for to store index in
                         # netCDF4
