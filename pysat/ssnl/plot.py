@@ -51,10 +51,10 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
         plt.suptitle(data_label[i])
         if xlim is not None:
             ax1.set_xlim(xlim)
-        ax2.set_xlim(xlim)
+            ax2.set_xlim(xlim)
         if ylim is not None:
             ax1.set_ylim(ylim)
-        ax2.set_ylim(ylim)
+            ax2.set_ylim(ylim)
 
     # norm method so that data may be scaled to colors appropriately
     norm = colors.Normalize(vmin=datalim[0], vmax=datalim[1])
@@ -77,7 +77,7 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
 
     for j, (fig, ax) in enumerate(zip(figs, axs)):
         try:
-            cbar = plt.colorbar(p[j], ax=ax[0], label='Amplitude (m/s)')
+            plt.colorbar(p[j], ax=ax[0], label='Amplitude (m/s)')
         except:
             print('Tried colorbar but failed, thus no colorbar.')
         ax[0].elev = 30.
