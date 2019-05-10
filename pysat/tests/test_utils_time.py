@@ -6,7 +6,6 @@ import numpy as np
 from nose.tools import raises
 import pandas as pds
 
-import pysat
 from pysat.utils import time as pytime
 
 

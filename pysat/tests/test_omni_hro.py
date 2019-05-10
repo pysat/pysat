@@ -1,11 +1,11 @@
 import datetime as dt
 import numpy as np
 
-from nose.tools import raises
 import pandas as pds
 
 import pysat
 from pysat.instruments import omni_hro
+
 
 
 class TestOMNICustom():

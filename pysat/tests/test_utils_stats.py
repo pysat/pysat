@@ -3,10 +3,8 @@ tests the pysat utils.stats area
 """
 import numpy as np
 
-import pandas as pds
 from scipy import stats as scistats
 
-import pysat
 from pysat.utils import stats as pystats
 
 

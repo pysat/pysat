@@ -9,7 +9,7 @@ seasons, and calculation of solar local time
 
 import numpy as np
 import pandas as pds
-from pysat import DataFrame, Series, datetime
+from pysat import datetime
 
 
 def getyrdoy(date):
