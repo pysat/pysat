@@ -1,7 +1,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import matplotlib.colors as colors
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
@@ -31,8 +31,12 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
 
     """
 
-    # interactive plotting off
-    plt.ioff()
+    if mpl.is_interactive():
+        interactive_mode = True
+        # turn interactive plotting off
+        plt.ioff()
+    else:
+        interactive_mode = False
 
     # create figures for plotting
     figs = []
@@ -51,13 +55,13 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
         plt.suptitle(data_label[i])
         if xlim is not None:
             ax1.set_xlim(xlim)
-        ax2.set_xlim(xlim)
+            ax2.set_xlim(xlim)
         if ylim is not None:
             ax1.set_ylim(ylim)
-        ax2.set_ylim(ylim)
+            ax2.set_ylim(ylim)
 
     # norm method so that data may be scaled to colors appropriately
-    norm = colors.Normalize(vmin=datalim[0], vmax=datalim[1])
+    norm = mpl.colors.Normalize(vmin=datalim[0], vmax=datalim[1])
     p = [i for i in np.arange(len(figs))]
     q = [i for i in np.arange(len(figs))]
     for i, inst in enumerate(inst):
@@ -77,11 +81,13 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
 
     for j, (fig, ax) in enumerate(zip(figs, axs)):
         try:
-            cbar = plt.colorbar(p[j], ax=ax[0], label='Amplitude (m/s)')
+            plt.colorbar(p[j], ax=ax[0], label='Amplitude (m/s)')
         except:
             print('Tried colorbar but failed, thus no colorbar.')
         ax[0].elev = 30.
 
-    # interactive plotting back on
-    plt.ion()
+    if interactive_mode:
+        # turn interactive plotting back on
+        plt.ion()
+
     return figs
