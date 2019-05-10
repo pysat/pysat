@@ -7,7 +7,7 @@ Welcome to pysat's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 2        
+   :maxdepth: 2
 
    introduction.rst
    installation.rst
@@ -17,3 +17,4 @@ Welcome to pysat's documentation!
    new_instrument.rst
    api.rst
    contributing.rst
+   faq.rst
