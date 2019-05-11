@@ -11,6 +11,7 @@ import pandas as pds
 import xarray
 
 import pysat
+from pysat.instruments import testing_methods as test
 
 # pysat required parameters
 platform = 'pysat'
@@ -82,33 +83,34 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
-    mlt = _generate_fake_data(time_delta.total_seconds(), num_array,
-                              period=5820, data_range=24.0)
+    mlt = test.generate_fake_data(time_delta.total_seconds(), num_array,
+                                  period=5820, data_range=24.0)
     data['mlt'] = (('time'), mlt)
 
     # do slt, 20 second offset from mlt
-    slt = _generate_fake_data(time_delta.total_seconds()+20, num_array,
-                              period=5820, data_range=24.0)
+    slt = test.generate_fake_data(time_delta.total_seconds()+20, num_array,
+                                  period=5820, data_range=24.0)
     data['slt'] = (('time'), slt)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    longitude = _generate_fake_data(time_delta.total_seconds(), num_array,
-                                    period=6240, data_range=360.0)
+    longitude = test.generate_fake_data(time_delta.total_seconds(), num_array,
+                                        period=6240, data_range=360.0)
     data['longitude'] = (('time'), longitude)
 
     # create latitude area for testing polar orbits
-    latitude = 90.0 * np.cos(_generate_fake_data(time_delta.total_seconds(),
-                                                 num_array, period=5820,
-                                                 data_range=2.0*np.pi))
+    angle = test.generate_fake_data(time_delta.total_seconds(),
+                                    num_array, period=5820,
+                                    data_range=2.0*np.pi)
+    latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
 
     # fake orbit number
     fake_delta = date - pysat.datetime(2008, 1, 1)
-    orbit_num = _generate_fake_data(fake_delta.total_seconds(),
-                                    num_array, period=5820,
-                                    cyclic=False)
+    orbit_num = test.generate_fake_data(fake_delta.total_seconds(),
+                                        num_array, period=5820,
+                                        cyclic=False)
 
     data['orbit_num'] = (('time'), orbit_num)
 
@@ -146,36 +148,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
     pass
-
-
-def _generate_fake_data(t0, num_array, period=5820, data_range=24.0,
-                        cyclic=True):
-    """Generates fake data over a given range
-
-    Parameters
-    ----------
-    t0 : float
-        Start time in seconds
-    num_array : array_like
-        Array of time steps from t0.  This is the index of the fake data
-    period : int
-        The number of seconds per period.
-        (default = 5820)
-    data_range : float
-        For cyclic functions, the range of data values cycled over one period.
-        Not used for non-cyclic functions.
-        (default = 24.0)
-    cyclic : bool
-    """
-
-    if cyclic:
-        uts_root = np.mod(t0, period)
-        data = (np.mod(uts_root + num_array, period)
-                * (data_range / float(period)))
-    else:
-        data = ((t0 + num_array) / period).astype(int)
-
-    return data
 
 
 meta = pysat.Meta()

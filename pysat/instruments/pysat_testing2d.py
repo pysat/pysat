@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
+from pysat.instruments import testing_methods as test
 
 platform = 'pysat'
 name = 'testing'
@@ -87,23 +88,23 @@ def load(fnames, tag=None, sat_id=None):
     # going to presume there are 5820 seconds per orbit (97 minute period)
     time_delta = date - pysat.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
-    data['mlt'] = _generate_fake_data(time_delta.total_seconds(),
-                                      np.arange(num)*scalar,
-                                      period=5820, data_range=24.0)
+    data['mlt'] = test.generate_fake_data(time_delta.total_seconds(),
+                                          np.arange(num)*scalar,
+                                          period=5820, data_range=24.0)
     # do slt, 20 second offset from mlt
-    data['slt'] = _generate_fake_data(time_delta.total_seconds()+20,
-                                      np.arange(num)*scalar,
-                                      period=5820, data_range=24.0)
+    data['slt'] = test.generate_fake_data(time_delta.total_seconds()+20,
+                                          np.arange(num)*scalar,
+                                          period=5820, data_range=24.0)
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    data['longitude'] = _generate_fake_data(time_delta.total_seconds(),
-                                            num_array, period=6240,
-                                            data_range=360.0)
+    data['longitude'] = test.generate_fake_data(time_delta.total_seconds(),
+                                                num_array, period=6240,
+                                                data_range=360.0)
     # create latitude signal for testing polar orbits
-    angle = _generate_fake_data(time_delta.total_seconds(),
-                                num_array, period=5820,
-                                data_range=2.0*np.pi)
+    angle = test.generate_fake_data(time_delta.total_seconds(),
+                                    num_array, period=5820,
+                                    data_range=2.0*np.pi)
     data['latitude'] = 90.0 * np.cos(angle)
 
     # create real UTC time signal
@@ -172,33 +173,3 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
     pass
-
-
-def _generate_fake_data(t0, num_array, period=5820, data_range=24.0,
-                        cyclic=True):
-    """Generates fake data over a given range
-
-    Parameters
-    ----------
-    t0 : float
-        Start time in seconds
-    num_array : array_like
-        Array of time steps from t0.  This is the index of the fake data
-    period : int
-        The number of seconds per period.
-        (default = 5820)
-    data_range : float
-        For cyclic functions, the range of data values cycled over one period.
-        Not used for non-cyclic functions.
-        (default = 24.0)
-    cyclic : bool
-    """
-
-    if cyclic:
-        uts_root = np.mod(t0, period)
-        data = (np.mod(uts_root + num_array, period)
-                * (data_range / float(period)))
-    else:
-        data = ((t0 + num_array) / period).astype(int)
-
-    return data
