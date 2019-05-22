@@ -136,7 +136,7 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
     """Load COSMIC GPS files, 2013 reprocessing.
 
     Parameters
-    ------------
+    ----------
     fnames : (pandas.Series)
         Series of filenames
     tag : (str or NoneType)
@@ -145,7 +145,7 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
         satellite id or None (default=None)
 
     Returns
-    ---------
+    -------
     data : (pandas.DataFrame)
         Object containing satellite data
     meta : (pysat.Meta)
@@ -156,16 +156,16 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id,
+        data = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id,
                                             altitude_bin=altitude_bin))
-        utsec = output.hour * 3600. + output.minute * 60. + output.second
-        output.index = \
-            pysat.utils.time.create_datetime_index(year=output.year,
-                                                   month=output.month,
-                                                   day=output.day,
+        utsec = data.hour * 3600. + data.minute * 60. + data.second
+        data.index = \
+            pysat.utils.time.create_datetime_index(year=data.year,
+                                                   month=data.month,
+                                                   day=data.day,
                                                    uts=utsec)
         # make sure UTS strictly increasing
-        output.sort_index(inplace=True)
+        data.sort_index(inplace=True)
         # use the first available file to pick out meta information
         profile_meta = pysat.Meta()
         meta = pysat.Meta()
@@ -188,7 +188,7 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
                 # file was empty, try the next one by incrementing ind
                 ind += 1
         meta['profiles'] = profile_meta
-        return output, meta
+        return data, meta
     else:
         # no data
         return pysat.DataFrame(None), pysat.Meta()
@@ -198,12 +198,28 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
 def load_files(files, tag=None, sat_id=None, altitude_bin=None):
-    """Loads a list of COSMIC data files, supplied by user.
+    """Load COSMIC data files directly from a given list.
 
-    Returns a list of dicts, a dict for each file.
+    May be directly called by user, but in general is called by load.  This is
+    separate from the main load function for future support of multiprocessor
+    loading.
+
+    Parameters
+    ----------
+    files : (pandas.Series)
+        Series of filenames
+    tag : (str or NoneType)
+        tag or None (default=None)
+    sat_id : (str or NoneType)
+        satellite id or None (default=None)
+
+    Returns
+    -------
+    data : (list of dicts, one per file)
+        Object containing satellite data
     """
 
-    output = [None] * len(files)
+    data = [None] * len(files)
     drop_idx = []
     for (i, file) in enumerate(files):
         try:
@@ -228,7 +244,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
             new['profiles'] = pysat.DataFrame(loadedVars)
 
-            output[i] = new
+            data[i] = new
             data.close()
         except RuntimeError:
             # some of the files have zero bytes, which causes a read error
@@ -239,21 +255,21 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     # drop anything that came from the zero byte files
     drop_idx.reverse()
     for i in drop_idx:
-        del output[i]
+        del data[i]
 
     if tag == 'ionprf':
         if altitude_bin is not None:
-            for out in output:
+            for out in data:
                 out['profiles'].index = \
                     (out['profiles']['MSL_alt']/altitude_bin).round().values \
                     * altitude_bin
                 out['profiles'] = \
                     out['profiles'].groupby(out['profiles'].index.values).mean()
         else:
-            for out in output:
+            for out in data:
                 out['profiles'].index = out['profiles']['MSL_alt']
 
-    return output
+    return data
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,

@@ -151,15 +151,15 @@ def load(fnames, tag=None, sat_id=None):
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
-        utsec = output.hour * 3600. + output.minute * 60. + output.second
-        output.index = \
-            pysat.utils.time.create_datetime_index(year=output.year,
-                                                   month=output.month,
-                                                   day=output.day,
+        data = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
+        utsec = data.hour * 3600. + data.minute * 60. + data.second
+        data.index = \
+            pysat.utils.time.create_datetime_index(year=data.year,
+                                                   month=data.month,
+                                                   day=data.day,
                                                    uts=utsec)
         # make sure UTS strictly increasing
-        output.sort_index(inplace=True)
+        data.sort_index(inplace=True)
         # use the first available file to pick out meta information
         meta = pysat.Meta()
         ind = 0
@@ -179,7 +179,7 @@ def load(fnames, tag=None, sat_id=None):
                 # file was empty, try the next one by incrementing ind
                 ind += 1
 
-        return output, meta
+        return data, meta
     else:
         # no data
         return pysat.DataFrame(None), pysat.Meta()
@@ -189,12 +189,28 @@ def load(fnames, tag=None, sat_id=None):
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
 def load_files(files, tag=None, sat_id=None):
-    """Loads a list of COSMIC data files, supplied by user.
+    """Load COSMIC data files directly from a given list.
 
-    Returns a list of dicts, a dict for each file.
+    May be directly called by user, but in general is called by load.  This is
+    separate from the main load function for future support of multiprocessor
+    loading.
+
+    Parameters
+    ----------
+    files : (pandas.Series)
+        Series of filenames
+    tag : (str or NoneType)
+        tag or None (default=None)
+    sat_id : (str or NoneType)
+        satellite id or None (default=None)
+
+    Returns
+    -------
+    data : (list of dicts, one per file)
+        Object containing satellite data
     """
 
-    output = [None] * len(files)
+    data = [None] * len(files)
     drop_idx = []
     for (i, file) in enumerate(files):
         try:
@@ -213,7 +229,7 @@ def load_files(files, tag=None, sat_id=None):
             new['profiles'] = pysat.DataFrame(loadedVars)
             if tag == 'ionprf':
                 new['profiles'].index = new['profiles']['MSL_alt']
-            output[i] = new
+            data[i] = new
             data.close()
         except RuntimeError:
             # some of the S4 files have zero bytes, which causes a read error
@@ -224,8 +240,8 @@ def load_files(files, tag=None, sat_id=None):
     # drop anything that came from the zero byte files
     drop_idx.reverse()
     for i in drop_idx:
-        del output[i]
-    return output
+        del data[i]
+    return data
 
 
 def download(date_array, tag, sat_id, data_path=None,

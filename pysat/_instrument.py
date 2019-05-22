@@ -194,8 +194,9 @@ class Instrument(object):
                 # platform and name are expected to be part of module
                 self.name = inst_module.name.lower()
                 self.platform = inst_module.platform.lower()
-            except AttributeError:
-                raise AttributeError(' '.join(('A name and platform attribute',
+            except AttributeError as str_err:
+                raise AttributeError(' '.join((str_error, '\n',
+                                               'A name and platform attribute',
                                                'for the instrument is',
                                                'required if supplying routine',
                                                'module directly.')))
