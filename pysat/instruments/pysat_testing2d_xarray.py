@@ -73,26 +73,26 @@ def load(fnames, tag=None, sat_id=None):
     # mlt runs 0-24 each orbit.
     mlt = test.generate_fake_data(time_delta.total_seconds(),
                                   np.arange(num)*scalar,
-                                  period=5820, data_range=24.0)
+                                  period=5820, data_range=[0.0, 24.0])
     data['mlt'] = (('time'), mlt)
 
     # do slt, 20 second offset from mlt
     slt = test.generate_fake_data(time_delta.total_seconds()+20,
                                   np.arange(num)*scalar,
-                                  period=5820, data_range=24.0)
+                                  period=5820, data_range=[0.0, 24.0])
     data['slt'] = (('time'), slt)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     longitude = test.generate_fake_data(time_delta.total_seconds(), num_array,
-                                        period=6240, data_range=360.0)
+                                        period=6240, data_range=[0.0, 360.0])
     data['longitude'] = (('time'), longitude)
 
     # create latitude signal for testing polar orbits
     angle = test.generate_fake_data(time_delta.total_seconds(),
                                     num_array, period=5820,
-                                    data_range=2.0*np.pi)
+                                    data_range=[0.0, 2.0*np.pi])
     latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
 
