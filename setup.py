@@ -29,7 +29,7 @@ if sys.version_info.major == 2:
                         'pysatMagVect', 'madrigalWeb', 'h5py',
                         'PyForecastTools', 'pyglow']
 else:
-    install_requires = ['xarray', 'pandas>=0.19.2', 'numpy>=1.12',
+    install_requires = ['xarray', 'pandas>=0.23', 'numpy>=1.12',
                         'sgp4', 'pyEphem', 'requests', 'beautifulsoup4',
                         'lxml', 'pysatCDF', 'apexpy', 'aacgmv2',
                         'pysatMagVect', 'madrigalWeb', 'h5py',
