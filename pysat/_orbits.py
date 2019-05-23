@@ -342,6 +342,8 @@ class Orbits(object):
             # print 'Time Gap'
 
         # create orbitbreak index, ensure first element is always 0
+        if len(ind) == 0:
+            ind = np.array([0])
         if ind[0] != 0:
             ind = np.hstack((np.array([0]), ind))
         # number of orbits
@@ -378,6 +380,8 @@ class Orbits(object):
             orbit_index.append(idx[0])
 
         # create orbitbreak index, ensure first element is always 0
+        if len(orbit_index) == 0:
+            orbit_index[0] = 0
         if orbit_index[0] != 0:
             ind = np.hstack((np.array([0]), orbit_index))
         else:
