@@ -17,11 +17,11 @@ Uses environment variables set by davitpy to download files
 from Virginia Tech SuperDARN data servers. davitpy routines
 are used to load SuperDARN data.
 
-This material is based upon work supported by the 
-National Science Foundation under Grant Number 1259508. 
+This material is based upon work supported by the
+National Science Foundation under Grant Number 1259508.
 
-Any opinions, findings, and conclusions or recommendations expressed in this 
-material are those of the author(s) and do not necessarily reflect the views 
+Any opinions, findings, and conclusions or recommendations expressed in this
+material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
 
 Warnings
@@ -44,17 +44,18 @@ import pysat
 
 platform = 'superdarn'
 name = 'grdex'
-tags = {'north':'',
-        'south':''}
-sat_ids = {'':['north', 'south']}
-test_dates = {'':{'north':pysat.datetime(2009,1,1),
-                    'south':pysat.datetime(2009,1,1)}}
+tags = {'north': '',
+        'south': ''}
+sat_ids = {'': ['north', 'south']}
+test_dates = {'': {'north': pysat.datetime(2009, 1, 1),
+                   'south': pysat.datetime(2009, 1, 1)}}
+
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
-    
+
     Runs once upon instantiation.
-    
+
     Parameters
     ----------
     self : pysat.Instrument
@@ -64,40 +65,43 @@ def init(self):
     --------
     Void : (NoneType)
         Object modified in place.
-    
-    
+
+
     """
 
     # reset the list_remote_files routine to include the data path
     # now conveniently included with instrument object
-    self._list_remote_rtn = functools.partial(list_remote_files, 
-                                               data_path=self.files.data_path,
-                                               format_str=self.files.file_format)
-    
+    self._list_remote_rtn = \
+        functools.partial(list_remote_files,
+                          data_path=self.files.data_path,
+                          format_str=self.files.file_format)
+
     # data acknowledgement from SuperDARN
     # coped from SD Documents area of VT SuperDARN webpage
     # http://vt.superdarn.org/tiki-list_file_gallery.php?galleryId=81
     # How to acknowledge use of SuperDARN Data - 2017
-    print ('Authors should acknowledge the use of SuperDARN data. ',  
-           'SuperDARN is a collection of radars funded by national scientific ',
-           'funding agencies of Australia, Canada, China, France, Italy, ',
-           'Japan, Norway, South Africa, United Kingdom and the United States ',
-           'of America.')
-    return 
+    print('Authors should acknowledge the use of SuperDARN data. ',
+          'SuperDARN is a collection of radars funded by national scientific ',
+          'funding agencies of Australia, Canada, China, France, Italy, ',
+          'Japan, Norway, South Africa, United Kingdom and the United States ',
+          'of America.')
+    return
+
 
 def list_remote_files(tag, sat_id, data_path=None, format_str=None):
     """Lists remote files available for SuperDARN.
-    
+
     Note
     ----
     This routine currently fakes the list but
     produces the desired effect of keeping data current.
     Begins with data in 1985. (this needs to be checked)
-    
+
     Parameters
     ----------
     tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>. (default=None)
+        Denotes type of file to load.  Accepted types are <tag strings>.
+        (default=None)
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
@@ -108,23 +112,23 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
         Series indexed by date that stores the filename for each date.
 
     """
-    
+
     # given the function of SuperMAG, create a fake list of files
     # starting 01 Jan 1970, through today
     now = pysat.datetime.now()
     now = pysat.datetime(now.year, now.month, now.day)
     # create a list of dates with appropriate frequency
-    index = pds.period_range(pysat.datetime(1985,1,1), now, freq='D')
+    index = pds.period_range(pysat.datetime(1985, 1, 1), now, freq='D')
     # pre fill in blank strings
-    remote_files = pds.Series(['']*len(index), index=index)
-    
+    remote_files = pds.Series([''] * len(index), index=index)
+
     # pysat compares both dates and filenames when determining
     # which files it needs to download
     # so we need to ensure that filename for dates that overlap
     # are the same or data that is already present will be redownloaded
-    
+
     # need to get a list of the current files attached to
-    # the Instrument object. In this case, the object hasn't 
+    # the Instrument object. In this case, the object hasn't
     # been passed in.....
     #   that is ok, we can just call list_files right here
     #   except we don't have the data path
@@ -134,9 +138,10 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
     local_files = list_files(tag, sat_id, data_path, format_str)
     # iterating directly since pandas is complaining about periods
     # between different between indexes
-    for time, fname in local_files.iteritems():   
+    for time, fname in local_files.iteritems():
         remote_files.loc[time] = fname
     return remote_files
+
 
 def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -164,56 +169,58 @@ def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
 
     if format_str is None and tag is not None:
         if tag == 'north' or tag == 'south':
-            hemi_fmt = ''.join(('{year:4d}{month:02d}{day:02d}.', tag, '.grdex'))
-            return pysat.Files.from_os(data_path=data_path, format_str=hemi_fmt)
+            hemi_fmt = ''.join(('{year:4d}{month:02d}{day:02d}.', tag,
+                                '.grdex'))
+            return pysat.Files.from_os(data_path=data_path,
+                                       format_str=hemi_fmt)
         else:
             estr = 'Unrecognized tag name for SuperDARN, north or south.'
-            raise ValueError(estr)                  
+            raise ValueError(estr)
     elif format_str is None:
         estr = 'A tag name must be passed to SuperDARN.'
-        raise ValueError (estr)
+        raise ValueError(estr)
     else:
         return pysat.Files.from_os(data_path=data_path, format_str=format_str)
-           
+
 
 def load(fnames, tag=None, sat_id=None):
     import davitpy
     if len(fnames) <= 0:
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames) == 1:
-        
+
         myPtr = davitpy.pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980, 1, 1),
                                               fileType='grdex',
                                               eTime=pysat.datetime(2250, 1, 1),
                                               hemi=tag,
                                               fileName=fnames[0])
         myPtr.open()
-                                                                                            
+
         in_list = []
-        in_dict = {'stid':[],
-            'channel':[],
-            'noisemean':[],
-            'noisesd':[],
-            'gsct':[],
-            'nvec':[],
-            'pmax':[],
-            'start_time':[],
-            'end_time':[],
-            'vemax':[],
-            'vemin':[],
-            'pmin':[],
-            'programid':[],
-            'wmax':[],
-            'wmin':[],
-            'freq':[]}
-        
+        in_dict = {'stid': [],
+                   'channel': [],
+                   'noisemean': [],
+                   'noisesd': [],
+                   'gsct': [],
+                   'nvec': [],
+                   'pmax': [],
+                   'start_time': [],
+                   'end_time': [],
+                   'vemax': [],
+                   'vemin': [],
+                   'pmin': [],
+                   'programid': [],
+                   'wmax': [],
+                   'wmin': [],
+                   'freq': []}
+
         while True:
             info = myPtr.readRec()
             if info is None:
                 myPtr.close()
-                break 
-                   
-            drift_frame = pds.DataFrame.from_records(info.vector.__dict__, 
+                break
+
+            drift_frame = pds.DataFrame.from_records(info.vector.__dict__,
                                                      nrows=len(info.pmax),
                                                      index=info.vector.index)
             drift_frame['partial'] = 1
@@ -250,17 +257,17 @@ def load(fnames, tag=None, sat_id=None):
     else:
         raise ValueError('Only one filename currently supported.')
 
-                                        
-#def default(ivm):
+
+# def default(ivm):
 #
 #    return
-            
+
 def clean(self):
     # remove data when there are no vectors
     idx, = np.where(self['nvec'] > 0)
     self.data = self.data.iloc[idx]
 
-    return  
+    return
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
@@ -273,28 +280,28 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     import os
     import pysftp
     import davitpy
-    
+
     if user is None:
         user = os.environ['DBREADUSER']
     if password is None:
         password = os.environ['DBREADPASS']
-        
+
     with pysftp.Connection(
-            os.environ['VTDB'], 
+            os.environ['VTDB'],
             username=user,
             password=password) as sftp:
-            
+
         for date in date_array:
-            myDir = '/data/'+date.strftime("%Y")+'/grdex/'+tag+'/'
+            myDir = '/data/' + date.strftime("%Y") + '/grdex/' + tag + '/'
             fname = date.strftime("%Y%m%d")+'.' + tag + '.grdex'
-            local_fname = fname+'.bz2'
-            saved_fname = os.path.join(data_path,local_fname) 
-            full_fname = os.path.join(data_path,fname) 
+            local_fname = fname + '.bz2'
+            saved_fname = os.path.join(data_path, local_fname)
+            full_fname = os.path.join(data_path, fname)
             try:
-                print('Downloading file for '+date.strftime('%d %B %Y'))
+                print('Downloading file for ' + date.strftime('%d %B %Y'))
                 sys.stdout.flush()
-                sftp.get(myDir+local_fname, saved_fname)
-                os.system('bunzip2 -c '+saved_fname+' > '+ full_fname)
+                sftp.get(myDir + local_fname, saved_fname)
+                os.system('bunzip2 -c ' + saved_fname + ' > ' + full_fname)
                 os.system('rm ' + saved_fname)
             except IOError:
                 print('File not available for '+date.strftime('%d %B %Y'))
