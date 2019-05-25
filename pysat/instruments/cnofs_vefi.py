@@ -94,7 +94,7 @@ def clean(inst):
 
     Parameters
     -----------
-    self : (pysat.Instrument)
+    inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 

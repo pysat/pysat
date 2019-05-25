@@ -56,10 +56,10 @@ test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data
+    """Return a Pandas Series of every file for chosen satellite data.
 
     Parameters
-    -----------
+    ----------
     tag : (string or NoneType)
         Denotes type of file to load, not supported by this routine.
         (default=None)
@@ -73,9 +73,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         User specified file format, not supported here. (default=None)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : (pysat._files.Files)
         A class containing the verified available files
+
     """
     import sys
     # if tag == 'ionprf':
@@ -130,7 +131,7 @@ def load(fnames, tag=None, sat_id=None):
     """Load COSMIC GPS files
 
     Parameters
-    ------------
+    ----------
     fnames : (pandas.Series)
         Series of filenames
     tag : (str or NoneType)
@@ -139,11 +140,12 @@ def load(fnames, tag=None, sat_id=None):
         satellite id or None (default=None)
 
     Returns
-    ---------
+    -------
     data : (pandas.DataFrame)
         Object containing satellite data
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
+
     """
 
     num = len(fnames)
@@ -208,8 +210,8 @@ def load_files(files, tag=None, sat_id=None):
     -------
     data : (list of dicts, one per file)
         Object containing satellite data
-    """
 
+    """
     data = [None] * len(files)
     drop_idx = []
     for (i, file) in enumerate(files):
@@ -246,24 +248,20 @@ def load_files(files, tag=None, sat_id=None):
 
 def download(date_array, tag, sat_id, data_path=None,
              user=None, password=None):
-    """Routine to download COSMIC GPS data
+    """Download COSMIC GPS data.
 
     Parameters
-    -----------
+    ----------
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
     Returns
-    --------
+    -------
     Void : (NoneType)
         data in inst is modified in-place.
 
-    Notes
-    --------
-
     """
-
     import requests
     from requests.auth import HTTPBasicAuth
     import os
@@ -307,25 +305,24 @@ def download(date_array, tag, sat_id, data_path=None,
 
 
 def clean(inst):
-    """Routine to return COSMIC GPS data cleaned to the specified level
+    """Return COSMIC GPS data cleaned to the specified level.
 
     Parameters
-    -----------
+    ----------
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
     Returns
-    --------
+    -------
     Void : (NoneType)
         data in inst is modified in-place.
 
     Notes
-    --------
+    -----
     Supports 'clean', 'dusty', 'dirty'
 
     """
-
     if inst.tag == 'ionprf':
         # ionosphere density profiles
         if inst.clean_level == 'clean':

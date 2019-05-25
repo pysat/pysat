@@ -60,10 +60,10 @@ test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data
+    """Return a Pandas Series of every file for chosen satellite data.
 
     Parameters
-    -----------
+    ----------
     tag : (string or NoneType)
         Denotes type of file to load.  Accepted types are '' and 'ascii'.
         If '' is specified, the primary data type (ascii) is loaded.
@@ -78,9 +78,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         User specified file format not supported. (default=None)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : (pysat._files.Files)
         A class containing the verified available files
+
     """
     import sys
     # if tag == 'ionprf':
@@ -150,6 +151,7 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
         Object containing satellite data
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
+
     """
     num = len(fnames)
     # make sure there are files to read
@@ -337,7 +339,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     return
 
 
-def clean(self):
+def clean(inst):
     """Routine to return COSMIC GPS data cleaned to the specified level
 
     Parameters
@@ -357,19 +359,19 @@ def clean(self):
 
     """
 
-    if self.tag == 'ionprf':
+    if inst.tag == 'ionprf':
         # ionosphere density profiles
-        if self.clean_level == 'clean':
+        if inst.clean_level == 'clean':
             # try and make sure all data is good
             # filter out profiles where source provider processing doesn't get
             # max dens and max dens alt
-            self.data = self.data[((self['edmaxalt'] != -999.) &
-                                   (self['edmax'] != -999.))]
+            inst.data = inst.data[((inst['edmaxalt'] != -999.) &
+                                   (inst['edmax'] != -999.))]
             # make sure edmaxalt in "reasonable" range
-            self.data = self.data[(self.data.edmaxalt >= 175.) &
-                                  (self.data.edmaxalt <= 475.)]
+            inst.data = inst.data[(inst.data.edmaxalt >= 175.) &
+                                  (inst.data.edmaxalt <= 475.)]
             # filter densities when negative
-            for i, profile in enumerate(self['profiles']):
+            for i, profile in enumerate(inst['profiles']):
                 # take out all densities below the highest altitude negative
                 # dens below 325
                 idx, = np.where((profile.ELEC_dens < 0) &
@@ -390,22 +392,22 @@ def clean(self):
                 normGrad = (densDiff/(altDiff*profile.ELEC_dens)).abs()
                 idx, = np.where((normGrad > 1.) & normGrad.notnull())
                 if len(idx) > 0:
-                    self[i, 'edmaxalt'] = np.nan
-                    self[i, 'edmax'] = np.nan
-                    self[i, 'edmaxlat'] = np.nan
+                    inst[i, 'edmaxalt'] = np.nan
+                    inst[i, 'edmax'] = np.nan
+                    inst[i, 'edmaxlat'] = np.nan
                     profile['ELEC_dens'] *= np.nan
-                    # self.data['profiles'][i]['ELEC_dens'] *= np.nan
+                    # inst.data['profiles'][i]['ELEC_dens'] *= np.nan
 
         # filter out any measurements where things have been set to NaN
-        self.data = self.data[self.data.edmaxalt.notnull()]
+        inst.data = inst.data[inst.data.edmaxalt.notnull()]
 
-    elif self.tag == 'scnlvl1':
+    elif inst.tag == 'scnlvl1':
         # scintillation files
-        if self.clean_level == 'clean':
+        if inst.clean_level == 'clean':
             # try and make sure all data is good
             # filter out profiles where source provider processing doesn't
             # work
-            self.data = self.data[((self['alttp_s4max'] != -999.) &
-                                   (self['s4max9sec'] != -999.))]
+            inst.data = inst.data[((inst['alttp_s4max'] != -999.) &
+                                   (inst['s4max9sec'] != -999.))]
 
     return
