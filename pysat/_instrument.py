@@ -14,6 +14,7 @@ import sys
 import pandas as pds
 import numpy as np
 import xarray as xr
+import warnings
 
 from . import _custom
 from . import _files
@@ -56,6 +57,9 @@ class Instrument(object):
     temporary_file_list : boolean, optional
         If true, the list of Instrument files will not be written to disk.
         Prevents a race condition when running multiple pysat processes.
+    strict_time_flag : boolean, option (False)
+        If true, pysat will check data to ensure times are unique and
+        monotonic. In future versions, this will be fixed to True.
     multi_file_day : boolean, optional
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
@@ -168,8 +172,9 @@ class Instrument(object):
                  clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
-                 temporary_file_list=False, units_label='units',
-                 name_label='long_name', notes_label='notes', desc_label='desc',
+                 temporary_file_list=False, strict_time_flag=False,
+                 units_label='units', name_label='long_name',
+                 notes_label='notes', desc_label='desc',
                  plot_label='label', axis_label='axis', scale_label='scale',
                  min_label='value_min', max_label='value_max',
                  fill_label='fill', *arg, **kwargs):
@@ -1224,10 +1229,14 @@ class Instrument(object):
         # check occurs after all the data padding loads, or individual load
         # thus it can potentially check issues with padding or with raw data
         if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
-            raise ValueError('Loaded data is not unique (',not self.index.is_unique,
-                             ') or not monotonic increasing (', 
-                             not self.index.is_monotonic_increasing,
-                             ')')
+            if strict_time_flag:
+                raise ValueError('Loaded data is not unique (',not self.index.is_unique,
+                                 ') or not monotonic increasing (', 
+                                 not self.index.is_monotonic_increasing,
+                                 ')')
+            else:
+                warnings.warn('Strict times will eventually be enforced upon all instruments.'
+                              ' (strict_time_flag), DeprecationWarning)
 
         # apply default instrument routine, if data present
         if not self.empty:
