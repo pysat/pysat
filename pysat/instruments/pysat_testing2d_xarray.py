@@ -11,7 +11,7 @@ import pandas as pds
 import xarray as xr
 
 import pysat
-from pysat.instruments import testing_methods as test
+from pysat.instruments.methods import testing as test
 
 platform = 'pysat'
 name = 'testing2D_xarray'

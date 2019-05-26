@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
-from pysat.instruments import testing_methods as test
+from pysat.instruments.methods import testing as test
 
 platform = 'pysat'
 name = 'testing'
