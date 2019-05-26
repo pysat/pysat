@@ -50,6 +50,8 @@ with open(os.path.join(here, 'version.txt')) as version_file:
 
 # get home directory
 home_dir = os.path.expanduser('~')
+# Set directory for test data
+test_data_path = os.path.join(here, 'tests', 'test_data')
 # set pysat directory path in home directory
 pysat_dir = os.path.join(home_dir, '.pysat')
 # make sure a pysat directory exists
