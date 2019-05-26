@@ -12,7 +12,7 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.meta = pysat.Meta()
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
 
     def teardown(self):
@@ -910,6 +910,7 @@ class TestBasics():
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta[['NEW2', 'new']] = {'units': ['yeppers', 'yep']}
+
         assert (self.meta['new'].units == 'yep')
         assert (self.meta['new'].long_name == 'boo')
         assert (self.meta['new2'].units == 'yeppers')
@@ -921,8 +922,8 @@ class TestBasics():
         self.meta._yo_yo = 'yo yo'
         self.meta.date = None
         self.meta.transfer_attributes_to_instrument(self.testInst)
-        check1 = self.testInst.new_attribute == 'hello'
-        assert check1
+
+        assert self.testInst.new_attribute == 'hello'
 
     # ensure leading hyphens are dropped
     @raises(AttributeError)
@@ -972,6 +973,28 @@ class TestBasics():
 
         assert (self.meta['new'].units == 'hey')
         assert (self.meta['new'].long_name == 'boo')
+        assert (self.meta['NEW21'].units == 'hey2')
+        assert (self.meta['NEW21'].long_name == 'boo2')
+        assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+    def test_drop_meta(self):
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
+                              'YoYoYO': 'yolo'}
+        self.meta.drop(['new'])
+
+        assert not ('new' in self.meta.data.index)
+        assert (self.meta['NEW21'].units == 'hey2')
+        assert (self.meta['NEW21'].long_name == 'boo2')
+        assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+    def test_keep_meta(self):
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
+                              'YoYoYO': 'yolo'}
+        self.meta.keep(['NEW21'])
+
+        assert not ('new' in self.meta.data.index)
         assert (self.meta['NEW21'].units == 'hey2')
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')

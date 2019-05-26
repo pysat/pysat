@@ -4,14 +4,16 @@ import numpy as np
 import pandas as pds
 
 import pysat
+from pysat.instruments import omni_hro
+
 
 
 class TestOMNICustom():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='12',
-                                         clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='12',
+                                         tag='1min', clean_level='clean')
         self.testInst.load(2009, 1)
 
         # Recast time in minutes rather than seconds
@@ -65,7 +67,7 @@ class TestOMNICustom():
         """ Test clock angle."""
 
         # Run the clock angle routine
-        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
+        omni_hro.calculate_clock_angle(self.testInst)
 
         # Set test clock angle
         test_angle = np.array([44.93710732, 24.04132437, 13.90673288,
@@ -81,7 +83,7 @@ class TestOMNICustom():
         """ Test the Byz plane magnitude calculation."""
 
         # Run the clock angle routine
-        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
+        omni_hro.calculate_clock_angle(self.testInst)
 
         # Calculate plane magnitude
         test_mag = np.array([5.57149172, 6.14467489, 4.15098040, 5.57747612,
@@ -96,10 +98,9 @@ class TestOMNICustom():
         """ Test the IMF steadiness CV calculation."""
 
         # Run the clock angle and steadiness routines
-        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
-        pysat.instruments.omni_hro.calculate_imf_steadiness(self.testInst,
-                                                            steady_window=5,
-                                                            min_window_frac=0.8)
+        omni_hro.calculate_clock_angle(self.testInst)
+        omni_hro.calculate_imf_steadiness(self.testInst, steady_window=5,
+                                          min_window_frac=0.8)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
         byz_cv = np.array([np.nan, 0.158620, 0.229267, 0.239404, 0.469371,
@@ -117,10 +118,9 @@ class TestOMNICustom():
         """ Test the IMF steadiness standard deviation calculation."""
 
         # Run the clock angle and steadiness routines
-        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
-        pysat.instruments.omni_hro.calculate_imf_steadiness(self.testInst,
-                                                            steady_window=5,
-                                                            min_window_frac=0.8)
+        omni_hro.calculate_clock_angle(self.testInst)
+        omni_hro.calculate_imf_steadiness(self.testInst, steady_window=5,
+                                          min_window_frac=0.8)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
         ca_std = np.array([np.nan, 13.317200, 14.429278, 27.278579,
@@ -139,8 +139,8 @@ class TestOMNICustom():
         """ Test the IMF steadiness standard deviation calculation."""
 
         # Run the clock angle and steadiness routines
-        pysat.instruments.omni_hro.calculate_clock_angle(self.testInst)
-        pysat.instruments.omni_hro.calculate_dayside_reconnection(self.testInst)
+        omni_hro.calculate_clock_angle(self.testInst)
+        omni_hro.calculate_dayside_reconnection(self.testInst)
 
         # Ensure the BYZ coefficient of variation is calculated correctly
         rcon = np.array([698.297487, 80.233896, 3.033586, 2.216075,
