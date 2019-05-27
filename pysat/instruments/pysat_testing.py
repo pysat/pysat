@@ -111,6 +111,10 @@ def init(self):
         self._list_rtn = functools.partial(list_files, file_date_range=fdr)
         self.files.refresh()
 
+    # mess with file dates if kwarg option present
+    if 'mangle_file_dates' in self.kwargs:
+        if self.kwargs['mangle_file_dates']:
+                self.files.files.index = self.files.files.index + pds.DateOffset(minutes=5)
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
