@@ -88,7 +88,8 @@ def init(self):
     return
 
 
-def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None):
+def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None,
+                      year=None, month=None, Day=None):
     """Lists remote files available for SuperMAG.
 
     Note
@@ -107,6 +108,24 @@ def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None):
         (default='')
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    data_path : (string or NoneType)
+        Path to data directory.  If None is specified, the value previously
+        set in Instrument.files.data_path is used.  (default=None)
+    format_str : (string or NoneType)
+        User specified file format.  If None is specified, the default
+        formats associated with the supplied tags are used. (default=None)
+    year : (int or NoneType)
+        Selects a given year to return remote files for.  None returns all
+        years.
+        (default=None)
+    month : (int or NoneType)
+        Selects a given month to return remote files for.  None returns all
+        months.  Requires year to be defined.
+        (default=None)
+    day : (int or NoneType)
+        Selects a given day to return remote files for.  None returns all
+        days.  Requires year and month to be defined.
         (default=None)
 
     Returns
