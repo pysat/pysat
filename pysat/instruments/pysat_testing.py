@@ -145,6 +145,9 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         (default=None)
     malformed_index : bool (default=False)
         If True, time index for simulation will be non-unique and non-monotonic.
+    **kwargs : Additional keywords
+        Additional keyword arguments supplied at pyast.Instrument instantiation
+        are passed here
 
     Returns
     -------
