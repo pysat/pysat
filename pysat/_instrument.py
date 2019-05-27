@@ -214,6 +214,11 @@ class Instrument(object):
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else 'none')
 
+        # assign strict_time_flag
+        self.strict_time_flag = strict_time_flag
+        
+        # assign directory format information, how pysat looks in 
+        # sub-directories for files
         # assign_func sets some instrument defaults, direct info rules all
         if directory_format is not None:
             self.directory_format = directory_format.lower()
@@ -225,7 +230,9 @@ class Instrument(object):
                 self.directory_format = self.directory_format(tag, sat_id)
             except TypeError:
                 pass
-
+        # assign the file format string, if provided by user
+        # enables user to temporarily put in a new string template for files
+        # that may not match the standard names obtained from download routine
         if file_format is not None:
             self.file_format = file_format
         # check to make sure value is reasonable
@@ -247,8 +254,9 @@ class Instrument(object):
         else:
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset
-
+        # assiign null data for user selected data type
         self.data = self._null_data.copy()
+        
         # create Meta instance with appropriate labels
         self.units_label = units_label
         self.name_label = name_label
@@ -1282,7 +1290,7 @@ class Instrument(object):
         # ensure data is unique and monotonic
         # check occurs after all the data padding loads, or individual load
         # thus it can potentially check issues with padding or with raw data
-        if strict_time_flag:
+        if self.strict_time_flag:
             if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
                 raise ValueError('Loaded data is not unique (',not self.index.is_unique,
                                  ') or not monotonic increasing (', 
