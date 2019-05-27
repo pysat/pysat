@@ -23,10 +23,11 @@ Naming Conventions
 
 pysat uses a hierarchy of named variables to define each specific data product.
 In order, this is
-- platform
-- name
-- sat_id
-- tag
+
+  * platform
+  * name
+  * sat_id
+  * tag
 
 The exact usage of these can be tailored to the nature of the mission and data
 products.  In general, each combination should point to a unique data file.
@@ -168,10 +169,10 @@ Fetch data from the internet.
    def download(date_array, data_path=None, user=None, password=None):
        return
 
-- date_array, a list of dates to download data for
-- data_path, the full path to the directory to store data
-- user, string for username
-- password, string for password
+* date_array, a list of dates to download data for
+* data_path, the full path to the directory to store data
+* user, string for username
+* password, string for password
 
 Routine should download data and write it to disk.
 
