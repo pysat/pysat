@@ -48,8 +48,9 @@ Scatter Radar at JRO (jro_isr).
 
 **sat_id**
 In general, this is a unique identifier for a satellite in a constellation of
-identical or similar satellites.  For example, the DMSP satellites carry
-instrument suites across multiple spacecraft.  These can be labeled as F11-F18.
+identical or similar satellites, or multiple instruments on the same satellite
+with different look directions.  For example, the DMSP satellites carry similar
+instrument suites across multiple spacecraft.  These are labeled as F11-F18.
 
 **tag**
 In general, the tag points to a specific data product.  This could be a
@@ -238,17 +239,8 @@ This method is called by several internal `pysat` functions, and can be directly
 Testing Support
 ---------------
 All modules defined in the __init__.py for pysat/instruments are automatically
-tested when pyast code is tested. To support testing all of the required routines,
-additional information is required by pysat.
-
-The following attributes must be defined.
-   - platform : platform name
-   - name : instrument name
-   - tags : dictionary of all tags supported by routine with a description. Typically these will include different available data products.
-   - sat_ids : dictionary of sat_ids, with a list of tags supported by each id. The sat_ids may refer to a specific platform within a multi-satellite constellation, or to a specific instrument for a single satellite with multiple copies of the same instrument looking in different directions.
-   - test_dates : dictionary of sat_ids, containing dictionary of available tags for each sat_id, along with a date to download for testing
-
-Note that platform and name must match those used to name the file, platform_name.py
+tested when pysat code is tested. To support testing all of the required
+routines, additional information is required by pysat.
 
 Example code from dmsp_ivm.py. The attributes are set at the top level simply
 by defining variable names with the proper info. The various satellites within
@@ -259,9 +251,11 @@ as a tag to delineate that the data contains the UTD developed quality flags.
 
    platform = 'dmsp'
    name = 'ivm'
-   tags = {'utd': 'UTDallas DMSP data processing'}
-   sat_ids = {'f11': ['utd'], 'f12': ['utd'], 'f13': ['utd'],
-              'f14': ['utd'], 'f15': ['utd']}
+   tags = {'utd': 'UTDallas DMSP data processing',
+           '': 'Level 1 data processing'}
+   sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
+              'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
+              'f18': ['']}
    test_dates = {'f11': {'utd': pysat.datetime(1998, 1, 2)},
                  'f12': {'utd': pysat.datetime(1998, 1, 2)},
                  'f13': {'utd': pysat.datetime(1998, 1, 2)},
@@ -272,11 +266,18 @@ as a tag to delineate that the data contains the UTD developed quality flags.
     def load(fnames, tag=None, sat_id=None):
         # code normally follows, example terminates here
 
+The rationale behind the variable names is explained above under Naming
+Conventions.  What is important here are the test_dates.  Each of these points
+to a specific date for which the unit tests will attempt to download and load
+data as part of end-to-end testing.  Make sure that the data exists for the
+given date. The tags without test dates will not be tested.
 
 Data Acknowledgements
 =====================
 
-Acknowledging the source of data is key for scientific collaboration.  This can generally be put in the `init` function of each instrument.  Relevant citations should be included in the instrument docstring.
+Acknowledging the source of data is key for scientific collaboration.  This can
+generally be put in the `init` function of each instrument.  Relevant
+citations should be included in the instrument docstring.
 
 
 Supported Data Templates
