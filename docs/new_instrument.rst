@@ -18,11 +18,84 @@ it also contains attributes platform and name.
 Some data repositories have pysat templates prepared to assist in integrating
 a new instrument. See Supported Templates for more.
 
+Naming Conventions
+------------------
+
+pysat uses a hierarchy of named variables to define each specific data product.
+In order, this is
+- platform
+- name
+- sat_id
+- tag
+
+The exact usage of these can be tailored to the nature of the mission and data
+products.  In general, each combination should point to a unique data file.
+Not every data product will need all of these variable names.  Both `sat_id`
+and `tag` can be instantiated as an empty string if unused, or if a default
+is preferred. Examples are given below.
+
+**platform**
+In general, this is the name of the mission or observatory.  Examples include
+ICON, JRO, COSMIC, and SuperDARN.  Note that this may be a single satellite or
+ground-based observatory, a constellation of satellites, or a collaboration of
+ground-based observatories.
+
+**name**
+In general, this is the name of the instrument or high-level data product.
+When combined with the platform, this forms a unique file in the `instruments`
+directory.  Examples include the EUV instrument on ICON and the Incoherent
+Scatter Radar at JRO (jro_isr).
+
+**sat_id**
+In general, this is a unique identifier for a satellite in a constellation of
+identical or similar satellites.  For example, the DMSP satellites carry
+instrument suites across multiple spacecraft.  These can be labeled as F11-F18.
+
+**tag**
+In general, the tag points to a specific data product.  This could be a
+specific processing level (such as L1, L2), or a product file (such as the
+different profile products for cosmic_gps data).
+
+Each instrument file will include the platform and name as variables at the
+top-level of the file.  Potential tags and sat_ids will be stored as
+dictionaries.  The DMSP IVM (dmsp_ivm) is a good example of a pysat instrument
+that uses all levels of variable names.
+
+.. code:: python
+
+  platform = 'dmsp'
+  name = 'ivm'
+  tags = {'utd': 'UTDallas DMSP data processing',
+          '': 'Level 1 data processing'}
+  sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
+             'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
+             'f18': ['']}
+
+Note that the possible tags that can be invoked are 'utd' and ''.  The tags
+dictionary includes a long name for each of these tags.
+
+The sat_ids are also stored in a dictionary.  Each key name here points to a
+list of the possible tags that can be associated with that particular satellite.
+Note that not all satellites support every level of processing.
+
+For a dataset that does not need multiple levels of tags and sat_ids, an empty
+string can be used to let pysat know how many levels the dataset has.
+
+.. code:: python
+
+  platform = 'cnofs'
+  name = 'ivm'
+  tags = {'': ''}
+  sat_ids = {'': ['']}
+
+
+Required Routines
+-----------------
+
 Three functions are required by pysat for operation, with supporting
 information for testing:
 
-List Files
-----------
+**list_files**
 
 Pysat maintains a list of files to enable data management functionality. It needs a pandas Series of filenames indexed by time. Pysat expects the module method platform_name.list_files to be:
 
@@ -57,8 +130,7 @@ where instrument is the name of the instrument object.  Likewise, files can be d
     inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
 
-Load Data
----------
+**load**
 
 Loading is a fundamental pysat activity, this routine enables the user to consider loading a hidden implementation 'detail'.
 
@@ -85,8 +157,7 @@ Loading is a fundamental pysat activity, this routine enables the user to consid
 
 
 
-Download Data
--------------
+**download**
 
 Download support significantly lowers the hassle in dealing with any dataset.
 Fetch data from the internet.
@@ -103,10 +174,11 @@ Fetch data from the internet.
 
 Routine should download data and write it to disk.
 
+
 Optional Routines
 -----------------
 
-**Initialize**
+**initialize**
 
 
 Initialize any specific instrument info. Runs once.
@@ -118,7 +190,7 @@ Initialize any specific instrument info. Runs once.
 
 inst is a pysat.Instrument() instance. init should modify inst in-place as needed; equivalent to a 'modify' custom routine.
 
-**Default**
+**default**
 
 
 First custom function applied, once per instrument load.
@@ -130,7 +202,7 @@ First custom function applied, once per instrument load.
 
 inst is a pysat.Instrument() instance. default should modify inst in-place as needed; equivalent to a 'modify' custom routine.
 
-**Clean Data**
+**clean**
 
 
 Cleans instrument for levels supplied in inst.clean_level.
@@ -146,7 +218,7 @@ Cleans instrument for levels supplied in inst.clean_level.
 
 inst is a pysat.Instrument() instance. clean should modify inst in-place as needed; equivalent to a 'modify' custom routine.
 
-**List Remote Files**
+**list_remote_files**
 
 Returns a list of available files on the remote server.
 
