@@ -240,8 +240,7 @@ class TestDifferenceSimilarInstruments:
                                         bounds, [('dummy1', 'dummy1')],
                                         cost_function)
         diff = results['dummy1']
-        dist = results['dist']
-        assert abs(diff - 5).max() == 0
+        assert np.all(abs(diff - 5)) == 0
 
 
 # test cost function for testing difference
@@ -254,23 +253,23 @@ def cost_function(point1, point2):
 class TestDataMod:
     """Test adapted from test_custom.py."""
     def setup(self):
-        '''Runs before every method to create a clean testing setup.'''
+        """Runs before every method to create a clean testing setup."""
         self.testConst = \
             pysat.Constellation([pysat.Instrument('pysat', 'testing',
                                                   sat_id='10',
                                                   clean_level='clean')])
 
     def teardown(self):
-        '''Runs after every method to clean up previous testing.'''
+        """Runs after every method to clean up previous testing."""
         del self.testConst
 
     def add(self, function, kind='add', at_pos='end', *args, **kwargs):
-        '''Adds a function to the object's custom queue'''
+        """Adds a function to the object's custom queue"""
         self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
 
     def test_single_adding_custom_function(self):
-        '''Test if custom function works correctly. Add function that returns
-        pandas object.'''
+        """Test if custom function works correctly. Add function that returns
+        pandas object."""
         def custom1(inst):
             d = 2. * inst.data.mlt
             d.name = 'doubleMLT'
