@@ -24,7 +24,7 @@ exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
                 'sw_kp': {'tag': [''], 'sat_id': ['']}}
 
 # dict, keyed by pysat instrument, with a list of usernames and passwords
-# user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
+user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
 
 
 def remove_files(inst):
