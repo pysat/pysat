@@ -24,10 +24,10 @@ Naming Conventions
 pysat uses a hierarchy of named variables to define each specific data product.
 In order, this is
 
-  * platform
-  * name
-  * sat_id
-  * tag
+* platform
+* name
+* sat_id
+* tag
 
 The exact usage of these can be tailored to the nature of the mission and data
 products.  In general, each combination should point to a unique data file.
@@ -36,24 +36,28 @@ and `tag` can be instantiated as an empty string if unused, or if a default
 is preferred. Examples are given below.
 
 **platform**
+
 In general, this is the name of the mission or observatory.  Examples include
 ICON, JRO, COSMIC, and SuperDARN.  Note that this may be a single satellite or
 ground-based observatory, a constellation of satellites, or a collaboration of
 ground-based observatories.
 
 **name**
+
 In general, this is the name of the instrument or high-level data product.
 When combined with the platform, this forms a unique file in the `instruments`
 directory.  Examples include the EUV instrument on ICON and the Incoherent
 Scatter Radar at JRO (jro_isr).
 
 **sat_id**
+
 In general, this is a unique identifier for a satellite in a constellation of
 identical or similar satellites, or multiple instruments on the same satellite
 with different look directions.  For example, the DMSP satellites carry similar
 instrument suites across multiple spacecraft.  These are labeled as F11-F18.
 
 **tag**
+
 In general, the tag points to a specific data product.  This could be a
 specific processing level (such as L1, L2), or a product file (such as the
 different profile products for cosmic_gps data).
