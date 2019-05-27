@@ -118,7 +118,7 @@ def init(self):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False):
+         malformed_index=False, **kwargs):
     """ Loads the test files
 
     Parameters
