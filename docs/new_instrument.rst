@@ -46,8 +46,8 @@ ground-based observatories.
 
 In general, this is the name of the instrument or high-level data product.
 When combined with the platform, this forms a unique file in the `instruments`
-directory.  Examples include the EUV instrument on ICON and the Incoherent
-Scatter Radar at JRO (jro_isr).
+directory.  Examples include the EUV instrument on ICON (icon_euv) and the
+Incoherent Scatter Radar at JRO (jro_isr).
 
 **sat_id**
 
