@@ -753,7 +753,8 @@ class TestMalformedIndex():
         self.testInst = pysat.Instrument('pysat', 'testing', '10', 
                                          clean_level='clean',
                                          malformed_index=True,
-                                         update_files=True)
+                                         update_files=True,
+                                         strict_time_index=True)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -781,7 +782,8 @@ class TestMalformedIndexXarray(TestMalformedIndex):
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', '10', 
                                          clean_level='clean',
                                          malformed_index=True,
-                                         update_files=True)
+                                         update_files=True,
+                                         strict_time_index=True)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
