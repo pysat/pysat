@@ -496,6 +496,13 @@ class TestBasics():
         start = pysat.datetime(2009,1,1)
         self.testInst.bounds = [start]
 
+    @raises(ValueError)
+    def test_set_bounds_too_many(self):
+        start = pysat.datetime(2009,1,1)
+        stop = pysat.datetime(2009,1,1)
+        huh = pysat.datetime(2009,1,1)
+        self.testInst.bounds = [start, stop, huh]
+
     def test_set_bounds_by_date(self):
         start = pysat.datetime(2009, 1, 1)
         stop = pysat.datetime(2009, 1, 15)
@@ -720,7 +727,7 @@ class TestBasicsXarray(TestBasics):
 
 class TestBasicsShiftedFileDates(TestBasics):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '10', 
                                          clean_level='clean',
@@ -741,7 +748,7 @@ class TestBasicsShiftedFileDates(TestBasics):
 
 class TestMalformedIndex():
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing', '10', 
                                          clean_level='clean',
@@ -769,7 +776,7 @@ class TestMalformedIndex():
 
 class TestMalformedIndexXarray(TestMalformedIndex):
     def setup(self):
-        reload(pysat.instruments.pysat_testing)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', '10', 
                                          clean_level='clean',
