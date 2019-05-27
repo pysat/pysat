@@ -720,7 +720,7 @@ def download(date_array, tag, sat_id='', data_path=None, user=None,
     -------
 
     """
-    warning.warn(' '.join(("Downloads not currently supported in pysat.",
+    warnings.warn(' '.join(("Downloads not currently supported in pysat.",
                            "Please visit http://supermag.jhuapl.edu/")))
     return None
 
