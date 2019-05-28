@@ -254,7 +254,7 @@ class Instrument(object):
         else:
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset
-        # assiign null data for user selected data type
+        # assign null data for user selected data type
         self.data = self._null_data.copy()
         
         # create Meta instance with appropriate labels
