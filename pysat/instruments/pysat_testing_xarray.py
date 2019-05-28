@@ -29,7 +29,8 @@ def init(self):
 
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-         sim_multi_file_left=False, malformed_index=False):
+         sim_multi_file_left=False, malformed_index=False,
+         **kwargs):
     """ Loads the test files
 
     Parameters
@@ -49,6 +50,9 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         root_date (default=False)
     malformed_index : (boolean)
         If True, time index will be non-unique and non-monotonic.
+    kwargs : dict
+        Additional unspecified keywords supplied to pysat.Instrument upon instantiation
+        are passed here.
 
     Returns
     -------
