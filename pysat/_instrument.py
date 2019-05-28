@@ -200,7 +200,7 @@ class Instrument(object):
                 self.name = inst_module.name.lower()
                 self.platform = inst_module.platform.lower()
             except AttributeError as str_err:
-                raise AttributeError(' '.join((str_err, '\n',
+                raise AttributeError(' '.join((str(str_err), '\n',
                                                'A name and platform attribute',
                                                'for the instrument is',
                                                'required if supplying routine',
@@ -216,8 +216,8 @@ class Instrument(object):
 
         # assign strict_time_flag
         self.strict_time_flag = strict_time_flag
-        
-        # assign directory format information, how pysat looks in 
+
+        # assign directory format information, how pysat looks in
         # sub-directories for files
         # assign_func sets some instrument defaults, direct info rules all
         if directory_format is not None:
@@ -256,7 +256,7 @@ class Instrument(object):
             self._data_library = xr.Dataset
         # assign null data for user selected data type
         self.data = self._null_data.copy()
-        
+
         # create Meta instance with appropriate labels
         self.units_label = units_label
         self.name_label = name_label
@@ -656,12 +656,12 @@ class Instrument(object):
     def date(self):
         """Date for loaded data."""
         return self._date
-        
+
     @date.setter
     def date(self, new):
         """Date for loaded data."""
         self._date = self._filter_datetime_input(new)
-        
+
     @property
     def index(self):
         """Returns time index of loaded data."""
@@ -877,7 +877,7 @@ class Instrument(object):
         else:
             if hasattr(date, '__iter__'):
                 return [pds.datetime(da.year, da.month, da.day) for da in date]
-            else:   
+            else:
                 return pds.datetime(date.year, date.month, date.day)
 
     def today(self):
@@ -1069,7 +1069,7 @@ class Instrument(object):
         # filtering instrinsic to assignment
         self.date = date
         self._fid = fid
-        
+
         if date is not None:
             year, doy = utils.time.getyrdoy(date)
             self.yr = year
@@ -1277,7 +1277,7 @@ class Instrument(object):
             self.meta[self.variables] = {self.name_label: self.variables,
                                          self.units_label: [''] *
                                          len(self.variables)}
-                                         
+
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
             if self.pad is not None:
@@ -1293,7 +1293,7 @@ class Instrument(object):
         if self.strict_time_flag:
             if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
                 raise ValueError('Loaded data is not unique (',not self.index.is_unique,
-                                 ') or not monotonic increasing (', 
+                                 ') or not monotonic increasing (',
                                  not self.index.is_monotonic_increasing,
                                  ')')
         else:
@@ -1303,11 +1303,11 @@ class Instrument(object):
         # apply default instrument routine, if data present
         if not self.empty:
             self._default_rtn(self)
-            
+
         # clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
             self._clean_rtn(self)
-            
+
         # apply custom functions via the nanokernel in self.custom
         if not self.empty:
             self.custom._apply_all(self)
@@ -1640,8 +1640,8 @@ class Instrument(object):
                 end = self.files.stop_date
             self._iter_start = [self._filter_datetime_input(start)]
             self._iter_stop = [self._filter_datetime_input(end)]
-            self._iter_list = utils.time.season_date_range(self._iter_start, 
-                                                           self._iter_stop, 
+            self._iter_list = utils.time.season_date_range(self._iter_start,
+                                                           self._iter_stop,
                                                            freq=step)
             self._iter_type = 'date'
         else:
