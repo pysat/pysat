@@ -29,7 +29,8 @@ def init(self):
 
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-         sim_multi_file_left=False):
+         sim_multi_file_left=False, malformed_index=False,
+         **kwargs):
     """ Loads the test files
 
     Parameters
@@ -47,6 +48,11 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     sim_multi_file_left : (boolean)
         Adjusts date range to be 12 hours in the past or twelve hours before
         root_date (default=False)
+    malformed_index : (boolean)
+        If True, time index will be non-unique and non-monotonic.
+    kwargs : dict
+        Additional unspecified keywords supplied to pysat.Instrument upon instantiation
+        are passed here.
 
     Returns
     -------
@@ -75,14 +81,20 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         data_date = date
     num = 86400 if sat_id == '' else int(sat_id)
     num_array = np.arange(num)
-    index = pds.date_range(data_date,
-                           data_date + pds.DateOffset(seconds=num-1),
+    index = pds.date_range(data_date, 
+                           data_date+pds.DateOffset(seconds=num-1), 
                            freq='S')
-
-    data = xarray.Dataset({'uts': (('time'), index)}, coords={'time': index})
-    # need to create simple orbits here. Have start of first orbit
-    # at 2009,1, 0 UT. 14.84 orbits per day
-    time_delta = date - root_date
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
+        
+    data = xarray.Dataset({'uts': (('time'), index)}, coords={'time':index})
+    # need to create simple orbits here. Have start of first orbit 
+    # at 2009,1, 0 UT. 14.84 orbits per day	
+    time_delta = date  - root_date
     mlt = test.generate_fake_data(time_delta.total_seconds(), num_array,
                                   period=5820, data_range=[0.0, 24.0])
     data['mlt'] = (('time'), mlt)
