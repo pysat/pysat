@@ -734,7 +734,7 @@ class TestBasicsShiftedFileDates(TestBasics):
                                          clean_level='clean',
                                          update_files=True,
                                          mangle_file_dates=True,
-                                         strict_time_index=True)
+                                         strict_time_flag=True)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -757,7 +757,7 @@ class TestMalformedIndex():
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
-                                         strict_time_index=True)
+                                         strict_time_flag=True)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -787,7 +787,7 @@ class TestMalformedIndexXarray(TestMalformedIndex):
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
-                                         strict_time_index=True)
+                                         strict_time_flag=True)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
