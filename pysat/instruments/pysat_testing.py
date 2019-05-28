@@ -92,37 +92,45 @@ meta['int32_dummy'] = {'units': '', 'long_name': 'int32_dummy'}
 meta['int64_dummy'] = {'units': '', 'long_name': 'int64_dummy'}
 
 
-def init(self):
+def init(inst):
     """ Initialization function
 
+    Shifts time index of files by 5-minutes if mangle_file_dates
+    set to True at pysat.Instrument instantiation.
+
+    Creates a file list for a given range if the file_date_range
+    keyword is set at instantiation.
+    
     Parameters
     ----------
     file_date_range : (pds.date_range)
         Optional keyword argument that specifies the range of dates for which
         test files will be created
+    mangle_file_dates : bool
+        If True, the loaded file list time index is shifted by 5-minutes.
 
     """
-    self.new_thing = True
-
-    if 'file_date_range' in self.kwargs:
+    inst.new_thing = True
+        
+    # work on file index if keyword present
+    if 'file_date_range' in inst.kwargs:
         # set list files routine to desired date range
         # attach to the instrument object
-        fdr = self.kwargs['file_date_range']
-        self._list_rtn = functools.partial(list_files, file_date_range=fdr)
-        self.files.refresh()
-
-def default(inst):
-    """The default function is applied first to data as it is loaded.
-    
-    Shifts time index of files by 5-minutes if mangle_file_dates
-    set to True at pysat.Instrument instantiation.
-    
-    """
-
+        fdr = inst.kwargs['file_date_range']
+        inst._list_rtn = functools.partial(list_files, file_date_range=fdr)
+        inst.files.refresh()
+        
     # mess with file dates if kwarg option present
     if 'mangle_file_dates' in inst.kwargs:
         if inst.kwargs['mangle_file_dates']:
                 inst.files.files.index = inst.files.files.index + pds.DateOffset(minutes=5)
+
+def default(inst):
+    """The default function is applied first to data as it is loaded.
+        
+    """
+    pass
+
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
