@@ -729,10 +729,12 @@ class TestBasicsShiftedFileDates(TestBasics):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '10', 
+        self.testInst = pysat.Instrument('pysat', 'testing', 
+                                         sat_id='10', 
                                          clean_level='clean',
                                          update_files=True,
-                                         mangle_file_dates=True)
+                                         mangle_file_dates=True,
+                                         strict_time_index=True)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -750,7 +752,8 @@ class TestMalformedIndex():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', '10', 
+        self.testInst = pysat.Instrument('pysat', 'testing', 
+                                         sat_id='10', 
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
@@ -779,7 +782,8 @@ class TestMalformedIndexXarray(TestMalformedIndex):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', '10', 
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', 
+                                         sat_id='10', 
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
