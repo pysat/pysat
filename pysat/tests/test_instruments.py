@@ -17,7 +17,7 @@ import pysat.instruments.pysat_testing
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
                 'cosmic2013_gps', 'demeter_iap', 'sport_ivm',
                 'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv',
-                'sw_dst', 'ucar_tiegcm']
+                'supermag_magnetometer', 'sw_dst', 'ucar_tiegcm']
 
 # exclude testing download functionality for specific module name, tag, sat_id
 exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
