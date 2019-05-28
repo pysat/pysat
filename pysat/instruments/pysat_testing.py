@@ -111,10 +111,18 @@ def init(self):
         self._list_rtn = functools.partial(list_files, file_date_range=fdr)
         self.files.refresh()
 
+def default(inst):
+    """The default function is applied first to data as it is loaded.
+    
+    Shifts time index of files by 5-minutes if mangle_file_dates
+    set to True at pysat.Instrument instantiation.
+    
+    """
+
     # mess with file dates if kwarg option present
     if 'mangle_file_dates' in self.kwargs:
-        if self.kwargs['mangle_file_dates']:
-                self.files.files.index = self.files.files.index + pds.DateOffset(minutes=5)
+        if inst.kwargs['mangle_file_dates']:
+                inst.files.files.index = self.files.files.index + pds.DateOffset(minutes=5)
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
