@@ -120,9 +120,9 @@ def default(inst):
     """
 
     # mess with file dates if kwarg option present
-    if 'mangle_file_dates' in self.kwargs:
+    if 'mangle_file_dates' in inst.kwargs:
         if inst.kwargs['mangle_file_dates']:
-                inst.files.files.index = self.files.files.index + pds.DateOffset(minutes=5)
+                inst.files.files.index = inst.files.files.index + pds.DateOffset(minutes=5)
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
