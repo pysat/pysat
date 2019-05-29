@@ -55,9 +55,9 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import functools
-
 import numpy as np
 
+import pysat
 from .methods import nasa_cdaweb as cdw
 
 platform = 'cnofs'
