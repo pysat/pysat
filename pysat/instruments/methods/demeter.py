@@ -3,10 +3,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pandas as pds
 import numpy as np
 import pysat
-import sys
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,

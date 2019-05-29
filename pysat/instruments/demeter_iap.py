@@ -40,7 +40,7 @@ import pandas as pds
 import numpy as np
 
 import pysat
-from . import demeter_methods
+from .methods import demeter
 
 platform = 'demeter'
 name = 'iap'
@@ -53,11 +53,11 @@ apid = {'survey': 1140, 'burst': 1139}
 multi_file_day = True
 
 # Use default demeter download method
-download = demeter_methods.download
+download = demeter.download
 
 # use default demeter list_remote_files method
 # as of 04 Dec 2018 this is a placeholder
-list_remote_files = demeter_methods.list_remote_files
+list_remote_files = demeter.list_remote_files
 
 
 def init(self):
@@ -142,8 +142,8 @@ def load(fnames, tag='survey', sat_id=''):
     # Load the desired data and cast as a DataFrame
     data = list()
     for fname in fnames:
-        fdata, fmeta = demeter_methods.load_binary_file(fname,
-                                                        load_experiment_data)
+        fdata, fmeta = demeter.load_binary_file(fname,
+                                                load_experiment_data)
         data.extend(fdata)
 
     data = np.vstack(data)
@@ -151,7 +151,7 @@ def load(fnames, tag='survey', sat_id=''):
 
     # Assign metadata
     if len(data.columns) > 0:
-        meta = demeter_methods.set_metadata(name, fmeta)
+        meta = demeter.set_metadata(name, fmeta)
     else:
         meta = pysat.Meta(None)
 
@@ -192,7 +192,7 @@ def load_experiment_data(fhandle):
         data_names.append('status_flag_{:02d}'.format(i))
         data_units[data_names[-1]] = "N/A"
 
-    data.append(demeter_methods.bytes_to_float(chunk[42:46]))  # Time resolution
+    data.append(demeter.bytes_to_float(chunk[42:46]))  # Time resolution
     data_names.append('time_resolution')
     data_units[data_names[-1]] = "s"
 
@@ -202,7 +202,7 @@ def load_experiment_data(fhandle):
                 'iv_Oz', 'iv_negOz_angle', 'iv_xOy_Ox_angle',
                 'satellite_potential']
     while i < 108:
-        data.append(demeter_methods.bytes_to_float(chunk[i:i+4]))
+        data.append(demeter.bytes_to_float(chunk[i:i+4]))
         i += 4
     data_names.extend(exp_data)
 

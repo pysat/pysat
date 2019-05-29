@@ -49,7 +49,7 @@ import os
 import sys
 import functools
 
-from . import nasa_cdaweb_methods as cdw
+from .methods import nasa_cdaweb as cdw
 
 import pandas as pds
 import numpy as np

@@ -38,8 +38,8 @@ import pandas as pds
 
 import functools
 import pysat
-from . import madrigal_methods as mad_meth
-from . import nasa_cdaweb_methods as cdw
+from .methods import madrigal as mad_meth
+from .methods import nasa_cdaweb as cdw
 
 
 platform = 'jro'
