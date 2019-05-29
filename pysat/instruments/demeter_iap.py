@@ -23,6 +23,8 @@ name : string
     'iap'
 tag : string
     'survey' or 'burst'
+sat_id : string
+    None supported
 
 Example
 -------
@@ -34,8 +36,6 @@ Example
 
 from __future__ import print_function, absolute_import
 
-import sys
-import functools
 import pandas as pds
 import numpy as np
 
@@ -44,7 +44,8 @@ from .methods import demeter
 
 platform = 'demeter'
 name = 'iap'
-tags = {'survey': 'Survey mode', 'burst': 'Burst mode'}
+tags = {'survey': 'Survey mode',
+        'burst': 'Burst mode'}
 sat_ids = {'': list(tags.keys())}
 test_dates = {'': {'survey': pysat.datetime(2010, 1, 1)}}
 
@@ -61,11 +62,12 @@ list_remote_files = demeter.list_remote_files
 
 
 def init(self):
-    print("When using this data please include a version of the acknoledgement"
-          + " outlined in the metadata attribute 'info.acknowledgements'.  We "
-          + "recommend that data users contact the experiment PI early in "
-          + " their study.  Experiment reference information is available in "
-          + "the metadata attribute 'info.reference'")
+    print(' '.join(("When using this data please include a version of the,"
+                    "acknowledgement outlined in the metadata attribute",
+                    "'info.acknowledgements'.  We recommend that data users",
+                    "contact the experiment PI early in their study. ",
+                    "Experiment reference information is available in the",
+                    "metadata attribute 'info.reference'")))
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
@@ -225,12 +227,12 @@ def load_experiment_data(fhandle):
     return data, meta
 
 
-def clean(iap):
+def clean(inst):
     """ Remove data to the desired level of cleanliness
 
     Parameters
     ----------
-    iap : pysat.Instrument
+    inst : pysat.Instrument
         DEMETER IAP instrument class object
 
     Return
@@ -245,24 +247,24 @@ def clean(iap):
     dirty : not applicable
     """
 
-    if iap.clean_level in ['dusty', 'dirty']:
+    if inst.clean_level in ['dusty', 'dirty']:
         print(''.join("'dusty' and 'dirty' levels not supported, ",
                       "defaulting to 'clean'"))
-        iap.clean_level = 'clean'
+        inst.clean_level = 'clean'
 
-    if iap.clean_level == 'clean':
+    if inst.clean_level == 'clean':
         # Determine the number of ions present, using a threshold for the
         # minimum significant density for one of the three ion species
         oplus_thresh = 5.0e2  # From Berthelier et al. 2006
-        nions = np.zeros(shape=iap.data.index.shape)
-        for i, oplus in enumerate(iap.data['O+_density']):
+        nions = np.zeros(shape=inst.data.index.shape)
+        for i, oplus in enumerate(inst.data['O+_density']):
             if oplus >= oplus_thresh:
                 nions[i] += 1
 
                 # From Berthelier et al. 2006
-                if iap.data['H+_density'][i] > oplus * 0.02:
+                if inst.data['H+_density'][i] > oplus * 0.02:
                     nions[i] += 1
-                if iap.data['He+_density'][i] > oplus * 0.02:
+                if inst.data['He+_density'][i] > oplus * 0.02:
                     nions[i] += 1
 
                 # Need Level 0 files to select data with J >= 1 nA
@@ -271,19 +273,19 @@ def clean(iap):
                 # Select times with at least two ion species
                 idx, = np.where(nions > 1)
     else:
-        idx = slice(0, iap.index.shape[0])
+        idx = slice(0, inst.index.shape[0])
 
-    iap.data = iap[idx]
+    inst.data = inst[idx]
 
     return
 
 
-def add_drift_sat_coord(iap):
+def add_drift_sat_coord(inst):
     """ Calculate the ion velocity in satellite x,y,z coordinates
 
     Parameters
     ----------
-    iap : pysat.Instrument
+    inst : pysat.Instrument
         DEMETER IAP instrument class object
 
     Return
@@ -293,14 +295,14 @@ def add_drift_sat_coord(iap):
     """
 
     # Because np.radians isn't working for data coming from the DataFrame :(
-    rad = np.array([np.radians(rr) for rr in iap['iv_negOz_angle']])
-    vxy = - iap['iv_Oz'] * np.tan(rad)
-    rad = np.array([np.radians(rr) for rr in iap['iv_xOy_Ox_angle']])
+    rad = np.array([np.radians(rr) for rr in inst['iv_negOz_angle']])
+    vxy = - inst['iv_Oz'] * np.tan(rad)
+    rad = np.array([np.radians(rr) for rr in inst['iv_xOy_Ox_angle']])
 
-    iap['iv_Ox'] = vxy * np.cos(rad)
-    iap['iv_Oy'] = vxy * np.sin(rad)
-    iap.meta.data.units['iv_Ox'] = iap.meta.data.units['iv_Oz']
-    iap.meta.data.units['iv_Oy'] = iap.meta.data.units['iv_Oz']
+    inst['iv_Ox'] = vxy * np.cos(rad)
+    inst['iv_Oy'] = vxy * np.sin(rad)
+    inst.meta.data.units['iv_Ox'] = inst.meta.data.units['iv_Oz']
+    inst.meta.data.units['iv_Oy'] = inst.meta.data.units['iv_Oz']
 
     # Because the ADV instrument is not fully aligned with the axis of the
     # satellite, reposition into satellite coordinates
@@ -311,12 +313,12 @@ def add_drift_sat_coord(iap):
     return
 
 
-def add_drift_lgm_coord(iap):
+def add_drift_lgm_coord(inst):
     """ Calcuate the ion velocity in local geomagneic coordinates
 
     Parameters
     ----------
-    iap : pysat.Instrument
+    inst : pysat.Instrument
         DEMETER IAP instrument class object
 
     Return
@@ -331,20 +333,20 @@ def add_drift_lgm_coord(iap):
     sc_keys = ['iv_Ox', 'iv_Oy', 'iv_Oz']
 
     # Test for ion velocity in spacecraft coordinates, add if not present
-    if not np.all([kk in iap.data.keys() for kk in sc_keys]):
-        add_drift_sat_coord(iap)
+    if not np.all([kk in inst.data.keys() for kk in sc_keys]):
+        add_drift_sat_coord(inst)
 
     # Construct a numpy array of the velocity vectors
-    sc_vel = iap.data[sc_keys].values
+    sc_vel = inst.data[sc_keys].values
 
     # Construct a numpy array of the rotational matrix that convert
     # from satellite to local geomagnetic coordinates.  Then calculate the
     # velocity in local geomagnetic coordinates
     lgm_vel = list()
-    for i, ind in enumerate(iap.data.index):
-        sat2geo = np.matrix([[iap['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
+    for i, ind in enumerate(inst.data.index):
+        sat2geo = np.matrix([[inst['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
                               for k in range(3)] for j in range(3)])
-        geo2lgm = np.matrix([[iap['geo2lgm_{:d}{:d}'.format(j+1, k+1)][ind]
+        geo2lgm = np.matrix([[inst['geo2lgm_{:d}{:d}'.format(j+1, k+1)][ind]
                               for k in range(3)] for j in range(3)])
         sat2lgm = np.matmul(geo2lgm, sat2geo)
 
@@ -353,18 +355,19 @@ def add_drift_lgm_coord(iap):
 
     # Save the data
     for i, name in enumerate(['iv_pos', 'iv_perp', 'iv_par']):
-        iap[name] = pds.Series(lgm_vel[:, i], index=iap.data.index, name=name)
-        iap.meta.data.units[name] = iap.meta.data.units[sc_keys[-1]]
+        inst[name] = pds.Series(lgm_vel[:, i], index=inst.data.index,
+                                name=name)
+        inst.meta.data.units[name] = inst.meta.data.units[sc_keys[-1]]
 
     return
 
 
-def add_drift_geo_coord(iap):
+def add_drift_geo_coord(inst):
     """ Calcuate the ion velocity in geographic coordinates
 
     Parameters
     ----------
-    iap : pysat.Instrument
+    inst : pysat.Instrument
         DEMETER IAP instrument class object
 
     Return
@@ -379,18 +382,18 @@ def add_drift_geo_coord(iap):
     sc_keys = ['iv_Ox', 'iv_Oy', 'iv_Oz']
 
     # Test for ion velocity in spacecraft coordinates, add if not present
-    if not np.all([kk in iap.data.keys() for kk in sc_keys]):
-        add_drift_sat_coord(iap)
+    if not np.all([kk in inst.data.keys() for kk in sc_keys]):
+        add_drift_sat_coord(inst)
 
     # Construct a numpy array of the velocity vectors
-    sc_vel = iap.data[sc_keys].values
+    sc_vel = inst.data[sc_keys].values
 
     # Construct a numpy array of the rotational matrix that convert
     # from satellite to local geomagnetic coordinates.  Then calculate the
     # velocity in local geomagnetic coordinates
     geo_vel = list()
-    for i, ind in enumerate(iap.data.index):
-        sat2geo = np.matrix([[iap['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
+    for i, ind in enumerate(inst.data.index):
+        sat2geo = np.matrix([[inst['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
                               for k in range(3)] for j in range(3)])
 
         geo_vel.append(np.matmul(sat2geo, np.array(sc_vel[i], dtype=float)))
@@ -398,7 +401,8 @@ def add_drift_geo_coord(iap):
 
     # Save the data
     for i, name in enumerate(['iv_geo_x', 'iv_geo_y', 'iv_geo_z']):
-        iap[name] = pds.Series(geo_vel[:, i], index=iap.data.index, name=name)
-        iap.meta.data.units[name] = iap.meta.data.units[sc_keys[-1]]
+        inst[name] = pds.Series(geo_vel[:, i], index=inst.data.index,
+                                name=name)
+        inst.meta.data.units[name] = inst.meta.data.units[sc_keys[-1]]
 
     return

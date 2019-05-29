@@ -103,7 +103,6 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.,
 
     """
 
-    import sgp4
     # wgs72 is the most commonly used gravity model in satellite tracking
     # community
     from sgp4.earth_gravity import wgs72

@@ -16,6 +16,8 @@ name : string
     'gps' for Radio Occultation profiles
 tag : string
     Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
+sat_id : string
+    None supported
 
 Note
 ----
@@ -29,13 +31,15 @@ Warnings
 - Routine was not produced by COSMIC team
 
 """
+
 from __future__ import print_function
 from __future__ import absolute_import
 import glob
+import numpy as np
 import os
 
 import netCDF4
-import numpy as np
+
 import pysat
 
 platform = 'cosmic'
@@ -52,10 +56,10 @@ test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data
+    """Return a Pandas Series of every file for chosen satellite data.
 
     Parameters
-    -----------
+    ----------
     tag : (string or NoneType)
         Denotes type of file to load, not supported by this routine.
         (default=None)
@@ -69,9 +73,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         User specified file format, not supported here. (default=None)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : (pysat._files.Files)
         A class containing the verified available files
+
     """
     import sys
     # if tag == 'ionprf':
@@ -86,9 +91,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     # number of files may be large, written with this in mind
     # only select file that are the cosmic data files and end with _nc
-    cosmicFiles = glob.glob(os.path.join(data_path, '*/*_nc'))
+    fnames = glob.glob(os.path.join(data_path, '*/*_nc'))
     # need to get date and time from filename to generate index
-    num = len(cosmicFiles)
+    num = len(fnames)
     if num != 0:
         print('Estimated time:', num * 1.E-5, 'seconds')
         sys.stdout.flush()
@@ -98,7 +103,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         hours = [None] * num
         minutes = [None] * num
         microseconds = [None] * num
-        for i, f in enumerate(cosmicFiles):
+        for i, f in enumerate(fnames):
             f2 = f.split('.')
             year[i] = f2[-6]
             days[i] = f2[-5]
@@ -115,40 +120,55 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         uts += np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
         index = pysat.utils.time.create_datetime_index(year=year, day=days,
                                                        uts=uts)
-        file_list = pysat.Series(cosmicFiles, index=index)
+        file_list = pysat.Series(fnames, index=index)
         return file_list
     else:
         print('Found no files, check your path or download them.')
         return pysat.Series(None)
 
 
-def load(cosmicFiles, tag=None, sat_id=None):
-    """
-    cosmic data load routine, called by pysat
+def load(fnames, tag=None, sat_id=None):
+    """Load COSMIC GPS files
+
+    Parameters
+    ----------
+    fnames : (pandas.Series)
+        Series of filenames
+    tag : (str or NoneType)
+        tag or None (default=None)
+    sat_id : (str or NoneType)
+        satellite id or None (default=None)
+
+    Returns
+    -------
+    data : (pandas.DataFrame)
+        Object containing satellite data
+    meta : (pysat.Meta)
+        Object containing metadata such as column names and units
+
     """
 
-    num = len(cosmicFiles)
+    num = len(fnames)
     # make sure there are files to read
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pysat.DataFrame(load_files(cosmicFiles, tag=tag,
-                                            sat_id=sat_id))
-        utsec = output.hour * 3600. + output.minute * 60. + output.second
-        output.index = \
-            pysat.utils.time.create_datetime_index(year=output.year,
-                                                   month=output.month,
-                                                   day=output.day,
+        data = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
+        utsec = data.hour * 3600. + data.minute * 60. + data.second
+        data.index = \
+            pysat.utils.time.create_datetime_index(year=data.year,
+                                                   month=data.month,
+                                                   day=data.day,
                                                    uts=utsec)
         # make sure UTS strictly increasing
-        output.sort_index(inplace=True)
+        data.sort_index(inplace=True)
         # use the first available file to pick out meta information
         meta = pysat.Meta()
         ind = 0
         repeat = True
         while repeat:
             try:
-                data = netCDF4.Dataset(cosmicFiles[ind])
+                data = netCDF4.Dataset(fnames[ind])
                 ncattrsList = data.ncattrs()
                 for d in ncattrsList:
                     meta[d] = {'units': '', 'long_name': d}
@@ -161,7 +181,7 @@ def load(cosmicFiles, tag=None, sat_id=None):
                 # file was empty, try the next one by incrementing ind
                 ind += 1
 
-        return output, meta
+        return data, meta
     else:
         # no data
         return pysat.DataFrame(None), pysat.Meta()
@@ -171,12 +191,28 @@ def load(cosmicFiles, tag=None, sat_id=None):
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
 def load_files(files, tag=None, sat_id=None):
-    '''Loads a list of COSMIC data files, supplied by user.
+    """Load COSMIC data files directly from a given list.
 
-    Returns a list of dicts, a dict for each file.
-    '''
+    May be directly called by user, but in general is called by load.  This is
+    separate from the main load function for future support of multiprocessor
+    loading.
 
-    output = [None] * len(files)
+    Parameters
+    ----------
+    files : (pandas.Series)
+        Series of filenames
+    tag : (str or NoneType)
+        tag or None (default=None)
+    sat_id : (str or NoneType)
+        satellite id or None (default=None)
+
+    Returns
+    -------
+    data : (list of dicts, one per file)
+        Object containing satellite data
+
+    """
+    data = [None] * len(files)
     drop_idx = []
     for (i, file) in enumerate(files):
         try:
@@ -195,7 +231,7 @@ def load_files(files, tag=None, sat_id=None):
             new['profiles'] = pysat.DataFrame(loadedVars)
             if tag == 'ionprf':
                 new['profiles'].index = new['profiles']['MSL_alt']
-            output[i] = new
+            data[i] = new
             data.close()
         except RuntimeError:
             # some of the S4 files have zero bytes, which causes a read error
@@ -206,68 +242,26 @@ def load_files(files, tag=None, sat_id=None):
     # drop anything that came from the zero byte files
     drop_idx.reverse()
     for i in drop_idx:
-        del output[i]
-    return output
-
-
-def clean(self):
-
-    if self.tag == 'ionprf':
-        # ionosphere density profiles
-        if self.clean_level == 'clean':
-            # try and make sure all data is good
-            # filter out profiles where source provider processing doesn't
-            # get max dens and max dens alt
-            self.data = self.data[((self['edmaxalt'] != -999.) &
-                                   (self['edmax'] != -999.))]
-            # make sure edmaxalt in "reasonable" range
-            self.data = self.data[(self.data.edmaxalt >= 175.) &
-                                  (self.data.edmaxalt <= 475.)]
-            # filter densities when negative
-            for i, profile in enumerate(self['profiles']):
-                # take out all densities below the highest altitude negative
-                # dens below 325
-                idx, = np.where((profile.ELEC_dens < 0) &
-                                (profile.index <= 325))
-                if len(idx) > 0:
-                    profile.iloc[0:idx[-1]+1] = np.nan
-                # take out all densities above the lowest altitude negative
-                # dens above 325
-                idx, = np.where((profile.ELEC_dens < 0) &
-                                (profile.index > 325))
-                if len(idx) > 0:
-                    profile.iloc[idx[0]:] = np.nan
-
-                # do an altitude density gradient check to reduce number of
-                # cycle slips
-                densDiff = profile.ELEC_dens.diff()
-                altDiff = profile.MSL_alt.diff()
-                normGrad = (densDiff / (altDiff * profile.ELEC_dens)).abs()
-                idx, = np.where((normGrad > 1.) & normGrad.notnull())
-                if len(idx) > 0:
-                    self[i, 'edmaxalt'] = np.nan
-                    self[i, 'edmax'] = np.nan
-                    self[i, 'edmaxlat'] = np.nan
-                    profile['ELEC_dens'] *= np.nan
-                    # self.data['profiles'][i]['ELEC_dens'] *= np.nan
-
-        # filter out any measurements where things have been set to NaN
-        self.data = self.data[self.data.edmaxalt.notnull()]
-
-    elif self.tag == 'scnlvl1':
-        # scintillation files
-        if self.clean_level == 'clean':
-            # try and make sure all data is good
-            # filter out profiles where source provider processing doesn't
-            # work
-            self.data = self.data[((self['alttp_s4max'] != -999.) &
-                                   (self['s4max9sec'] != -999.))]
-
-    return
+        del data[i]
+    return data
 
 
 def download(date_array, tag, sat_id, data_path=None,
              user=None, password=None):
+    """Download COSMIC GPS data.
+
+    Parameters
+    ----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Returns
+    -------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    """
     import requests
     from requests.auth import HTTPBasicAuth
     import os
@@ -309,9 +303,74 @@ def download(date_array, tag, sat_id, data_path=None,
 
     return
 
-    # mean altitude profiles over bin size, make a pandas Series for each
-    # altBin = 3
-    # roundMSL_alt = np.round(loadedVars['MSL_alt']/altBin)*altBin
-    # profiles = pds.DataFrame(loadedVars, index=roundMSL_alt)
-    # profiles = profiles.groupby(profiles.index.values).mean()
-    # del loadedVars
+
+def clean(inst):
+    """Return COSMIC GPS data cleaned to the specified level.
+
+    Parameters
+    ----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Returns
+    -------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Notes
+    -----
+    Supports 'clean', 'dusty', 'dirty'
+
+    """
+    if inst.tag == 'ionprf':
+        # ionosphere density profiles
+        if inst.clean_level == 'clean':
+            # try and make sure all data is good
+            # filter out profiles where source provider processing doesn't
+            # get max dens and max dens alt
+            inst.data = inst.data[((inst['edmaxalt'] != -999.) &
+                                   (inst['edmax'] != -999.))]
+            # make sure edmaxalt in "reasonable" range
+            inst.data = inst.data[(inst.data.edmaxalt >= 175.) &
+                                  (inst.data.edmaxalt <= 475.)]
+            # filter densities when negative
+            for i, profile in enumerate(inst['profiles']):
+                # take out all densities below the highest altitude negative
+                # dens below 325
+                idx, = np.where((profile.ELEC_dens < 0) &
+                                (profile.index <= 325))
+                if len(idx) > 0:
+                    profile.iloc[0:idx[-1]+1] = np.nan
+                # take out all densities above the lowest altitude negative
+                # dens above 325
+                idx, = np.where((profile.ELEC_dens < 0) &
+                                (profile.index > 325))
+                if len(idx) > 0:
+                    profile.iloc[idx[0]:] = np.nan
+
+                # do an altitude density gradient check to reduce number of
+                # cycle slips
+                densDiff = profile.ELEC_dens.diff()
+                altDiff = profile.MSL_alt.diff()
+                normGrad = (densDiff / (altDiff * profile.ELEC_dens)).abs()
+                idx, = np.where((normGrad > 1.) & normGrad.notnull())
+                if len(idx) > 0:
+                    inst[i, 'edmaxalt'] = np.nan
+                    inst[i, 'edmax'] = np.nan
+                    inst[i, 'edmaxlat'] = np.nan
+                    profile['ELEC_dens'] *= np.nan
+
+        # filter out any measurements where things have been set to NaN
+        inst.data = inst.data[inst.data.edmaxalt.notnull()]
+
+    elif inst.tag == 'scnlvl1':
+        # scintillation files
+        if inst.clean_level == 'clean':
+            # try and make sure all data is good
+            # filter out profiles where source provider processing doesn't
+            # work
+            inst.data = inst.data[((inst['alttp_s4max'] != -999.) &
+                                   (inst['s4max9sec'] != -999.))]
+
+    return

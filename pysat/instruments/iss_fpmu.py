@@ -12,22 +12,21 @@ name : string
     'fpmu'
 tag : string
     None Supported
+sat_id : string
+    None supported
 
 Warnings
 --------
-- Currently no cleaning routine.
+- Currently clean only replaces fill values with Nans.
 - Module not written by FPMU team.
 
 """
-
 from __future__ import print_function
 from __future__ import absolute_import
-import pandas as pds
-import numpy as np
-import pysat
-import sys
 import functools
+import numpy as np
 
+import pysat
 
 from .methods import nasa_cdaweb as cdw
 
@@ -54,28 +53,26 @@ basic_tag = {'dir': '/pub/data/international_space_station_iss/sp_fpmu',
              'local_fname': fname}
 supported_tags = {'': {'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
+
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
 def clean(inst):
-    """Routine to return FPMU data cleaned to the specified level
+    """Return FPMU data cleaned to the specified level.
 
     Parameters
-    -----------
+    ----------
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
     Returns
-    --------
+    -------
     Void : (NoneType)
         data in inst is modified in-place.
 
-    Notes
-    --------
-    No cleaning currently available for FPMU
     """
 
     inst.data.replace(-999., np.nan, inplace=True)  # Te

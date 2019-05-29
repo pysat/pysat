@@ -37,9 +37,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-
-import pandas as pds
 import numpy as np
+import pandas as pds
+import warnings
 
 import pysat
 
@@ -104,8 +104,8 @@ def clean(inst, clean_level=None):
 
     """
 
-    if clean_level is not 'none':
-        print("Cleaning actions for ICON FUV aren't yet defined.")
+    if clean_level != 'none':
+        warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
     return
 
 
@@ -287,6 +287,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    print("Downloads aren't yet available.")
+    warnings.warn("Downloads aren't yet available.")
 
     return

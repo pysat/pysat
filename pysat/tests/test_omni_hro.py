@@ -57,6 +57,12 @@ class TestOMNICustom():
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
+    # def test_time_shift_to_magnetic_poles(self):
+    #     """Test time shift of OMNI data"""
+    #     pysat.instruments.omni_hro.time_shift_to_magnetic_poles(self.testInst)
+    #
+    #     assert True
+
     def test_clock_angle(self):
         """ Test clock angle."""
 

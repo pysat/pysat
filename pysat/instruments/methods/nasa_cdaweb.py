@@ -8,7 +8,6 @@ intervention.
 from __future__ import absolute_import, division, print_function
 import sys
 
-import numpy as np
 import pandas as pds
 
 import pysat
@@ -72,10 +71,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     if data_path is not None:
         if format_str is None:
-                try:
-                    format_str = supported_tags[sat_id][tag]
-                except KeyError:
-                    raise ValueError('Unknown tag')
+            try:
+                format_str = supported_tags[sat_id][tag]
+            except KeyError:
+                raise ValueError('Unknown tag')
         out = pysat.Files.from_os(data_path=data_path,
                                   format_str=format_str)
 

@@ -9,6 +9,8 @@ with the development of code associated with SPORT and the IVM.
 
 # import pandas as pds
 # import numpy as np
+import warnings
+
 import pysat
 
 # pysat required parameters
@@ -131,7 +133,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """
 
     if format_str is None:
-        if tag is '':
+        if tag == '':
             tag = 'L2'
         format_str = ''.join(['SPORT_', tag, '_IVM_{year:04d}-{month:02d}-'
                               '{day:02d}_v{version:02d}r{revision:04d}.NC'])
@@ -173,5 +175,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    print('Downloads are not currently supported')
+    warnings.warn('Downloads are not currently supported - not launched yet!')
+
     pass
