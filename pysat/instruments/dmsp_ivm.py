@@ -23,7 +23,9 @@ platform : string
 name : string
     'ivm'
 tag : string
-    'utd'
+    'utd', None
+sat_id : string
+    ['f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18']
 
 Example
 -------
@@ -45,6 +47,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
+import numpy as np
+import pandas as pds
+
 import pysat
 from .methods import madrigal as mad_meth
 from .methods import nasa_cdaweb as cdw
@@ -168,11 +173,11 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
                       data_path=data_path, user=user, password=password)
 
 
-def default(ivm):
+def default(inst):
     pass
 
 
-def clean(ivm):
+def clean(inst):
     """Routine to return DMSP IVM data cleaned to the specified level
 
     'Clean' enforces that both RPA and DM flags are <= 1
@@ -198,32 +203,31 @@ def clean(ivm):
     Supports 'clean', 'dusty', 'dirty'
 
     """
-    import numpy as np
 
-    if ivm.tag == 'utd':
-        if ivm.clean_level == 'clean':
-            idx, = np.where((ivm['rpa_flag_ut'] <= 1) &
-                            (ivm['idm_flag_ut'] <= 1))
-        elif ivm.clean_level == 'dusty':
-            idx, = np.where((ivm['rpa_flag_ut'] <= 2) &
-                            (ivm['idm_flag_ut'] <= 2))
-        elif ivm.clean_level == 'dirty':
-            idx, = np.where((ivm['rpa_flag_ut'] <= 3) &
-                            (ivm['idm_flag_ut'] <= 3))
+    if inst.tag == 'utd':
+        if inst.clean_level == 'clean':
+            idx, = np.where((inst['rpa_flag_ut'] <= 1) &
+                            (inst['idm_flag_ut'] <= 1))
+        elif inst.clean_level == 'dusty':
+            idx, = np.where((inst['rpa_flag_ut'] <= 2) &
+                            (inst['idm_flag_ut'] <= 2))
+        elif inst.clean_level == 'dirty':
+            idx, = np.where((inst['rpa_flag_ut'] <= 3) &
+                            (inst['idm_flag_ut'] <= 3))
         else:
-            idx = slice(0, ivm.index.shape[0])
+            idx = slice(0, inst.index.shape[0])
     else:
-        if ivm.clean_level in ['clean', 'dusty', 'dirty']:
+        if inst.clean_level in ['clean', 'dusty', 'dirty']:
             print('WARNING: this level 1 data has no quality flags')
-        idx = slice(0, ivm.index.shape[0])
+        idx = slice(0, inst.index.shape[0])
 
     # downselect data based upon cleaning conditions above
-    ivm.data = ivm[idx]
+    inst.data = inst[idx]
 
     return
 
 
-def smooth_ram_drifts(ivm, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
+def smooth_ram_drifts(inst, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
     """ Smooth the ram drifts using a rolling mean
 
     Parameters
@@ -240,16 +244,17 @@ def smooth_ram_drifts(ivm, rpa_flag_key=None, rpa_vel_key='ion_v_sat_for'):
 
     """
 
-    if rpa_flag_key in list(ivm.data.keys()):
+    if rpa_flag_key in list(inst.data.keys()):
         rpa_idx, = np.where(inst[rpa_flag_key] == 1)
     else:
         rpa_idx = list()
 
-    ivm[rpa_idx, rpa_vel_key] = ivm[rpa_idx, rpa_vel_key].rolling(15, 5).mean()
+    inst[rpa_idx, rpa_vel_key] = \
+        inst[rpa_idx, rpa_vel_key].rolling(15, 5).mean()
     return
 
 
-def update_DMSP_ephemeris(ivm, ephem=None):
+def update_DMSP_ephemeris(inst, ephem=None):
     """Updates DMSP instrument data with DMSP ephemeris
 
     Parameters
@@ -265,33 +270,33 @@ def update_DMSP_ephemeris(ivm, ephem=None):
 
     # Ensure the right ephemera is loaded
     if ephem is None:
-        print('No ephemera provided for {:}'.format(ivm.date))
-        ivm.data = pds.DataFrame(None)
+        print('No ephemera provided for {:}'.format(inst.date))
+        inst.data = pds.DataFrame(None)
         return
 
-    if ephem.sat_id != ivm.sat_id:
+    if ephem.sat_id != inst.sat_id:
         raise ValueError('ephemera provided for the wrong satellite')
 
-    if ephem.date != ivm.date:
-        ephem.load(date=ivm.date, verifyPad=True)
+    if ephem.date != inst.date:
+        ephem.load(date=inst.date, verifyPad=True)
 
         if ephem.data.empty:
-            print('unable to load ephemera for {:}'.format(date))
-            ivm.data = pds.DataFrame(None)
+            print('unable to load ephemera for {:}'.format(inst.date))
+            inst.data = pds.DataFrame(None)
             return
 
     # Reindex the ephemeris data
-    ephem.data = ephem.data.reindex(index=ivm.data.index, method='pad')
+    ephem.data = ephem.data.reindex(index=inst.data.index, method='pad')
     ephem.data = ephem.data.interpolate('time')
 
     # Update the DMSP instrument
-    ivm['mlt'] = ephem['SC_AACGM_LTIME']
-    ivm['mlat'] = ephem['SC_AACGM_LAT']
+    inst['mlt'] = ephem['SC_AACGM_LTIME']
+    inst['mlat'] = ephem['SC_AACGM_LAT']
 
     return
 
 
-def add_drift_unit_vectors(ivm):
+def add_drift_unit_vectors(inst):
     """ Add unit vectors for the satellite velocity
 
     Returns
@@ -307,8 +312,8 @@ def add_drift_unit_vectors(ivm):
 
     """
     # Calculate theta and R in radians from MLT and MLat, respectively
-    theta = ivm['mlt'] * (np.pi / 12.0) - np.pi * 0.5
-    r = np.radians(90.0 - dmsp['mlat'].abs())
+    theta = inst['mlt'] * (np.pi / 12.0) - np.pi * 0.5
+    r = np.radians(90.0 - inst['mlat'].abs())
 
     # Determine the positions in cartesian coordinates
     pos_x = r * np.cos(theta)
@@ -320,27 +325,27 @@ def add_drift_unit_vectors(ivm):
     # Calculate the RAM and cross-track unit vectors in cartesian and polar
     # coordinates.
     # x points along MLT = 6, y points along MLT = 12
-    ivm['unit_ram_x'] = diff_x / norm
-    ivm['unit_ram_y'] = diff_y / norm
-    ivm['unit_cross_x'] = -diff_y / norm
-    ivm['unit_cross_y'] = diff_x / norm
-    idx, = np.where(ivm['mlat'] < 0)
-    ivm.data.loc[ivm.index[idx], 'unit_cross_x'] *= -1.0
-    ivm.data.loc[ivm.index[idx], 'unit_cross_y'] *= -1.0
+    inst['unit_ram_x'] = diff_x / norm
+    inst['unit_ram_y'] = diff_y / norm
+    inst['unit_cross_x'] = -diff_y / norm
+    inst['unit_cross_y'] = diff_x / norm
+    idx, = np.where(inst['mlat'] < 0)
+    inst.data.loc[inst.index[idx], 'unit_cross_x'] *= -1.0
+    inst.data.loc[inst.index[idx], 'unit_cross_y'] *= -1.0
 
-    ivm['unit_ram_r'] = ivm['unit_ram_x'] * np.cos(theta) + \
-        ivm['unit_ram_y'] * np.sin(theta)
-    ivm['unit_ram_theta'] = -ivm['unit_ram_x'] * np.sin(theta) + \
-        ivm['unit_ram_y'] * np.cos(theta)
+    inst['unit_ram_r'] = inst['unit_ram_x'] * np.cos(theta) + \
+        inst['unit_ram_y'] * np.sin(theta)
+    inst['unit_ram_theta'] = -inst['unit_ram_x'] * np.sin(theta) + \
+        inst['unit_ram_y'] * np.cos(theta)
 
-    ivm['unit_cross_r'] = ivm['unit_cross_x'] * np.cos(theta) + \
-        ivm['unit_cross_y'] * np.sin(theta)
-    ivm['unit_cross_theta'] = -ivm['unit_cross_x'] * np.sin(theta) + \
-        ivm['unit_cross_y'] * np.cos(theta)
+    inst['unit_cross_r'] = inst['unit_cross_x'] * np.cos(theta) + \
+        inst['unit_cross_y'] * np.sin(theta)
+    inst['unit_cross_theta'] = -inst['unit_cross_x'] * np.sin(theta) + \
+        inst['unit_cross_y'] * np.cos(theta)
     return
 
 
-def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
+def add_drifts_polar_cap_x_y(inst, rpa_flag_key=None,
                              rpa_vel_key='ion_v_sat_for',
                              cross_vel_key='ion_v_sat_left'):
     """ Add polar cap drifts in cartesian coordinates
@@ -367,7 +372,7 @@ def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
     """
 
     # Get the good RPA data, if available
-    if rpa_flag_key in list(ivm.data.keys()):
+    if rpa_flag_key in list(inst.data.keys()):
         rpa_idx, = np.where(inst[rpa_flag_key] != 1)
     else:
         rpa_idx = list()
@@ -377,17 +382,17 @@ def add_drifts_polar_cap_x_y(ivm, rpa_flag_key=None,
     iv_x[rpa_idx] = 0.0
 
     # Check to see if unit vectors have been created
-    if 'unit_ram_y' not in list(ivm.data.keys()):
-        add_drift_unit_vectors(ivm)
+    if 'unit_ram_y' not in list(inst.data.keys()):
+        add_drift_unit_vectors(inst)
 
     # Calculate the velocities
-    ivm['ion_vel_pc_x'] = iv_x * ivm['unit_ram_x'] + \
-        ivm[cross_vel_key] * ivm['unit_cross_x']
-    ivm['ion_vel_pc_y'] = iv_x * ivm['unit_ram_y'] + \
-        ivm[cross_vel_key] * ivm['unit_cross_y']
+    inst['ion_vel_pc_x'] = iv_x * inst['unit_ram_x'] + \
+        inst[cross_vel_key] * inst['unit_cross_x']
+    inst['ion_vel_pc_y'] = iv_x * inst['unit_ram_y'] + \
+        inst[cross_vel_key] * inst['unit_cross_y']
 
     # Flag the velocities as full (False) or partial (True)
-    ivm['partial'] = False
-    ivm[rpa_idx, 'partial'] = True
+    inst['partial'] = False
+    inst[rpa_idx, 'partial'] = True
 
     return
