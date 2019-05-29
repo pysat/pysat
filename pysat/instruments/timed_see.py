@@ -41,7 +41,7 @@ from __future__ import absolute_import
 import functools
 
 import pysat
-from . import nasa_cdaweb_methods as cdw
+from .methods import nasa_cdaweb as cdw
 
 # include basic instrument info
 platform = 'timed'

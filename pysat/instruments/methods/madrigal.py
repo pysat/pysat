@@ -238,8 +238,8 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
                                      '--kindat=' + kindat])
         print('Feedback from openMadrigal ', a)
     except OSError as str_err:
-        print(''.join("problem running globalDownload.py, check python path ",
-                      "->", str_err))
+        print(' '.join("problem running globalDownload.py, check python path",
+                       "->", str_err))
 
 
 def list_remote_files(tag, sat_id, inst_code=None, user=None,
@@ -387,7 +387,7 @@ def filter_data_single_date(self):
     pysat instrument file to this one.
 
     within platform_name.py set
-        default = pysat.instruments.madrigal_methods.filter_data_single_date
+        default = pysat.instruments.methods.madrigal.filter_data_single_date
     at the top level
 
     """

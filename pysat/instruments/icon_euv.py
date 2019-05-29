@@ -33,7 +33,7 @@ import pandas as pds
 import warnings
 
 import pysat
-from . import nasa_cdaweb_methods as cdw
+from .methods import nasa_cdaweb as cdw
 
 
 platform = 'icon'
