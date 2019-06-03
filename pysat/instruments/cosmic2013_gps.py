@@ -323,8 +323,12 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
         sys.stdout.flush()
         yr, doy = pysat.utils.time.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
-                         "tarservice/data/cosmic2013/"))
+        if sat_id == '2013':
+            dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                             "tarservice/data/cosmic2013/"))
+        else:
+            dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                             "tarservice/data/cosmic/"))
         dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
                                                                  doy=doy)
         req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
@@ -338,7 +342,11 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
             tar.extractall(path=data_path)
             tar.close()
             # move files
-            ext_dir = os.path.join(data_path, 'cosmic2013', sub_dir, yrdoystr)
+            if sat_id == '2013':
+                ext_dir = os.path.join(data_path, 'cosmic2013', sub_dir,
+                                       yrdoystr)
+            else:
+                ext_dir = os.path.join(data_path, 'cosmic', sub_dir, yrdoystr)
             shutil.move(ext_dir, os.path.join(data_path, yrdoystr))
 
     return
