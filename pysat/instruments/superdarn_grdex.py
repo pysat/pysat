@@ -307,3 +307,33 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 print('File not available for '+date.strftime('%d %B %Y'))
 
     return
+
+def polar_plot(inst, time, process_data=True,
+               ocb_flag=False):
+    """Summary plot of SuperDARN over polar cap.
+    
+    Uses pysatDINEOF nmethods to produce plots.
+    
+    Parameters
+    ----------
+    inst : pyast.Instrument
+      DMSP pysat Instrument object
+    time : datetime
+      Time at start of SuperDARN measurement
+    process_data : bool
+      If True, add all processing routines required
+      to produce plot
+    ocb_flag : bbool
+      If True, uses OCB data for processing.
+      
+    Returns
+    -------
+    Figure
+    
+    """
+    
+    import pydineof
+
+    # create plot
+    f, ax, vp = pydineof.darn.plot_combined_map(inst, [time])
+    return f
