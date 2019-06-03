@@ -17,8 +17,6 @@ platform : string
     'cosmic'
 name : string
     'gps' for Radio Occultation profiles
-sat_id : string
-    '2013' for re-processed data (default), 'pre-2013' for post-processed data
 tag : string
     Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
 sat_id : string
@@ -54,15 +52,14 @@ tags = {'ionprf': '',
         'sonprf': '',
         'wetprf': '',
         'atmprf': ''}
-sat_ids = {'2013': ['ionprf', 'sonprf', 'wetprf', 'atmprf'],
-           'pre-2013': ['ionprf', 'sonprf', 'wetprf', 'atmprf']}
+sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf']}
 test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
                    'sonprf': pysat.datetime(2008, 1, 1),
                    'wetprf': pysat.datetime(2008, 1, 1),
                    'atmprf': pysat.datetime(2008, 1, 1)}}
 
 
-def list_files(tag=None, sat_id='2013', data_path=None, format_str=None):
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
@@ -72,9 +69,8 @@ def list_files(tag=None, sat_id='2013', data_path=None, format_str=None):
         If '' is specified, the primary data type (ascii) is loaded.
         (default=None)
     sat_id : (string or NoneType)
-        Specifies the processing algorithm used.  Can be '2013' (re-processed)
-        or 'pre-2013' (post-processed)
-        (default='2013')
+        Not supported
+        (default=None)
     data_path : (string or NoneType)
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
@@ -360,30 +356,45 @@ def download(date_array, tag, sat_id, data_path=None,
         sys.stdout.flush()
         yr, doy = pysat.utils.time.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        if sat_id == '2013':
+        # Try re-processed data (preferred)
+        try:
             dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
                              "tarservice/data/cosmic2013/"))
-        else:
-            dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
-                             "tarservice/data/cosmic/"))
-        dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
-                                                                 doy=doy)
-        req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+            dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
+                                                                     doy=doy)
+            top_dir = os.path.join(data_path, 'cosmic2013')
+            req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+        # if repsonse is negative, try post-processed data
+            try:
+                dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/",
+                                 "rest/tarservice/data/cosmic/"))
+                dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'
+                dwnld = dwnld.format(year=yr, doy=doy)
+                top_dir = os.path.join(data_path, 'cosmic')
+                req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+                req.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                estr = ''.join(str(err), '\n', 'Data not found')
+                print(estr)
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
         with open(fname, "wb") as local_file:
             local_file.write(req.content)
             local_file.close()
-            # uncompress files
-            tar = tarfile.open(fname)
-            tar.extractall(path=data_path)
-            tar.close()
-            # move files
-            if sat_id == '2013':
-                ext_dir = os.path.join(data_path, 'cosmic2013', sub_dir,
-                                       yrdoystr)
-            else:
-                ext_dir = os.path.join(data_path, 'cosmic', sub_dir, yrdoystr)
-            shutil.move(ext_dir, os.path.join(data_path, yrdoystr))
+        # uncompress files and remove tarball
+        tar = tarfile.open(fname)
+        tar.extractall(path=data_path)
+        tar.close()
+        os.remove(fname)
+        # move files
+        source_dir = os.path.join(top_dir, sub_dir, yrdoystr)
+        destination_dir = os.path.join(data_path, yrdoystr)
+        if os.path.exists(destination_dir):
+            shutil.rmtree(destination_dir)
+        shutil.move(source_dir, destination_dir)
+        # Get rid of empty directories from tar process
+        shutil.rmtree(top_dir)
 
     return
