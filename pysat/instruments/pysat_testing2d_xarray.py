@@ -11,7 +11,7 @@ import pandas as pds
 import xarray as xr
 
 import pysat
-from pysat.instruments import testing_methods as test
+from pysat.instruments.methods import testing as test
 
 platform = 'pysat'
 name = 'testing2D_xarray'
@@ -23,7 +23,7 @@ def init(self):
     self.new_thing = True
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, malformed_index=False):
     """ Loads the test files
 
     Parameters
@@ -58,10 +58,16 @@ def load(fnames, tag=None, sat_id=None):
     num = 86400//scalar
     num_array = np.arange(num) * scalar
     # seed DataFrame with UT array
-    index = pds.date_range(date,
-                           date + pds.DateOffset(seconds=num-1),
+    index = pds.date_range(date, 
+                           date+pds.DateOffset(seconds=num-1), 
                            freq='S')
-    data = xr.Dataset({'uts': (('time'), index)}, coords={'time': index})
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
+    data = xr.Dataset({'uts': (('time'), index)}, coords={'time':index})
 
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day

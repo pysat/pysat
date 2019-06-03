@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
-from pysat.instruments import testing_methods as test
+from pysat.instruments.methods import testing as test
 
 # pysat required parameters
 platform = 'pysat'
@@ -92,28 +92,49 @@ meta['int32_dummy'] = {'units': '', 'long_name': 'int32_dummy'}
 meta['int64_dummy'] = {'units': '', 'long_name': 'int64_dummy'}
 
 
-def init(self):
+def init(inst):
     """ Initialization function
 
+    Shifts time index of files by 5-minutes if mangle_file_dates
+    set to True at pysat.Instrument instantiation.
+
+    Creates a file list for a given range if the file_date_range
+    keyword is set at instantiation.
+    
     Parameters
     ----------
     file_date_range : (pds.date_range)
         Optional keyword argument that specifies the range of dates for which
         test files will be created
+    mangle_file_dates : bool
+        If True, the loaded file list time index is shifted by 5-minutes.
 
     """
-    self.new_thing = True
-
-    if 'file_date_range' in self.kwargs:
+    inst.new_thing = True
+        
+    # work on file index if keyword present
+    if 'file_date_range' in inst.kwargs:
         # set list files routine to desired date range
         # attach to the instrument object
-        fdr = self.kwargs['file_date_range']
-        self._list_rtn = functools.partial(list_files, file_date_range=fdr)
-        self.files.refresh()
+        fdr = inst.kwargs['file_date_range']
+        inst._list_rtn = functools.partial(list_files, file_date_range=fdr)
+        inst.files.refresh()
+        
+    # mess with file dates if kwarg option present
+    if 'mangle_file_dates' in inst.kwargs:
+        if inst.kwargs['mangle_file_dates']:
+                inst.files.files.index = inst.files.files.index + pds.DateOffset(minutes=5)
+
+def default(inst):
+    """The default function is applied first to data as it is loaded.
+        
+    """
+    pass
 
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-         sim_multi_file_left=False, root_date=None, file_date_range=None):
+         sim_multi_file_left=False, root_date=None, file_date_range=None,
+         malformed_index=False, **kwargs):
     """ Loads the test files
 
     Parameters
@@ -138,6 +159,11 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         Range of dates for files or None, if this optional arguement is not
         used
         (default=None)
+    malformed_index : bool (default=False)
+        If True, time index for simulation will be non-unique and non-monotonic.
+    **kwargs : Additional keywords
+        Additional keyword arguments supplied at pyast.Instrument instantiation
+        are passed here
 
     Returns
     -------
@@ -230,11 +256,18 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
     # print (data['string_dummy'])
-
-    index = pds.date_range(data_date,
-                           data_date + pds.DateOffset(seconds=num-1),
+    
+    index = pds.date_range(data_date, 
+                           data_date+pds.DateOffset(seconds=num-1), 
                            freq='S')
-    data.index = index[0:num]
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
+        
+    data.index=index[0:num]
     data.index.name = 'Epoch'
     return data, meta.copy()
 

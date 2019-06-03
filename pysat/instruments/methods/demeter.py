@@ -3,10 +3,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pandas as pds
 import numpy as np
 import pysat
-import sys
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,
@@ -199,18 +197,28 @@ def load_location_parameters(fhandle):
                            'glat_conj_S_110km', 'glon_conj_S_110km',
                            'mag_comp_1', 'mag_comp_2', 'mag_comp_3',
                            'proton_gyrofreq', 'Xs', 'Ys', 'Zs'],
-            'data units': {'glat': 'degrees', 'glon': 'degrees',
-                           'altitude': 'km', 'LT': 'h', 'mlat': 'degrees',
-                           'mlon': 'degrees', 'MLT': 'h', 'ilat': 'degrees',
-                           'L': 'Earth_Radii', 'glat_conj': 'degrees',
+            'data units': {'glat': 'degrees',
+                           'glon': 'degrees',
+                           'altitude': 'km',
+                           'LT': 'h',
+                           'mlat': 'degrees',
+                           'mlon': 'degrees',
+                           'MLT': 'h',
+                           'ilat': 'degrees',
+                           'L': 'Earth_Radii',
+                           'glat_conj': 'degrees',
                            'glon_conj': 'degrees',
                            'glat_conj_N_110km': 'degrees',
                            'glon_conj_N_110km': 'degrees',
                            'glat_conj_S_110km': 'degrees',
                            'glon_conj_S_110km': 'degrees',
-                           'mag_comp_1': 'nT', 'mag_comp_2': 'nT',
-                           'mag_comp_3': 'nT', 'proton_gyrofreq': 'Hz',
-                           'Xs': 'N/A', 'Ys': 'N/A', 'Zs': 'N/A'}}
+                           'mag_comp_1': 'nT',
+                           'mag_comp_2': 'nT',
+                           'mag_comp_3': 'nT',
+                           'proton_gyrofreq': 'Hz',
+                           'Xs': 'N/A',
+                           'Ys': 'N/A',
+                           'Zs': 'N/A'}}
 
     return data, meta
 

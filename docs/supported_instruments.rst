@@ -21,21 +21,21 @@ General Data Source Methods
 NASA CDAWeb
 -----------
 
-.. automodule:: pysat.instruments.nasa_cdaweb_methods
+.. automodule:: pysat.instruments.methods.nasa_cdaweb
    :members: __doc__, init, load, list_files, list_remote_files, download
 
 
 Madrigal
 --------
 
-.. automodule:: pysat.instruments.madrigal_methods
+.. automodule:: pysat.instruments.methods.madrigal
    :members: __doc__, cedar_rules, load, download, filter_data_single_date
 
 
 Demeter
 -------
 
-.. automodule:: pysat.instruments.demeter_methods
+.. automodule:: pysat.instruments.methods.demeter
    :members: __doc__, download, bytes_to_float, load_general_header, load_location_parameters, load_attitude_parameters, load_binary_file, set_metadata
 
 

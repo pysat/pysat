@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
-from pysat.instruments import testing_methods as test
+from pysat.instruments.methods import testing as test
 
 platform = 'pysat'
 name = 'testing'
@@ -42,7 +42,7 @@ def init(self):
     self.new_thing = True
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, malformed_index=False):
     """ Loads the test files
 
     Parameters
@@ -54,6 +54,8 @@ def load(fnames, tag=None, sat_id=None):
         the number of times to include in the test instrument)
     sat_id : (str or NoneType)
         Instrument satellite ID (accepts '')
+    malformed_index : bool (False)
+        If True, the time index will be non-unique and non-monotonic. 
 
     Returns
     -------
@@ -113,6 +115,13 @@ def load(fnames, tag=None, sat_id=None):
                                                  minutes=59,
                                                  seconds=59),
                            freq=str(scalar)+'S')
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
+
     data.index = index
     data.index.name = 'epoch'
     # higher rate time signal (for scalar >= 2)
