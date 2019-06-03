@@ -44,7 +44,7 @@ import pandas as pds
 import numpy as np
 import pysat
 
-platform = 'cosmic2013'
+platform = 'cosmic'
 name = 'gps'
 tags = {'ionprf': '',
         'sonprf': '',
