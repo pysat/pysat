@@ -14,6 +14,7 @@ import sys
 import pandas as pds
 import numpy as np
 import xarray as xr
+import warnings
 
 from . import _custom
 from . import _files
@@ -55,6 +56,9 @@ class Instrument(object):
     temporary_file_list : boolean, optional
         If true, the list of Instrument files will not be written to disk.
         Prevents a race condition when running multiple pysat processes.
+    strict_time_flag : boolean, option (False)
+        If true, pysat will check data to ensure times are unique and
+        monotonic. In future versions, this will be fixed to True.
     multi_file_day : boolean, optional
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
@@ -167,11 +171,12 @@ class Instrument(object):
                  clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
-                 temporary_file_list=False, units_label='units',
-                 name_label='long_name', notes_label='notes',
-                 desc_label='desc', plot_label='label', axis_label='axis',
-                 scale_label='scale', min_label='value_min',
-                 max_label='value_max', fill_label='fill', *arg, **kwargs):
+                 temporary_file_list=False, strict_time_flag=False,
+                 units_label='units', name_label='long_name',
+                 notes_label='notes', desc_label='desc',
+                 plot_label='label', axis_label='axis', scale_label='scale',
+                 min_label='value_min', max_label='value_max',
+                 fill_label='fill', *arg, **kwargs):
 
         if inst_module is None:
             # use strings to look up module name
@@ -194,12 +199,12 @@ class Instrument(object):
                 # platform and name are expected to be part of module
                 self.name = inst_module.name.lower()
                 self.platform = inst_module.platform.lower()
-            except AttributeError:
-                raise AttributeError(string.join(('A name and platform ',
-                                                  'attribute for the ',
-                                                  'instrument is required if ',
-                                                  'supplying routine module ',
-                                                  'directly.')))
+            except AttributeError as err:
+                raise AttributeError(' '.join((str(err), '\n',
+                                               'A name and platform attribute',
+                                               'for the instrument is',
+                                               'required if supplying routine',
+                                               'module directly.')))
             # look to module for instrument functions and defaults
             self._assign_funcs(inst_module=inst_module)
 
@@ -209,6 +214,11 @@ class Instrument(object):
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else 'none')
 
+        # assign strict_time_flag
+        self.strict_time_flag = strict_time_flag
+
+        # assign directory format information, how pysat looks in
+        # sub-directories for files
         # assign_func sets some instrument defaults, direct info rules all
         if directory_format is not None:
             self.directory_format = directory_format.lower()
@@ -220,7 +230,9 @@ class Instrument(object):
                 self.directory_format = self.directory_format(tag, sat_id)
             except TypeError:
                 pass
-
+        # assign the file format string, if provided by user
+        # enables user to temporarily put in a new string template for files
+        # that may not match the standard names obtained from download routine
         if file_format is not None:
             self.file_format = file_format
         # check to make sure value is reasonable
@@ -242,8 +254,9 @@ class Instrument(object):
         else:
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset
-
+        # assign null data for user selected data type
         self.data = self._null_data.copy()
+
         # create Meta instance with appropriate labels
         self.units_label = units_label
         self.name_label = name_label
@@ -376,11 +389,12 @@ class Instrument(object):
                     try:
                         # Assume key[0] is integer (including list or slice)
                         return self.data.loc[self.data.index[key[0]], key[1]]
-                    except ValueError:
-                        estring = '\n'.join(("Unable to sort out data.",
-                                             "Instrument has data : " +
-                                             str(not self.empty),
-                                             "Requested key : ", str(key)))
+                    except ValueError as err:
+                        estring = ' '.join((str(err), "\n",
+                                            "Unable to sort out data.",
+                                            "Instrument has data : ",
+                                            str(not self.empty), "\n",
+                                            "Requested key : ", str(key)))
                         raise ValueError(estring)
             else:
                 try:
@@ -389,11 +403,12 @@ class Instrument(object):
                 except:
                     try:
                         return self.data[key]
-                    except ValueError:
-                        estring = '\n'.join(("Unable to sort out data access.",
-                                             "Instrument has data : " +
-                                             str(not self.empty),
-                                             "Requested key : ", str(key)))
+                    except ValueError as err:
+                        estring = ' '.join((str(err), "\n",
+                                            "Unable to sort out data access.",
+                                            "Instrument has data : ",
+                                            str(not self.empty), "\n",
+                                            "Requested key : ", str(key)))
                         raise ValueError(estring)
         else:
             return self.__getitem_xarray__(key)
@@ -489,11 +504,12 @@ class Instrument(object):
                     try:
                         # Assume key[0] is integer (including list or slice)
                         self.data.loc[self.data.index[key[0]], key[1]] = new
-                    except ValueError:
-                        estring = '\n'.join(("Unable to sort out data access.",
-                                             "Instrument has data : " +
-                                             str(not self.empty),
-                                             "Requested key : ", str(key)))
+                    except ValueError as err:
+                        estring = ' '.join((str(err), "\n",
+                                            "Unable to sort out data access.",
+                                            "Instrument has data : ",
+                                            str(not self.empty), "\n",
+                                            "Requested key : ", str(key)))
                         raise ValueError(estring)
                 self.meta[key[1]] = {}
                 return
@@ -639,18 +655,20 @@ class Instrument(object):
                 return len(data.indexes['time']) == 0
             else:
                 return True
+    @property
+    def date(self):
+        """Date for loaded data."""
+        return self._date
+
+    @date.setter
+    def date(self, new):
+        """Date for loaded data."""
+        self._date = self._filter_datetime_input(new)
 
     @property
     def index(self):
         """Returns time index of loaded data."""
-
-        if self.pandas_format:
-            return self.data.index
-        else:
-            if 'time' in self.data.indexes:
-                return self.data.indexes['time']
-            else:
-                return pds.Index([])
+        return self._index()
 
     def _index(self, data=None):
         """Returns time index of loaded data."""
@@ -726,9 +744,10 @@ class Instrument(object):
             self._load_rtn = inst.load
             self._list_rtn = inst.list_files
             self._download_rtn = inst.download
-        except AttributeError:
+        except AttributeError as err:
             estr = 'A load, file_list, and download routine are required for '
-            raise AttributeError('{:s}every instrument.'.format(estr))
+            raise AttributeError("\n".join((str(err),
+                                            '{:s}every instrument.'.format(estr))))
         try:
             self._default_rtn = inst.default
         except AttributeError:
@@ -848,16 +867,22 @@ class Instrument(object):
 
         Parameters
         ----------
-        date : datetime
+        date : datetime (array_like or single input)
 
         Returns
         -------
-        datetime
+        datetime (or list of datetimes)
             Only includes year, month, and day from original input
 
         """
 
-        return pds.datetime(date.year, date.month, date.day)
+        if date is None:
+            return date
+        else:
+            if hasattr(date, '__iter__'):
+                return [pds.datetime(da.year, da.month, da.day) for da in date]
+            else:
+                return pds.datetime(date.year, date.month, date.day)
 
     def today(self):
         """Returns today's date, with no hour, minute, second, etc.
@@ -926,11 +951,12 @@ class Instrument(object):
             pysat meta data
         """
 
+        date = self._filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
             fname = self.files[fid:fid+1]
         elif date is not None:
-            fname = self.files[date: date+pds.DateOffset(days=1)]
+            fname = self.files[date:date+pds.DateOffset(days=1)]
         else:
             raise ValueError('Must supply either a date or file id number.')
 
@@ -1042,8 +1068,12 @@ class Instrument(object):
             return self._load_data(fid=self._fid-1)
 
     def _set_load_parameters(self, date=None, fid=None):
+        # filter supplied data so that it is only year, month, and day
+        # and then store as part of instrument object
+        # filtering instrinsic to assignment
         self.date = date
         self._fid = fid
+
         if date is not None:
             year, doy = utils.time.getyrdoy(date)
             self.yr = year
@@ -1086,11 +1116,11 @@ class Instrument(object):
         # set options used by loading routine based upon user input
         if date is not None:
             # ensure date portion from user is only year, month, day
-            self._set_load_parameters(date=self._filter_datetime_input(date),
+            self._set_load_parameters(date=date,
                                       fid=None)
             # increment
             inc = pds.DateOffset(days=1)
-            curr = date
+            curr = self._filter_datetime_input(date)
         elif (yr is not None) & (doy is not None):
             date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
             self._set_load_parameters(date=date, fid=None)
@@ -1251,6 +1281,7 @@ class Instrument(object):
             self.meta[self.variables] = {self.name_label: self.variables,
                                          self.units_label: [''] *
                                          len(self.variables)}
+
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
             if self.pad is not None:
@@ -1260,16 +1291,32 @@ class Instrument(object):
             self.date = pds.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.time.getyrdoy(self.date)
 
+        # ensure data is unique and monotonic
+        # check occurs after all the data padding loads, or individual load
+        # thus it can potentially check issues with padding or with raw data
+        if self.strict_time_flag:
+            if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
+                raise ValueError('Loaded data is not unique (',not self.index.is_unique,
+                                 ') or not monotonic increasing (',
+                                 not self.index.is_monotonic_increasing,
+                                 ')')
+        else:
+            warnings.warn('Strict times will eventually be enforced upon all instruments.'
+                          ' (strict_time_flag)', DeprecationWarning)
+
+        # apply default instrument routine, if data present
         if not self.empty:
             self._default_rtn(self)
-        # clean
+
+        # clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
             self._clean_rtn(self)
-        # apply custom functions
+
+        # apply custom functions via the nanokernel in self.custom
         if not self.empty:
             self.custom._apply_all(self)
 
-        # remove the excess padding, if any applied
+        # remove the excess data padding, if any applied
         if (self.pad is not None) & (not self.empty) & (not verifyPad):
             self.data = self[first_time: last_time]
             if not self.empty:
@@ -1445,8 +1492,8 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            print('Downloading the most recent data by default. ',
-                  '(yesterday through tomorrow)')
+            print ('Downloading the most recent data by default ',
+                   '(yesterday through tomorrow).')
             start = self.yesterday()
             stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
@@ -1495,12 +1542,13 @@ class Instrument(object):
             start of iteration, if None uses first data date.
             list-like collection also accepted
         end :  datetime object, filename, or None (default)
-                end of iteration, inclusive. If None uses last data date.
-                list-like collection also accepted
+            end of iteration, inclusive. If None uses last data date.
+            list-like collection also accepted
 
         Note
         ----
-        Both start and stop must be the same type (date, or filename) or None
+        Both start and stop must be the same type (date, or filename) or None.
+        Only the year, month, and day are used for date inputs.
 
         Examples
         --------
@@ -1534,7 +1582,7 @@ class Instrument(object):
         if len(value) == 3:
             step = value[2]
         else:
-            # default do daily
+            # default to daily
             step = 'D'
 
         if (start is None) and (end is None):
@@ -1561,8 +1609,9 @@ class Instrument(object):
                 self._iter_list = self.files.get_file_array(start, end)
             elif isinstance(start[0], pds.datetime):
                 self._iter_type = 'date'
-                self._iter_list = utils.time.season_date_range(start, end,
-                                                               freq=step)
+                start = self._filter_datetime_input(start)
+                end = self._filter_datetime_input(end)
+                self._iter_list = utils.time.season_date_range(start, end, freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1593,9 +1642,10 @@ class Instrument(object):
                 start = self.files.start_date
             if end is None:
                 end = self.files.stop_date
-            self._iter_start = [start]
-            self._iter_stop = [end]
-            self._iter_list = utils.time.season_date_range(start, end,
+            self._iter_start = [self._filter_datetime_input(start)]
+            self._iter_stop = [self._filter_datetime_input(end)]
+            self._iter_list = utils.time.season_date_range(self._iter_start,
+                                                           self._iter_stop,
                                                            freq=step)
             self._iter_type = 'date'
         else:
@@ -2097,8 +2147,10 @@ class Instrument(object):
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
                         cdfkey.setncatts(new_dict)
-                    except KeyError:
-                        print(', '.join(('Unable to find MetaData for', key)))
+                    except KeyError as err:
+                        print(' '.join((str(err), '\n',
+                                        ', '.join(('Unable to find MetaData for',
+                                                   key)))))
                     # assign data
                     if datetime_flag:
                         # datetime is in nanoseconds, storing milliseconds
@@ -2231,8 +2283,9 @@ class Instrument(object):
                                                                       coltype)
                                     # print ('mid2 ', new_dict)
                                     cdfkey.setncatts(new_dict)
-                                except KeyError:
-                                    print(' '.join(('Unable to find MetaData',
+                                except KeyError as err:
+                                    print(' '.join((str(err), '\n',
+                                                    'Unable to find MetaData',
                                                     'for', ', '.join((key,
                                                                       col)))))
                                 # attach data
@@ -2278,8 +2331,9 @@ class Instrument(object):
                                     # really attach metadata now
                                     # print ('mid3 ', new_dict)
                                     cdfkey.setncatts(new_dict)
-                                except KeyError:
-                                    print(' '.join(('Unable to find MetaData',
+                                except KeyError as err:
+                                    print(' '.join((str(err), '\n',
+                                                    'Unable to find MetaData',
                                                     'for,', key)))
                                 # attach data
                                 temp_cdf_data = \

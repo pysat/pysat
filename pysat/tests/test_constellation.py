@@ -101,8 +101,8 @@ class TestAdditionIdenticalInstruments:
 class TestAdditionOppositeInstruments:
     def setup(self):
         """
-        The data in testadd1['dummy1'] is just ascending integers 0 to the
-        length of the other data, testadd2 has the same data but negative.
+        The data in ascend['dummy1'] is just ascending integers 0 to the
+        length of the other data, descend has the same data but negative.
         The addition of these two signals should be zero everywhere.
         """
         self.testC = pysat.Constellation(name='test_add_opposite')
@@ -122,21 +122,21 @@ class TestAdditionOppositeInstruments:
         data_label = 'dummy1'
         results = self.testC.add(bounds1, label1, bounds2, label2, bins3,
                                  label3, data_label)
-        med = results['dummy1']['median']
-        for i in med:
-            assert i == 0
+        med = np.array(results['dummy1']['median'])
+        assert abs(med).max() == 0
 
 
 class TestAdditionSimilarInstruments:
     def setup(self):
         """
-        All the data in dummy1 of testadd3 is the data in testadd1 + 10
-        So the addition of testadd1 and testadd3 should be no more than 10 off
-        from the addition of just testadd1
+        All the data in dummy1 of 'plus10' is the data in default + 10
+        So the addition of 'ascend' and 'plus10' should be no
+        more than 10 off from the addition of just 'ascend'
         TODO: actually check the math on this
         """
         self.testC = pysat.Constellation(name='test_add_similar')
-        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd1',
+        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testing',
+                                                          tag='ascend',
                                                           clean_level='clean')])
 
     def teardown(self):
@@ -159,11 +159,11 @@ class TestAdditionSimilarInstruments:
                                  label3, data_label)
         refresults = self.refC.add(bounds1, label1, bounds2, label2, bins3,
                                    label3, data_label)
-        med = results['dummy1']['median']
-        refmed = refresults['dummy1']['median']
-        diff = [med[i] - refmed[i] for i in range(len(med))]
-        for i in diff:
-            assert i <= 10 and i >= 0
+        med = np.array(results['dummy1']['median'])
+        refmed = np.array(refresults['dummy1']['median'])
+        diff = med - refmed
+        assert diff.min() >= 0
+        assert diff.max() <= 10
 
 
 class TestAdditionSingleInstrument:
@@ -174,7 +174,7 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        self.testInst = pysat.Instrument('pysat', 'testadd4',
+        self.testInst = pysat.Instrument('pysat', 'testing', 'fives',
                                          clean_level='clean')
         insts.append(self.testInst)
         self.testConst = pysat.Constellation(insts)
@@ -203,12 +203,12 @@ class TestAdditionSingleInstrument:
 
 class TestDifferenceSameInstrument:
     def setup(self):
-        self.const = pysat.Constellation(name='test_diff')
+        self.const = pysat.Constellation(name='test_diff_same')
 
     def teardown(self):
         del self.const
 
-    def test_diff(self):
+    def test_diff_same_instruments(self):
         self.const.load(date=pysat.datetime(2008, 1, 1))
         bounds = [('longitude', 'longitude', 0, 360, .5),
                   ('latitude', 'latitude', -90, 90, .5),
@@ -220,20 +220,13 @@ class TestDifferenceSameInstrument:
         dist = results['dist']
         # the instruments are identical, so the difference should be 0
         # everywhere
-        for i in diff:
-            assert i == 0
-        for i in dist:
-            assert i == 0
-
-
-class TestDifferenceSmallInstruments(TestDifferenceSameInstrument):
-    def setup(self):
-        self.const = pysat.Constellation(name='test_diff_small')
+        assert abs(diff).max() == 0
+        assert abs(dist).max() == 0
 
 
 class TestDifferenceSimilarInstruments:
     def setup(self):
-        self.const = pysat.Constellation(name='test_diff2')
+        self.const = pysat.Constellation(name='test_diff_similar')
 
     def teardown(self):
         del self.const
@@ -247,9 +240,7 @@ class TestDifferenceSimilarInstruments:
                                         bounds, [('dummy1', 'dummy1')],
                                         cost_function)
         diff = results['dummy1']
-        dist = results['dist']
-        for i in diff:
-            assert i == 5
+        assert np.all(abs(diff - 5)) == 0
 
 
 # test cost function for testing difference
@@ -262,22 +253,23 @@ def cost_function(point1, point2):
 class TestDataMod:
     """Test adapted from test_custom.py."""
     def setup(self):
-        '''Runs before every method to create a clean testing setup.'''
+        """Runs before every method to create a clean testing setup."""
         self.testConst = \
-            pysat.Constellation([pysat.Instrument('pysat', 'testing', tag='10',
+            pysat.Constellation([pysat.Instrument('pysat', 'testing',
+                                                  sat_id='10',
                                                   clean_level='clean')])
 
     def teardown(self):
-        '''Runs after every method to clean up previous testing.'''
+        """Runs after every method to clean up previous testing."""
         del self.testConst
 
     def add(self, function, kind='add', at_pos='end', *args, **kwargs):
-        '''Adds a function to the object's custom queue'''
+        """Adds a function to the object's custom queue"""
         self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
 
     def test_single_adding_custom_function(self):
-        '''Test if custom function works correctly. Add function that returns
-        pandas object.'''
+        """Test if custom function works correctly. Add function that returns
+        pandas object."""
         def custom1(inst):
             d = 2. * inst.data.mlt
             d.name = 'doubleMLT'

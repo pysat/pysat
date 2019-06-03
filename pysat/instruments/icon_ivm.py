@@ -37,12 +37,12 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-
-import pandas as pds
 import numpy as np
+import pandas as pds
+import warnings
 
 import pysat
-from . import nasa_cdaweb_methods as cdw
+from .methods import nasa_cdaweb as cdw
 
 
 platform = 'icon'
@@ -254,8 +254,43 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    print("Downloads aren't yet available.")
+    warnings.warn("Downloads aren't yet available.")
 
+    return
+
+
+def clean(inst, clean_level=None):
+    """Provides data cleaning based upon clean_level.
+
+    clean_level is set upon Instrument instantiation to
+    one of the following:
+
+    'Clean'
+    'Dusty'
+    'Dirty'
+    'None'
+
+    Routine is called by pysat, and not by the end user directly.
+
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Returns
+    --------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Note
+    ----
+        Supports 'clean', 'dusty', 'dirty', 'none'
+
+    """
+
+    if clean_level != 'none':
+        warnings.warn("Cleaning actions for ICON IVM are not yet defined.")
     return
 
 

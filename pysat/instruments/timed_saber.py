@@ -52,14 +52,10 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-import sys
-
-import numpy as np
-import pandas as pds
 
 import pysat
 # CDAWeb methods prewritten for pysat
-from . import nasa_cdaweb_methods as cdw
+from .methods import nasa_cdaweb as cdw
 
 # the platform and name strings associated with this instrument
 # need to be defined at the top level
