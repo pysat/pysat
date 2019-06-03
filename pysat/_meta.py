@@ -272,7 +272,7 @@ class Meta(object):
     def keep(self, keep_names):
         """Keeps variables (keep_names) while dropping other parameters"""
 
-        current_names = self._data.columns
+        current_names = self._data.index
         drop_names = []
         for name in current_names:
             if name not in keep_names:

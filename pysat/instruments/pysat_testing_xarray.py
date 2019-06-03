@@ -11,6 +11,7 @@ import pandas as pds
 import xarray
 
 import pysat
+from pysat.instruments.methods import testing as test
 
 # pysat required parameters
 platform = 'pysat'
@@ -28,7 +29,8 @@ def init(self):
 
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
-         sim_multi_file_left=False):
+         sim_multi_file_left=False, malformed_index=False,
+         **kwargs):
     """ Loads the test files
 
     Parameters
@@ -46,6 +48,11 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     sim_multi_file_left : (boolean)
         Adjusts date range to be 12 hours in the past or twelve hours before
         root_date (default=False)
+    malformed_index : (boolean)
+        If True, time index will be non-unique and non-monotonic.
+    kwargs : dict
+        Additional unspecified keywords supplied to pysat.Instrument upon instantiation
+        are passed here.
 
     Returns
     -------
@@ -72,44 +79,52 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     else:
         root_date = pysat.datetime(2009, 1, 1)
         data_date = date
-    num = 86400 if tag is '' else int(tag)
+    num = 86400 if sat_id == '' else int(sat_id)
     num_array = np.arange(num)
-    uts = num_array
-    index = pds.date_range(data_date,
-                           data_date + pds.DateOffset(seconds=num-1),
+    index = pds.date_range(data_date, 
+                           data_date+pds.DateOffset(seconds=num-1), 
                            freq='S')
-
-    data = xarray.Dataset({'uts': (('time'), index)}, coords={'time': index})
-    # need to create simple orbits here. Have start of first orbit
-    # at 2009,1, 0 UT. 14.84 orbits per day
-    time_delta = date - root_date
-    uts_root = np.mod(time_delta.total_seconds(), 5820)
-    mlt = np.mod(uts_root + num_array, 5820) * (24. / 5820.)
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
+        
+    data = xarray.Dataset({'uts': (('time'), index)}, coords={'time':index})
+    # need to create simple orbits here. Have start of first orbit 
+    # at 2009,1, 0 UT. 14.84 orbits per day	
+    time_delta = date  - root_date
+    mlt = test.generate_fake_data(time_delta.total_seconds(), num_array,
+                                  period=5820, data_range=[0.0, 24.0])
     data['mlt'] = (('time'), mlt)
 
-    # fake orbit number
-    fake_delta = date - pysat.datetime(2008, 1, 1)
-    fake_uts_root = fake_delta.total_seconds()
-
-    data['orbit_num'] = (('time'),
-                         ((fake_uts_root + num_array) / 5820.).astype(int))
+    # do slt, 20 second offset from mlt
+    slt = test.generate_fake_data(time_delta.total_seconds()+20, num_array,
+                                  period=5820, data_range=[0.0, 24.0])
+    data['slt'] = (('time'), slt)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
+    longitude = test.generate_fake_data(time_delta.total_seconds(), num_array,
+                                        period=6240, data_range=[0.0, 360.0])
     data['longitude'] = (('time'), longitude)
 
     # create latitude area for testing polar orbits
-    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
-                            (2. * np.pi / 5820.))
+    angle = test.generate_fake_data(time_delta.total_seconds(),
+                                    num_array, period=5820,
+                                    data_range=[0.0, 2.0*np.pi])
+    latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
 
-    # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
-    data['slt'] = (('time'),
-                   np.mod(uts_root + num_array, 5820) * (24. / 5820.))
+    # fake orbit number
+    fake_delta = date - pysat.datetime(2008, 1, 1)
+    orbit_num = test.generate_fake_data(fake_delta.total_seconds(),
+                                        num_array, period=5820,
+                                        cyclic=False)
+
+    data['orbit_num'] = (('time'), orbit_num)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)

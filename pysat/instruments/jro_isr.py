@@ -33,13 +33,12 @@ Note
 
 from __future__ import print_function
 from __future__ import absolute_import
-import numpy as np
-import pandas as pds
-
 import functools
+import numpy as np
+
 import pysat
-from . import madrigal_methods as mad_meth
-from . import nasa_cdaweb_methods as cdw
+from .methods import madrigal as mad_meth
+from .methods import nasa_cdaweb as cdw
 
 
 platform = 'jro'
@@ -188,7 +187,6 @@ def clean(self):
     Routine is called by pysat, and not by the end user directly.
 
     """
-    import numpy as np
 
     # Default to selecting all of the data
     idx = {'gdalt': [i for i in range(self.data.indexes['gdalt'].shape[0])]}
@@ -230,8 +228,7 @@ def calc_measurement_loc(self):
     have azimuth and elevation keys that match the format 'eldir#' and 'azdir#'
 
     """
-    import numpy as np
-    import pandas as pds
+
     from pysat import utils
 
     az_keys = [kk[5:] for kk in list(self.data.keys())

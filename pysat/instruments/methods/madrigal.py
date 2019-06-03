@@ -14,7 +14,7 @@ import pysat
 
 
 def cedar_rules():
-    """ General acknowledgement statement for Madrigal data
+    """ General acknowledgement statement for Madrigal data.
 
     Returns
     -------
@@ -22,7 +22,6 @@ def cedar_rules():
         String with general acknowledgement for all CEDAR Madrigal data
 
     """
-
     ackn = "Contact the PI when using this data, in accordance with the CEDAR"
     ackn += " 'Rules of the Road'"
     return ackn
@@ -238,15 +237,16 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
                                      '--inst=' + inst_code,
                                      '--kindat=' + kindat])
         print('Feedback from openMadrigal ', a)
-    except OSError as err:
-        print("problem running globalDownload.py, check python path")
+    except OSError as str_err:
+        print(' '.join("problem running globalDownload.py, check python path",
+                       "->", str_err))
 
 
 def list_remote_files(tag, sat_id, inst_code=None, user=None,
                       password=None, supported_tags=None,
                       url="http://cedar.openmadrigal.org",
                       two_digit_year_break=None):
-    """Lists files available from Madrigal.
+    """List files available from Madrigal.
 
     Parameters
     ----------
@@ -279,7 +279,7 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
         and '2000' will be added for years < two_digit_year_break.
 
     Returns
-    --------
+    -------
     Void : (NoneType)
         Downloads data to disk.
 
@@ -304,7 +304,6 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
                                               inst_code=madrigal_inst_code)
 
     """
-
     import madrigalWeb.madrigalWeb
 
     if inst_code is None:
@@ -388,7 +387,7 @@ def filter_data_single_date(self):
     pysat instrument file to this one.
 
     within platform_name.py set
-        default = pysat.instruments.madrigal_methods.filter_data_single_date
+        default = pysat.instruments.methods.madrigal.filter_data_single_date
     at the top level
 
     """
