@@ -15,7 +15,7 @@ class TestBasics():
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
-        self.bounds1 = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.bounds1 = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
         self.bounds2 = (pysat.datetime(2009, 1, 1), pysat.datetime(2009, 1, 2))
 
     def teardown(self):
@@ -59,7 +59,7 @@ class TestBasics():
 
         # holds here because there are 32 days, no data is discarded,
         # each day holds same amount of data
-        assert(self.testInst.data['dummy1'].size*32 ==
+        assert(self.testInst.data['dummy1'].size*3 ==
                sum([sum(i) for i in results['dummy1']['count']]))
 
         assert np.all(check)
@@ -96,7 +96,7 @@ class TestFrameProfileAverages():
         self.testInst = pysat.Instrument('pysat', 'testing2D',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
-                                pysat.datetime(2008, 2, 1))
+                                pysat.datetime(2008, 1, 3))
         self.dname = 'alt_profiles'
         self.test_vals = np.arange(50) * 1.2
         self.test_fracs = np.arange(50) / 50.0
@@ -192,7 +192,7 @@ class TestConstellation:
                                           clean_level='clean'))
         self.testC = pysat.Constellation(instruments=insts)
         self.testI = pysat.Instrument('pysat', 'testing', clean_level='clean')
-        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.testI, self.bounds
@@ -249,7 +249,7 @@ class TestHeterogenousConstellation:
                                           clean_level='clean',
                                           root_date=r_date))
         self.testC = pysat.Constellation(instruments=insts)
-        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.bounds
@@ -319,7 +319,7 @@ class Test2DConstellation:
         insts.append(pysat.Instrument('pysat', 'testing2d',
                      clean_level='clean'))
         self.testC = pysat.Constellation(insts)
-        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.bounds
@@ -370,7 +370,7 @@ class TestSeasonalAverageUnevenBins:
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
-                                pysat.datetime(2008, 2, 1))
+                                pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -412,7 +412,7 @@ class TestSeasonalAverageUnevenBins:
 
         # holds here because there are 32 days, no data is discarded,
         # each day holds same amount of data
-        assert(self.testInst.data['dummy1'].size*32 ==
+        assert(self.testInst.data['dummy1'].size*3 ==
                sum([sum(i) for i in results['dummy1']['count']]))
 
         assert np.all(check)
