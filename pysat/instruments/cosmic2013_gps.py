@@ -56,7 +56,7 @@ test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
                    'atmprf': pysat.datetime(2008, 1, 1)}}
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, sat_id='2013', data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
@@ -66,8 +66,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         If '' is specified, the primary data type (ascii) is loaded.
         (default=None)
     sat_id : (string or NoneType)
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
+        Specifies the processing algorithm used.  Can be '2013' (re-processed)
+        or 'pre-2013' (post-processed)
+        (default='2013')
     data_path : (string or NoneType)
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
@@ -129,7 +130,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         return pysat.Series(None)
 
 
-def load(cosmicFiles, tag=None, sat_id=None, altitude_bin=None):
+def load(cosmicFiles, tag=None, sat_id='2013', altitude_bin=None):
     """
     cosmic data load routine, called by pysat
     """
