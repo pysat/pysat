@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Loads and downloads data from the COSMIC satellite.
+Loads data from the COSMIC satellite.
 
 The Constellation Observing System for Meteorology, Ionosphere, and Climate
 (COSMIC) is comprised of six satellites in LEO with GPS receivers. The
@@ -10,10 +10,15 @@ and Archival Center.
 
 Parameters
 ----------
+altitude_bin : integer
+    Number of kilometers to bin altitude profiles by when loading.
+    Currently only supported for tag='ionprf'.
 platform : string
     'cosmic'
 name : string
     'gps' for Radio Occultation profiles
+sat_id : string
+    '2013' for re-processed data (default), 'pre-2013' for post-processed data
 tag : string
     Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
 
@@ -33,40 +38,44 @@ from __future__ import print_function
 from __future__ import absolute_import
 import glob
 import os
-
-import netCDF4
+import sys
+from scipy.io.netcdf import netcdf_file
+import pandas as pds
 import numpy as np
 import pysat
 
-platform = 'cosmic'
+platform = 'cosmic2013'
 name = 'gps'
 tags = {'ionprf': '',
         'sonprf': '',
         'wetprf': '',
         'atmprf': ''}
-sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf']}
+sat_ids = {'2013': ['ionprf', 'sonprf', 'wetprf', 'atmprf'],
+           'pre-2013': ['ionprf', 'sonprf', 'wetprf', 'atmprf']}
 test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
                    'sonprf': pysat.datetime(2008, 1, 1),
                    'wetprf': pysat.datetime(2008, 1, 1),
                    'atmprf': pysat.datetime(2008, 1, 1)}}
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, sat_id='2013', data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 
     Parameters
     -----------
     tag : (string or NoneType)
-        Denotes type of file to load, not supported by this routine.
+        Denotes type of file to load.  Accepted types are '' and 'ascii'.
+        If '' is specified, the primary data type (ascii) is loaded.
         (default=None)
     sat_id : (string or NoneType)
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
+        Specifies the processing algorithm used.  Can be '2013' (re-processed)
+        or 'pre-2013' (post-processed)
+        (default='2013')
     data_path : (string or NoneType)
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
-        User specified file format, not supported here. (default=None)
+    format_str : (NoneType)
+        User specified file format not supported. (default=None)
 
     Returns
     --------
@@ -108,11 +117,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         year = np.array(year).astype(int)
         days = np.array(days).astype(int)
-        uts = np.array(hours).astype(int) * 3600. + \
-            np.array(minutes).astype(int) * 60.
+        uts = (np.array(hours).astype(int) * 3600.
+               + np.array(minutes).astype(int) * 60.)
         # adding microseconds to ensure each time is unique, not allowed to
         # pass 1.E-3 s
-        uts += np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
+        uts += np.mod(np.array(microseconds).astype(int) * 4, 8000) * 1.E-5
         index = pysat.utils.time.create_datetime_index(year=year, day=days,
                                                        uts=uts)
         file_list = pysat.Series(cosmicFiles, index=index)
@@ -122,18 +131,18 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         return pysat.Series(None)
 
 
-def load(cosmicFiles, tag=None, sat_id=None):
+def load(cosmicFiles, tag=None, sat_id='2013', altitude_bin=None):
     """
     cosmic data load routine, called by pysat
     """
-
     num = len(cosmicFiles)
     # make sure there are files to read
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
         output = pysat.DataFrame(load_files(cosmicFiles, tag=tag,
-                                            sat_id=sat_id))
+                                            sat_id=sat_id,
+                                            altitude_bin=altitude_bin))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
         output.index = \
             pysat.utils.time.create_datetime_index(year=output.year,
@@ -143,24 +152,26 @@ def load(cosmicFiles, tag=None, sat_id=None):
         # make sure UTS strictly increasing
         output.sort_index(inplace=True)
         # use the first available file to pick out meta information
+        profile_meta = pysat.Meta()
         meta = pysat.Meta()
         ind = 0
         repeat = True
         while repeat:
             try:
-                data = netCDF4.Dataset(cosmicFiles[ind])
-                ncattrsList = data.ncattrs()
-                for d in ncattrsList:
-                    meta[d] = {'units': '', 'long_name': d}
+                data = netcdf_file(cosmicFiles[ind], mode='r', mmap=False)
                 keys = data.variables.keys()
                 for key in keys:
-                    meta[key] = {'units': data.variables[key].units,
-                                 'long_name': data.variables[key].long_name}
+                    profile_meta[key] = {'units': data.variables[key].units,
+                                         'long_name':
+                                         data.variables[key].long_name}
+                ncattrsList = data._attributes.keys()
+                for d in ncattrsList:
+                    meta[d] = {'units': '', 'long_name': d}
                 repeat = False
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind
                 ind += 1
-
+        meta['profiles'] = profile_meta
         return output, meta
     else:
         # no data
@@ -170,7 +181,7 @@ def load(cosmicFiles, tag=None, sat_id=None):
 # seperate routine for doing actual loading. This was broken off from main load
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
-def load_files(files, tag=None, sat_id=None):
+def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     '''Loads a list of COSMIC data files, supplied by user.
 
     Returns a list of dicts, a dict for each file.
@@ -180,25 +191,29 @@ def load_files(files, tag=None, sat_id=None):
     drop_idx = []
     for (i, file) in enumerate(files):
         try:
-            data = netCDF4.Dataset(file)
+            data = netcdf_file(file, mode='r', mmap=False)
             # build up dictionary will all ncattrs
             new = {}
             # get list of file attributes
-            ncattrsList = data.ncattrs()
+            ncattrsList = data._attributes.keys()
             for d in ncattrsList:
-                new[d] = data.getncattr(d)
+                new[d] = data._attributes[d]
             # load all of the variables in the netCDF
             loadedVars = {}
             keys = data.variables.keys()
             for key in keys:
-                loadedVars[key] = data.variables[key][:]
+                if data.variables[key][:].dtype.byteorder != '=':
+                    loadedVars[key] = \
+                        data.variables[key][:].byteswap().newbyteorder()
+                else:
+                    loadedVars[key] = data.variables[key][:]
+
             new['profiles'] = pysat.DataFrame(loadedVars)
-            if tag == 'ionprf':
-                new['profiles'].index = new['profiles']['MSL_alt']
+
             output[i] = new
             data.close()
         except RuntimeError:
-            # some of the S4 files have zero bytes, which causes a read error
+            # some of the files have zero bytes, which causes a read error
             # this stores the index of these zero byte files so I can drop
             # the Nones the gappy file leaves behind
             drop_idx.append(i)
@@ -207,6 +222,19 @@ def load_files(files, tag=None, sat_id=None):
     drop_idx.reverse()
     for i in drop_idx:
         del output[i]
+
+    if tag == 'ionprf':
+        if altitude_bin is not None:
+            for out in output:
+                out['profiles'].index = \
+                    (out['profiles']['MSL_alt']/altitude_bin).round().values \
+                    * altitude_bin
+                out['profiles'] = \
+                    out['profiles'].groupby(out['profiles'].index.values).mean()
+        else:
+            for out in output:
+                out['profiles'].index = out['profiles']['MSL_alt']
+
     return output
 
 
@@ -266,8 +294,8 @@ def clean(self):
     return
 
 
-def download(date_array, tag, sat_id, data_path=None,
-             user=None, password=None):
+def download(date_array, tag, sat_id, data_path=None, user=None,
+             password=None):
     import requests
     from requests.auth import HTTPBasicAuth
     import os
@@ -285,12 +313,20 @@ def download(date_array, tag, sat_id, data_path=None,
     else:
         raise ValueError('Unknown cosmic_gps tag')
 
+    if (user is None) or (password is None):
+        raise ValueError('CDAAC user account information must be provided.')
+
     for date in date_array:
         print('Downloading COSMIC data for ' + date.strftime('%D'))
+        sys.stdout.flush()
         yr, doy = pysat.utils.time.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
-                         "tarservice/data/cosmic2013/"))
+        if sat_id == '2013':
+            dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                             "tarservice/data/cosmic2013/"))
+        else:
+            dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                             "tarservice/data/cosmic/"))
         dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
                                                                  doy=doy)
         req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
@@ -304,7 +340,11 @@ def download(date_array, tag, sat_id, data_path=None,
             tar.extractall(path=data_path)
             tar.close()
             # move files
-            ext_dir = os.path.join(data_path, 'cosmic2013', sub_dir, yrdoystr)
+            if sat_id == '2013':
+                ext_dir = os.path.join(data_path, 'cosmic2013', sub_dir,
+                                       yrdoystr)
+            else:
+                ext_dir = os.path.join(data_path, 'cosmic', sub_dir, yrdoystr)
             shutil.move(ext_dir, os.path.join(data_path, yrdoystr))
 
     return
@@ -312,6 +352,6 @@ def download(date_array, tag, sat_id, data_path=None,
     # mean altitude profiles over bin size, make a pandas Series for each
     # altBin = 3
     # roundMSL_alt = np.round(loadedVars['MSL_alt']/altBin)*altBin
-    # profiles = pds.DataFrame(loadedVars, index=roundMSL_alt)
+    # profiles = pysat.DataFrame(loadedVars, index=roundMSL_alt)
     # profiles = profiles.groupby(profiles.index.values).mean()
     # del loadedVars
