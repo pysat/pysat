@@ -396,3 +396,49 @@ def add_drifts_polar_cap_x_y(inst, rpa_flag_key=None,
     inst[rpa_idx, 'partial'] = True
 
     return
+
+def polar_plot_by_orbit(inst, orbit, process_data=True,
+                        ocb_flag=False):
+    """Summary plot of DMSP over polar cap.
+    
+    Uses pysatDINEOF nmethods to produce plots.
+    
+    Parameters
+    ----------
+    inst : pyast.Instrument
+      DMSP pysat Instrument object
+    orbit : integer
+      Orbit number for the given day to be plotted
+    process_data : bool
+      If True, add all processing routines required
+      to produce plot
+    ocb_flag : bbool
+      If True, uses OCB data for processing.
+      
+    Returns
+    -------
+    Figure
+    
+    """
+    
+    import pydineof
+    
+    if process_data:
+        inst2 = pydineof.dmsp.set_up_dmsp_dineof_object(inst.tag, ocb_flag=ocb_flag)
+    else:
+        inst2 = inst.copy()
+        
+    # select orbit
+    inst2.orbits[orbit]
+    
+    # get mlt,mlat values of polar binning, used for plotting
+    plot_supp = pydineof.polar.polar_bin_to_mlt_mlat(np.arange(4825))
+    plot_mlt = plot_supp['mlt']
+    plot_mlat = plot_supp['mlat']
+
+    # create plot
+    f, ax, vp = pydineof.polar.plot_map(plot_mlt, plot_mlat, inst2['iv_pc_x'], 
+                        inst2['iv_pc_y'],
+                        title='DMSP Orbit Summary Plot',
+                        scale=100, clim=[0.,100.])
+    return f
