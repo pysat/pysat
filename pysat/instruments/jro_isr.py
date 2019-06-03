@@ -58,8 +58,8 @@ test_dates = {'': {'drifts': pysat.datetime(2010, 1, 19),
 # use the default CDAWeb method
 jro_fname1 = 'jro{year:4d}{month:02d}{day:02d}'
 jro_fname2 = '.{version:03d}.hdf5'
-supported_tags = {ss: {'drifts': jro_fname1 + "drifts" + jro_fname2,
-                       'drifts_ave': jro_fname1 + "drifts_avg" + jro_fname2,
+supported_tags = {ss: {'drifts': jro_fname1 + "_drifts" + jro_fname2,
+                       'drifts_ave': jro_fname1 + "_avg_drifts" + jro_fname2,
                        'oblique_stan': jro_fname1 + jro_fname2,
                        'oblique_rand': jro_fname1 + "?" + jro_fname2,
                        'oblique_long': jro_fname1 + "?" + jro_fname2}
@@ -291,3 +291,69 @@ def calc_measurement_loc(self):
                               self.meta.fill_label: np.nan}
 
     return
+    
+def drifts_plot(inst):
+    """Summary plot for JRO ISR data using normal or average drifts data
+    
+    Parameters
+    ----------
+    inst : pysat.Instrument
+    
+    Returns
+    -------
+    matplotlib.figure
+    
+    """
+    import matplotlib.pyplot as plt
+    
+    # get altitude difference
+    alt_diff = inst['gdalt'].values[1] - inst['gdalt'].values[0]
+    # get altitude locations, create y labels
+    ytick_vals = [val - alt_diff/2. for val in inst['gdalt'].values]
+    ytick_vals.append(inst['gdalt'].values[-1] + alt_diff/2.)
+    
+    fig = plt.figure()
+    if inst.tag == 'drifts':
+        ax = fig.add_subplot(311)
+    else:
+        ax = fig.add_subplot(211)
+    plt.pcolormesh(inst.index, ytick_vals, 
+                   inst['vipn2'].values.T, vmin=-50., vmax=50.)
+    plt.ylabel('Altitude (km)')
+    cbar = plt.colorbar()
+    cbar.set_label('Perp North (m/s)')
+
+    plt.title(str('Jicamarca Summary Plot ' + inst.date.strftime('%x')))
+    # remove times from upper plot
+    ax.axes.get_xaxis().set_visible(False)
+    
+    if inst.tag == 'drifts':
+        ax = fig.add_subplot(312)
+    else:
+        ax = fig.add_subplot(212)
+    plt.pcolormesh(np.arange(len(inst.index)), ytick_vals, 
+                   inst['vipe1'].values.T, vmin=-200., vmax=200.)
+    plt.ylabel('Altitude (km)')
+    cbar = plt.colorbar()
+    cbar.set_label('Perp East (m/s)')
+    
+    if inst.tag == 'drifts':
+        # remove times from second plot
+        ax.axes.get_xaxis().set_visible(False)
+
+        ax = fig.add_subplot(313)
+        plt.pcolormesh(np.arange(len(inst.index)), ytick_vals, 
+                    inst['pacwl'].values.T, vmin=-10., vmax=10.)
+        plt.ylabel('Altitude (km)')
+        cbar = plt.colorbar()
+        cbar.set_label('SNR')
+
+    # create better time labels
+    xloc, xticks = plt.xticks()
+    xticks = [val.strftime('%X') for val in inst.index[xloc[:-1].astype(int)]]
+    xticks.append(inst.index[-1].strftime('%X'))
+    ax.set_xticklabels(xticks)
+    plt.xlabel('Universal Time')
+    
+    plt.tight_layout()
+
