@@ -398,7 +398,7 @@ def add_drifts_polar_cap_x_y(inst, rpa_flag_key=None,
     return
 
 def polar_plot_by_orbit(inst, orbit, process_data=True,
-                        ocb_flag=False):
+                        ocb_flag=False, update_ephemeris=False):
     """Summary plot of DMSP over polar cap.
     
     Uses pysatDINEOF nmethods to produce plots.
@@ -414,6 +414,9 @@ def polar_plot_by_orbit(inst, orbit, process_data=True,
       to produce plot
     ocb_flag : bbool
       If True, uses OCB data for processing.
+    update_ephemeris : bool
+      If True, use NOAA updated ephemeris data to provide
+      new location values for DMSP.
       
     Returns
     -------
@@ -424,21 +427,24 @@ def polar_plot_by_orbit(inst, orbit, process_data=True,
     import pydineof
     
     if process_data:
-        inst2 = pydineof.dmsp.set_up_dmsp_dineof_object(inst.tag, ocb_flag=ocb_flag)
+        inst2 = pydineof.dmsp.set_up_dmsp_dineof_object(inst.tag, ocb_flag=ocb_flag,
+                                                        update_ephemeris=update_ephemeris)
     else:
         inst2 = inst.copy()
         
     # select orbit
     inst2.orbits[orbit]
     
-    # get mlt,mlat values of polar binning, used for plotting
+    # get mlt, mlat values of polar binning, used for plotting
     plot_supp = pydineof.polar.polar_bin_to_mlt_mlat(np.arange(4825))
     plot_mlt = plot_supp['mlt']
     plot_mlat = plot_supp['mlat']
 
     # create plot
-    f, ax, vp = pydineof.polar.plot_map(plot_mlt, plot_mlat, inst2['iv_pc_x'], 
-                        inst2['iv_pc_y'],
-                        title='DMSP Orbit Summary Plot',
-                        scale=100, clim=[0.,100.])
+    f, ax, vp = pydineof.polar.plot_map(plot_mlt, plot_mlat, 
+                                        inst2['iv_pc_x'], 
+                                        inst2['iv_pc_y'],
+                                        title='DMSP Orbit Summary Plot',
+                                        scale=100, 
+                                        clim=[0.,100.])
     return f
