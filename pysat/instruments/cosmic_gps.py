@@ -192,7 +192,7 @@ def load(fnames, tag=None, sat_id=None):
                 # file was empty, try the next one by incrementing ind
                 ind += 1
         meta['profiles'] = profile_meta
-        return output, meta
+        return data, meta
     else:
         # no data
         return pysat.DataFrame(None), pysat.Meta()
@@ -249,7 +249,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
             new['profiles'] = pysat.DataFrame(loadedVars)
 
-            output[i] = new
+            data[i] = new
             data.close()
         except RuntimeError:
             # some of the files have zero bytes, which causes a read error
@@ -260,21 +260,21 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     # drop anything that came from the zero byte files
     drop_idx.reverse()
     for i in drop_idx:
-        del output[i]
+        del data[i]
 
     if tag == 'ionprf':
         if altitude_bin is not None:
-            for out in output:
+            for out in data:
                 out['profiles'].index = \
                     (out['profiles']['MSL_alt']/altitude_bin).round().values \
                     * altitude_bin
                 out['profiles'] = \
                     out['profiles'].groupby(out['profiles'].index.values).mean()
         else:
-            for out in output:
+            for out in data:
                 out['profiles'].index = out['profiles']['MSL_alt']
 
-    return output
+    return data
 
 
 def clean(self):
