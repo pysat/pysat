@@ -8,6 +8,10 @@ occultation of GPS signals by the atmosphere provides a measurement of
 atmospheric parameters. Data downloaded from the COSMIC Data Analaysis
 and Archival Center.
 
+Default behavior is to search for the 2013 re-processed data first, then the
+post-processed data as recommended on
+https://cdaac-www.cosmic.ucar.edu/cdaac/products.html
+
 Parameters
 ----------
 altitude_bin : integer
