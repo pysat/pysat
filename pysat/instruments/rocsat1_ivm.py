@@ -11,10 +11,12 @@ name : string
     'ivm'
 tag : string
     None
+sat_id : string
+    None supported
 
 Note
 ----
-- no tag required
+- no tag or sat_id required
 
 Warnings
 --------
@@ -24,15 +26,12 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
-import pandas as pds
-import numpy as np
-import pysat
-import sys
-
 import functools
+import warnings
 
+import pysat
 
-from . import nasa_cdaweb_methods as cdw
+from .methods import nasa_cdaweb as cdw
 
 platform = 'rocsat1'
 name = 'ivm'
@@ -81,5 +80,7 @@ def clean(inst):
     --------
     No cleaning currently available for ROCSAT-1 IVM.
     """
+
+    warnings.warn("No cleaning currently available for ROCSAT")
 
     return None
