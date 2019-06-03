@@ -343,7 +343,7 @@ def drifts_plot(inst):
 
         ax = fig.add_subplot(313)
         plt.pcolormesh(np.arange(len(inst.index)), ytick_vals, 
-                    inst['pacwl'].values.T, vmin=-10., vmax=10.)
+                    inst['pacwl'].values.T, vmin=-3., vmax=3.)
         plt.ylabel('Altitude (km)')
         cbar = plt.colorbar()
         cbar.set_label('SNR')
