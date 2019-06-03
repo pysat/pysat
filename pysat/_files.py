@@ -374,8 +374,10 @@ class Files(object):
                 except:
                     # Assume key is something else
                     out = self.files.loc[key]
-            except IndexError:
-                raise IndexError('Date requested outside file bounds.')
+            except IndexError as err:
+                raise IndexError(''.join((str(err), '\n',
+                                          'Date requested outside file ',
+                                          'bounds.')))
             if isinstance(key.start, pds.datetime):
                 # enforce exclusive slicing on datetime
                 if len(out) > 1:
