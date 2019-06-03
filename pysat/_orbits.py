@@ -668,7 +668,7 @@ class Orbits(object):
                                           'ever be. Talk to someone about',
                                           'this fundamental failure or open',
                                           'an issue at',
-                                          'www.github.com/rstonback/pysat'.)))
+                                          'www.github.com/rstonback/pysat')))
 
         else:  # no data
             while self.sat.empty:
