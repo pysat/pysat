@@ -792,9 +792,11 @@ class Orbits(object):
                 print('Loaded Orbit:%i' % (self._current - 1))
 
             else:
-                raise Exception('You ended up where noone should ever be. ' +
-                                'Talk to someone about this fundamental ' +
-                                'failure.')
+                raise Exception(' '.join(('You ended up where nobody should',
+                                          'ever be. Talk to someone about',
+                                          'this fundamental failure or open',
+                                          'an issue at',
+                                          'www.github.com/rstonback/pysat')))
             # includes hack to appear to be zero indexed
         else:
             # no data
