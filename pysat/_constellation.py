@@ -225,11 +225,12 @@ class Constellation(object):
 
                         # If there's data in this bin
                         if len(yindex) > 0:
-
+                            ydx = data_considered.index[yindex.astype(int)]
                             # For each data label, add the points.
                             for zk in zarr:
-                                ans[zk][yj][0].extend(data_considered.ix[yindex,
-                                                      data_label[zk]].tolist())
+                                dlab = data_label[zk]
+                                ans[zk][yj][0].extend(
+                                    data_considered.loc[ydx, dlab].tolist())
 
         # Now for the averaging.
         # Let's, try .. packing the answers for the 2d function.
@@ -386,7 +387,9 @@ class Constellation(object):
         return { 'data': data_df, 'start':start, 'end':end }
         """
 
-        labels = [dl1 for dl1, dl2 in data_labels] + ['1_'+b[0] for b in bounds] + ['2_'+b[1] for b in bounds] + ['dist']
+        labels = [dl1 for dl1, dl2 in data_labels] + \
+            ['1_' + b[0] for b in bounds] + ['2_' + b[1] for b in bounds] + \
+            ['dist']
         data = {label: [] for label in labels}
 
         # Apply bounds
@@ -443,11 +446,11 @@ class Constellation(object):
             for b in bounds:
                 label1 = b[0]
                 label2 = b[1]
-                data['1_'+label1].append(s1_point[label1])
+                data['1_' + label1].append(s1_point[label1])
                 if s2_nearest is not None:
-                    data['2_'+label2].append(s2_nearest[label2])
+                    data['2_' + label2].append(s2_nearest[label2])
                 else:
-                    data['2_'+label2].append(float('NaN'))
+                    data['2_' + label2].append(float('NaN'))
 
         data_df = pds.DataFrame(data=data)
         return data_df

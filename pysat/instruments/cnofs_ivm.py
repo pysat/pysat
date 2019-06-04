@@ -1,9 +1,23 @@
 # -*- coding: utf-8 -*-
-"""Supports the Ion Velocity Meter (IVM) 
-onboard the Communication and Navigation Outage Forecasting
-System (C/NOFS) satellite, part of the Coupled Ion Netural Dynamics 
-Investigation (CINDI). Downloads data from the
-NASA Coordinated Data Analysis Web (CDAWeb) in CDF format.
+"""Supports the Ion Velocity Meter (IVM) onboard the Communication
+and Navigation Outage Forecasting System (C/NOFS) satellite, part
+of the Coupled Ion Netural Dynamics Investigation (CINDI). Downloads
+data from the NASA Coordinated Data Analysis Web (CDAWeb) in CDF
+format.
+
+The IVM is composed of the Retarding Potential Analyzer (RPA) and
+Drift Meter (DM). The RPA measures the energy of plasma along the
+direction of satellite motion. By fitting these measurements
+to a theoretical description of plasma the number density, plasma
+composition, plasma temperature, and plasma motion may be determined.
+The DM directly measures the arrival angle of plasma. Using the reported
+motion of the satellite the angle is converted into ion motion along
+two orthogonal directions, perpendicular to the satellite track.
+
+A brief discussion of the C/NOFS mission and instruments can be found at
+de La Beaujardière, O., et al. (2004), C/NOFS: A mission to forecast
+scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
+doi:10.1016/j.jastp.2004.07.030.
 
 Parameters
 ----------
@@ -13,6 +27,8 @@ name : string
     'ivm'
 tag : string
     None supported
+sat_id : string
+    None supported
 
 Warnings
 --------
@@ -20,32 +36,31 @@ Warnings
   The rate is attached to the instrument object as .sample_rate.
 
 - The cleaning parameters for the instrument are still under development.
-       
+
 """
 from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
 
-import pandas as pds
 import numpy as np
 
 import pysat
 
-from . import nasa_cdaweb_methods as cdw
+from .methods import nasa_cdaweb as cdw
 
 platform = 'cnofs'
 name = 'ivm'
-tags = {'':''}
-sat_ids = {'':['']}
-test_dates = {'':{'':pysat.datetime(2009,1,1)}}
+tags = {'': ''}
+sat_ids = {'': ['']}
+test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
 # support list files routine
 # use the default CDAWeb method
-ivm_fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'':{'':ivm_fname}}
-list_files = functools.partial(cdw.list_files, 
+fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+supported_tags = {'': {'': fname}}
+list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
 
 # support load routine
@@ -54,21 +69,21 @@ load = cdw.load
 
 # support download routine
 # use the default CDAWeb method
-basic_tag = {'dir':'/pub/data/cnofs/cindi/ivm_500ms_cdf',
-            'remote_fname':'{year:4d}/'+ivm_fname,
-            'local_fname':ivm_fname}
-supported_tags = {'':{'':basic_tag}}
+basic_tag = {'dir': '/pub/data/cnofs/cindi/ivm_500ms_cdf',
+             'remote_fname': '{year:4d}/' + fname,
+             'local_fname': fname}
+supported_tags = {'': {'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
 # support listing files currently on CDAWeb
-list_remote_files = functools.partial(cdw.list_remote_files, 
+list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
 def default(ivm):
     ivm.sample_rate = 1.0 if ivm.date >= pysat.datetime(2010, 7, 29) else 2.0
-   
-        
-def clean(self):
+
+
+def clean(inst):
     """Routine to return C/NOFS IVM data cleaned to the specified level
 
     Parameters
@@ -85,51 +100,50 @@ def clean(self):
     Notes
     --------
     Supports 'clean', 'dusty', 'dirty'
-    
+
     """
 
     # cleans cindi data
-    if self.clean_level == 'clean':
+    if inst.clean_level == 'clean':
         # choose areas below 550km
-        # self.data = self.data[self.data.alt <= 550]
-        idx, = np.where(self.data.altitude <= 550)
-        self.data = self[idx,:]
-    
-    # make sure all -999999 values are NaN
-    self.data.replace(-999999., np.nan, inplace=True)
+        # inst.data = inst.data[inst.data.alt <= 550]
+        idx, = np.where(inst.data.altitude <= 550)
+        inst.data = inst[idx, :]
 
-    if (self.clean_level == 'clean') | (self.clean_level == 'dusty'):
+    # make sure all -999999 values are NaN
+    inst.data.replace(-999999., np.nan, inplace=True)
+
+    if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
         try:
-            idx, = np.where(np.abs(self.data.ionVelmeridional) < 10000.)
-            self.data = self[idx,:]
+            idx, = np.where(np.abs(inst.data.ionVelmeridional) < 10000.)
+            inst.data = inst[idx, :]
         except AttributeError:
             pass
-        
-        if self.clean_level == 'dusty':
+
+        if inst.clean_level == 'dusty':
             # take out all values where RPA data quality is > 1
-            idx, = np.where(self.data.RPAflag <= 1)
-            self.data = self[idx,:]
+            idx, = np.where(inst.data.RPAflag <= 1)
+            inst.data = inst[idx, :]
             # IDM quality flags
-            self.data = self.data[ (self.data.driftMeterflag<= 3) ]
+            inst.data = inst.data[(inst.data.driftMeterflag <= 3)]
         else:
             # take out all values where RPA data quality is > 0
-            idx, = np.where(self.data.RPAflag <= 0)
-            self.data = self[idx,:] 
+            idx, = np.where(inst.data.RPAflag <= 0)
+            inst.data = inst[idx, :]
             # IDM quality flags
-            self.data = self.data[ (self.data.driftMeterflag<= 0) ]
-    if self.clean_level == 'dirty':
+            inst.data = inst.data[(inst.data.driftMeterflag <= 0)]
+    if inst.clean_level == 'dirty':
         # take out all values where RPA data quality is > 4
-        idx, = np.where(self.data.RPAflag <= 4)
-        self.data = self[idx,:]
+        idx, = np.where(inst.data.RPAflag <= 4)
+        inst.data = inst[idx, :]
         # IDM quality flags
-        self.data = self.data[ (self.data.driftMeterflag<= 6) ]
-        
-    # basic quality check on drifts and don't let UTS go above 86400.
-    idx, = np.where(self.data.time <= 86400.)
-    self.data = self[idx,:]
-    
-    # make sure MLT is between 0 and 24
-    idx, = np.where((self.data.mlt >= 0) & (self.data.mlt <= 24.))
-    self.data = self[idx,:]
-    return
+        inst.data = inst.data[(inst.data.driftMeterflag <= 6)]
 
+    # basic quality check on drifts and don't let UTS go above 86400.
+    idx, = np.where(inst.data.time <= 86400.)
+    inst.data = inst[idx, :]
+
+    # make sure MLT is between 0 and 24
+    idx, = np.where((inst.data.mlt >= 0) & (inst.data.mlt <= 24.))
+    inst.data = inst[idx, :]
+    return

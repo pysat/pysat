@@ -50,25 +50,30 @@ with open(os.path.join(here, 'version.txt')) as version_file:
 
 # get home directory
 home_dir = os.path.expanduser('~')
+# Set directory for test data
+test_data_path = os.path.join(here, 'tests', 'test_data')
 # set pysat directory path in home directory
 pysat_dir = os.path.join(home_dir, '.pysat')
 # make sure a pysat directory exists
 if not os.path.isdir(pysat_dir):
     # create directory
     os.mkdir(pysat_dir)
-    # create file
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
-        f.write('')
     print('Created .pysat directory in user home directory to store settings.')
-    data_dir = ''
+    # create file with default data directory
+    if not (os.environ.get('TRAVIS') == 'true'):
+        data_dir = os.path.join(home_dir, 'pysatData')
+    else:
+        data_dir = '/home/travis/build/rstoneback/pysatData'
+    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
+        f.write(data_dir)
+    print(''.join(("\nHi there!  Pysat will nominally store data in the "
+                   "'pysatData' directory at the user's home directory level. "
+                   "Run pysat.utils.set_data_dir to specify a different "
+                   "top-level directory to store science data.")))
 else:
     # load up stored data path
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
         data_dir = f.readline()
-
-if data_dir == '':
-    print(''.join(('Run pysat.utils.set_data_dir to set the path',
-          ' to top-level directory that will/does contain science data.')))
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils

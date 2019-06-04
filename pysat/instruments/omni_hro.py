@@ -12,6 +12,8 @@ name : string
     'hro'
 tag : string
     Select time between samples, one of {'1min', '5min'}
+sat_id : string
+    None supported
 
 Note
 ----
@@ -45,16 +47,13 @@ calculate_dayside_reconnection : Calculate the dayside reconnection rate
 
 from __future__ import print_function
 from __future__ import absolute_import
-import os
-import sys
+
 import functools
-
-from . import nasa_cdaweb_methods as cdw
-
-import pandas as pds
 import numpy as np
+import pandas as pds
 
 import pysat
+from .methods import nasa_cdaweb as cdw
 
 platform = 'omni'
 name = 'hro'
@@ -197,6 +196,8 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
         Y-Z plane (default=0.5)
     """
 
+    from pysat.utils import stats as pystats
+
     # We are not going to interpolate through missing values
     sample_rate = int(inst.tag[0])
     max_wnum = np.floor(steady_window / sample_rate)
@@ -215,18 +216,21 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     inst['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
 
     # Calculate the running circular standard deviation of the clock angle
-    circ_kwargs = {'high':360.0, 'low':0.0}
-    ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
-    ca_std = inst['clock_angle'].rolling(min_periods=min_wnum,
-                                         window=steady_window, \
-                center=True).apply(pysat.utils.nan_circstd, kwargs=circ_kwargs)
+    circ_kwargs = {'high': 360.0, 'low': 0.0}
+
+    ca_std = \
+        inst['clock_angle'].rolling(min_periods=min_wnum,
+                                    window=steady_window,
+                                    center=True).apply(pystats.nan_circstd,
+                                                       kwargs=circ_kwargs,
+                                                       raw=True)
     inst['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
 
     # Determine how long the clock angle and IMF magnitude are steady
     imf_steady = np.zeros(shape=inst.data.index.shape)
 
     steady = False
-    for i,cv in enumerate(inst.data['BYZ_CV']):
+    for i, cv in enumerate(inst.data['BYZ_CV']):
         if steady:
             del_min = int((inst.data.index[i] -
                            inst.data.index[i-1]).total_seconds() / 60.0)
@@ -245,6 +249,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 
     inst['IMF_Steady'] = pds.Series(imf_steady, index=inst.data.index)
     return
+
 
 def calculate_dayside_reconnection(inst):
     """ Calculate the dayside reconnection rate (Milan et al. 2014)

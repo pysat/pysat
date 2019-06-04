@@ -21,20 +21,25 @@ with open(os.path.join(here, version_filename)) as version_file:
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-install_requires=['xarray', 'pandas>=0.19.2', 'numpy>=1.12',  'sgp4', 'pyEphem', 'requests',     
-                  'pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 
-                  'madrigalWeb', 'h5py', 'PyForecastTools']
-
-# keep pyglow out of requirements until pip installable
-# if sys.version_info[0] < 3:
-#     # TODO Remove when pyglow works in python 3
-#     install_requires.append('pyglow')
+if sys.version_info.major == 2:
+    install_requires = ['xarray<0.12', 'pandas>=0.23, <0.25',
+                        'numpy>=1.12, <1.17', 'scipy<1.3', 'sgp4',
+                        'pyEphem', 'requests', 'beautifulsoup4',
+                        'lxml', 'pysatCDF', 'apexpy', 'aacgmv2',
+                        'pysatMagVect', 'madrigalWeb', 'h5py',
+                        'PyForecastTools', 'pyglow']
+else:
+    install_requires = ['xarray', 'pandas>=0.23', 'numpy>=1.12',
+                        'sgp4', 'pyEphem', 'requests', 'beautifulsoup4',
+                        'lxml', 'pysatCDF', 'apexpy', 'aacgmv2',
+                        'pysatMagVect', 'madrigalWeb', 'h5py',
+                        'PyForecastTools', 'pyglow']
 
 # all packages after pysatCDF are excluded if on ReadTheDocs
 if on_rtd:
     # read the docs doesn't do Fortran
     # remove pysatCDF through h5py
-    install_requires = install_requires[:-7]
+    install_requires = install_requires[:-8]
 
 setup(
     name='pysat',
@@ -82,6 +87,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 
     # What does your project relate to?
