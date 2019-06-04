@@ -1,10 +1,25 @@
 from dateutil.relativedelta import relativedelta as relativedelta
+from nose.tools import raises
 import numpy as np
-
 import pandas as pds
 
 import pysat
 
+
+class TestOrbitsUserInterface():
+
+    @raises(NameError)
+    def test_orbit_wo_info(self):
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+
+    @raises(ValueError)
+    def test_orbit_w_bad_kind(self):
+        info = {'index': 'mlt', 'kind': 'cats'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
 
 class TestSpecificUTOrbits():
 
