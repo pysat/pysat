@@ -268,48 +268,6 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     return output
 
 
-def clean(self):
-
-    if self.tag == 'ionprf':
-        # ionosphere density profiles
-        if self.clean_level == 'clean':
-            # try and make sure all data is good
-            # filter out profiles where source provider processing doesn't
-            # get max dens and max dens alt
-            self.data = self.data[((self['edmaxalt'] != -999.) &
-                                   (self['edmax'] != -999.))]
-            # make sure edmaxalt in "reasonable" range
-            self.data = self.data[(self.data.edmaxalt >= 175.) &
-                                  (self.data.edmaxalt <= 475.)]
-            # filter densities when negative
-            for i, profile in enumerate(self['profiles']):
-                # take out all densities below the highest altitude negative
-                # dens below 325
-                idx, = np.where((profile.ELEC_dens < 0) &
-                                (profile.index <= 325))
-                if len(idx) > 0:
-                    profile.iloc[0:idx[-1]+1] = np.nan
-                # take out all densities above the lowest altitude negative
-                # dens above 325
-                idx, = np.where((profile.ELEC_dens < 0) &
-                                (profile.index > 325))
-                if len(idx) > 0:
-                    profile.iloc[idx[0]:] = np.nan
-
-                # do an altitude density gradient check to reduce number of
-                # cycle slips
-                densDiff = profile.ELEC_dens.diff()
-                altDiff = profile.MSL_alt.diff()
-                normGrad = (densDiff / (altDiff * profile.ELEC_dens)).abs()
-                idx, = np.where((normGrad > 1.) & normGrad.notnull())
-                if len(idx) > 0:
-                    self[i, 'edmaxalt'] = np.nan
-                    self[i, 'edmax'] = np.nan
-                    self[i, 'edmaxlat'] = np.nan
-                    profile['ELEC_dens'] *= np.nan
-                    # self.data['profiles'][i]['ELEC_dens'] *= np.nan
-
-
 def download(date_array, tag, sat_id, data_path=None,
              user=None, password=None):
     """Download COSMIC GPS data.
@@ -393,3 +351,45 @@ def download(date_array, tag, sat_id, data_path=None,
         shutil.rmtree(top_dir)
 
     return
+
+
+def clean(self):
+
+    if self.tag == 'ionprf':
+        # ionosphere density profiles
+        if self.clean_level == 'clean':
+            # try and make sure all data is good
+            # filter out profiles where source provider processing doesn't
+            # get max dens and max dens alt
+            self.data = self.data[((self['edmaxalt'] != -999.) &
+                                   (self['edmax'] != -999.))]
+            # make sure edmaxalt in "reasonable" range
+            self.data = self.data[(self.data.edmaxalt >= 175.) &
+                                  (self.data.edmaxalt <= 475.)]
+            # filter densities when negative
+            for i, profile in enumerate(self['profiles']):
+                # take out all densities below the highest altitude negative
+                # dens below 325
+                idx, = np.where((profile.ELEC_dens < 0) &
+                                (profile.index <= 325))
+                if len(idx) > 0:
+                    profile.iloc[0:idx[-1]+1] = np.nan
+                # take out all densities above the lowest altitude negative
+                # dens above 325
+                idx, = np.where((profile.ELEC_dens < 0) &
+                                (profile.index > 325))
+                if len(idx) > 0:
+                    profile.iloc[idx[0]:] = np.nan
+
+                # do an altitude density gradient check to reduce number of
+                # cycle slips
+                densDiff = profile.ELEC_dens.diff()
+                altDiff = profile.MSL_alt.diff()
+                normGrad = (densDiff / (altDiff * profile.ELEC_dens)).abs()
+                idx, = np.where((normGrad > 1.) & normGrad.notnull())
+                if len(idx) > 0:
+                    self[i, 'edmaxalt'] = np.nan
+                    self[i, 'edmax'] = np.nan
+                    self[i, 'edmaxlat'] = np.nan
+                    profile['ELEC_dens'] *= np.nan
+                    # self.data['profiles'][i]['ELEC_dens'] *= np.nan
