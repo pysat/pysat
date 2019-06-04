@@ -64,13 +64,12 @@ test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Return a Pandas Series of every file for chosen satellite data
+    """Return a Pandas Series of every file for chosen satellite data.
 
     Parameters
     ----------
     tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are '' and 'ascii'.
-        If '' is specified, the primary data type (ascii) is loaded.
+        Denotes type of file to load.
         (default=None)
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
@@ -79,7 +78,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
     format_str : (NoneType)
-        User specified file format not supported. (default=None)
+        User specified file format not supported here. (default=None)
 
     Returns
     -------
@@ -130,7 +129,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
 
 def load(fnames, tag=None, sat_id=None):
-    """Load COSMIC GPS files
+    """Load COSMIC GPS files.
 
     Parameters
     ----------
