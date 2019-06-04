@@ -42,12 +42,11 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import glob
+import netCDF4
 import numpy as np
 import os
-import sys
-from scipy.io.netcdf import netcdf_file
 import pandas as pds
-import numpy as np
+import sys
 import pysat
 
 platform = 'cosmic'
@@ -73,7 +72,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         If '' is specified, the primary data type (ascii) is loaded.
         (default=None)
     sat_id : (string or NoneType)
-        Not supported
+        Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : (string or NoneType)
         Path to data directory.  If None is specified, the value previously
@@ -178,15 +177,15 @@ def load(fnames, tag=None, sat_id=None):
         repeat = True
         while repeat:
             try:
-                data = netcdf_file(fnames[ind], mode='r', mmap=False)
+                data = netCDF4.Dataset(fnames[ind])
+                ncattrsList = data.ncattrs()
+                for d in ncattrsList:
+                    meta[d] = {'units': '', 'long_name': d}
                 keys = data.variables.keys()
                 for key in keys:
                     profile_meta[key] = {'units': data.variables[key].units,
                                          'long_name':
                                          data.variables[key].long_name}
-                ncattrsList = data._attributes.keys()
-                for d in ncattrsList:
-                    meta[d] = {'units': '', 'long_name': d}
                 repeat = False
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind
@@ -230,13 +229,13 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     drop_idx = []
     for (i, file) in enumerate(files):
         try:
-            data = netcdf_file(file, mode='r', mmap=False)
+            data = netCDF4.Dataset(file)
             # build up dictionary will all ncattrs
             new = {}
             # get list of file attributes
-            ncattrsList = data._attributes.keys()
+            ncattrsList = data.ncattrs()
             for d in ncattrsList:
-                new[d] = data._attributes[d]
+                new[d] = data.getncattr(d)
             # load all of the variables in the netCDF
             loadedVars = {}
             keys = data.variables.keys()
