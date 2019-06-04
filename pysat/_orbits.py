@@ -187,9 +187,10 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not exist in ' +
-                                 'loaded data')
+            except ValueError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'exist in loaded data')))
         # get difference in orbit index around the orbit
         lt_diff = self.sat[self.orbit_index]
         if not self.sat.pandas_format:
@@ -319,9 +320,10 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not appear to ' +
-                                 'exist in loaded data')
+            except ValueError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'appear to exist in loaded data')))
 
         # determine where orbit index goes from positive to negative
         pos = (self.sat[self.orbit_index] >= 0)
@@ -366,9 +368,10 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not appear to ' +
-                                 'exist in loaded data')
+            except ValueError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'appear to exist in loaded data')))
 
         # determine where the orbit index changes from one value to the next
         uniq_vals = np.unique(self.sat[self.orbit_index].values)
@@ -661,9 +664,11 @@ class Orbits(object):
                 print('Loaded Orbit:%i' % (self._current - 1))
 
             else:
-                raise Exception('You ended up where nobody should ever be. ' +
-                                'Talk to someone about this fundamental ' +
-                                'failure.')
+                raise Exception(' '.join(('You ended up where nobody should',
+                                          'ever be. Talk to someone about',
+                                          'this fundamental failure or open',
+                                          'an issue at',
+                                          'www.github.com/rstonback/pysat')))
 
         else:  # no data
             while self.sat.empty:
