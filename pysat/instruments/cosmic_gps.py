@@ -42,11 +42,12 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import glob
-import netCDF4
 import numpy as np
 import os
 import pandas as pds
 import sys
+
+import netCDF4
 import pysat
 
 platform = 'cosmic'
@@ -86,13 +87,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         A class containing the verified available files
 
     """
-    import sys
-    # if tag == 'ionprf':
-    #    # from_os constructor currently doesn't work because of the variable
-    #    # filename components at the end of each string.....
-    #    ion_fmt = '*/ionPrf_*.{year:04d}.{day:03d}.{hour:02d}.{min:02d}*_nc'
-    #    return pysat.Files.from_os(dir_path=os.path.join('cosmic', 'ionprf'),
-    #                               format_str=ion_fmt)
     estr = 'Building a list of COSMIC files, which can possibly take time. '
     print('{:s}~1s per 100K files'.format(estr))
     sys.stdout.flush()
