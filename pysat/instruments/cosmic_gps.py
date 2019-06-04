@@ -355,18 +355,22 @@ def download(date_array, tag, sat_id, data_path=None,
 
 def clean(inst):
     """Return COSMIC GPS data cleaned to the specified level.
+
     Parameters
     ----------
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
+
     Returns
     -------
     Void : (NoneType)
         data in inst is modified in-place.
+
     Notes
     -----
     Supports 'clean', 'dusty', 'dirty'
+
     """
     if inst.tag == 'ionprf':
         # ionosphere density profiles
@@ -405,4 +409,17 @@ def clean(inst):
                     inst[i, 'edmax'] = np.nan
                     inst[i, 'edmaxlat'] = np.nan
                     profile['ELEC_dens'] *= np.nan
-                    # inst.data['profiles'][i]['ELEC_dens'] *= np.nan
+
+        # filter out any measurements where things have been set to NaN
+        inst.data = inst.data[inst.data.edmaxalt.notnull()]
+
+    elif inst.tag == 'scnlvl1':
+        # scintillation files
+        if inst.clean_level == 'clean':
+            # try and make sure all data is good
+            # filter out profiles where source provider processing doesn't
+            # work
+            inst.data = inst.data[((inst['alttp_s4max'] != -999.) &
+                                   (inst['s4max9sec'] != -999.))]
+
+    return
