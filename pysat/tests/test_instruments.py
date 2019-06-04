@@ -1,5 +1,5 @@
 """
-tests the pysat meta object and code
+tests the pysat instruments and code
 """
 from importlib import import_module
 from functools import partial
