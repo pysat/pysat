@@ -97,7 +97,7 @@ def init_func_external(self):
                             # drop out of for loop
                             # we don't want to test download for this combo
                             print(' '.join(['Excluding', name, tag, sat_id]))
-                            break
+                            pass
                     try:
                         inst = pysat.Instrument(inst_module=module,
                                                 tag=tag,
