@@ -69,28 +69,28 @@ that uses all levels of variable names.
 
 .. code:: python
 
-  platform = 'dmsp'
-  name = 'ivm'
-  tags = {'utd': 'UTDallas DMSP data processing',
-          '': 'Level 1 data processing'}
-  sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
-             'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
-             'f18': ['']}
+  platform = 'your_platform_name'
+  name = 'name_of_instrument'
+  tags = {'': 'The standard processing for the data.  Loaded by default',
+          'fancy': 'A higher-level processing of the data.'}
+  sat_ids = {'A': ['', 'fancy'], 'B': ['', 'fancy'], 'C': []}
 
-Note that the possible tags that can be invoked are 'utd' and ''.  The tags
-dictionary includes a long name for each of these tags.
+Note that the possible tags that can be invoked are '' and 'fancy'.  The tags
+dictionary includes a long name for each of these tags.  A blank tag will be
+loaded by default if the user does not specify a tag.
 
 The sat_ids are also stored in a dictionary.  Each key name here points to a
 list of the possible tags that can be associated with that particular satellite.
-Note that not all satellites support every level of processing.
+Note that not all satellites support every level of processing.  In this case,
+the 'fancy' processing is available for satellites A and B, but not C.
 
 For a dataset that does not need multiple levels of tags and sat_ids, an empty
 string can be used to let pysat know how many levels the dataset has.
 
 .. code:: python
 
-  platform = 'cnofs'
-  name = 'ivm'
+  platform = 'your_platform_name'
+  name = 'name_of_instrument'
   tags = {'': ''}
   sat_ids = {'': ['']}
 
