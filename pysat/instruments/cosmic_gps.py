@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Loads and downloads data from the COSMIC satellite.
+Loads data from the COSMIC satellite.
 
 The Constellation Observing System for Meteorology, Ionosphere, and Climate
 (COSMIC) is comprised of six satellites in LEO with GPS receivers. The
@@ -8,8 +8,15 @@ occultation of GPS signals by the atmosphere provides a measurement of
 atmospheric parameters. Data downloaded from the COSMIC Data Analaysis
 and Archival Center.
 
+Default behavior is to search for the 2013 re-processed data first, then the
+post-processed data as recommended on
+https://cdaac-www.cosmic.ucar.edu/cdaac/products.html
+
 Parameters
 ----------
+altitude_bin : integer
+    Number of kilometers to bin altitude profiles by when loading.
+    Currently only supported for tag='ionprf'.
 platform : string
     'cosmic'
 name : string
@@ -37,9 +44,10 @@ from __future__ import absolute_import
 import glob
 import numpy as np
 import os
+import pandas as pds
+import sys
 
 import netCDF4
-
 import pysat
 
 platform = 'cosmic'
@@ -61,7 +69,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     Parameters
     ----------
     tag : (string or NoneType)
-        Denotes type of file to load, not supported by this routine.
+        Denotes type of file to load.
         (default=None)
     sat_id : (string or NoneType)
         Specifies the satellite ID for a constellation.  Not used.
@@ -69,8 +77,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     data_path : (string or NoneType)
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
-        User specified file format, not supported here. (default=None)
+    format_str : (NoneType)
+        User specified file format not supported here. (default=None)
 
     Returns
     -------
@@ -78,13 +86,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         A class containing the verified available files
 
     """
-    import sys
-    # if tag == 'ionprf':
-    #    # from_os constructor currently doesn't work because of the variable
-    #    # filename components at the end of each string.....
-    #    ion_fmt = '*/ionPrf_*.{year:04d}.{day:03d}.{hour:02d}.{min:02d}*_nc'
-    #    return pysat.Files.from_os(dir_path=os.path.join('cosmic', 'ionprf'),
-    #                               format_str=ion_fmt)
     estr = 'Building a list of COSMIC files, which can possibly take time. '
     print('{:s}~1s per 100K files'.format(estr))
     sys.stdout.flush()
@@ -113,11 +114,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         year = np.array(year).astype(int)
         days = np.array(days).astype(int)
-        uts = np.array(hours).astype(int) * 3600. + \
-            np.array(minutes).astype(int) * 60.
+        uts = (np.array(hours).astype(int) * 3600.
+               + np.array(minutes).astype(int) * 60.)
         # adding microseconds to ensure each time is unique, not allowed to
         # pass 1.E-3 s
-        uts += np.mod(np.array(microseconds).astype(int)*1.E-6, 1.E-3)
+        uts += np.mod(np.array(microseconds).astype(int) * 4, 8000) * 1.E-5
         index = pysat.utils.time.create_datetime_index(year=year, day=days,
                                                        uts=uts)
         file_list = pysat.Series(fnames, index=index)
@@ -128,7 +129,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
 
 def load(fnames, tag=None, sat_id=None):
-    """Load COSMIC GPS files
+    """Load COSMIC GPS files.
 
     Parameters
     ----------
@@ -141,7 +142,7 @@ def load(fnames, tag=None, sat_id=None):
 
     Returns
     -------
-    data : (pandas.DataFrame)
+    output : (pandas.DataFrame)
         Object containing satellite data
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
@@ -153,16 +154,17 @@ def load(fnames, tag=None, sat_id=None):
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        data = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
-        utsec = data.hour * 3600. + data.minute * 60. + data.second
-        data.index = \
-            pysat.utils.time.create_datetime_index(year=data.year,
-                                                   month=data.month,
-                                                   day=data.day,
+        output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
+        utsec = output.hour * 3600. + output.minute * 60. + output.second
+        output.index = \
+            pysat.utils.time.create_datetime_index(year=output.year,
+                                                   month=output.month,
+                                                   day=output.day,
                                                    uts=utsec)
         # make sure UTS strictly increasing
-        data.sort_index(inplace=True)
+        output.sort_index(inplace=True)
         # use the first available file to pick out meta information
+        profile_meta = pysat.Meta()
         meta = pysat.Meta()
         ind = 0
         repeat = True
@@ -174,14 +176,15 @@ def load(fnames, tag=None, sat_id=None):
                     meta[d] = {'units': '', 'long_name': d}
                 keys = data.variables.keys()
                 for key in keys:
-                    meta[key] = {'units': data.variables[key].units,
-                                 'long_name': data.variables[key].long_name}
+                    profile_meta[key] = {'units': data.variables[key].units,
+                                         'long_name':
+                                         data.variables[key].long_name}
                 repeat = False
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind
                 ind += 1
-
-        return data, meta
+        meta['profiles'] = profile_meta
+        return output, meta
     else:
         # no data
         return pysat.DataFrame(None), pysat.Meta()
@@ -190,7 +193,7 @@ def load(fnames, tag=None, sat_id=None):
 # seperate routine for doing actual loading. This was broken off from main load
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
-def load_files(files, tag=None, sat_id=None):
+def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     """Load COSMIC data files directly from a given list.
 
     May be directly called by user, but in general is called by load.  This is
@@ -205,14 +208,17 @@ def load_files(files, tag=None, sat_id=None):
         tag or None (default=None)
     sat_id : (str or NoneType)
         satellite id or None (default=None)
+    altitude_bin : integer
+        Number of kilometers to bin altitude profiles by when loading.
+        Currently only supported for tag='ionprf'.
 
     Returns
     -------
-    data : (list of dicts, one per file)
+    output : (list of dicts, one per file)
         Object containing satellite data
 
     """
-    data = [None] * len(files)
+    output = [None] * len(files)
     drop_idx = []
     for (i, file) in enumerate(files):
         try:
@@ -227,14 +233,18 @@ def load_files(files, tag=None, sat_id=None):
             loadedVars = {}
             keys = data.variables.keys()
             for key in keys:
-                loadedVars[key] = data.variables[key][:]
+                if data.variables[key][:].dtype.byteorder != '=':
+                    loadedVars[key] = \
+                        data.variables[key][:].byteswap().newbyteorder()
+                else:
+                    loadedVars[key] = data.variables[key][:]
+
             new['profiles'] = pysat.DataFrame(loadedVars)
-            if tag == 'ionprf':
-                new['profiles'].index = new['profiles']['MSL_alt']
-            data[i] = new
+
+            output[i] = new
             data.close()
         except RuntimeError:
-            # some of the S4 files have zero bytes, which causes a read error
+            # some of the files have zero bytes, which causes a read error
             # this stores the index of these zero byte files so I can drop
             # the Nones the gappy file leaves behind
             drop_idx.append(i)
@@ -242,8 +252,20 @@ def load_files(files, tag=None, sat_id=None):
     # drop anything that came from the zero byte files
     drop_idx.reverse()
     for i in drop_idx:
-        del data[i]
-    return data
+        del output[i]
+
+    if tag == 'ionprf':
+        if altitude_bin is not None:
+            for out in output:
+                rval = (out['profiles']['MSL_alt']/altitude_bin).round().values
+                out['profiles'].index = rval * altitude_bin
+                out['profiles'] = \
+                    out['profiles'].groupby(out['profiles'].index.values).mean()
+        else:
+            for out in output:
+                out['profiles'].index = out['profiles']['MSL_alt']
+
+    return output
 
 
 def download(date_array, tag, sat_id, data_path=None,
@@ -279,27 +301,54 @@ def download(date_array, tag, sat_id, data_path=None,
     else:
         raise ValueError('Unknown cosmic_gps tag')
 
+    if (user is None) or (password is None):
+        raise ValueError('CDAAC user account information must be provided.')
+
     for date in date_array:
         print('Downloading COSMIC data for ' + date.strftime('%D'))
+        sys.stdout.flush()
         yr, doy = pysat.utils.time.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
-        dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
-                         "tarservice/data/cosmic2013/"))
-        dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
-                                                                 doy=doy)
-        req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+        # Try re-processed data (preferred)
+        try:
+            dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
+                             "tarservice/data/cosmic2013/"))
+            dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
+                                                                     doy=doy)
+            top_dir = os.path.join(data_path, 'cosmic2013')
+            req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+            req.raise_for_status()
+        except requests.exceptions.HTTPError:
+        # if repsonse is negative, try post-processed data
+            try:
+                dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/",
+                                 "rest/tarservice/data/cosmic/"))
+                dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'
+                dwnld = dwnld.format(year=yr, doy=doy)
+                top_dir = os.path.join(data_path, 'cosmic')
+                req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+                req.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                estr = ''.join(str(err), '\n', 'Data not found')
+                print(estr)
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
         with open(fname, "wb") as local_file:
             local_file.write(req.content)
             local_file.close()
-            # uncompress files
-            tar = tarfile.open(fname)
-            tar.extractall(path=data_path)
-            tar.close()
-            # move files
-            ext_dir = os.path.join(data_path, 'cosmic2013', sub_dir, yrdoystr)
-            shutil.move(ext_dir, os.path.join(data_path, yrdoystr))
+        # uncompress files and remove tarball
+        tar = tarfile.open(fname)
+        tar.extractall(path=data_path)
+        tar.close()
+        os.remove(fname)
+        # move files
+        source_dir = os.path.join(top_dir, sub_dir, yrdoystr)
+        destination_dir = os.path.join(data_path, yrdoystr)
+        if os.path.exists(destination_dir):
+            shutil.rmtree(destination_dir)
+        shutil.move(source_dir, destination_dir)
+        # Get rid of empty directories from tar process
+        shutil.rmtree(top_dir)
 
     return
 
