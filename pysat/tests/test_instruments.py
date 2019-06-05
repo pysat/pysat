@@ -97,17 +97,17 @@ def init_func_external(self):
                             # drop out of for loop
                             # we don't want to test download for this combo
                             print(' '.join(['Excluding', name, tag, sat_id]))
-                            break
-                    try:
-                        inst = pysat.Instrument(inst_module=module,
-                                                tag=tag,
-                                                sat_id=sat_id,
-                                                temporary_file_list=True)
-                        inst.test_dates = module.test_dates
-                        self.instruments.append(inst)
-                        self.instrument_modules.append(module)
-                    except:
-                        pass
+                        else:
+                            try:
+                                inst = pysat.Instrument(inst_module=module,
+                                                        tag=tag,
+                                                        sat_id=sat_id,
+                                                        temporary_file_list=True)
+                                inst.test_dates = module.test_dates
+                                self.instruments.append(inst)
+                                self.instrument_modules.append(module)
+                            except:
+                                pass
     pysat.utils.set_data_dir(saved_path, store=False)
 
 
