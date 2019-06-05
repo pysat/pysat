@@ -8,12 +8,6 @@ import pysat
 
 class TestOrbitsUserInterface():
 
-    @raises(NameError)
-    def test_orbit_wo_info(self):
-        self.testInst = pysat.Instrument('pysat', 'testing',
-                                         clean_level='clean',
-                                         orbit_info=info, update_files=True)
-
     @raises(ValueError)
     def test_orbit_w_bad_kind(self):
         info = {'index': 'mlt', 'kind': 'cats'}
