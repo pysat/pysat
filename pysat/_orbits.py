@@ -384,7 +384,7 @@ class Orbits(object):
 
         # create orbitbreak index, ensure first element is always 0
         if len(orbit_index) == 0:
-            orbit_index[0] = 0
+            orbit_index = np.array([0])
         if orbit_index[0] != 0:
             ind = np.hstack((np.array([0]), orbit_index))
         else:
