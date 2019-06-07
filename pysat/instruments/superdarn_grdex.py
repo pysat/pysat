@@ -276,7 +276,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     """
 
-    import Warnings
+    import warnings
 
     warnings.warn(" ".join(("Downloads for SuperDARN currently not supported,",
                             "but will be added in a future version.")))
