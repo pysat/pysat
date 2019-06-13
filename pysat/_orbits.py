@@ -187,9 +187,10 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not exist in ' +
-                                 'loaded data')
+            except ValueError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'exist in loaded data')))
         # get difference in orbit index around the orbit
         lt_diff = self.sat[self.orbit_index]
         if not self.sat.pandas_format:
@@ -319,9 +320,10 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not appear to ' +
-                                 'exist in loaded data')
+            except ValueError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'appear to exist in loaded data')))
 
         # determine where orbit index goes from positive to negative
         pos = (self.sat[self.orbit_index] >= 0)
@@ -342,8 +344,11 @@ class Orbits(object):
             # print 'Time Gap'
 
         # create orbitbreak index, ensure first element is always 0
-        if ind[0] != 0:
-            ind = np.hstack((np.array([0]), ind))
+        if len(ind) > 0:
+            if ind[0] != 0:
+                ind = np.hstack((np.array([0]), ind))
+        else:
+            ind = np.array([0])
         # number of orbits
         num_orbits = len(ind)
         # set index of orbit breaks
@@ -366,9 +371,10 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not appear to ' +
-                                 'exist in loaded data')
+            except ValueError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'appear to exist in loaded data')))
 
         # determine where the orbit index changes from one value to the next
         uniq_vals = np.unique(self.sat[self.orbit_index].values)
@@ -378,10 +384,11 @@ class Orbits(object):
             orbit_index.append(idx[0])
 
         # create orbitbreak index, ensure first element is always 0
-        if orbit_index[0] != 0:
-            ind = np.hstack((np.array([0]), orbit_index))
+        if len(orbit_index) > 0:
+            if orbit_index[0] != 0:
+                ind = np.hstack((np.array([0]), orbit_index))
         else:
-            ind = orbit_index
+            ind = np.array([0])
         # number of orbits
         num_orbits = len(ind)
         # set index of orbit breaks
@@ -661,9 +668,11 @@ class Orbits(object):
                 print('Loaded Orbit:%i' % (self._current - 1))
 
             else:
-                raise Exception('You ended up where nobody should ever be. ' +
-                                'Talk to someone about this fundamental ' +
-                                'failure.')
+                raise Exception(' '.join(('You ended up where nobody should',
+                                          'ever be. Talk to someone about',
+                                          'this fundamental failure or open',
+                                          'an issue at',
+                                          'www.github.com/rstonback/pysat')))
 
         else:  # no data
             while self.sat.empty:
@@ -783,9 +792,11 @@ class Orbits(object):
                 print('Loaded Orbit:%i' % (self._current - 1))
 
             else:
-                raise Exception('You ended up where noone should ever be. ' +
-                                'Talk to someone about this fundamental ' +
-                                'failure.')
+                raise Exception(' '.join(('You ended up where nobody should',
+                                          'ever be. Talk to someone about',
+                                          'this fundamental failure or open',
+                                          'an issue at',
+                                          'www.github.com/rstonback/pysat')))
             # includes hack to appear to be zero indexed
         else:
             # no data

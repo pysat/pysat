@@ -199,8 +199,8 @@ class Instrument(object):
                 # platform and name are expected to be part of module
                 self.name = inst_module.name.lower()
                 self.platform = inst_module.platform.lower()
-            except AttributeError as str_err:
-                raise AttributeError(' '.join((str(str_err), '\n',
+            except AttributeError as err:
+                raise AttributeError(' '.join((str(err), '\n',
                                                'A name and platform attribute',
                                                'for the instrument is',
                                                'required if supplying routine',
@@ -389,11 +389,12 @@ class Instrument(object):
                     try:
                         # Assume key[0] is integer (including list or slice)
                         return self.data.loc[self.data.index[key[0]], key[1]]
-                    except ValueError:
-                        estring = '\n'.join(("Unable to sort out data.",
-                                             "Instrument has data : " +
-                                             str(not self.empty),
-                                             "Requested key : ", str(key)))
+                    except ValueError as err:
+                        estring = ' '.join((str(err), "\n",
+                                            "Unable to sort out data.",
+                                            "Instrument has data : ",
+                                            str(not self.empty), "\n",
+                                            "Requested key : ", str(key)))
                         raise ValueError(estring)
             else:
                 try:
@@ -402,11 +403,12 @@ class Instrument(object):
                 except:
                     try:
                         return self.data[key]
-                    except ValueError:
-                        estring = '\n'.join(("Unable to sort out data access.",
-                                             "Instrument has data : " +
-                                             str(not self.empty),
-                                             "Requested key : ", str(key)))
+                    except ValueError as err:
+                        estring = ' '.join((str(err), "\n",
+                                            "Unable to sort out data access.",
+                                            "Instrument has data : ",
+                                            str(not self.empty), "\n",
+                                            "Requested key : ", str(key)))
                         raise ValueError(estring)
         else:
             return self.__getitem_xarray__(key)
@@ -502,11 +504,12 @@ class Instrument(object):
                     try:
                         # Assume key[0] is integer (including list or slice)
                         self.data.loc[self.data.index[key[0]], key[1]] = new
-                    except ValueError:
-                        estring = '\n'.join(("Unable to sort out data access.",
-                                             "Instrument has data : " +
-                                             str(not self.empty),
-                                             "Requested key : ", str(key)))
+                    except ValueError as err:
+                        estring = ' '.join((str(err), "\n",
+                                            "Unable to sort out data access.",
+                                            "Instrument has data : ",
+                                            str(not self.empty), "\n",
+                                            "Requested key : ", str(key)))
                         raise ValueError(estring)
                 self.meta[key[1]] = {}
                 return
@@ -741,9 +744,10 @@ class Instrument(object):
             self._load_rtn = inst.load
             self._list_rtn = inst.list_files
             self._download_rtn = inst.download
-        except AttributeError:
+        except AttributeError as err:
             estr = 'A load, file_list, and download routine are required for '
-            raise AttributeError('{:s}every instrument.'.format(estr))
+            raise AttributeError("\n".join((str(err),
+                                            '{:s}every instrument.'.format(estr))))
         try:
             self._default_rtn = inst.default
         except AttributeError:
@@ -2143,8 +2147,10 @@ class Instrument(object):
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
                         cdfkey.setncatts(new_dict)
-                    except KeyError:
-                        print(', '.join(('Unable to find MetaData for', key)))
+                    except KeyError as err:
+                        print(' '.join((str(err), '\n',
+                                        ', '.join(('Unable to find MetaData for',
+                                                   key)))))
                     # assign data
                     if datetime_flag:
                         # datetime is in nanoseconds, storing milliseconds
@@ -2277,8 +2283,9 @@ class Instrument(object):
                                                                       coltype)
                                     # print ('mid2 ', new_dict)
                                     cdfkey.setncatts(new_dict)
-                                except KeyError:
-                                    print(' '.join(('Unable to find MetaData',
+                                except KeyError as err:
+                                    print(' '.join((str(err), '\n',
+                                                    'Unable to find MetaData',
                                                     'for', ', '.join((key,
                                                                       col)))))
                                 # attach data
@@ -2324,8 +2331,9 @@ class Instrument(object):
                                     # really attach metadata now
                                     # print ('mid3 ', new_dict)
                                     cdfkey.setncatts(new_dict)
-                                except KeyError:
-                                    print(' '.join(('Unable to find MetaData',
+                                except KeyError as err:
+                                    print(' '.join((str(err), '\n',
+                                                    'Unable to find MetaData',
                                                     'for,', key)))
                                 # attach data
                                 temp_cdf_data = \

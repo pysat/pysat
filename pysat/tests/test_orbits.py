@@ -1,10 +1,19 @@
 from dateutil.relativedelta import relativedelta as relativedelta
+from nose.tools import raises
 import numpy as np
-
 import pandas as pds
 
 import pysat
 
+
+class TestOrbitsUserInterface():
+
+    @raises(ValueError)
+    def test_orbit_w_bad_kind(self):
+        info = {'index': 'mlt', 'kind': 'cats'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
 
 class TestSpecificUTOrbits():
 
@@ -134,6 +143,19 @@ class TestGeneralOrbitsMLT():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
+
+    def test_less_than_one_orbiit_of_data(self):
+        def filter_data(inst):
+            inst.data = inst[0:20]
+        self.testInst.custom.add(filter_data, 'modify')
+        self.testInst.load(2009, 1)
+        self.testInst.orbits[0]
+        assert True
+        
+    def test_load_orbits_w_empty_data(self):
+        self.testInst.load(1959, 1)
+        self.testInst.orbits[0]
+        assert True
 
     def test_repeated_orbit_calls_symmetric_single_day_starting_with_last(self):
         self.testInst.load(2009, 1)

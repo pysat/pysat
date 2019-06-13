@@ -66,12 +66,6 @@ CHAMP-STAR
 .. automodule:: pysat.instruments.champ_star
    :members: __doc__
 
-COSMIC 2013 GPS
----------------
-
-.. automodule:: pysat.instruments.cosmic2013_gps
-   :members: __doc__
-
 COSMIC GPS
 ----------
 

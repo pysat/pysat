@@ -1,5 +1,5 @@
 """
-tests the pysat meta object and code
+tests the pysat instruments and code
 """
 from importlib import import_module
 from functools import partial
@@ -91,23 +91,22 @@ def init_func_external(self):
                 module.test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
-                    if name in exclude_tags:
-                        if tag in exclude_tags[name]['tag'] and \
-                                  sat_id in exclude_tags[name]['sat_id']:
-                            # drop out of for loop
-                            # we don't want to test download for this combo
-                            print(' '.join(['Excluding', name, tag, sat_id]))
-                            break
-                    try:
-                        inst = pysat.Instrument(inst_module=module,
-                                                tag=tag,
-                                                sat_id=sat_id,
-                                                temporary_file_list=True)
-                        inst.test_dates = module.test_dates
-                        self.instruments.append(inst)
-                        self.instrument_modules.append(module)
-                    except:
-                        pass
+                    if name in exclude_tags and \
+                            tag in exclude_tags[name]['tag'] and \
+                            sat_id in exclude_tags[name]['sat_id']:
+                        # we don't want to test download for this combo
+                        print(' '.join(['Excluding', name, tag, sat_id]))
+                    else:
+                        try:
+                            inst = pysat.Instrument(inst_module=module,
+                                                    tag=tag,
+                                                    sat_id=sat_id,
+                                                    temporary_file_list=True)
+                            inst.test_dates = module.test_dates
+                            self.instruments.append(inst)
+                            self.instrument_modules.append(module)
+                        except:
+                            pass
     pysat.utils.set_data_dir(saved_path, store=False)
 
 
