@@ -387,6 +387,8 @@ class Orbits(object):
         if len(orbit_index) > 0:
             if orbit_index[0] != 0:
                 ind = np.hstack((np.array([0]), orbit_index))
+            else:
+                ind = orbit_ind
         else:
             ind = np.array([0])
         # number of orbits
