@@ -147,6 +147,7 @@ class TestGeneralOrbitsMLT():
     def test_load_orbits_w_empty_data(self):
         self.testInst.load(1959, 1)
         self.testInst.orbits[0]
+        self.testInst.orbits.next()
         assert True
 
     def test_repeated_orbit_calls_symmetric_single_day_starting_with_last(self):
