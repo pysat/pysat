@@ -130,7 +130,7 @@ load = cdw.load
 # a dictionary needs to be created for each sat_id and tag
 # combination along with the file format template
 # outer dict keyed by sat_id, inner dict keyed by tag
-basic_tag = {'dir': '/pub/data/timed/saber/level2a_v2_00_CDF',
+basic_tag = {'dir': '/pub/data/timed/saber/level2a_v2_00_cdf',
              'remote_fname': '{year:4d}/{month:02d}/' + fname,
              'local_fname': fname}
 supported_tags = {'': {'': basic_tag}}
