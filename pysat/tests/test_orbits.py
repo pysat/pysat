@@ -151,7 +151,53 @@ class TestGeneralOrbitsMLT():
         self.testInst.custom.add(filter_data, 'modify')
         self.testInst.load(2009, 1)
         self.testInst.orbits.next()
-        assert True
+        # a recusion issue has been observed in this area
+        # checking for date to limit reintroduction potential
+        assert self.testInst.date == pyast.datetime(2009, 1, 1)
+
+     def test_less_than_one_orbit_of_data_two_ways(self):
+        def filter_data(inst):
+            inst.data = inst[0:20]
+        self.testInst.custom.add(filter_data, 'modify')
+        self.testInst.load(2009, 1)
+        # starting from no orbit calls next loads first orbit
+        self.testInst.orbits.next()
+        # store comparison data        
+        saved_data = self.testInst.data.copy()
+        self.testInst.load(2009, 1)
+        self.testInst.orbits[0]
+        assert self.testInst.data == saved_data
+        # a recusion issue has been observed in this area
+        # checking for date to limit reintroduction potential
+        assert self.testInst.date == pyast.datetime(2009, 1, 1)
+
+     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
+        # create situation where the < 1 orbit split across two days
+        def filter_data(inst):
+            if inst.date == pysat.datetime(2009, 1, 2):
+                inst.data = inst[0:20]
+            elif inst.date == pysat.datetime(2009, 1, 1):
+                inst.data = inst[-20:]
+                
+        self.testInst.custom.add(filter_data, 'modify')
+        self.testInst.load(2009, 1)
+        # starting from no orbit calls next loads first orbit
+        self.testInst.orbits.next()
+        # store comparison data        
+        saved_data = self.testInst.data.copy()
+        self.testInst.load(2009, 2)
+        self.testInst.orbits[0]
+        assert self.testInst.data == saved_data
+        self.testInst.load(2009, 1)
+        self.testInst.orbits[0]
+        assert self.testInst.data == saved_data
+        self.testInst.load(2009, 2)
+        self.testInst.orbits.prev()
+        assert self.testInst.data == saved_data
+        # a recusion issue has been observed in this area
+        # checking for date to limit reintroduction potential
+        print(self.testInst.date)
+        assert self.testInst.date == pyast.datetime(2009, 1, 1)
 
     def test_repeated_orbit_calls_symmetric_single_day_start_with_last(self):
         self.testInst.load(2009, 1)
