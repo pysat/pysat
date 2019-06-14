@@ -166,7 +166,7 @@ class TestGeneralOrbitsMLT():
         saved_data = self.testInst.data.copy()
         self.testInst.load(2009, 1)
         self.testInst.orbits[0]
-        assert self.testInst.data == saved_data
+        assert all(self.testInst.data == saved_data)
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         assert self.testInst.date == pysat.datetime(2009, 1, 1)
@@ -187,13 +187,13 @@ class TestGeneralOrbitsMLT():
         saved_data = self.testInst.data.copy()
         self.testInst.load(2009, 2)
         self.testInst.orbits[0]
-        assert self.testInst.data == saved_data
+        assert all(self.testInst.data == saved_data)
         self.testInst.load(2009, 1)
         self.testInst.orbits[0]
-        assert self.testInst.data == saved_data
+        assert all(self.testInst.data == saved_data)
         self.testInst.load(2009, 2)
         self.testInst.orbits.prev()
-        assert self.testInst.data == saved_data
+        assert all(self.testInst.data == saved_data)
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         print(self.testInst.date)
