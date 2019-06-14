@@ -145,16 +145,11 @@ class TestGeneralOrbitsMLT():
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
-    def test_less_than_one_orbiit_of_data(self):
+    def test_less_than_one_orbit_of_data(self):
         def filter_data(inst):
             inst.data = inst[0:20]
         self.testInst.custom.add(filter_data, 'modify')
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
-        assert True
-
-    def test_load_orbits_w_empty_data(self):
-        self.testInst.load(1959, 1)
         self.testInst.orbits.next()
         assert True
 
