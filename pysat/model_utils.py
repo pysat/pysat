@@ -16,21 +16,40 @@ import datetime as dt
 import numpy as np
 import pandas as pds
 
+
 def satellite_view_through_model(sat, tie, scoords, tlabels):
-    """Interpolates model values onto satellite orbital path.
-    
+    """Interpolate model values onto satellite orbital path.
+
+    Parameters
+    ----------
+    sat : pysat.Instrument object
+        Instrument object with some form of coordinates
+    tie : ucar_tiegcm object
+        Model run loaded as tie_gcm object
+    scoords : string or list of strings
+        Variable names reflecting coordinates in sat to interpolate model onto
+    tlabels : string or list of strings
+        Variable names from model to interpolate onto sat locations
     """
     
+    import warnings
+
+    warnings.warn('Preliminary code.  Currently tested for TIE-GCM')
+
     # tiegcm is in pressure levels, need in altitude, but on regular
     # grid
     import scipy.interpolate as interpolate
     
     # create input array using satellite time/position
+    if isinstance(scoords, str):
+        scoords = [scoords]
     coords = [sat[coord] for coord in scoords]
     coords.insert(0, sat.index.values.astype(int))
     sat_pts = [inp for inp in zip(*coords)]
     
     interp = {}
+    if isinstance(tlabels, str):
+        tlabels = [tlabels]
     for label in tlabels:
         points = [tie.data.coords[dim].values if dim != 'time' else 
                   tie.data.coords[dim].values.astype(int) 
