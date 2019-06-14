@@ -155,7 +155,7 @@ class TestGeneralOrbitsMLT():
         # checking for date to limit reintroduction potential
         assert self.testInst.date == pyast.datetime(2009, 1, 1)
 
-     def test_less_than_one_orbit_of_data_two_ways(self):
+    def test_less_than_one_orbit_of_data_two_ways(self):
         def filter_data(inst):
             inst.data = inst[0:20]
         self.testInst.custom.add(filter_data, 'modify')
@@ -171,7 +171,7 @@ class TestGeneralOrbitsMLT():
         # checking for date to limit reintroduction potential
         assert self.testInst.date == pyast.datetime(2009, 1, 1)
 
-     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
+    def test_less_than_one_orbit_of_data_four_ways_two_days(self):
         # create situation where the < 1 orbit split across two days
         def filter_data(inst):
             if inst.date == pysat.datetime(2009, 1, 2):
