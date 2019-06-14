@@ -580,9 +580,10 @@ class Orbits(object):
                         if not self.sat.empty:
                             # combine this next day's data with previous last
                             # orbit, grab the first one
+                            final_val = self.sat.index[0] \
+                                - pds.DateOffset(microseconds=1)
                             self.sat.data = self.sat.concat_data(
-                                [temp_orbit_data[:self.sat.index[0] -
-                                                 pds.DateOffset(microseconds=1)],
+                                [temp_orbit_data[:final_val],
                                  self.sat.data])
                             self._getBasicOrbit(orbit=1)
                         else:
