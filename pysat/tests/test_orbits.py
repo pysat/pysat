@@ -184,23 +184,23 @@ class TestGeneralOrbitsMLT():
                 inst.data = inst[-20:]
                 
         self.testInst.custom.add(filter_data, 'modify')
-        self.testInst.load(2009, 1)
+        self.testInst.load(2009, 4)
         # starting from no orbit calls next loads first orbit
         self.testInst.orbits.next()
         # store comparison data        
         saved_data = self.testInst.data.copy()
-        self.testInst.load(2009, 2)
+        self.testInst.load(2009, 5)
         self.testInst.orbits[0]
         if self.testInst.orbits.num == 1:
             # equivalence only when only one orbit
             # some test settings can violate this assumption
             print('1 ', saved_data.index, self.testInst.index)
             assert all(self.testInst.data == saved_data)
-        self.testInst.load(2009, 1)
+        self.testInst.load(2009, 4)
         self.testInst.orbits[0]
         print('2 ', saved_data.index, self.testInst.index)
         assert all(self.testInst.data == saved_data)
-        self.testInst.load(2009, 2)
+        self.testInst.load(2009, 5)
         self.testInst.orbits.prev()
         if self.testInst.orbits.num == 1:
             print('3 ', saved_data.index, self.testInst.index)
