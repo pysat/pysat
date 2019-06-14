@@ -500,22 +500,12 @@ class Orbits(object):
                                     - self.sat.index[0]
                         if delta_start < self.orbit_period:
                             # near begining
-                            # load previous file, then go forward
+                            # load previous file, then go forward one orbit
                             self.sat.prev()
-                            if not self.sat.empty:
-                                self.next()
-                            # next keeps going until it finds data
-                            # want at least one next call, max two
-                            self.next()
                         elif delta_end < self.orbit_period:
                             # near end
-                            # load next file, then go back orbits
+                            # load next file, then go back one orbit
                             self.sat.next()
-                            # self.prev keeps going until it finds data
-                            # want at least one prev call, max two
-                            # keeps us on the correct day
-                            if not self.sat.empty:
-                                self.prev()
                             self.prev()
                         else:
                             self._getBasicOrbit(orbit=-1)
