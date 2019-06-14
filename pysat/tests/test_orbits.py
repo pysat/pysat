@@ -15,6 +15,7 @@ class TestOrbitsUserInterface():
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
 
+
 class TestSpecificUTOrbits():
 
     def setup(self):
@@ -151,7 +152,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(2009, 1)
         self.testInst.orbits.next()
         assert True
-        
+
     def test_load_orbits_w_empty_data(self):
         self.testInst.load(1959, 1)
         self.testInst.orbits.next()
