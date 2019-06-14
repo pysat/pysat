@@ -189,7 +189,7 @@ class TestGeneralOrbitsMLT():
         saved_data = self.testInst.data.copy()
         self.testInst.load(2009, 2)
         self.testInst.orbits[0]
-        if self.testInst.orbits.num == 0:
+        if self.testInst.orbits.num == 1:
             # equivalence only when only one orbit
             # some test settings can violate this assumption
             assert all(self.testInst.data == saved_data)
@@ -198,7 +198,7 @@ class TestGeneralOrbitsMLT():
         assert all(self.testInst.data == saved_data)
         self.testInst.load(2009, 2)
         self.testInst.orbits.prev()
-        if self.testInst.orbits.num == 0:
+        if self.testInst.orbits.num == 1:
             assert all(self.testInst.data == saved_data)
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
