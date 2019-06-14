@@ -158,7 +158,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.orbits.next()
         assert True
 
-    def test_repeated_orbit_calls_symmetric_single_day_starting_with_last(self):
+    def test_repeated_orbit_calls_symmetric_single_day_start_with_last(self):
         self.testInst.load(2009, 1)
         # start on last orbit of last day
         self.testInst.orbits[0]
@@ -258,7 +258,7 @@ class TestGeneralOrbitsMLT():
             self.testInst.orbits.next()
         assert all(control.data == self.testInst.data)
 
-    def test_repeated_orbit_calls_antisymmetric_multi_multi_day_0_UT_long_time_gap(self):
+    def test_repeat_orbit_calls_asym_multi_day_0_UT_long_time_gap(self):
         self.testInst.load(2009, 12)
         self.testInst.orbits.next()
         control = self.testInst.copy()
@@ -268,7 +268,7 @@ class TestGeneralOrbitsMLT():
             self.testInst.orbits.prev()
         assert all(control.data == self.testInst.data)
 
-    def test_repeated_orbit_calls_antisymmetric_multi_multi_day_0_UT_really_long_time_gap(self):
+    def test_repeat_orbit_calls_asym_multi_day_0_UT_really_long_time_gap(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits.next()
         control = self.testInst.copy()
@@ -278,8 +278,7 @@ class TestGeneralOrbitsMLT():
             self.testInst.orbits.prev()
         assert all(control.data == self.testInst.data)
 
-
-    def test_repeated_orbit_calls_antisymmetric_multi_multi_day_0_UT_multiple_time_gaps(self):
+    def test_repeat_orbit_calls_asym_multi_day_0_UT_multiple_time_gaps(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits.next()
         control = self.testInst.copy()
