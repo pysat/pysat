@@ -66,7 +66,7 @@ name = 'kp'
 tags = {'': '',
         'forecast': 'SWPC Forecast data next (3 days)',
         'recent': 'SWPC provided Kp for past 30 days'}
-sat_ids = {'': ['']}
+sat_ids = {'': ['', 'forecast', 'recent']}
 
 # generate todays date to support loading forecast data
 now = pysat.datetime.now()

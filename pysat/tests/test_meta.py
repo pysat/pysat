@@ -20,6 +20,10 @@ class TestBasics():
         del self.testInst
         del self.meta
 
+    @raises(ValueError)
+    def test_setting_nonpandas_metadata(self):
+        self.meta = pysat.Meta(metadata='Not a Panda')
+
     def test_inst_data_assign_meta_default(self):
         self.testInst.load(2009, 1)
         self.testInst['help'] = self.testInst['mlt']
@@ -324,6 +328,16 @@ class TestBasics():
                 assert m1[key] == m2[key]
         # make sure both have the same indexes
         assert np.all(m1.index == m2.index)
+
+    @raises(KeyError)
+    def test_basic_pops_w_bad_key(self):
+
+        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew',
+                             'value_min': 0, 'value_max': 1}
+        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
+                             'description': 'boohoo', 'fill': 1,
+                             'value_min': 0, 'value_max': 1}
+        _ = self.meta.pop('new4')
 
     def test_basic_equality(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
