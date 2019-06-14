@@ -196,8 +196,7 @@ class TestGeneralOrbitsMLT():
         assert all(self.testInst.data == saved_data)
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
-        print(self.testInst.date)
-        assert self.testInst.date == pysat.datetime(2009, 1, 1)
+        assert self.testInst.date == pysat.datetime(2009, 1, 2)
 
     def test_repeated_orbit_calls_symmetric_single_day_start_with_last(self):
         self.testInst.load(2009, 1)
