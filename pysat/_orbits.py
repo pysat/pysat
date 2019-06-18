@@ -344,10 +344,11 @@ class Orbits(object):
             # print 'Time Gap'
 
         # create orbitbreak index, ensure first element is always 0
-        if len(ind) == 0:
+        if len(ind) > 0:
+            if ind[0] != 0:
+                ind = np.hstack((np.array([0]), ind))
+        else:
             ind = np.array([0])
-        if ind[0] != 0:
-            ind = np.hstack((np.array([0]), ind))
         # number of orbits
         num_orbits = len(ind)
         # set index of orbit breaks
@@ -383,12 +384,13 @@ class Orbits(object):
             orbit_index.append(idx[0])
 
         # create orbitbreak index, ensure first element is always 0
-        if len(orbit_index) == 0:
-            orbit_index = np.array([0])
-        if orbit_index[0] != 0:
-            ind = np.hstack((np.array([0]), orbit_index))
+        if len(orbit_index) > 0:
+            if orbit_index[0] != 0:
+                ind = np.hstack((np.array([0]), orbit_index))
+            else:
+                ind = orbit_index
         else:
-            ind = orbit_index
+            ind = np.array([0])
         # number of orbits
         num_orbits = len(ind)
         # set index of orbit breaks
@@ -480,28 +482,59 @@ class Orbits(object):
                     # -2 second to last, etc.
                     orbit = self.num + 1 + orbit
 
-                if orbit == 1:
-                    # change from orig copied from _core, didn't look correct.
-                    # self._getBasicOrbit(orbit=2)
-                    try:
-                        true_date = self.sat.date  # .copy()
+                if orbit == self.num:
+                    # we get here if user asks for last orbit
+                    # this call is first to trap case where there is only one orbit (self.num=1)
+                    # which needs to be treated differently than a orbit=1 call
+                    if self.num != 1:
+                        # more than one orbit, go back one (simple call)
+                        # and then forward doing full logic for breaks across day
+                        self._getBasicOrbit(self.num - 1)
+                        self.next()
+                    else:
+                        # only one complete orbit in file, or less                        
+                        # check if we are close to begining or end of day
+                        date = self.sat.date                        
+                        delta_start = self.sat.index[-1] - date
+                        delta_end = date + pds.DateOffset(days=1) \
+                                    - self.sat.index[0]
+                        if delta_start < self.orbit_period:
+                            # near begining
+                            # load previous file, then go forward one orbit
+                            self.sat.prev()
+                        elif delta_end < self.orbit_period:
+                            # near end
+                            # load next file, then go back one orbit
+                            self.sat.next()
+                            self.prev()
+                        else:
+                            self._getBasicOrbit(orbit=-1)
 
+                elif orbit == 1:
+                    # user asked for first orbit
+                    try:
+                        # orbit could start file previous
+                        # check for this condition
+                        # store real date user wants
+                        true_date = self.sat.date
+                        # go back a day
                         self.sat.prev()
                         # if and else added becuase of CINDI turn off
                         # 6/5/2013, turn on 10/22/2014
                         # crashed when starting on 10/22/2014
                         # prev returned empty data
                         if not self.sat.empty:
+                            # get last orbit if there is data
+                            # this will deal with orbits across file cleanly
                             self.load(orbit=-1)
                         else:
+                            # no data, no previous data to account for
+                            # move back to original data, do simple load
+                            # of first orbit
                             self.sat.next()
                             self._getBasicOrbit(orbit=1)
                         # check that this orbit should end on the current day
                         delta = true_date - self.sat.index[0]
-                        # print 'checking if first orbit should land on
-                        #     requested day'
-                        # print self.sat.date, self.sat.index[0], delta,
-                        #     delta >= self.orbit_period
                         if delta >= self.orbit_period:
                             # the orbit loaded isn't close enough to date
                             # to be the first orbit of the day, move forward
@@ -512,16 +545,6 @@ class Orbits(object):
                         # includes hack to appear to be zero indexed
                         print('Loaded Orbit:%i' % (self._current - 1))
                         # check if the first orbit is also the last orbit
-
-                elif orbit == self.num:
-                    # we get here if user asks for last orbit
-                    # make sure that orbit data goes across daybreak as needed
-                    # load previous orbit
-                    if self.num != 1:
-                        self._getBasicOrbit(self.num - 1)
-                        self.next()
-                    else:
-                        self._getBasicOrbit(orbit=-1)
 
                 elif orbit < self.num:
                     # load orbit data into data
@@ -578,9 +601,10 @@ class Orbits(object):
                         if not self.sat.empty:
                             # combine this next day's data with previous last
                             # orbit, grab the first one
+                            final_val = self.sat.index[0] \
+                                - pds.DateOffset(microseconds=1)
                             self.sat.data = self.sat.concat_data(
-                                [temp_orbit_data[:self.sat.index[0] -
-                                                 pds.DateOffset(microseconds=1)],
+                                [temp_orbit_data[:final_val],
                                  self.sat.data])
                             self._getBasicOrbit(orbit=1)
                         else:
