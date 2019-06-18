@@ -341,7 +341,6 @@ class Orbits(object):
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            # print 'Time Gap'
 
         # create orbitbreak index, ensure first element is always 0
         if ind[0] != 0:
@@ -494,16 +493,11 @@ class Orbits(object):
                             self._getBasicOrbit(orbit=1)
                         # check that this orbit should end on the current day
                         delta = true_date - self.sat.index[0]
-                        # print 'checking if first orbit should land on
-                        #     requested day'
-                        # print self.sat.date, self.sat.index[0], delta,
-                        #     delta >= self.orbit_period
                         if delta >= self.orbit_period:
                             # the orbit loaded isn't close enough to date
                             # to be the first orbit of the day, move forward
                             self.next()
                     except StopIteration:
-                        # print 'going for basic orbit'
                         self._getBasicOrbit(orbit=1)
                         # includes hack to appear to be zero indexed
                         print('Loaded Orbit:%i' % (self._current - 1))
@@ -809,7 +803,7 @@ class Orbits(object):
         ::
 
             for inst in inst.orbits:
-                print 'next available orbit ', inst.data
+                print('next available orbit ', inst.data)
 
         Note
         ----

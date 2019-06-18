@@ -100,7 +100,7 @@ def init(inst):
 
     Creates a file list for a given range if the file_date_range
     keyword is set at instantiation.
-    
+
     Parameters
     ----------
     file_date_range : (pds.date_range)
@@ -111,7 +111,7 @@ def init(inst):
 
     """
     inst.new_thing = True
-        
+
     # work on file index if keyword present
     if 'file_date_range' in inst.kwargs:
         # set list files routine to desired date range
@@ -119,7 +119,7 @@ def init(inst):
         fdr = inst.kwargs['file_date_range']
         inst._list_rtn = functools.partial(list_files, file_date_range=fdr)
         inst.files.refresh()
-        
+
     # mess with file dates if kwarg option present
     if 'mangle_file_dates' in inst.kwargs:
         if inst.kwargs['mangle_file_dates']:
@@ -127,7 +127,7 @@ def init(inst):
 
 def default(inst):
     """The default function is applied first to data as it is loaded.
-        
+
     """
     pass
 
@@ -255,10 +255,9 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
-    # print (data['string_dummy'])
     
-    index = pds.date_range(data_date, 
-                           data_date+pds.DateOffset(seconds=num-1), 
+    index = pds.date_range(data_date,
+                           data_date+pds.DateOffset(seconds=num-1),
                            freq='S')
     if malformed_index:
         index = index[0:num].tolist()
@@ -266,7 +265,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]]*3
-        
+
     data.index=index[0:num]
     data.index.name = 'Epoch'
     return data, meta.copy()

@@ -149,7 +149,6 @@ def load(fnames, tag=None, sat_id=None, obs_long=0., obs_lat=0., obs_alt=0.,
         # orbit propagator - computes x,y,z position and velocity
         pos, vel = satellite.propagate(time.year, time.month, time.day,
                                        time.hour, time.minute, time.second)
-        # print (pos)
         position.extend(pos)
         velocity.extend(vel)
 
@@ -636,7 +635,6 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
     from pyglow.pyglow import Point
 
     iri_params = []
-    # print 'IRI Simulations'
     for time, lat, lon, alt in zip(inst.data.index, inst[glat_label],
                                    inst[glong_label], inst[alt_label]):
         # Point class is instantiated. Its parameters are a function of time
@@ -654,7 +652,6 @@ def add_iri_thermal_plasma(inst, glat_label='glat', glong_label='glong',
         iri['frac_dens_h'] = pt.ni['H+']/iri['ion_dens']
         iri['frac_dens_he'] = pt.ni['HE+']/iri['ion_dens']
         iri_params.append(iri)
-    # print 'Complete.'
     iri = pds.DataFrame(iri_params)
     iri.index = inst.data.index
     inst[iri.keys()] = iri
@@ -724,7 +721,6 @@ def add_hwm_winds_and_ecef_vectors(inst, glat_label='glat',
         hwm['zonal_wind'] = pt.u
         hwm['meridional_wind'] = pt.v
         hwm_params.append(hwm)
-    # print 'Complete.'
     hwm = pds.DataFrame(hwm_params)
     hwm.index = inst.data.index
     inst[['zonal_wind', 'meridional_wind']] = hwm[['zonal_wind',
@@ -838,7 +834,6 @@ def add_igrf(inst, glat_label='glat', glong_label='glong', alt_label='alt'):
     import pysatMagVect
 
     igrf_params = []
-    # print 'IRI Simulations'
     for time, lat, lon, alt in zip(inst.data.index, inst[glat_label],
                                    inst[glong_label], inst[alt_label]):
         pt = Point(time, lat, lon, alt)
@@ -849,7 +844,6 @@ def add_igrf(inst, glat_label='glat', glong_label='glong', alt_label='alt'):
         igrf['B_north'] = pt.By
         igrf['B_up'] = pt.Bz
         igrf_params.append(igrf)
-    # print 'Complete.'
     igrf = pds.DataFrame(igrf_params)
     igrf.index = inst.data.index
     inst[igrf.keys()] = igrf
@@ -933,7 +927,6 @@ def add_msis(inst, glat_label='glat', glong_label='glong', alt_label='alt'):
     from pyglow.pyglow import Point
 
     msis_params = []
-    # print 'IRI Simulations'
     for time, lat, lon, alt in zip(inst.data.index, inst[glat_label],
                                    inst[glong_label], inst[alt_label]):
         pt = Point(time, lat, lon, alt)
@@ -949,7 +942,6 @@ def add_msis(inst, glat_label='glat', glong_label='glong', alt_label='alt'):
         msis['Nn_O2'] = pt.nn['O2']
         msis['Tn_msis'] = pt.Tn_msis
         msis_params.append(msis)
-    # print 'Complete.'
     msis = pds.DataFrame(msis_params)
     msis.index = inst.data.index
     inst[msis.keys()] = msis
@@ -1184,7 +1176,6 @@ def plot_simulated_data(ivm, filename=None):
         # aligned with ivm measurement sample
         lon0 = ivm[0, 'glong']
         lon1 = ivm[-1, 'glong']
-        # print (lon0, lon1)
 
         # enforce minimal longitude window, keep graphics from being too
         # disturbed
@@ -1195,8 +1186,7 @@ def plot_simulated_data(ivm, filename=None):
             lon0 -= 360.
             lon1 -= 360.
             ivm[:, 'glong'] -= 360.
-        # print (lon0, lon1)
-
+        
         m = Basemap(projection='mill', llcrnrlat=-60, urcrnrlat=60.,
                     urcrnrlon=lon1.copy(), llcrnrlon=lon0.copy(),
                     resolution='c', ax=ax6, fix_aspect=False)

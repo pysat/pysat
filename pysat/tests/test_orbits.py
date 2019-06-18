@@ -24,8 +24,6 @@ class TestSpecificUTOrbits():
         self.testInst.orbits[0]
         ans = (self.testInst.index[0] == pds.datetime(2009, 1, 1))
         ans2 = (self.testInst.index[-1] == pds.datetime(2009, 1, 1, 1, 36, 59))
-        # print (ans,ans2)
-        # print (self.testInst.index[0], self.testInst.index[-1])
         assert ans & ans2
 
     def test_single_orbit_call_by_1_index(self):
@@ -33,8 +31,6 @@ class TestSpecificUTOrbits():
         self.testInst.orbits[1]
         ans = (self.testInst.index[0] == pds.datetime(2009, 1, 1, 1, 37))
         ans2 = (self.testInst.index[-1] == pds.datetime(2009, 1, 1, 3, 13, 59))
-        # print (ans,ans2)
-        # print (self.testInst.index[0], self.testInst.index[-1])
         assert ans & ans2
 
     def test_single_orbit_call_by_negative_1_index(self):
@@ -106,9 +102,6 @@ class TestSpecificUTOrbits():
         from dateutil.relativedelta import relativedelta as relativedelta
         self.testInst.load(2008, 366)
         self.testInst.orbits.next()
-        # print self.testInst.index[0], pds.datetime(2008,12,30, 23, 45),
-        # self.testInst.index[-1], (pds.datetime(2008,12,30, 23, 45)+
-        # relativedelta(hours=1, minutes=36, seconds=59))
         assert (self.testInst.index[0] == pds.datetime(2008, 12, 30, 23, 45))
         assert (self.testInst.index[-1] ==
                 (pds.datetime(2008, 12, 30, 23, 45) +

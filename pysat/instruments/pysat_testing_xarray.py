@@ -81,8 +81,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         data_date = date
     num = 86400 if sat_id == '' else int(sat_id)
     num_array = np.arange(num)
-    index = pds.date_range(data_date, 
-                           data_date+pds.DateOffset(seconds=num-1), 
+    index = pds.date_range(data_date,
+                           data_date+pds.DateOffset(seconds=num-1),
                            freq='S')
     if malformed_index:
         index = index[0:num].tolist()
@@ -90,10 +90,10 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]]*3
-        
+
     data = xarray.Dataset({'uts': (('time'), index)}, coords={'time':index})
-    # need to create simple orbits here. Have start of first orbit 
-    # at 2009,1, 0 UT. 14.84 orbits per day	
+    # need to create simple orbits here. Have start of first orbit
+    # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date  - root_date
     mlt = test.generate_fake_data(time_delta.total_seconds(), num_array,
                                   period=5820, data_range=[0.0, 24.0])
@@ -143,8 +143,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
                            dtype=np.int32))
     data['int64_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
                            dtype=np.int64))
-    # print (data['string_dummy'])
-
+    
     return data, meta.copy()
 
 
