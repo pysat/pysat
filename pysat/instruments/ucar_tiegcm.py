@@ -39,9 +39,7 @@ platform = 'ucar'
 name = 'tiegcm'
 
 # dictionary of data 'tags' and corresponding description
-tags = {'': 'Level-2 IVM Files',  # this is the default
-        'L1': 'Level-1 IVM Files',
-        'L0': 'Level-0 IVM Files'}
+tags = {'': 'UCAR TIE-GCM file'}
 # dictionary of satellite IDs, list of corresponding tags for each sat_ids
 # example
 # sat_ids = {'a':['L1', 'L0'], 'b':['L1', 'L2'], 'c':['L1', 'L3']}
