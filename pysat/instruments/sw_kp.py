@@ -368,7 +368,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         sub_kps = [[], [], []]
         # iterate through file lines and parse out the info we want
         for line in raw_data:
-            # print (line)
             kp_time.append(pysat.datetime.strptime(line[0:10], '%Y %m %d'))
             # pick out Kp values for each of the three columns
             sub_lines = [line[17:33], line[40:56], line[63:]]
