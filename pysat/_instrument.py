@@ -1211,7 +1211,6 @@ class Instrument(object):
             # specific date if loading by day
             # set up times for the possible data padding coming up
             if self._load_by_date:
-                # print ('double trouble')
                 first_time = self.date
                 first_pad = self.date - loop_pad
                 last_time = self.date + pds.DateOffset(days=1)
@@ -1219,7 +1218,6 @@ class Instrument(object):
                 want_last_pad = False
             # loading by file, can't be a multi_file-day flag situation
             elif (not self._load_by_date) and (not self.multi_file_day):
-                # print ('single trouble')
                 first_time = self._index(self._curr_data)[0]
                 first_pad = first_time - loop_pad
                 last_time = self._index(self._curr_data)[-1]
@@ -1229,7 +1227,6 @@ class Instrument(object):
                 raise ValueError("multi_file_day and loading by date are " +
                                  "effectively equivalent.  Can't have " +
                                  "multi_file_day and load by file.")
-            # print (first_pad, first_time, last_time, last_pad)
 
             # pad data based upon passed parameter
             if (not self._empty(self._prev_data)) & (not self.empty):
@@ -1492,8 +1489,8 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            print ('Downloading the most recent data by default ',
-                   '(yesterday through tomorrow).')
+            print('Downloading the most recent data by default ',
+                  '(yesterday through tomorrow).')
             start = self.yesterday()
             stop = self.tomorrow()
         print('Downloading data to: ', self.files.data_path)
@@ -1895,7 +1892,7 @@ class Instrument(object):
         if (coltype == type(' ')) or (coltype == type(u' ')):
             # if isinstance(coltype, str):
             remove = True
-        # print ('coltype', coltype, remove, type(coltype), )
+        # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
@@ -2118,7 +2115,6 @@ class Instrument(object):
             # iterate over all of the columns in the Instrument dataframe
             # check what kind of data we are dealing with, then store
             for key in self.variables:
-                # print (key)
                 # get information on type data we are dealing with
                 # data is data in proer type( multiformat support)
                 # coltype is the direct type, np.int64
@@ -2276,12 +2272,9 @@ class Instrument(object):
                                     new_dict['Format'] = \
                                         self._get_var_type_code(coltype)
                                     new_dict['Var_Type'] = 'data'
-                                    # print('Frame Writing ', key, col,
-                                    # export_meta[key].children[col])
                                     new_dict = \
                                         self._filter_netcdf4_metadata(new_dict,
                                                                       coltype)
-                                    # print ('mid2 ', new_dict)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     print(' '.join((str(err), '\n',
@@ -2293,7 +2286,6 @@ class Instrument(object):
                                 # method as well astype method below collect
                                 # data into a numpy array, then write the full
                                 # array in one go
-                                # print(coltype, dims)
                                 temp_cdf_data = \
                                     np.zeros((num, dims[0])).astype(coltype)
                                 for i in range(num):
@@ -2329,7 +2321,6 @@ class Instrument(object):
                                         self._filter_netcdf4_metadata(new_dict,
                                                                       coltype)
                                     # really attach metadata now
-                                    # print ('mid3 ', new_dict)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     print(' '.join((str(err), '\n',

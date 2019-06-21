@@ -247,7 +247,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                             data.variables[key].getncattr(nc_key)
                     dim_meta_data[clean_key] = meta_dict
 
-                # print (dim_meta_data)
                 dim_meta_dict = {'meta': dim_meta_data}
                 if index_key_name is not None:
                     # add top level meta
@@ -305,8 +304,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1)])
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
-                # print (loop_frame.columns)
-
+                
                 # add 2D object data, all based on a unique dimension within
                 # netCDF, to loaded data dictionary
                 loadedVars[obj_key_name] = loop_list

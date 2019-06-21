@@ -145,12 +145,12 @@ class TestBasics():
         # print(self.testInst.date)
         self.testInst.prev()
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month, 
+        test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
         assert (test_date == pds.datetime(2009,1,3))  & \
                (test_date == self.testInst.date)
-        
-        
+
+
     #------------------------------------------------------------------------------
     #
     # Test date helpers
@@ -173,7 +173,7 @@ class TestBasics():
         today = pysat.datetime(now.year, now.month, now.day)
         self.testInst.date = now
         assert today == self.testInst.date
-     
+
     #------------------------------------------------------------------------------
     #
     # Test empty property flags, if True, no data
@@ -205,8 +205,8 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert np.all(self.testInst.index == self.testInst.data.index)
         else:
-            assert np.all(self.testInst.index == 
-                          self.testInst.data.indexes['time'])    
+            assert np.all(self.testInst.index ==
+                          self.testInst.data.indexes['time'])
 
     #------------------------------------------------------------------------------
     #
@@ -246,7 +246,7 @@ class TestBasics():
     #
     # test instrument initialization functions
     #
-    #------------------------------------------------------------------------------                      
+    #------------------------------------------------------------------------------
     def test_instrument_init(self):
         """Test if init function supplied by instrument can modify object"""
         assert self.testInst.new_thing
@@ -460,8 +460,8 @@ class TestBasics():
             assert len(a) == 5
         else:
             assert a.sizes['time'] == 5
-                    
-                                                            
+
+
     #------------------------------------------------------------------------------
     #
     # Test iteration behaviors
@@ -482,15 +482,15 @@ class TestBasics():
         # load last data
         self.testInst.prev()
         # move on to future data that doesn't exist
-        self.testInst.next()       
+        self.testInst.next()
 
     def test_set_bounds_with_frequency(self):
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2010,1,15)
         self.testInst.bounds = (start, stop, 'M')
-        assert np.all(self.testInst._iter_list == pds.date_range(start, stop, 
+        assert np.all(self.testInst._iter_list == pds.date_range(start, stop,
                                                                  freq='M').tolist())
-                                                                                                                                                                                                                                
+
     @raises(ValueError)
     def test_set_bounds_too_few(self):
         start = pysat.datetime(2009,1,1)
@@ -507,23 +507,23 @@ class TestBasics():
         start = pysat.datetime(2009, 1, 1)
         stop = pysat.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
-        assert np.all(self.testInst._iter_list == 
+        assert np.all(self.testInst._iter_list ==
                       pds.date_range(start, stop).tolist())
 
     def test_set_bounds_by_default(self):
         start = self.testInst.files.start_date
         stop = self.testInst.files.stop_date
         self.testInst.bounds = (None, None)
-        assert np.all(self.testInst._iter_list == 
+        assert np.all(self.testInst._iter_list ==
                       pds.date_range(start, stop).tolist())
         self.testInst.bounds = None
-        assert np.all(self.testInst._iter_list == 
+        assert np.all(self.testInst._iter_list ==
                       pds.date_range(start, stop).tolist())
         self.testInst.bounds = (start, None)
-        assert np.all(self.testInst._iter_list == 
+        assert np.all(self.testInst._iter_list ==
                       pds.date_range(start, stop).tolist())
         self.testInst.bounds = (None, stop)
-        assert np.all(self.testInst._iter_list == 
+        assert np.all(self.testInst._iter_list ==
                       pds.date_range(start, stop).tolist())
 
     def test_set_bounds_by_date_extra_time(self):
@@ -532,7 +532,7 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         start = self.testInst._filter_datetime_input(start)
         stop = self.testInst._filter_datetime_input(stop)
-        assert np.all(self.testInst._iter_list == 
+        assert np.all(self.testInst._iter_list ==
                       pds.date_range(start, stop).tolist())
 
     def test_iterate_over_bounds_set_by_date(self):
@@ -545,7 +545,7 @@ class TestBasics():
         out = pds.date_range(start, stop).tolist()
         assert np.all(dates == out)
 
-        
+
     def test_iterate_over_bounds_set_by_date2(self):
         start = pysat.datetime(2008,1,1)
         stop = pysat.datetime(2010,12,31)
@@ -562,7 +562,7 @@ class TestBasics():
         self.testInst.bounds = (None, None)
         dates = []
         for inst in self.testInst:
-            dates.append(inst.date)            
+            dates.append(inst.date)
         out = pds.date_range(start, stop).tolist()
         assert np.all(dates == out)
 
@@ -605,7 +605,7 @@ class TestBasics():
         # iterate
         dates = []
         for inst in self.testInst:
-            dates.append(inst.date)            
+            dates.append(inst.date)
         out = pds.date_range(start[0], stop[0]).tolist()
         out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(dates == out)
@@ -729,8 +729,8 @@ class TestBasicsShiftedFileDates(TestBasics):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', 
-                                         sat_id='10', 
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         sat_id='10',
                                          clean_level='clean',
                                          update_files=True,
                                          mangle_file_dates=True,
@@ -752,8 +752,8 @@ class TestMalformedIndex():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', 
-                                         sat_id='10', 
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         sat_id='10',
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
@@ -782,8 +782,8 @@ class TestMalformedIndexXarray(TestMalformedIndex):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', 
-                                         sat_id='10', 
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+                                         sat_id='10',
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
@@ -890,16 +890,11 @@ class TestDataPaddingbyFile():
         self.testInst.load(fid=1, verifyPad=True)
         test_index = pds.date_range(self.testInst.index[0],
                                     self.testInst.index[-1], freq='S')
-        # print (test_index[0], test_index[-1], len(test_index))
-        # print(self.testInst.index[0], self.testInst.index[-1],
-        #       len(self.testInst.data))
         assert (np.all(self.testInst.index == test_index))
 
     def test_fid_data_padding_removal(self):
         self.testInst.load(fid=1)
         self.rawInst.load(fid=1)
-        # print(self.testInst.index)
-        # print(new_inst.data.index)
         assert self.testInst.index[0] == self.rawInst.index[0]
         assert self.testInst.index[-1] == self.rawInst.index[-1]
         assert len(self.rawInst.data) == len(self.testInst.data)
