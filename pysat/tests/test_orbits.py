@@ -154,62 +154,62 @@ class TestGeneralOrbitsMLT():
         # checking for date to limit reintroduction potential
         assert self.testInst.date == pysat.datetime(2009, 1, 1)
 
-    # def test_less_than_one_orbit_of_data_two_ways(self):
-    #     def filter_data(inst):
-    #         inst.data = inst[0:5]
-    #     self.testInst.custom.add(filter_data, 'modify')
-    #     self.testInst.load(2009, 1)
-    #     # starting from no orbit calls next loads first orbit
-    #     self.testInst.orbits.next()
-    #     # store comparison data
-    #     saved_data = self.testInst.data.copy()
-    #     self.testInst.load(2009, 1)
-    #     self.testInst.orbits[0]
-    #     print('0 ', saved_data.index, self.testInst.index)
-    #     assert all(self.testInst.data == saved_data)
-    #     # a recusion issue has been observed in this area
-    #     # checking for date to limit reintroduction potential
-    #     d1check = self.testInst.date == pysat.datetime(2009, 1, 1)
-    #     d2check = self.testInst.date == pysat.datetime(2009, 1, 2)
-    #     d3check = self.testInst.date == pysat.datetime(2008, 12, 31)
-    #     assert d1check or d2check or d3check
-    #
-    # def test_less_than_one_orbit_of_data_four_ways_two_days(self):
-    #     # create situation where the < 1 orbit split across two days
-    #     def filter_data(inst):
-    #         if inst.date == pysat.datetime(2009, 1, 5):
-    #             inst.data = inst[0:20]
-    #         elif inst.date == pysat.datetime(2009, 1, 4):
-    #             inst.data = inst[-20:]
-    #
-    #     self.testInst.custom.add(filter_data, 'modify')
-    #     self.testInst.load(2009, 4)
-    #     # starting from no orbit calls next loads first orbit
-    #     self.testInst.orbits.next()
-    #     # store comparison data
-    #     saved_data = self.testInst.data.copy()
-    #     self.testInst.load(2009, 5)
-    #     self.testInst.orbits[0]
-    #     if self.testInst.orbits.num == 1:
-    #         # equivalence only when only one orbit
-    #         # some test settings can violate this assumption
-    #         print('1 ', saved_data.index, self.testInst.index)
-    #         assert all(self.testInst.data == saved_data)
-    #     self.testInst.load(2009, 4)
-    #     self.testInst.orbits[0]
-    #     print('2 ', saved_data.index, self.testInst.index)
-    #     assert all(self.testInst.data == saved_data)
-    #     self.testInst.load(2009, 5)
-    #     self.testInst.orbits.prev()
-    #     if self.testInst.orbits.num == 1:
-    #         print('3 ', saved_data.index, self.testInst.index)
-    #         assert all(self.testInst.data == saved_data)
-    #     # a recusion issue has been observed in this area
-    #     # checking for date to limit reintroduction potential
-    #     d1check = self.testInst.date == pysat.datetime(2009, 1, 4)
-    #     d2check = self.testInst.date == pysat.datetime(2009, 1, 5)
-    #     d3check = self.testInst.date == pysat.datetime(2009, 1, 3)
-    #     assert d1check or d2check or d3check
+    def test_less_than_one_orbit_of_data_two_ways(self):
+        def filter_data(inst):
+            inst.data = inst[0:5]
+        self.testInst.custom.add(filter_data, 'modify')
+        self.testInst.load(2009, 1)
+        # starting from no orbit calls next loads first orbit
+        self.testInst.orbits.next()
+        # store comparison data
+        saved_data = self.testInst.data.copy()
+        self.testInst.load(2009, 1)
+        self.testInst.orbits[0]
+        print('0 ', saved_data.index, self.testInst.index)
+        assert all(self.testInst.data == saved_data)
+        # a recusion issue has been observed in this area
+        # checking for date to limit reintroduction potential
+        d1check = self.testInst.date == pysat.datetime(2009, 1, 1)
+        d2check = self.testInst.date == pysat.datetime(2009, 1, 2)
+        d3check = self.testInst.date == pysat.datetime(2008, 12, 31)
+        assert d1check or d2check or d3check
+
+    def test_less_than_one_orbit_of_data_four_ways_two_days(self):
+        # create situation where the < 1 orbit split across two days
+        def filter_data(inst):
+            if inst.date == pysat.datetime(2009, 1, 5):
+                inst.data = inst[0:20]
+            elif inst.date == pysat.datetime(2009, 1, 4):
+                inst.data = inst[-20:]
+
+        self.testInst.custom.add(filter_data, 'modify')
+        self.testInst.load(2009, 4)
+        # starting from no orbit calls next loads first orbit
+        self.testInst.orbits.next()
+        # store comparison data
+        saved_data = self.testInst.data.copy()
+        self.testInst.load(2009, 5)
+        self.testInst.orbits[0]
+        if self.testInst.orbits.num == 1:
+            # equivalence only when only one orbit
+            # some test settings can violate this assumption
+            print('1 ', saved_data.index, self.testInst.index)
+            assert all(self.testInst.data == saved_data)
+        self.testInst.load(2009, 4)
+        self.testInst.orbits[0]
+        print('2 ', saved_data.index, self.testInst.index)
+        assert all(self.testInst.data == saved_data)
+        self.testInst.load(2009, 5)
+        self.testInst.orbits.prev()
+        if self.testInst.orbits.num == 1:
+            print('3 ', saved_data.index, self.testInst.index)
+            assert all(self.testInst.data == saved_data)
+        # a recusion issue has been observed in this area
+        # checking for date to limit reintroduction potential
+        d1check = self.testInst.date == pysat.datetime(2009, 1, 4)
+        d2check = self.testInst.date == pysat.datetime(2009, 1, 5)
+        d3check = self.testInst.date == pysat.datetime(2009, 1, 3)
+        assert d1check or d2check or d3check
 
     def test_repeated_orbit_calls_symmetric_single_day_start_with_last(self):
         self.testInst.load(2009, 1)
