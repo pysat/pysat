@@ -122,6 +122,40 @@ class TestSWKp():
         assert(self.testInst.meta[dkey][self.testInst.meta.axis_label] ==
                'High lat Kp')
         del dkey
+        
+    def test_convert_ap_to_kp(self):
+        """ Test conversion of ap to Kp"""
+
+        sw_kp.convert_3hr_kp_to_ap(self.testInst)
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['3hr_ap'])
+
+        # Assert original and coverted there and back Kp are equal
+        assert all(abs(kp_out - self.testInst.data['Kp']) < 1.0e-4)
+
+        # Assert the converted Kp meta data exists and is reasonable
+        assert 'Kp' in kp_meta.keys()
+        assert(kp_meta['Kp'][kp_meta.fill_label] == -1)
+
+        del kp_out, kp_meta
+
+    def test_convert_ap_to_kp_fill_val(self):
+        """ Test conversion of ap to Kp with fill values"""
+
+        # Set the first value to a fill value, then calculate ap
+        fill_label = self.testInst.meta.fill_label
+        self.testInst['Kp'][0] = self.testInst.meta['Kp'][fill_label]
+        sw_kp.convert_3hr_kp_to_ap(self.testInst)
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['3hr_ap'], \
+                            fill_val=self.testInst.meta['Kp'][fill_label])
+
+        # Test non-fill ap values
+        assert all(abs(kp_out[1:] - self.testInst.data['Kp'][1:]) < 1.0e-4)
+
+        # Test the fill value in the data and metadata
+        assert np.isnan(kp_out[0])
+        assert np.isnan(kp_meta['Kp'][fill_label])
+
+        del fill_label, kp_out, kp_meta
 
 
 class TestSwKpCombine():
