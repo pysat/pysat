@@ -497,16 +497,41 @@ class Orbits(object):
                         delta_start = self.sat.index[-1] - date
                         delta_end = date + pds.DateOffset(days=1) \
                                     - self.sat.index[0]
-                        if delta_start < self.orbit_period:
+                        # debug printing
+                        # print('delta check ', delta_start, delta_end, self.orbit_period, 
+                        #                     ' if ', delta_start < self.orbit_period, 
+                        #                     ' else ', delta_end < self.orbit_period, 
+                        #                     date, 
+                        #                     self.num)
+                        if delta_start <= self.orbit_period*1.05:
                             # near begining
                             # load previous file, then go forward one orbit
                             self.sat.prev()
-                        elif delta_end < self.orbit_period:
+                            self.next()
+                            if self.sat.index[-1] < date + delta_start:
+                                # we could go back a day, iterate over orbit,
+                                # as above, and the data we have is the wrong day
+                                # In this case, move forward again.
+                                # happens when previous day doesn't have data 
+                                # near end of the day
+                                self.next()
+                                
+                        elif delta_end <= self.orbit_period*1.05:
                             # near end
                             # load next file, then go back one orbit
                             self.sat.next()
                             self.prev()
+                            if self.sat.index[0] > date + pds.DateOffset(days=1) \
+                                                   - delta_end:
+                                # we could go forward a day, iterate over orbit, 
+                               # as above, and the data we have is the wrong day
+                                # In this case, move back again.
+                                # happens when next day doesn't have data 
+                                # near begining of the day
+                                self.prev()
                         else:
+                            # not near begining or end, just get the last orbit 
+                            # available (only one)
                             self._getBasicOrbit(orbit=-1)
 
                 elif orbit == 1:
