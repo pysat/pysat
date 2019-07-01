@@ -511,3 +511,71 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
     ap_inst.meta.__setitem__(daily_name, meta_dict)
 
     return
+
+def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
+    """ Convert Ap into Kp
+
+    Parameters
+    ----------
+    ap_data : array-like
+        Array-like object containing Ap data
+    fill_val : int, float, NoneType
+        Fill value for the data set (default=-1)
+    ap_name : str
+        Name of the input ap
+
+    Returns
+    -------
+    kp_data : array-like
+        Array-like object containing Kp data
+    meta : Metadata
+        Metadata object containing information about transformed data
+
+    """
+    
+    # Ap are keys, Kp returned as double (N- = N.6667, N+=N.3333333)
+    one_third = 1.0 / 3.0
+    two_third = 2.0 / 3.0
+    ap_to_kp = {0: 0, 2: one_third, 3: two_third, 4: 1, 5: 1.0+one_third,
+                6: 1.0+two_third, 7: 2, 9: 2.0+one_third, 12: 2.0+two_third,
+                15: 3, 18: 3.0+one_third, 22: 3.0+two_third, 27: 4,
+                32: 4.0+one_third, 39: 4.0+two_third, 48: 5, 56: 5.0+one_third,
+                67: 5.0+two_third, 80: 6, 94: 6.0+one_third, 111: 6.0+two_third,
+                132: 7, 154: 7.0+one_third, 179: 7.0+two_third, 207: 8,
+                236: 8.0+one_third, 300: 8.0+two_third, 400: 9}
+    ap_keys = sorted(list(ap_to_kp.keys()))
+
+    # If the ap falls between two Kp indices, assign it to the lower Kp value
+    def round_ap(ap_in, fill_val=fill_val):
+        """ Round an ap value to the nearest Kp value
+        """
+        i = 0
+        while ap_keys[i] <= ap_in:
+            i += 1
+        i -= 1
+
+        if i >= len(ap_keys) or ap_keys[i] > ap_in:
+            return fill_val
+
+        return ap_to_kp[ap_keys[i]]
+
+    # Convert from ap to Kp
+    kp_data = np.array([ap_to_kp[aa] if aa in ap_keys else
+                        round_ap(aa, fill_val=fill_val) for aa in ap_data])
+
+    # Set the metadata
+    meta = pysat.Meta()
+    meta['Kp'] = {meta.units_label : '',
+                  meta.name_label: 'Kp',
+                  meta.desc_label: 'Kp converted from {:}'.format(ap_name),
+                  meta.plot_label: 'Kp',
+                  meta.axis_label: 'Kp',
+                  meta.scale_label: 'linear',
+                  meta.min_label: 0,
+                  meta.max_label: 9,
+                  meta.fill_label: fill_val,
+                  meta.notes_label: 'Kp converted from {:} as described at: '
+                  'https://www.ngdc.noaa.gov/stp/GEOMAG/kp_ap.html'}
+
+    # Return data and metadata
+    return(kp_data, meta)
