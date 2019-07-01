@@ -549,6 +549,9 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
     def round_ap(ap_in, fill_val=fill_val):
         """ Round an ap value to the nearest Kp value
         """
+        if not np.isfinite(ap_in):
+            return fill_val
+        
         i = 0
         while ap_keys[i] <= ap_in:
             i += 1
