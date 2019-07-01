@@ -171,9 +171,7 @@ class TestGeneralOrbitsMLT():
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
-        # d2check = self.testInst.date == pysat.datetime(2009, 1, 2)
-        # d3check = self.testInst.date == pysat.datetime(2008, 12, 31)
-        assert d1check #or d2check or d3check
+        assert d1check 
 
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
         # create situation where the < 1 orbit split across two days
@@ -216,10 +214,7 @@ class TestGeneralOrbitsMLT():
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
-#        d1check = self.testInst.date == pysat.datetime(2009, 1, 4)       
-        # d2check = self.testInst.date == pysat.datetime(2009, 1, 5)
-        # d3check = self.testInst.date == pysat.datetime(2009, 1, 3)
-        assert d1check #or d2check or d3check
+        assert d1check
 
     def test_repeated_orbit_calls_symmetric_single_day_start_with_last(self):
         self.testInst.load(2009, 1)
