@@ -24,7 +24,6 @@ def prep_dir(inst=None):
     # create data directories
     try:
         os.makedirs(inst.files.data_path)
-        # print ('Made Directory')
     except OSError:
         pass
 
@@ -239,8 +238,6 @@ class TestBasicNetCDF4():
 
         # test Series of DataFrames
         test_list = []
-        # print (loaded_inst.columns)
-        # print (loaded_inst)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
@@ -258,10 +255,8 @@ class TestBasicNetCDF4():
         for frame1, frame2 in zip(test_inst.data['series_profiles'],
                                   loaded_inst['series_profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
-            # print frame1, frame2
         loaded_inst.drop('series_profiles', inplace=True, axis=1)
         test_inst.data.drop('series_profiles', inplace=True, axis=1)
 
         assert (np.all((test_inst.data == loaded_inst).all()))
-        # print (test_list)
         assert np.all(test_list)

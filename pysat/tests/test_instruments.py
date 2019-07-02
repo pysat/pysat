@@ -247,7 +247,6 @@ class TestInstrumentQualifier():
         import os
 
         start = inst.test_dates[inst.sat_id][inst.tag]
-        # print (start)
         try:
             # check for username
             inst_name = '_'.join((inst.platform, inst.name))

@@ -315,12 +315,10 @@ class TestBasics():
         aa = self.meta.pop('new3')
         assert np.all(aa['children'] == meta2)
         # ensure lower metadata created when ho data assigned
-        # print (aa['units'])
         assert aa['units'] == ''
         assert aa['long_name'] == 'new3'
         m1 = self.meta['new2']
         m2 = self.meta.pop('new2')
-        # assert np.all(bb == cc)
         assert m1['children'] is None
         assert m2['children'] is None
         for key in m1.index:
@@ -703,7 +701,6 @@ class TestBasics():
     def test_multiple_input_names_null_value_preexisting_values(self):
         self.meta[['test1', 'test2']] = {'units': ['degrees', 'hams'],
                                          'long_name': ['testing', 'further']}
-        # print (self.meta)
         self.meta[['test1', 'test2']] = {}
         check1 = self.meta['test1', 'units'] == 'degrees'
         check2 = self.meta['test2', 'long_name'] == 'further'
@@ -725,8 +722,6 @@ class TestBasics():
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
-        # print ( self.meta['new'])
-        # print (self.meta['new2', 'units'])
         self.meta['new'].units
 
     def test_get_Units_wrong_case(self):
@@ -762,12 +757,10 @@ class TestBasics():
             self.meta['new_%d' % i] = {'units': 'heyhey%d' % i,
                                        'long_name': 'booboo%d' % i}
 
-        # print (self.meta['new'])
         assert self.meta['new'].Units == 'hey9'
         assert self.meta['new'].Long_Name == 'boo9'
         assert self.meta['new_9'].Units == 'heyhey9'
         assert self.meta['new_9'].Long_Name == 'booboo9'
-        # print (self.meta['new_500'])
         assert self.meta['new_5'].Units == 'hey9'
         assert self.meta['new_5'].Long_Name == 'boo9'
 
@@ -777,7 +770,6 @@ class TestBasics():
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        # print(self.meta['new'])
         assert ((self.meta['new'].Units == 'hey') &
                 (self.meta['new'].Long_Name == 'boo') &
                 (self.meta['new2'].Units == 'hey2') &
@@ -791,7 +783,6 @@ class TestBasics():
         self.meta['new2'] = meta2
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        # print(self.meta['new'])
         assert ((self.meta['new'].Units == 'hey') &
                 (self.meta['new'].Long_Name == 'boo') &
                 (self.meta['new2'].children['new21'].Units == 'hey2') &
@@ -806,7 +797,6 @@ class TestBasics():
         self.meta['new2'] = meta2
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        # print(self.meta['new'])
         assert ((self.meta['new'].units == 'hey') &
                 (self.meta['new'].long_name == 'boo') &
                 (self.meta['new2'].children['new21'].units == 'hey2') &

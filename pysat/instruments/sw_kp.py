@@ -368,7 +368,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         sub_kps = [[], [], []]
         # iterate through file lines and parse out the info we want
         for line in raw_data:
-            # print (line)
             kp_time.append(pysat.datetime.strptime(line[0:10], '%Y %m %d'))
             # pick out Kp values for each of the three columns
             sub_lines = [line[17:33], line[40:56], line[63:]]
@@ -503,7 +502,7 @@ def convert_3hr_kp_to_ap(kp_inst):
     """
 
     # Kp are keys, where n.3 = n+ and n.6 = (n+1)-. E.g., 0.6 = 1-
-    kp_to_ap = {0: 0, 0.3: 2, 0.6: 4, 1: 4, 1.3: 5, 1.6: 6, 2: 7, 2.3: 9,
+    kp_to_ap = {0: 0, 0.3: 2, 0.6: 3, 1: 4, 1.3: 5, 1.6: 6, 2: 7, 2.3: 9,
                 2.6: 12, 3: 15, 3.3: 18, 3.6: 22, 4: 27, 4.3: 32, 4.6: 39,
                 5: 48, 5.3: 56, 5.6: 67, 6: 80, 6.3: 94, 6.6: 111, 7: 132,
                 7.3: 154, 7.6: 179, 8: 207, 8.3: 236, 8.6: 300, 9: 400}
