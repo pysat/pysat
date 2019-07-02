@@ -122,11 +122,27 @@ class TestSWKp():
         assert(self.testInst.meta[dkey][self.testInst.meta.axis_label] ==
                'High lat Kp')
         del dkey
-        
+
     def test_convert_ap_to_kp(self):
         """ Test conversion of ap to Kp"""
 
         sw_kp.convert_3hr_kp_to_ap(self.testInst)
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['3hr_ap'])
+
+        # Assert original and coverted there and back Kp are equal
+        assert all(abs(kp_out - self.testInst.data['Kp']) < 1.0e-4)
+
+        # Assert the converted Kp meta data exists and is reasonable
+        assert 'Kp' in kp_meta.keys()
+        assert(kp_meta['Kp'][kp_meta.fill_label] == -1)
+
+        del kp_out, kp_meta
+
+    def test_convert_ap_to_kp_middle(self):
+        """ Test conversion of ap to Kp where ap is not an exact Kp value"""
+
+        sw_kp.convert_3hr_kp_to_ap(self.testInst)
+        self.testInst['3hr_ap'][8] += 1
         kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['3hr_ap'])
 
         # Assert original and coverted there and back Kp are equal
