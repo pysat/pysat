@@ -292,7 +292,7 @@ def calc_measurement_loc(self):
 
     return
     
-def drifts_plot(inst):
+def summary_plot(inst):
     """Summary plot for JRO ISR data using normal or average drifts data
     
     Parameters
@@ -306,54 +306,58 @@ def drifts_plot(inst):
     """
     import matplotlib.pyplot as plt
     
-    # get altitude difference
-    alt_diff = inst['gdalt'].values[1] - inst['gdalt'].values[0]
-    # get altitude locations, create y labels
-    ytick_vals = [val - alt_diff/2. for val in inst['gdalt'].values]
-    ytick_vals.append(inst['gdalt'].values[-1] + alt_diff/2.)
+    if inst.tag == 'drifts' or (inst.tag == 'drifts_ave'):
     
-    fig = plt.figure()
-    if inst.tag == 'drifts':
-        ax = fig.add_subplot(311)
-    else:
-        ax = fig.add_subplot(211)
-    plt.pcolormesh(inst.index, ytick_vals, 
-                   inst['vipn2'].values.T, vmin=-50., vmax=50.)
-    plt.ylabel('Altitude (km)')
-    cbar = plt.colorbar()
-    cbar.set_label('Perp North (m/s)')
-
-    plt.title(str('Jicamarca Summary Plot ' + inst.date.strftime('%x')))
-    # remove times from upper plot
-    ax.axes.get_xaxis().set_visible(False)
-    
-    if inst.tag == 'drifts':
-        ax = fig.add_subplot(312)
-    else:
-        ax = fig.add_subplot(212)
-    plt.pcolormesh(np.arange(len(inst.index)), ytick_vals, 
-                   inst['vipe1'].values.T, vmin=-200., vmax=200.)
-    plt.ylabel('Altitude (km)')
-    cbar = plt.colorbar()
-    cbar.set_label('Perp East (m/s)')
-    
-    if inst.tag == 'drifts':
-        # remove times from second plot
-        ax.axes.get_xaxis().set_visible(False)
-
-        ax = fig.add_subplot(313)
-        plt.pcolormesh(np.arange(len(inst.index)), ytick_vals, 
-                    inst['pacwl'].values.T, vmin=-3., vmax=3.)
+        # get altitude difference
+        alt_diff = inst['gdalt'].values[1] - inst['gdalt'].values[0]
+        # get altitude locations, create y labels
+        ytick_vals = [val - alt_diff/2. for val in inst['gdalt'].values]
+        ytick_vals.append(inst['gdalt'].values[-1] + alt_diff/2.)
+        
+        fig = plt.figure()
+        if inst.tag == 'drifts':
+            ax = fig.add_subplot(311)
+        else:
+            ax = fig.add_subplot(211)
+        plt.pcolormesh(inst.index, ytick_vals, 
+                    inst['vipn2'].values.T, vmin=-50., vmax=50.)
         plt.ylabel('Altitude (km)')
         cbar = plt.colorbar()
-        cbar.set_label('SNR')
-
-    # create better time labels
-    xloc, xticks = plt.xticks()
-    xticks = [val.strftime('%X') for val in inst.index[xloc[:-1].astype(int)]]
-    xticks.append(inst.index[-1].strftime('%X'))
-    ax.set_xticklabels(xticks)
-    plt.xlabel('Universal Time')
+        cbar.set_label('Perp North (m/s)')
     
-    plt.tight_layout()
+        plt.title(str('Jicamarca Summary Plot ' + inst.date.strftime('%x')))
+        # remove times from upper plot
+        ax.axes.get_xaxis().set_visible(False)
+        
+        if inst.tag == 'drifts':
+            ax = fig.add_subplot(312)
+        else:
+            ax = fig.add_subplot(212)
+        plt.pcolormesh(np.arange(len(inst.index)), ytick_vals, 
+                    inst['vipe1'].values.T, vmin=-200., vmax=200.)
+        plt.ylabel('Altitude (km)')
+        cbar = plt.colorbar()
+        cbar.set_label('Perp East (m/s)')
+        
+        if inst.tag == 'drifts':
+            # remove times from second plot
+            ax.axes.get_xaxis().set_visible(False)
+    
+            ax = fig.add_subplot(313)
+            plt.pcolormesh(np.arange(len(inst.index)), ytick_vals, 
+                        inst['pacwl'].values.T, vmin=-3., vmax=3.)
+            plt.ylabel('Altitude (km)')
+            cbar = plt.colorbar()
+            cbar.set_label('SNR')
+    
+        # create better time labels
+        xloc, xticks = plt.xticks()
+        xticks = [val.strftime('%X') for val in inst.index[xloc[:-1].astype(int)]]
+        xticks.append(inst.index[-1].strftime('%X'))
+        ax.set_xticklabels(xticks)
+        plt.xlabel('Universal Time')
+        
+        plt.tight_layout()
+    else:
+        print('Summary plot not supported for this tag yet. Please add some!')
 

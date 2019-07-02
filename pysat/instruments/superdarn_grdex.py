@@ -308,7 +308,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     return
 
-def polar_plot(inst, time, process_data=True,
+def summary_plot(inst, time, process_data=True,
                ocb_flag=False):
     """Summary plot of SuperDARN over polar cap.
     

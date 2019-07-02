@@ -397,8 +397,8 @@ def add_drifts_polar_cap_x_y(inst, rpa_flag_key=None,
 
     return
 
-def polar_plot_by_orbit(inst, orbit, process_data=True,
-                        ocb_flag=False, update_ephemeris=False):
+def summary_plot(inst, orbit, process_data=True,
+                 ocb_flag=False, update_ephemeris=False):
     """Summary plot of DMSP over polar cap.
     
     Uses pysatDINEOF nmethods to produce plots.
