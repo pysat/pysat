@@ -13,8 +13,96 @@ class TestOrbitsUserInterface():
         info = {'index': 'mlt', 'kind': 'cats'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
-                                         orbit_info=info, update_files=True)
+                                         orbit_info=info, update_files=True)        
 
+    @raises(ValueError)
+    def test_orbit_long_w_bad_variable(self):
+        info = {'index': 'magnetic local time', 'kind': 'longitude'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+
+    @raises(ValueError)
+    def test_orbit_long_w_missing_orbit_info(self):
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         update_files=True)
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+
+    @raises(ValueError)
+    def test_orbit_long_w_missing_orbit_index(self):
+        info = {'index': 'magnetic local time', 'kind': 'longitude'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+        # force index to None
+        self.testInst.orbits.orbit_index = None
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+
+    @raises(ValueError)
+    def test_orbit_mlt_w_bad_variable(self):
+        info = {'index': 'magnetic local time', 'kind': 'lt'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+
+    @raises(ValueError)
+    def test_orbit_mlt_w_missing_orbit_index(self):
+        info = {'index': 'magnetic local time', 'kind': 'lt'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+        # force index to None
+        self.testInst.orbits.orbit_index = None
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+
+    @raises(ValueError)
+    def test_orbit_polar_w_bad_variable(self):
+        info = {'index': 'magnetic local time', 'kind': 'polar'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+
+    @raises(ValueError)
+    def test_orbit_polar_w_missing_orbit_index(self):
+        info = {'index': 'magnetic local time', 'kind': 'polar'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+        # force index to None
+        self.testInst.orbits.orbit_index = None
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+
+    @raises(ValueError)
+    def test_orbit_orbibt_w_bad_variable(self):
+        info = {'index': 'magnetic local time', 'kind': 'orbit'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+
+    @raises(ValueError)
+    def test_orbit_orbit_w_missing_orbit_index(self):
+        info = {'index': 'magnetic local time', 'kind': 'orbit'}
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info=info, update_files=True)
+        # force index to None
+        self.testInst.orbits.orbit_index = None
+        self.testInst.load(2009, 1)
+        self.testInst.orbits.next()
+        
 
 class TestSpecificUTOrbits():
 
@@ -60,6 +148,30 @@ class TestSpecificUTOrbits():
         assert (self.testInst.index[-1] ==
                 (pds.datetime(2009, 1, 1)-relativedelta(seconds=1)))
 
+    @raises(Exception)
+    def test_single_orbit_call_too_many(self):
+        self.testInst.load(2008, 366)
+        self.testInst.orbits[17]
+
+    @raises(Exception)
+    def test_single_orbit_no_input(self):
+        self.testInst.load(2008, 366)
+        self.testInst.orbits[None]
+
+    def test_oribt_number_via_current_multiple_orbit_calls_in_day(self):
+        self.testInst.load(2009, 1)
+        self.testInst.bounds = (pysat.datetime(2009, 1, 1), None)
+        true_vals = np.arange(15)
+        true_vals[-1] = 0
+        test_vals = []
+        for i, inst in enumerate(self.testInst.orbits):
+            if i > 14:
+                break
+            test_vals.append(self.testInst.orbits.current)
+            print('Loaded orbit ', self.testInst.orbits.current)
+ 
+        assert np.all(test_vals == true_vals)
+
     def test_all_single_orbit_calls_in_day(self):
         self.testInst.load(2009, 1)
         ans = []
@@ -68,7 +180,7 @@ class TestSpecificUTOrbits():
         for i, inst in enumerate(self.testInst.orbits):
             if i > 14:
                 break
-
+            print('Loaded orbit ', self.testInst.orbits.current)
             ans.append(self.testInst.index[0] ==
                        (pds.datetime(2009, 1, 1) +
                        i*relativedelta(hours=1, minutes=37)))
@@ -165,8 +277,6 @@ class TestGeneralOrbitsMLT():
         saved_data = self.testInst.copy()
         self.testInst.load(2009, 1)
         self.testInst.orbits[0]
-        # debug
-        # print('0 ', saved_data.index, self.testInst.index, self.testInst.date)
         assert all(self.testInst.data == saved_data.data)
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
@@ -192,22 +302,16 @@ class TestGeneralOrbitsMLT():
         if self.testInst.orbits.num == 1:
             # equivalence only when only one orbit
             # some test settings can violate this assumption
-            # debug
-            # print('1 ', saved_data.index, self.testInst.index, self.testInst.date)
             assert all(self.testInst.data == saved_data.data)
         else:
             print('Skipping this part of test.')
         self.testInst.load(2009, 4)
         self.testInst.orbits[0]
-        # debug
-        # print('2 ', saved_data.index, self.testInst.index)
         assert all(self.testInst.data == saved_data.data)
         
         self.testInst.load(2009, 5)
         self.testInst.orbits.prev()
         if self.testInst.orbits.num == 1:
-            # debug
-            # print('3 ', saved_data.index, self.testInst.index, self.testInst.date)
             assert all(self.testInst.data == saved_data.data)
         else:
             print('Skipping this part of test.')
