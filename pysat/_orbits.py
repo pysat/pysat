@@ -187,7 +187,7 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError as err:
+            except KeyError as err:
                 raise ValueError(''.join((str(err), '\n',
                                           'Provided orbit index does not ',
                                           'exist in loaded data')))
@@ -320,7 +320,7 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError as err:
+            except KeyError as err:
                 raise ValueError(''.join((str(err), '\n',
                                           'Provided orbit index does not ',
                                           'appear to exist in loaded data')))
@@ -370,7 +370,7 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError as err:
+            except KeyError as err:
                 raise ValueError(''.join((str(err), '\n',
                                           'Provided orbit index does not ',
                                           'appear to exist in loaded data')))
