@@ -497,12 +497,7 @@ class Orbits(object):
                         delta_start = self.sat.index[-1] - date
                         delta_end = date + pds.DateOffset(days=1) \
                                     - self.sat.index[0]
-                        # debug printing
-                        # print('delta check ', delta_start, delta_end, self.orbit_period, 
-                        #                     ' if ', delta_start < self.orbit_period, 
-                        #                     ' else ', delta_end < self.orbit_period, 
-                        #                     date, 
-                        #                     self.num)
+
                         if delta_start <= self.orbit_period*1.05:
                             # near begining
                             # load previous file, then go forward one orbit
@@ -524,7 +519,7 @@ class Orbits(object):
                             if self.sat.index[0] > date + pds.DateOffset(days=1) \
                                                    - delta_end:
                                 # we could go forward a day, iterate over orbit, 
-                               # as above, and the data we have is the wrong day
+                                # as above, and the data we have is the wrong day
                                 # In this case, move back again.
                                 # happens when next day doesn't have data 
                                 # near begining of the day
