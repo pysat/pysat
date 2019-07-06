@@ -157,7 +157,7 @@ class Instrument(object):
         print(ivm['ionVelmeridional'])
 
         # Ionosphere profiles from GPS occultation
-        cosmic = pysat.Instrument('cosmic2013',
+        cosmic = pysat.Instrument('cosmic',
                                     'gps',
                                     'ionprf',
                                     altitude_bin=3)
