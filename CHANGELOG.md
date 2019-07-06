@@ -2,6 +2,73 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.0] - 2019-07-??
+ - New Features
+   - `pysatData` directory created in user's home directory if no directory specified
+   - Added preliminary support for `xarray` to the `instrument` object
+   - Support for `today`, `tomorrow`, and `yesterday` as datetime objects
+   - Added `model_utils`, featuring preliminary support for data-model comparison
+   - Added support for 1d median in seasonal averages
+   - Added routine to convert from kp to Ap
+   - Added `pyglow` integration support for python 3.x
+   - Improves input handling for datetime parameters that are more precise than just year, month, and day, where appropriate
+   - Added merging routines to allow combination of measured and forecasted Kp and F10.7 indexes into a single instrument object
+ - Code restructure
+   - Moved instrument templates and methods to subdirectories
+   - Moved utils into multiple subdirectories to aid with organization
+ - Instrument Updates
+   - NASA CDAWeb download now uses https protocol rather than FTP
+   - `_instrument.py` supports xarray
+   - Support for listing files from remote server
+   - COSMIC RO data unified into single instrument object
+   - Added support for DEMETER IAP
+   - Added support for DMSP IVM Level 1 data
+   - Added routines to update DMSP ephemeris and drifts
+   - Added warnings to instruments without download support
+   - Added support for ICON FUV and MIGHTI
+   - Added support for JRO ISR
+   - Added support for F10.7 and more Kp forecast products
+   - Added instrument templates for Madrigal, CDAWeb, and netcdf_pandas
+   - Added support for TIMED SABER
+   - Added support for UCAR TIEGCM
+   - Switched download methods for CDAWeb and COSMIC data to use `requests`
+   - Removed support for SuperDARN and SuperMAG downloads while server changes are sorted out
+ - Updates to travis configuration
+   - Tests run for python 2.7 and 3.7
+   - Added display port to test plots
+ - Updates to community docs
+   - Added Issue templates
+   - Added Pull Request Template
+   - Added note for PR to be made to develop, not master
+ - Style updates throughout
+   - Consistent documentation for docstrings and instruments
+   - Cleaned up commented code lines
+   - PEP8 scrub
+ - Documentation
+   - Added FAQ section
+   - Added "powered by pysat" logo
+   - Updated supported instruments
+ - Unit Test Updates
+   - Dropped instrument templates from coverage
+   - Added multiple output options for `pysat_testing` object to aid with constellation tests. Removed old constellation test objects.
+   - Added test data for space weather indices to speed up testing
+   - Cyclic data for test instruments now generated from single test method
+   - test objects for xarray added
+   - Added test for parsed delimited files
+   - Removed ftp downloads from travis tests, still will run locally
+ - Bug fixes
+   - `pandas.ix` notation replaced with `pandas.loc` and `pandas.iloc` throughout
+   - Fixed a bug that forced user into interactive mode in `ssnl.plot`
+   - Bug fixes and cleanup in demo codes
+   - Fix for orbit iteration when data is not loaded
+   - Fixed a bug in python 3.7 caused by change in behaviour of StopIteration (#207)
+   - Update to use of `len` on xarray to handle new behaviour (#130)
+   - Updated import of reload statements now that python 3.3 has reached end of life
+   - Updated deprecated behaviour of `get_duplicates`, `.apply`, and `.to_csv` when using pandas
+   - Fixed bug in assigning units to metadata (#162)
+   - Fixed timing bug introduced by reading only the first date/data pair from each line in the 45-day file data blocks
+
+
 ## [1.2.0] - 2018-09-24
  - SuperMAG support added
  - Increased data access robustness when using integer indexing
@@ -20,7 +87,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Added support for Defense Meteorological Satellite Program (DMSP) Ion Velocity Meter (IVM) data. Downloads from the Madrigal database (https://openmadrigal.org)
  - Added support for both sat_id and tag variations within filenames in the NASA CDAWeb template
  - Updated docummentation covering requirements for adding new instruments to pysat
- 
+
 ## [1.0.1] - 2018-05-06
  - Improved robustness of Meta object when working with high and low order data
  - Improved Meta test coverage
@@ -135,7 +202,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Removed spacepy and netCDF from setup.py requirements. Both of
   these packages require non-python code to function properly.
-  pysat now builds correctly as determined by travis-cl. 
+  pysat now builds correctly as determined by travis-cl.
   Installation instructions have been updated.
 
 ## [0.2.0] - 2015-04-27
@@ -148,4 +215,3 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Changed doy parameter in create_datetime_index to day.
 - Changed Instrument.query_files to update_files
 - Improved performance of cnofs_ivm code
-
