@@ -13,6 +13,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added `pyglow` integration support for python 3.x
    - Improves input handling for datetime parameters that are more precise than just year, month, and day, where appropriate
    - Added merging routines to allow combination of measured and forecasted Kp and F10.7 indexes into a single instrument object
+   - Files class internally refactored to improve robustness.
+   - Added feature to handle delimited filenames, in addition to fixed_width names.
+   - Exposed methods to allow users to more easily benefit from features in Files. Used to support remote_file_lists and make data downloads more convenient.
+   - Expanded testing with Files.
+   - Updated keyword names to be more complete. 'sec' to 'second', etc.
+   - Updated Files access mechanisms to remove deprecated calls and improve robustness.
  - Code restructure
    - Moved instrument templates and methods to subdirectories
    - Moved utils into multiple subdirectories to aid with organization
@@ -22,16 +28,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Support for listing files from remote server
    - COSMIC RO data unified into single instrument object
    - Added support for DEMETER IAP
-   - Added support for DMSP IVM Level 1 data
+   - Added support for DMSP IVM Level 1 data.  Uses OpenMadrigal.
    - Added routines to update DMSP ephemeris and drifts
    - Added warnings to instruments without download support
-   - Added support for ICON FUV and MIGHTI
+   - Added preliminary support for ICON FUV and MIGHTI
    - Added support for JRO ISR
    - Added support for F10.7 and more Kp forecast products
    - Added instrument templates for Madrigal, CDAWeb, and netcdf_pandas
    - Added support for TIMED SABER
    - Added support for UCAR TIEGCM
+   - OMNI HRO instrument now uses CDAWeb methods
    - Switched download methods for CDAWeb and COSMIC data to use `requests`
+   - Added Madrigal methods
    - Removed support for SuperDARN and SuperMAG downloads while server changes are sorted out
  - Updates to travis configuration
    - Tests run for python 2.7 and 3.7
@@ -60,7 +68,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - `pandas.ix` notation replaced with `pandas.loc` and `pandas.iloc` throughout
    - Fixed a bug that forced user into interactive mode in `ssnl.plot`
    - Bug fixes and cleanup in demo codes
-   - Fix for orbit iteration when data is not loaded
+   - Fix for orbit iteration when less than one orbit of data exists. Fix now covers multiple days with less than one orbit.
    - Fixed a bug in python 3.7 caused by change in behaviour of StopIteration (#207)
    - Update to use of `len` on xarray to handle new behaviour (#130)
    - Updated import of reload statements now that python 3.3 has reached end of life
