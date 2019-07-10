@@ -11,6 +11,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added support for 1d median in seasonal averages
    - Added routine to convert from kp to Ap
    - Added `pyglow` integration support for python 3.x
+   - Added option to check that loaded data has a unique and monotonic time index. Will be enforced in a future version.
+   - Refactored data access through the Instrument object and expanded testing.
+   - Added .empty attribute to Instrument object, True when no data loaded.
+   - Added .index access mechanism to Instrument object, providing consistent access to the pandas DatetimeIndex associated with loaded data.
+   - Added mechanism to return a list of loaded variables, .variables.
+   - Added Instrument method to concat input data with data already loaded into Instrument object.
+   - Updated format of printed dates to day month name and year, 01 January 2001.
+   - Added Instrument property .date, returns date of loaded data.
+   - Added download_updated_files, Instrument method that downloads any remote data not currently on the local machine.
+   - Added remote_date_range, an Instrument method that returns first and last date for remote data.
+   - Download method now defaults to most recent data (near now).
    - Improves input handling for datetime parameters that are more precise than just year, month, and day, where appropriate
    - Added merging routines to allow combination of measured and forecasted Kp and F10.7 indexes into a single instrument object
    - Files class internally refactored to improve robustness.
@@ -32,7 +43,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added routines to update DMSP ephemeris and drifts
    - Added warnings to instruments without download support
    - Added preliminary support for ICON FUV and MIGHTI
-   - Added support for JRO ISR
+   - Added support for Jicamarca Radio Observatory ISR
    - Added support for F10.7 and more Kp forecast products
    - Added instrument templates for Madrigal, CDAWeb, and netcdf_pandas
    - Added support for TIMED SABER
