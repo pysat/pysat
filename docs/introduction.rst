@@ -6,7 +6,10 @@ Every scientific instrument has unique properties though the general process for
 
 This document covers installation, a tutorial on pysat including demonstration code, coverage of supported instruments, an overview of adding new instruments to pysat, and an API reference.
 
+Logos
+-----
 
+Does your project use pysat?  If so, grab a "powered by pysat" logo!
 
-
- 
+.. image:: ./images/poweredbypysat.png
+   :align: center

@@ -1,7 +1,7 @@
 from nose.tools import raises
 import numpy as np
+
 import pysat
-import pandas as pds
 
 
 class TestConstellation:
@@ -58,7 +58,9 @@ class TestConstellation:
 
     def test_str(self):
         """Test Constellation:__str__."""
-        assert str(self.const) == "\npysat Constellation object:\ntesting\ntesting\n"
+        assert str(self.const) == \
+            "\npysat Constellation object:\ntesting\ntesting\n"
+
 
 class TestAdditionIdenticalInstruments:
     def setup(self):
@@ -70,34 +72,37 @@ class TestAdditionIdenticalInstruments:
         del self.const2
 
     def test_addition_identical(self):
-        self.const1.set_bounds(pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
-        self.const2.set_bounds(pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.const1.set_bounds(pysat.datetime(2008, 1, 1),
+                               pysat.datetime(2008, 2, 1))
+        self.const2.set_bounds(pysat.datetime(2008, 1, 1),
+                               pysat.datetime(2008, 2, 1))
 
-        bounds1 = [0,360]
+        bounds1 = [0, 360]
         label1 = 'longitude'
-        bounds2 = [-90,90]
+        bounds2 = [-90, 90]
         label2 = 'latitude'
-        bins3 = [0,24,24]
+        bins3 = [0, 24, 24]
         label3 = 'mlt'
         data_label = ['dummy1']
-        results1 = self.const1.add(bounds1, label1, bounds2, label2, bins3, label3,
-                data_label)
-        results2 = self.const2.add(bounds1, label1, bounds2, label2, bins3, label3,
-                data_label)
+        results1 = self.const1.add(bounds1, label1, bounds2, label2, bins3,
+                                   label3, data_label)
+        results2 = self.const2.add(bounds1, label1, bounds2, label2, bins3,
+                                   label3, data_label)
         med1 = results1['dummy1']['median']
         med2 = results2['dummy1']['median']
         for (left, right) in zip(med1, med2):
             assert left == right or \
-                   ( np.isnan(left) and np.isnan(right) )
+                   (np.isnan(left) and np.isnan(right))
 
-        #for i in range(len(med1)):
+        # for i in range(len(med1)):
         #    assert med1[i] == med2[i]
+
 
 class TestAdditionOppositeInstruments:
     def setup(self):
         """
-        The data in testadd1['dummy1'] is just ascending integers 0 to the
-        length of the other data, testadd2 has the same data but negative.
+        The data in ascend['dummy1'] is just ascending integers 0 to the
+        length of the other data, descend has the same data but negative.
         The addition of these two signals should be zero everywhere.
         """
         self.testC = pysat.Constellation(name='test_add_opposite')
@@ -106,54 +111,60 @@ class TestAdditionOppositeInstruments:
         del self.testC
 
     def test_addition_opposite_instruments(self):
-        self.testC.set_bounds(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
-        bounds1 = [0,360]
+        self.testC.set_bounds(pysat.datetime(2008, 1, 1),
+                              pysat.datetime(2008, 2, 1))
+        bounds1 = [0, 360]
         label1 = 'longitude'
-        bounds2 = [-90,90]
+        bounds2 = [-90, 90]
         label2 = 'latitude'
-        bins3 = [0,24,24]
+        bins3 = [0, 24, 24]
         label3 = 'mlt'
         data_label = 'dummy1'
-        results = self.testC.add(bounds1, label1, bounds2, label2, bins3, label3,
-                data_label)
-        med = results['dummy1']['median']
-        for i in med:
-            assert i == 0
+        results = self.testC.add(bounds1, label1, bounds2, label2, bins3,
+                                 label3, data_label)
+        med = np.array(results['dummy1']['median'])
+        assert abs(med).max() == 0
+
 
 class TestAdditionSimilarInstruments:
     def setup(self):
         """
-        All the data in dummy1 of testadd3 is the data in testadd1 + 10
-        So the addition of testadd1 and testadd3 should be no more than 10 off from
-        the addition of just testadd1
+        All the data in dummy1 of 'plus10' is the data in default + 10
+        So the addition of 'ascend' and 'plus10' should be no
+        more than 10 off from the addition of just 'ascend'
         TODO: actually check the math on this
         """
         self.testC = pysat.Constellation(name='test_add_similar')
-        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testadd1', clean_level='clean')])
+        self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testing',
+                                                          tag='ascend',
+                                                          clean_level='clean')])
 
     def teardown(self):
         del self.testC
         del self.refC
 
     def test_addition_similar_instruments(self):
-        self.testC.set_bounds(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
-        self.refC.set_bounds(pysat.datetime(2008,1,1), pysat.datetime(2008,2,1))
-        bounds1 = [0,360]
+        self.testC.set_bounds(pysat.datetime(2008, 1, 1),
+                              pysat.datetime(2008, 2, 1))
+        self.refC.set_bounds(pysat.datetime(2008, 1, 1),
+                             pysat.datetime(2008, 2, 1))
+        bounds1 = [0, 360]
         label1 = 'longitude'
-        bounds2 = [-90,90]
+        bounds2 = [-90, 90]
         label2 = 'latitude'
-        bins3 = [0,24,24]
+        bins3 = [0, 24, 24]
         label3 = 'mlt'
         data_label = 'dummy1'
-        results = self.testC.add(bounds1, label1, bounds2, label2, bins3, label3,
-                data_label)
-        refresults = self.refC.add(bounds1, label1, bounds2, label2, bins3, label3,
-                data_label)
-        med = results['dummy1']['median']
-        refmed = refresults['dummy1']['median']
-        diff = [med[i] - refmed[i] for i in range(len(med))]
-        for i in diff:
-            assert i <= 10 and i >= 0
+        results = self.testC.add(bounds1, label1, bounds2, label2, bins3,
+                                 label3, data_label)
+        refresults = self.refC.add(bounds1, label1, bounds2, label2, bins3,
+                                   label3, data_label)
+        med = np.array(results['dummy1']['median'])
+        refmed = np.array(refresults['dummy1']['median'])
+        diff = med - refmed
+        assert diff.min() >= 0
+        assert diff.max() <= 10
+
 
 class TestAdditionSingleInstrument:
     def setup(self):
@@ -163,7 +174,8 @@ class TestAdditionSingleInstrument:
         the bounds
         """
         insts = []
-        self.testInst = pysat.Instrument('pysat', 'testadd4', clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testing', 'fives',
+                                         clean_level='clean')
         insts.append(self.testInst)
         self.testConst = pysat.Constellation(insts)
 
@@ -172,7 +184,8 @@ class TestAdditionSingleInstrument:
 
     def test_addition_single_instrument(self):
         for inst in self.testConst:
-            inst.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2 ,1))
+            inst.bounds = (pysat.datetime(2008, 1, 1),
+                           pysat.datetime(2008, 2, 1))
         bounds1 = [0, 360]
         label1 = 'longitude'
         bounds2 = [-90, 90]
@@ -180,90 +193,90 @@ class TestAdditionSingleInstrument:
         bins3 = [0, 24, 24]
         label3 = 'mlt'
         data_label = 'dummy1'
-        results = self.testConst.add(bounds1, label1, bounds2, label2, bins3, label3,
-                data_label)
+        results = self.testConst.add(bounds1, label1, bounds2, label2, bins3,
+                                     label3, data_label)
 
         med = results['dummy1']['median']
         for i in med:
-            assert  i == 5
+            assert i == 5
+
 
 class TestDifferenceSameInstrument:
     def setup(self):
-        self.const = pysat.Constellation(name='test_diff')
+        self.const = pysat.Constellation(name='test_diff_same')
 
     def teardown(self):
         del self.const
 
-    def test_diff(self):
-        self.const.load(date=pysat.datetime(2008,1,1))
-        bounds = [('longitude', 'longitude', 0, 360, .5), 
-                ('latitude', 'latitude', -90, 90, .5), 
-                ('mlt', 'mlt', 0, 24, .1)]
-        results = self.const.difference(self.const[0], self.const[1], 
-                bounds, [('dummy1','dummy1')], cost_function)
+    def test_diff_same_instruments(self):
+        self.const.load(date=pysat.datetime(2008, 1, 1))
+        bounds = [('longitude', 'longitude', 0, 360, .5),
+                  ('latitude', 'latitude', -90, 90, .5),
+                  ('mlt', 'mlt', 0, 24, .1)]
+        results = self.const.difference(self.const[0], self.const[1],
+                                        bounds, [('dummy1', 'dummy1')],
+                                        cost_function)
         diff = results['dummy1']
         dist = results['dist']
-        #the instruments are identical, so the difference should be 0
-        #everywhere
-        for i in diff:
-            assert i == 0
-        for i in dist:
-            assert i == 0
+        # the instruments are identical, so the difference should be 0
+        # everywhere
+        assert abs(diff).max() == 0
+        assert abs(dist).max() == 0
 
-class TestDifferenceSmallInstruments(TestDifferenceSameInstrument):
-    def setup(self):
-        self.const = pysat.Constellation(name='test_diff_small')
 
 class TestDifferenceSimilarInstruments:
     def setup(self):
-        self.const = pysat.Constellation(name='test_diff2')
+        self.const = pysat.Constellation(name='test_diff_similar')
 
     def teardown(self):
         del self.const
 
     def test_diff_similar_instruments(self):
-        self.const.load(date=pysat.datetime(2008,1,1))
-        bounds = [('longitude', 'longitude', 0, 360, .5), 
-                ('latitude', 'latitude', -90, 90, .5), 
-                ('mlt', 'mlt', 0, 24, .1)]
-        results = self.const.difference(self.const[0], self.const[1], 
-                bounds, [('dummy1','dummy1')], cost_function)
+        self.const.load(date=pysat.datetime(2008, 1, 1))
+        bounds = [('longitude', 'longitude', 0, 360, .5),
+                  ('latitude', 'latitude', -90, 90, .5),
+                  ('mlt', 'mlt', 0, 24, .1)]
+        results = self.const.difference(self.const[0], self.const[1],
+                                        bounds, [('dummy1', 'dummy1')],
+                                        cost_function)
         diff = results['dummy1']
-        dist = results['dist']
-        for i in diff:
-            assert i == 5
+        assert np.all(abs(diff - 5)) == 0
 
-#test cost function for testing difference
+
+# test cost function for testing difference
 def cost_function(point1, point2):
     lat_diff = point1['latitude'] - point2['latitude']
     long_diff = point1['longitude'] - point2['longitude']
     return lat_diff*lat_diff + long_diff*long_diff
 
 
-
 class TestDataMod:
     """Test adapted from test_custom.py."""
     def setup(self):
-        '''Runs before every method to create a clean testing setup.'''
-        self.testConst = pysat.Constellation([pysat.Instrument('pysat','testing', tag='10', clean_level='clean')])
+        """Runs before every method to create a clean testing setup."""
+        self.testConst = \
+            pysat.Constellation([pysat.Instrument('pysat', 'testing',
+                                                  sat_id='10',
+                                                  clean_level='clean')])
 
     def teardown(self):
-        '''Runs after every method to clean up previous testing.'''
+        """Runs after every method to clean up previous testing."""
         del self.testConst
 
     def add(self, function, kind='add', at_pos='end', *args, **kwargs):
-        '''Adds a function to the object's custom queue'''
+        """Adds a function to the object's custom queue"""
         self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
 
     def test_single_adding_custom_function(self):
-        '''Test if custom function works correctly. Add function that returns pandas object.'''
+        """Test if custom function works correctly. Add function that returns
+        pandas object."""
         def custom1(inst):
-            d = 2.*inst.data.mlt
-            d.name='doubleMLT'
+            d = 2. * inst.data.mlt
+            d.name = 'doubleMLT'
             return d
 
-        self.add(custom1, 'add')  
-        self.testConst.load(2009,1)
-        ans = (self.testConst[0].data['doubleMLT'].values == 2.*self.testConst[0].data.mlt.values).all()
+        self.add(custom1, 'add')
+        self.testConst.load(2009, 1)
+        ans = (self.testConst[0].data['doubleMLT'].values ==
+               2. * self.testConst[0].data.mlt.values).all()
         assert ans
-

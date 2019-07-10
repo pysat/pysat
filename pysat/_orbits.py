@@ -5,7 +5,7 @@ import functools
 
 import numpy as np
 import pandas as pds
-from pysat import Series, DataFrame
+from pysat import Series
 
 
 class Orbits(object):
@@ -47,7 +47,7 @@ class Orbits(object):
     ::
 
         info = {'index':'longitude', 'kind':'longitude'}
-        vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b', 
+        vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                                 clean_level=None, orbit_info=info)
         start = pysat.datetime(2009,1,1)
         stop = pysat.datetime(2009,1,10)
@@ -103,14 +103,14 @@ class Orbits(object):
             raise ValueError('Unknown kind of orbit requested.')
 
         self._orbit_breaks = []
-        self.num = 0 #[]
+        self.num = 0
         self._current = 0
         self.orbit_index = index
 
     @property
     def current(self):
-        """Current orbit number. 
-        
+        """Current orbit number.
+
         Returns
         -------
         int or None
@@ -119,14 +119,14 @@ class Orbits(object):
             The first orbit for day n is generally also the last orbit
             on day n - 1. When iterating forward, the orbit will be labeled
             as first (0). When iterating backward, orbit labeled as the last.
-            
+
         """
-        
+
         if self._current > 0:
             return self._current - 1
         else:
             return None
-        
+
     def __getitem__(self, key):
         """Enable convenience notation for loading orbit into parent object.
 
@@ -146,12 +146,12 @@ class Orbits(object):
         if key < 0:
             self.load(key)
         else:
-            self.load(key+1)
+            self.load(key + 1)
 
     def _reset(self):
         # create null arrays for storing orbit info
         self._orbit_breaks = []
-        self.num = 0 #None
+        self.num = 0
         self._current = 0
 
     def _calcOrbits(self):
@@ -171,7 +171,7 @@ class Orbits(object):
     def _equaBreaks(self, orbit_index_period=24.):
         """Determine where breaks in an equatorial satellite orbit occur.
 
-        Looks for negative gradients in local time (or longitude) as well as 
+        Looks for negative gradients in local time (or longitude) as well as
         breaks in UT.
 
         Parameters
@@ -182,18 +182,22 @@ class Orbits(object):
 
         if self.orbit_index is None:
             raise ValueError('Orbit properties must be defined at ' +
-                             'pysat.Instrument object instantiation.' + 
+                             'pysat.Instrument object instantiation.' +
                              'See Instrument docs.')
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not exist in ' +
-                                 'loaded data')
+            except KeyError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'exist in loaded data')))
         # get difference in orbit index around the orbit
-        lt_diff = self.sat[self.orbit_index].diff()
+        lt_diff = self.sat[self.orbit_index]
+        if not self.sat.pandas_format:
+            lt_diff = lt_diff.to_pandas()
+        lt_diff = lt_diff.diff()
         # universal time values, from datetime index
-        ut_vals = Series(self.sat.data.index)
+        ut_vals = Series(self.sat.index)
         # UT difference
         ut_diff = ut_vals.diff()
 
@@ -245,7 +249,7 @@ class Orbits(object):
 
         # check if there is a UT break that is larger than orbital period, aka
         # a time gap
-        ut_change_vs_period = ( ut_diff > self.orbit_period )
+        ut_change_vs_period = (ut_diff > self.orbit_period)
         # characterize ut change using orbital period
         norm_ut = ut_diff / self.orbit_period
         # now, look for breaks because the length of time between samples is
@@ -270,7 +274,10 @@ class Orbits(object):
         # now that most problems in orbits should have been caught, look at
         # the time difference between orbits (not individual orbits)
         orbit_ut_diff = ut_vals[ind].diff()
-        orbit_lt_diff = self.sat[self.orbit_index][ind].diff()
+        if not self.sat.pandas_format:
+            orbit_lt_diff = self.sat[self.orbit_index].to_pandas()[ind].diff()
+        else:
+            orbit_lt_diff = self.sat[self.orbit_index][ind].diff()
         # look for time gaps between partial orbits. The full orbital time
         # period is not required between end of one orbit and begining of next
         # if first orbit is partial.  Also provides another general test of the
@@ -302,42 +309,45 @@ class Orbits(object):
     def _polarBreaks(self):
         """Determine where breaks in a polar orbiting satellite orbit occur.
 
-        Looks for sign changes in latitude (magnetic or geographic) as well as 
+        Looks for sign changes in latitude (magnetic or geographic) as well as
         breaks in UT.
         """
 
         if self.orbit_index is None:
             raise ValueError('Orbit properties must be defined at ' +
-                             'pysat.Instrument object instantiation.' + 
+                             'pysat.Instrument object instantiation.' +
                              'See Instrument docs.')
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not appear to ' +
-                                 'exist in loaded data')
+            except KeyError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'appear to exist in loaded data')))
 
         # determine where orbit index goes from positive to negative
         pos = (self.sat[self.orbit_index] >= 0)
-        npos = -pos
+        npos = np.logical_not(pos)
         change = (pos.values[:-1] & npos.values[1:]) | (npos.values[:-1] &
                                                         pos.values[1:])
 
         ind, = np.where(change)
         ind += 1
 
-        ut_diff = Series(self.sat.data.index).diff()
+        ut_diff = Series(self.sat.index).diff()
         ut_ind, = np.where(ut_diff / self.orbit_period > 0.95)
 
         if len(ut_ind) > 0:
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            # print 'Time Gap'
 
         # create orbitbreak index, ensure first element is always 0
-        if ind[0] != 0:
-            ind = np.hstack((np.array([0]), ind))
+        if len(ind) > 0:
+            if ind[0] != 0:
+                ind = np.hstack((np.array([0]), ind))
+        else:
+            ind = np.array([0])
         # number of orbits
         num_orbits = len(ind)
         # set index of orbit breaks
@@ -346,7 +356,8 @@ class Orbits(object):
         self.num = num_orbits
 
     def _orbitNumberBreaks(self):
-        """Determine where orbital breaks in a dataset with orbit numbers occur.
+        """Determine where orbital breaks in a dataset with orbit numbers
+        occur.
 
         Looks for changes in unique values.
 
@@ -359,22 +370,26 @@ class Orbits(object):
         else:
             try:
                 self.sat[self.orbit_index]
-            except ValueError:
-                raise ValueError('Provided orbit index does not appear to ' +
-                                 'exist in loaded data')
+            except KeyError as err:
+                raise ValueError(''.join((str(err), '\n',
+                                          'Provided orbit index does not ',
+                                          'appear to exist in loaded data')))
 
         # determine where the orbit index changes from one value to the next
-        uniq_vals = self.sat[self.orbit_index].unique()
+        uniq_vals = np.unique(self.sat[self.orbit_index].values)
         orbit_index = []
         for val in uniq_vals:
             idx, = np.where(val == self.sat[self.orbit_index].values)
             orbit_index.append(idx[0])
 
         # create orbitbreak index, ensure first element is always 0
-        if orbit_index[0] != 0:
-            ind = np.hstack((np.array([0]), orbit_index))
+        if len(orbit_index) > 0:
+            if orbit_index[0] != 0:
+                ind = np.hstack((np.array([0]), orbit_index))
+            else:
+                ind = orbit_index
         else:
-            ind = orbit_index
+            ind = np.array([0])
         # number of orbits
         num_orbits = len(ind)
         # set index of orbit breaks
@@ -403,22 +418,29 @@ class Orbits(object):
 
             # ensure user is requesting a particular orbit
             if orbit is not None:
+                # set up data access for both pandas and xarray
+                self.sat.data = self._fullDayData
                 # pull out requested orbit
                 if orbit == -1:
                     # load orbit data into data
-                    self.sat.data = self._fullDayData[self._orbit_breaks[self.num + orbit]:]
+                    self.sat.data = self.sat[self._orbit_breaks[self.num +
+                                                                orbit]:]
                     self._current = self.num + orbit + 1
                 elif ((orbit < 0) & (orbit >= -self.num)):
                     # load orbit data into data
-                    self.sat.data = self._fullDayData[
-                                    self._orbit_breaks[self.num + orbit]:self._orbit_breaks[self.num + orbit + 1]]
+                    self.sat.data = self.sat[self._orbit_breaks[self.num +
+                                                                orbit]:
+                                             self._orbit_breaks[self.num +
+                                                                orbit + 1]]
+
                     self._current = self.num + orbit + 1
                 elif (orbit < self.num) & (orbit != 0):
                     # load orbit data into data
-                    self.sat.data = self._fullDayData[self._orbit_breaks[orbit - 1]:self._orbit_breaks[orbit]]
+                    self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:
+                                             self._orbit_breaks[orbit]]
                     self._current = orbit
                 elif orbit == self.num:
-                    self.sat.data = self._fullDayData[self._orbit_breaks[orbit - 1]:]
+                    self.sat.data = self.sat[self._orbit_breaks[orbit - 1]:]
                     # recent addition, wondering why it wasn't there before,
                     # could just be a bug that is now fixed.
                     self._current = orbit
@@ -442,10 +464,10 @@ class Orbits(object):
             orbit number, 1 indexed
 
         Note
-        ----    
+        ----
         A day of data must be loaded before this routine functions properly.
         If the last orbit of the day is requested, it will automatically be
-        padded with data from the next day. The orbit counter will be 
+        padded with data from the next day. The orbit counter will be
         reset to 1.
         """
         if not self.sat.empty:  # ensure data exists
@@ -459,46 +481,88 @@ class Orbits(object):
                     # -2 second to last, etc.
                     orbit = self.num + 1 + orbit
 
-                if orbit == 1:
-                    # change from orig copied from _core, didn't look correct.
-                    # self._getBasicOrbit(orbit=2)
-                    try:
-                        true_date = self.sat.date  # .copy()
+                if orbit == self.num:
+                    # we get here if user asks for last orbit
+                    # this call is first to trap case where there is only one orbit (self.num=1)
+                    # which needs to be treated differently than a orbit=1 call
+                    if self.num != 1:
+                        # more than one orbit, go back one (simple call)
+                        # and then forward doing full logic for breaks across day
+                        self._getBasicOrbit(self.num - 1)
+                        self.next()
+                    else:
+                        # only one complete orbit in file, or less                        
+                        # check if we are close to begining or end of day
+                        date = self.sat.date                        
+                        delta_start = self.sat.index[-1] - date
+                        delta_end = date + pds.DateOffset(days=1) \
+                                    - self.sat.index[0]
 
+                        if delta_start <= self.orbit_period*1.05:
+                            # near begining
+                            # load previous file, then go forward one orbit
+                            self.sat.prev()
+                            self.next()
+                            if self.sat.index[-1] < date + delta_start:
+                                # we could go back a day, iterate over orbit,
+                                # as above, and the data we have is the wrong day
+                                # In this case, move forward again.
+                                # happens when previous day doesn't have data 
+                                # near end of the day
+                                self.next()
+                                
+                        elif delta_end <= self.orbit_period*1.05:
+                            # near end
+                            # load next file, then go back one orbit
+                            self.sat.next()
+                            self.prev()
+                            if self.sat.index[0] > date + pds.DateOffset(days=1) \
+                                                   - delta_end:
+                                # we could go forward a day, iterate over orbit, 
+                                # as above, and the data we have is the wrong day
+                                # In this case, move back again.
+                                # happens when next day doesn't have data 
+                                # near begining of the day
+                                self.prev()
+                        else:
+                            # not near begining or end, just get the last orbit 
+                            # available (only one)
+                            self._getBasicOrbit(orbit=-1)
+
+                elif orbit == 1:
+                    # user asked for first orbit
+                    try:
+                        # orbit could start file previous
+                        # check for this condition
+                        # store real date user wants
+                        true_date = self.sat.date
+                        # go back a day
                         self.sat.prev()
-                        # if and else added becuase of CINDI turn off 
+                        # if and else added becuase of CINDI turn off
                         # 6/5/2013, turn on 10/22/2014
                         # crashed when starting on 10/22/2014
                         # prev returned empty data
                         if not self.sat.empty:
+                            # get last orbit if there is data
+                            # this will deal with orbits across file cleanly
                             self.load(orbit=-1)
                         else:
+                            # no data, no previous data to account for
+                            # move back to original data, do simple load
+                            # of first orbit
                             self.sat.next()
                             self._getBasicOrbit(orbit=1)
                         # check that this orbit should end on the current day
-                        delta = true_date - self.sat.data.index[0]
-                        # print 'checking if first orbit should land on requested day'
-                        # print self.sat.date, self.sat.data.index[0], delta, delta >= self.orbit_period
+                        delta = true_date - self.sat.index[0]
                         if delta >= self.orbit_period:
                             # the orbit loaded isn't close enough to date
                             # to be the first orbit of the day, move forward
                             self.next()
                     except StopIteration:
-                        # print 'going for basic orbit'
                         self._getBasicOrbit(orbit=1)
                         # includes hack to appear to be zero indexed
                         print('Loaded Orbit:%i' % (self._current - 1))
                         # check if the first orbit is also the last orbit
-
-                elif orbit == self.num:
-                    # we get here if user asks for last orbit
-                    # make sure that orbit data goes across daybreak as needed
-                    # load previous orbit
-                    if self.num != 1:
-                        self._getBasicOrbit(self.num - 1)
-                        self.next()
-                    else:
-                        self._getBasicOrbit(orbit=-1)
 
                 elif orbit < self.num:
                     # load orbit data into data
@@ -508,8 +572,9 @@ class Orbits(object):
 
                 else:
                     # gone too far
-                    self.sat.data = DataFrame()
-                    raise Exception('Requested an orbit past total orbits for day')
+                    self.sat.data = self.sat._null_data
+                    raise Exception('Requested an orbit past total orbits ' +
+                                    'for day')
             else:
                 raise Exception('Must set an orbit')
         else:
@@ -536,7 +601,7 @@ class Orbits(object):
                 # End of orbit may occur on the next day
                 load_next = True
                 if self.sat._iter_type == 'date':
-                    delta = self.sat.date - self.sat.data.index[-1] \
+                    delta = self.sat.date - self.sat.index[-1] \
                             + pds.Timedelta('1 day')
                     if delta >= self.orbit_period:
                         # don't need to load the next day because this orbit
@@ -547,16 +612,17 @@ class Orbits(object):
                     # the end of the user's desired orbit occurs tomorrow, need
                     # to form a complete orbit save this current orbit, load
                     # the next day, combine data, select the correct orbit
-                    temp_orbit_data = self.sat.data.copy()
+                    temp_orbit_data = self.sat.copy()
                     try:
                         # loading next day/file clears orbit breaks info
                         self.sat.next()
                         if not self.sat.empty:
                             # combine this next day's data with previous last
                             # orbit, grab the first one
-                            self.sat.data = pds.concat(
-                                [temp_orbit_data[:self.sat.data.index[0] -
-                                                 pds.DateOffset(microseconds=1)],
+                            final_val = self.sat.index[0] \
+                                - pds.DateOffset(microseconds=1)
+                            self.sat.data = self.sat.concat_data(
+                                [temp_orbit_data[:final_val],
                                  self.sat.data])
                             self._getBasicOrbit(orbit=1)
                         else:
@@ -573,7 +639,8 @@ class Orbits(object):
             elif self._current == (self.num):
                 # at the last orbit, need to be careful about getting the next
                 # orbit save this current orbit and load the next day
-                temp_orbit_data = self.sat.data.copy()
+                # temp_orbit_data = self.sat.data.copy()
+                temp_orbit_data = self.sat.copy()
                 # load next day, which clears orbit breaks info
                 self.sat.next()
                 # combine this next day orbit with previous last orbit to
@@ -592,8 +659,8 @@ class Orbits(object):
                     if pad_next:
                         # orbit went across day break, stick old orbit onto new
                         # data and grab second orbit (first is old)
-                        self.sat.data = pds.concat(
-                            [temp_orbit_data[:self.sat.data.index[0] -
+                        self.sat.data = self.sat.concat_data(
+                            [temp_orbit_data[:self.sat.index[0] -
                                              pds.DateOffset(microseconds=1)],
                              self.sat.data])
                         # select second orbit of combined data
@@ -604,16 +671,16 @@ class Orbits(object):
                         self._getBasicOrbit(orbit=1)
                         if self.sat._iter_type == 'date':
                             delta = self.sat.date + pds.DateOffset(days=1) \
-                                    - self.sat.data.index[0]
+                                    - self.sat.index[0]
 
                             if delta < self.orbit_period:
-                                # this orbits end occurs on the next day, though
-                                # we grabbed the first orbit, missing data
-                                # means the first available orbit in the data
-                                # is actually the last for the day. Resetting to
-                                # the second to last orbit and then calling
-                                # next() will get the last orbit, accounting
-                                # for tomorrow's data as well.
+                                # this orbits end occurs on the next day,
+                                # though we grabbed the first orbit, missing
+                                # data means the first available orbit in the
+                                # datais actually the last for the day.
+                                # Resetting to the second to last orbit and t
+                                # hen callingnext() will get the last orbit,
+                                # accounting for tomorrow's data as well.
                                 self._current = self.num - 1
                                 self.next()
                 else:
@@ -643,9 +710,11 @@ class Orbits(object):
                 print('Loaded Orbit:%i' % (self._current - 1))
 
             else:
-                raise Exception('You ended up where nobody should ever be. ' +
-                                'Talk to someone about this fundamental ' +
-                                'failure.')
+                raise Exception(' '.join(('You ended up where nobody should',
+                                          'ever be. Talk to someone about',
+                                          'this fundamental failure or open',
+                                          'an issue at',
+                                          'www.github.com/rstonback/pysat')))
 
         else:  # no data
             while self.sat.empty:
@@ -683,7 +752,7 @@ class Orbits(object):
 
                 load_prev = True
                 if self.sat._iter_type == 'date':
-                    delta = self.sat.data.index[-1] - self.sat.date
+                    delta = self.sat.index[-1] - self.sat.date
                     if delta >= self.orbit_period:
                         # don't need to load the prev day because this orbit
                         # ends more than a orbital period from start of today's
@@ -692,15 +761,16 @@ class Orbits(object):
 
                 if load_prev:
                     # need to save this current orbit and load the prev day
-                    temp_orbit_data = self.sat.data[self.sat.date:]
+                    temp_orbit_data = self.sat[self.sat.date:]
                     # load previous day, which clears orbit breaks info
-    
+
                     try:
                         self.sat.prev()
                         # combine this next day orbit with previous last orbit
                         if not self.sat.empty:
-                            self.sat.data = pds.concat([self.sat.data,
-                                                        temp_orbit_data])
+                            self.sat.data = \
+                                self.sat.concat_data([self.sat.data,
+                                                      temp_orbit_data])
                             # select first orbit of combined data
                             self._getBasicOrbit(orbit=-1)
                         else:
@@ -708,11 +778,11 @@ class Orbits(object):
                             self._getBasicOrbit(orbit=1)
                     except StopIteration:
                         # if loading the first orbit, of first day of data,
-                        # you'll end up here as the attempt to make a full orbit
-                        # will move the date backwards, and StopIteration is
-                        # made. everything is already ok, just move along
+                        # you'll end up here as the attempt to make a full
+                        # orbit will move the date backwards, and StopIteration
+                        # is made. everything is already ok, just move along
                         pass
-    
+
                     del temp_orbit_data
 
                 print('Loaded Orbit:%i' % (self._current - 1))
@@ -733,7 +803,7 @@ class Orbits(object):
                 if not self.sat.empty:
                     load_prev = True
                     if self.sat._iter_type == 'date':
-                        delta = self.sat.date - self.sat.data.index[-1] \
+                        delta = self.sat.date - self.sat.index[-1] \
                                 + pds.Timedelta('1 day')
                         if delta >= self.orbit_period:
                             # don't need to load the prev day because this
@@ -742,15 +812,15 @@ class Orbits(object):
                             load_prev = False
 
                     if load_prev:
-                        self.sat.data = pds.concat([self.sat.data,
-                                                    temp_orbit_data])
+                        self.sat.data = self.sat.concat_data([self.sat.data,
+                                                              temp_orbit_data])
                         # select second to last orbit of combined data
                         self._getBasicOrbit(orbit=-2)
                     else:
                         # padding from the previous is needed
                         self._getBasicOrbit(orbit=-1)
                         if self.sat._iter_type == 'date':
-                            delta = self.sat.date - self.sat.data.index[-1] \
+                            delta = self.sat.date - self.sat.index[-1] \
                                     + pds.Timedelta('1 day')
                             if delta < self.orbit_period:
                                 self._current = self.num
@@ -764,11 +834,12 @@ class Orbits(object):
                 print('Loaded Orbit:%i' % (self._current - 1))
 
             else:
-                raise Exception('You ended up where noone should ever be. ' +
-                                'Talk to someone about this fundamental ' +
-                                'failure.')
+                raise Exception(' '.join(('You ended up where nobody should',
+                                          'ever be. Talk to someone about',
+                                          'this fundamental failure or open',
+                                          'an issue at',
+                                          'www.github.com/rstonback/pysat')))
             # includes hack to appear to be zero indexed
-            #print('Loaded Orbit:%i' % (self._current - 1))
         else:
             # no data
             while self.sat.empty:
@@ -786,7 +857,7 @@ class Orbits(object):
         ::
 
             for inst in inst.orbits:
-                print 'next available orbit ', inst.data
+                print('next available orbit ', inst.data)
 
         Note
         ----
@@ -798,18 +869,9 @@ class Orbits(object):
         while self.sat.empty:
             self.sat.next()
 
-        # if self.sat._iter_type == 'file':
-        #     for fname in self.sat._iter_list:
-        #         self.sat.load(fname=fname)
-        #         break
-        #
-        # elif self.sat._iter_type == 'date':
-        #     for date in self.sat._iter_list:
-        #         self.sat.load(date=date)
-        #         break
-        # else:
-        #     raise ValueError('Iteration type not set')
-    
         while True:
-            self.next()
-            yield self.sat
+            try:
+                self.next()
+                yield self.sat
+            except StopIteration:
+                return

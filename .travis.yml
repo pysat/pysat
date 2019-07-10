@@ -1,14 +1,17 @@
 language: python
-python:
-  - "2.7"
-  - "3.6"
-sudo: false
+matrix:
+  include:
+    - python: 2.7.14
+      services: xvfb
+    - python: 3.7
+      dist: xenial
+      services: xvfb
 
 cache: pip
-cache:		
-   directories:		
-      - ../pyglow
- 
+cache:
+   directories:
+      - ../pyglow_cache
+
 addons:
   apt:
     packages:
@@ -18,65 +21,43 @@ addons:
 # Setup anaconda
 before_install:
   #- apt-get update
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q --yes conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose pandas statsmodels coverage netCDF4 ipython
+  - pip install coveralls
+  - pip install future
+  - pip install matplotlib
+  - pip install netCDF4
+  - pip install beautifulsoup4
+  - pip install lxml
+  - pip install pysatCDF >/dev/null
+  # install pyglow, space science models
+  - cd ..
+  - echo 'cloning pyglow'
+  - git clone https://github.com/timduly4/pyglow.git >/dev/null
+  - echo 'installing pyglow'
+  - cd ./pyglow
+  - make -C src/pyglow/models source >/dev/null
+  - python setup.py install >/dev/null
+  - cd ..
 
 # command to install dependencies
 install:
-  # Coverage packages are on my binstar channel
-  # - conda install --yes -c dan_blanchard python-coveralls nose-cov
   - source activate test-environment
-  - pip install coveralls
-  - pip install pysatCDF >/dev/null
-    # install pyglow, space science models
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      travis_wait 30 pip install ipdb --user;
-      cd ..;
-    fi
-  - pwd
-  - ls
-   # check if there is a partial download of pyglow, remove if true
-  - export PYGLOW_DIR=./pyglow
-  - if [[ -d "$PYGLOW_DIR" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      export PYGLOW_SIZE=($(du -s $PYGLOW_DIR));
-      echo 'PYGLOW_SIZE' $PYGLOW_SIZE;
-      export CHECK_SIZE=50000;
-      if [[ "${PYGLOW_SIZE}" -lt "$CHECK_SIZE" ]]; then
-        rm -r $PYGLOW_DIR;
-        echo 'removing pyglow directory';
-      fi
-    fi
-    # If pyglow exists, install it
-  - if [[ -d "$PYGLOW_DIR" && -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      cd $PYGLOW_DIR;
-      python setup.py install;
-      cd ..;
-    fi
-    # If no pyglow, clone, then run script
-  - if [[ ! -d "$PYGLOW_DIR" || ! -e "$PYGLOW_DIR/setup.py" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      travis_wait 40 git clone https://github.com/timduly4/pyglow.git;
-      cd $PYGLOW_DIR;
-      travis_wait 40 ./pyglow_install.sh >/dev/null;
-      cd ..;
-    fi
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      cd pysat;
-    fi
+  # set up data directory
+  - mkdir /home/travis/build/rstoneback/pysatData
   # install pysat
-  - "python setup.py install"
+  - cd /home/travis/build/rstoneback/pysat
+  - python setup.py install
+
+before_script:
+  # set up display screen
+  - export DISPLAY=:99.0
+  - if [[ $TRAVIS_PYTHON_VERSION < "3.7" ]]; then
+      sh -e /etc/init.d/xvfb start;
+      sleep 3;
+    fi
+
 # command to run tests
-script: 
-  - nosetests -vs --with-coverage --cover-package=pysat
+script:
+ - nosetests -vs --with-coverage --cover-package=pysat
+
 after_success:
-  coveralls
+ - coveralls

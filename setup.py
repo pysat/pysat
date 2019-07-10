@@ -21,19 +21,25 @@ with open(os.path.join(here, version_filename)) as version_file:
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-install_requires=['pandas', 'numpy',  'sgp4', 'pyEphem', 'requests',
-                  'pysatCDF', 'apexpy', 'aacgmv2', 'pysatMagVect', 
-                  'madrigalWeb', 'h5py']
+if sys.version_info.major == 2:
+    install_requires = ['xarray<0.12', 'pandas>=0.23, <0.25',
+                        'numpy>=1.12, <1.17', 'scipy<1.3', 'sgp4',
+                        'pyEphem', 'requests', 'beautifulsoup4',
+                        'lxml', 'pysatCDF', 'apexpy', 'aacgmv2',
+                        'pysatMagVect', 'madrigalWeb', 'h5py',
+                        'PyForecastTools', 'pyglow']
+else:
+    install_requires = ['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
+                        'sgp4', 'pyEphem', 'requests', 'beautifulsoup4',
+                        'lxml', 'pysatCDF', 'apexpy', 'aacgmv2',
+                        'pysatMagVect', 'madrigalWeb', 'h5py',
+                        'PyForecastTools', 'pyglow']
 
-# keep pyglow out of requirements until pip installable
-# if sys.version_info[0] < 3:
-#     # TODO Remove when pyglow works in python 3
-#     install_requires.append('pyglow')
-
+# all packages after pysatCDF are excluded if on ReadTheDocs
 if on_rtd:
     # read the docs doesn't do Fortran
     # remove pysatCDF through h5py
-    install_requires = install_requires[:-6]
+    install_requires = install_requires[:-8]
 
 setup(
     name='pysat',
@@ -41,8 +47,8 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version=version,
-    
-    description='Supports science data analysis across measurement platforms',    
+
+    description='Supports science data analysis across measurement platforms',
     long_description=long_description,
     # The project's main homepage.
     url='http://github.com/rstoneback/pysat',
@@ -51,10 +57,10 @@ setup(
     author='Russell Stoneback',
     author_email='rstoneba@utdallas.edu',
 
-    
-    package_data = {'pysat': ['pysat/version*.txt']},
+
+    package_data={'pysat': ['pysat/version*.txt']},
     include_package_data=True,
-    
+
     # Choose your license
     license='BSD',
 
@@ -81,10 +87,11 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 
     # What does your project relate to?
-    #keywords='sample setuptools development',
+    # keywords='sample setuptools development',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
@@ -94,5 +101,5 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires = install_requires,
+    install_requires=install_requires,
 )

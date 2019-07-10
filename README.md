@@ -11,9 +11,8 @@
 
 
 The Python Satellite Data Analysis Toolkit (pysat) is a package providing a simple and flexible interface
-for downloading, loading, cleaning, managing, processing, and analyzing scientific 
-measurements. Though pysat was initially designed for in-situ
-satellite based measurements it aims to support all instruments in space science.
+for downloading, loading, cleaning, managing, processing, and analyzing scientific
+measurements. Although pysat was initially designed for in situ satellite observations, it now supports many different types of ground- and space-based measurements.
 
 Full [Documentation](http://pysat.readthedocs.io/en/latest/index.html)
 
@@ -22,17 +21,18 @@ JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 # Main Features
 * Instrument independent analysis routines.
 * Instrument object providing an interface for downloading and analyzing a wide variety of science data sets.
-  * Uses pandas for the underlying data structure;
+  * Uses pandas or xarray for the underlying data structure;
   capable of handling the many forms scientific measurements take in a consistent manner.
-  * Science data pipeline tasks of identifying files, loading, cleaning, and modifying
-  data sets are built into the instrument object.
-  * Supports metadata consistent with the netCDF CF-1.6 standard. Each variable 
+  * Standard scientific data handling tasks (e.g., identifying, downloading,
+  and loading files and cleaning and modifying data) are built into the
+  Instrument object.
+  * Supports metadata consistent with the netCDF CF-1.6 standard. Each variable
   has a name, long name, and units. Note units are informational only.
 * Simplifies data management
   * Iterator support for loading data by day/file/orbit, independent of data storage details.
   * Orbits are calculated on the fly from loaded data and span day breaks.
   * Iterate over custom seasons
-* Supports rigorous time-series calculations that require spin up/down time across day/file breaks. 
+* Supports rigorous time-series calculations that require spin up/down time across day, orbit, and file breaks.
 * Includes helper functions to reduce the barrier in adding new science instruments to pysat
 
 # Installation
@@ -50,4 +50,3 @@ pip install pysat
   ```
   pip install netCDF4
   ```
-  
