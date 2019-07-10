@@ -39,7 +39,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Support for listing files from remote server
    - COSMIC RO data unified into single instrument object
    - Added support for DEMETER IAP
-   - Added support for DMSP IVM Level 1 data.  Uses OpenMadrigal.
+   - Added support for DMSP IVM Level 2 data.  Uses OpenMadrigal.
    - Added routines to update DMSP ephemeris and drifts
    - Added warnings to instruments without download support
    - Added preliminary support for ICON FUV and MIGHTI
