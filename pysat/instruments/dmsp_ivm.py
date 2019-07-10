@@ -56,7 +56,7 @@ from .methods import nasa_cdaweb as cdw
 
 platform = 'dmsp'
 name = 'ivm'
-tags = {'utd': 'UTDallas DMSP data processing', '': 'Level 1 data processing'}
+tags = {'utd': 'UTDallas DMSP data processing', '': 'Level 2 data processing'}
 sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
            'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
            'f18': ['']}

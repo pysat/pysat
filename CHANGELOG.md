@@ -2,6 +2,92 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.0] - 2019-07-??
+ - New Features
+   - `pysatData` directory created in user's home directory if no directory specified
+   - Added preliminary support for `xarray` to the `instrument` object
+   - Support for `today`, `tomorrow`, and `yesterday` as datetime objects
+   - Added `model_utils`, featuring preliminary support for data-model comparison
+   - Added support for 1d median in seasonal averages
+   - Added routine to convert from kp to Ap
+   - Added `pyglow` integration support for python 3.x
+   - Added option to check that loaded data has a unique and monotonic time index. Will be enforced in a future version.
+   - Refactored data access through the Instrument object and expanded testing.
+   - Added .empty attribute to Instrument object, True when no data loaded.
+   - Added .index access mechanism to Instrument object, providing consistent access to the pandas DatetimeIndex associated with loaded data.
+   - Added mechanism to return a list of loaded variables, .variables.
+   - Added Instrument method to concat input data with data already loaded into Instrument object.
+   - Updated format of printed dates to day month name and year, 01 January 2001.
+   - Added Instrument property .date, returns date of loaded data.
+   - Added download_updated_files, Instrument method that downloads any remote data not currently on the local machine.
+   - Added remote_date_range, an Instrument method that returns first and last date for remote data.
+   - Download method now defaults to most recent data (near now).
+   - Improves input handling for datetime parameters that are more precise than just year, month, and day, where appropriate
+   - Added merging routines to allow combination of measured and forecasted Kp and F10.7 indexes into a single instrument object
+   - Files class internally refactored to improve robustness.
+   - Added feature to handle delimited filenames, in addition to fixed_width names.
+   - Exposed methods to allow users to more easily benefit from features in Files. Used to support remote_file_lists and make data downloads more convenient.
+   - Expanded testing with Files.
+   - Updated keyword names to be more complete. 'sec' to 'second', etc.
+   - Updated Files access mechanisms to remove deprecated calls and improve robustness.
+ - Code restructure
+   - Moved instrument templates and methods to subdirectories
+   - Moved utils into multiple subdirectories to aid with organization
+ - Instrument Updates
+   - NASA CDAWeb download now uses https protocol rather than FTP
+   - `_instrument.py` supports xarray
+   - Support for listing files from remote server
+   - COSMIC RO data unified into single instrument object
+   - Added support for DEMETER IAP
+   - Added support for DMSP IVM Level 1 data.  Uses OpenMadrigal.
+   - Added routines to update DMSP ephemeris and drifts
+   - Added warnings to instruments without download support
+   - Added preliminary support for ICON FUV and MIGHTI
+   - Added support for Jicamarca Radio Observatory ISR
+   - Added support for F10.7 and more Kp forecast products
+   - Added instrument templates for Madrigal, CDAWeb, and netcdf_pandas
+   - Added support for TIMED SABER
+   - Added support for UCAR TIEGCM
+   - OMNI HRO instrument now uses CDAWeb methods
+   - Switched download methods for CDAWeb and COSMIC data to use `requests`
+   - Added Madrigal methods
+   - Removed support for SuperDARN and SuperMAG downloads while server changes are sorted out
+ - Updates to travis configuration
+   - Tests run for python 2.7 and 3.7
+   - Added display port to test plots
+ - Updates to community docs
+   - Added Issue templates
+   - Added Pull Request Template
+   - Added note for PR to be made to develop, not master
+ - Style updates throughout
+   - Consistent documentation for docstrings and instruments
+   - Cleaned up commented code lines
+   - PEP8 scrub
+ - Documentation
+   - Added FAQ section
+   - Added "powered by pysat" logo
+   - Updated supported instruments
+ - Unit Test Updates
+   - Dropped instrument templates from coverage
+   - Added multiple output options for `pysat_testing` object to aid with constellation tests. Removed old constellation test objects.
+   - Added test data for space weather indices to speed up testing
+   - Cyclic data for test instruments now generated from single test method
+   - test objects for xarray added
+   - Added test for parsed delimited files
+   - Removed ftp downloads from travis tests, still will run locally
+ - Bug fixes
+   - `pandas.ix` notation replaced with `pandas.loc` and `pandas.iloc` throughout
+   - Fixed a bug that forced user into interactive mode in `ssnl.plot`
+   - Bug fixes and cleanup in demo codes
+   - Fix for orbit iteration when less than one orbit of data exists. Fix now covers multiple days with less than one orbit.
+   - Fixed a bug in python 3.7 caused by change in behaviour of StopIteration (#207)
+   - Update to use of `len` on xarray to handle new behaviour (#130)
+   - Updated import of reload statements now that python 3.3 has reached end of life
+   - Updated deprecated behaviour of `get_duplicates`, `.apply`, and `.to_csv` when using pandas
+   - Fixed bug in assigning units to metadata (#162)
+   - Fixed timing bug introduced by reading only the first date/data pair from each line in the 45-day file data blocks
+
+
 ## [1.2.0] - 2018-09-24
  - SuperMAG support added
  - Increased data access robustness when using integer indexing
@@ -20,7 +106,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
  - Added support for Defense Meteorological Satellite Program (DMSP) Ion Velocity Meter (IVM) data. Downloads from the Madrigal database (https://openmadrigal.org)
  - Added support for both sat_id and tag variations within filenames in the NASA CDAWeb template
  - Updated docummentation covering requirements for adding new instruments to pysat
- 
+
 ## [1.0.1] - 2018-05-06
  - Improved robustness of Meta object when working with high and low order data
  - Improved Meta test coverage
@@ -135,7 +221,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Removed spacepy and netCDF from setup.py requirements. Both of
   these packages require non-python code to function properly.
-  pysat now builds correctly as determined by travis-cl. 
+  pysat now builds correctly as determined by travis-cl.
   Installation instructions have been updated.
 
 ## [0.2.0] - 2015-04-27
@@ -148,4 +234,3 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Changed doy parameter in create_datetime_index to day.
 - Changed Instrument.query_files to update_files
 - Improved performance of cnofs_ivm code
-
