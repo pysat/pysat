@@ -191,6 +191,10 @@ def scale_units(out_unit, in_unit):
         if in_unit.lower() in accepted_units[kk]:
             in_key = kk
 
+    if out_key is None and in_key is None:
+        raise ValueError(''.join(['Cannot scale {:s} and '.format(in_unit)
+                                  '{:s}, unknown units'.format(out_unit)]))
+
     if out_key is None:
         raise ValueError('Unknown output unit {:}'.format(out_unit))
 
