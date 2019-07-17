@@ -31,7 +31,8 @@ class TestBasics():
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
-        self.vel_units = ["m/s", "cm/s", "km/s"]
+        self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
+                          'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -150,21 +151,61 @@ class TestBasics():
         for out_unit in self.vel_units:
             scale = coords.scale_units(out_unit, "m/s")
 
-            if out_unit == "m/s":
+            if out_unit.find("m") == 0:
                 assert scale == 1.0
-            elif out_unit.find("km/s") == 0:
+            elif out_unit.find("km") == 0:
                 assert scale == 0.001
             else:
                 assert scale == 100.0
 
-    def test_scale_units_bad(self):
-        """Test scale_units for mismatched input"""
+    def test_scale_units_bad_output(self):
+        """Test scale_units for unknown output unit"""
 
         assert_raises(ValueError, coords.scale_units, "happy", "m")
+        try:
+            coords.scale_units('happy', 'm')
+            verr = None
+        except ValueError as verr:
+            assert str(verr).find('output unit') > 0
+
+    def test_scale_units_bad_input(self):
+        """Test scale_units for unknown input unit"""
+
         assert_raises(ValueError, coords.scale_units, "m", "happy")
+        try:
+            coords.scale_units('m', 'happy')
+            verr = None
+        except ValueError as verr:
+            assert str(verr).find('input unit') > 0
+
+    def test_scale_units_bad_match_pairs(self):
+        """Test scale_units for mismatched input for all pairings"""
+
         assert_raises(ValueError, coords.scale_units, "m", "m/s")
         assert_raises(ValueError, coords.scale_units, "m", "deg")
         assert_raises(ValueError, coords.scale_units, "h", "km/s")
+
+    def test_scale_units_bad_match_message(self):
+        """Test scale_units error message for mismatched input"""
+
+        assert_raises(ValueError, coords.scale_units, "m", "m/s")
+        try:
+            coords.scale_units('m', 'm/s')
+            verr = None
+        except ValueError as verr:
+            assert str(verr).find('Cannot scale') >= 0
+            assert str(verr).find('unknown units') < 0
+
+    def test_scale_units_both_bad(self):
+        """Test scale_units for bad input and output"""
+
+        assert_raises(ValueError, coords.scale_units, "happy", "sad")
+        try:
+            coords.scale_units('happy', 'sad')
+            verr = None
+        except ValueError as verr:
+            assert str(verr).find('unknown units') > 0
+
 
     #####################################
     # Geodetic / Geocentric conversions
