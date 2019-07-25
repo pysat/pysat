@@ -3,10 +3,14 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.X.X] - 2019-07-17
+- New Features
+   - Added new velocity format options to utils.coords.scale_units
+   - Improved failure messages for utils.coords.scale_units
+   - Added some tests for model_utils
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
 
-## [2.0.0] - 2019-07-??
+## [2.0.0] - 2019-07-11
  - New Features
    - `pysatData` directory created in user's home directory if no directory specified
    - Added preliminary support for `xarray` to the `instrument` object

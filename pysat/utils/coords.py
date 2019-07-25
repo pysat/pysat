@@ -176,36 +176,60 @@ def scale_units(out_unit, in_unit):
                       'rad': ['rad', 'radian', 'radians'],
                       'h': ['h', 'hr', 'hrs', 'hours'],
                       'm': ['m', 'km', 'cm'],
-                      'm/s': ['m/s', 'cm/s', 'km/s']}
+                      'm/s': ['m/s', 'cm/s', 'km/s', 'm s$^{-1}$',
+                              'cm s$^{-1}$', 'km s$^{-1}$', 'm s-1', 'cm s-1',
+                              'km s-1']}
+    replace_str = {'/s': [' s$^{-1}$', ' s-1']}
 
     scales = {'deg': 180.0, 'rad': np.pi, 'h': 12.0,
               'm': 1.0, 'km': 0.001, 'cm': 100.0,
               'm/s': 1.0, 'cm/s': 100.0, 'km/s': 0.001}
 
     # Test input and determine transformation type
-    out_key = None
-    in_key = None
+    out_key = out_unit.lower()
+    in_key = in_unit.lower()
     for kk in accepted_units.keys():
-        if out_unit.lower() in accepted_units[kk]:
+        if out_key in accepted_units.keys() and in_key in accepted_units.keys():
+            break
+
+        if(out_key not in accepted_units.keys() and
+           out_unit.lower() in accepted_units[kk]):
             out_key = kk
-        if in_unit.lower() in accepted_units[kk]:
+        if(in_key not in accepted_units.keys() and
+           in_unit.lower() in accepted_units[kk]):
             in_key = kk
 
-    if out_key is None:
+    if(out_key not in accepted_units.keys() and
+       in_key not in accepted_units.keys()):
+        raise ValueError(''.join(['Cannot scale {:s} and '.format(in_unit),
+                                  '{:s}, unknown units'.format(out_unit)]))
+
+    if out_key not in accepted_units.keys():
         raise ValueError('Unknown output unit {:}'.format(out_unit))
 
-    if in_key is None:
+    if in_key not in accepted_units.keys():
         raise ValueError('Unknown input unit {:}'.format(in_unit))
 
     if out_key == 'm' or out_key == 'm/s' or in_key == 'm' or in_key == 'm/s':
         if in_key != out_key:
             raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
                                                                  in_unit))
-        # Recast units as keys for the scales dictionary
-        out_key = out_unit
-        in_key = in_unit
+        # Recast units as keys for the scales dictionary and ensure that
+        # the format is consistent
+        rkey = ''
+        for rr in replace_str.keys():
+            if out_key.find(rr):
+                rkey = rr
 
-    unit_scale = scales[out_key.lower()] / scales[in_key.lower()]
+        out_key = out_unit.lower()
+        in_key = in_unit.lower()
+
+        if rkey in replace_str.keys():
+            for rval in replace_str[rkey]:
+                out_key = out_key.replace(rval, rkey)
+                in_key = in_key.replace(rval, rkey)
+
+    unit_scale = scales[out_key] / scales[in_key]
 
     return unit_scale
 
