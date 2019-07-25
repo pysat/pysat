@@ -186,8 +186,8 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     # Cycle through all of the data types
     for i, iname in enumerate(inst_name):
         # Determine whether the model data needs to be scaled
-        iscale = utils.scale_units(pairs.data_vars[iname].units,
-                                   pairs.data_vars[mod_name[i]].units)
+        iscale = utils.coords.scale_units(pairs.data_vars[iname].units,
+                                          pairs.data_vars[mod_name[i]].units)
         mod_scaled = pairs.data_vars[mod_name[i]].values.flatten() * iscale
 
         # Flatten both data sets, since accuracy routines require 1D arrays
@@ -350,7 +350,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         if mdata is not None:
             # Load the instrument data, if needed
             if inst.empty or inst.index[-1] < istart:
-                inst.custom.add(pysat.utils.update_longitude, 'modify',
+                inst.custom.add(pysat.utils.coords.update_longitude, 'modify',
                                 low=lon_low, lon_name=inst_lon_name,
                                 high=lon_high)
                 inst.load(date=istart)
@@ -510,8 +510,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
         if ii not in list(inst.data.keys()):
             raise ValueError('Unknown instrument location index ' +
                              '{:}'.format(ii))
-        inst_scale[i] = utils.scale_units(mod_units[i],
-                                          inst.meta.data.units[ii])
+        inst_scale[i] = utils.coords.scale_units(mod_units[i],
+                                                 inst.meta.data.units[ii])
 
     # Determine which data to interpolate and initialize the interpolated
     # output
