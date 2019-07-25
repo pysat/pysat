@@ -164,7 +164,6 @@ class TestBasics():
         assert_raises(ValueError, coords.scale_units, "happy", "m")
         try:
             coords.scale_units('happy', 'm')
-            verr = None
         except ValueError as verr:
             assert str(verr).find('output unit') > 0
 
@@ -174,7 +173,6 @@ class TestBasics():
         assert_raises(ValueError, coords.scale_units, "m", "happy")
         try:
             coords.scale_units('m', 'happy')
-            verr = None
         except ValueError as verr:
             assert str(verr).find('input unit') > 0
 
@@ -191,7 +189,6 @@ class TestBasics():
         assert_raises(ValueError, coords.scale_units, "m", "m/s")
         try:
             coords.scale_units('m', 'm/s')
-            verr = None
         except ValueError as verr:
             assert str(verr).find('Cannot scale') >= 0
             assert str(verr).find('unknown units') < 0
@@ -202,7 +199,6 @@ class TestBasics():
         assert_raises(ValueError, coords.scale_units, "happy", "sad")
         try:
             coords.scale_units('happy', 'sad')
-            verr = None
         except ValueError as verr:
             assert str(verr).find('unknown units') > 0
 
