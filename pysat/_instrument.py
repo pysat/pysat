@@ -2026,7 +2026,7 @@ class Instrument(object):
         # to the main input Instrument will be written to the netCDF4
         base_instrument = Instrument() if base_instrument is None \
             else base_instrument
-
+        print('Latest')
         # begin processing metadata for writing to the file
         # look to see if user supplied a list of export keys
         # corresponding to internally tracked metadata within pysat
@@ -2120,13 +2120,15 @@ class Instrument(object):
                 # coltype is the direct type, np.int64
                 # and datetime_flag lets you know if the data is full of time
                 # information
+                case_key = self.meta.var_case_name(key)
                 data, coltype, datetime_flag = self._get_data_info(self[key],
                                                                    file_format)
                 # operate on data based upon type
                 if self[key].dtype != np.dtype('O'):
                     # not an object, normal basic 1D data
                     # print(key, coltype, file_format)
-                    cdfkey = out_data.createVariable(key,
+                    print('Got key ', key)
+                    cdfkey = out_data.createVariable(case_key,
                                                      coltype,
                                                      dimensions=(epoch_name),
                                                      zlib=zlib,
@@ -2135,7 +2137,7 @@ class Instrument(object):
                     # attach any meta data, after filtering for standards
                     try:
                         # attach dimension metadata
-                        new_dict = export_meta[key]
+                        new_dict = export_meta[case_key]
                         new_dict['Depend_0'] = epoch_name
                         new_dict['Display_Type'] = 'Time Series'
                         new_dict['Format'] = self._get_var_type_code(coltype)
@@ -2167,7 +2169,8 @@ class Instrument(object):
 
                     if (coltype == type(' ')) or (coltype == type(u' ')):
                         # dealing with a string
-                        cdfkey = out_data.createVariable(key, coltype,
+                        cdfkey = out_data.createVariable(case_key,
+                                                         coltype,
                                                          dimensions=(epoch_name),
                                                          zlib=zlib,
                                                          complevel=complevel,
@@ -2175,7 +2178,7 @@ class Instrument(object):
                         # attach any meta data
                         try:
                             # attach dimension metadata
-                            new_dict = export_meta[key]
+                            new_dict = export_meta[case_key]
                             new_dict['Depend_0'] = epoch_name
                             new_dict['Display_Type'] = 'Time Series'
                             new_dict['Format'] = \
@@ -2213,7 +2216,7 @@ class Instrument(object):
                         for i, dim in enumerate(dims[:-1]):
                             # don't need to go over last dimension value,
                             # it covers number of columns (if a frame)
-                            obj_dim_names.append(key)
+                            obj_dim_names.append(case_key)
                             out_data.createDimension(obj_dim_names[-1], dim)
                         # create simple tuple with information needed to create
                         # the right dimensions for variables that will
@@ -2257,7 +2260,7 @@ class Instrument(object):
                                 data, coltype, _ = \
                                     self._get_data_info(idx, file_format)
                                 cdfkey = \
-                                    out_data.createVariable(key+'_'+col,
+                                    out_data.createVariable(case_key + '_' + col,
                                                             coltype,
                                                             dimensions=var_dim,
                                                             zlib=zlib,
@@ -2265,7 +2268,7 @@ class Instrument(object):
                                                             shuffle=shuffle)
                                 # attach any meta data
                                 try:
-                                    new_dict = export_meta[key+'_'+col]
+                                    new_dict = export_meta[case_key + '_'+col]
                                     new_dict['Depend_0'] = epoch_name
                                     new_dict['Depend_1'] = obj_dim_names[-1]
                                     new_dict['Display_Type'] = 'Spectrogram'
@@ -2302,7 +2305,7 @@ class Instrument(object):
                                 data, coltype, _ = \
                                     self._get_data_info(idx, file_format)
                                 cdfkey = \
-                                    out_data.createVariable(key + '_data',
+                                    out_data.createVariable(case_key + '_data',
                                                             coltype,
                                                             dimensions=var_dim,
                                                             zlib=zlib,
@@ -2310,7 +2313,7 @@ class Instrument(object):
                                                             shuffle=shuffle)
                                 # attach any meta data
                                 try:
-                                    new_dict = export_meta[key]
+                                    new_dict = export_meta[case_key]
                                     new_dict['Depend_0'] = epoch_name
                                     new_dict['Depend_1'] = obj_dim_names[-1]
                                     new_dict['Display_Type'] = 'Spectrogram'
@@ -2345,13 +2348,13 @@ class Instrument(object):
                                                 file_format)
                         # create dimension variable for to store index in
                         # netCDF4
-                        cdfkey = out_data.createVariable(key, coltype,
+                        cdfkey = out_data.createVariable(case_key, coltype,
                                                          dimensions=var_dim,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
                         # work with metadata
-                        new_dict = export_meta[key]
+                        new_dict = export_meta[case_key]
                         new_dict['Depend_0'] = epoch_name
                         new_dict['Depend_1'] = obj_dim_names[-1]
                         new_dict['Display_Type'] = 'Time Series'
@@ -2415,28 +2418,44 @@ class Instrument(object):
                 if key not in base_attrb:
                     if key[0] != '_':
                         adict[key] = self.meta.__getattribute__(key)
+            # Add additional metadata to conform to standards
             adict['pysat_version'] = pysat.__version__
             if 'Conventions' not in adict:
                 adict['Conventions'] = 'SPDF ISTP/IACG Modified for NetCDF'
             if 'Text_Supplement' not in adict:
-                adict['Text_Supplement'] = ''
+                adict['Text_Supplement'] = ''                
+            # remove any attributes with the names below
+            # pysat is responible for including them in the file.
+            items = ['Date_End', 'Date_Start', 'File', 'File_Date',
+                     'Generation_Date', 'Logical_File_ID']
+            for item in items:
+                if item in adict:
+                    _ = adict.pop(item)
 
-            adict['Date_Start'] = \
-                pysat.datetime.strftime(self.index[0],
-                                        '%a, %d %b %Y,  ' +
-                                        '%Y-%m-%dT%H:%M:%S.%f UTC')
             adict['Date_End'] = \
                 pysat.datetime.strftime(self.index[-1],
                                         '%a, %d %b %Y,  ' +
-                                        '%Y-%m-%dT%H:%M:%S.%f UTC')
+                                        '%Y-%m-%dT%H:%M:%S.%f')
+            adict['Date_End'] = adict['Date_End'][:-3] + ' UTC'
+            
+            adict['Date_Start'] = \
+                pysat.datetime.strftime(self.index[0],
+                                    '%a, %d %b %Y,  ' +
+                                    '%Y-%m-%dT%H:%M:%S.%f')
+            adict['Date_Start'] = adict['Date_Start'][:-3] + ' UTC'
             adict['File'] = os.path.split(fname)
+            adict['File_Date'] = \
+                self.index[-1].strftime('%a, %d %b %Y,  ' +
+                                        '%Y-%m-%dT%H:%M:%S.%f')
+            adict['File_Date'] = adict['File_Date'][:-3] + ' UTC'
             adict['Generation_Date'] = \
                 pysat.datetime.utcnow().strftime('%Y%m%d')
             adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
-            # check for binary types
+
+            # check for binary types, convert when found
             for key in adict.keys():
                 if isinstance(adict[key], bool):
                     adict[key] = int(adict[key])
-            # print('adict', adict)
+            # attach attributes
             out_data.setncatts(adict)
         return
