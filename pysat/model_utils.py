@@ -196,25 +196,38 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Ensure no NaN are used in statistics
         inum = np.where(np.isfinite(mod_scaled) & np.isfinite(inst_dat))[0]
 
-        # Calculate all of the desired statistics
-        for mm in methods:
-            try:
-                stat_dict[iname][mm] = method_rout[mm](mod_scaled[inum],
-                                                       inst_dat[inum])
+        if inum.shape[0] < 2:
+            # Not all data types can use all statistics.  Print warnings
+            # instead of stopping processing.  Only valid statistics
+            # will be included in output
+            print("{:s} can't calculate stats for {:d} finite samples".format( \
+                                                        iname, inum.shape[0]))
+            stat_dict
+        else:
+            # Calculate all of the desired statistics
+            for mm in methods:
+                try:
+                    stat_dict[iname][mm] = method_rout[mm](mod_scaled[inum],
+                                                           inst_dat[inum])
 
-                # Convenience functions add layers to the output, remove
-                # these layers
-                if hasattr(stat_dict[iname][mm], "keys"):
-                    for nn in stat_dict[iname][mm].keys():
-                        new = replace_keys[nn] if nn in replace_keys.keys() \
-                            else nn
-                        stat_dict[iname][new] = stat_dict[iname][mm][nn]
-                    del stat_dict[iname][mm]
-            except ValueError or NotImplementedError as err:
-                # Not all data types can use all statistics.  Print warnings
-                # instead of stopping processing.  Only valid statistics will
-                # be included in output
-                print("{:s} can't use {:s}: {:}".format(iname, mm, err))
+                    # Convenience functions add layers to the output, remove
+                    # these layers
+                    if hasattr(stat_dict[iname][mm], "keys"):
+                        for nn in stat_dict[iname][mm].keys():
+                            new = replace_keys[nn] if nn in replace_keys.keys()\
+                                else nn
+                            stat_dict[iname][new] = stat_dict[iname][mm][nn]
+                        del stat_dict[iname][mm]
+                except ValueError as verr:
+                    # Not all data types can use all statistics.  Print warnings
+                    # instead of stopping processing.  Only valid statistics
+                    # will be included in output
+                    print("{:s} can't use {:s}: {:}".format(iname, mm, verr))
+                except NotImplementedError:
+                    # Not all data types can use all statistics.  Print warnings
+                    # instead of stopping processing.  Only valid statistics
+                    # will be included in output
+                    print("{:s} can't implement {:s}".format(iname, mm))
 
     return stat_dict, data_units
 
