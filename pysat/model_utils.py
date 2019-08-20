@@ -186,8 +186,8 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     # Cycle through all of the data types
     for i, iname in enumerate(inst_name):
         # Determine whether the model data needs to be scaled
-        iscale = utils.scale_units(pairs.data_vars[iname].units,
-                                   pairs.data_vars[mod_name[i]].units)
+        iscale = utils.coords.scale_units(pairs.data_vars[iname].units,
+                                          pairs.data_vars[mod_name[i]].units)
         mod_scaled = pairs.data_vars[mod_name[i]].values.flatten() * iscale
 
         # Flatten both data sets, since accuracy routines require 1D arrays
@@ -196,25 +196,38 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Ensure no NaN are used in statistics
         inum = np.where(np.isfinite(mod_scaled) & np.isfinite(inst_dat))[0]
 
-        # Calculate all of the desired statistics
-        for mm in methods:
-            try:
-                stat_dict[iname][mm] = method_rout[mm](mod_scaled[inum],
-                                                       inst_dat[inum])
+        if inum.shape[0] < 2:
+            # Not all data types can use all statistics.  Print warnings
+            # instead of stopping processing.  Only valid statistics
+            # will be included in output
+            print("{:s} can't calculate stats for {:d} finite samples".format( \
+                                                        iname, inum.shape[0]))
+            stat_dict
+        else:
+            # Calculate all of the desired statistics
+            for mm in methods:
+                try:
+                    stat_dict[iname][mm] = method_rout[mm](mod_scaled[inum],
+                                                           inst_dat[inum])
 
-                # Convenience functions add layers to the output, remove
-                # these layers
-                if hasattr(stat_dict[iname][mm], "keys"):
-                    for nn in stat_dict[iname][mm].keys():
-                        new = replace_keys[nn] if nn in replace_keys.keys() \
-                            else nn
-                        stat_dict[iname][new] = stat_dict[iname][mm][nn]
-                    del stat_dict[iname][mm]
-            except ValueError or NotImplementedError as err:
-                # Not all data types can use all statistics.  Print warnings
-                # instead of stopping processing.  Only valid statistics will
-                # be included in output
-                print("{:s} can't use {:s}: {:}".format(iname, mm, err))
+                    # Convenience functions add layers to the output, remove
+                    # these layers
+                    if hasattr(stat_dict[iname][mm], "keys"):
+                        for nn in stat_dict[iname][mm].keys():
+                            new = replace_keys[nn] if nn in replace_keys.keys()\
+                                else nn
+                            stat_dict[iname][new] = stat_dict[iname][mm][nn]
+                        del stat_dict[iname][mm]
+                except ValueError as verr:
+                    # Not all data types can use all statistics.  Print warnings
+                    # instead of stopping processing.  Only valid statistics
+                    # will be included in output
+                    print("{:s} can't use {:s}: {:}".format(iname, mm, verr))
+                except NotImplementedError:
+                    # Not all data types can use all statistics.  Print warnings
+                    # instead of stopping processing.  Only valid statistics
+                    # will be included in output
+                    print("{:s} can't implement {:s}".format(iname, mm))
 
     return stat_dict, data_units
 
@@ -350,7 +363,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         if mdata is not None:
             # Load the instrument data, if needed
             if inst.empty or inst.index[-1] < istart:
-                inst.custom.add(pysat.utils.update_longitude, 'modify',
+                inst.custom.add(pysat.utils.coords.update_longitude, 'modify',
                                 low=lon_low, lon_name=inst_lon_name,
                                 high=lon_high)
                 inst.load(date=istart)
@@ -510,8 +523,8 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
         if ii not in list(inst.data.keys()):
             raise ValueError('Unknown instrument location index ' +
                              '{:}'.format(ii))
-        inst_scale[i] = utils.scale_units(mod_units[i],
-                                          inst.meta.data.units[ii])
+        inst_scale[i] = utils.coords.scale_units(mod_units[i],
+                                                 inst.meta.data.units[ii])
 
     # Determine which data to interpolate and initialize the interpolated
     # output

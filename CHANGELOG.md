@@ -14,7 +14,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
 
-## [2.0.0] - 2019-07-11 - New Features
+## [2.0.0] - 2019-07-11
+ - New Features
    - `pysatData` directory created in user's home directory if no directory specified
    - Added preliminary support for `xarray` to the `instrument` object
    - Support for `today`, `tomorrow`, and `yesterday` as datetime objects
