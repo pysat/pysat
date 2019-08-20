@@ -701,7 +701,7 @@ class Instrument(object):
         """Concats data1 and data2 for xarray or pandas as needed"""
 
         if self.pandas_format:
-            return pds.concat(data, sort=True, *args, **kwargs)
+            return pds.concat(data, *args, **kwargs)
         else:
             return xr.concat(data, dim='time')
 
