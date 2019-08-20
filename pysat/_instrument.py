@@ -1996,9 +1996,13 @@ class Instrument(object):
             the HDF5 shuffle filter will be applied before compressing the data
             (default True). This significantly improves compression. Default is
             True. Ignored if zlib=False.
-        preserve_meta_case : bool
+        preserve_meta_case : bool (False)
             if True, then the variable strings within the MetaData object, which
             preserves case, are used to name variables in the written netCDF file.
+            If False, then the variable strings used to access data from the
+            Instrument object are used instead. By default, the variable strings
+            on both the data and metadata side are the same, though this relationship
+            may be altered by a user.
 
         Note
         ----
