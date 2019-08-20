@@ -229,7 +229,7 @@ def calc_measurement_loc(self):
 
     """
 
-    from pysat import utils
+    from pysat.utils import coords
 
     az_keys = [kk[5:] for kk in list(self.data.keys())
                if kk.find('azdir') == 0]
@@ -257,13 +257,13 @@ def calc_measurement_loc(self):
         # JRO is located 520 m above sea level (jro.igp.gob.pe./english/)
         # Also, altitude has already been calculated
         gdaltr = np.ones(shape=self['gdlonr'].shape) * 0.52
-        gdlat, gdlon, _ = utils.local_horizontal_to_global_geo(self[az_key],
-                                                               self[el_key],
-                                                               self['range'],
-                                                               self['gdlatr'],
-                                                               self['gdlonr'],
-                                                               gdaltr,
-                                                               geodetic=True)
+        gdlat, gdlon, _ = coords.local_horizontal_to_global_geo(self[az_key],
+                                                                self[el_key],
+                                                                self['range'],
+                                                                self['gdlatr'],
+                                                                self['gdlonr'],
+                                                                gdaltr,
+                                                                geodetic=True)
 
         # Assigning as data, to ensure that the number of coordinates match
         # the number of data dimensions

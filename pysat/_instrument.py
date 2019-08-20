@@ -1975,7 +1975,7 @@ class Instrument(object):
         return export_dict
 
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
-                   zlib=False, complevel=4, shuffle=True):
+                   zlib=False, complevel=4, shuffle=True, preserve_meta_case=False):
         """Stores loaded data into a netCDF4 file.
 
         Parameters
@@ -1996,6 +1996,13 @@ class Instrument(object):
             the HDF5 shuffle filter will be applied before compressing the data
             (default True). This significantly improves compression. Default is
             True. Ignored if zlib=False.
+        preserve_meta_case : bool (False)
+            if True, then the variable strings within the MetaData object, which
+            preserves case, are used to name variables in the written netCDF file.
+            If False, then the variable strings used to access data from the
+            Instrument object are used instead. By default, the variable strings
+            on both the data and metadata side are the same, though this relationship
+            may be altered by a user.
 
         Note
         ----
@@ -2026,7 +2033,7 @@ class Instrument(object):
         # to the main input Instrument will be written to the netCDF4
         base_instrument = Instrument() if base_instrument is None \
             else base_instrument
-        print('Latest')
+
         # begin processing metadata for writing to the file
         # look to see if user supplied a list of export keys
         # corresponding to internally tracked metadata within pysat
@@ -2049,6 +2056,16 @@ class Instrument(object):
         # Apply instrument specific post-processing to the export_meta
         if hasattr(self._export_meta_post_processing, '__call__'):
             export_meta = self._export_meta_post_processing(export_meta)
+
+        # check if there are multiple variables with same characters
+        # but with different case
+        variables = self.variables
+        variables = [var.lower() for var in variables]
+        unique_variables = np.unique(variables)
+        if len(unique_variables) != len(variables):
+            raise ValueError('There are multiple variables with the same ' +
+                             'name but different case which results in a ' +
+                             'loss of metadata. Please make the names unique.')
 
         # general process for writing data is this
         # first, take care of the EPOCH information
@@ -2120,14 +2137,19 @@ class Instrument(object):
                 # coltype is the direct type, np.int64
                 # and datetime_flag lets you know if the data is full of time
                 # information
-                case_key = self.meta.var_case_name(key)
+                if preserve_meta_case:
+                    # use the variable case stored in the MetaData object
+                    case_key = self.meta.var_case_name(key)
+                else:
+                    # use variable names used by user when working with data
+                    case_key = key
                 data, coltype, datetime_flag = self._get_data_info(self[key],
                                                                    file_format)
                 # operate on data based upon type
                 if self[key].dtype != np.dtype('O'):
                     # not an object, normal basic 1D data
                     # print(key, coltype, file_format)
-                    print('Got key ', key)
+
                     cdfkey = out_data.createVariable(case_key,
                                                      coltype,
                                                      dimensions=(epoch_name),
