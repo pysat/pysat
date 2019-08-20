@@ -2135,7 +2135,7 @@ class Instrument(object):
                 if self[key].dtype != np.dtype('O'):
                     # not an object, normal basic 1D data
                     # print(key, coltype, file_format)
-                    print('Got key ', key)
+
                     cdfkey = out_data.createVariable(case_key,
                                                      coltype,
                                                      dimensions=(epoch_name),
