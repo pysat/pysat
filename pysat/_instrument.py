@@ -2057,6 +2057,16 @@ class Instrument(object):
         if hasattr(self._export_meta_post_processing, '__call__'):
             export_meta = self._export_meta_post_processing(export_meta)
 
+        # check if there are multiple variables with same characters
+        # but with different case
+        variables = inst.variables
+        variables = [var.lower() for var in variables]
+        unique_variables = np.unique(variables)
+        if len(unique_variables) != len(variables):
+            raise ValueError('There are multiple variables with the same ' +
+                             'name but different case which results in a ' +
+                             'loss of metadata. Please make the names unique.')
+
         # general process for writing data is this
         # first, take care of the EPOCH information
         # second, iterate over the variable colums in Instrument.data
