@@ -2029,7 +2029,7 @@ class Instrument(object):
         # to the main input Instrument will be written to the netCDF4
         base_instrument = Instrument() if base_instrument is None \
             else base_instrument
-        print('Latest')
+
         # begin processing metadata for writing to the file
         # look to see if user supplied a list of export keys
         # corresponding to internally tracked metadata within pysat
