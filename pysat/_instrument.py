@@ -1975,7 +1975,7 @@ class Instrument(object):
         return export_dict
 
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
-                   zlib=False, complevel=4, shuffle=True):
+                   zlib=False, complevel=4, shuffle=True, preserve_meta_case=False):
         """Stores loaded data into a netCDF4 file.
 
         Parameters
@@ -1996,6 +1996,9 @@ class Instrument(object):
             the HDF5 shuffle filter will be applied before compressing the data
             (default True). This significantly improves compression. Default is
             True. Ignored if zlib=False.
+        preserve_meta_case : bool
+            if True, then the variable strings within the MetaData object, which
+            preserves case, are used to name variables in the written netCDF file.
 
         Note
         ----
@@ -2120,7 +2123,12 @@ class Instrument(object):
                 # coltype is the direct type, np.int64
                 # and datetime_flag lets you know if the data is full of time
                 # information
-                case_key = self.meta.var_case_name(key)
+                if preserve_meta_case:
+                    # use the variable case stored in the MetaData object
+                    case_key = self.meta.var_case_name(key)
+                else:
+                    # use variable names used by user when working with data
+                    case_key = key
                 data, coltype, datetime_flag = self._get_data_info(self[key],
                                                                    file_format)
                 # operate on data based upon type
