@@ -2059,7 +2059,7 @@ class Instrument(object):
 
         # check if there are multiple variables with same characters
         # but with different case
-        variables = inst.variables
+        variables = self.variables
         variables = [var.lower() for var in variables]
         unique_variables = np.unique(variables)
         if len(unique_variables) != len(variables):
