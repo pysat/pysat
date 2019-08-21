@@ -182,14 +182,15 @@ class TestBasics():
     #------------------------------------------------------------------------------
 
     def test_concat_data(self):
-        """Test if the correct day is being loaded (checking object date and
-        data)."""
+        # data set #2
         self.testInst.load(2009, 2)
         data2 = self.testInst.data
         len2 = len(self.testInst.index)
         self.testInst.load(2009, 1)
+        # data set #1
         data1 = self.testInst.data
         len1 = len(self.testInst.index)
+        # concat together
         self.testInst.data = self.testInst.concat_data([data1, data2])
         # test for concatenation
         len3 = len(self.testInst.index)
