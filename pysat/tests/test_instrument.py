@@ -174,6 +174,30 @@ class TestBasics():
         self.testInst.date = now
         assert today == self.testInst.date
 
+
+    #------------------------------------------------------------------------------
+    #
+    # Test concat_data method
+    #
+    #------------------------------------------------------------------------------
+
+    def test_concat_data(self):
+        """Test if the correct day is being loaded (checking object date and
+        data)."""
+        self.testInst.load(2009, 2)
+        data2 = self.testInst.data
+        len2 = len(self.testInst.index)
+        self.testInst.load(2009, 1)
+        data1 = self.testInst.data
+        len1 = len(self.testInst.index)
+        self.testInst.data = self.testInst.concat_data([data1, data2])
+        # test for concatenation
+        len3 = len(self.testInst.index)
+        assert (len3 == len1 + len2)
+        assert ((self.testInst[0:len1] == data1).all().all() & 
+                (self.testInst[len1:] == data2).all().all()) 
+
+
     #------------------------------------------------------------------------------
     #
     # Test empty property flags, if True, no data
