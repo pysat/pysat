@@ -2020,7 +2020,12 @@ class Instrument(object):
            structure
 
 
-        All attributes attached to instrument meta are written to netCDF attrs.
+        All attributes attached to instrument meta are written to netCDF attrs
+        with the exception of 'Date_End', 'Date_Start', 'File', 'File_Date',
+        'Generation_Date', and 'Logical_File_ID'. These are defined within to_netCDF
+        at the time the file is written, as per the adopted standard, 
+        SPDF ISTP/IACG Modified for NetCDF. Atrributes 'Conventions' and 
+        'Text_Supplement' are given default values if not present.
 
         """
 
