@@ -11,17 +11,20 @@ import string
 import os
 import copy
 import sys
+
+import pkgutil
 import pandas as pds
 import numpy as np
 import xarray as xr
 import warnings
 
-from . import _custom
-from . import _files
-from . import _orbits
-from . import _meta
-from . import utils
+from pysat import _custom
+from pysat import _files
+from pysat import _orbits
+from pysat import _meta
+from pysat import utils
 from pysat import DataFrame
+from pysat import user_modules as user_modules
 
 
 # main class for users
@@ -730,9 +733,45 @@ class Instrument(object):
 
         if by_name:
             # look for code with filename name, any errors passed up
-            inst = importlib.import_module(''.join(('.', self.platform, '_',
-                                           self.name)),
-                                           package='pysat.instruments')
+            # start with local areas
+            import_success = False
+            try:
+                inst = importlib.import_module(''.join(('.', self.platform, '_',
+                                            self.name)),
+                                            package='pysat.instruments')
+                import_success = True
+            except:
+                # iterate through user set modules
+                for mod in user_modules:
+                    # name of package in list[1]
+                    name = mod[1]
+                    try:
+                        inst = importlib.import_module(
+                                ''.join(('.', self.platform, '_', self.name)),
+                                package=name)
+                        import_success = True
+                        # done!
+                        break
+                    except:
+                        pass
+                if not import_success:
+                    # now iterate through all modules
+                    for mod in pkgutil.iter_modules():
+                        # name of package in list[1]
+                        name = mod[1]
+                        # look for any packages with pysat in leading Title
+                        if name[0:5] == 'pysat' & len(name) > 5:
+                            try:
+                                inst = importlib.import_module(
+                                    ''.join(('.', self.platform, '_', self.name)),
+                                    package=name + '.instruments')
+                                import_success = True
+                                # done!
+                                break
+                            except:
+                                st = ''.join((self.platform, '_', self.name))
+                                raise RuntimeError('Unable find a package with' +
+                                                   'support for ' + st)
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
             inst = inst_module
