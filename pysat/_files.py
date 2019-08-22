@@ -197,6 +197,19 @@ class Files(object):
                 # raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
+            # filter for empty files here
+            keep_index = []
+            for i, fi in enumerate(self.files):
+                fi_path = os.path.join(self.data_path, fi)
+                if os.path.exists(fi_path):
+                    if os.path.getsize() > 0:
+                        keep_index.append(i)
+            if len(keep_index) < len(self.files.index):
+                print('Found ' + str(len(self.files.index) - len(keep_index)) +
+                      ' empty files. Removing these files from list.')
+            self.files = self.files.iloc[keep_index]
+
+            # extract date information
             self.start_date = self._sat._filter_datetime_input(files_info.index[0])
             self.stop_date = self._sat._filter_datetime_input(files_info.index[-1])
         else:
