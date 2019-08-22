@@ -64,16 +64,29 @@ if not os.path.isdir(pysat_dir):
         data_dir = os.path.join(home_dir, 'pysatData')
     else:
         data_dir = '/home/travis/build/rstoneback/pysatData'
+    # create data directory, if needed
+    if not os.path.isdir(data_dir):
+        os.mkdir(data_dir)
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
                    "Run pysat.utils.set_data_dir to specify a different "
                    "top-level directory to store science data.")))
+    # user modules file
+    with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
+        user_modules = []
+
 else:
     # load up stored data path
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
         data_dir = f.readline()
+    # load up stored user modules
+    user_modules = []
+    with open(os.path.join(pysat_dir, 'user_modules.txt'), 'r') as f:
+        _ = f.readline()
+        if _ != '' and (_ is not None):
+            user_modules.append(_)
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
