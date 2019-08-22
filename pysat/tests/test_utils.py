@@ -182,7 +182,7 @@ class TestBasicNetCDF4():
         assert(np.all(sorted(self.testInst.data.columns) == sorted(loaded_inst.columns)))
 
     @raises(Exception)
-    def test_write_netcdf4_doubeled_variable_names(self):
+    def test_write_netcdf4_duplicate_variable_names(self):
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
