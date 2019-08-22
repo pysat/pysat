@@ -171,7 +171,7 @@ class TestBasicNetCDF4():
             print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
 
-        # modify meteadata names in data
+        # modify metadata names in data
         self.testInst.meta.data = self.testInst.meta.data.rename(str.upper, axis='index')
         # write file
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
