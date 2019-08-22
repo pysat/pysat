@@ -2467,8 +2467,8 @@ class Instrument(object):
             
             adict['Date_Start'] = \
                 pysat.datetime.strftime(self.index[0],
-                                    '%a, %d %b %Y,  ' +
-                                    '%Y-%m-%dT%H:%M:%S.%f')
+                                        '%a, %d %b %Y,  ' +
+                                        '%Y-%m-%dT%H:%M:%S.%f')
             adict['Date_Start'] = adict['Date_Start'][:-3] + ' UTC'
             adict['File'] = os.path.split(fname)
             adict['File_Date'] = \
