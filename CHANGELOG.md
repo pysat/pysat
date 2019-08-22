@@ -2,11 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.X.X] - 2019-07-17
+## [2.X.X] - 2019-08-20
 - New Features
    - Added new velocity format options to utils.coords.scale_units
    - Improved failure messages for utils.coords.scale_units
    - Added some tests for model_utils
+   - Added option to to_netCDF that names variables in the written file
+   based upon the strings in the Instrument.meta object
+   - Improved compatibility with NASA ICON's file standards
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils

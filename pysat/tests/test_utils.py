@@ -13,6 +13,7 @@ if sys.version_info[0] >= 3:
 else:
     re_load = reload
 
+from nose.tools import raises
 
 # ----------------------------------
 # test netCDF export file support
@@ -145,6 +146,51 @@ class TestBasicNetCDF4():
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key]))
+
+    def test_basic_write_and_read_netcdf4_mixed_case_format(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        # modify data names in data
+        original = sorted(self.testInst.data.columns)
+        self.testInst.data = self.testInst.data.rename(str.upper, axis='columns')
+        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        self.testInst.data = \
+            self.testInst.data.reindex(sorted(self.testInst.data.columns),
+                                       axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+
+        # check that names are lower case when written
+        assert(np.all(original == loaded_inst.columns))
+        
+        for key in self.testInst.data.columns:
+            print('Testing Data Equality to filesystem and back ', key)
+            assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
+
+        # modify metadata names in data
+        self.testInst.meta.data = self.testInst.meta.data.rename(str.upper, axis='index')
+        # write file
+        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+        # load file
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+
+        # check that names are upper case when written
+        assert(np.all(sorted(self.testInst.data.columns) == sorted(loaded_inst.columns)))
+
+    @raises(Exception)
+    def test_write_netcdf4_duplicate_variable_names(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst['MLT'] = 1
+        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+
 
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
