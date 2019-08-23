@@ -323,20 +323,22 @@ class Files(object):
         info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id,
                                    data_path=self.data_path,
                                    format_str=self.file_format)
-
+        info = self._remove_data_dir_path(info)
         if not info.empty:
             # filter for empty files here
             if self.ignore_empty_files:
                 keep_index = []
                 for i, fi in enumerate(info):
                     # create full path
-                    # fi_path = os.path.join(self.data_path, fi)
+                    fi_path = os.path.join(self.data_path, fi)
                     # ensure it exists
-                    if os.path.exists(fi):
+                    # print(fi)
+                    if os.path.exists(fi_path):
                         # check for size
-                        if os.path.getsize(fi) > 0:
+                        if os.path.getsize(fi_path) > 0:
                             # store if not empty
                             keep_index.append(i)
+
                 # remove filenames as needed
                 if len(keep_index) < len(self.files.index):
                     # print('Found ' + str(len(self.files.index) - len(keep_index)) +
@@ -349,8 +351,9 @@ class Files(object):
             estr += " If you have the necessary files please check pysat "
             estr += "settings and file locations (e.g. pysat.pysat_dir)."
             print(estr)
-        info = self._remove_data_dir_path(info)
+        # attach to object
         self._attach_files(info)
+        # store - to disk, if enabled
         self._store()
 
     def get_new(self):
