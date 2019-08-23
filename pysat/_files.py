@@ -79,7 +79,8 @@ class Files(object):
     """
 
     def __init__(self, sat, manual_org=False, directory_format=None,
-                 update_files=False, file_format=None, write_to_disk=True):
+                 update_files=False, file_format=None, write_to_disk=True,
+                 ignore_empty_files=False):
         """ Initialization for Files class object
 
         Parameters
@@ -108,6 +109,10 @@ class Files(object):
             If true, the list of Instrument files will be written to disk.
             Setting this to False prevents a rare condition when running
             multiple pysat processes.
+        ignore_empty_files : boolean
+            if True, the list of files found will be checked to
+            ensure the filesiizes are greater than zero. Empty files are
+            removed from the stored list of files.
         """
 
         # pysat.Instrument object
@@ -158,6 +163,9 @@ class Files(object):
             self._previous_file_list = pds.Series([], dtype='a')
             self._current_file_list = pds.Series([], dtype='a')
 
+        # store ignore_empty_files preference
+        self.ignore_empty_files = ignore_empty_files
+
         if self._sat.platform != '':
             # load stored file info
             info = self._load()
@@ -197,17 +205,23 @@ class Files(object):
                 # raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
-            # filter for empty files here
-            keep_index = []
-            for i, fi in enumerate(self.files):
-                fi_path = os.path.join(self.data_path, fi)
-                if os.path.exists(fi_path):
-                    if os.path.getsize() > 0:
-                        keep_index.append(i)
-            if len(keep_index) < len(self.files.index):
-                print('Found ' + str(len(self.files.index) - len(keep_index)) +
-                      ' empty files. Removing these files from list.')
-            self.files = self.files.iloc[keep_index]
+            # # filter for empty files here
+            # if self.ignore_empty_files:
+            #     keep_index = []
+            #     for i, fi in enumerate(self.files):
+            #         # create full path
+            #         fi_path = os.path.join(self.data_path, fi)
+            #         # ensure it exists
+            #         if os.path.exists(fi_path):
+            #             # check for size
+            #             if os.path.getsize(fi_path) > 0:
+            #                 # store if not empty
+            #                 keep_index.append(i)
+            #     # remove filenames as needed
+            #     if len(keep_index) < len(self.files.index):
+            #         print('Found ' + str(len(self.files.index) - len(keep_index)) +
+            #             ' empty files. Removing these files from list.')
+            #         self.files = self.files.iloc[keep_index]
 
             # extract date information
             self.start_date = self._sat._filter_datetime_input(files_info.index[0])
@@ -311,6 +325,24 @@ class Files(object):
                                    format_str=self.file_format)
 
         if not info.empty:
+            # filter for empty files here
+            if self.ignore_empty_files:
+                keep_index = []
+                for i, fi in enumerate(info):
+                    # create full path
+                    # fi_path = os.path.join(self.data_path, fi)
+                    # ensure it exists
+                    if os.path.exists(fi):
+                        # check for size
+                        if os.path.getsize(fi) > 0:
+                            # store if not empty
+                            keep_index.append(i)
+                # remove filenames as needed
+                if len(keep_index) < len(self.files.index):
+                    # print('Found ' + str(len(self.files.index) - len(keep_index)) +
+                        # ' empty files. Removing these files from list.')
+                    info = info.iloc[keep_index]
+
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
             estr = "Unable to find any files that match the supplied template."
