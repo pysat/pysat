@@ -195,8 +195,8 @@ class TestBasics():
         # test for concatenation
         len3 = len(self.testInst.index)
         assert (len3 == len1 + len2)
-        assert ((self.testInst[0:len1] == data1).all().all() & 
-                (self.testInst[len1:] == data2).all().all()) 
+        assert ((self.testInst[0:len1, self.testInst.variables] == data1[:, self.testInst.variables]).all().all() & 
+                (self.testInst[len1:, self.testInst.variables] == data2[:, self.testInst.variables]).all().all()) 
 
 
     #------------------------------------------------------------------------------
