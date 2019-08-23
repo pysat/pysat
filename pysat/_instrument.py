@@ -76,6 +76,10 @@ class Instrument(object):
         month, and sat_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
         instrument list_files routine.
+    ignore_empty_files : boolean
+        if True, the list of files found will be checked to
+        ensure the filesiizes are greater than zero. Empty files are
+        removed from the stored list of files.
     units_label : str
         String used to label units in storage. Defaults to 'units'.
     name_label : str
@@ -172,6 +176,7 @@ class Instrument(object):
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=False,
+                 ignore_empty_files=False,
                  units_label='units', name_label='long_name',
                  notes_label='notes', desc_label='desc',
                  plot_label='label', axis_label='axis', scale_label='scale',
@@ -311,7 +316,8 @@ class Instrument(object):
                                   directory_format=self.directory_format,
                                   update_files=update_files,
                                   file_format=self.file_format,
-                                  write_to_disk=temporary_file_list)
+                                  write_to_disk=temporary_file_list,
+                                  ignore_empty_files=ignore_empty_files)
 
         # set bounds for iteration
         # self.bounds requires the Files class
