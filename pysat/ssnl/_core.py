@@ -27,7 +27,7 @@ def computational_form(data):
 
     if isinstance(data.iloc[0], DataFrame):
         dslice = Panel.from_dict(dict([(i, data.iloc[i])
-                                       for i in xrange(len(data))]))
+                                       for i in range(len(data))]))
     elif isinstance(data.iloc[0], Series):
         dslice = DataFrame(data.tolist())
         dslice.index = data.index
