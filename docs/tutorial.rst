@@ -447,7 +447,7 @@ This code works for 1D, 2D, and 3D datasets, regardless of instrument platform, 
                # compute mean absolute using pandas functions and store
                # data could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
-               data = pysat.utils.computational_form(data)
+               data = pysat.ssnl.computational_form(data)
                mean_val[inst.date] = data.abs().mean(axis=0, skipna=True)
 
    return mean_val
@@ -530,7 +530,7 @@ Building support for this iteration into the mean_day example is easy.
                # compute mean absolute using pandas functions and store
                # data could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
-               data = pysat.utils.computational_form(data)
+               data = pysat.ssnl.computational_form(data)
                mean_val[inst.date] = data.abs().mean(axis=0, skipna=True)
 
        return mean_val
@@ -746,7 +746,7 @@ We also don't want to maintain two code bases that do almost the same thing. So 
                   else:
                       date = inst.date
 
-                  data = pysat.utils.computational_form(data)
+                  data = pysat.ssnl.computational_form(data)
                   mean_val[date] = data.abs().mean(axis=0, skipna=True)
 
        del iterator
