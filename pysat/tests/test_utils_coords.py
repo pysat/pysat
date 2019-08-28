@@ -5,6 +5,7 @@ import numpy as np
 
 import pandas as pds
 
+from nose.tools import raises
 import pysat
 from pysat.utils import coords, time
 

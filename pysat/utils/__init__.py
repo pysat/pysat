@@ -10,4 +10,4 @@ for the pysat data directory structure.
 """
 
 from . import coords, stats, time  # noqa 401
-from ._core import set_data_dir, load_netcdf4  # noqa 401
+from ._core import set_data_dir, scale_units, load_netcdf4  # noqa 401
