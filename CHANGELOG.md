@@ -11,9 +11,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    based upon the strings in the Instrument.meta object
    - Improved compatibility with NASA ICON's file standards
 - Code Restructure
-  - move `computational_form` to `ssnl`
-  - move `scale_units` to `utils._core`
-  - rename `season_date_range` as `create_date_range`
+  - Move `computational_form` to `ssnl`
+  - Move `scale_units` to `utils._core`
+  - Rename `season_date_range` as `create_date_range`
+  - Added deprecation warnings to stat functions
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
