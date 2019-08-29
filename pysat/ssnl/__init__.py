@@ -13,7 +13,7 @@ Main Features
 
 """
 
-from . import occur_prob  # noqa: 401
-from . import avg  # noqa: 401
-from . import plot  # noqa: 401
-from ._core import computational_form  # noqa: 401
+from . import occur_prob  # noqa: F401
+from . import avg  # noqa: F401
+from . import plot  # noqa: F401
+from ._core import computational_form  # noqa: F401
