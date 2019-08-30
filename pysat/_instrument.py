@@ -725,7 +725,7 @@ class Instrument(object):
             if 'sort' in kwargs:
                 sort = kwargs['sort']
                 _ = kwargs.pop('sort')
-            else
+            else:
                 sort = False
             return pds.concat(data, sort=sort, *args, **kwargs)
         else:
