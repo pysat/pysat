@@ -707,7 +707,8 @@ class Instrument(object):
         user provided value is used instead.
         
         For xarray, dim='time' is passed along to xarray.concat
-        except if the user includes a value as a keyword argument.
+        except if the user includes a value for dim as a 
+        keyword argument.
         
         Parameters
         ----------
