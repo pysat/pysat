@@ -195,8 +195,29 @@ class TestBasics():
         # test for concatenation
         len3 = len(self.testInst.index)
         assert (len3 == len1 + len2)
-        assert ((self.testInst[0:len1, self.testInst.variables] == data1[:, self.testInst.variables]).all().all() & 
-                (self.testInst[len1:, self.testInst.variables] == data2[:, self.testInst.variables]).all().all()) 
+        assert ((self.testInst[0:len1, :] == data1[:, :]).all().all() & 
+                (self.testInst[len1:, :] == data2[:, :]).all().all()) 
+
+        # concat together with sort=True
+        if self.testInst.pandas_format:
+            self.testInst.data = self.testInst.concat_data([data1, data2], sort=True)
+            # test for concatenation
+            len3 = len(self.testInst.index)
+            assert (len3 == len1 + len2)
+            assert ((self.testInst[0:len1, data1.columns] == data1[:, :]).all().all() & 
+                    (self.testInst[len1:, data2.columns] == data2[:, :]).all().all()) 
+        else:
+            # xarray
+            # test for dim keyword
+            data1.indexes['time2'] = data1.indexes['time']
+            data2.indexes['time2'] = data2.indexes['time']
+            # concat together
+            self.testInst.data = self.testInst.concat_data([data1, data2], dim='time2')
+            # test for concatenation
+            len3 = len(self.testInst.index)
+            assert (len3 == len1 + len2)
+            assert ((self.testInst[0:len1, :] == data1[:, :]).all().all() & 
+                    (self.testInst[len1:, :] == data2[:, :]).all().all()) 
 
 
     #------------------------------------------------------------------------------
