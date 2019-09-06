@@ -205,23 +205,23 @@ class Files(object):
                 # raise ValueError('List of files must have unique datetimes.')
 
             self.files = files_info.sort_index()
-            # # filter for empty files here
-            # if self.ignore_empty_files:
-            #     keep_index = []
-            #     for i, fi in enumerate(self.files):
-            #         # create full path
-            #         fi_path = os.path.join(self.data_path, fi)
-            #         # ensure it exists
-            #         if os.path.exists(fi_path):
-            #             # check for size
-            #             if os.path.getsize(fi_path) > 0:
-            #                 # store if not empty
-            #                 keep_index.append(i)
-            #     # remove filenames as needed
-            #     if len(keep_index) < len(self.files.index):
-            #         print('Found ' + str(len(self.files.index) - len(keep_index)) +
-            #             ' empty files. Removing these files from list.')
-            #         self.files = self.files.iloc[keep_index]
+            # filter for empty files here (in addition to refresh)
+            if self.ignore_empty_files:
+                keep_index = []
+                for i, fi in enumerate(self.files):
+                    # create full path
+                    fi_path = os.path.join(self.data_path, fi)
+                    # ensure it exists
+                    if os.path.exists(fi_path):
+                        # check for size
+                        if os.path.getsize(fi_path) > 0:
+                            # store if not empty
+                            keep_index.append(i)
+                # remove filenames as needed
+                if len(keep_index) < len(self.files.index):
+                    # print('Found ' + str(len(self.files.index) - len(keep_index)) +
+                    #     ' empty files. Removing these files from list.')
+                    self.files = self.files.iloc[keep_index]
 
             # extract date information
             self.start_date = self._sat._filter_datetime_input(files_info.index[0])
@@ -332,7 +332,6 @@ class Files(object):
                     # create full path
                     fi_path = os.path.join(self.data_path, fi)
                     # ensure it exists
-                    # print(fi)
                     if os.path.exists(fi_path):
                         # check for size
                         if os.path.getsize(fi_path) > 0:
