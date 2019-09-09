@@ -383,8 +383,14 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             if data.empty:
                 warnings.warn("no data for {:}".format(date), UserWarning)
             else:
-                times = [pysat.datetime.strptime(time, '%Y %m %d')
-                         for time in data.pop('time')]
+                try:
+                    # This is the new data format
+                    times = [pysat.datetime.strptime(time, '%Y%m%d')
+                             for time in data.pop('time')]
+                except ValueError:
+                    # Accepts old file formats
+                    times = [pysat.datetime.strptime(time, '%Y %m %d')
+                             for time in data.pop('time')]
                 data.index = times
                 # replace fill with NaNs
                 idx, = np.where(data['f107'] == -99999.0)
