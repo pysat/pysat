@@ -411,8 +411,14 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # process
         raw_dict = json.loads(r.text)['noaa_radio_flux']
         data = pds.DataFrame.from_dict(raw_dict['samples'])
-        times = [pysat.datetime.strptime(time, '%Y %m %d')
-                 for time in data.pop('time')]
+        try:
+            # This is the new data format
+            times = [pysat.datetime.strptime(time, '%Y%m%d')
+                     for time in data.pop('time')]
+        except ValueError:
+            # Accepts old file formats
+            times = [pysat.datetime.strptime(time, '%Y %m %d')
+                     for time in data.pop('time')]
         data.index = times
         # replace fill with NaNs
         idx, = np.where(data['f107'] == -99999.0)
