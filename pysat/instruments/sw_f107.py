@@ -43,7 +43,6 @@ is not appropriate for 'forecast' data.
 """
 
 import os
-import functools
 import warnings
 
 import numpy as np
@@ -444,8 +443,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
         bad_fname = list()
 
-        # Get the local files, to ensure that the version 1 files are downloaded
-        # again if more data has been added
+        # Get the local files, to ensure that the version 1 files are
+        # downloaded again if more data has been added
         local_files = list_files(tag, sat_id, data_path)
 
         # To avoid downloading multiple files, cycle dates based on file length
@@ -453,7 +452,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         while date <= date_array[-1]:
             # The file name changes, depending on how recent the requested
             # data is
-            qnum = (date.month-1) // 3 + 1 # Integer floor division
+            qnum = (date.month-1) // 3 + 1  # Integer floor division
             qmonth = (qnum-1) * 3 + 1
             quar = 'Q{:d}_'.format(qnum)
             fnames = ['{:04d}{:s}DSD.txt'.format(date.year, ss)
