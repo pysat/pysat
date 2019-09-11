@@ -105,26 +105,26 @@ def test_calc_freq_type_fail():
 
 
 ####################
-# season_date_range
+# create_date_range
 
-def test_season_date_range():
+def test_create_date_range():
     """Test ability to generate season list"""
 
     start = pds.datetime(2012, 2, 28)
     stop = pds.datetime(2012, 3, 1)
-    season = pytime.season_date_range(start, stop, freq='D')
+    season = pytime.create_date_range(start, stop, freq='D')
 
     assert season[0] == start
     assert season[-1] == stop
     assert len(season) == 3
 
 
-def test_season_date_range_w_gaps():
+def test_create_date_range_w_gaps():
     """Test ability to generate season list"""
 
     start = [pds.datetime(2012, 2, 28), pds.datetime(2013, 2, 28)]
     stop = [pds.datetime(2012, 3, 1), pds.datetime(2013, 3, 1)]
-    season = pytime.season_date_range(start, stop, freq='D')
+    season = pytime.create_date_range(start, stop, freq='D')
 
     assert season[0] == start[0]
     assert season[-1] == stop[-1]
