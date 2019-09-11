@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
+   - Fixed error introduced by upstream change in NOAA F10.7 file format
 
 ## [2.0.0] - 2019-07-11
  - New Features
