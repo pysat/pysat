@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added option to to_netCDF that names variables in the written file
    based upon the strings in the Instrument.meta object
    - Improved compatibility with NASA ICON's file standards
+   - Improved file downloading for Kp
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
