@@ -1500,7 +1500,7 @@ class Instrument(object):
             # make sure dates are whole days
             start = self._filter_datetime_input(start)
             stop = self._filter_datetime_input(stop)
-            date_array = utils.time.season_date_range(start, stop, freq=freq)
+            date_array = utils.time.create_date_range(start, stop, freq=freq)
 
         if user is None:
             self._download_rtn(date_array,
@@ -1590,7 +1590,7 @@ class Instrument(object):
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
                 self._iter_list = \
-                    utils.time.season_date_range(self._iter_start,
+                    utils.time.create_date_range(self._iter_start,
                                                  self._iter_stop,
                                                  freq=step)
 
@@ -1608,7 +1608,7 @@ class Instrument(object):
                 self._iter_type = 'date'
                 start = self._filter_datetime_input(start)
                 end = self._filter_datetime_input(end)
-                self._iter_list = utils.time.season_date_range(start, end, freq=step)
+                self._iter_list = utils.time.create_date_range(start, end, freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1641,7 +1641,7 @@ class Instrument(object):
                 end = self.files.stop_date
             self._iter_start = [self._filter_datetime_input(start)]
             self._iter_stop = [self._filter_datetime_input(end)]
-            self._iter_list = utils.time.season_date_range(self._iter_start,
+            self._iter_list = utils.time.create_date_range(self._iter_start,
                                                            self._iter_stop,
                                                            freq=step)
             self._iter_type = 'date'
