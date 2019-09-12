@@ -218,9 +218,10 @@ class TestBasics():
             data2 = data2.rename({'time':'time2'})
 
             # concat together
-            self.testInst.data = self.testInst.concat_data([data1, data2], dim='time2').rename({'time2':'time'})
+            self.testInst.data = self.testInst.concat_data([data1, data2], dim='time2').rename({'time2': 'time'})
             # test for concatenation
-            len3 = len(self.testInst.index) # Instrument.data must have a 'time' index 
+            # Instrument.data must have a 'time' index 
+            len3 = len(self.testInst.index) 
             assert (len3 == len1 + len2)
             assert ((self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all() & 
                     (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()) 
