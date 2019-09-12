@@ -195,29 +195,35 @@ class TestBasics():
         # test for concatenation
         len3 = len(self.testInst.index)
         assert (len3 == len1 + len2)
-        assert ((self.testInst[0:len1, :] == data1[:, :]).all().all() & 
-                (self.testInst[len1:, :] == data2[:, :]).all().all()) 
 
         # concat together with sort=True
         if self.testInst.pandas_format:
+            assert ((self.testInst[0:len1, :] == data1.values[:, :]).all().all() & 
+                    (self.testInst[len1:, :] == data2.values[:, :]).all().all()) 
             self.testInst.data = self.testInst.concat_data([data1, data2], sort=True)
             # test for concatenation
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
-            assert ((self.testInst[0:len1, data1.columns] == data1[:, :]).all().all() & 
-                    (self.testInst[len1:, data2.columns] == data2[:, :]).all().all()) 
+            assert ((self.testInst[0:len1, data1.columns] == data1.values[:, :]).all().all() & 
+                    (self.testInst[len1:, data2.columns] == data2.values[:, :]).all().all()) 
         else:
             # xarray
+
+            assert ((self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all() & 
+                    (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()) 
+
+
             # test for dim keyword
-            data1.indexes['time2'] = data1.indexes['time']
-            data2.indexes['time2'] = data2.indexes['time']
+            data1 = data1.rename({'time':'time2'})
+            data2 = data2.rename({'time':'time2'})
+
             # concat together
-            self.testInst.data = self.testInst.concat_data([data1, data2], dim='time2')
+            self.testInst.data = self.testInst.concat_data([data1, data2], dim='time2').rename({'time2':'time'})
             # test for concatenation
-            len3 = len(self.testInst.index)
+            len3 = len(self.testInst.index) # Instrument.data must have a 'time' index 
             assert (len3 == len1 + len2)
-            assert ((self.testInst[0:len1, :] == data1[:, :]).all().all() & 
-                    (self.testInst[len1:, :] == data2[:, :]).all().all()) 
+            assert ((self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all() & 
+                    (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()) 
 
 
     #------------------------------------------------------------------------------

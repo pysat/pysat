@@ -443,7 +443,12 @@ class Instrument(object):
                 try:
                     return self.data.isel(time=key[0])[key[1]]
                 except:
-                    return self.data.sel(time=key[0])[key[1]]
+                    try:
+                        return self.data.sel(time=key[0])[key[1]]
+                    except: # construct dataset from names
+                        variables = list(self.data.variables.keys())[key[1]]
+                        dataset_dict = {v: self.data[v] for v in variables if v not in self.data.coords}
+                        return xr.Dataset(dataset_dict, coords = self.data.coords, attrs = self.data.attrs)
             else:
                 # multidimensional indexing
                 indict = {}
