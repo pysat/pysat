@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added option to to_netCDF that names variables in the written file
    based upon the strings in the Instrument.meta object
    - Improved compatibility with NASA ICON's file standards
+   - Improved file downloading for Kp
 - Code Restructure
   - Move `computational_form` to `ssnl`
   - Move `scale_units` to `utils._core`
