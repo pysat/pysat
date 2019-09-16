@@ -4,6 +4,7 @@ Citations in the pysat ecosystem
 When referring to this software package, please cite the original paper by Stoneback et al [2018] https://doi.org/10.1029/2018JA025297 as well as the package https://doi.org/10.5281/zenodo.1199703. Note that this doi will always point to the latest version of the code.  A list of dois for all versions can be found at the [zenodo page](https://zenodo.org/record/3321222).
 
 Citing the package (Version 2.0):
+
 ```
 @misc{pysat200,
   author       = {Russell Stoneback and
@@ -24,6 +25,7 @@ Citing the package (Version 2.0):
 ```
 
 Citing the publication:
+
 ```
 @article{Stoneback2018,
 author = {Stoneback, R. A. and Burrell, A. G. and Klenzing, J. and Depew, M. D.},
