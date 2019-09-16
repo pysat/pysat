@@ -13,11 +13,11 @@ Citing the package (Version 2.0):
                     Angeline Burrell and
                     Carey Spence and
                     Matthew Depew and
-                    NHargrave and
-                    vvonbose and
+                    Nathaniel Hargrave and
+                    Veronica von Bose and
                     Silvio Luis and
-                    Gayatri},
-    title        = {rstoneback/pysat v2.0},
+                    Gayatri Iyer},
+    title        = {Python Satellite Data Analysis Toolkit (pysat) v2.0},
     month        = jul,
     year         = 2019,
     doi          = {10.5281/zenodo.3321222},
