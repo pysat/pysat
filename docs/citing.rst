@@ -5,7 +5,7 @@ When referring to this software package, please cite the original paper by Stone
 
 Citing the package (Version 2.0):
 ```
-@misc{russell_stoneback_2019_3321222,
+@misc{pysat200,
   author       = {Russell Stoneback and
                   Jeff Klenzing and
                   Angeline Burrell and
