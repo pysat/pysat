@@ -18,6 +18,8 @@ Full [Documentation](http://pysat.readthedocs.io/en/latest/index.html)
 
 JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 
+[Citation Info](https://pysat.readthedocs.io/en/latest/citing.html)
+
 # Main Features
 * Instrument independent analysis routines.
 * Instrument object providing an interface for downloading and analyzing a wide variety of science data sets.
