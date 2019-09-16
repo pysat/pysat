@@ -29,18 +29,18 @@ Citing the publication:
 .. code::
 
   @article{Stoneback2018,
-    author  = {Stoneback, R. A. and
-              Burrell, A. G. and
-              Klenzing, J. and
-              Depew, M. D.},
-    doi     = {10.1029/2018JA025297},
-    issn    = {21699402},
-    journal = {Journal of Geophysical Research: Space Physics},
-    number  = {6},
-    pages   = {5271--5283},
-    title   = {{PYSAT: Python Satellite Data Analysis Toolkit}},
-    volume  = {123},
-    year    = {2018}
+    author    = {Stoneback, R. A. and
+                 Burrell, A. G. and
+                 Klenzing, J. and
+                 Depew, M. D.},
+    doi       = {10.1029/2018JA025297},
+    issn      = {21699402},
+    journal   = {Journal of Geophysical Research: Space Physics},
+    number    = {6},
+    pages     = {5271--5283},
+    title     = {{PYSAT: Python Satellite Data Analysis Toolkit}},
+    volume    = {123},
+    year      = {2018}
   }
 
 To aid in scientific reproducibility, please include the version number in publications that use this code.  This can be found by invoking `pysat.__version__ `.
