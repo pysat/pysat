@@ -107,7 +107,7 @@ def load_general_header(fhandle):
     microsec = int(codecs.encode(chunk[20:22], 'hex'), 16) * 1000
     dtime = dt.datetime(year, month, day, hour, minute, sec, microsec)
 
-    data = [int(codecs.encode(chunk[0], 'hex'), 16),  # P field
+    data = [int(codecs.encode(chunk[:1], 'hex'), 16),  # P field
             int(codecs.encode(chunk[1:4], 'hex'), 16),  # Days since 1/1/1950
             int(codecs.encode(chunk[4:8], 'hex'), 16),  # Millisec in day
             dtime,  # UT timestamp
