@@ -446,9 +446,7 @@ class Instrument(object):
                     try:
                         return self.data.sel(time=key[0])[key[1]]
                     except TypeError: # construct dataset from names
-                        variables = list(self.data.variables.keys())[key[1]]
-                        dataset_dict = {variable: self.data[variable] for variable in variables if variable not in self.data.coords}
-                        return xr.Dataset(dataset_dict, coords = self.data.coords, attrs = self.data.attrs)
+                        return self.data[self.variables[key[1]]]
             else:
                 # multidimensional indexing
                 indict = {}

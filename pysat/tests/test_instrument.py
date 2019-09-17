@@ -353,6 +353,14 @@ class TestBasics():
         assert np.all(self.testInst[0:10, 'uts'] ==
                       self.testInst.data['uts'].values[0:10])
 
+    def test_data_access_by_row_slicing_and_name_slicing(self):
+        self.testInst.load(2009, 1)
+        result = self.testInst[0:10,:]
+        for variable, array in result.items():
+            assert len(array) == len(self.testInst.data[variable].values[0:10])
+            assert np.all(array == self.testInst.data[variable].values[0:10])
+
+
     def test_data_access_by_row_slicing_w_ndarray_and_name(self):
         self.testInst.load(2009, 1)
         assert np.all(self.testInst[np.arange(0, 10), 'uts'] ==
