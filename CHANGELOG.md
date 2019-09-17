@@ -20,6 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
    - Fixed error introduced by upstream change in NOAA F10.7 file format
+   - Fixed bugs in DEMETER file reading introduced by changes in codecs
 
 ## [2.0.0] - 2019-07-11
  - New Features
