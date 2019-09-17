@@ -195,29 +195,36 @@ class TestBasics():
         # test for concatenation
         len3 = len(self.testInst.index)
         assert (len3 == len1 + len2)
-        assert ((self.testInst[0:len1, :] == data1[:, :]).all().all() & 
-                (self.testInst[len1:, :] == data2[:, :]).all().all()) 
 
         # concat together with sort=True
         if self.testInst.pandas_format:
+            assert ((self.testInst[0:len1, :] == data1.values[:, :]).all().all() & 
+                    (self.testInst[len1:, :] == data2.values[:, :]).all().all()) 
             self.testInst.data = self.testInst.concat_data([data1, data2], sort=True)
             # test for concatenation
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
-            assert ((self.testInst[0:len1, data1.columns] == data1[:, :]).all().all() & 
-                    (self.testInst[len1:, data2.columns] == data2[:, :]).all().all()) 
+            assert ((self.testInst[0:len1, data1.columns] == data1.values[:, :]).all().all() & 
+                    (self.testInst[len1:, data2.columns] == data2.values[:, :]).all().all()) 
         else:
             # xarray
+
+            assert ((self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all() & 
+                    (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()) 
+
+
             # test for dim keyword
-            data1.indexes['time2'] = data1.indexes['time']
-            data2.indexes['time2'] = data2.indexes['time']
+            data1 = data1.rename({'time':'time2'})
+            data2 = data2.rename({'time':'time2'})
+
             # concat together
-            self.testInst.data = self.testInst.concat_data([data1, data2], dim='time2')
+            self.testInst.data = self.testInst.concat_data([data1, data2], dim='time2').rename({'time2': 'time'})
             # test for concatenation
-            len3 = len(self.testInst.index)
+            # Instrument.data must have a 'time' index 
+            len3 = len(self.testInst.index) 
             assert (len3 == len1 + len2)
-            assert ((self.testInst[0:len1, :] == data1[:, :]).all().all() & 
-                    (self.testInst[len1:, :] == data2[:, :]).all().all()) 
+            assert ((self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all() & 
+                    (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()) 
 
 
     #------------------------------------------------------------------------------
@@ -345,6 +352,14 @@ class TestBasics():
         self.testInst.load(2009, 1)
         assert np.all(self.testInst[0:10, 'uts'] ==
                       self.testInst.data['uts'].values[0:10])
+
+    def test_data_access_by_row_slicing_and_name_slicing(self):
+        self.testInst.load(2009, 1)
+        result = self.testInst[0:10,:]
+        for variable, array in result.items():
+            assert len(array) == len(self.testInst.data[variable].values[0:10])
+            assert np.all(array == self.testInst.data[variable].values[0:10])
+
 
     def test_data_access_by_row_slicing_w_ndarray_and_name(self):
         self.testInst.load(2009, 1)
