@@ -8,15 +8,15 @@ Citing the package (Version 2.0):
 .. code::
 
   @misc{pysat200,
-    author       = {Russell Stoneback and
-                    Jeff Klenzing and
-                    Angeline Burrell and
-                    Carey Spence and
-                    Matthew Depew and
-                    Nathaniel Hargrave and
-                    Veronica von Bose and
-                    Silvio Luis and
-                    Gayatri Iyer},
+    author       = {Stoneback, R.A. and
+                    Klenzing, J.H. and
+                    Burrell, A.G. and
+                    Spence, C. and
+                    Depew, M. and
+                    Hargrave, N. and
+                    von Bose, V. and
+                    Luis, S. and
+                    Iyer, G.},
     title        = {Python Satellite Data Analysis Toolkit (pysat) v2.0},
     month        = jul,
     year         = 2019,
@@ -44,3 +44,5 @@ Citing the publication:
   }
 
 To aid in scientific reproducibility, please include the version number in publications that use this code.  This can be found by invoking `pysat.__version__ `.
+
+Information for appropriately acknowledging and citing the different instruments accessed through pysat is sometimes available in the metadata through `inst.meta.info.acknowledgements` and `inst.meta.info.reference`.  If this information is missing, please consider improving pysat by either submitting an issue or adding the information yourself.
