@@ -115,14 +115,14 @@ def load_general_header(fhandle):
             bool(int(codecs.encode(chunk[24:26], 'hex'), 16))]  # Orbit type
 
     meta = {'telemetry station': chunk[26:34],
-            'software processing version': int(codecs.encode(chunk[34], 'hex'),
-                                               16),
-            'software processing subversion': int(codecs.encode(chunk[35],
+            'software processing version': int(codecs.encode(chunk[34:35],
+                                                             'hex'), 16),
+            'software processing subversion': int(codecs.encode(chunk[35:36],
                                                                 'hex'), 16),
-            'calibration file version': int(codecs.encode(chunk[36], 'hex'),
+            'calibration file version': int(codecs.encode(chunk[36:37], 'hex'),
                                             16),
-            'calibration file subversion': int(codecs.encode(chunk[37], 'hex'),
-                                               16),
+            'calibration file subversion': int(codecs.encode(chunk[37:38],
+                                                             'hex'), 16),
             'data names': ['P_field', 'epoch_time', 'time_of_day', 'UT',
                            'orbit_number', 'orbit_type'],
             'data units': {'P_field': 'N/A',
@@ -187,9 +187,9 @@ def load_location_parameters(fhandle):
             bytes_to_float(chunk[80:84]),  # Ys in geographic coordinate system
             bytes_to_float(chunk[84:88])]  # Zs in geographic coordinate system
 
-    meta = {'software processing version': int(codecs.encode(chunk[88], 'hex'),
-                                               16),
-            'software processing subversion': int(codecs.encode(chunk[89],
+    meta = {'software processing version': int(codecs.encode(chunk[88:89],
+                                                             'hex'), 16),
+            'software processing subversion': int(codecs.encode(chunk[89:90],
                                                                 'hex'), 16),
             'data names': ['glat', 'glon', 'altitude', 'LT', 'mlat', 'mlon',
                            'MLT', 'ilat', 'L', 'glat_conj', 'glon_conj',
@@ -280,9 +280,9 @@ def load_attitude_parameters(fhandle):
     data_names.append('attitude_flag')
     data_units[data_names[-1]] = 'unitless'
 
-    meta = {'software processing version': int(codecs.encode(chunk[74], 'hex'),
-                                               16),
-            'software processing subversion': int(codecs.encode(chunk[75],
+    meta = {'software processing version': int(codecs.encode(chunk[74:75],
+                                                             'hex'), 16),
+            'software processing subversion': int(codecs.encode(chunk[75:76],
                                                                 'hex'), 16),
             'data names': data_names, 'data units': data_units}
 
