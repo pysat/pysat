@@ -1535,7 +1535,7 @@ class Instrument(object):
             # make sure dates are whole days
             start = self._filter_datetime_input(start)
             stop = self._filter_datetime_input(stop)
-            date_array = utils.time.season_date_range(start, stop, freq=freq)
+            date_array = utils.time.create_date_range(start, stop, freq=freq)
 
         if user is None:
             self._download_rtn(date_array,
@@ -1625,7 +1625,7 @@ class Instrument(object):
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
                 self._iter_list = \
-                    utils.time.season_date_range(self._iter_start,
+                    utils.time.create_date_range(self._iter_start,
                                                  self._iter_stop,
                                                  freq=step)
 
@@ -1643,7 +1643,7 @@ class Instrument(object):
                 self._iter_type = 'date'
                 start = self._filter_datetime_input(start)
                 end = self._filter_datetime_input(end)
-                self._iter_list = utils.time.season_date_range(start, end, freq=step)
+                self._iter_list = utils.time.create_date_range(start, end, freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1676,7 +1676,7 @@ class Instrument(object):
                 end = self.files.stop_date
             self._iter_start = [self._filter_datetime_input(start)]
             self._iter_stop = [self._filter_datetime_input(end)]
-            self._iter_list = utils.time.season_date_range(self._iter_start,
+            self._iter_list = utils.time.create_date_range(self._iter_start,
                                                            self._iter_stop,
                                                            freq=step)
             self._iter_type = 'date'
@@ -2055,7 +2055,12 @@ class Instrument(object):
            structure
 
 
-        All attributes attached to instrument meta are written to netCDF attrs.
+        All attributes attached to instrument meta are written to netCDF attrs
+        with the exception of 'Date_End', 'Date_Start', 'File', 'File_Date',
+        'Generation_Date', and 'Logical_File_ID'. These are defined within to_netCDF
+        at the time the file is written, as per the adopted standard, 
+        SPDF ISTP/IACG Modified for NetCDF. Atrributes 'Conventions' and 
+        'Text_Supplement' are given default values if not present.
 
         """
 
@@ -2497,8 +2502,8 @@ class Instrument(object):
             
             adict['Date_Start'] = \
                 pysat.datetime.strftime(self.index[0],
-                                    '%a, %d %b %Y,  ' +
-                                    '%Y-%m-%dT%H:%M:%S.%f')
+                                        '%a, %d %b %Y,  ' +
+                                        '%Y-%m-%dT%H:%M:%S.%f')
             adict['Date_Start'] = adict['Date_Start'][:-3] + ' UTC'
             adict['File'] = os.path.split(fname)
             adict['File_Date'] = \

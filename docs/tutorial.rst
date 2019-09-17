@@ -118,7 +118,7 @@ To load data over a season, pysat provides a convenience function that returns a
    mean_dB = pandas.Series()
 
    # get list of dates between start and stop
-   date_array = pysat.utils.time.season_date_range(start, stop)
+   date_array = pysat.utils.time.create_date_range(start, stop)
 
    # iterate over season, calculate the mean absolute perturbation in
    # meridional magnetic field
@@ -310,7 +310,7 @@ We can repeat the earlier VEFI example, this time using nano-kernel functionalit
    mean_dB = pandas.Series()
 
    # get list of dates between start and stop
-   date_array = pysat.utils.time.season_date_range(start, stop)
+   date_array = pysat.utils.time.create_date_range(start, stop)
 
    # iterate over season, calculate the mean absolute perturbation in
    # meridional magnetic field
@@ -340,7 +340,7 @@ Note the same result is obtained. The VEFI instrument object and analysis are pe
       mean_val = pandas.Series()
 
       # get list of dates between start and stop
-      date_array = pysat.utils.time.season_date_range(start, stop)
+      date_array = pysat.utils.time.create_date_range(start, stop)
 
       # iterate over season, calculate the mean
       for date in date_array:
@@ -404,7 +404,7 @@ daily_mean now works for any instrument, as long as the data to be averaged is 1
        # create empty series to hold result
        mean_val = pandas.Series()
        # get list of dates between start and stop
-       date_array = pysat.utils.time.season_date_range(start, stop)
+       date_array = pysat.utils.time.create_date_range(start, stop)
        # iterate over season, calculate the mean
        for date in date_array:
            inst.load(date=date)
@@ -439,7 +439,7 @@ This code works for 1D, 2D, and 3D datasets, regardless of instrument platform, 
        # create empty series to hold result
        mean_val = pandas.Series()
        # get list of dates between start and stop
-       date_array = pysat.utils.time.season_date_range(start, stop)
+       date_array = pysat.utils.time.create_date_range(start, stop)
        # iterate over season, calculate the mean
        for date in date_array:
            inst.load(date=date)
@@ -447,7 +447,7 @@ This code works for 1D, 2D, and 3D datasets, regardless of instrument platform, 
                # compute mean absolute using pandas functions and store
                # data could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
-               data = pysat.utils.computational_form(data)
+               data = pysat.ssnl.computational_form(data)
                mean_val[inst.date] = data.abs().mean(axis=0, skipna=True)
 
    return mean_val
@@ -466,7 +466,7 @@ The seasonal analysis loop is repeated commonly:
 
 .. code:: python
 
-   date_array = pysat.utils.time.season_date_range(start,stop)
+   date_array = pysat.utils.time.create_date_range(start,stop)
    for date in date_array:
        vefi.load(date=date)
        print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
@@ -530,7 +530,7 @@ Building support for this iteration into the mean_day example is easy.
                # compute mean absolute using pandas functions and store
                # data could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
-               data = pysat.utils.computational_form(data)
+               data = pysat.ssnl.computational_form(data)
                mean_val[inst.date] = data.abs().mean(axis=0, skipna=True)
 
        return mean_val
@@ -746,7 +746,7 @@ We also don't want to maintain two code bases that do almost the same thing. So 
                   else:
                       date = inst.date
 
-                  data = pysat.utils.computational_form(data)
+                  data = pysat.ssnl.computational_form(data)
                   mean_val[date] = data.abs().mean(axis=0, skipna=True)
 
        del iterator
