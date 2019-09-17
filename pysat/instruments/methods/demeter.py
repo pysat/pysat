@@ -59,10 +59,14 @@ def bytes_to_float(chunk):
     import struct
     import codecs
 
+    chunk_code = codecs.encode(chunk, 'hex')
+
     if sys.version_info.major == 2:
-        decoded = codecs.encode(chunk, 'hex').decode('hex')
+        decoded = chunk_code.decode('hex')
+    elif hasattr(chunk_code, "decode"):
+        decoded = bytes.fromhex(chunk_code.decode('utf-8'))
     else:
-        decoded = bytes.fromhex(codecs.encode(chunk, 'hex'))
+        decoded = bytes.fromhex(chunk_code)
 
     return struct.unpack("!f", decoded)[0]
 
