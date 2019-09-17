@@ -21,7 +21,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Fixed error catching bug in model_utils
    - Removed deprecated keyword from methods within Instrument.concat_data
    - Fixed error introduced by upstream change in NOAA F10.7 file format
-   - Fixed issue with name sliciing and xarray. Added unit test.
+   - Fixed issue with data access via Instrument object using time and name slicing and xarray. Added unit test.
 
 ## [2.0.0] - 2019-07-11
  - New Features
