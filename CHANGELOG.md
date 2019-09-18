@@ -8,7 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Improved failure messages for utils.coords.scale_units
    - Added some tests for model_utils
    - Added option to to_netCDF that names variables in the written file
-   based upon the strings in the Instrument.meta object
+     based upon the strings in the Instrument.meta object
    - Improved compatibility with NASA ICON's file standards
    - Improved file downloading for Kp
 - Code Restructure
@@ -20,6 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
    - Fixed error introduced by upstream change in NOAA F10.7 file format
+   - Fixed a bug when trying to combine empty kp lists
 - Documentation
   - Added info on how to cite the code and package.
 
