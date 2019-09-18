@@ -1,9 +1,9 @@
 Citations in the pysat ecosystem
 ================================
 
-When referring to this software package, please cite the original paper by Stoneback et al [2018] https://doi.org/10.1029/2018JA025297 as well as the package https://doi.org/10.5281/zenodo.1199703. Note that this doi will always point to the latest version of the code.  A list of dois for all versions can be found at the [zenodo page](https://zenodo.org/record/3321222).
+When referring to this software package, please cite the original paper by Stoneback et al [2018] https://doi.org/10.1029/2018JA025297 as well as the package https://doi.org/10.5281/zenodo.1199703. Note that this doi will always point to the latest version of the code.  A list of dois for all versions can be found at the [zenodo page](https://zenodo.org/record/1199703).
 
-Citing the package (Version 2.0):
+Example for citation in BibTex for a generalized version:
 
 .. code::
 
@@ -17,11 +17,11 @@ Citing the package (Version 2.0):
                     von Bose, V. and
                     Luis, S. and
                     Iyer, G.},
-    title        = {Python Satellite Data Analysis Toolkit (pysat) v2.0},
+    title        = {Python Satellite Data Analysis Toolkit (pysat) vX.Y.Z},
     month        = jul,
     year         = 2019,
-    doi          = {10.5281/zenodo.3321222},
-    url          = {https://doi.org/10.5281/zenodo.3321222}
+    doi          = {10.5281/zenodo.1199703},
+    url          = {https://doi.org/10.5281/zenodo.1199703}
   }
 
 Citing the publication:
