@@ -19,7 +19,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
-   - Removed deprecated keyword from methods within Instrument.concat_data
+   - Updated Instrument.concat_data for consistency across pandas and xarray. Includes support for user provided keywords.
    - Fixed error introduced by upstream change in NOAA F10.7 file format
    - Fixed issue with data access via Instrument object using time and name slicing and xarray. Added unit test.
 
