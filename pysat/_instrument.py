@@ -443,7 +443,10 @@ class Instrument(object):
                 try:
                     return self.data.isel(time=key[0])[key[1]]
                 except:
-                    return self.data.sel(time=key[0])[key[1]]
+                    try:
+                        return self.data.sel(time=key[0])[key[1]]
+                    except TypeError: # construct dataset from names
+                        return self.data[self.variables[key[1]]]
             else:
                 # multidimensional indexing
                 indict = {}
@@ -698,12 +701,44 @@ class Instrument(object):
         return copy.deepcopy(self)
 
     def concat_data(self, data, *args, **kwargs):
-        """Concats data1 and data2 for xarray or pandas as needed"""
+        """Concats data1 and data2 for xarray or pandas as needed
+        
+        Note
+        ----
+        For pandas, sort=False is passed along to the underlying
+        pandas.concat method. If sort is supplied as a keyword, the
+        user provided value is used instead.
+        
+        For xarray, dim='time' is passed along to xarray.concat
+        except if the user includes a value for dim as a 
+        keyword argument.
+        
+        Parameters
+        ----------
+        data : pandas or xarray
+           Data to be appended to data already within the Instrument object
+           
+        Returns
+        -------
+        void
+            Instrument.data modified in place.
+            
+        """
 
         if self.pandas_format:
-            return pds.concat(data, sort=True, *args, **kwargs)
+            if 'sort' in kwargs:
+                sort = kwargs['sort']
+                _ = kwargs.pop('sort')
+            else:
+                sort = False
+            return pds.concat(data, sort=sort, *args, **kwargs)
         else:
-            return xr.concat(data, dim='time')
+            if 'dim' in kwargs:
+                dim = kwargs['dim']
+                _ = kwargs.pop('dim')
+            else:
+                dim = 'time'
+            return xr.concat(data, dim=dim, *args, **kwargs)
 
     def _pass_func(*args, **kwargs):
         pass
