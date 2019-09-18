@@ -190,16 +190,19 @@ class TestBasics():
         # data set #1
         data1 = self.testInst.data
         len1 = len(self.testInst.index)
+        
         # concat together
         self.testInst.data = self.testInst.concat_data([data1, data2])
-        # test for concatenation
+        # basic test for concatenation
         len3 = len(self.testInst.index)
         assert (len3 == len1 + len2)
-
-        # concat together with sort=True
+        
         if self.testInst.pandas_format:
+           # test concat from above
             assert ((self.testInst[0:len1, :] == data1.values[:, :]).all().all() & 
                     (self.testInst[len1:, :] == data2.values[:, :]).all().all()) 
+            # concat together with sort=True
+            # pandas only feature
             self.testInst.data = self.testInst.concat_data([data1, data2], sort=True)
             # test for concatenation
             len3 = len(self.testInst.index)
@@ -207,13 +210,14 @@ class TestBasics():
             assert ((self.testInst[0:len1, data1.columns] == data1.values[:, :]).all().all() & 
                     (self.testInst[len1:, data2.columns] == data2.values[:, :]).all().all()) 
         else:
-            # xarray
 
+            # first, check for concat just before if else
             assert ((self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all() & 
                     (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()) 
 
-
-            # test for dim keyword
+            # concat together while also specifying a different concatentation dimension
+            # xarray specific functionality
+            # change name of main dim to support test for dim keyword
             data1 = data1.rename({'time':'time2'})
             data2 = data2.rename({'time':'time2'})
 
