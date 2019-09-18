@@ -45,7 +45,7 @@ def remove_files(inst=None):
 
 
 # create year doy file set
-def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None):
+def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None, content = None):
 
     if freq is None:
         freq = '1D'
@@ -66,7 +66,8 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None):
                              day=doy, month=date.month, hour=date.hour,
                              minute=date.minute, second=date.second))
         with open(fname, 'w') as f:
-            pass
+            if content is not None:
+                f.write(content)
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -414,6 +415,47 @@ class TestInstrumentWithFiles():
         dates = pysat.utils.time.season_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
+
+    def test_refresh_on_ignore_empty_files(self):
+        # setup created empty files - make sure such files can be ignored
+        self.testInst.files.ignore_empty_files = True
+        self.testInst.files.refresh()
+        assert len(self.testInst.files.files) == 0
+
+        # create new files with content and make sure they are captured
+        start = pysat.datetime(2007, 12, 31)
+        stop = pysat.datetime(2008, 1, 10)
+        create_files(self.testInst, start, stop, freq='100min',
+                     use_doy=False,
+                     root_fname=self.root_fname,
+                     content = 'test')
+        dates = pysat.utils.time.season_date_range(start, stop, freq='100min')
+        self.testInst.files.refresh()
+        assert (np.all(self.testInst.files.files.index == dates))
+
+    def test_init_on_ignore_empty_files(self):
+        """Make sure new instruments can ignore empty files"""
+        self.testInst = \
+            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                             clean_level='clean',
+                             update_files=True,
+                             temporary_file_list=self.temporary_file_list,
+                             ignore_empty_files=True)
+
+        assert len(self.testInst.files.files) == 0
+
+        # create new files with content and make sure they are captured
+        start = pysat.datetime(2007, 12, 31)
+        stop = pysat.datetime(2008, 1, 10)
+        create_files(self.testInst, start, stop, freq='100min',
+                     use_doy=False,
+                     root_fname=self.root_fname,
+                     content = 'test')
+        dates = pysat.utils.time.season_date_range(start, stop, freq='100min')
+        self.testInst.files.refresh()
+        assert (np.all(self.testInst.files.files.index == dates))
+
+
 
     def test_refresh_on_unchanged_files(self):
         start = pysat.datetime(2007, 12, 31)
