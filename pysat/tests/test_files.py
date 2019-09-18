@@ -433,7 +433,7 @@ class TestInstrumentWithFiles():
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
 
-    def test_init_on_ignore_empty_files(self):
+    def test_instrument_with_ignore_empty_files(self):
         """Make sure new instruments can ignore empty files"""
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
