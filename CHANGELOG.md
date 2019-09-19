@@ -16,12 +16,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Move `scale_units` to `utils._core`
   - Rename `season_date_range` as `create_date_range`
   - Added deprecation warnings to stat functions
+  - Removed artificial requirement cap on xarray, numpy, scipy, now handled in travis.yml
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
    - Updated Instrument.concat_data for consistency across pandas and xarray. Includes support for user provided keywords.
    - Fixed error introduced by upstream change in NOAA F10.7 file format
    - Fixed issue with data access via Instrument object using time and name slicing and xarray. Added unit test.
+   - Updated travis.yml to work under pysat organization
+   - Added missing requirements (matplotlib, netCDF4)
 - Documentation
   - Added info on how to cite the code and package.
 
