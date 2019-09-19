@@ -23,10 +23,6 @@ before_install:
   #- apt-get update
   - pip install coveralls
   - pip install future
-  - pip install matplotlib
-  - pip install netCDF4
-  - pip install beautifulsoup4
-  - pip install lxml
   - pip install pysatCDF >/dev/null
   # install pyglow, space science models
   - cd ..
