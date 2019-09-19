@@ -8,11 +8,10 @@ https://github.com/pypa/sampleproject
 from setuptools import setup
 # To use a consistent encoding
 from codecs import open
-from os import path
 import os
 
-here = path.abspath(path.dirname(__file__))
-with open(path.join(here, 'description.txt'), encoding='utf-8') as f:
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, 'description.txt'), encoding='utf-8') as f:
     long_description = f.read()
 version_filename = os.path.join('pysat', 'version.txt')
 with open(os.path.join(here, version_filename)) as version_file:
