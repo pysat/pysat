@@ -23,6 +23,9 @@ before_install:
   #- apt-get update
   - pip install coveralls
   - pip install future
+  - pip install pandas
+  - pip install xarray
+  - pip install matplotlib
   - pip install pysatCDF >/dev/null
   # install pyglow, space science models
   - cd ..
