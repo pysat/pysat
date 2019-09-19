@@ -23,7 +23,6 @@ before_install:
   #- apt-get update
   - pip install coveralls
   - pip install future
-  - pip install pandas
   - pip install xarray
   - pip install numpy
   - pip install scipy
