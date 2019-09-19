@@ -25,6 +25,8 @@ before_install:
   - pip install future
   - pip install pandas
   - pip install xarray
+  - pip install numpy
+  - pip install scipy
   - pip install matplotlib
   - pip install pysatCDF >/dev/null
   # install pyglow, space science models
