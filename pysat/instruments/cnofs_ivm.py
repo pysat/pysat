@@ -103,13 +103,6 @@ def clean(inst):
 
     """
 
-    # cleans cindi data
-    if inst.clean_level == 'clean':
-        # choose areas below 550km
-        # inst.data = inst.data[inst.data.alt <= 550]
-        idx, = np.where(inst.data.altitude <= 550)
-        inst.data = inst[idx, :]
-
     # make sure all -999999 values are NaN
     inst.data.replace(-999999., np.nan, inplace=True)
 
@@ -120,12 +113,9 @@ def clean(inst):
     elif inst.clean_level == 'dusty':
         max_rpa_flag = 3
         max_dm_flag = 3
-    elif inst.clean_level == 'dirty':
+    else:
         max_rpa_flag = 4
         max_dm_flag = 6
-    else:
-        max_rpa_flag = 9
-        max_dm_flag = 9
 
     # First pass, remove bad densities
     idx, = np.where(inst.data.RPAflag <= max_rpa_flag)
