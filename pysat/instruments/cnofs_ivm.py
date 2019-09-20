@@ -132,8 +132,6 @@ def clean(inst):
     inst.data = inst[idx, :]
 
     # Second pass, find bad drifts
-    drift_labels = ['ionVelmeridional', 'ionVelparallel', 'ionVelzonal',
-                    'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
     idx, = np.where(inst.data.driftMeterflag > max_dm_flag)
 
     # Also exclude very large drifts
@@ -144,6 +142,8 @@ def clean(inst):
         except AttributeError:
             pass
 
+    drift_labels = ['ionVelmeridional', 'ionVelparallel', 'ionVelzonal',
+                    'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
     for label in drift_labels:
         inst[label][idx] = np.NaN
 
