@@ -78,7 +78,7 @@ class Instrument(object):
         instrument list_files routine.
     ignore_empty_files : boolean
         if True, the list of files found will be checked to
-        ensure the filesiizes are greater than zero. Empty files are
+        ensure the filesizes are greater than zero. Empty files are
         removed from the stored list of files.
     units_label : str
         String used to label units in storage. Defaults to 'units'.
