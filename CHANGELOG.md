@@ -22,6 +22,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updated Instrument.concat_data for consistency across pandas and xarray. Includes support for user provided keywords.
    - Fixed error introduced by upstream change in NOAA F10.7 file format
    - Fixed issue with data access via Instrument object using time and name slicing and xarray. Added unit test.
+   - Updated travis.yml to work under pysat organization
+   - Added missing requirements (matplotlib, netCDF4)
 - Documentation
   - Added info on how to cite the code and package.
 
