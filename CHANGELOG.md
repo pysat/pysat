@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added missing requirements (matplotlib, netCDF4)
 - Documentation
   - Added info on how to cite the code and package.
+  - Updated instrument docstring
 
 ## [2.0.0] - 2019-07-11
  - New Features
