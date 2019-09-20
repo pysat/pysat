@@ -121,14 +121,15 @@ def clean(inst):
     idx, = np.where(inst.data.RPAflag <= max_rpa_flag)
     inst.data = inst[idx, :]
 
-    # Second pass, find bad drifts
+    # Second pass, find bad drifts, replace with NaNs
     idx, = np.where(inst.data.driftMeterflag > max_dm_flag)
 
-    # Also exclude very large drifts
+    # Also exclude very large drifts and drifts where 100% O+
     if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
         try:
             idx2, = np.where(np.abs(inst.data.ionVelmeridional) >= 10000.)
-            idx = np.unique(np.append(idx, idx2))
+            idx3, = np.where(inst.data.ion1fraction >= 1.0)
+            idx = np.unique(np.append(idx, idx2, idx3))
         except AttributeError:
             pass
 
@@ -136,6 +137,11 @@ def clean(inst):
                     'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
     for label in drift_labels:
         inst[label][idx] = np.NaN
+        
+    # Check for bad temperature fits (O+ < 15%), replace with NaNs
+    # Criteria from Hairston et al, 2015
+    idx, = np.where(ivm.data.ion1fraction < 0.15)
+    inst['ionTemperature'][idx] = np.NaN
 
     # basic quality check on drifts and don't let UTS go above 86400.
     idx, = np.where(inst.data.time <= 86400.)
