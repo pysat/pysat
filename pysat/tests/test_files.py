@@ -429,7 +429,7 @@ class TestInstrumentWithFiles():
                      use_doy=False,
                      root_fname=self.root_fname,
                      content = 'test')
-        dates = pysat.utils.time.season_date_range(start, stop, freq='100min')
+        dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
 
@@ -451,7 +451,7 @@ class TestInstrumentWithFiles():
                      use_doy=False,
                      root_fname=self.root_fname,
                      content = 'test')
-        dates = pysat.utils.time.season_date_range(start, stop, freq='100min')
+        dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
 
