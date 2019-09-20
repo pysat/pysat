@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pds
 import collections
 
+
 def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
     """Return a 1D median of data_label over a season and label1
 
@@ -25,7 +26,7 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
         data column name that the binning will be performed over (i.e., lat)
     data_label: (list-like )
         contains strings identifying data product(s) to be averaged
-    auto_bin: if True, function will create bins from the min, max and 
+    auto_bin: if True, function will create bins from the min, max and
               number of bins. If false, bin edges must be manually entered
     returnData : (boolean)
         Return data in output dictionary as well as statistics
@@ -37,11 +38,11 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
         over the season delineated by bounds of passed instrument objects.
         Also includes 'count' and 'avg_abs_dev' as well as the values of
         the bin edges in 'bin_x'
-    
+
     """
 
-    # const is either an Instrument or a Constellation, and we want to 
-    #  iterate over it. 
+    # const is either an Instrument or a Constellation, and we want to
+    #  iterate over it.
     # If it's a Constellation, then we can do that as is, but if it's
     #  an Instrument, we just have to put that Instrument into something
     #  that will yeild that Instrument, like a list.
@@ -72,7 +73,7 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
     for inst in const:
         # do loop to iterate over instrument season
         # probably iterates by date but that all depends on the
-        # configuration of that particular instrument. 
+        # configuration of that particular instrument.
         # either way, it iterates over the instrument, loading successive
         # data between start and end bounds
         for inst in inst:
@@ -84,7 +85,7 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
                 # for each possible x index
                 for xi in xarr:
                     # get the indicies of those pieces of data in that bin
-                    xindex, = np.where(xind==xi)
+                    xindex, = np.where(xind == xi)
                     if len(xindex) > 0:
                         # for each data product label zk
                         for zk in zarr:
@@ -96,6 +97,7 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
     # Calculate the 1D median
     return _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
                            returnData)
+
 
 def median2D(const, bin1, label1, bin2, label2, data_label,
              returnData=False, auto_bin=True):
@@ -374,23 +376,24 @@ def _core_mean(inst, data_label, by_orbit=False, by_day=False, by_file=False):
     # iterate over season, calculate the mean
     for inst in iterator:
         if not inst.data.empty:
-                # compute mean absolute using pandas functions and store
-                # data could be an image, or lower dimension, account for 2D
-                # and lower
-                data = inst[data_label]
-                data.dropna(inplace=True)
+            # compute mean absolute using pandas functions and store
+            # data could be an image, or lower dimension, account for 2D
+            # and lower
+            data = inst[data_label]
+            data.dropna(inplace=True)
 
-                if by_orbit or by_file:
-                    date = inst.data.index[0]
-                else:
-                    date = inst.date
-                # perform average
-                mean_val[date] = \
-                    pysat.utils.computational_form(data).mean(axis=0,
-                                                              skipna=True)
+            if by_orbit or by_file:
+                date = inst.data.index[0]
+            else:
+                date = inst.date
+            # perform average
+            mean_val[date] = \
+                pysat.ssnl.computational_form(data).mean(axis=0,
+                                                          skipna=True)
 
     del iterator
     return mean_val
+
 
 def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
                     returnData=False):
@@ -410,7 +413,7 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
     # set up output arrays
     medianAns = [[None for i in xarr] for k in zarr]
     countAns = [[None for i in xarr] for k in zarr]
-    devAns = [[None for i in xarr] for k in zarr]    
+    devAns = [[None for i in xarr] for k in zarr]
 
     # all of the loading and storing data is done
     # determine what kind of data is stored
@@ -423,19 +426,19 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
     for zk in zarr:
         for xi in xarr:
             if len(ans[zk][xi]) > 0:
-                dataType[zk] = type(ans[zk][xi][0]) 
+                dataType[zk] = type(ans[zk][xi][0])
                 break
 
     # determine if normal number objects are being used or if there
     # are more complicated objects
     objArray = [False] * len(zarr)
     for i, thing in enumerate(dataType):
-         if thing == pds.core.series.Series:
+        if thing == pds.core.series.Series:
             objArray[i] = 'S'
-         elif thing == pds.core.frame.DataFrame:
+        elif thing == pds.core.frame.DataFrame:
             objArray[i] = 'F'
-         else:
-             # other, simple scalaRs
+        else:
+            # other, simple scalaRs
             objArray[i] = 'R'
 
     objArray = np.array(objArray)
@@ -457,15 +460,17 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
     objidx, = np.where(objArray == 'F')
     if len(objidx) > 0:
         for zk in zarr[objidx]:
-            for xi in xarr:                    
+            for xi in xarr:
                 if len(ans[zk][xi]) > 0:
                     ans[zk][xi] = list(ans[zk][xi])
                     countAns[zk][xi] = len(ans[zk][xi])
-                    test = pds.Panel.from_dict(dict([(i,temp) for i, temp \
+                    test = pds.Panel.from_dict(dict([(i, temp) for i, temp \
                                                     in enumerate(ans[zk][xi])]))
                     medianAns[zk][xi] = test.median(axis=0)
-                    devAns[zk][xi] = (test.subtract(medianAns[zk][xi], \
-                                    axis=0)).abs().median(axis=0, skipna=True)
+                    devAns[zk][xi] = \
+                        (test.subtract(medianAns[zk][xi],
+                                       axis=0)).abs().median(axis=0,
+                                                             skipna=True)
 
     objidx, = np.where(objArray == 'R')
     if len(objidx) > 0:
@@ -488,11 +493,11 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
 
     # prepare output
     output = {}
-    for i,label in enumerate(data_label):
-        output[label] = {'median': medianAns[i], 
-                        'count':countAns[i],
-                        'avg_abs_dev':devAns[i],
-                        'bin_x': binx}
+    for i, label in enumerate(data_label):
+        output[label] = {'median': medianAns[i],
+                         'count': countAns[i],
+                         'avg_abs_dev': devAns[i],
+                         'bin_x': binx}
 
         if returnData:
             output[label]['data'] = ans[i]

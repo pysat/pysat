@@ -23,10 +23,6 @@ before_install:
   #- apt-get update
   - pip install coveralls
   - pip install future
-  - pip install matplotlib
-  - pip install netCDF4
-  - pip install beautifulsoup4
-  - pip install lxml
   - pip install pysatCDF >/dev/null
   # install pyglow, space science models
   - cd ..
@@ -42,9 +38,9 @@ before_install:
 install:
   - source activate test-environment
   # set up data directory
-  - mkdir /home/travis/build/rstoneback/pysatData
+  - mkdir /home/travis/build/pysat/pysatData
   # install pysat
-  - cd /home/travis/build/rstoneback/pysat
+  - cd /home/travis/build/pysat/pysat
   - python setup.py install
 
 before_script:
