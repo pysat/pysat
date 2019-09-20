@@ -198,6 +198,8 @@ class Instrument(object):
                                  'strings, or both None.')
         else:
             # user has provided a module
+            if type(inst_module) == str:
+                inst_module = utils.user_modules.register(inst_module)
             try:
                 # platform and name are expected to be part of module
                 self.name = inst_module.name.lower()
@@ -714,7 +716,6 @@ class Instrument(object):
     def _assign_funcs(self, by_name=False, inst_module=None):
         """Assign all external science instrument methods to Instrument object.
         """
-
         import importlib
         # set defaults
         self._list_rtn = self._pass_func
@@ -743,35 +744,20 @@ class Instrument(object):
             except:
                 # iterate through user set modules
                 for mod in user_modules:
-                    # name of package in list[1]
-                    name = mod[1]
+                    # get my.package.name from my.package.name.platform_name
+                    package_name = '.'.join(mod.split('.')[:-1])
                     try:
                         inst = importlib.import_module(
                                 ''.join(('.', self.platform, '_', self.name)),
-                                package=name)
+                                package=package_name)
                         import_success = True
                         # done!
                         break
                     except:
                         pass
                 if not import_success:
-                    # now iterate through all modules
-                    for mod in pkgutil.iter_modules():
-                        # name of package in list[1]
-                        name = mod[1]
-                        # look for any packages with pysat in leading Title
-                        if name[0:5] == 'pysat' & len(name) > 5:
-                            try:
-                                inst = importlib.import_module(
-                                    ''.join(('.', self.platform, '_', self.name)),
-                                    package=name + '.instruments')
-                                import_success = True
-                                # done!
-                                break
-                            except:
-                                st = ''.join((self.platform, '_', self.name))
-                                raise RuntimeError('Unable find a package with' +
-                                                   'support for ' + st)
+                    raise ImportError(
+                        "Could not find a registered module for {}_{}".format(self.platform, self.name))
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
             inst = inst_module

@@ -84,9 +84,9 @@ else:
     # load up stored user modules
     user_modules = []
     with open(os.path.join(pysat_dir, 'user_modules.txt'), 'r') as f:
-        _ = f.readline()
-        if _ != '' and (_ is not None):
-            user_modules.append(_)
+        for _ in f:
+            if _ != '' and (_ is not None):
+                user_modules.append(_.strip())
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
