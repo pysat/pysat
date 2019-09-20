@@ -134,7 +134,7 @@ def clean(inst):
     # Second pass, find bad drifts
     drift_labels = ['ionVelmeridional', 'ionVelparallel', 'ionVelzonal',
                     'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
-    idx, = np.where(inst.data.DMflag > max_dm_flag)
+    idx, = np.where(inst.data.driftMeterflag > max_dm_flag)
 
     # Also exclude very large drifts
     if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
