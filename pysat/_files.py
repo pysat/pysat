@@ -191,9 +191,10 @@ class Files(object):
                     # store if not empty
                     keep_index.append(i)
         # remove filenames as needed
-        if len(keep_index) < len(self.files.index):
-            # print('Found ' + str(len(self.files.index) - len(keep_index)) +
-            #     ' empty files. Removing these files from list.')
+        dropped_num = len(self.files.index) - len(keep_index)
+        if dropped_num > 0:
+            print(' '.join(('Removing', str(dropped_num),
+                  'empty files from Instrument list.')))
             self.files = self.files.iloc[keep_index]
 
 
