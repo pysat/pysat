@@ -113,31 +113,39 @@ def clean(inst):
     # make sure all -999999 values are NaN
     inst.data.replace(-999999., np.nan, inplace=True)
 
+    # Set maximum flags
+    if inst.clean_level == 'clean':
+        max_rpa_flag = 1
+        max_dm_flag = 0
+    elif inst.clean_level == 'dusty':
+        max_rpa_flag = 3
+        max_dm_flag = 3
+    elif inst.clean_level == 'dirty':
+        max_rpa_flag = 4
+        max_dm_flag = 6
+    else:
+        max_rpa_flag = 9
+        max_dm_flag = 9
+
+    # First pass, remove bad densities
+    idx, = np.where(inst.data.RPAflag <= max_rpa_flag)
+    inst.data = inst[idx, :]
+
+    # Second pass, find bad drifts
+    drift_labels = ['ionVelmeridional', 'ionVelparallel', 'ionVelzonal',
+                    'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
+    idx, = np.where(inst.data.DMflag > max_dm_flag)
+
+    # Also exclude very large drifts
     if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
         try:
-            idx, = np.where(np.abs(inst.data.ionVelmeridional) < 10000.)
-            inst.data = inst[idx, :]
+            idx2, = np.where(np.abs(inst.data.ionVelmeridional) >= 10000.)
+            idx = np.unique(np.append(idx, idx2))
         except AttributeError:
             pass
 
-        if inst.clean_level == 'dusty':
-            # take out all values where RPA data quality is > 1
-            idx, = np.where(inst.data.RPAflag <= 1)
-            inst.data = inst[idx, :]
-            # IDM quality flags
-            inst.data = inst.data[(inst.data.driftMeterflag <= 3)]
-        else:
-            # take out all values where RPA data quality is > 0
-            idx, = np.where(inst.data.RPAflag <= 0)
-            inst.data = inst[idx, :]
-            # IDM quality flags
-            inst.data = inst.data[(inst.data.driftMeterflag <= 0)]
-    if inst.clean_level == 'dirty':
-        # take out all values where RPA data quality is > 4
-        idx, = np.where(inst.data.RPAflag <= 4)
-        inst.data = inst[idx, :]
-        # IDM quality flags
-        inst.data = inst.data[(inst.data.driftMeterflag <= 6)]
+    for label in drift_labels:
+        inst[label][idx] = np.NaN
 
     # basic quality check on drifts and don't let UTS go above 86400.
     idx, = np.where(inst.data.time <= 86400.)
