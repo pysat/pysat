@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    based upon the strings in the Instrument.meta object
    - Improved compatibility with NASA ICON's file standards
    - Improved file downloading for Kp
+   - Updated cleaning routines for C/NOFS IVM
 - Code Restructure
   - Move `computational_form` to `ssnl`
   - Move `scale_units` to `utils._core`
