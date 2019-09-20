@@ -177,6 +177,26 @@ class Files(object):
                 # couldn't find stored info, load file list and then store
                 self.refresh()
 
+    def _filter_empty_files(self):
+        """Update the file list (files) with empty files ignored"""
+
+        keep_index = []
+        for i, fi in enumerate(self.files):
+            # create full path
+            fi_path = os.path.join(self.data_path, fi)
+            # ensure it exists
+            if os.path.exists(fi_path):
+                # check for size
+                if os.path.getsize(fi_path) > 0:
+                    # store if not empty
+                    keep_index.append(i)
+        # remove filenames as needed
+        if len(keep_index) < len(self.files.index):
+            # print('Found ' + str(len(self.files.index) - len(keep_index)) +
+            #     ' empty files. Removing these files from list.')
+            self.files = self.files.iloc[keep_index]
+
+
     def _attach_files(self, files_info):
         """Attach results of instrument list_files routine to Instrument object
 
@@ -207,22 +227,7 @@ class Files(object):
             self.files = files_info.sort_index()
             # filter for empty files here (in addition to refresh)
             if self.ignore_empty_files:
-                keep_index = []
-                for i, fi in enumerate(self.files):
-                    # create full path
-                    fi_path = os.path.join(self.data_path, fi)
-                    # ensure it exists
-                    if os.path.exists(fi_path):
-                        # check for size
-                        if os.path.getsize(fi_path) > 0:
-                            # store if not empty
-                            keep_index.append(i)
-                # remove filenames as needed
-                if len(keep_index) < len(self.files.index):
-                    # print('Found ' + str(len(self.files.index) - len(keep_index)) +
-                    #     ' empty files. Removing these files from list.')
-                    self.files = self.files.iloc[keep_index]
-
+                self._filter_empty_files()
             # extract date information
             self.start_date = self._sat._filter_datetime_input(files_info.index[0])
             self.stop_date = self._sat._filter_datetime_input(files_info.index[-1])
@@ -325,25 +330,8 @@ class Files(object):
                                    format_str=self.file_format)
         info = self._remove_data_dir_path(info)
         if not info.empty:
-            # filter for empty files here
             if self.ignore_empty_files:
-                keep_index = []
-                for i, fi in enumerate(info):
-                    # create full path
-                    fi_path = os.path.join(self.data_path, fi)
-                    # ensure it exists
-                    if os.path.exists(fi_path):
-                        # check for size
-                        if os.path.getsize(fi_path) > 0:
-                            # store if not empty
-                            keep_index.append(i)
-
-                # remove filenames as needed
-                if len(keep_index) < len(self.files.index):
-                    # print('Found ' + str(len(self.files.index) - len(keep_index)) +
-                        # ' empty files. Removing these files from list.')
-                    info = info.iloc[keep_index]
-
+                self._filter_empty_files()
             print('Found {ll:d} of them.'.format(ll=len(info)))
         else:
             estr = "Unable to find any files that match the supplied template."
