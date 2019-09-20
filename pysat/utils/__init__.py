@@ -9,5 +9,5 @@ of formats, loading of files, and user-supplied info
 for the pysat data directory structure.
 """
 
-from . import coords, stats, time, user_modules
+from . import coords, stats, time, registry
 from ._core import set_data_dir, computational_form, load_netcdf4

@@ -199,7 +199,7 @@ class Instrument(object):
         else:
             # user has provided a module
             if type(inst_module) == str:
-                inst_module = utils.user_modules.register(inst_module)
+                inst_module = utils.registry.register(inst_module)
             try:
                 # platform and name are expected to be part of module
                 self.name = inst_module.name.lower()
@@ -757,7 +757,8 @@ class Instrument(object):
                         pass
                 if not import_success:
                     raise ImportError(
-                        "Could not find a registered module for {}_{}".format(self.platform, self.name))
+                        "Could not find a registered module for {}_{}\nAvailable modules:{}".format(
+                            self.platform, self.name, user_modules))
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
             inst = inst_module
