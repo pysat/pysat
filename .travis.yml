@@ -24,16 +24,7 @@ before_install:
   - pip install coveralls
   - pip install future
   - pip install pysatCDF >/dev/null
-  # install pyglow, space science models
-  - cd ..
-  - echo 'cloning pyglow'
-  - git clone https://github.com/timduly4/pyglow.git >/dev/null
-  - echo 'installing pyglow'
-  - cd ./pyglow
-  - make -C src/pyglow/models source >/dev/null
-  - python setup.py install >/dev/null
-  - cd ..
-
+  
 # command to install dependencies
 install:
   - source activate test-environment

@@ -22,17 +22,15 @@ with open(os.path.join(here, version_filename)) as version_file:
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if sys.version_info.major == 2:
     install_requires = ['xarray<0.12', 'pandas>=0.23, <0.25',
-                        'numpy>=1.12, <1.17', 'scipy<1.3', 'sgp4',
-                        'pyEphem', 'requests', 'beautifulsoup4',
+                        'numpy>=1.12, <1.17', 'scipy<1.3',
+                        'requests', 'beautifulsoup4',
                         'lxml', 'netCDF4', 'matplotlib<3.0', 'pysatCDF',
-                        'apexpy', 'aacgmv2', 'pysatMagVect', 'madrigalWeb',
-                        'h5py', 'PyForecastTools', 'pyglow']
+                        'madrigalWeb', 'h5py', 'PyForecastTools']
 else:
     install_requires = ['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                        'sgp4', 'pyEphem', 'requests', 'beautifulsoup4',
+                        'requests', 'beautifulsoup4',
                         'lxml', 'netCDF4', 'matplotlib', 'pysatCDF',
-                        'apexpy', 'aacgmv2', 'pysatMagVect', 'madrigalWeb',
-                        'h5py', 'PyForecastTools', 'pyglow']
+                        'madrigalWeb', 'h5py', 'PyForecastTools']
 
 # all packages after pysatCDF are excluded if on ReadTheDocs
 if on_rtd:
