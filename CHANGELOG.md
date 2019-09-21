@@ -19,10 +19,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
+   - Updated Instrument.concat_data for consistency across pandas and xarray. Includes support for user provided keywords.
    - Fixed error introduced by upstream change in NOAA F10.7 file format
+   - Fixed issue with data access via Instrument object using time and name slicing and xarray. Added unit test.
+   - Updated travis.yml to work under pysat organization
+   - Added missing requirements (matplotlib, netCDF4)
    - Fixed a bug when trying to combine empty kp lists
 - Documentation
   - Added info on how to cite the code and package.
+  - Updated instrument docstring
 
 ## [2.0.0] - 2019-07-11
  - New Features
