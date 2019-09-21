@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.X.X] - 2019-09-16
+## [2.X.X] - 2019-09-20
 - New Features
    - Added new velocity format options to utils.coords.scale_units
    - Improved failure messages for utils.coords.scale_units
@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    based upon the strings in the Instrument.meta object
    - Improved compatibility with NASA ICON's file standards
    - Improved file downloading for Kp
+   - Added keyword ignore_empty_files to pysat.Instrument and Files objects
+    to filter out empty files from the stored file list
 - Code Restructure
   - Move `computational_form` to `ssnl`
   - Move `scale_units` to `utils._core`
