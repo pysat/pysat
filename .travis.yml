@@ -1,7 +1,7 @@
 language: python
 matrix:
   include:
-    - python: 2.7.14
+    - python: 2.7
       services: xvfb
     - python: 3.7
       dist: xenial
@@ -23,6 +23,7 @@ before_install:
   #- apt-get update
   - pip install coveralls
   - pip install future
+  - pip install apexpy
   - pip install pysatCDF >/dev/null
   # install pyglow, space science models
   - cd ..

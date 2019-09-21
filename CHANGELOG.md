@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Fixed issue with data access via Instrument object using time and name slicing and xarray. Added unit test.
    - Updated travis.yml to work under pysat organization
    - Added missing requirements (matplotlib, netCDF4)
+   - Updated travis.yml to work with python 2.7.15
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
