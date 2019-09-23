@@ -11,14 +11,13 @@ from nose.tools import assert_raises
 import os
 from pysat import pysat_dir
 
-def create_fake_module(package_name, instrument_name):
+def create_fake_module(full_module_name,  platform, name):
     """Creates fake module and package from test instrument"""
-    
-    module_name = instrument_name
     
     # use pysat_testing as base instrument
     file_path = pysat_testing.__file__
 
+    package_name, module_name = full_module_name.split('.')
 
     # implementation from https://stackoverflow.com/a/51575963
     importlib.machinery.SOURCE_SUFFIXES.append('') # empty string to allow any file
@@ -27,7 +26,6 @@ def create_fake_module(package_name, instrument_name):
     spec.loader.exec_module(instrument)
 
     # update the platform and name
-    platform, name = instrument_name.split('_')
     instrument.platform = platform
     instrument.name = name
 
@@ -37,12 +35,17 @@ def create_fake_module(package_name, instrument_name):
     
     import sys
     sys.modules[package_name] = package
-    sys.modules['.'.join([package_name, instrument_name])] = instrument
+    sys.modules['.'.join([package_name, module_name])] = instrument
 
 
 
 def test_multi_registration():
-    module_names = 'my_package.brand_first', 'my_package.brand_second'
+    modules = [
+        ('package1.module1', 'platname1', 'name1'),
+        ('package2.module2', 'platname2', 'name2')]
+
+    module_names = [mod[0] for mod in modules]
+
     registry.remove(*module_names)
 
     # make sure modules are not yet created
@@ -51,18 +54,21 @@ def test_multi_registration():
 
     # make sure instruments are not yet registered
     saved_modules = registry.load_saved_modules()
-    for module_name in module_names:
+    for module_name, platform, name in modules:
         assert module_name not in saved_modules
-        instrument_name = module_name.split('.')[-1]
-        assert_raises(ImportError, Instrument, *instrument_name.split('_'))
+        assert_raises(ImportError, Instrument, platform, name)
 
 
     # create modules
-    for module_name in module_names:
-        create_fake_module(*module_name.split('.'))
+    for module_name, platform, name in modules:
+
+        create_fake_module(module_name, platform, name)
 
         # register module by str
         testInst = Instrument(inst_module = module_name)
+
+        # load by platform and name
+        testInst = Instrument(platform, name)
 
         # check that global registry was updated
         assert module_name in user_modules

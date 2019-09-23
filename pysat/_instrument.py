@@ -747,13 +747,12 @@ class Instrument(object):
                     # get my.package.name from my.package.name.platform_name
                     package_name = '.'.join(mod.split('.')[:-1])
                     try:
-                        inst = importlib.import_module(
-                                ''.join(('.', self.platform, '_', self.name)),
-                                package=package_name)
-                        import_success = True
-                        # done!
-                        break
-                    except:
+                        inst = importlib.import_module(mod)
+                        if ((inst.platform == self.platform) & (inst.name == self.name)):
+                            import_success = True
+                            # done!
+                            break
+                    except ImportError:
                         pass
                 if not import_success:
                     raise ImportError(
