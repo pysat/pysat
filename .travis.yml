@@ -42,6 +42,7 @@ before_install:
 install:
   - source activate test-environment
   # set up data directory
+  - whoami
   - mkdir /home/travis/build/rstoneback/pysatData
   # install pysat
   - cd /home/travis/build/rstoneback/pysat
