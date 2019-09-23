@@ -71,7 +71,8 @@ def register(module_name):
 
     Returns
     --------
-    Updates the user module registry specified in pysat_dir/user_module.txt
+    Updates the user module registry specified in 
+    pysat_dir/user_module.txt
 
 
     Notes
@@ -82,8 +83,8 @@ def register(module_name):
     Module names do not have to follow the pysat platform_name naming
     convection.
 
-    Warning: Registering a module that contains code other than pysat  
-    instrument files could result in unexpected consequences.
+    Warning: Registering a module that contains code other than 
+    pysat instrument files could result in unexpected consequences.
 
     Examples
     ---------
@@ -105,7 +106,6 @@ def register(module_name):
     
     if module_name not in pysat.user_modules:
         print('registering user module {}'.format(module_name))
-        print('warning')
         pysat.user_modules.append(module_name)
         store()
 
