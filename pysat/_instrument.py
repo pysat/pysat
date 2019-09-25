@@ -76,6 +76,10 @@ class Instrument(object):
         month, and sat_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
         instrument list_files routine.
+    ignore_empty_files : boolean
+        if True, the list of files found will be checked to
+        ensure the filesizes are greater than zero. Empty files are
+        removed from the stored list of files.
     units_label : str
         String used to label units in storage. Defaults to 'units'.
     name_label : str
@@ -109,7 +113,9 @@ class Instrument(object):
     yr : int
         year for loaded data
     bounds : (datetime/filename/None, datetime/filename/None)
-        bounds for loading data, supply array_like for a season with gaps
+        bounds for loading data, supply array_like for a season with gaps.
+        Users may provide as a tuple or tuple of lists, but the attribute is
+        stored as a tuple of lists for consistency
     doy : int
         day of year for loaded data
     files : pysat.Files
@@ -172,6 +178,7 @@ class Instrument(object):
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=False,
+                 ignore_empty_files=False,
                  units_label='units', name_label='long_name',
                  notes_label='notes', desc_label='desc',
                  plot_label='label', axis_label='axis', scale_label='scale',
@@ -311,7 +318,8 @@ class Instrument(object):
                                   directory_format=self.directory_format,
                                   update_files=update_files,
                                   file_format=self.file_format,
-                                  write_to_disk=temporary_file_list)
+                                  write_to_disk=temporary_file_list,
+                                  ignore_empty_files=ignore_empty_files)
 
         # set bounds for iteration
         # self.bounds requires the Files class
@@ -702,27 +710,27 @@ class Instrument(object):
 
     def concat_data(self, data, *args, **kwargs):
         """Concats data1 and data2 for xarray or pandas as needed
-        
+
         Note
         ----
         For pandas, sort=False is passed along to the underlying
         pandas.concat method. If sort is supplied as a keyword, the
         user provided value is used instead.
-        
+
         For xarray, dim='time' is passed along to xarray.concat
-        except if the user includes a value for dim as a 
+        except if the user includes a value for dim as a
         keyword argument.
-        
+
         Parameters
         ----------
         data : pandas or xarray
            Data to be appended to data already within the Instrument object
-           
+
         Returns
         -------
         void
             Instrument.data modified in place.
-            
+
         """
 
         if self.pandas_format:
@@ -2058,8 +2066,8 @@ class Instrument(object):
         All attributes attached to instrument meta are written to netCDF attrs
         with the exception of 'Date_End', 'Date_Start', 'File', 'File_Date',
         'Generation_Date', and 'Logical_File_ID'. These are defined within to_netCDF
-        at the time the file is written, as per the adopted standard, 
-        SPDF ISTP/IACG Modified for NetCDF. Atrributes 'Conventions' and 
+        at the time the file is written, as per the adopted standard,
+        SPDF ISTP/IACG Modified for NetCDF. Atrributes 'Conventions' and
         'Text_Supplement' are given default values if not present.
 
         """
@@ -2485,7 +2493,7 @@ class Instrument(object):
             if 'Conventions' not in adict:
                 adict['Conventions'] = 'SPDF ISTP/IACG Modified for NetCDF'
             if 'Text_Supplement' not in adict:
-                adict['Text_Supplement'] = ''                
+                adict['Text_Supplement'] = ''
             # remove any attributes with the names below
             # pysat is responible for including them in the file.
             items = ['Date_End', 'Date_Start', 'File', 'File_Date',
@@ -2499,7 +2507,7 @@ class Instrument(object):
                                         '%a, %d %b %Y,  ' +
                                         '%Y-%m-%dT%H:%M:%S.%f')
             adict['Date_End'] = adict['Date_End'][:-3] + ' UTC'
-            
+
             adict['Date_Start'] = \
                 pysat.datetime.strftime(self.index[0],
                                         '%a, %d %b %Y,  ' +
