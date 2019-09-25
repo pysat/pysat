@@ -131,16 +131,7 @@ def clean(inst):
             idx2, = np.where(np.abs(inst.data.ionVelmeridional) >= 10000.)
             # shallow fit region for vx
             idx3, = np.where(inst.data.ion1fraction >= 1.0)
-            if len(idx2)>0:
-                if len(idx)>0:
-                    idx = np.unique(np.append(idx, idx2))
-                else:
-                    idx = idx2
-            if len(idx3)>0:
-                if len(idx)>0:
-                    idx = np.unique(np.append(idx, idx3))
-                else:
-                    idx = idx3
+            idx = np.unique(idx.extend(idx2, idx3))
         except AttributeError:
             pass
 
