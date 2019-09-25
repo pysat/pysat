@@ -127,16 +127,28 @@ def clean(inst):
     # Also exclude very large drifts and drifts where 100% O+
     if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
         try:
+            # unrealistic velocities
             idx2, = np.where(np.abs(inst.data.ionVelmeridional) >= 10000.)
+            # shallow fit region for vx
             idx3, = np.where(inst.data.ion1fraction >= 1.0)
-            idx = np.unique(np.append(idx, idx2, idx3))
+            if len(idx2)>0:
+                if len(idx)>0:
+                    idx = np.unique(np.append(idx, idx2))
+                else:
+                    idx = idx2
+            if len(idx3)>0:
+                if len(idx)>0:
+                    idx = np.unique(np.append(idx, idx3))
+                else:
+                    idx = idx3
         except AttributeError:
             pass
 
-    drift_labels = ['ionVelmeridional', 'ionVelparallel', 'ionVelzonal',
-                    'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
-    for label in drift_labels:
-        inst[label][idx] = np.NaN
+    if len(idx)>0:
+        drift_labels = ['ionVelmeridional', 'ionVelparallel', 'ionVelzonal',
+                        'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
+        for label in drift_labels:
+            inst[label][idx] = np.NaN
 
     # Check for bad temperature fits (O+ < 15%), replace with NaNs
     # Criteria from Hairston et al, 2015
