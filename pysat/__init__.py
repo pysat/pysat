@@ -41,6 +41,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
 
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
@@ -58,7 +66,7 @@ pysat_dir = os.path.join(home_dir, '.pysat')
 if not os.path.isdir(pysat_dir):
     # create directory
     os.mkdir(pysat_dir)
-    print('Created .pysat directory in user home directory to store settings.')
+    logger.info('Created .pysat directory in user home directory to store settings.')
     # create file with default data directory
     if not (os.environ.get('TRAVIS') == 'true'):
         data_dir = os.path.join(home_dir, 'pysatData')
@@ -66,7 +74,7 @@ if not os.path.isdir(pysat_dir):
         data_dir = '/home/travis/build/rstoneback/pysatData'
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
-    print(''.join(("\nHi there!  Pysat will nominally store data in the "
+    logger.info(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
                    "Run pysat.utils.set_data_dir to specify a different "
                    "top-level directory to store science data.")))

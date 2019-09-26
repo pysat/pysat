@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pds
 from pysat import data_dir as data_dir
 
+from pysat import logger
 
 class Files(object):
     """Maintains collection of files for instrument object.
@@ -189,8 +190,8 @@ class Files(object):
                 estr = 'WARNING! Duplicate datetimes in provided file '
                 estr = '{:s}information.\nKeeping one of each '.format(estr)
                 estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
-                print(estr)
-                print(files_info.index[files_info.index.duplicated()].unique())
+                logger.warning(estr)
+                logger.warning(files_info.index[files_info.index.duplicated()].unique())
 
                 idx = np.unique(files_info.index, return_index=True)
                 files_info = files_info.iloc[idx[1]]
@@ -291,19 +292,19 @@ class Files(object):
                                        sat_id=self._sat.sat_id)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
         output_str = " ".join(output_str.split())
-        print(output_str)
+        logger.info(output_str)
 
         info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id,
                                    data_path=self.data_path,
                                    format_str=self.file_format)
 
         if not info.empty:
-            print('Found {ll:d} of them.'.format(ll=len(info)))
+            logger.info('Found {ll:d} of them.'.format(ll=len(info)))
         else:
             estr = "Unable to find any files that match the supplied template."
             estr += " If you have the necessary files please check pysat "
             estr += "settings and file locations (e.g. pysat.pysat_dir)."
-            print(estr)
+            logger.info(estr)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
         self._store()
