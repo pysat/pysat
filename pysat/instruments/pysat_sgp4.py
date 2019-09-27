@@ -22,6 +22,9 @@ import pandas as pds
 import numpy as np
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 # pysat required parameters
 platform = 'pysat'
 name = 'sgp4'
@@ -407,7 +410,7 @@ def add_sc_attitude_vectors(inst):
                   inst['sc_zhat_ecef_z']**2)
     idx, = np.where((mag < .999999999) | (mag > 1.000000001))
     if len(idx) > 0:
-        print(mag[idx])
+        logger.info(mag[idx])
         raise RuntimeError('Unit vector generation failure. Not sufficently ' +
                            'orthogonal.')
 

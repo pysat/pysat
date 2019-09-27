@@ -6,6 +6,9 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
@@ -13,7 +16,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
     url = 'https://cdpp-archive.cnes.fr/'
-    print('Data must be downloaded by registered users at: {:s}'.format(url))
+    logger.info('Data must be downloaded by registered users at: {:s}'.format(url))
     return
 
 
@@ -37,7 +40,7 @@ def list_remote_files(tag, sat_id):
 
     """
 
-    print('Remote file lists are not supported for Demeter.')
+    logger.info('Remote file lists are not supported for Demeter.')
     return
 
 
@@ -556,7 +559,7 @@ def set_metadata(name, meta_dict):
                          'satellite_potential': 'Satellite potential'}}
 
     if name not in long_inst.keys():
-        print('Warning, no long-form names available for {:s}'.format(name))
+        logger.warning('no long-form names available for {:s}'.format(name))
 
         long_inst[name] = {nn: nn for nn in meta_dict['data names']}
 

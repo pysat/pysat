@@ -44,11 +44,10 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
-formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 # set version
 here = os.path.abspath(os.path.dirname(__file__))

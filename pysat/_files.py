@@ -187,7 +187,7 @@ class Files(object):
         if not files_info.empty:
             unique_files = len(files_info.index.unique()) != len(files_info)
             if (not self._sat.multi_file_day and unique_files):
-                estr = 'WARNING! Duplicate datetimes in provided file '
+                estr = 'Duplicate datetimes in provided file '
                 estr = '{:s}information.\nKeeping one of each '.format(estr)
                 estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
                 logger.warning(estr)

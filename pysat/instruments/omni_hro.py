@@ -55,6 +55,9 @@ import pandas as pds
 import pysat
 from .methods import nasa_cdaweb as cdw
 
+import logging
+logger = logging.getLogger(__name__)
+
 platform = 'omni'
 name = 'hro'
 tags = {'1min': '1-minute time averaged data',
@@ -140,8 +143,8 @@ def time_shift_to_magnetic_poles(inst):
     time_x = inst['BSN_x']*6371.2/-inst['Vx']
     idx, = np.where(np.isnan(time_x))
     if len(idx) > 0:
-        print(time_x[idx])
-        print(time_x)
+        logger.info(time_x[idx])
+        logger.info(time_x)
     time_x_offset = [pds.DateOffset(seconds=time)
                      for time in time_x.astype(int)]
     new_index = []
@@ -203,8 +206,8 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     max_wnum = np.floor(steady_window / sample_rate)
     if max_wnum != steady_window / sample_rate:
         steady_window = max_wnum * sample_rate
-        print("WARNING: sample rate is not a factor of the statistical window")
-        print("new statistical window is {:.1f}".format(steady_window))
+        logger.warning("sample rate is not a factor of the statistical window")
+        logger.warning("new statistical window is {:.1f}".format(steady_window))
 
     min_wnum = int(np.ceil(max_wnum * min_window_frac))
 
