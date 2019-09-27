@@ -193,9 +193,13 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
         notes += "{:})".format(itime.date())
 
     # Determine if the beginning or end of the time series needs to be padded
-    freq = pysat.utils.time.calc_freq(kp_times)
+    
+    freq = None if len(kp_times) < 2 else pysat.utils.time.calc_freq(kp_times)
     date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
                                 freq=freq)
+
+    if len(kp_times) == 0:
+        kp_times = date_range
 
     if date_range[0] < kp_times[0]:
         # Extend the time and value arrays from their beginning with fill

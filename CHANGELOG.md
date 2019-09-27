@@ -8,7 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Improved failure messages for utils.coords.scale_units
    - Added some tests for model_utils
    - Added option to to_netCDF that names variables in the written file
-   based upon the strings in the Instrument.meta object
+     based upon the strings in the Instrument.meta object
    - Improved compatibility with NASA ICON's file standards
    - Improved file downloading for Kp
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Fixed issue with data access via Instrument object using time and name slicing and xarray. Added unit test.
    - Updated travis.yml to work under pysat organization
    - Added missing requirements (matplotlib, netCDF4)
+   - Fixed a bug when trying to combine empty kp lists
    - Updated travis.yml to work with python 2.7.15
 - Documentation
   - Added info on how to cite the code and package.
