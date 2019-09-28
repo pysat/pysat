@@ -126,13 +126,9 @@ def calc_freq(index):
 
 def season_date_range(start, stop, freq='D'):
     """
-    Return array of datetime objects using input frequency from start to stop
+    Deprecated Function, will be removed in future version.
 
-    Supports single datetime object or list, tuple, ndarray of start and
-    stop dates.
-
-    freq codes correspond to pandas date_range codes, D daily, M monthly,
-    S secondly
+    Replaced by create_date_range
 
     """
 
