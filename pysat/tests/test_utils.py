@@ -39,6 +39,23 @@ def remove_files(inst):
                 os.unlink(file_path)
 
 
+def test_deprecation_warning_computational_form():
+    """Test if computational form in utils is deprecated"""
+
+    import pandas as pds
+    import warnings
+
+    data = pds.Series([0, 1, 2])
+    warnings.simplefilter("always")
+    dslice1 = pysat.ssnl.computational_form(data)
+    with warnings.catch_warnings(record=True) as w:
+        dslice2 = pysat.utils.computational_form(data)
+
+    assert (dslice1 == dslice2).all()
+    assert len(w) == 1
+    assert w[0].category == DeprecationWarning
+
+
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
