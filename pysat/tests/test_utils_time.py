@@ -165,3 +165,23 @@ def test_create_datetime_index_wo_month_day_uts():
     assert dates[0] == pds.datetime(2012, 1, 1)
     assert dates[-1] == pds.datetime(2012, 1, 1)
     assert len(dates) == 4
+
+
+def test_deprecated_season_date_range():
+    """Tests that deprecation of season_date_range is working"""
+
+    import warnings
+
+    start = pds.datetime(2012, 2, 28)
+    stop = pds.datetime(2012, 3, 1)
+    warnings.simplefilter("always")
+    with warnings.catch_warnings(record=True) as w1:
+        season1 = pytime.create_date_range(start, stop, freq='D')
+    with warnings.catch_warnings(record=True) as w2:
+        season2 = pytime.season_date_range(start, stop, freq='D')
+
+    assert len(season1) == len(season2)
+    assert (season1 == season2).all()
+    assert len(w1) == 0
+    assert len(w2) == 1
+    assert w2[0].category == DeprecationWarning
