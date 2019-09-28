@@ -62,7 +62,7 @@ def test_parse_date_4_digit_year():
 def test_parse_date_bad_input():
     """Test the ability to idenitfy a non-physical date"""
 
-    date = pytime.parse_date('194', '15', '31')
+    _ = pytime.parse_date('194', '15', '31')
 
 
 ############
@@ -152,7 +152,7 @@ def test_create_datetime_index():
 def test_create_datetime_index_wo_year():
     """Must include a year"""
 
-    dates = pytime.create_datetime_index()
+    _ = pytime.create_datetime_index()
 
 
 def test_create_datetime_index_wo_month_day_uts():
