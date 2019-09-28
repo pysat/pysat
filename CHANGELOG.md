@@ -16,7 +16,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Code Restructure
   - Move `computational_form` to `ssnl`
   - Move `scale_units` to `utils._core`
-  - Rename `season_date_range` as `create_date_range`
+  - Replace `season_date_range` with `create_date_range`, add deprecation warning
   - Added deprecation warnings to stat functions
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
