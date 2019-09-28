@@ -25,7 +25,8 @@ class TestBasics():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='10',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         sat_id='10',
                                          clean_level='clean',
                                          update_files=True)
 
@@ -781,7 +782,8 @@ class TestBasicsXarray(TestBasics):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
                                          sat_id='10',
                                          clean_level='clean',
                                          update_files=True)
@@ -801,7 +803,7 @@ class TestBasicsShiftedFileDates(TestBasics):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          sat_id='10',
                                          clean_level='clean',
                                          update_files=True,
@@ -824,7 +826,7 @@ class TestMalformedIndex():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          sat_id='10',
                                          clean_level='clean',
                                          malformed_index=True,
@@ -855,7 +857,8 @@ class TestMalformedIndexXarray(TestMalformedIndex):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
                                          sat_id='10',
                                          clean_level='clean',
                                          malformed_index=True,
@@ -876,13 +879,13 @@ class TestDataPaddingbyFile():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          update_files=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
 
-        self.rawInst = pysat.Instrument('pysat', 'testing',
+        self.rawInst = pysat.Instrument(platform='pysat', name='testing',
                                         clean_level='clean',
                                         update_files=True)
         self.rawInst.bounds = self.testInst.bounds
@@ -982,13 +985,15 @@ class TestDataPaddingbyFileXarray():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          update_files=True)
         self.testInst.bounds = ('2008-01-01.nofile', '2010-12-31.nofile')
 
-        self.rawInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.rawInst = pysat.Instrument(platform='pysat',
+                                        name='testing_xarray',
                                         clean_level='clean',
                                         update_files=True)
         self.rawInst.bounds = self.testInst.bounds
@@ -1003,12 +1008,13 @@ class TestOffsetRightFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
                                          pad={'minutes': 5})
-        self.rawInst = pysat.Instrument('pysat', 'testing', '',
+        self.rawInst = pysat.Instrument(platform='pysat', name='testing',
+                                        tag='',
                                         clean_level='clean',
                                         update_files=True,
                                         sim_multi_file_right=True)
@@ -1020,12 +1026,14 @@ class TestOffsetRightFileDataPaddingBasicsXarray(TestDataPaddingbyFile):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
                                          pad={'minutes': 5})
-        self.rawInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.rawInst = pysat.Instrument(platform='pysat',
+                                        name='testing_xarray',
                                         clean_level='clean',
                                         update_files=True,
                                         sim_multi_file_right=True)
@@ -1037,12 +1045,12 @@ class TestOffsetLeftFileDataPaddingBasics(TestDataPaddingbyFile):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
                                          pad={'minutes': 5})
-        self.rawInst = pysat.Instrument('pysat', 'testing',
+        self.rawInst = pysat.Instrument(platform='pysat', name='testing',
                                         clean_level='clean',
                                         update_files=True,
                                         sim_multi_file_left=True)
@@ -1054,7 +1062,7 @@ class TestDataPadding():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          update_files=True)
@@ -1166,7 +1174,8 @@ class TestDataPaddingXarray(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          update_files=True)
@@ -1176,7 +1185,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
@@ -1192,7 +1201,8 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_right=True,
@@ -1208,7 +1218,8 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing',
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
@@ -1224,7 +1235,8 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
                                          clean_level='clean',
                                          update_files=True,
                                          sim_multi_file_left=True,
