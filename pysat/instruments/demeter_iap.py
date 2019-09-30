@@ -70,7 +70,7 @@ def init(self):
                     "'info.acknowledgements'.  We recommend that data users",
                     "contact the experiment PI early in their study. ",
                     "Experiment reference information is available in the",
-                    "metadata attribute 'info.reference'"]))
+                    "metadata attribute 'info.reference'")))
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
