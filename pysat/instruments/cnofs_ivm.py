@@ -117,8 +117,12 @@ def clean(inst):
         max_rpa_flag = 4
         max_dm_flag = 6
 
-    # First pass, remove bad densities
+    # First pass, keep good RPA fits
     idx, = np.where(inst.data.RPAflag <= max_rpa_flag)
+    if (inst.clean_level == 'clean'):
+        nO = inst.data.ion1fraction*inst.data.Ni
+        idx2 = np.where((inst.data.RPAflag <= 3) and (nO > 3.0e4))
+        idx = np.unique(idx.extend(idx2))
     inst.data = inst[idx, :]
 
     # Second pass, find bad drifts, replace with NaNs
