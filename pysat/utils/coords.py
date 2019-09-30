@@ -136,76 +136,15 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
 
 
 def scale_units(out_unit, in_unit):
-    """ Determine the scaling factor between two units
+    """Deprecated function, moved to pysat.utils._core"""
 
-    Parameters
-    -------------
-    out_unit : str
-        Desired unit after scaling
-    in_unit : str
-        Unit to be scaled
+    import warnings
+    from pysat import utils
 
-    Returns
-    -----------
-    unit_scale : float
-        Scaling factor that will convert from in_units to out_units
-
-    Notes
-    -------
-    Accepted units include degrees ('deg', 'degree', 'degrees'),
-    radians ('rad', 'radian', 'radians'),
-    hours ('h', 'hr', 'hrs', 'hour', 'hours'), and lengths ('m', 'km', 'cm').
-    Can convert between degrees, radians, and hours or different lengths.
-
-    Example
-    -----------
-    ::
-    import numpy as np
-    two_pi = 2.0 * np.pi
-    scale = scale_units("deg", "RAD")
-    two_pi *= scale
-    two_pi # will show 360.0
-
-
-    """
-
-    if out_unit == in_unit:
-        return 1.0
-
-    accepted_units = {'deg': ['deg', 'degree', 'degrees'],
-                      'rad': ['rad', 'radian', 'radians'],
-                      'h': ['h', 'hr', 'hrs', 'hours'],
-                      'm': ['m', 'km', 'cm'],
-                      'm/s': ['m/s', 'cm/s', 'km/s']}
-
-    scales = {'deg': 180.0, 'rad': np.pi, 'h': 12.0,
-              'm': 1.0, 'km': 0.001, 'cm': 100.0,
-              'm/s': 1.0, 'cm/s': 100.0, 'km/s': 0.001}
-
-    # Test input and determine transformation type
-    out_key = None
-    in_key = None
-    for kk in accepted_units.keys():
-        if out_unit.lower() in accepted_units[kk]:
-            out_key = kk
-        if in_unit.lower() in accepted_units[kk]:
-            in_key = kk
-
-    if out_key is None:
-        raise ValueError('Unknown output unit {:}'.format(out_unit))
-
-    if in_key is None:
-        raise ValueError('Unknown input unit {:}'.format(in_unit))
-
-    if out_key == 'm' or out_key == 'm/s' or in_key == 'm' or in_key == 'm/s':
-        if in_key != out_key:
-            raise ValueError('Cannot scale {:s} and {:s}'.format(out_unit,
-                                                                 in_unit))
-        # Recast units as keys for the scales dictionary
-        out_key = out_unit
-        in_key = in_unit
-
-    unit_scale = scales[out_key.lower()] / scales[in_key.lower()]
+    warnings.warn(' '.join(["utils.computational_form is deprecated, use",
+                            "pysat.ssnl.computational_form instead"]),
+                  DeprecationWarning)
+    unit_scale = utils.scale_units(out_unit, in_unit)
 
     return unit_scale
 
