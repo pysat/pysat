@@ -306,3 +306,25 @@ class TestBasicNetCDF4():
 
         assert (np.all((test_inst.data == loaded_inst).all()))
         assert np.all(test_list)
+
+    def test_netcdf_meta_change(self):
+
+        self.testInst.load(2009, 1)
+        current_units = self.testInst.meta['uts', 'units']
+
+        new_units = current_units + '^2'
+
+        self.testInst.meta['uts', 'units'] = new_units
+        
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+
+        self.testInst.to_netcdf4(outfile)
+
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+
+        try:
+            assert meta['uts','units'] == new_units
+        except AssertionError:
+            print('{} != {}'.format(meta['uts','units'], new_units))
+            raise
