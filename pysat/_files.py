@@ -304,7 +304,7 @@ class Files(object):
             estr = "Unable to find any files that match the supplied template."
             estr += " If you have the necessary files please check pysat "
             estr += "settings and file locations (e.g. pysat.pysat_dir)."
-            logger.info(estr)
+            logger.warning(estr)
         info = self._remove_data_dir_path(info)
         self._attach_files(info)
         self._store()
