@@ -121,8 +121,8 @@ def clean(inst):
     idx, = np.where(inst.data.RPAflag <= max_rpa_flag)
     if (inst.clean_level == 'clean'):
         nO = inst.data.ion1fraction*inst.data.Ni
-        idx2 = np.where((inst.data.RPAflag <= 3) and (nO > 3.0e4))
-        idx = np.unique(idx.extend(idx2))
+        idx2, = np.where((inst.data.RPAflag <= 3) & (nO > 3.0e4))
+        idx = np.unique(np.concatenate((idx, idx2)))
     inst.data = inst[idx, :]
 
     # Second pass, find bad drifts, replace with NaNs
@@ -135,7 +135,7 @@ def clean(inst):
             idx2, = np.where(np.abs(inst.data.ionVelmeridional) >= 10000.)
             # shallow fit region for vx
             idx3, = np.where(inst.data.ion1fraction >= 1.0)
-            idx = np.unique(idx.extend(idx2, idx3))
+            idx = np.unique(np.concatenate((idx, idx2, idx3)))
         except AttributeError:
             pass
 
