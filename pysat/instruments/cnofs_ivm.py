@@ -139,7 +139,7 @@ def clean(inst):
         except AttributeError:
             pass
 
-    if len(idx)>0:
+    if len(idx) > 0:
         drift_labels = ['ionVelmeridional', 'ionVelparallel', 'ionVelzonal',
                         'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
         for label in drift_labels:
