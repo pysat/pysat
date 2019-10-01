@@ -310,21 +310,13 @@ class TestBasicNetCDF4():
     def test_netcdf_meta_change(self):
 
         self.testInst.load(2009, 1)
-        current_units = self.testInst.meta['uts', 'units']
-
-        new_units = current_units + '^2'
-
-        self.testInst.meta['uts', 'units'] = new_units
-        
+        self.testInst.meta['uts'] = dict(bespoke = True)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
 
         self.testInst.to_netcdf4(outfile)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
-
-        try:
-            assert meta['uts','units'] == new_units
-        except AssertionError:
-            print('{} != {}'.format(meta['uts','units'], new_units))
-            raise
+        
+        assert meta['uts','bespoke'] == 1.0 # netcdf stores True  as 1.0 
+        assert np.isnan(meta['Epoch', 'bespoke'])
