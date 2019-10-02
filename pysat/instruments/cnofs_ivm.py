@@ -119,10 +119,6 @@ def clean(inst):
 
     # First pass, keep good RPA fits
     idx, = np.where(inst.data.RPAflag <= max_rpa_flag)
-    if (inst.clean_level == 'clean'):
-        nO = inst.data.ion1fraction*inst.data.Ni
-        idx2, = np.where((inst.data.RPAflag <= 3) & (nO > 3.0e4))
-        idx = np.unique(np.concatenate((idx, idx2)))
     inst.data = inst[idx, :]
 
     # Second pass, find bad drifts, replace with NaNs
@@ -133,9 +129,7 @@ def clean(inst):
         try:
             # unrealistic velocities
             idx2, = np.where(np.abs(inst.data.ionVelmeridional) >= 10000.)
-            # shallow fit region for vx
-            idx3, = np.where(inst.data.ion1fraction >= 1.0)
-            idx = np.unique(np.concatenate((idx, idx2, idx3)))
+            idx = np.unique(np.concatenate((idx, idx2)))
         except AttributeError:
             pass
 
@@ -144,6 +138,25 @@ def clean(inst):
                         'ionVelocityX', 'ionVelocityY', 'ionVelocityZ']
         for label in drift_labels:
             inst[label][idx] = np.NaN
+
+    # Check for bad RPA fits in dusty regime.
+    # O+ concentration criteria from Burrell, 2012
+    # Shallow Fit region from Klenzing and Stoneback ????
+    if (inst.clean_level == 'dusty'):
+        # shallow fit region for vx
+        idx, = np.where(inst.data.ion1fraction >= 1.0)
+        # Low O+ concentrations for RPA Flag of 3 are suspect
+        nO = inst.data.ion1fraction*inst.data.Ni
+        idx2, = np.where((inst.data.RPAflag <= 3) & (nO <= 3.0e4))
+        idx = np.unique(np.concatenate((idx, idx2)))
+        # However, only remove these if RPA component of drift is significant
+        unit_vecs = {'ionVelmeridional': 'meridionalunitvectorX',
+                     'ionVelparallel': 'parallelunitvectorX',
+                     'ionVelzonal': 'zonalunitvectorX'}
+        for label in unit_vecs:
+            idx0, = np.where(np.abs(inst[unit_vecs[label]]) >= 0.01)
+            idx0 = np.unique(np.concatenate((idx, idx0)))
+            inst[label][idx0] = np.NaN
 
     # Check for bad temperature fits (O+ < 15%), replace with NaNs
     # Criteria from Hairston et al, 2015
