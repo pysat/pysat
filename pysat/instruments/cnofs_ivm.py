@@ -160,8 +160,9 @@ def clean(inst):
 
     # Check for bad temperature fits (O+ < 15%), replace with NaNs
     # Criteria from Hairston et al, 2015
-    idx, = np.where(inst.data.ion1fraction < 0.15)
-    inst['ionTemperature'][idx] = np.NaN
+    if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
+        idx, = np.where(inst.data.ion1fraction < 0.15)
+        inst['ionTemperature'][idx] = np.NaN
 
     # basic quality check on drifts and don't let UTS go above 86400.
     idx, = np.where(inst.data.time <= 86400.)
