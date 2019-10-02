@@ -147,7 +147,7 @@ def clean(inst):
         idx, = np.where(inst.data.ion1fraction >= 1.0)
         # Low O+ concentrations for RPA Flag of 3 are suspect
         nO = inst.data.ion1fraction*inst.data.Ni
-        idx2, = np.where((inst.data.RPAflag <= 3) & (nO <= 3.0e4))
+        idx2, = np.where((inst.data.RPAflag == 3) & (nO <= 3.0e4))
         idx = np.unique(np.concatenate((idx, idx2)))
         # However, only remove these if RPA component of drift is significant
         unit_vecs = {'ionVelmeridional': 'meridionalunitvectorX',
