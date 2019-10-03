@@ -28,7 +28,7 @@ if sys.version_info.major == 2:
                         'madrigalWeb', 'h5py', 'PyForecastTools']
 else:
     install_requires = ['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                        'requests', 'beautifulsoup4',
+                        'scipy', 'requests', 'beautifulsoup4',
                         'lxml', 'netCDF4', 'matplotlib', 'pysatCDF',
                         'madrigalWeb', 'h5py', 'PyForecastTools']
 
