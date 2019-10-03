@@ -8,9 +8,6 @@ matrix:
       services: xvfb
 
 cache: pip
-cache:
-   directories:
-      - ../pyglow_cache
 
 addons:
   apt:
@@ -24,7 +21,7 @@ before_install:
   - pip install coveralls
   - pip install future
   - pip install pysatCDF >/dev/null
-  
+
 # command to install dependencies
 install:
   - source activate test-environment
