@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import numpy as np
+import pysat
 
 
 def set_data_dir(path=None, store=True):
@@ -34,6 +35,19 @@ def set_data_dir(path=None, store=True):
         pysat._instrument = re_load(pysat._instrument)
     else:
         raise ValueError('Path %s does not lead to a valid directory.' % path)
+
+
+def computational_form(data):
+    """Deprecated function.  Moved to pysat.ssnl.computational_form"""
+
+    import warnings
+
+    warnings.warn(' '.join(["utils.computational_form is deprecated, use",
+                            "pysat.ssnl.computational_form instead"]),
+                  DeprecationWarning)
+    dslice = pysat.ssnl.computational_form(data)
+
+    return dslice
 
 
 def scale_units(out_unit, in_unit):

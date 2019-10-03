@@ -2,28 +2,33 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.X.X] - 2019-09-16
+## [2.X.X] - 2019-09-20
 - New Features
    - Added new velocity format options to utils.coords.scale_units
    - Improved failure messages for utils.coords.scale_units
    - Added some tests for model_utils
    - Added option to to_netCDF that names variables in the written file
-   based upon the strings in the Instrument.meta object
+     based upon the strings in the Instrument.meta object
    - Improved compatibility with NASA ICON's file standards
    - Improved file downloading for Kp
+   - Added keyword ignore_empty_files to pysat.Instrument and Files objects
+    to filter out empty files from the stored file list
 - Code Restructure
-  - Move `computational_form` to `ssnl`
-  - Move `scale_units` to `utils._core`
-  - Rename `season_date_range` as `create_date_range`
+  - Move `computational_form` to `ssnl`, old version is deprecated
+  - Move `scale_units` to `utils._core`, old version is deprecated
+  - Replace `season_date_range` with `create_date_range`, old version is deprecated
   - Added deprecation warnings to stat functions
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
    - Updated Instrument.concat_data for consistency across pandas and xarray. Includes support for user provided keywords.
    - Fixed error introduced by upstream change in NOAA F10.7 file format
+   - Fixed bugs in DEMETER file reading introduced by changes in codecs
    - Fixed issue with data access via Instrument object using time and name slicing and xarray. Added unit test.
    - Updated travis.yml to work under pysat organization
    - Added missing requirements (matplotlib, netCDF4)
+   - Fixed a bug when trying to combine empty kp lists
+   - Updated travis.yml to work with python 2.7.15
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
