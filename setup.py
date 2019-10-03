@@ -36,7 +36,7 @@ else:
 if on_rtd:
     # read the docs doesn't do Fortran
     # remove pysatCDF through h5py
-    install_requires = install_requires[:-8]
+    install_requires = install_requires[:-4]
 
 setup(
     name='pysat',
