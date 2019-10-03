@@ -239,7 +239,7 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
                                      date_array[-1].strftime('%m/%d/%Y'),
                                      '--inst=' + inst_code,
                                      '--kindat=' + kindat])
-        logger.info('Feedback from openMadrigal ', a)
+        logger.info('Feedback from openMadrigal %s', a)
     except OSError as str_err:
         logger.error(' '.join("problem running globalDownload.py, check python path",
                        "->", str_err))
@@ -338,7 +338,7 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     # iterate over experiments to grab files for each one
     files = []
     logger.info("Grabbing filenames for each experiment")
-    logger.info("A total of", len(exp_list), "experiments were found")
+    logger.info("A total of %s %s", len(exp_list), "experiments were found")
     for exp in exp_list:
         file_list = web_data.getExperimentFiles(exp.id)
         files.extend(file_list)

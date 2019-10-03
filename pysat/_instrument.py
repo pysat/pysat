@@ -1482,7 +1482,7 @@ class Instrument(object):
             if date in remote_files.index:
                 if remote_files[date] != local_files[date]:
                     new_dates.append(date)
-        logger.info('Found ', len(new_dates), ' files that are new or updated.')
+        logger.info('Found {} files that are new or updated.'.format(len(new_dates)))
         # download date for dates in new_dates (also includes new names)
         self.download(user=user, password=password, date_array=new_dates,
                       **kwargs)
@@ -1533,11 +1533,11 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            logger.info('Downloading the most recent data by default ',
+            logger.info('Downloading the most recent data by default ' +
                   '(yesterday through tomorrow).')
             start = self.yesterday()
             stop = self.tomorrow()
-        logger.info('Downloading data to: ', self.files.data_path)
+        logger.info('Downloading data to: {}'.format(self.files.data_path))
 
         if date_array is None:
             # create range of dates to download data for
@@ -2100,8 +2100,8 @@ class Instrument(object):
             export_units_labels = self._meta_translation_table['units_label']
             export_desc_labels = self._meta_translation_table['desc_label']
             export_notes_labels = self._meta_translation_table['notes_label']
-            logger.info('Using Metadata Translation Table: ',
-                  self._meta_translation_table)
+            logger.info('Using Metadata Translation Table: ' +
+                  str(self._meta_translation_table))
         # Apply instrument specific post-processing to the export_meta
         if hasattr(self._export_meta_post_processing, '__call__'):
             export_meta = self._export_meta_post_processing(export_meta)

@@ -99,7 +99,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # need to get date and time from filename to generate index
     num = len(fnames)
     if num != 0:
-        logger.info('Estimated time:', num * 1.E-5, 'seconds')
+        logger.info('Estimated time: {} seconds'.format(num * 1.E-5))
         sys.stdout.flush()
         # preallocate lists
         year = [None] * num
