@@ -130,8 +130,13 @@ def init(inst):
     # Pandas output
     if 'pandas_format' in inst.kwargs:
         inst.pandas_format = inst.kwargs['pandas_format']
-        inst._load_rtn = functools.partial(load,
-                                           pandas_format=inst.pandas_format)
+        if inst.pandas_format:
+            inst._null_data = pds.DataFrame(None)
+            inst._data_library = pds.DataFrame
+        else:
+            inst._null_data = xr.Dataset(None)
+            inst._data_library = xr.Dataset
+
 
 def default(inst):
     """The default function is applied first to data as it is loaded.
