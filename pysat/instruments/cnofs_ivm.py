@@ -19,6 +19,17 @@ de La Beaujardière, O., et al. (2004), C/NOFS: A mission to forecast
 scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
 doi:10.1016/j.jastp.2004.07.030.
 
+Discussion of cleaning parameters for ion drifts can be found in:
+Burrell, Angeline G., Equatorial topside magnetic field-aligned ion drifts 
+at solar minimum, The University of Texas at Dallas, ProQuest 
+Dissertations Publishing, 2012. 3507604. 
+
+Discussion of cleaning parameters for ion temperature can be found in:
+Hairston, M. R., W. R. Coley, and R. A. Heelis (2010), Mapping the 
+duskside topside ionosphere with CINDI and DMSP, J. Geophys. Res.,115, 
+A08324, doi:10.1029/2009JA015051.
+
+
 Parameters
 ----------
 platform : string
@@ -141,7 +152,6 @@ def clean(inst):
 
     # Check for bad RPA fits in dusty regime.
     # O+ concentration criteria from Burrell, 2012
-    # Shallow Fit region from Klenzing and Stoneback ????
     if (inst.clean_level == 'dusty'):
         # shallow fit region for vx
         idx, = np.where(inst.data.ion1fraction >= 1.0)
@@ -159,7 +169,7 @@ def clean(inst):
             inst[label][idx0] = np.NaN
 
     # Check for bad temperature fits (O+ < 15%), replace with NaNs
-    # Criteria from Hairston et al, 2015
+    # Criteria from Hairston et al, 2010
     if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
         idx, = np.where(inst.data.ion1fraction < 0.15)
         inst['ionTemperature'][idx] = np.NaN
