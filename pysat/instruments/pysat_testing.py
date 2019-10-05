@@ -9,7 +9,6 @@ import os
 
 import numpy as np
 import pandas as pds
-import xarray as xr
 
 import pysat
 from pysat.instruments.methods import testing as test
@@ -127,12 +126,6 @@ def init(inst):
             inst.files.files.index = \
                 inst.files.files.index + pds.DateOffset(minutes=5)
 
-    # Pandas output
-    if 'pandas_format' in inst.kwargs:
-        inst.pandas_format = inst.kwargs['pandas_format']
-        inst._load_rtn = functools.partial(load,
-                                           pandas_format=inst.pandas_format)
-
 def default(inst):
     """The default function is applied first to data as it is loaded.
 
@@ -142,7 +135,7 @@ def default(inst):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, pandas_format=True, **kwargs):
+         malformed_index=False, **kwargs):
     """ Loads the test files
 
     Parameters
@@ -175,7 +168,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     Returns
     -------
-    data : (pds.DataFrame or xarray.Dataset)
+    data : (pds.DataFrame)
         Testing data
     meta : (pysat.Meta)
         Metadataxs
@@ -205,73 +198,39 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # any of the testing objects
     num = 86400 if sat_id == '' else int(sat_id)
     num_array = np.arange(num)
-    index = pds.date_range(data_date,
-                           data_date + pds.DateOffset(seconds=num-1),
-                           freq='S')
-    if malformed_index:
-        index = index[0:num].tolist()
-        # nonmonotonic
-        index[0:3], index[3:6] = index[3:6], index[0:3]
-        # non unique
-        index[6:9] = [index[6]]*3
-
     uts = num_array
-    if pandas_format:
-        data = pysat.DataFrame(uts, columns=['uts'])
-    else:
-        data = xr.Dataset({'uts': (('time'), index)},
-                          coords={'time': index})
+    data = pysat.DataFrame(uts, columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
     time_delta = date - root_date
-    mlt = test.generate_fake_data(time_delta.total_seconds(),
-                                  num_array, period=5820,
-                                  data_range=[0.0, 24.0])
-    if pandas_format:
-        data['mlt'] = mlt
-    else:
-        data['mlt'] = (('time'), mlt)
+    data['mlt'] = test.generate_fake_data(time_delta.total_seconds(),
+                                          num_array, period=5820,
+                                          data_range=[0.0, 24.0])
 
     # do slt, 20 second offset from mlt
-    slt = test.generate_fake_data(time_delta.total_seconds()+20,
-                                  num_array, period=5820,
-                                  data_range=[0.0, 24.0])
-    if pandas_format:
-        data['slt'] = slt
-    else:
-        data['slt'] = (('time'), slt)
+    data['slt'] = test.generate_fake_data(time_delta.total_seconds()+20,
+                                          num_array, period=5820,
+                                          data_range=[0.0, 24.0])
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    longitude = test.generate_fake_data(time_delta.total_seconds(),
-                                        num_array, period=6240,
-                                        data_range=[0.0, 360.0])
-    if pandas_format:
-        data['longitude'] = longitude
-    else:
-        data['longitude'] = (('time'), longitude)
+    data['longitude'] = test.generate_fake_data(time_delta.total_seconds(),
+                                                num_array, period=6240,
+                                                data_range=[0.0, 360.0])
 
     # create latitude area for testing polar orbits
     angle = test.generate_fake_data(time_delta.total_seconds(),
                                     num_array, period=5820,
                                     data_range=[0.0, 2.0*np.pi])
-    latitude = 90.0 * np.cos(angle)
-    if pandas_format:
-        data['latitude'] = latitude
-    else:
-        data['latitude'] = (('time'), latitude)
+    data['latitude'] = 90.0 * np.cos(angle)
 
     # fake orbit number
     fake_delta = date - (test_dates[''][''] - pds.DateOffset(years=1))
-    orbit_num = test.generate_fake_data(fake_delta.total_seconds(),
-                                        num_array, period=5820,
-                                        cyclic=False)
-    if pandas_format:
-        data['orbit_num'] = orbit_num
-    else:
-        data['orbit_num'] = (('time'), orbit_num)
+    data['orbit_num'] = test.generate_fake_data(fake_delta.total_seconds(),
+                                                num_array, period=5820,
+                                                cyclic=False)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
@@ -298,13 +257,23 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
-    if pandas_format:
-        data.index.name = 'Epoch'
+    index = pds.date_range(data_date,
+                           data_date+pds.DateOffset(seconds=num-1),
+                           freq='S')
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
+
+    data.index = index[0:num]
+    data.index.name = 'Epoch'
     return data, meta.copy()
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
-               file_date_range=None, multi_file_day=None):
+               file_date_range=None):
     """Produce a fake list of files spanning a year
 
     Parameters
