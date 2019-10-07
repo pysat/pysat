@@ -526,17 +526,34 @@ class Meta(object):
         if isinstance(key, tuple):
             # if tuple length is 2, index, column
             if len(key) == 2:
-                new_index = self.var_case_name(key[0])
-                new_name = self.attr_case_name(key[1])
+                if isinstance(key[0], basestring):
+                    new_index = [self.var_case_name(key[0])]
+                elif isinstance(key[0], slice):
+                    new_index = self.data.index[key[0]]
+                else:
+                    new_index = [self.var_case_name(key_) for key_ in key[0]]
+
+                if isinstance(key[1], basestring):
+                    new_name = [self.attr_case_name(key[1])]
+                elif isinstance(key[1], slice):
+                    new_name = key[1]
+                else:
+                    new_name = [self.attr_case_name(key[1])]
                 return self.data.loc[new_index, new_name]
+
             # if tuple length is 3, index, child_index, column
             elif len(key) == 3:
-                new_index = self.var_case_name(key[0])
+                if isinstance(key[0], basestring):
+                    new_index = [self.var_case_name(key[0])]
+                elif isinstance(key[0], slice):
+                    new_index = list(self.ho_data.keys())[key[0]]
+                else:
+                    new_index = [self.var_case_name(key_) for key_ in key[0]]
+
                 new_child_index = self.var_case_name(key[1])
                 new_name = self.attr_case_name(key[2])
-                return self.ho_data[new_index].data.loc[new_child_index,
-                                                        new_name]
-        else:
+                return [self.ho_data[new_index_].data.loc[new_child_index, new_name] for new_index_ in new_index]
+        elif isinstance(key, basestring):
             # ensure variable is present somewhere
             if key in self:
                 # get case preserved string for variable name
@@ -557,6 +574,11 @@ class Meta(object):
                 #                       index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
+        else:
+            try:
+                return self[key,:]
+            except:
+                raise NotImplementedError("No way to handle MetaData key {}".format(key.__repr__()))
 
     def _label_setter(self, new_label, current_label, attr_label,
                       default=np.NaN, use_names_default=False):

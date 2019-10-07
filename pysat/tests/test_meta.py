@@ -455,6 +455,25 @@ class TestBasics():
         assert self.meta['new2'].units == 'hey2'
         assert self.meta['new2'].long_name == 'boo2'
 
+    def test_multiple_meta_retrieval(self):
+        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
+                                      'long_name': ['boo', 'boo2']}
+        self.meta[['new', 'new2']]
+        self.meta[['new', 'new2'],:]
+        self.meta[:,'units']
+
+    def test_multiple_meta_ho_data_retrieval(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
+        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
+        self.meta[['higher', 'lower']] = {'meta': [meta, None],
+                                          'units': [None, 'boo'],
+                                          'long_name': [None, 'boohoo']}
+        assert self.meta['lower'].units == 'boo'
+        assert self.meta['lower'].long_name == 'boohoo'
+        assert self.meta['higher'].children == meta
+
+
     @raises(ValueError)
     def test_multiple_meta_assignment_error(self):
         self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
