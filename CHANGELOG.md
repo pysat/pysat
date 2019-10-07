@@ -29,6 +29,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added missing requirements (matplotlib, netCDF4)
    - Fixed a bug when trying to combine empty kp lists
    - Updated travis.yml to work with python 2.7.15
+   - Updated setup.py to not overwrite defauly `open` command from `codecs`
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
