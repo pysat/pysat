@@ -797,7 +797,7 @@ class Instrument(object):
                         pass
                 if not import_success:
                     raise ImportError(
-                        "Could not find a registered module for {}_{}\nAvailable modules:{}".format(
+                        "Could not find a registered module for {} {}\nAvailable modules:{}".format(
                             self.platform, self.name, user_modules))
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines

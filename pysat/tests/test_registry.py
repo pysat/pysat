@@ -64,10 +64,13 @@ def test_multi_registration():
 
         create_fake_module(module_name, platform, name)
 
-        # register module by str
-        testInst = Instrument(inst_module = module_name)
+        test_mod = importlib.import_module(module_name)
+
+        # load module by keyword
+        testInst = Instrument(inst_module = test_mod)
 
         # load by platform and name
+        registry.register(module_name)
         testInst = Instrument(platform, name)
 
         # check that global registry was updated
