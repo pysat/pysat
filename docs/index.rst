@@ -18,3 +18,4 @@ Welcome to pysat's documentation!
    api.rst
    contributing.rst
    faq.rst
+   citing.rst
