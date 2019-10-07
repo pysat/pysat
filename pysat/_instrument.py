@@ -205,8 +205,6 @@ class Instrument(object):
                                  'strings, or both None.')
         else:
             # user has provided a module
-            if type(inst_module) == str:
-                inst_module = utils.registry.register(inst_module)
             try:
                 # platform and name are expected to be part of module
                 self.name = inst_module.name.lower()
