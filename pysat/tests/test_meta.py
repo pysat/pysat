@@ -460,7 +460,7 @@ class TestBasics():
                                       'long_name': ['boo', 'boo2']}
         self.meta[['new', 'new2']]
         self.meta[['new', 'new2'],:]
-        self.meta[:,'units']
+        self.meta[:, 'units']
 
     def test_multiple_meta_ho_data_retrieval(self):
         meta = pysat.Meta()
