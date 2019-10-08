@@ -8,8 +8,7 @@ from pysat.instruments import pysat_testing
 import importlib
 
 from nose.tools import assert_raises
-import os
-from pysat import pysat_dir
+
 
 def create_fake_module(full_module_name,  platform, name):
     """Creates fake module and package from test instrument"""
@@ -67,11 +66,11 @@ def test_multi_registration():
         test_mod = importlib.import_module(module_name)
 
         # load module by keyword
-        testInst = Instrument(inst_module = test_mod)
+        Instrument(inst_module = test_mod)
 
         # load by platform and name
         registry.register(module_name)
-        testInst = Instrument(platform, name)
+        Instrument(platform, name)
 
         # check that global registry was updated
         assert module_name in user_modules
