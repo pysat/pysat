@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Improved file downloading for Kp
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
     to filter out empty files from the stored file list
+   - Added registry module for registering custom external instruments
 - Code Restructure
   - Move `computational_form` to `ssnl`, old version is deprecated
   - Move `scale_units` to `utils._core`, old version is deprecated
@@ -32,6 +33,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
+  - Added info on how to register new instruments
 
 ## [2.0.0] - 2019-07-11
  - New Features
