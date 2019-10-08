@@ -20,12 +20,8 @@ module my.package.myInstrument having  platform and name attributes
 
     registry.register('my.package.myInstrument')
 
-or, alternatively, by instatiating an Instrument object using the 
-inst_module keyword
 
-    Instrument(inst_module = 'my.package.myInstrument')
-
-Either way, the full module name "my.package.myInstrument" will be
+The full module name "my.package.myInstrument" will be
 registered in pysat_dir/user_modules.txt and is also listed in
 pysat.user_modules.
 
