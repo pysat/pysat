@@ -307,16 +307,49 @@ class TestBasicNetCDF4():
         assert (np.all((test_inst.data == loaded_inst).all()))
         assert np.all(test_list)
 
-    def test_netcdf_meta_change(self):
-
+    def test_netcdf_attribute_override(self):
+        """Test that attributes in netcdf file may be overridden"""
         self.testInst.load(2009, 1)
-        self.testInst.meta['uts'] = dict(bespoke = True)
-        outfile = os.path.join(self.testInst.files.data_path,
-                               'pysat_test_ncdf.nc')
 
+        try:
+            assert self.testInst.bespoke # should raise
+        except AttributeError:
+            pass
+        
+        fname = 'output.nc'
+        self.testInst.meta.bespoke = True
+
+        self.testInst.meta.transfer_attributes_to_instrument(self.testInst)
+
+        # ensure custom meta attribute assigned to instrument
+        assert self.testInst.bespoke
+
+        outfile = os.path.join(self.testInst.files.data_path, fname)
         self.testInst.to_netcdf4(outfile)
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        data, meta = pysat.utils.load_netcdf4(outfile)
+
+        # custom attribute correctly read from file
+        assert meta.bespoke
+
+        # assign metadata to new instrument
+        inst = pysat.Instrument()
+
+        inst.data = data
+        inst.meta = meta
+
+
+        meta.transfer_attributes_to_instrument(inst)
+
+        fname2 = 'output2.nc'
+        outfile2 = os.path.join(self.testInst.files.data_path, fname2)
+
+        inst.bespoke = False
+        inst.myattr = True
         
-        assert meta['uts','bespoke'] == 1.0 # netcdf stores True  as 1.0 
-        assert np.isnan(meta['Epoch', 'bespoke'])
+        inst.to_netcdf4(outfile2)
+
+        data2, meta2 = pysat.utils.load_netcdf4(outfile2)
+
+        assert meta2.myattr
+        assert not meta2.bespoke

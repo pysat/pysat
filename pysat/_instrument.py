@@ -353,6 +353,35 @@ class Instrument(object):
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
+    def __setattr__(self, name, value):
+        """Moves instrument attributes onto meta attributes"""
+
+        if '_base_attr' in dir(self):
+            if name not in self._base_attr:
+                # set attribute on meta
+                object.__setattr__(self.meta, name, value) 
+            else:
+                object.__setattr__(self, name, value)
+        else:
+            object.__setattr__(self, name, value)
+
+
+    def __getattr__(self, name):
+        """Gets instrument attributes from meta attributes"""
+        if name is not '_base_attr':
+            if name not in self._base_attr:
+                # get attribute from meta
+                return getattr(self.meta, name)
+            else:
+                return self.__dict__[name]
+        else:
+            if '_base_attr' in dir(self):
+                # get attribute from instrument
+                return self.__dict__['_base_attr']
+            else:
+                raise AttributeError(name)
+
+
     def __getitem__(self, key):
         """
         Convenience notation for accessing data; inst['name'] is inst.data.name
