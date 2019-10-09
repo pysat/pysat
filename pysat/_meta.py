@@ -938,7 +938,9 @@ class Meta(object):
         # store any non-standard attributes in Instrument
         # get list of instrument objects attributes first
         # to check if a duplicate
-        inst_attr = dir(inst)
+
+        # instrument attributes are now inst.meta attributes
+        inst_attr = dir(inst.meta)
         for key in transfer_key:
             if key not in banned:
                 if key not in inst_attr:
