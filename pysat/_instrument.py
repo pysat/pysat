@@ -359,7 +359,10 @@ class Instrument(object):
         if '_base_attr' in dir(self):
             if name not in self._base_attr:
                 # set attribute on meta
-                object.__setattr__(self.meta, name, value) 
+                if name[0] != '_':
+                    object.__setattr__(self.meta, name, value)
+                else:
+                    object.__setattr__(self, name, value)
             else:
                 object.__setattr__(self, name, value)
         else:
