@@ -354,7 +354,11 @@ class Instrument(object):
         self._base_attr = dir(self)
 
     def __setattr__(self, name, value):
-        """Moves instrument attributes onto meta attributes"""
+        """Moves instrument attributes onto meta attributes
+        
+        If the attribute is not in _base_attrs, add to meta attributes.
+        For all other cases, store as an instrument attribute.
+        """
 
         if '_base_attr' in dir(self):
             if name not in self._base_attr:
@@ -370,11 +374,23 @@ class Instrument(object):
 
 
     def __getattr__(self, name):
-        """Gets instrument attributes from meta attributes"""
+        """Gets instrument attributes from meta attributes
+
+        Retrieves attribute by this priority:
+        1. attributes stored in self._base_attr
+        2. sttributes stored in self.meta
+        3. remaining attributes in self
+        """
         if name is not '_base_attr':
             if name not in self._base_attr:
                 # get attribute from meta
-                return getattr(self.meta, name)
+                try:
+                    return getattr(self.meta, name)
+                except AttributeError:
+                    try:
+                        return self.__dict__[name]
+                    except KeyError:
+                        raise AttributeError
             else:
                 return self.__dict__[name]
         else:
@@ -812,6 +828,11 @@ class Instrument(object):
             pass
         try:
             self.pandas_format = inst.pandas_format
+        except AttributeError:
+            pass
+
+        try:
+            self.test_dates = inst.test_dates
         except AttributeError:
             pass
 
