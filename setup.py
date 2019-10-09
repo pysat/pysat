@@ -7,15 +7,15 @@ https://github.com/pypa/sampleproject
 # Always prefer setuptools over distutils
 from setuptools import setup
 # To use a consistent encoding
-from codecs import open
+import codecs
 import os
 import sys
 
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'description.txt'), encoding='utf-8') as f:
+with codecs.open(os.path.join(here, 'description.txt'), encoding='utf-8') as f:
     long_description = f.read()
 version_filename = os.path.join('pysat', 'version.txt')
-with open(os.path.join(here, version_filename)) as version_file:
+with codecs.open(os.path.join(here, version_filename)) as version_file:
     version = version_file.read().strip()
 
 # change setup.py for readthedocs
