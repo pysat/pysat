@@ -84,6 +84,6 @@ from ._files import Files
 from ._custom import Custom
 from ._orbits import Orbits
 from . import instruments
-from . import ssnl
+import pysatSeasons as ssnl
 
 __all__ = ['ssnl', 'instruments', 'utils']

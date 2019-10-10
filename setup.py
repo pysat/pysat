@@ -24,13 +24,13 @@ if sys.version_info.major == 2:
     install_requires = ['xarray<0.12', 'pandas>=0.23, <0.25',
                         'numpy>=1.12, <1.17', 'scipy<1.3',
                         'requests', 'beautifulsoup4',
-                        'lxml', 'netCDF4', 'matplotlib<3.0', 'pysatCDF',
-                        'madrigalWeb', 'h5py', 'PyForecastTools']
+                        'lxml', 'netCDF4', 'matplotlib<3.0', 'pysatSeasons',
+                        'pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
 else:
     install_requires = ['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
                         'scipy', 'requests', 'beautifulsoup4',
-                        'lxml', 'netCDF4', 'matplotlib', 'pysatCDF',
-                        'madrigalWeb', 'h5py', 'PyForecastTools']
+                        'lxml', 'netCDF4', 'matplotlib', 'pysatSeasons',
+                        'pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
 
 # all packages after pysatCDF are excluded if on ReadTheDocs
 if on_rtd:
