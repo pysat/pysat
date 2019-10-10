@@ -1460,7 +1460,7 @@ class Instrument(object):
         # get list of remote files
         remote_files = self.remote_file_list()
         if remote_files.empty:
-            logger.info('No remote files found. Unable to download latest data.')
+            logger.warn('No remote files found. Unable to download latest data.')
             return
 
         # get current list of local files
