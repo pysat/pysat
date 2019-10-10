@@ -3,7 +3,7 @@ import importlib
 import numpy as np
 import pandas as pds
 
-from pysat.ssnl.avg import _calc_2d_median
+from pysatSeasons.avg import _calc_2d_median
 
 
 class Constellation(object):
