@@ -63,10 +63,7 @@ if not os.path.isdir(pysat_dir):
     if not (os.environ.get('TRAVIS') == 'true'):
         data_dir = os.path.join(home_dir, 'pysatData')
     else:
-        data_dir = '/home/travis/build/rstoneback/pysatData'
-    # create data directory, if needed
-    if not os.path.isdir(data_dir):
-        os.mkdir(data_dir)
+        data_dir = '/home/travis/build/pysat/pysatData'
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
@@ -84,9 +81,9 @@ else:
     # load up stored user modules
     user_modules = []
     with open(os.path.join(pysat_dir, 'user_modules.txt'), 'r') as f:
-        _ = f.readline()
-        if _ != '' and (_ is not None):
-            user_modules.append(_)
+        for _ in f:
+            if _ != '' and (_ is not None):
+                user_modules.append(_.strip())
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
