@@ -22,7 +22,7 @@ platform : string
 name : string
     'gps' for Radio Occultation profiles
 tag : string
-    Select profile type, or scintillation, one of: 
+    Select profile type, or scintillation, one of:
     {'ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1'}
 sat_id : string
     None supported
