@@ -8,9 +8,6 @@ matrix:
       services: xvfb
 
 cache: pip
-cache:
-   directories:
-      - ../pyglow_cache
 
 addons:
   apt:
@@ -25,15 +22,6 @@ before_install:
   - pip install future
   - pip install apexpy
   - pip install pysatCDF >/dev/null
-  # install pyglow, space science models
-  - cd ..
-  - echo 'cloning pyglow'
-  - git clone https://github.com/timduly4/pyglow.git >/dev/null
-  - echo 'installing pyglow'
-  - cd ./pyglow
-  - make -C src/pyglow/models source >/dev/null
-  - python setup.py install >/dev/null
-  - cd ..
 
 # command to install dependencies
 install:
