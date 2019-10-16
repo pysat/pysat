@@ -15,9 +15,7 @@ addons:
     - gfortran
     - libncurses5-dev
 
-# Setup anaconda
 before_install:
-  #- apt-get update
   - pip install coveralls
   - pip install future
   - pip install pysatCDF >/dev/null
