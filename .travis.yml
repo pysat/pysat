@@ -29,7 +29,7 @@ install:
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
-  - cd /home/travis/build/pysat
+  - cd ./pysat
   - python setup.py install
 
 before_script:
