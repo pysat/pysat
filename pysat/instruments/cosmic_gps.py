@@ -32,7 +32,7 @@ Note
 - 'ionprf: 'ionPrf' ionosphere profiles
 - 'sonprf': 'sonPrf' files
 - 'wetprf': 'wetPrf' files
-- 'atmPrf': 'atmPrf' files
+- 'atmprf': 'atmPrf' files
 - 'scnlv1': 'scnLv1' files
 
 Warnings
@@ -63,7 +63,8 @@ sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1']}
 test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
                    'sonprf': pysat.datetime(2008, 1, 1),
                    'wetprf': pysat.datetime(2008, 1, 1),
-                   'atmprf': pysat.datetime(2008, 1, 1)}}
+                   'atmprf': pysat.datetime(2008, 1, 1),
+                   'scnlv1': pysat.datetime(2008, 1, 1)}}
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -305,7 +306,7 @@ def download(date_array, tag, sat_id, data_path=None,
         sub_dir = 'sonPrf'
     elif tag == 'wetprf':
         sub_dir = 'wetPrf'
-    elif tag == 'atmPrf':
+    elif tag == 'atmprf':
         sub_dir = 'atmPrf'
     elif tag == 'scnlv1':
         sub_dir = 'scnLv1'
