@@ -63,7 +63,7 @@ if not os.path.isdir(pysat_dir):
     if not (os.environ.get('TRAVIS') == 'true'):
         data_dir = os.path.join(home_dir, 'pysatData')
     else:
-        data_dir = '/home/travis/build/pysat/pysatData'
+        data_dir = '/home/travis/build/pysatData'
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
     print(''.join(("\nHi there!  Pysat will nominally store data in the "

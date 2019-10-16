@@ -20,15 +20,16 @@ before_install:
   #- apt-get update
   - pip install coveralls
   - pip install future
+  - pip install apexpy
   - pip install pysatCDF >/dev/null
 
 # command to install dependencies
 install:
   - source activate test-environment
   # set up data directory
-  - mkdir /home/travis/build/pysat/pysatData
+  - mkdir /home/travis/build/pysatData
   # install pysat
-  - cd /home/travis/build/pysat/pysat
+  - cd /home/travis/build/pysat
   - python setup.py install
 
 before_script:
