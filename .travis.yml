@@ -29,7 +29,9 @@ install:
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
+  - pwd
   - cd ./pysat
+  - pwd
   - python setup.py install
 
 before_script:
