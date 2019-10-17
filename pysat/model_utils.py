@@ -34,7 +34,9 @@ def satellite_view_through_model(sat, tie, scoords, tlabels):
 
     import warnings
 
-    warnings.warn('Preliminary code.  Currently tested for TIE-GCM')
+    warnings.warn(' '.join(["This function is deprecated here, use",
+                            "pysatModelUtils instead"]),
+                  DeprecationWarning)
 
     # tiegcm is in pressure levels, need in altitude, but on regular
     # grid
@@ -119,6 +121,11 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     """
     import verify  # PyForecastTools
     from pysat import utils
+    import warnings
+
+    warnings.warn(' '.join(["This function is deprecated here, use",
+                            "pysatModelUtils instead"]),
+                  DeprecationWarning)
 
     method_rout = {"bias": verify.bias, "accuracy": verify.accuracy,
                    "meanPercentageError": verify.meanPercentageError,
@@ -304,6 +311,11 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
     """
     from os import path
     import pysat
+    import warnings
+
+    warnings.warn(' '.join(["This function is deprecated here, use",
+                            "pysatModelUtils instead"]),
+                  DeprecationWarning)
 
     matched_inst = None
 
@@ -491,6 +503,11 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     """
     from scipy import interpolate
     from pysat import utils
+    import warnings
+
+    warnings.warn(' '.join(["This function is deprecated here, use",
+                            "pysatModelUtils instead"]),
+                  DeprecationWarning)
 
     # Test input
     if inst is None:
