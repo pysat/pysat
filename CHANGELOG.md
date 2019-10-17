@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.X.X] - 2019-09-20
+## [2.X.X] - 2019-10-16
 - New Features
    - Added new velocity format options to utils.coords.scale_units
    - Improved failure messages for utils.coords.scale_units
@@ -33,6 +33,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updated travis.yml to work with python 2.7.15
    - Unit tests reload pysat_testing_xarray for xarray tests
    - Updated setup.py to not overwrite defauly `open` command from `codecs`
+   - Updated Travis CI settings to allow forks to run tests on local travis accounts
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
