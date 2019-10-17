@@ -57,3 +57,43 @@ class TestBasics():
 
         assert np.isnan(ref_nan)
         assert ref_std == test_nan
+
+    def test_deprecation_warning_median1d(self):
+        """Test if median1D in stats is deprecated"""
+
+        import warnings
+        import pysat
+
+        testInst = pysat.Instrument('pysat', 'testing')
+        testInst.load(date=pysat.datetime(2009, 1, 1))
+
+        warnings.simplefilter("always")
+        with warnings.catch_warnings(record=True) as w:
+            pystats.median1D(testInst, [0, 24, 2], 'slt', 'slt')
+
+        assert len(w) == 1
+        assert w[0].category == DeprecationWarning
+
+    def test_deprecation_warning_circmean(self):
+        """Test if circmean in stats is deprecated"""
+
+        import warnings
+
+        warnings.simplefilter("always")
+        with warnings.catch_warnings(record=True) as w:
+            pystats.nan_circmean(self.test_angles, **self.circ_kwargs)
+
+        assert len(w) == 1
+        assert w[0].category == DeprecationWarning
+
+    def test_deprecation_warning_circstd(self):
+        """Test if circmean in stats is deprecated"""
+
+        import warnings
+
+        warnings.simplefilter("always")
+        with warnings.catch_warnings(record=True) as w:
+            pystats.nan_circstd(self.test_angles, **self.circ_kwargs)
+
+        assert len(w) == 1
+        assert w[0].category == DeprecationWarning
