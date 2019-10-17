@@ -1,8 +1,4 @@
-import numpy as np
-import sys
-
-from nose.tools import assert_raises, raises
-import pandas as pds
+from nose.tools import raises
 
 import pysat
 from pysat import model_utils as mu
