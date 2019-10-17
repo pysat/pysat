@@ -87,7 +87,7 @@ class TestBasics():
         assert w[0].category == DeprecationWarning
 
     def test_deprecation_warning_circstd(self):
-        """Test if circmean in stats is deprecated"""
+        """Test if circstd in stats is deprecated"""
 
         import warnings
 
