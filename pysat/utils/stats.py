@@ -41,7 +41,7 @@ def median1D(self, bin_params, bin_label, data_label):
     medians = 0. * bins[0:-1]
     ind = np.digitize(self.data[bin_label], bins)
 
-    for i in xrange(bins.size-1):
+    for i in range(bins.size-1):
         index, = np.where(ind == (i + 1))
         if len(index) > 0:
             idx = self.data.index[index.astype(int)]
@@ -71,10 +71,10 @@ def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
         Circular mean
 
     """
-    
-    warnings.warn(' '.join(("utils.stats.nan_circmean is deprecated and will ",
-                            "be removed is a future version. This function is ",
-                            "part of the scipy 1.4.0 milestones and will be ",
+
+    warnings.warn(' '.join(("utils.stats.nan_circmean is deprecated and will",
+                            "be removed is a future version. This function is",
+                            "part of the scipy 1.4.0 milestones and will be",
                             "migrated there.")),
                   DeprecationWarning)
 
@@ -127,9 +127,9 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
 
     """
 
-    warnings.warn(' '.join(("utils.stats.nan_circstd is deprecated and will ",
-                            "be removed is a future version. This function is ",
-                            "part of the scipy 1.4.0 milestones and will be ",
+    warnings.warn(' '.join(("utils.stats.nan_circstd is deprecated and will",
+                            "be removed is a future version. This function is",
+                            "part of the scipy 1.4.0 milestones and will be",
                             "migrated there.")),
                   DeprecationWarning)
 
