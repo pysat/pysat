@@ -14,13 +14,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
     to filter out empty files from the stored file list
    - Updated cleaning routines for C/NOFS IVM
-   - Imports ssnl routines from pysatSeasons
 - Code Restructure
   - Move `computational_form` to `ssnl`, old version is deprecated
   - Move `scale_units` to `utils._core`, old version is deprecated
   - Replace `season_date_range` with `create_date_range`, old version is deprecated
   - Added deprecation warnings to stat functions
   - Removed `pysat_sgp4` instrument
+  - Imports ssnl routines from pysatSeasons
+  - Deprecation warnings for `model_utils`
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
