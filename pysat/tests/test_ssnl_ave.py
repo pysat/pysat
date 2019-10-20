@@ -90,6 +90,101 @@ class TestBasics():
         assert np.all(ans == 86399/2.0)
 
 
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         clean_level='clean')
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 1))
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
+    def test_median1D_deprecation_warning(self):
+        """Test generation of deprecation warning for median1D"""
+
+        import warnings
+
+        warnings.simplefilter("always")
+
+        self.testInst.bounds = self.bounds
+        with warnings.catch_warnings(record=True) as w:
+            med_dict = avg.median1D(self.testInst, [0., 360., 24.],
+                                    'longitude', ['dummy1'])
+
+        # Test output type
+        assert isinstance(med_dict, dict)
+        assert len(w) >= 1
+        assert w[0].category == DeprecationWarning
+
+    def test_median2D_deprecation_warning(self):
+        """Test generation of deprecation warning for median1D"""
+
+        import warnings
+
+        warnings.simplefilter("always")
+
+        self.testInst.bounds = self.bounds
+        with warnings.catch_warnings(record=True) as w:
+            med_dict = avg.median2D(self.testInst, [0., 360., 24.],
+                                    'longitude', [0., 24., 24.], 'mlt',
+                                    ['dummy1'])
+
+        # Test output type
+        assert isinstance(med_dict, dict)
+        assert len(w) >= 1
+        assert w[0].category == DeprecationWarning
+
+    def test_mean_by_day_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_day"""
+
+        import warnings
+
+        warnings.simplefilter("always")
+
+        self.testInst.bounds = self.bounds
+        with warnings.catch_warnings(record=True) as w:
+            med_dict = avg.mean_by_day(self.testInst, 'dummy1')
+
+        # Test output type
+        assert isinstance(med_dict, pds.Series)
+        assert len(w) >= 1
+        assert w[0].category == DeprecationWarning
+
+    def test_mean_by_orbit_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_orbit"""
+
+        import warnings
+
+        warnings.simplefilter("always")
+
+        self.testInst.bounds = self.bounds
+        with warnings.catch_warnings(record=True) as w:
+            med_dict = avg.mean_by_orbit(self.testInst, 'dummy1')
+
+        # Test output type
+        assert isinstance(med_dict, pds.Series)
+        assert len(w) >= 1
+        assert w[0].category == DeprecationWarning
+
+    def test_mean_by_file_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_file"""
+
+        import warnings
+
+        warnings.simplefilter("always")
+
+        self.testInst.bounds = self.bounds
+        with warnings.catch_warnings(record=True) as w:
+            med_dict = avg.mean_by_file(self.testInst, 'dummy1')
+
+        # Test output type
+        assert isinstance(med_dict, pds.Series)
+        assert len(w) >= 1
+        assert w[0].category == DeprecationWarning
+
+
 class TestFrameProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""

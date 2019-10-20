@@ -71,3 +71,17 @@ class TestBasics():
         assert len(figs) == 2
         assert len(axes) == 3
         assert len(axes2) == 3
+
+    def test_deprecation_warning_scatterplot(self):
+        """Test if scatterplot in ssnl is deprecated"""
+
+        import warnings
+
+        warnings.simplefilter("always")
+        with warnings.catch_warnings(record=True) as w:
+            figs = plot.scatterplot(self.testInst, 'longitude', 'latitude',
+                                    'slt', [0.0, 24.0])
+
+        assert len(figs) == 1
+        assert len(w) >= 1
+        assert w[0].category == DeprecationWarning
