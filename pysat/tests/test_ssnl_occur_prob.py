@@ -158,7 +158,8 @@ class TestBasics():
         warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
             occur_prob.by_orbit3D(self.testInst, [0, 24, 2], 'slt',
-                                  [-60, 60, 3], 'latitude', ['slt'], [12.],
+                                  [-60, 60, 3], 'latitude', [0, 360, 4],
+                                  'longitude', ['slt'], [12.],
                                   returnBins=True)
 
         assert len(w) >= 1
