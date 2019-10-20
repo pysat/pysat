@@ -18,6 +18,7 @@ object as the season of interest.
 """
 
 import numpy as np
+import warnings
 
 
 def daily2D(inst, bin1, label1, bin2, label2, data_label, gate,
@@ -59,6 +60,12 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate,
     Season delineated by the bounds attached to Instrument object.
 
     """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
 
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                          by_orbit=False, returnBins=returnBins)
@@ -102,6 +109,12 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate,
     Season delineated by the bounds attached to Instrument object.
 
     """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
 
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                          by_orbit=True, returnBins=returnBins)
@@ -211,6 +224,12 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
 
     """
 
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
+
     return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
                          data_label, gate, returnBins=returnBins,
                          by_orbit=False)
@@ -253,6 +272,12 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
     Season delineated by the bounds attached to Instrument object.
 
     """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
 
     return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
                          data_label, gate, returnBins=returnBins,

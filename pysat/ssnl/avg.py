@@ -10,6 +10,7 @@ import pysat
 import numpy as np
 import pandas as pds
 import collections
+import warnings
 
 
 def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
@@ -40,6 +41,12 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
         the bin edges in 'bin_x'
 
     """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
 
     # const is either an Instrument or a Constellation, and we want to
     #  iterate over it.
@@ -124,6 +131,12 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
 
     """
 
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
+
     # const is either an Instrument or a Constellation, and we want to
     #  iterate over it.
     # If it's a Constellation, then we can do that as is, but if it's
@@ -202,6 +215,7 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
 
 def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx,
                     numy, numz, returnData=False):
+
     # set up output arrays
     medianAns = [[[None for i in xarr] for j in yarr] for k in zarr]
     countAns = [[[None for i in xarr] for j in yarr] for k in zarr]
@@ -325,6 +339,13 @@ def mean_by_day(inst, data_label):
         simple mean of data_label indexed by day
 
     """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
+
     return _core_mean(inst, data_label, by_day=True)
 
 
@@ -342,6 +363,13 @@ def mean_by_orbit(inst, data_label):
         simple mean of data_label indexed by start of each orbit
 
     """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
+
     return _core_mean(inst, data_label, by_orbit=True)
 
 
@@ -359,6 +387,13 @@ def mean_by_file(inst, data_label):
         simple mean of data_label indexed by start of each file
 
     """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning)
+
     return _core_mean(inst, data_label, by_file=True)
 
 
@@ -389,7 +424,7 @@ def _core_mean(inst, data_label, by_orbit=False, by_day=False, by_file=False):
             # perform average
             mean_val[date] = \
                 pysat.ssnl.computational_form(data).mean(axis=0,
-                                                          skipna=True)
+                                                         skipna=True)
 
     del iterator
     return mean_val
@@ -410,7 +445,8 @@ def _calc_1d_median(ans, data_label, binx, xarr, zarr, numx, numz,
     This is an overcomplicated way of doing this.  Try and simplify later
 
     """
-    # set up output arrays
+
+# set up output arrays
     medianAns = [[None for i in xarr] for k in zarr]
     countAns = [[None for i in xarr] for k in zarr]
     devAns = [[None for i in xarr] for k in zarr]
