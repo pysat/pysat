@@ -52,7 +52,7 @@ def test_deprecation_warning_computational_form():
         dslice2 = pysat.utils.computational_form(data)
 
     assert (dslice1 == dslice2).all()
-    assert len(w) == 1
+    assert len(w) >= 1
     assert w[0].category == DeprecationWarning
 
 

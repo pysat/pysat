@@ -71,7 +71,7 @@ class TestBasics():
         with warnings.catch_warnings(record=True) as w:
             pystats.median1D(testInst, [0, 24, 2], 'slt', 'slt')
 
-        assert len(w) == 1
+        assert len(w) >= 1
         assert w[0].category == DeprecationWarning
 
     def test_deprecation_warning_circmean(self):
@@ -83,7 +83,7 @@ class TestBasics():
         with warnings.catch_warnings(record=True) as w:
             pystats.nan_circmean(self.test_angles, **self.circ_kwargs)
 
-        assert len(w) == 1
+        assert len(w) >= 1
         assert w[0].category == DeprecationWarning
 
     def test_deprecation_warning_circstd(self):
@@ -95,5 +95,5 @@ class TestBasics():
         with warnings.catch_warnings(record=True) as w:
             pystats.nan_circstd(self.test_angles, **self.circ_kwargs)
 
-        assert len(w) == 1
+        assert len(w) >= 1
         assert w[0].category == DeprecationWarning
