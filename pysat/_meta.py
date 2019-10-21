@@ -527,14 +527,14 @@ class Meta(object):
             # if tuple length is 2, index, column
             if len(key) == 2:
                 if isinstance(key[0], basestring):
-                    new_index = [self.var_case_name(key[0])]
+                    new_index = self.var_case_name(key[0])
                 elif isinstance(key[0], slice):
                     new_index = self.data.index[key[0]]
                 else:
                     new_index = [self.var_case_name(key_) for key_ in key[0]]
 
                 if isinstance(key[1], basestring):
-                    new_name = [self.attr_case_name(key[1])]
+                    new_name = self.attr_case_name(key[1])
                 elif isinstance(key[1], slice):
                     new_name = key[1]
                 else:
@@ -544,7 +544,7 @@ class Meta(object):
             # if tuple length is 3, index, child_index, column
             elif len(key) == 3:
                 if isinstance(key[0], basestring):
-                    new_index = [self.var_case_name(key[0])]
+                    new_index = self.var_case_name(key[0])
                 elif isinstance(key[0], slice):
                     new_index = list(self.ho_data.keys())[key[0]]
                 else:
@@ -553,6 +553,7 @@ class Meta(object):
                 new_child_index = self.var_case_name(key[1])
                 new_name = self.attr_case_name(key[2])
                 return [self.ho_data[new_index_].data.loc[new_child_index, new_name] for new_index_ in new_index]
+
         elif isinstance(key, basestring):
             # ensure variable is present somewhere
             if key in self:
@@ -567,6 +568,7 @@ class Meta(object):
                 else:
                     # empty_meta = Meta()
                     # self.apply_default_labels(empty_meta)
+                    # Following line issues a pandas SettingWithCopyWarning
                     meta_row.at['children'] = None  # empty_meta
                 return meta_row
                 # else:
