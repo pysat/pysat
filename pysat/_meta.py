@@ -554,6 +554,9 @@ class Meta(object):
                 new_name = self.attr_case_name(key[2])
                 return [self.ho_data[new_index_].data.loc[new_child_index, new_name] for new_index_ in new_index]
 
+        elif isinstance(key, list):
+            return self[key,:]
+
         elif isinstance(key, basestring):
             # ensure variable is present somewhere
             if key in self:
@@ -577,10 +580,7 @@ class Meta(object):
             else:
                 raise KeyError('Key not found in MetaData')
         else:
-            try:
-                return self[key,:]
-            except:
-                raise NotImplementedError("No way to handle MetaData key {}".format(key.__repr__()))
+            raise NotImplementedError("No way to handle MetaData key {}".format(key.__repr__()))
 
     def _label_setter(self, new_label, current_label, attr_label,
                       default=np.NaN, use_names_default=False):
