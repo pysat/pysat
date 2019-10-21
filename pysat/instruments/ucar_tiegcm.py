@@ -47,7 +47,7 @@ sat_ids = {'': ['']}
 # good day to download test data for. Downloads aren't currently supported!
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
-test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 
 # specify using xarray (not using pandas)
 pandas_format = False

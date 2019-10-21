@@ -53,7 +53,7 @@ tags = {'indices': 'SMU and SML indices',
         'all': 'magnetometer measurements and indices',
         'stations': 'magnetometer stations'}
 sat_ids = {'': tags.keys()}
-test_dates = {'': {kk: pysat.datetime(2009, 1, 1) for kk in tags.keys()}}
+_test_dates = {'': {kk: pysat.datetime(2009, 1, 1) for kk in tags.keys()}}
 
 
 def init(self):

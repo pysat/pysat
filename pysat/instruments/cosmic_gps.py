@@ -57,7 +57,7 @@ tags = {'ionprf': '',
         'wetprf': '',
         'atmprf': ''}
 sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf']}
-test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
+_test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
                    'sonprf': pysat.datetime(2008, 1, 1),
                    'wetprf': pysat.datetime(2008, 1, 1),
                    'atmprf': pysat.datetime(2008, 1, 1)}}

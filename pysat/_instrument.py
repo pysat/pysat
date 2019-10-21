@@ -831,11 +831,6 @@ class Instrument(object):
         except AttributeError:
             pass
 
-        try:
-            self.test_dates = inst.test_dates
-        except AttributeError:
-            pass
-
         return
 
     def __str__(self):
