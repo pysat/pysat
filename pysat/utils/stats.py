@@ -77,7 +77,7 @@ def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
                             "be removed in pysat 3.0.0. This function is",
                             "part of the scipy 1.4.0 milestones and will be",
                             "migrated there."]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     samples = np.asarray(samples)
     samples = samples[~np.isnan(samples)]
@@ -132,7 +132,7 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
                             "be removed in pysat 3.0.0. This function is",
                             "part of the scipy 1.4.0 milestones and will be",
                             "migrated there."]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     samples = np.asarray(samples)
     samples = samples[~np.isnan(samples)]

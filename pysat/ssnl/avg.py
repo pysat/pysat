@@ -46,7 +46,7 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     # const is either an Instrument or a Constellation, and we want to
     #  iterate over it.
@@ -135,7 +135,7 @@ def median2D(const, bin1, label1, bin2, label2, data_label,
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     # const is either an Instrument or a Constellation, and we want to
     #  iterate over it.
@@ -344,7 +344,7 @@ def mean_by_day(inst, data_label):
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     return _core_mean(inst, data_label, by_day=True)
 
@@ -368,7 +368,7 @@ def mean_by_orbit(inst, data_label):
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     return _core_mean(inst, data_label, by_orbit=True)
 
@@ -392,7 +392,7 @@ def mean_by_file(inst, data_label):
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     return _core_mean(inst, data_label, by_file=True)
 
