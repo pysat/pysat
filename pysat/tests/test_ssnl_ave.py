@@ -5,6 +5,7 @@ import numpy as np
 
 from nose.tools import raises
 import pandas as pds
+import sys
 
 import pysat
 from pysat.ssnl import avg
@@ -94,6 +95,8 @@ class TestDeprecation():
 
     def setup(self):
         """Runs before every method to create a clean testing setup"""
+        if sys.version_info.major == 2:
+            reload(avg)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean')
         self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 1))
