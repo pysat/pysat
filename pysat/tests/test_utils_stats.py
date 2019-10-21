@@ -79,7 +79,7 @@ class TestBasics():
 
         import warnings
 
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
             pystats.nan_circmean(self.test_angles, **self.circ_kwargs)
 
@@ -91,7 +91,7 @@ class TestBasics():
 
         import warnings
 
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
             pystats.nan_circstd(self.test_angles, **self.circ_kwargs)
 
