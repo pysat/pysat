@@ -8,9 +8,6 @@ matrix:
       services: xvfb
 
 cache: pip
-cache:
-   directories:
-      - ../pyglow_cache
 
 addons:
   apt:
@@ -18,30 +15,17 @@ addons:
     - gfortran
     - libncurses5-dev
 
-# Setup anaconda
 before_install:
-  #- apt-get update
   - pip install coveralls
   - pip install future
-  - pip install apexpy
   - pip install pysatCDF >/dev/null
-  # install pyglow, space science models
-  - cd ..
-  - echo 'cloning pyglow'
-  - git clone https://github.com/timduly4/pyglow.git >/dev/null
-  - echo 'installing pyglow'
-  - cd ./pyglow
-  - make -C src/pyglow/models source >/dev/null
-  - python setup.py install >/dev/null
-  - cd ..
 
 # command to install dependencies
 install:
   - source activate test-environment
   # set up data directory
-  - mkdir /home/travis/build/pysat/pysatData
+  - mkdir /home/travis/build/pysatData
   # install pysat
-  - cd /home/travis/build/pysat/pysat
   - python setup.py install
 
 before_script:

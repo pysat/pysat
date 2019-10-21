@@ -123,7 +123,8 @@ def init(inst):
     # mess with file dates if kwarg option present
     if 'mangle_file_dates' in inst.kwargs:
         if inst.kwargs['mangle_file_dates']:
-                inst.files.files.index = inst.files.files.index + pds.DateOffset(minutes=5)
+            inst.files.files.index = \
+                inst.files.files.index + pds.DateOffset(minutes=5)
 
 def default(inst):
     """The default function is applied first to data as it is loaded.
@@ -160,7 +161,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         used
         (default=None)
     malformed_index : bool (default=False)
-        If True, time index for simulation will be non-unique and non-monotonic.
+        If True, time index for simulation will be non-unique and non-monotonic
     **kwargs : Additional keywords
         Additional keyword arguments supplied at pyast.Instrument instantiation
         are passed here
@@ -255,7 +256,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
-    
+
     index = pds.date_range(data_date,
                            data_date+pds.DateOffset(seconds=num-1),
                            freq='S')
@@ -266,7 +267,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         # non unique
         index[6:9] = [index[6]]*3
 
-    data.index=index[0:num]
+    data.index = index[0:num]
     data.index.name = 'Epoch'
     return data, meta.copy()
 
