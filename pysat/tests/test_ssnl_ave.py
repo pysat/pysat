@@ -162,11 +162,11 @@ class TestDeprecation():
 
         warnings.simplefilter("always")
 
-        self.testInst.bounds = self.bounds
         orbit_info = {'kind': 'local time', 'index': 'mlt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=orbit_info)
+        self.testInst.bounds = self.bounds
         with warnings.catch_warnings(record=True) as w:
             med_dict = avg.mean_by_orbit(self.testInst, 'dummy1')
 
