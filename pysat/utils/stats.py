@@ -35,7 +35,7 @@ def median1D(self, bin_params, bin_label, data_label):
     warnings.warn(' '.join(["utils.stats.median1D is deprecated and will be",
                             "removed in pysat 3.0.0. Please use",
                             "ssnl.avg.median1D instead"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     bins = np.arange(bin_params[0], bin_params[1] + bin_params[2],
                      bin_params[2])

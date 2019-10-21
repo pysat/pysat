@@ -37,7 +37,7 @@ def satellite_view_through_model(sat, tie, scoords, tlabels):
                             "removed in pysat 3.0.0. Please use",
                             "pysatModelUtils instead:"
                             "https://github.com/pysat/pysatModelUtils"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     # tiegcm is in pressure levels, need in altitude, but on regular
     # grid
@@ -127,7 +127,7 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                             "removed in pysat 3.0.0. Please use",
                             "pysatModelUtils instead:"
                             "https://github.com/pysat/pysatModelUtils"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     method_rout = {"bias": verify.bias, "accuracy": verify.accuracy,
                    "meanPercentageError": verify.meanPercentageError,
@@ -318,7 +318,7 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                             "removed in pysat 3.0.0. Please use",
                             "pysatModelUtils instead:"
                             "https://github.com/pysat/pysatModelUtils"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     matched_inst = None
 
@@ -511,7 +511,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                             "removed in pysat 3.0.0. Please use",
                             "pysatModelUtils instead:"
                             "https://github.com/pysat/pysatModelUtils"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     # Test input
     if inst is None:

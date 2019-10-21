@@ -36,7 +36,7 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     if mpl.is_interactive():
         interactive_mode = True

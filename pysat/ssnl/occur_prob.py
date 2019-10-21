@@ -65,7 +65,7 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate,
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                          by_orbit=False, returnBins=returnBins)
@@ -114,7 +114,7 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate,
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     return _occurrence2D(inst, bin1, label1, bin2, label2, data_label, gate,
                          by_orbit=True, returnBins=returnBins)
@@ -228,7 +228,7 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
                          data_label, gate, returnBins=returnBins,
@@ -277,7 +277,7 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
                             "removed in pysat 3.0.0. Please use",
                             "pysatSeasons instead:"
                             "https://github.com/pysat/pysatSeasons"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
 
     return _occurrence3D(inst, bin1, label1, bin2, label2, bin3, label3,
                          data_label, gate, returnBins=returnBins,
