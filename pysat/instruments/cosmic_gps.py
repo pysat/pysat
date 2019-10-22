@@ -330,6 +330,8 @@ def download(date_array, tag, sat_id, data_path=None,
             except requests.exceptions.HTTPError as err:
                 estr = ''.join([str(err), '\n', 'Data not found'])
                 print(estr)
+        # Copy request info to tarball
+        # If data does not exist, will copy info not readable as tar
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
         with open(fname, "wb") as local_file:
@@ -349,8 +351,10 @@ def download(date_array, tag, sat_id, data_path=None,
             # Get rid of empty directories from tar process
             shutil.rmtree(top_dir)
         except tarfile.ReadError:
-            # If file cannot be read, file cannot be downloaded
+            # If file cannot be read as a tarfile, then data does not exist
+            # skip this day since no data to move
             pass
+        # tar file must be removed (even if download fails)
         os.remove(fname)
 
     return
