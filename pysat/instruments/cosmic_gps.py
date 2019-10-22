@@ -329,7 +329,7 @@ def download(date_array, tag, sat_id, data_path=None,
                 req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
                 req.raise_for_status()
             except requests.exceptions.HTTPError as err:
-                estr = ''.join(str(err), '\n', 'Data not found')
+                estr = ''.join([str(err), '\n', 'Data not found'])
                 print(estr)
         try:
             fname = os.path.join(data_path,
