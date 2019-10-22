@@ -330,17 +330,16 @@ def download(date_array, tag, sat_id, data_path=None,
             except requests.exceptions.HTTPError as err:
                 estr = ''.join([str(err), '\n', 'Data not found'])
                 print(estr)
+        fname = os.path.join(data_path,
+                             'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
+        with open(fname, "wb") as local_file:
+            local_file.write(req.content)
+            local_file.close()
         try:
-            fname = os.path.join(data_path,
-                                 'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
-            with open(fname, "wb") as local_file:
-                local_file.write(req.content)
-                local_file.close()
             # uncompress files and remove tarball
             tar = tarfile.open(fname)
             tar.extractall(path=data_path)
             tar.close()
-            os.remove(fname)
             # move files
             source_dir = os.path.join(top_dir, sub_dir, yrdoystr)
             destination_dir = os.path.join(data_path, yrdoystr)
@@ -352,6 +351,7 @@ def download(date_array, tag, sat_id, data_path=None,
         except tarfile.ReadError:
             # If file cannot be read, file cannot be downloaded
             pass
+        os.remove(fname)
 
     return
 
