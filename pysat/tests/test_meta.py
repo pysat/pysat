@@ -337,6 +337,14 @@ class TestBasics():
                              'value_min': 0, 'value_max': 1}
         _ = self.meta.pop('new4')
 
+    @raises(KeyError)
+    def test_basic_getitem_w_bad_key(self):
+        self.meta['new4']
+
+    @raises(NotImplementedError)
+    def test_basic_getitem_w_bad_key(self):
+        self.meta[1]
+
     def test_basic_equality(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',

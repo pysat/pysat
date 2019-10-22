@@ -525,7 +525,7 @@ class Meta(object):
         # if key is a tuple, looking at index, column access pattern
 
         def match_name(func, name, names):
-            """Returns a key or set of keys depending on key type"""
+            """Applies func on name(s) depending on name type"""
             if isinstance(name, basestring):
                 return func(name)
             elif isinstance(name, slice):
