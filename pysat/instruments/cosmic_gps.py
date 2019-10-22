@@ -44,7 +44,6 @@ from __future__ import absolute_import
 import glob
 import numpy as np
 import os
-import pandas as pds
 import sys
 
 import netCDF4
@@ -319,7 +318,7 @@ def download(date_array, tag, sat_id, data_path=None,
             req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-        # if repsonse is negative, try post-processed data
+            # if repsonse is negative, try post-processed data
             try:
                 dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/",
                                  "rest/tarservice/data/cosmic/"))
