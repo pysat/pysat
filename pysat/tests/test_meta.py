@@ -996,7 +996,7 @@ class TestBasics():
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
                               'YoYoYO': 'yolo'}
-        self.meta.keep(['NEW21'])
+        self.meta.keep(['new21'])
 
         assert not ('new' in self.meta.data.index)
         assert (self.meta['NEW21'].units == 'hey2')
