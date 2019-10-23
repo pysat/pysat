@@ -65,7 +65,7 @@ pysat_dir = os.path.join(home_dir, '.pysat')
 if not os.path.isdir(pysat_dir):
     # create directory
     os.mkdir(pysat_dir)
-    logger.info('Created .pysat directory in user home directory to store settings.')
+    print('Created .pysat directory in user home directory to store settings.')
     # create file with default data directory
     if not (os.environ.get('TRAVIS') == 'true'):
         data_dir = os.path.join(home_dir, 'pysatData')
@@ -73,7 +73,7 @@ if not os.path.isdir(pysat_dir):
         data_dir = '/home/travis/build/pysat/pysatData'
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
-    logger.info(''.join(("\nHi there!  Pysat will nominally store data in the "
+    print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
                    "Run pysat.utils.set_data_dir to specify a different "
                    "top-level directory to store science data.")))
