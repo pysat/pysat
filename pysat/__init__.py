@@ -72,6 +72,7 @@ if not os.path.isdir(pysat_dir):
                    "top-level directory to store science data.")))
     # user modules file
     with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
+        f.write('')
         user_modules = []
 
 else:
@@ -80,10 +81,12 @@ else:
         data_dir = f.readline()
     # load up stored user modules
     user_modules = []
-    with open(os.path.join(pysat_dir, 'user_modules.txt'), 'r') as f:
-        for _ in f:
-            if _ != '' and (_ is not None):
-                user_modules.append(_.strip())
+    modules_file = os.path.join(pysat_dir, 'user_modules.txt')
+    if os.path.exists(modules_file):
+        with open(modules_file, 'r') as f:
+            for _ in f:
+                if _ != '' and (_ is not None):
+                    user_modules.append(_.strip())
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
