@@ -1,11 +1,10 @@
 """
 tests the pysat averaging code
 """
-import numpy as np
-
 from nose.tools import raises
+import numpy as np
 import pandas as pds
-
+import warnings
 import pysat
 from pysat.ssnl import avg
 
@@ -94,9 +93,7 @@ class TestDeprecation():
 
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         clean_level='clean')
-        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 1))
+        warnings.simplefilter("always")
 
     def teardown(self):
         """Runs after every method to clean up previous testing"""
@@ -104,87 +101,67 @@ class TestDeprecation():
     def test_median1D_deprecation_warning(self):
         """Test generation of deprecation warning for median1D"""
 
-        import warnings
-
-        warnings.simplefilter("always")
-
-        self.testInst.bounds = self.bounds
         with warnings.catch_warnings(record=True) as w:
-            med_dict = avg.median1D(self.testInst, [0., 360., 24.],
-                                    'longitude', ['dummy1'])
+            try:
+                avg.median1D(None, [0., 360., 24.],
+                             'longitude', ['dummy1'])
+            except ValueError:
+                # Setting inst to None should produce a ValueError
+                pass
 
-        # Test output type
-        assert isinstance(med_dict, dict)
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
 
     def test_median2D_deprecation_warning(self):
         """Test generation of deprecation warning for median1D"""
 
-        import warnings
-
-        warnings.simplefilter("always")
-
-        self.testInst.bounds = self.bounds
         with warnings.catch_warnings(record=True) as w:
-            med_dict = avg.median2D(self.testInst, [0., 360., 24.],
-                                    'longitude', [0., 24., 24.], 'mlt',
-                                    ['dummy1'])
+            try:
+                avg.median2D(None, [0., 360., 24.], 'longitude',
+                             [0., 24., 24.], 'mlt', ['dummy1'])
+            except ValueError:
+                # Setting inst to None should produce a ValueError
+                pass
 
-        # Test output type
-        assert isinstance(med_dict, dict)
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
 
     def test_mean_by_day_deprecation_warning(self):
         """Test generation of deprecation warning for mean_by_day"""
 
-        import warnings
-
-        warnings.simplefilter("always")
-
-        self.testInst.bounds = self.bounds
         with warnings.catch_warnings(record=True) as w:
-            med_dict = avg.mean_by_day(self.testInst, 'dummy1')
+            try:
+                avg.mean_by_day(None, 'dummy1')
+            except TypeError:
+                # Setting inst to None should produce a TypeError
+                pass
 
-        # Test output type
-        assert isinstance(med_dict, pds.Series)
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
 
     def test_mean_by_orbit_deprecation_warning(self):
         """Test generation of deprecation warning for mean_by_orbit"""
 
-        import warnings
-
-        warnings.simplefilter("always")
-
-        orbit_info = {'kind': 'local time', 'index': 'mlt'}
-        self.testInst = pysat.Instrument('pysat', 'testing',
-                                         clean_level='clean',
-                                         orbit_info=orbit_info)
-        self.testInst.bounds = self.bounds
         with warnings.catch_warnings(record=True) as w:
-            med_dict = avg.mean_by_orbit(self.testInst, 'dummy1')
+            try:
+                avg.mean_by_orbit(None, 'dummy1')
+            except AttributeError:
+                # Setting inst to None should produce a AttributeError
+                pass
 
-        # Test output type
-        assert isinstance(med_dict, pds.Series)
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
 
     def test_mean_by_file_deprecation_warning(self):
         """Test generation of deprecation warning for mean_by_file"""
 
-        import warnings
-
-        warnings.simplefilter("always")
-
-        self.testInst.bounds = self.bounds
         with warnings.catch_warnings(record=True) as w:
-            med_dict = avg.mean_by_file(self.testInst, 'dummy1')
+            try:
+                avg.mean_by_file(None, 'dummy1')
+            except TypeError:
+                # Setting inst to None should produce a TypeError
+                pass
 
-        # Test output type
-        assert isinstance(med_dict, pds.Series)
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
 

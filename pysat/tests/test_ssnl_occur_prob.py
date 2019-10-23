@@ -3,7 +3,7 @@ tests the pysat occur_prob object and code
 """
 
 from nose.tools import raises
-
+import warnings
 import pysat
 from pysat.ssnl import occur_prob
 
@@ -108,16 +108,25 @@ class TestBasics():
         assert abs(ans['slt']['bin_y'] - [-60, -20, 20, 60]).max() < 1.0e-6
         assert abs(ans['slt']['bin_z'] - [0, 12, 24]).max() < 1.0e-6
 
+
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+
     def test_deprecation_warning_daily_2D(self):
         """Test if occur_prob.daily2D is deprecated"""
 
-        import warnings
-
-        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
-            occur_prob.daily2D(self.testInst, [0, 24, 2], 'slt',
-                               [-60, 60, 3], 'latitude', ['slt'], [12.],
-                               returnBins=True)
+            try:
+                occur_prob.daily2D(None, [0, 24, 2], 'slt',
+                                   [-60, 60, 3], 'latitude', ['slt'], [12.])
+            except TypeError:
+                # Setting inst to None should produce a TypeError
+                pass
 
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
@@ -125,13 +134,13 @@ class TestBasics():
     def test_deprecation_warning_by_orbit_2D(self):
         """Test if occur_prob.by_orbit2D is deprecated"""
 
-        import warnings
-
-        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
-            occur_prob.by_orbit2D(self.testInst, [0, 24, 2], 'slt',
-                                  [-60, 60, 3], 'latitude', ['slt'], [12.],
-                                  returnBins=True)
+            try:
+                occur_prob.by_orbit2D(None, [0, 24, 2], 'slt',
+                                      [-60, 60, 3], 'latitude', ['slt'], [12.])
+            except AttributeError:
+                # Setting inst to None should produce a AttributeError
+                pass
 
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
@@ -139,13 +148,14 @@ class TestBasics():
     def test_deprecation_warning_daily_3D(self):
         """Test if occur_prob.daily3D is deprecated"""
 
-        import warnings
-
-        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
-            occur_prob.daily3D(self.testInst, [0, 360, 4], 'longitude',
-                               [-60, 60, 3], 'latitude', [0, 24, 2], 'slt',
-                               ['slt'], [12.], returnBins=True)
+            try:
+                occur_prob.daily3D(None, [0, 360, 4], 'longitude',
+                                   [-60, 60, 3], 'latitude', [0, 24, 2], 'slt',
+                                   ['slt'], [12.])
+            except TypeError:
+                # Setting inst to None should produce a TypeError
+                pass
 
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
@@ -153,14 +163,14 @@ class TestBasics():
     def test_deprecation_warning_by_orbit_3D(self):
         """Test if occur_prob.by_orbit3D is deprecated"""
 
-        import warnings
-
-        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
-            occur_prob.by_orbit3D(self.testInst, [0, 24, 2], 'slt',
-                                  [-60, 60, 3], 'latitude', [0, 360, 4],
-                                  'longitude', ['slt'], [12.],
-                                  returnBins=True)
+            try:
+                occur_prob.by_orbit3D(None, [0, 24, 2], 'slt',
+                                      [-60, 60, 3], 'latitude', [0, 360, 4],
+                                      'longitude', ['slt'], [12.])
+            except AttributeError:
+                # Setting inst to None should produce a AttributeError
+                pass
 
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
