@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
     to filter out empty files from the stored file list
    - Updated cleaning routines for C/NOFS IVM
+   - Added S4 scintillation data to the cosmic-gps instrument
 - Code Restructure
   - Move `computational_form` to `ssnl`, old version is deprecated
   - Move `scale_units` to `utils._core`, old version is deprecated
