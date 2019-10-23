@@ -948,13 +948,12 @@ class TestBasics():
         self.testInst.__yo_yo == 'yo yo'
 
     # ensure meta attributes aren't transfered
-    @raises(AttributeError)
     def test_transfer_attributes_to_instrument_no_meta_attr(self):
         self.meta.new_attribute = 'hello'
         self.meta._yo_yo = 'yo yo'
         self.meta.date = None
         self.meta.transfer_attributes_to_instrument(self.testInst)
-        self.testInst.ho_data
+        assert 'ho_data' not in dir(self.testInst)
 
     @raises(RuntimeError)
     def test_transfer_attributes_to_instrument_strict_names(self):
