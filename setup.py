@@ -7,38 +7,36 @@ https://github.com/pypa/sampleproject
 # Always prefer setuptools over distutils
 from setuptools import setup
 # To use a consistent encoding
-from codecs import open
+import codecs
 import os
 import sys
 
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'description.txt'), encoding='utf-8') as f:
+with codecs.open(os.path.join(here, 'description.txt'), encoding='utf-8') as f:
     long_description = f.read()
 version_filename = os.path.join('pysat', 'version.txt')
-with open(os.path.join(here, version_filename)) as version_file:
+with codecs.open(os.path.join(here, version_filename)) as version_file:
     version = version_file.read().strip()
 
 # change setup.py for readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 if sys.version_info.major == 2:
     install_requires = ['xarray<0.12', 'pandas>=0.23, <0.25',
-                        'numpy>=1.12, <1.17', 'scipy<1.3', 'sgp4',
-                        'pyEphem', 'requests', 'beautifulsoup4',
+                        'numpy>=1.12, <1.17', 'scipy<1.3',
+                        'requests', 'beautifulsoup4',
                         'lxml', 'netCDF4', 'matplotlib<3.0', 'pysatCDF',
-                        'apexpy', 'aacgmv2', 'pysatMagVect', 'madrigalWeb',
-                        'h5py', 'PyForecastTools', 'pyglow']
+                        'madrigalWeb', 'h5py', 'PyForecastTools']
 else:
     install_requires = ['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                        'sgp4', 'pyEphem', 'requests', 'beautifulsoup4',
+                        'scipy', 'requests', 'beautifulsoup4',
                         'lxml', 'netCDF4', 'matplotlib', 'pysatCDF',
-                        'apexpy', 'aacgmv2', 'pysatMagVect', 'madrigalWeb',
-                        'h5py', 'PyForecastTools', 'pyglow']
+                        'madrigalWeb', 'h5py', 'PyForecastTools']
 
 # all packages after pysatCDF are excluded if on ReadTheDocs
 if on_rtd:
     # read the docs doesn't do Fortran
     # remove pysatCDF through h5py
-    install_requires = install_requires[:-8]
+    install_requires = install_requires[:-4]
 
 setup(
     name='pysat',
