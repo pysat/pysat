@@ -22,7 +22,8 @@ platform : string
 name : string
     'gps' for Radio Occultation profiles
 tag : string
-    Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
+    Select profile type, or scintillation, one of:
+    {'ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1'}
 sat_id : string
     None supported
 
@@ -31,7 +32,8 @@ Note
 - 'ionprf: 'ionPrf' ionosphere profiles
 - 'sonprf': 'sonPrf' files
 - 'wetprf': 'wetPrf' files
-- 'atmPrf': 'atmPrf' files
+- 'atmprf': 'atmPrf' files
+- 'scnlv1': 'scnLv1' files
 
 Warnings
 --------
@@ -55,12 +57,14 @@ name = 'gps'
 tags = {'ionprf': '',
         'sonprf': '',
         'wetprf': '',
-        'atmprf': ''}
-sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf']}
+        'atmprf': '',
+        'scnlv1': ''}
+sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1']}
 test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
                    'sonprf': pysat.datetime(2008, 1, 1),
                    'wetprf': pysat.datetime(2008, 1, 1),
-                   'atmprf': pysat.datetime(2008, 1, 1)}}
+                   'atmprf': pysat.datetime(2008, 1, 1),
+                   'scnlv1': pysat.datetime(2008, 1, 1)}}
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -106,11 +110,17 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         microseconds = [None] * num
         for i, f in enumerate(fnames):
             f2 = f.split('.')
-            year[i] = f2[-6]
-            days[i] = f2[-5]
-            hours[i] = f2[-4]
-            minutes[i] = f2[-3]
             microseconds[i] = i
+            if tag != 'scnlv1':
+                year[i] = f2[-6]
+                days[i] = f2[-5]
+                hours[i] = f2[-4]
+                minutes[i] = f2[-3]
+            else:
+                year[i] = f2[-8]
+                days[i] = f2[-7]
+                hours[i] = f2[-6]
+                minutes[i] = f2[-5]
 
         year = np.array(year).astype(int)
         days = np.array(days).astype(int)
@@ -296,8 +306,10 @@ def download(date_array, tag, sat_id, data_path=None,
         sub_dir = 'sonPrf'
     elif tag == 'wetprf':
         sub_dir = 'wetPrf'
-    elif tag == 'atmPrf':
+    elif tag == 'atmprf':
         sub_dir = 'atmPrf'
+    elif tag == 'scnlv1':
+        sub_dir = 'scnLv1'
     else:
         raise ValueError('Unknown cosmic_gps tag')
 
@@ -329,7 +341,7 @@ def download(date_array, tag, sat_id, data_path=None,
                 req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
                 req.raise_for_status()
             except requests.exceptions.HTTPError as err:
-                estr = ''.join(str(err), '\n', 'Data not found')
+                estr = ''.join((str(err), '\n', 'Data not found'))
                 print(estr)
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
@@ -413,7 +425,7 @@ def clean(inst):
         # filter out any measurements where things have been set to NaN
         inst.data = inst.data[inst.data.edmaxalt.notnull()]
 
-    elif inst.tag == 'scnlvl1':
+    elif inst.tag == 'scnlv1':
         # scintillation files
         if inst.clean_level == 'clean':
             # try and make sure all data is good
