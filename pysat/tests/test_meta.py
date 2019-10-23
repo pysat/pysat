@@ -481,6 +481,7 @@ class TestBasics():
         assert self.meta['lower'].units == 'boo'
         assert self.meta['lower'].long_name == 'boohoo'
         assert self.meta['higher'].children == meta
+        self.meta['higher',('axis','scale')]
 
 
     @raises(ValueError)

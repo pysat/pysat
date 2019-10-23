@@ -517,9 +517,15 @@ class Meta(object):
 
             meta[ 'name1', 'units' ]
 
+            meta[[ 'name1', 'name2'], 'units']
+
+            meta[:, 'units']
+
             for higher order data
 
             meta[ 'name1', 'subvar', 'units' ]
+
+            meta[ 'name1', ('units', 'scale') ]
 
         """
         # if key is a tuple, looking at index, column access pattern
