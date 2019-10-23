@@ -18,8 +18,7 @@ import pandas as pds
 import warnings
 
 
-def satellite_view_through_model(sat=None, tie=None, scoords=None,
-                                 tlabels=None):
+def satellite_view_through_model(sat, tie, scoords, tlabels):
     """Interpolate model values onto satellite orbital path.
 
     Parameters

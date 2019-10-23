@@ -40,7 +40,7 @@ class TestBasics():
 
         with warnings.catch_warnings(record=True) as w:
             try:
-                mu.satellite_view_through_model()
+                mu.satellite_view_through_model(None, None, None, None)
             except TypeError:
                 pass
 
