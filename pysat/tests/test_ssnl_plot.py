@@ -89,7 +89,8 @@ class TestDeprecation():
                 plot.scatterplot(None, 'longitude', 'latitude', ['slt', 'mlt'],
                                  [0.0, 24.0])
             except TypeError:
-                # Setting inst to None should produce a TypeError
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1

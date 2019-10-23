@@ -106,7 +106,8 @@ class TestDeprecation():
                 avg.median1D(None, [0., 360., 24.],
                              'longitude', ['dummy1'])
             except ValueError:
-                # Setting inst to None should produce a ValueError
+                # Setting inst to None should produce a ValueError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -120,7 +121,8 @@ class TestDeprecation():
                 avg.median2D(None, [0., 360., 24.], 'longitude',
                              [0., 24., 24.], 'mlt', ['dummy1'])
             except ValueError:
-                # Setting inst to None should produce a ValueError
+                # Setting inst to None should produce a ValueError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -133,7 +135,8 @@ class TestDeprecation():
             try:
                 avg.mean_by_day(None, 'dummy1')
             except TypeError:
-                # Setting inst to None should produce a TypeError
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -146,7 +149,8 @@ class TestDeprecation():
             try:
                 avg.mean_by_orbit(None, 'dummy1')
             except AttributeError:
-                # Setting inst to None should produce a AttributeError
+                # Setting inst to None should produce a AttributeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -159,7 +163,8 @@ class TestDeprecation():
             try:
                 avg.mean_by_file(None, 'dummy1')
             except TypeError:
-                # Setting inst to None should produce a TypeError
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1

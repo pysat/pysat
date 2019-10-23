@@ -125,7 +125,8 @@ class TestDeprecation():
                 occur_prob.daily2D(None, [0, 24, 2], 'slt',
                                    [-60, 60, 3], 'latitude', ['slt'], [12.])
             except TypeError:
-                # Setting inst to None should produce a TypeError
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -139,7 +140,8 @@ class TestDeprecation():
                 occur_prob.by_orbit2D(None, [0, 24, 2], 'slt',
                                       [-60, 60, 3], 'latitude', ['slt'], [12.])
             except AttributeError:
-                # Setting inst to None should produce a AttributeError
+                # Setting inst to None should produce a AttributeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -154,7 +156,8 @@ class TestDeprecation():
                                    [-60, 60, 3], 'latitude', [0, 24, 2], 'slt',
                                    ['slt'], [12.])
             except TypeError:
-                # Setting inst to None should produce a TypeError
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -169,7 +172,8 @@ class TestDeprecation():
                                       [-60, 60, 3], 'latitude', [0, 360, 4],
                                       'longitude', ['slt'], [12.])
             except AttributeError:
-                # Setting inst to None should produce a AttributeError
+                # Setting inst to None should produce a AttributeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1

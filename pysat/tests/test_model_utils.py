@@ -34,14 +34,25 @@ class TestBasics():
         _ = mu.collect_inst_model_pairs(start=self.start, stop=self.stop,
                                         inst=self.testInst)
 
+
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
     def test_satellite_view_through_model_deprecation(self):
         """Test if satellite_view_through_model is deprecated"""
-        warnings.simplefilter('always')
 
         with warnings.catch_warnings(record=True) as w:
             try:
                 mu.satellite_view_through_model(None, None, None, None)
             except TypeError:
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -49,12 +60,13 @@ class TestBasics():
 
     def test_collect_inst_model_pairs_deprecation(self):
         """Test if collect_inst_model_pairs is deprecated"""
-        warnings.simplefilter('always')
 
         with warnings.catch_warnings(record=True) as w:
             try:
-                mu.collect_inst_model_pairs()
+                mu.collect_inst_model_pairs(inst=None)
             except ValueError:
+                # Setting inst to None should produce a ValueError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -62,12 +74,13 @@ class TestBasics():
 
     def test_compare_model_and_inst_deprecation(self):
         """Test if compare_model_and_inst is deprecated"""
-        warnings.simplefilter('always')
 
         with warnings.catch_warnings(record=True) as w:
             try:
-                mu.compare_model_and_inst()
+                mu.compare_model_and_inst(pairs=None)
             except ValueError:
+                # Setting pairs to None should produce a ValueError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1
@@ -75,12 +88,13 @@ class TestBasics():
 
     def test_extract_modelled_observations_deprecation(self):
         """Test if extract_modelled_observations is deprecated"""
-        warnings.simplefilter('always')
 
         with warnings.catch_warnings(record=True) as w:
             try:
-                mu.extract_modelled_observations()
+                mu.extract_modelled_observations(inst=None)
             except ValueError:
+                # Setting inst to None should produce a ValueError after
+                # warning is generated
                 pass
 
         assert len(w) >= 1

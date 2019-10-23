@@ -2,9 +2,8 @@
 tests the pysat utils.stats area
 """
 import numpy as np
-
 from scipy import stats as scistats
-
+import warnings
 from pysat.utils import stats as pystats
 
 
@@ -58,18 +57,26 @@ class TestBasics():
         assert np.isnan(ref_nan)
         assert ref_std == test_nan
 
+
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
     def test_deprecation_warning_median1d(self):
         """Test if median1D in stats is deprecated"""
 
-        import warnings
-        import pysat
-
-        testInst = pysat.Instrument('pysat', 'testing')
-        testInst.load(date=pysat.datetime(2009, 1, 1))
-
-        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
-            pystats.median1D(testInst, [0, 24, 2], 'slt', 'slt')
+            try:
+                pystats.median1D(None, [0, 24, 2], 'slt', 'slt')
+            except AttributeError:
+                # Setting inst to None should produce a AttributeError after
+                # warning is generated
+                pass
 
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
@@ -77,11 +84,13 @@ class TestBasics():
     def test_deprecation_warning_circmean(self):
         """Test if circmean in stats is deprecated"""
 
-        import warnings
-
-        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
-            pystats.nan_circmean(self.test_angles, **self.circ_kwargs)
+            try:
+                pystats.nan_circmean(None)
+            except TypeError:
+                # Setting input to None should produce a TypeError after
+                # warning is generated
+                pass
 
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
@@ -89,11 +98,13 @@ class TestBasics():
     def test_deprecation_warning_circstd(self):
         """Test if circstd in stats is deprecated"""
 
-        import warnings
-
-        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as w:
-            pystats.nan_circstd(self.test_angles, **self.circ_kwargs)
+            try:
+                pystats.nan_circstd(None)
+            except TypeError:
+                # Setting input to None should produce a TypeError after
+                # warning is generated
+                pass
 
         assert len(w) >= 1
         assert w[0].category == DeprecationWarning
