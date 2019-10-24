@@ -20,13 +20,13 @@ scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
 doi:10.1016/j.jastp.2004.07.030.
 
 Discussion of cleaning parameters for ion drifts can be found in:
-Burrell, Angeline G., Equatorial topside magnetic field-aligned ion drifts 
-at solar minimum, The University of Texas at Dallas, ProQuest 
-Dissertations Publishing, 2012. 3507604. 
+Burrell, Angeline G., Equatorial topside magnetic field-aligned ion drifts
+at solar minimum, The University of Texas at Dallas, ProQuest
+Dissertations Publishing, 2012. 3507604.
 
 Discussion of cleaning parameters for ion temperature can be found in:
-Hairston, M. R., W. R. Coley, and R. A. Heelis (2010), Mapping the 
-duskside topside ionosphere with CINDI and DMSP, J. Geophys. Res.,115, 
+Hairston, M. R., W. R. Coley, and R. A. Heelis (2010), Mapping the
+duskside topside ionosphere with CINDI and DMSP, J. Geophys. Res.,115,
 A08324, doi:10.1029/2009JA015051.
 
 
@@ -175,13 +175,12 @@ def clean(inst):
         inst['ionTemperature'][idx] = np.NaN
 
         # The ion fractions should always sum to one and never drop below zero
-        ifracs = ['ion{:d}fraction'.format(i) for i in np.arange(1,6)]
+        ifracs = ['ion{:d}fraction'.format(i) for i in np.arange(1, 6)]
         ion_sum = np.sum([inst[label] for label in ifracs], axis=0)
         ion_min = np.min([inst[label] for label in ifracs], axis=0)
         idx, = np.where((ion_sum != 1.0) | (ion_min < 0.0))
         for label in ifracs:
             inst.data[label][idx] = np.NaN
-        
 
     # basic quality check on drifts and don't let UTS go above 86400.
     idx, = np.where(inst.data.time <= 86400.)
