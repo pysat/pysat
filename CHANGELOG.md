@@ -35,6 +35,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Unit tests reload pysat_testing_xarray for xarray tests
    - Updated setup.py to not overwrite defauly `open` command from `codecs`
    - Updated Travis CI settings to allow forks to run tests on local travis accounts
+   - Fixed selection bugs in the DEMETER IAP, CNOFS IVM, and model_utils routines
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
