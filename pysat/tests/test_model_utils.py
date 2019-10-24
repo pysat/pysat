@@ -21,18 +21,18 @@ class TestBasics():
     @raises(ValueError)
     def test_collect_inst_model_pairs_wo_date(self):
         """Try to run without start or stop dates"""
-        _ = mu.collect_inst_model_pairs(inst=self.testInst)
+        mu.collect_inst_model_pairs(inst=self.testInst)
 
     @raises(ValueError)
     def test_collect_inst_model_pairs_wo_inst(self):
         """Try to run without an instrument"""
-        _ = mu.collect_inst_model_pairs(start=self.start, stop=self.stop)
+        mu.collect_inst_model_pairs(start=self.start, stop=self.stop)
 
     @raises(ValueError)
     def test_collect_inst_model_pairs_wo_model(self):
         """Try to run without a model"""
-        _ = mu.collect_inst_model_pairs(start=self.start, stop=self.stop,
-                                        inst=self.testInst)
+        mu.collect_inst_model_pairs(start=self.start, stop=self.stop,
+                                    inst=self.testInst)
 
 
 class TestDeprecation():
