@@ -137,12 +137,11 @@ def clean(inst):
 
     # Also exclude very large drifts and drifts where 100% O+
     if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
-        try:
+        if 'ionVelmeridional' in inst.data.columns:
             # unrealistic velocities
-            idx2, = np.where(np.abs(inst.data.ionVelmeridional) >= 10000.)
+            # This check should be performed at the RPA or IDM velocity level
+            idx2, = np.where(np.abs(inst.data.ionVelmeridional) >= 10000.0)
             idx = np.unique(np.concatenate((idx, idx2)))
-        except AttributeError:
-            pass
 
     if len(idx) > 0:
         drift_labels = ['ionVelmeridional', 'ionVelparallel', 'ionVelzonal',
@@ -152,21 +151,23 @@ def clean(inst):
 
     # Check for bad RPA fits in dusty regime.
     # O+ concentration criteria from Burrell, 2012
-    if (inst.clean_level == 'dusty'):
-        # shallow fit region for vx
-        idx, = np.where(inst.data.ion1fraction >= 1.0)
-        # Low O+ concentrations for RPA Flag of 3 are suspect
-        nO = inst.data.ion1fraction*inst.data.Ni
-        idx2, = np.where((inst.data.RPAflag == 3) & (nO <= 3.0e4))
-        idx = np.unique(np.concatenate((idx, idx2)))
-        # However, only remove these if RPA component of drift is significant
+    if inst.clean_level == 'dusty' or inst.clean_level == 'clean':
+        # Low O+ concentrations for RPA Flag of 3 are suspect and high O+
+        # fractions create a shallow fit region for the ram velocity
+        nO = inst.data.ion1fraction * inst.data.Ni
+        idx, = np.where(((inst.data.RPAflag == 3) & (nO <= 3.0e4)) |
+                        (inst.data.ion1fraction >= 1.0))
+
+        # Only remove data if RPA component of drift is greater than 1%
         unit_vecs = {'ionVelmeridional': 'meridionalunitvectorX',
                      'ionVelparallel': 'parallelunitvectorX',
                      'ionVelzonal': 'zonalunitvectorX'}
         for label in unit_vecs:
-            idx0, = np.where(np.abs(inst[unit_vecs[label]]) >= 0.01)
-            idx0 = np.unique(np.concatenate((idx, idx0)))
+            idx0 = idx[np.where(np.abs(inst[unit_vecs[label]][idx]) >= 0.01)[0]]
             inst[label][idx0] = np.NaN
+
+        # The RPA component of the ram velocity is always 100%
+        inst.data['ionVelocityX'][idx] = np.NaN
 
     # Check for bad temperature fits (O+ < 15%), replace with NaNs
     # Criteria from Hairston et al, 2010
