@@ -169,11 +169,19 @@ def clean(inst):
         # The RPA component of the ram velocity is always 100%
         inst.data['ionVelocityX'][idx] = np.NaN
 
-    # Check for bad temperature fits (O+ < 15%), replace with NaNs
-    # Criteria from Hairston et al, 2010
-    if (inst.clean_level == 'clean') | (inst.clean_level == 'dusty'):
+        # Check for bad temperature fits (O+ < 15%), replace with NaNs
+        # Criteria from Hairston et al, 2010
         idx, = np.where(inst.data.ion1fraction < 0.15)
         inst['ionTemperature'][idx] = np.NaN
+
+        # The ion fractions should always sum to one and never drop below zero
+        ifracs = ['ion{:d}fraction'.format(i) for i in np.arange(1,6)]
+        ion_sum = np.sum([inst[label] for label in ifracs], axis=0)
+        ion_min = np.min([inst[label] for label in ifracs], axis=0)
+        idx, = np.where((ion_sum != 1.0) | (ion_min < 0.0))
+        for label in ifracs:
+            inst.data[label][idx] = np.NaN
+        
 
     # basic quality check on drifts and don't let UTS go above 86400.
     idx, = np.where(inst.data.time <= 86400.)
