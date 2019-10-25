@@ -3,9 +3,9 @@ tests the pysat coords area
 """
 import numpy as np
 
-from nose.tools import assert_raises, raises
 import pandas as pds
 
+from nose.tools import raises
 import pysat
 from pysat.utils import coords, time
 
@@ -109,101 +109,21 @@ class TestBasics():
         coords.calc_solar_local_time(self.testInst, lon_name="not longitude",
                                      slt_name='slt')
 
-    #####################################
-    # Scale units
+    def test_deprecation_warning_scale_units(self):
+        """Test deprecation warning for this function"""
 
-    def test_scale_units_same(self):
-        """ Test scale_units when both units are the same """
+        import warnings
 
-        scale = coords.scale_units("happy", "happy")
+        warnings.simplefilter("always")
+        scale1 = pysat.utils.scale_units("happy", "happy")
+        with warnings.catch_warnings(record=True) as w:
+            scale2 = coords.scale_units("happy", "happy")
 
-        assert scale == 1.0
+        assert scale1 == scale2
+        assert len(w) == 1
+        assert w[0].category == DeprecationWarning
 
-    def test_scale_units_angles(self):
-        """Test scale_units for angles """
-
-        for out_unit in self.deg_units:
-            scale = coords.scale_units(out_unit, "deg")
-
-            if out_unit.find("deg") == 0:
-                assert scale == 1.0
-            elif out_unit.find("rad") == 0:
-                assert scale == np.pi / 180.0
-            else:
-                assert scale == 1.0 / 15.0
-
-    def test_scale_units_dist(self):
-        """Test scale_units for distances """
-
-        for out_unit in self.dist_units:
-            scale = coords.scale_units(out_unit, "m")
-
-            if out_unit == "m":
-                assert scale == 1.0
-            elif out_unit.find("km") == 0:
-                assert scale == 0.001
-            else:
-                assert scale == 100.0
-
-    def test_scale_units_vel(self):
-        """Test scale_units for velocities """
-
-        for out_unit in self.vel_units:
-            scale = coords.scale_units(out_unit, "m/s")
-
-            if out_unit.find("m") == 0:
-                assert scale == 1.0
-            elif out_unit.find("km") == 0:
-                assert scale == 0.001
-            else:
-                assert scale == 100.0
-
-    def test_scale_units_bad_output(self):
-        """Test scale_units for unknown output unit"""
-
-        assert_raises(ValueError, coords.scale_units, "happy", "m")
-        try:
-            coords.scale_units('happy', 'm')
-        except ValueError as verr:
-            assert str(verr).find('output unit') > 0
-
-    def test_scale_units_bad_input(self):
-        """Test scale_units for unknown input unit"""
-
-        assert_raises(ValueError, coords.scale_units, "m", "happy")
-        try:
-            coords.scale_units('m', 'happy')
-        except ValueError as verr:
-            assert str(verr).find('input unit') > 0
-
-    def test_scale_units_bad_match_pairs(self):
-        """Test scale_units for mismatched input for all pairings"""
-
-        assert_raises(ValueError, coords.scale_units, "m", "m/s")
-        assert_raises(ValueError, coords.scale_units, "m", "deg")
-        assert_raises(ValueError, coords.scale_units, "h", "km/s")
-
-    def test_scale_units_bad_match_message(self):
-        """Test scale_units error message for mismatched input"""
-
-        assert_raises(ValueError, coords.scale_units, "m", "m/s")
-        try:
-            coords.scale_units('m', 'm/s')
-        except ValueError as verr:
-            assert str(verr).find('Cannot scale') >= 0
-            assert str(verr).find('unknown units') < 0
-
-    def test_scale_units_both_bad(self):
-        """Test scale_units for bad input and output"""
-
-        assert_raises(ValueError, coords.scale_units, "happy", "sad")
-        try:
-            coords.scale_units('happy', 'sad')
-        except ValueError as verr:
-            assert str(verr).find('unknown units') > 0
-
-
-    #####################################
+    ###################################
     # Geodetic / Geocentric conversions
 
     def test_geodetic_to_geocentric_single(self):

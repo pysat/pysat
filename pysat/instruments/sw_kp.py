@@ -284,6 +284,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         ftp = FTP('ftp.gfz-potsdam.de')   # connect to host, default port
         ftp.login()               # user anonymous, passwd anonymous@
         ftp.cwd('/pub/home/obs/kp-ap/tab')
+        dnames = list()
 
         for date in date_array:
             fname = 'kp{year:02d}{month:02d}.tab'
@@ -291,19 +292,21 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                                  month=date.month)
             local_fname = fname
             saved_fname = os.path.join(data_path, local_fname)
-            try:
-                print('Downloading file for '+date.strftime('%x'))
-                sys.stdout.flush()
-                ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
-            except ftplib.error_perm as exception:
+            if not fname in dnames:
+                try:
+                    print('Downloading file for '+date.strftime('%b %Y'))
+                    sys.stdout.flush()
+                    ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
+                    dnames.append(fname)
+                except ftplib.error_perm as exception:
 
-                if str(exception.args[0]).split(" ", 1)[0] != '550':
-                    raise
-                else:
-                    # file isn't actually there, just let people know
-                    # then continue on
-                    os.remove(saved_fname)
-                    print('File not available for '+date.strftime('%x'))
+                    if str(exception.args[0]).split(" ", 1)[0] != '550':
+                        raise
+                    else:
+                        # file isn't actually there, just let people know
+                        # then continue on
+                        os.remove(saved_fname)
+                        print('File not available for '+date.strftime('%x'))
 
         ftp.close()
 

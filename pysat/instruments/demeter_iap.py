@@ -62,12 +62,12 @@ list_remote_files = demeter.list_remote_files
 
 
 def init(self):
-    print(' '.join(("When using this data please include a version of the,"
+    print(' '.join(["When using this data please include a version of the,"
                     "acknowledgement outlined in the metadata attribute",
                     "'info.acknowledgements'.  We recommend that data users",
                     "contact the experiment PI early in their study. ",
                     "Experiment reference information is available in the",
-                    "metadata attribute 'info.reference'")))
+                    "metadata attribute 'info.reference'"]))
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
@@ -108,8 +108,8 @@ def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
         else:
             time_str = '????????_??????_{year:4d}{month:02d}{day:02d}_??????'
 
-        format_str = ''.join(('DMT_N1_{:d}_??????_'.format(apid[tag]),
-                              time_str, '.DAT'))
+        format_str = ''.join(['DMT_N1_{:d}_??????_'.format(apid[tag]),
+                              time_str, '.DAT'])
 
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
@@ -190,7 +190,7 @@ def load_experiment_data(fhandle):
     data_units = dict()
     # Load the house-keeping and status flags
     for i in range(32):
-        data.append(int(codecs.encode(chunk[10+i], 'hex'), 16))
+        data.append(int(codecs.encode(chunk[10+i:11+i], 'hex'), 16))
         data_names.append('status_flag_{:02d}'.format(i))
         data_units[data_names[-1]] = "N/A"
 
@@ -248,8 +248,8 @@ def clean(inst):
     """
 
     if inst.clean_level in ['dusty', 'dirty']:
-        print(''.join("'dusty' and 'dirty' levels not supported, ",
-                      "defaulting to 'clean'"))
+        print(''.join(["'dusty' and 'dirty' levels not supported, ",
+                       "defaulting to 'clean'"]))
         inst.clean_level = 'clean'
 
     if inst.clean_level == 'clean':

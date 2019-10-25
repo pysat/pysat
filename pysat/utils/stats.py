@@ -71,6 +71,12 @@ def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
         Circular mean
 
     """
+    
+    warnings.warn(' '.join(("utils.stats.nan_circmean is deprecated and will ",
+                            "be removed is a future version. This function is ",
+                            "part of the scipy 1.4.0 milestones and will be ",
+                            "migrated there.")),
+                  DeprecationWarning)
 
     samples = np.asarray(samples)
     samples = samples[~np.isnan(samples)]
@@ -120,6 +126,12 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
         Circular standard deviation
 
     """
+
+    warnings.warn(' '.join(("utils.stats.nan_circstd is deprecated and will ",
+                            "be removed is a future version. This function is ",
+                            "part of the scipy 1.4.0 milestones and will be ",
+                            "migrated there.")),
+                  DeprecationWarning)
 
     samples = np.asarray(samples)
     samples = samples[~np.isnan(samples)]

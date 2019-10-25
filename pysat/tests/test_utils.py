@@ -5,6 +5,7 @@ import numpy as np
 import os
 import tempfile
 
+from nose.tools import assert_raises, raises
 import pysat
 
 import sys
@@ -13,7 +14,6 @@ if sys.version_info[0] >= 3:
 else:
     re_load = reload
 
-from nose.tools import raises
 
 # ----------------------------------
 # test netCDF export file support
@@ -37,6 +37,23 @@ def remove_files(inst):
             file_path = os.path.join(temp_dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
+
+
+def test_deprecation_warning_computational_form():
+    """Test if computational form in utils is deprecated"""
+
+    import pandas as pds
+    import warnings
+
+    data = pds.Series([0, 1, 2])
+    warnings.simplefilter("always")
+    dslice1 = pysat.ssnl.computational_form(data)
+    with warnings.catch_warnings(record=True) as w:
+        dslice2 = pysat.utils.computational_form(data)
+
+    assert (dslice1 == dslice2).all()
+    assert len(w) == 1
+    assert w[0].category == DeprecationWarning
 
 
 class TestBasics():
@@ -100,6 +117,110 @@ class TestBasics():
             pass
 
         assert True
+
+
+class TestScaleUnits():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
+                          "radians", "h", "hr", "hrs", "hours"]
+        self.dist_units = ["m", "km", "cm"]
+        self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
+                          'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.deg_units, self.dist_units, self.vel_units
+
+    def test_scale_units_same(self):
+        """ Test scale_units when both units are the same """
+
+        scale = pysat.utils.scale_units("happy", "happy")
+
+        assert scale == 1.0
+
+    def test_scale_units_angles(self):
+        """Test scale_units for angles """
+
+        for out_unit in self.deg_units:
+            scale = pysat.utils.scale_units(out_unit, "deg")
+
+            if out_unit.find("deg") == 0:
+                assert scale == 1.0
+            elif out_unit.find("rad") == 0:
+                assert scale == np.pi / 180.0
+            else:
+                assert scale == 1.0 / 15.0
+
+    def test_scale_units_dist(self):
+        """Test scale_units for distances """
+
+        for out_unit in self.dist_units:
+            scale = pysat.utils.scale_units(out_unit, "m")
+
+            if out_unit == "m":
+                assert scale == 1.0
+            elif out_unit.find("km") == 0:
+                assert scale == 0.001
+            else:
+                assert scale == 100.0
+
+    def test_scale_units_vel(self):
+        """Test scale_units for velocities """
+
+        for out_unit in self.vel_units:
+            scale = pysat.utils.scale_units(out_unit, "m/s")
+
+            if out_unit.find("m") == 0:
+                assert scale == 1.0
+            elif out_unit.find("km") == 0:
+                assert scale == 0.001
+            else:
+                assert scale == 100.0
+
+    def test_scale_units_bad_output(self):
+        """Test scale_units for unknown output unit"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "happy", "m")
+        try:
+            pysat.utils.scale_units('happy', 'm')
+        except ValueError as verr:
+            assert str(verr).find('output unit') > 0
+
+    def test_scale_units_bad_input(self):
+        """Test scale_units for unknown input unit"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "m", "happy")
+        try:
+            pysat.utils.scale_units('m', 'happy')
+        except ValueError as verr:
+            assert str(verr).find('input unit') > 0
+
+    def test_scale_units_bad_match_pairs(self):
+        """Test scale_units for mismatched input for all pairings"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
+        assert_raises(ValueError, pysat.utils.scale_units, "m", "deg")
+        assert_raises(ValueError, pysat.utils.scale_units, "h", "km/s")
+
+    def test_scale_units_bad_match_message(self):
+        """Test scale_units error message for mismatched input"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
+        try:
+            pysat.utils.scale_units('m', 'm/s')
+        except ValueError as verr:
+            assert str(verr).find('Cannot scale') >= 0
+            assert str(verr).find('unknown units') < 0
+
+    def test_scale_units_both_bad(self):
+        """Test scale_units for bad input and output"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "happy", "sad")
+        try:
+            pysat.utils.scale_units('happy', 'sad')
+        except ValueError as verr:
+            assert str(verr).find('unknown units') > 0
 
 
 class TestBasicNetCDF4():
@@ -166,7 +287,7 @@ class TestBasicNetCDF4():
 
         # check that names are lower case when written
         assert(np.all(original == loaded_inst.columns))
-        
+
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
