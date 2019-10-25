@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Improved file downloading for Kp
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
     to filter out empty files from the stored file list
+   - Added slice and list ability to meta
    - Updated cleaning routines for C/NOFS IVM
    - Added S4 scintillation data to the cosmic-gps instrument
 - Code Restructure
