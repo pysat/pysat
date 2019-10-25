@@ -20,7 +20,7 @@ name = 'testing_xarray'
 tags = {'': 'Regular testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 pandas_format = False
 
 
