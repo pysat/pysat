@@ -1372,7 +1372,7 @@ class Instrument(object):
                                  ')')
         else:
             warnings.warn('Strict times will eventually be enforced upon all instruments.'
-                          ' (strict_time_flag)', DeprecationWarning)
+                          ' (strict_time_flag)', DeprecationWarning, stacklevel=2)
 
         # apply default instrument routine, if data present
         if not self.empty:

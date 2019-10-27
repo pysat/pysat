@@ -13,13 +13,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Improved file downloading for Kp
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
     to filter out empty files from the stored file list
+   - Added slice and list ability to meta
    - Updated cleaning routines for C/NOFS IVM
+   - Added S4 scintillation data to the cosmic-gps instrument
 - Code Restructure
   - Move `computational_form` to `ssnl`, old version is deprecated
   - Move `scale_units` to `utils._core`, old version is deprecated
   - Replace `season_date_range` with `create_date_range`, old version is deprecated
   - Added deprecation warnings to stat functions
+  - Added deprecation warnings to `ssnl` and `model_utils`
   - Removed `pysat_sgp4` instrument
+  - Added cleaning steps to the C/NOFS IVM ion fraction data
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
@@ -34,6 +38,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Unit tests reload pysat_testing_xarray for xarray tests
    - Updated setup.py to not overwrite defauly `open` command from `codecs`
    - Updated Travis CI settings to allow forks to run tests on local travis accounts
+   - Fixed a bug with COSMIC GPS downloads
+   - Fixed selection bugs in the DEMETER IAP, CNOFS IVM, and model_utils routines
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring

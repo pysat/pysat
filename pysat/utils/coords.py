@@ -143,7 +143,7 @@ def scale_units(out_unit, in_unit):
 
     warnings.warn(' '.join(["utils.computational_form is deprecated, use",
                             "pysat.ssnl.computational_form instead"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
     unit_scale = utils.scale_units(out_unit, in_unit)
 
     return unit_scale

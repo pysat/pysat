@@ -517,18 +517,38 @@ class Meta(object):
 
             meta[ 'name1', 'units' ]
 
+            meta[[ 'name1', 'name2'], 'units']
+
+            meta[:, 'units']
+
             for higher order data
 
             meta[ 'name1', 'subvar', 'units' ]
 
+            meta[ 'name1', ('units', 'scale') ]
+
         """
         # if key is a tuple, looking at index, column access pattern
+
+        def match_name(func, name, names):
+            """Applies func on name(s) depending on name type"""
+            if isinstance(name, basestring):
+                return func(name)
+            elif isinstance(name, slice):
+                return [func(name_) for name_ in names[name]]
+            else:
+                # assume iterable
+                return [func(name_) for name_ in name]
+
         if isinstance(key, tuple):
             # if tuple length is 2, index, column
             if len(key) == 2:
-                new_index = self.var_case_name(key[0])
-                new_name = self.attr_case_name(key[1])
+                new_index = match_name(self.var_case_name, key[0],
+                                        self.data.index)
+                new_name = match_name(self.attr_case_name, key[1],
+                                        self.data.columns)
                 return self.data.loc[new_index, new_name]
+
             # if tuple length is 3, index, child_index, column
             elif len(key) == 3:
                 new_index = self.var_case_name(key[0])
@@ -536,7 +556,11 @@ class Meta(object):
                 new_name = self.attr_case_name(key[2])
                 return self.ho_data[new_index].data.loc[new_child_index,
                                                         new_name]
-        else:
+
+        elif isinstance(key, list):
+            return self[key, :]
+
+        elif isinstance(key, basestring):
             # ensure variable is present somewhere
             if key in self:
                 # get case preserved string for variable name
@@ -550,6 +574,7 @@ class Meta(object):
                 else:
                     # empty_meta = Meta()
                     # self.apply_default_labels(empty_meta)
+                    # Following line issues a pandas SettingWithCopyWarning
                     meta_row.at['children'] = None  # empty_meta
                 return meta_row
                 # else:
@@ -557,6 +582,9 @@ class Meta(object):
                 #                       index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
+        else:
+            raise NotImplementedError("No way to handle MetaData key {}".format(
+                key.__repr__()))
 
     def _label_setter(self, new_label, current_label, attr_label,
                       default=np.NaN, use_names_default=False):

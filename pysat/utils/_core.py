@@ -44,7 +44,7 @@ def computational_form(data):
 
     warnings.warn(' '.join(["utils.computational_form is deprecated, use",
                             "pysat.ssnl.computational_form instead"]),
-                  DeprecationWarning)
+                  DeprecationWarning, stacklevel=2)
     dslice = pysat.ssnl.computational_form(data)
 
     return dslice

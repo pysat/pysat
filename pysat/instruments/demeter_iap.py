@@ -270,8 +270,8 @@ def clean(inst):
                 # Need Level 0 files to select data with J >= 1 nA
                 print("WARNING: Level 0 files needed to finish cleaning data")
 
-                # Select times with at least two ion species
-                idx, = np.where(nions > 1)
+        # Select times with at least two ion species
+        idx, = np.where(nions > 1)
     else:
         idx = slice(0, inst.index.shape[0])
 
