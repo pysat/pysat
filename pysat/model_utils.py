@@ -354,9 +354,13 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         mod_file = start.strftime(model_files)
 
         if path.isfile(mod_file):
-            mdata = model_load_rout(mod_file, start)
-            lon_high = float(mdata.coords[mod_lon_name].max())
-            lon_low = float(mdata.coords[mod_lon_name].min())
+            try:
+                mdata = model_load_rout(mod_file, start)
+                lon_high = float(mdata.coords[mod_lon_name].max())
+                lon_low = float(mdata.coords[mod_lon_name].min())
+            except Exception as err:
+                print("unable to load {:s}: {:}".format(mod_file, err))
+                mdata = None
         else:
             mdata = None
 
