@@ -46,7 +46,6 @@ from __future__ import absolute_import
 import glob
 import numpy as np
 import os
-import pandas as pds
 import sys
 
 import netCDF4
@@ -331,7 +330,7 @@ def download(date_array, tag, sat_id, data_path=None,
             req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-        # if repsonse is negative, try post-processed data
+            # if repsonse is negative, try post-processed data
             try:
                 dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/",
                                  "rest/tarservice/data/cosmic/"))
@@ -341,26 +340,34 @@ def download(date_array, tag, sat_id, data_path=None,
                 req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
                 req.raise_for_status()
             except requests.exceptions.HTTPError as err:
-                estr = ''.join((str(err), '\n', 'Data not found'))
+                estr = ''.join([str(err), '\n', 'Data not found'])
                 print(estr)
+        # Copy request info to tarball
+        # If data does not exist, will copy info not readable as tar
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
         with open(fname, "wb") as local_file:
             local_file.write(req.content)
             local_file.close()
-        # uncompress files and remove tarball
-        tar = tarfile.open(fname)
-        tar.extractall(path=data_path)
-        tar.close()
+        try:
+            # uncompress files and remove tarball
+            tar = tarfile.open(fname)
+            tar.extractall(path=data_path)
+            tar.close()
+            # move files
+            source_dir = os.path.join(top_dir, sub_dir, yrdoystr)
+            destination_dir = os.path.join(data_path, yrdoystr)
+            if os.path.exists(destination_dir):
+                shutil.rmtree(destination_dir)
+            shutil.move(source_dir, destination_dir)
+            # Get rid of empty directories from tar process
+            shutil.rmtree(top_dir)
+        except tarfile.ReadError:
+            # If file cannot be read as a tarfile, then data does not exist
+            # skip this day since no data to move
+            pass
+        # tar file must be removed (even if download fails)
         os.remove(fname)
-        # move files
-        source_dir = os.path.join(top_dir, sub_dir, yrdoystr)
-        destination_dir = os.path.join(data_path, yrdoystr)
-        if os.path.exists(destination_dir):
-            shutil.rmtree(destination_dir)
-        shutil.move(source_dir, destination_dir)
-        # Get rid of empty directories from tar process
-        shutil.rmtree(top_dir)
 
     return
 
