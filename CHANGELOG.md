@@ -21,6 +21,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Move `scale_units` to `utils._core`, old version is deprecated
   - Replace `season_date_range` with `create_date_range`, old version is deprecated
   - Added deprecation warnings to stat functions
+  - Added deprecation warnings to `ssnl` and `model_utils`
   - Removed `pysat_sgp4` instrument
   - Added cleaning steps to the C/NOFS IVM ion fraction data
 - Bug fix
