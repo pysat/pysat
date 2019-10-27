@@ -337,6 +337,17 @@ class TestBasics():
                              'value_min': 0, 'value_max': 1}
         _ = self.meta.pop('new4')
 
+    def test_basic_getitem_w_bad_key(self):
+        try:
+            self.meta['new4']
+        except KeyError:
+            pass
+
+        try:
+            self.meta[1]
+        except NotImplementedError:
+            pass
+
     def test_basic_equality(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -454,6 +465,27 @@ class TestBasics():
         assert self.meta['new'].long_name == 'boo'
         assert self.meta['new2'].units == 'hey2'
         assert self.meta['new2'].long_name == 'boo2'
+
+    def test_multiple_meta_retrieval(self):
+        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
+                                      'long_name': ['boo', 'boo2']}
+        self.meta[['new', 'new2']]
+        self.meta[['new', 'new2'],:]
+        self.meta[:, 'units']
+        self.meta['new',('units','long_name')]
+
+    def test_multiple_meta_ho_data_retrieval(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
+        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
+        self.meta[['higher', 'lower']] = {'meta': [meta, None],
+                                          'units': [None, 'boo'],
+                                          'long_name': [None, 'boohoo']}
+        assert self.meta['lower'].units == 'boo'
+        assert self.meta['lower'].long_name == 'boohoo'
+        assert self.meta['higher'].children == meta
+        self.meta['higher',('axis','scale')]
+
 
     @raises(ValueError)
     def test_multiple_meta_assignment_error(self):

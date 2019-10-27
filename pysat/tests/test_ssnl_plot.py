@@ -4,7 +4,7 @@ tests the pysat averaging code
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
+import warnings
 import pysat
 from pysat.ssnl import plot
 
@@ -71,3 +71,27 @@ class TestBasics():
         assert len(figs) == 2
         assert len(axes) == 3
         assert len(axes2) == 3
+
+
+class TestDeprecation():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+
+    def test_deprecation_warning_scatterplot(self):
+        """Test if scatterplot in ssnl is deprecated"""
+
+        with warnings.catch_warnings(record=True) as w:
+            try:
+                plot.scatterplot(None, 'longitude', 'latitude', ['slt', 'mlt'],
+                                 [0.0, 24.0])
+            except TypeError:
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
+                pass
+
+        assert len(w) >= 1
+        assert w[0].category == DeprecationWarning

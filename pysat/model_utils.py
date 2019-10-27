@@ -15,6 +15,7 @@ from __future__ import absolute_import
 import datetime as dt
 import numpy as np
 import pandas as pds
+import warnings
 
 
 def satellite_view_through_model(sat, tie, scoords, tlabels):
@@ -32,9 +33,11 @@ def satellite_view_through_model(sat, tie, scoords, tlabels):
         Variable names from model to interpolate onto sat locations
     """
 
-    import warnings
-
-    warnings.warn('Preliminary code.  Currently tested for TIE-GCM')
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatModelUtils instead:"
+                            "https://github.com/pysat/pysatModelUtils"]),
+                  DeprecationWarning, stacklevel=2)
 
     # tiegcm is in pressure levels, need in altitude, but on regular
     # grid
@@ -119,6 +122,12 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     """
     import verify  # PyForecastTools
     from pysat import utils
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatModelUtils instead:"
+                            "https://github.com/pysat/pysatModelUtils"]),
+                  DeprecationWarning, stacklevel=2)
 
     method_rout = {"bias": verify.bias, "accuracy": verify.accuracy,
                    "meanPercentageError": verify.meanPercentageError,
@@ -305,6 +314,12 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
     from os import path
     import pysat
 
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatModelUtils instead:"
+                            "https://github.com/pysat/pysatModelUtils"]),
+                  DeprecationWarning, stacklevel=2)
+
     matched_inst = None
 
     # Test the input
@@ -354,9 +369,13 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         mod_file = start.strftime(model_files)
 
         if path.isfile(mod_file):
-            mdata = model_load_rout(mod_file, start)
-            lon_high = float(mdata.coords[mod_lon_name].max())
-            lon_low = float(mdata.coords[mod_lon_name].min())
+            try:
+                mdata = model_load_rout(mod_file, start)
+                lon_high = float(mdata.coords[mod_lon_name].max())
+                lon_low = float(mdata.coords[mod_lon_name].min())
+            except Exception as err:
+                print("unable to load {:s}: {:}".format(mod_file, err))
+                mdata = None
         else:
             mdata = None
 
@@ -491,6 +510,12 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     """
     from scipy import interpolate
     from pysat import utils
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatModelUtils instead:"
+                            "https://github.com/pysat/pysatModelUtils"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Test input
     if inst is None:
