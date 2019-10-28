@@ -60,6 +60,9 @@ import pandas as pds
 
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 platform = 'sw'
 name = 'kp'
@@ -294,7 +297,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             saved_fname = os.path.join(data_path, local_fname)
             if not fname in dnames:
                 try:
-                    print('Downloading file for '+date.strftime('%b %Y'))
+                    logger.info('Downloading file for '+date.strftime('%b %Y'))
                     sys.stdout.flush()
                     ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
                     dnames.append(fname)
@@ -306,13 +309,13 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                         # file isn't actually there, just let people know
                         # then continue on
                         os.remove(saved_fname)
-                        print('File not available for '+date.strftime('%x'))
+                        logger.info('File not available for '+date.strftime('%x'))
 
         ftp.close()
 
     elif tag == 'forecast':
         import requests
-        print('This routine can only download the current forecast, ' +
+        logger.info('This routine can only download the current forecast, ' +
               'not archived forecasts')
         # download webpage
         furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
@@ -351,7 +354,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     elif tag == 'recent':
         import requests
-        print('This routine can only download the current webpage, not ' +
+        logger.info('This routine can only download the current webpage, not ' +
               'archived forecasts')
         # download webpage
         rurl = 'https://services.swpc.noaa.gov/text/' + \

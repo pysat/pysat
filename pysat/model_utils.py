@@ -16,6 +16,8 @@ import datetime as dt
 import numpy as np
 import pandas as pds
 
+from pysat import logger
+
 
 def satellite_view_through_model(sat, tie, scoords, tlabels):
     """Interpolate model values onto satellite orbital path.
@@ -196,11 +198,12 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Ensure no NaN are used in statistics
         inum = np.where(np.isfinite(mod_scaled) & np.isfinite(inst_dat))[0]
 
+
         if inum.shape[0] < 2:
             # Not all data types can use all statistics.  Print warnings
             # instead of stopping processing.  Only valid statistics
             # will be included in output
-            print("{:s} can't calculate stats for {:d} finite samples".format( \
+            logger.info("{:s} can't calculate stats for {:d} finite samples".format( \
                                                         iname, inum.shape[0]))
             stat_dict
         else:
@@ -222,12 +225,12 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                     # Not all data types can use all statistics.  Print warnings
                     # instead of stopping processing.  Only valid statistics
                     # will be included in output
-                    print("{:s} can't use {:s}: {:}".format(iname, mm, verr))
+                    logger.warning("{:s} can't use {:s}: {:}".format(iname, mm, verr))
                 except NotImplementedError:
                     # Not all data types can use all statistics.  Print warnings
                     # instead of stopping processing.  Only valid statistics
                     # will be included in output
-                    print("{:s} can't implement {:s}".format(iname, mm))
+                    logger.warning("{:s} can't implement {:s}".format(iname, mm))
 
     return stat_dict, data_units
 
@@ -652,7 +655,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     if str(verr).find("requested xi is out of bounds") > 0:
                         # This is acceptable, pad the interpolated data with
                         # NaN
-                        print("Warning: {:} for ".format(verr) +
+                        logger.warning("{:} for ".format(verr) +
                               "{:s} data at {:}".format(mdat, xi))
                         yi = [np.nan]
                     else:

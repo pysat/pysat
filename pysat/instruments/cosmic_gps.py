@@ -50,6 +50,9 @@ import sys
 import netCDF4
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 platform = 'cosmic'
 name = 'gps'
 tags = {'ionprf': '',
@@ -87,7 +90,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     """
     estr = 'Building a list of COSMIC files, which can possibly take time. '
-    print('{:s}~1s per 100K files'.format(estr))
+    logger.info('{:s}~1s per 100K files'.format(estr))
     sys.stdout.flush()
 
     # number of files may be large, written with this in mind
@@ -96,7 +99,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # need to get date and time from filename to generate index
     num = len(fnames)
     if num != 0:
-        print('Estimated time:', num * 1.E-5, 'seconds')
+        logger.info('Estimated time: {} seconds'.format(num * 1.E-5))
         sys.stdout.flush()
         # preallocate lists
         year = [None] * num
@@ -124,7 +127,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         file_list = pysat.Series(fnames, index=index)
         return file_list
     else:
-        print('Found no files, check your path or download them.')
+        logger.info('Found no files, check your path or download them.')
         return pysat.Series(None)
 
 
@@ -305,7 +308,7 @@ def download(date_array, tag, sat_id, data_path=None,
         raise ValueError('CDAAC user account information must be provided.')
 
     for date in date_array:
-        print('Downloading COSMIC data for ' + date.strftime('%D'))
+        logger.info('Downloading COSMIC data for ' + date.strftime('%D'))
         sys.stdout.flush()
         yr, doy = pysat.utils.time.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
@@ -330,7 +333,7 @@ def download(date_array, tag, sat_id, data_path=None,
                 req.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 estr = ''.join(str(err), '\n', 'Data not found')
-                print(estr)
+                logger.info(estr)
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
         with open(fname, "wb") as local_file:
