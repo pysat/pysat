@@ -87,6 +87,10 @@ else:
             for _ in f:
                 if _ != '' and (_ is not None):
                     user_modules.append(_.strip())
+    else:
+        # write user modules file
+        with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
+            f.write('')
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
