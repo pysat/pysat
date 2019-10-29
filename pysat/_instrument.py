@@ -390,7 +390,10 @@ class Instrument(object):
         to check for invalid attributes manually.
         """
         if name not in self.__dict__:
-            raise AttributeError("No attribute {}".format(name))
+            try:
+                return getattr(self.meta, name)
+            except:
+                raise AttributeError("No attribute {}".format(name))
 
         return getattr(self.meta, name)
 
