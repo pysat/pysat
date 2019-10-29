@@ -384,10 +384,14 @@ class Instrument(object):
     def __getattr__(self, name):
         """Gets instrument attributes from meta attributes
 
-        __getattr__ will only be called if name does not already
+        Usually, python only calls __getattr__ if name does not already
         exist in the instrument, so we only need to check
-        the meta object
+        the meta object. However, __copy__ calls __getattr__, so we still have
+        to check for invalid attributes manually.
         """
+        if name not in self.__dict__:
+            raise AttributeError("No attribute {}".format(name))
+
         return getattr(self.meta, name)
 
     def __getitem__(self, key):
