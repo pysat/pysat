@@ -42,6 +42,9 @@ import numpy as np
 import pysat
 from .methods import demeter
 
+import logging
+logger = logging.getLogger(__name__)
+
 platform = 'demeter'
 name = 'iap'
 tags = {'survey': 'Survey mode',
@@ -62,12 +65,12 @@ list_remote_files = demeter.list_remote_files
 
 
 def init(self):
-    print(' '.join(["When using this data please include a version of the,"
+    logger.info(' '.join(("When using this data please include a version of the,"
                     "acknowledgement outlined in the metadata attribute",
                     "'info.acknowledgements'.  We recommend that data users",
                     "contact the experiment PI early in their study. ",
                     "Experiment reference information is available in the",
-                    "metadata attribute 'info.reference'"]))
+                    "metadata attribute 'info.reference'")))
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
@@ -138,7 +141,7 @@ def load(fnames, tag='survey', sat_id=''):
     """
 
     if len(fnames) == 0:
-        print('need list of filenames')
+        logger.info('need list of filenames')
         return pysat.DataFrame(None), None
 
     # Load the desired data and cast as a DataFrame
@@ -248,8 +251,8 @@ def clean(inst):
     """
 
     if inst.clean_level in ['dusty', 'dirty']:
-        print(''.join(["'dusty' and 'dirty' levels not supported, ",
-                       "defaulting to 'clean'"]))
+        logger.info(''.join("'dusty' and 'dirty' levels not supported, ",
+                      "defaulting to 'clean'"))
         inst.clean_level = 'clean'
 
     if inst.clean_level == 'clean':
@@ -268,7 +271,7 @@ def clean(inst):
                     nions[i] += 1
 
                 # Need Level 0 files to select data with J >= 1 nA
-                print("WARNING: Level 0 files needed to finish cleaning data")
+                logger.warning("Level 0 files needed to finish cleaning data")
 
                 # Select times with at least two ion species
                 idx, = np.where(nions > 1)
@@ -307,7 +310,7 @@ def add_drift_sat_coord(inst):
     # Because the ADV instrument is not fully aligned with the axis of the
     # satellite, reposition into satellite coordinates
     # (IS THIS ALREADY CORRECTED IN FILES?)
-    print("WARNING the ADV instrument is not fully aligned with the axis of "
+    logger.warning("the ADV instrument is not fully aligned with the axis of "
           + "the satellite and this may not have been corrected")
 
     return

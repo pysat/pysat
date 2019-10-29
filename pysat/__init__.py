@@ -41,6 +41,13 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.WARNING)
 
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
@@ -63,7 +70,7 @@ if not os.path.isdir(pysat_dir):
     if not (os.environ.get('TRAVIS') == 'true'):
         data_dir = os.path.join(home_dir, 'pysatData')
     else:
-        data_dir = '/home/travis/build/pysat/pysatData'
+        data_dir = '/home/travis/build/pysatData'
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
     print(''.join(("\nHi there!  Pysat will nominally store data in the "

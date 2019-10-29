@@ -43,6 +43,9 @@ import warnings
 
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 platform = 'icon'
 name = 'fuv'
@@ -68,7 +71,7 @@ def init(self):
 
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
 
     pass
