@@ -37,7 +37,7 @@ platform = 'rocsat1'
 name = 'ivm'
 tags = {'': ''}
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2002, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2002, 1, 1)}}
 
 
 # support list files routine

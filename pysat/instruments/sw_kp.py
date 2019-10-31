@@ -72,7 +72,7 @@ sat_ids = {'': ['', 'forecast', 'recent']}
 now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
-test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1),
                    'forecast': today + pds.DateOffset(days=1)}}
 
 

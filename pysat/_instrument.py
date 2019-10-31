@@ -384,30 +384,18 @@ class Instrument(object):
     def __getattr__(self, name):
         """Gets instrument attributes from meta attributes
 
-        Retrieves attribute by this priority:
-        1. attributes stored in self._base_attr
-        2. sttributes stored in self.meta
-        3. remaining attributes in self
+        Usually, python only calls __getattr__ if name does not already
+        exist in the instrument, so we only need to check
+        the meta object. However, __copy__ calls __getattr__, so we still have
+        to check for invalid attributes manually.
         """
-        if name is not '_base_attr':
-            if name not in self._base_attr:
-                # get attribute from meta
-                try:
-                    return getattr(self.meta, name)
-                except AttributeError:
-                    try:
-                        return self.__dict__[name]
-                    except KeyError:
-                        raise AttributeError
-            else:
-                return self.__dict__[name]
-        else:
-            if '_base_attr' in dir(self):
-                # get attribute from instrument
-                return self.__dict__['_base_attr']
-            else:
-                raise AttributeError(name)
+        if name not in self.__dict__:
+            try:
+                return getattr(self.meta, name)
+            except:
+                raise AttributeError("No attribute {}".format(name))
 
+        return getattr(self.meta, name)
 
     def __getitem__(self, key):
         """
@@ -1390,7 +1378,7 @@ class Instrument(object):
                                  ')')
         else:
             warnings.warn('Strict times will eventually be enforced upon all instruments.'
-                          ' (strict_time_flag)', DeprecationWarning)
+                          ' (strict_time_flag)', DeprecationWarning, stacklevel=2)
 
         # apply default instrument routine, if data present
         if not self.empty:
