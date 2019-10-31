@@ -88,7 +88,7 @@ name = 'pandas'
 tags = {'': 'General Madrigal data access loaded into pysat via pandas.'}
 sat_ids = {'': list(tags.keys())}
 # need to sort out test day setting for unit testing
-test_dates = {'': {'': pysat.datetime(2010, 1, 19)}}
+_test_dates = {'': {'': pysat.datetime(2010, 1, 19)}}
 
 # support list files routine
 # use the default CDAWeb method
