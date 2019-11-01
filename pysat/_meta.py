@@ -270,7 +270,13 @@ class Meta(object):
                 _ = self._ho_data.pop(name)
 
     def keep(self, keep_names):
-        """Keeps variables (keep_names) while dropping other parameters"""
+        """Keeps variables (keep_names) while dropping other parameters
+
+        Parameters
+        ----------
+        keep_names : list-like
+            variables to keep
+        """
         keep_ = [self.var_case_name(name) for name in keep_names]
         current_names = self._data.index
         drop_names = []
