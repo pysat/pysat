@@ -17,6 +17,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updated cleaning routines for C/NOFS IVM
    - Added S4 scintillation data to the cosmic-gps instrument
    - pysat no longer creates a default data directory. User must specify location.
+   - User set custom attributes are transparently stored within Meta object and are
+     available via both Instrument and Meta.
 - Code Restructure
   - Move `computational_form` to `ssnl`, old version is deprecated
   - Move `scale_units` to `utils._core`, old version is deprecated
