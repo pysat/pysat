@@ -62,11 +62,13 @@ if not os.path.isdir(pysat_dir):
     # create file with default data directory
     if (os.environ.get('TRAVIS') == 'true'):
         data_dir = '/home/travis/build/pysatData'
-        with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
-            f.write(data_dir)
+    else:
+        data_dir = ''
+    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
+        f.write(data_dir)
     print(''.join(("\nHi there!  Please inform pysat where you will store "
-                   "(or are storinig) science data by "
-                   "running pysat.utils.set_data_dir and specifying  "
+                   "(or are storing) science data by "
+                   "running pysat.utils.set_data_dir and specifying "
                    "a location.")))
 else:
     # load up stored data path
