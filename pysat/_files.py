@@ -148,7 +148,10 @@ class Files(object):
                                                  platform=self._sat.platform,
                                                  tag=self._sat.tag,
                                                  sat_id=self._sat.sat_id)
-
+        # ensure we have a path for pysat data directory
+        if data_dir == '':
+            raise RuntimeError(" ".join(("pysat's data_dir is None. Set a directory",
+                                         "using pysat.utils.set_data_dir.")))
         # make sure path always ends with directory seperator
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         if self.data_path[-2] == os.path.sep:
