@@ -2143,10 +2143,9 @@ class Instrument(object):
 
         # check if there are multiple variables with same characters
         # but with different case
-        variables = self.variables
-        variables = [var.lower() for var in variables]
-        unique_variables = np.unique(variables)
-        if len(unique_variables) != len(variables):
+        lower_variables = [var.lower() for var in self.variables]
+        unique_lower_variables = np.unique(lower_variables)
+        if len(unique_lower_variables) != len(lower_variables):
             raise ValueError('There are multiple variables with the same ' +
                              'name but different case which results in a ' +
                              'loss of metadata. Please make the names unique.')
