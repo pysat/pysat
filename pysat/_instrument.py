@@ -363,7 +363,7 @@ class Instrument(object):
 
     def __setattr__(self, name, value):
         """Moves instrument attributes onto meta attributes
-        
+
         If the attribute is not in _base_attrs, add to meta attributes.
         For all other cases, store as an instrument attribute.
         """
@@ -747,16 +747,6 @@ class Instrument(object):
     def concat_data(self, data, *args, **kwargs):
         """Concats data1 and data2 for xarray or pandas as needed
 
-        Note
-        ----
-        For pandas, sort=False is passed along to the underlying
-        pandas.concat method. If sort is supplied as a keyword, the
-        user provided value is used instead.
-
-        For xarray, dim='time' is passed along to xarray.concat
-        except if the user includes a value for dim as a
-        keyword argument.
-
         Parameters
         ----------
         data : pandas or xarray
@@ -766,6 +756,16 @@ class Instrument(object):
         -------
         void
             Instrument.data modified in place.
+
+        Notes
+        -----
+        For pandas, sort=False is passed along to the underlying
+        pandas.concat method. If sort is supplied as a keyword, the
+        user provided value is used instead.
+
+        For xarray, dim='time' is passed along to xarray.concat
+        except if the user includes a value for dim as a
+        keyword argument.
 
         """
 
