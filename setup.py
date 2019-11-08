@@ -18,25 +18,30 @@ version_filename = os.path.join('pysat', 'version.txt')
 with codecs.open(os.path.join(here, version_filename)) as version_file:
     version = version_file.read().strip()
 
-# change setup.py for readthedocs
-on_rtd = os.environ.get('READTHEDOCS') == 'True'
+# packages to be installed
+# starting with packages common across all setups
+install_requires = ['requests', 'beautifulsoup4',
+                     'lxml', 'netCDF4']
+# packages with Fortran code
+fortran_install = ['pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
+# python version specific support libraries
 if sys.version_info.major == 2:
-    install_requires = ['xarray<0.12', 'pandas>=0.23, <0.25',
-                        'numpy>=1.12, <1.17', 'scipy<1.3',
-                        'requests', 'beautifulsoup4',
-                        'lxml', 'netCDF4', 'matplotlib<3.0', 'pysatCDF',
-                        'madrigalWeb', 'h5py', 'PyForecastTools']
+    install_requires.extend(['xarray<0.12', 'pandas>=0.23, <0.25',
+                             'numpy>=1.12, <1.17', 'scipy<1.3',
+                             'matplotlib<3.0'])
 else:
-    install_requires = ['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                        'scipy', 'requests', 'beautifulsoup4',
-                        'lxml', 'netCDF4', 'matplotlib', 'pysatCDF',
-                        'madrigalWeb', 'h5py', 'PyForecastTools']
+    # python 3+
+    install_requires.extend(['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
+                             'scipy', 'matplotlib'])
 
-# all packages after pysatCDF are excluded if on ReadTheDocs
-if on_rtd:
-    # read the docs doesn't do Fortran
-    # remove pysatCDF through h5py
-    install_requires = install_requires[:-4]
+# flag, True if on readthedocs
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+
+# include Fortran for normal install
+# read the docs doesn't do Fortran
+if not on_rtd:
+    # not on ReadTheDocs, add Fortran
+    install_requires.extend(fortran_install)
 
 setup(
     name='pysat',
