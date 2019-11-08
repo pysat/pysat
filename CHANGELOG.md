@@ -12,13 +12,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Improved compatibility with NASA ICON's file standards
    - Improved file downloading for Kp
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
-    to filter out empty files from the stored file list
+     to filter out empty files from the stored file list
    - Added slice and list ability to meta
    - Updated cleaning routines for C/NOFS IVM
    - Added S4 scintillation data to the cosmic-gps instrument
    - pysat no longer creates a default data directory. User must specify location.
    - User set custom attributes are transparently stored within Meta object and are
      available via both Instrument and Meta.
+   - Improved robustness of required library specification across multiple
+     platforms
 - Code Restructure
   - Move `computational_form` to `ssnl`, old version is deprecated
   - Move `scale_units` to `utils._core`, old version is deprecated
@@ -47,6 +49,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
+  - Corrected pysat.Instrument examples using COSMIC
 
 ## [2.0.0] - 2019-07-11
  - New Features
