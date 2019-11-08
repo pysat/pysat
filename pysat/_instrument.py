@@ -2373,7 +2373,7 @@ class Instrument(object):
                                                             shuffle=shuffle)
                                 # attach any meta data
                                 try:
-                                    new_dict = export_meta[case_key + '_'+col]
+                                    new_dict = export_meta[case_key + '_' + col]
                                     new_dict['Depend_0'] = epoch_name
                                     new_dict['Depend_1'] = obj_dim_names[-1]
                                     new_dict['Display_Type'] = 'Spectrogram'
