@@ -1,11 +1,13 @@
 """
 tests the pysat utils area
 """
-import numpy as np
 import os
 import tempfile
-
+import warnings
 from nose.tools import assert_raises, raises
+import numpy as np
+import pandas as pds
+
 import pysat
 
 import sys
@@ -42,18 +44,16 @@ def remove_files(inst):
 def test_deprecation_warning_computational_form():
     """Test if computational form in utils is deprecated"""
 
-    import pandas as pds
-    import warnings
 
     data = pds.Series([0, 1, 2])
     warnings.simplefilter("always")
     dslice1 = pysat.ssnl.computational_form(data)
-    with warnings.catch_warnings(record=True) as w:
+    with warnings.catch_warnings(record=True) as war:
         dslice2 = pysat.utils.computational_form(data)
 
     assert (dslice1 == dslice2).all()
-    assert len(w) >= 1
-    assert w[0].category == DeprecationWarning
+    assert len(war) >= 1
+    assert war[0].category == DeprecationWarning
 
 
 class TestBasics():
@@ -436,7 +436,7 @@ class TestBasicNetCDF4():
             assert self.testInst.bespoke # should raise
         except AttributeError:
             pass
-        
+
         fname = 'output.nc'
         self.testInst.meta.bespoke = True
 
@@ -467,7 +467,7 @@ class TestBasicNetCDF4():
 
         inst.bespoke = False
         inst.myattr = True
-        
+
         inst.to_netcdf4(outfile2)
 
         data2, meta2 = pysat.utils.load_netcdf4(outfile2)
