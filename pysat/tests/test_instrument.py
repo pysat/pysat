@@ -50,6 +50,23 @@ class TestBasics():
         assert (test_date == pds.datetime(2009, 1, 1)) & \
             (test_date == self.testInst.date)
 
+    @raises(Exception)
+    def test_basic_instrument_load_yr_no_doy(self):
+        self.testInst.load(2009)
+
+    @raises(Exception)
+    def test_basic_instrument_load_no_input(self):
+        self.testInst.load()
+
+    @raises(Exception)
+    def test_basic_instrument_load_by_file_and_multifile(self):
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    update_files=True,
+                                    multi_file_day=True)
+        testInst.load(fname=testInst.files[0])
+
     def test_basic_instrument_load_by_date(self):
         date = pysat.datetime(2009, 1, 1)
         self.testInst.load(date=date)
@@ -322,10 +339,17 @@ class TestBasics():
         assert True
 
     def test_repr_w_orbit(self):
-        self.testInst.orbit_info = {'index': 'mlt',
-                                    'kind': 'local time',
-                                    'period': np.timedelta64(97, 'm')}
-        self.testInst.orbits.num = 10
+        orbit_info = {'index': 'mlt',
+                      'kind': 'local time',
+                      'period': np.timedelta64(97, 'm')}
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    update_files=True,
+                                    orbit_info=orbit_info)
+
+        testInst.load(2009, 1)
+        testInst.orbits.next()
         print(self.testInst)
         assert True
 
@@ -1131,6 +1155,13 @@ class TestDataPadding():
                 (testInst.index[-1] == testInst.date +
                  pds.DateOffset(hours=23, minutes=59, seconds=59) +
                  pds.DateOffset(minutes=5)))
+
+    @raises(Exception)
+    def test_data_padding_bad_instantiation(self):
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    clean_level='clean',
+                                    pad=2,
+                                    update_files=True)
 
     def test_yrdoy_data_padding_missing_days(self):
         self.testInst.load(2008, 1)
