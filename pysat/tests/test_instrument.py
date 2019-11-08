@@ -155,7 +155,7 @@ class TestBasics():
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.testInst.load(fname='2010-12-30.nofile')
-        self.testInst.next()
+        self.testInstg
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
@@ -1179,7 +1179,7 @@ class TestDataPadding():
     def test_data_padding_offset_instantiation(self):
         testInst = pysat.Instrument(platform='pysat', name='testing',
                                     clean_level='clean',
-                                    pad=pds.DateOffset({'minutes': 5}),
+                                    pad=pds.DateOffset(minutes=5),
                                     update_files=True)
         testInst.load(2009, 2, verifyPad=True)
         assert ((testInst.index[0] ==
