@@ -155,7 +155,7 @@ class TestBasics():
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.testInst.load(fname='2010-12-30.nofile')
-        self.testInstg
+        self.testInst.next()
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
@@ -339,6 +339,7 @@ class TestBasics():
         assert True
 
     def test_repr_w_orbit(self):
+        re_load(pysat.instruments.pysat_testing)
         orbit_info = {'index': 'mlt',
                       'kind': 'local time',
                       'period': np.timedelta64(97, 'm')}
@@ -350,7 +351,7 @@ class TestBasics():
 
         testInst.load(2009, 1)
         testInst.orbits.next()
-        print(self.testInst)
+        print(testInst)
         assert True
 
     def test_repr_w_padding(self):
