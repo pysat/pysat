@@ -46,6 +46,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Fixed keep method to be case insensitive
    - Fixed a bug with COSMIC GPS downloads
    - Fixed selection bugs in the DEMETER IAP, CNOFS IVM, and model_utils routines
+   - Updated URL link in setup.py
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
