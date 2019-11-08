@@ -120,7 +120,7 @@ class TestDeprecation():
     def test_deprecation_warning_daily_2D(self):
         """Test if occur_prob.daily2D is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 occur_prob.daily2D(None, [0, 24, 2], 'slt',
                                    [-60, 60, 3], 'latitude', ['slt'], [12.])
@@ -129,13 +129,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_by_orbit_2D(self):
         """Test if occur_prob.by_orbit2D is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 occur_prob.by_orbit2D(None, [0, 24, 2], 'slt',
                                       [-60, 60, 3], 'latitude', ['slt'], [12.])
@@ -144,13 +144,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_daily_3D(self):
         """Test if occur_prob.daily3D is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 occur_prob.daily3D(None, [0, 360, 4], 'longitude',
                                    [-60, 60, 3], 'latitude', [0, 24, 2], 'slt',
@@ -160,13 +160,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_by_orbit_3D(self):
         """Test if occur_prob.by_orbit3D is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 occur_prob.by_orbit3D(None, [0, 24, 2], 'slt',
                                       [-60, 60, 3], 'latitude', [0, 360, 4],
@@ -176,5 +176,5 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
