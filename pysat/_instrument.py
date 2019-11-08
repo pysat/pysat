@@ -361,6 +361,13 @@ class Instrument(object):
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
+        # warn about changes coming in the future
+        if not self.strict_time_flag:
+            warnings.warn('Strict times will eventually be enforced upon all'
+                          ' instruments. (strict_time_flag)', DeprecationWarning,
+                          stacklevel=2)
+
+
     def __setattr__(self, name, value):
         """Moves instrument attributes onto meta attributes
 
@@ -1389,9 +1396,6 @@ class Instrument(object):
                                  ') or not monotonic increasing (',
                                  not self.index.is_monotonic_increasing,
                                  ')')
-        else:
-            warnings.warn('Strict times will eventually be enforced upon all instruments.'
-                          ' (strict_time_flag)', DeprecationWarning, stacklevel=2)
 
         # apply default instrument routine, if data present
         if not self.empty:
