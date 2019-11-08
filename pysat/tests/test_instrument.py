@@ -1120,6 +1120,18 @@ class TestDataPadding():
                  pds.DateOffset(hours=23, minutes=59, seconds=59) +
                  pds.DateOffset(minutes=5)))
 
+    def test_data_padding_offset_instantiation(self):
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    clean_level='clean',
+                                    pad=pds.DateOffset({'minutes': 5}),
+                                    update_files=True)
+        testInst.load(2009, 2, verifyPad=True)
+        assert ((testInst.index[0] ==
+                 testInst.date - pds.DateOffset(minutes=5)) &
+                (testInst.index[-1] == testInst.date +
+                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
+                 pds.DateOffset(minutes=5)))
+
     def test_yrdoy_data_padding_missing_days(self):
         self.testInst.load(2008, 1)
         # test load
