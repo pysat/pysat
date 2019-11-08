@@ -53,7 +53,7 @@ setup(
     description='Supports science data analysis across measurement platforms',
     long_description=long_description,
     # The project's main homepage.
-    url='http://github.com/rstoneback/pysat',
+    url='http://github.com/pysat/pysat',
 
     # Author details
     author='Russell Stoneback',
