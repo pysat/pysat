@@ -70,7 +70,7 @@ class TestDeprecation():
     def test_deprecation_warning_median1d(self):
         """Test if median1D in stats is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 pystats.median1D(None, [0, 24, 2], 'slt', 'slt')
             except AttributeError:
@@ -78,13 +78,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_circmean(self):
         """Test if circmean in stats is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 pystats.nan_circmean(None)
             except TypeError:
@@ -92,13 +92,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_circstd(self):
         """Test if circstd in stats is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 pystats.nan_circstd(None)
             except TypeError:
@@ -106,5 +106,5 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
