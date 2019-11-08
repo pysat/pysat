@@ -39,7 +39,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updated travis.yml to work under pysat organization
    - Added missing requirements (matplotlib, netCDF4)
    - Fixed a bug when trying to combine empty kp lists
-   - Updated travis.yml to work with python 2.7.15
+   - Updated travis.yml to work with python 2.7.15 and beyond
    - Unit tests reload pysat_testing_xarray for xarray tests
    - Updated setup.py to not overwrite default `open` command from `codecs`
    - Updated Travis CI settings to allow forks to run tests on local travis accounts
