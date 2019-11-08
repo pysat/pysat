@@ -631,6 +631,34 @@ class TestBasics():
         self.testInst.bounds = [start]
 
     @raises(ValueError)
+    def test_set_bounds_mixed(self):
+        start = pysat.datetime(2009, 1, 1)
+        self.testInst.bounds = [start, '2009-01-01.nofile']
+
+    @raises(ValueError)
+    def test_set_bounds_wrong_type(self):
+        start = pysat.datetime(2009, 1, 1)
+        self.testInst.bounds = [start, 1]
+
+    @raises(ValueError)
+    def test_set_bounds_mixed_iterable(self):
+        start = [pysat.datetime(2009, 1, 1)]*2
+        self.testInst.bounds = [start, '2009-01-01.nofile']
+
+    @raises(ValueError)
+    def test_set_bounds_mixed_iterabless(self):
+        start = [pysat.datetime(2009, 1, 1)]*2
+        self.testInst.bounds = [start, [pysat.datetime(2009, 1, 1), '2009-01-01.nofile']]
+
+    def test_set_bounds_string_default_start(self):
+        self.testInst.bounds = [None, '2009-01-01.nofile']
+        assert self.testInst.bounds[0][0] == self.testInst.files[0]
+
+    def test_set_bounds_string_default_end(self):
+        self.testInst.bounds = ['2009-01-01.nofile', None]
+        assert self.testInst.bounds[1][0] == self.testInst.files[-1]
+
+    @raises(ValueError)
     def test_set_bounds_too_many(self):
         start = pysat.datetime(2009, 1, 1)
         stop = pysat.datetime(2009, 1, 1)
@@ -774,11 +802,13 @@ class TestBasics():
         stop_d = pysat.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         dates = []
-        self.testInst.next()
-        dates.append(self.testInst.date)
-        while self.testInst.date < stop_d:
-            self.testInst.next()
-            dates.append(self.testInst.date)
+        loop_next = True
+        while loop_next:
+            try:
+                self.testInst.next()
+                dates.append(self.testInst.date)
+            except StopIteration:
+                loop_next = False
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out)
 
@@ -789,11 +819,13 @@ class TestBasics():
         stop_d = pysat.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         dates = []
-        self.testInst.prev()
-        dates.append(self.testInst.date)
-        while self.testInst.date > start_d:
-            self.testInst.prev()
-            dates.append(self.testInst.date)
+        loop = True
+        while loop:
+            try:
+                self.testInst.prev()
+                dates.append(self.testInst.date)
+            except StopIteration:
+                loop = False
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out[::-1])
 
