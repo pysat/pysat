@@ -41,7 +41,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Fixed a bug when trying to combine empty kp lists
    - Updated travis.yml to work with python 2.7.15
    - Unit tests reload pysat_testing_xarray for xarray tests
-   - Updated setup.py to not overwrite defauly `open` command from `codecs`
+   - Updated setup.py to not overwrite default `open` command from `codecs`
    - Updated Travis CI settings to allow forks to run tests on local travis accounts
    - Fixed keep method to be case insensitive
    - Fixed a bug with COSMIC GPS downloads
