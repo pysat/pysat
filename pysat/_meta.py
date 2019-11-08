@@ -541,10 +541,10 @@ class Meta(object):
             if isinstance(name, basestring):
                 return func(name)
             elif isinstance(name, slice):
-                return [func(name_) for name_ in names[name]]
+                return [func(nn) for nn in names[name]]
             else:
                 # assume iterable
-                return [func(name_) for name_ in name]
+                return [func(nn) for nn in name]
 
         if isinstance(key, tuple):
             # if tuple length is 2, index, column
