@@ -116,12 +116,12 @@ class TestBasics():
 
         warnings.simplefilter("always")
         scale1 = pysat.utils.scale_units("happy", "happy")
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             scale2 = coords.scale_units("happy", "happy")
 
         assert scale1 == scale2
-        assert len(w) == 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) == 1
+        assert war[0].category == DeprecationWarning
 
     ###################################
     # Geodetic / Geocentric conversions
