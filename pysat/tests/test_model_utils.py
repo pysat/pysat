@@ -47,7 +47,7 @@ class TestDeprecation():
     def test_satellite_view_through_model_deprecation(self):
         """Test if satellite_view_through_model is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 mu.satellite_view_through_model(None, None, None, None)
             except TypeError:
@@ -55,13 +55,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_collect_inst_model_pairs_deprecation(self):
         """Test if collect_inst_model_pairs is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 mu.collect_inst_model_pairs(inst=None)
             except ValueError:
@@ -69,13 +69,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_compare_model_and_inst_deprecation(self):
         """Test if compare_model_and_inst is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 mu.compare_model_and_inst(pairs=None)
             except ValueError:
@@ -83,13 +83,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_extract_modelled_observations_deprecation(self):
         """Test if extract_modelled_observations is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 mu.extract_modelled_observations(inst=None)
             except ValueError:
@@ -97,5 +97,5 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
