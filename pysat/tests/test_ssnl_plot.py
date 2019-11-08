@@ -84,7 +84,7 @@ class TestDeprecation():
     def test_deprecation_warning_scatterplot(self):
         """Test if scatterplot in ssnl is deprecated"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 plot.scatterplot(None, 'longitude', 'latitude', ['slt', 'mlt'],
                                  [0.0, 24.0])
@@ -93,5 +93,5 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
