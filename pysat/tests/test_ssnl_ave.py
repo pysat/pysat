@@ -101,7 +101,7 @@ class TestDeprecation():
     def test_median1D_deprecation_warning(self):
         """Test generation of deprecation warning for median1D"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 avg.median1D(None, [0., 360., 24.],
                              'longitude', ['dummy1'])
@@ -110,13 +110,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_median2D_deprecation_warning(self):
         """Test generation of deprecation warning for median1D"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 avg.median2D(None, [0., 360., 24.], 'longitude',
                              [0., 24., 24.], 'mlt', ['dummy1'])
@@ -125,13 +125,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_mean_by_day_deprecation_warning(self):
         """Test generation of deprecation warning for mean_by_day"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 avg.mean_by_day(None, 'dummy1')
             except TypeError:
@@ -139,13 +139,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_mean_by_orbit_deprecation_warning(self):
         """Test generation of deprecation warning for mean_by_orbit"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 avg.mean_by_orbit(None, 'dummy1')
             except AttributeError:
@@ -153,13 +153,13 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
     def test_mean_by_file_deprecation_warning(self):
         """Test generation of deprecation warning for mean_by_file"""
 
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True) as war:
             try:
                 avg.mean_by_file(None, 'dummy1')
             except TypeError:
@@ -167,8 +167,8 @@ class TestDeprecation():
                 # warning is generated
                 pass
 
-        assert len(w) >= 1
-        assert w[0].category == DeprecationWarning
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
 
 class TestFrameProfileAverages():
