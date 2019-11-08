@@ -625,27 +625,27 @@ class TestBasics():
         assert np.all(self.testInst._iter_list == pds.date_range(start, stop,
                                                                  freq='M').tolist())
 
-    @raises(ValueError)
+    @raises(Exception)
     def test_set_bounds_too_few(self):
         start = pysat.datetime(2009, 1, 1)
         self.testInst.bounds = [start]
 
-    @raises(ValueError)
+    @raises(Exception)
     def test_set_bounds_mixed(self):
         start = pysat.datetime(2009, 1, 1)
         self.testInst.bounds = [start, '2009-01-01.nofile']
 
-    @raises(ValueError)
+    @raises(Exception)
     def test_set_bounds_wrong_type(self):
         start = pysat.datetime(2009, 1, 1)
         self.testInst.bounds = [start, 1]
 
-    @raises(ValueError)
+    @raises(Exception)
     def test_set_bounds_mixed_iterable(self):
         start = [pysat.datetime(2009, 1, 1)]*2
         self.testInst.bounds = [start, '2009-01-01.nofile']
 
-    @raises(ValueError)
+    @raises(Exception)
     def test_set_bounds_mixed_iterabless(self):
         start = [pysat.datetime(2009, 1, 1)]*2
         self.testInst.bounds = [start, [pysat.datetime(2009, 1, 1), '2009-01-01.nofile']]
