@@ -1104,12 +1104,25 @@ class Instrument(object):
                                            fname[-1]))
         else:
             # no data signal
-            if bad_datetime:
-                output_str = ' '.join(('Bad datetime for', output_str,
-                                       date.strftime('%d %B %Y')))
+            if date is not None:
+                if bad_datetime:
+                    output_str = ' '.join(('Bad datetime for', output_str,
+                                        date.strftime('%d %B %Y')))
+                else:
+                    output_str = ' '.join(('No', output_str, 'data for',
+                                        date.strftime('%d %B %Y')))
             else:
-                output_str = ' '.join(('No', output_str, 'data for',
-                                       date.strftime('%d %B %Y')))
+                if len(fname) == 1:
+                    output_str = ' '.join(('No', output_str, 'data for',
+                                           fname[0]))
+                elif len(fname) == 0:
+                     output_str = ' '.join(('No', output_str, 'valid',
+                                            'filenames found'))
+                else:
+                    output_str = ' '.join(('No', output_str, 'data for',
+                                            fname[0], '::',
+                                            fname[-1]))
+
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         print(output_str)
