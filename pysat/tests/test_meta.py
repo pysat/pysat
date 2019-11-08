@@ -483,15 +483,10 @@ class TestBasics():
         assert self.meta['higher'].children == meta
         self.meta['higher',('axis','scale')]
 
-
     @raises(ValueError)
     def test_multiple_meta_assignment_error(self):
         self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
                                       'long_name': ['boo']}
-        assert self.meta['new'].units == 'hey'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new2'].units == 'hey2'
-        assert self.meta['new2'].long_name == 'boo2'
 
     def test_replace_meta_units(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
