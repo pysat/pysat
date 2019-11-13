@@ -83,6 +83,9 @@ import pysat
 from .methods import madrigal as mad_meth
 from .methods import nasa_cdaweb as cdw
 
+import logging
+logger = logging.getLogger(__name__)
+
 platform = 'madrigal'
 name = 'pandas'
 tags = {'': 'General Madrigal data access loaded into pysat via pandas.'}
@@ -137,7 +140,7 @@ def init(self):
 
     """
 
-    print(mad_meth.cedar_rules())
+    logger.info(mad_meth.cedar_rules())
 
     code = self.kwargs['madrigal_code']
     tag = self.kwargs['madrigal_tag']
@@ -221,6 +224,6 @@ def clean(self):
 
     """
     if self.clean_level in ['clean', 'dusty', 'dirty']:
-        print('WARNING: Generalized Madrigal data support has no cleaning.')
+        logger.warning('Generalized Madrigal data support has no cleaning.')
 
     return

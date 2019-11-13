@@ -35,6 +35,8 @@ import warnings
 import pysat
 from .methods import nasa_cdaweb as cdw
 
+import logging
+logger = logging.getLogger(__name__)
 
 platform = 'icon'
 name = 'euv'
@@ -59,7 +61,7 @@ def init(self):
         modified in-place, as desired.
 
     """
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
     pass
 
