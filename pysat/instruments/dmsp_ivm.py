@@ -54,6 +54,9 @@ import pysat
 from .methods import madrigal as mad_meth
 from .methods import nasa_cdaweb as cdw
 
+import logging
+logger = logging.getLogger(__name__)
+
 platform = 'dmsp'
 name = 'ivm'
 tags = {'utd': 'UTDallas DMSP data processing', '': 'Level 2 data processing'}
@@ -122,7 +125,7 @@ def init(self):
 
     """
 
-    print(mad_meth.cedar_rules())
+    logger.info(mad_meth.cedar_rules())
     return
 
 
@@ -218,7 +221,7 @@ def clean(inst):
             idx = slice(0, inst.index.shape[0])
     else:
         if inst.clean_level in ['clean', 'dusty', 'dirty']:
-            print('WARNING: this level 1 data has no quality flags')
+            logger.warning('this level 1 data has no quality flags')
         idx = slice(0, inst.index.shape[0])
 
     # downselect data based upon cleaning conditions above
@@ -270,7 +273,7 @@ def update_DMSP_ephemeris(inst, ephem=None):
 
     # Ensure the right ephemera is loaded
     if ephem is None:
-        print('No ephemera provided for {:}'.format(inst.date))
+        logger.info('No ephemera provided for {:}'.format(inst.date))
         inst.data = pds.DataFrame(None)
         return
 
@@ -281,7 +284,7 @@ def update_DMSP_ephemeris(inst, ephem=None):
         ephem.load(date=inst.date, verifyPad=True)
 
         if ephem.data.empty:
-            print('unable to load ephemera for {:}'.format(inst.date))
+            logger.info('unable to load ephemera for {:}'.format(inst.date))
             inst.data = pds.DataFrame(None)
             return
 

@@ -45,6 +45,9 @@ import pandas as pds
 import xarray as xr
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 # the platform and name strings associated with this instrument
 # need to be defined at the top level
 # these attributes will be copied over to the Instrument object by pysat
@@ -96,7 +99,7 @@ def init(self):
 
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
     return
 

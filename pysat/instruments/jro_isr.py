@@ -40,6 +40,9 @@ import pysat
 from .methods import madrigal as mad_meth
 from .methods import nasa_cdaweb as cdw
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 platform = 'jro'
 name = 'isr'
@@ -114,7 +117,7 @@ def init(self):
 
     """
 
-    print("The Jicamarca Radio Observatory is operated by the Instituto " +
+    logger.info("The Jicamarca Radio Observatory is operated by the Instituto " +
           "Geofisico del Peru, Ministry of Education, with support from the" +
           " National Science Foundation as contracted through Cornell" +
           " University.  " + mad_meth.cedar_rules())
@@ -193,24 +196,24 @@ def clean(self):
 
     if self.tag.find('oblique') == 0:
         # Oblique profile cleaning
-        print('The double pulse, coded pulse, and long pulse modes ' +
+        logger.info('The double pulse, coded pulse, and long pulse modes ' +
               'implemented at Jicamarca have different limitations arising ' +
               'from different degrees of precision and accuracy. Users ' +
               'should consult with the staff to determine which mode is ' +
               'right for their application.')
 
         if self.clean_level in ['clean', 'dusty', 'dirty']:
-            print('WARNING: this level 2 data has no quality flags')
+            logger.warning('this level 2 data has no quality flags')
     else:
         # Ion drift cleaning
         if self.clean_level in ['clean', 'dusty', 'dirty']:
             if self.clean_level in ['clean', 'dusty']:
-                print('WARNING: this level 2 data has no quality flags')
+                logger.warning('this level 2 data has no quality flags')
 
             ida, = np.where((self.data.indexes['gdalt'] > 200.0))
             idx['gdalt'] = np.unique(ida)
         else:
-            print("WARNING: interpretation of drifts below 200 km should " +
+            logger.warning("interpretation of drifts below 200 km should " +
                   "always be done in partnership with the contact people")
 
     # downselect data based upon cleaning conditions above
@@ -242,7 +245,7 @@ def calc_measurement_loc(self):
             try:
                 good_dir.append(int(kk))
             except:
-                print("WARNING: unknown direction number [{:}]".format(kk))
+                logger.warning("unknown direction number [{:}]".format(kk))
 
     # Calculate the geodetic latitude and longitude for each direction
     if len(good_dir) == 0:

@@ -26,6 +26,9 @@ import pandas as pds
 import numpy as np
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 # pysat required parameters
 platform = 'netcdf'
 name = 'pandas'
@@ -207,6 +210,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    print('This is a generic Instrument routine and does not support ' +
+    logger.info('This is a generic Instrument routine and does not support ' +
           'downloading data.')
     pass

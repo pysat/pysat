@@ -22,6 +22,7 @@ from . import _orbits
 from . import _meta
 from . import utils
 from pysat import DataFrame
+from pysat import logger
 
 
 # main class for users
@@ -1132,7 +1133,7 @@ class Instrument(object):
 
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
-        print(output_str)
+        logger.info(output_str)
         return data, mdata
 
     def _load_next(self):
@@ -1251,7 +1252,7 @@ class Instrument(object):
             if self._empty(self._next_data) & self._empty(self._prev_data):
                 # data has not already been loaded for previous and next days
                 # load data for all three
-                print('Initializing three day/file window')
+                logger.info('Initializing three day/file window')
                 # using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
                 self._curr_data, self._curr_meta = \
@@ -1512,7 +1513,7 @@ class Instrument(object):
         # get list of remote files
         remote_files = self.remote_file_list()
         if remote_files.empty:
-            print('No remote files found. Unable to download latest data.')
+            logger.warn('No remote files found. Unable to download latest data.')
             return
 
         # get current list of local files
@@ -1534,7 +1535,7 @@ class Instrument(object):
             if date in remote_files.index:
                 if remote_files[date] != local_files[date]:
                     new_dates.append(date)
-        print('Found ', len(new_dates), ' files that are new or updated.')
+        logger.info('Found {} files that are new or updated.'.format(len(new_dates)))
         # download date for dates in new_dates (also includes new names)
         self.download(user=user, password=password, date_array=new_dates,
                       **kwargs)
@@ -1585,11 +1586,11 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            print('Downloading the most recent data by default ',
+            logger.info('Downloading the most recent data by default ' +
                   '(yesterday through tomorrow).')
             start = self.yesterday()
             stop = self.tomorrow()
-        print('Downloading data to: ', self.files.data_path)
+        logger.info('Downloading data to: {}'.format(self.files.data_path))
 
         if date_array is None:
             # create range of dates to download data for
@@ -1615,14 +1616,14 @@ class Instrument(object):
         first_date = self.files.start_date
         last_date = self.files.stop_date
 
-        print('Updating pysat file list')
+        logger.info('Updating pysat file list')
         self.files.refresh()
 
         # if instrument object has default bounds, update them
         if len(self.bounds[0]) == 1:
             if(self.bounds[0][0] == first_date and
                self.bounds[1][0] == last_date):
-                print('Updating instrument object bounds.')
+                logger.info('Updating instrument object bounds.')
                 self.bounds = None
 
     @property
@@ -2152,8 +2153,8 @@ class Instrument(object):
             export_units_labels = self._meta_translation_table['units_label']
             export_desc_labels = self._meta_translation_table['desc_label']
             export_notes_labels = self._meta_translation_table['notes_label']
-            print('Using Metadata Translation Table: ',
-                  self._meta_translation_table)
+            logger.info('Using Metadata Translation Table: ' +
+                  str(self._meta_translation_table))
         # Apply instrument specific post-processing to the export_meta
         if hasattr(self._export_meta_post_processing, '__call__'):
             export_meta = self._export_meta_post_processing(export_meta)
@@ -2268,7 +2269,7 @@ class Instrument(object):
                                                                  coltype)
                         cdfkey.setncatts(new_dict)
                     except KeyError as err:
-                        print(' '.join((str(err), '\n',
+                        logger.info(' '.join((str(err), '\n',
                                         ', '.join(('Unable to find MetaData for',
                                                    key)))))
                     # assign data
@@ -2313,7 +2314,7 @@ class Instrument(object):
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
-                            print(', '.join(('Unable to find MetaData for',
+                            logger.info(', '.join(('Unable to find MetaData for',
                                              key)))
 
                         # time to actually write the data now
@@ -2402,7 +2403,7 @@ class Instrument(object):
                                                                       coltype)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
-                                    print(' '.join((str(err), '\n',
+                                    logger.info(' '.join((str(err), '\n',
                                                     'Unable to find MetaData',
                                                     'for', ', '.join((key,
                                                                       col)))))
@@ -2448,7 +2449,7 @@ class Instrument(object):
                                     # really attach metadata now
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
-                                    print(' '.join((str(err), '\n',
+                                    logger.info(' '.join((str(err), '\n',
                                                     'Unable to find MetaData',
                                                     'for,', key)))
                                 # attach data

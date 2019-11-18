@@ -7,6 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import warnings
 
+from pysat import logger
 
 def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
                 ylim=None):
@@ -90,7 +91,7 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
         try:
             plt.colorbar(p[j], ax=ax[0], label='Amplitude (m/s)')
         except:
-            print('Tried colorbar but failed, thus no colorbar.')
+            logger.info('Tried colorbar but failed, thus no colorbar.')
         ax[0].elev = 30.
 
     if interactive_mode:

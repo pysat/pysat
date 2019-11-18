@@ -6,6 +6,7 @@ import functools
 import numpy as np
 import pandas as pds
 from pysat import Series
+from pysat import logger
 
 
 class Orbits(object):
@@ -212,7 +213,7 @@ class Orbits(object):
             # done for robustness
             if len(ind) > 1:
                 if min(dist) == 1:
-                    print('There are orbit breaks right next to each other')
+                    logger.info('There are orbit breaks right next to each other')
                 ind = ind[:-1][dist > 1]
 
             # check for large positive gradients around the break that would
@@ -269,7 +270,7 @@ class Orbits(object):
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            print('Time Gap')
+            logger.info('Time Gap')
 
         # now that most problems in orbits should have been caught, look at
         # the time difference between orbits (not individual orbits)
@@ -561,14 +562,14 @@ class Orbits(object):
                     except StopIteration:
                         self._getBasicOrbit(orbit=1)
                         # includes hack to appear to be zero indexed
-                        print('Loaded Orbit:%i' % (self._current - 1))
+                        logger.info('Loaded Orbit:%i' % (self._current - 1))
                         # check if the first orbit is also the last orbit
 
                 elif orbit < self.num:
                     # load orbit data into data
                     self._getBasicOrbit(orbit)
                     # includes hack to appear to be zero indexed
-                    print('Loaded Orbit:%i' % (self._current - 1))
+                    logger.info('Loaded Orbit:%i' % (self._current - 1))
 
                 else:
                     # gone too far
@@ -578,7 +579,7 @@ class Orbits(object):
             else:
                 raise Exception('Must set an orbit')
         else:
-            print('No data loaded in instrument object to determine orbits.')
+            logger.info('No data loaded in instrument object to determine orbits.')
 
     def next(self, *arg, **kwarg):
         """Load the next orbit into .data.
@@ -634,7 +635,7 @@ class Orbits(object):
                         pass
                     del temp_orbit_data
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             elif self._current == (self.num):
                 # at the last orbit, need to be careful about getting the next
@@ -694,7 +695,7 @@ class Orbits(object):
 
                 del temp_orbit_data
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             elif self._current == 0:
                 # no current orbit set, grab the first one
@@ -707,7 +708,7 @@ class Orbits(object):
                 # orbit
                 self._getBasicOrbit(orbit=self._current + 1)
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             else:
                 raise Exception(' '.join(('You ended up where nobody should',
@@ -743,7 +744,7 @@ class Orbits(object):
             if (self._current > 2) & (self._current <= self.num):
                 # load orbit and put it into self.sat.data
                 self._getBasicOrbit(orbit=self._current - 1)
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             # if current orbit near the first, must be careful
             elif self._current == 2:
@@ -785,7 +786,7 @@ class Orbits(object):
 
                     del temp_orbit_data
 
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             elif self._current == 0:
                 self.load(orbit=-1)
@@ -831,7 +832,7 @@ class Orbits(object):
                     self._getBasicOrbit(orbit=-1)
 
                 del temp_orbit_data
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             else:
                 raise Exception(' '.join(('You ended up where nobody should',
