@@ -28,7 +28,7 @@ tags = {'': 'Regular testing data set',
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in sat_id to change the number of points per day
 sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
-test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 meta = pysat.Meta()
 meta['uts'] = {'units': 's',
@@ -123,7 +123,8 @@ def init(inst):
     # mess with file dates if kwarg option present
     if 'mangle_file_dates' in inst.kwargs:
         if inst.kwargs['mangle_file_dates']:
-                inst.files.files.index = inst.files.files.index + pds.DateOffset(minutes=5)
+            inst.files.files.index = \
+                inst.files.files.index + pds.DateOffset(minutes=5)
 
 def default(inst):
     """The default function is applied first to data as it is loaded.
@@ -153,14 +154,14 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         Adjusts date range to be 12 hours in the past or twelve hours before
         root_date (default=False)
     root_date : (NoneType)
-        Optional central date, uses test_dates if not specified.
+        Optional central date, uses _test_dates if not specified.
         (default=None)
     file_date_range : (pds.date_range or NoneType)
         Range of dates for files or None, if this optional arguement is not
         used
         (default=None)
     malformed_index : bool (default=False)
-        If True, time index for simulation will be non-unique and non-monotonic.
+        If True, time index for simulation will be non-unique and non-monotonic
     **kwargs : Additional keywords
         Additional keyword arguments supplied at pyast.Instrument instantiation
         are passed here
@@ -184,13 +185,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     date = pysat.datetime(yr, month, day)
     pds_offset = pds.DateOffset(hours=12)
     if sim_multi_file_right:
-        root_date = root_date or test_dates[''][''] + pds_offset
+        root_date = root_date or _test_dates[''][''] + pds_offset
         data_date = date + pds_offset
     elif sim_multi_file_left:
-        root_date = root_date or test_dates[''][''] - pds_offset
+        root_date = root_date or _test_dates[''][''] - pds_offset
         data_date = date - pds_offset
     else:
-        root_date = root_date or test_dates['']['']
+        root_date = root_date or _test_dates['']['']
         data_date = date
 
     # The sat_id can be used to specify the number of indexes to load for
@@ -226,7 +227,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['latitude'] = 90.0 * np.cos(angle)
 
     # fake orbit number
-    fake_delta = date - (test_dates[''][''] - pds.DateOffset(years=1))
+    fake_delta = date - (_test_dates[''][''] - pds.DateOffset(years=1))
     data['orbit_num'] = test.generate_fake_data(fake_delta.total_seconds(),
                                                 num_array, period=5820,
                                                 cyclic=False)
@@ -255,7 +256,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int16_dummy'] = np.ones(len(data), dtype=np.int16)
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
-    
+
     index = pds.date_range(data_date,
                            data_date+pds.DateOffset(seconds=num-1),
                            freq='S')
@@ -266,7 +267,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         # non unique
         index[6:9] = [index[6]]*3
 
-    data.index=index[0:num]
+    data.index = index[0:num]
     data.index.name = 'Epoch'
     return data, meta.copy()
 
@@ -296,8 +297,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     # Determine the appropriate date range for the fake files
     if file_date_range is None:
-        start = test_dates[''][''] - pds.DateOffset(years=1)
-        stop = test_dates[''][''] + pds.DateOffset(years=2) \
+        start = _test_dates[''][''] - pds.DateOffset(years=1)
+        stop = _test_dates[''][''] + pds.DateOffset(years=2) \
             - pds.DateOffset(days=1)
         file_date_range = pds.date_range(start, stop)
 

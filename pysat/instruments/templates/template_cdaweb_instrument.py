@@ -69,11 +69,11 @@ sat_ids = {'': ['']}
 # Define good days to download data for when pysat undergoes testing.
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
-# test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
+# _test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
 #                    'L1':pysat.datetime(2019,1,2)},
 #               'b':{'L1':pysat.datetime(2019,3,1),
 #                    'L2':pysat.datetime(2019,11,23),}}
-test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 
 # Additional information needs to be defined
 # to support the CDAWeb list files routine

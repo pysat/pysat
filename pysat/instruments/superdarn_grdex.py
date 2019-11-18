@@ -47,7 +47,7 @@ name = 'grdex'
 tags = {'north': '',
         'south': ''}
 sat_ids = {'': ['north', 'south']}
-test_dates = {'': {'north': pysat.datetime(2009, 1, 1),
+_test_dates = {'': {'north': pysat.datetime(2009, 1, 1),
                    'south': pysat.datetime(2009, 1, 1)}}
 
 

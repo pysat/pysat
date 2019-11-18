@@ -64,7 +64,7 @@ platform = 'cnofs'
 name = 'vefi'
 tags = {'dc_b': 'DC Magnetometer data - 1 second'}
 sat_ids = {'': ['dc_b']}
-test_dates = {'': {'dc_b': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'dc_b': pysat.datetime(2009, 1, 1)}}
 
 # support list files routine
 # use the default CDAWeb method

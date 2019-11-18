@@ -36,7 +36,7 @@ platform = 'sw'
 name = 'dst'
 tags = {'': ''}
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
 
 
 def load(fnames, tag=None, sat_id=None):

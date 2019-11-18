@@ -32,16 +32,17 @@ def median1D(self, bin_params, bin_label, data_label):
 
     """
 
-    warnings.warn(' '.join(("utils.stats.median1D is deprecated, use",
-                            "ssnl.avg.median1D instead")),
-                  DeprecationWarning)
+    warnings.warn(' '.join(["utils.stats.median1D is deprecated and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "ssnl.avg.median1D instead"]),
+                  DeprecationWarning, stacklevel=2)
 
     bins = np.arange(bin_params[0], bin_params[1] + bin_params[2],
                      bin_params[2])
     medians = 0. * bins[0:-1]
     ind = np.digitize(self.data[bin_label], bins)
 
-    for i in xrange(bins.size-1):
+    for i in range(bins.size-1):
         index, = np.where(ind == (i + 1))
         if len(index) > 0:
             idx = self.data.index[index.astype(int)]
@@ -71,6 +72,12 @@ def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
         Circular mean
 
     """
+
+    warnings.warn(' '.join(["utils.stats.nan_circmean is deprecated and will",
+                            "be removed in a future version. This function is",
+                            "part of the scipy 1.4.0 milestones and will be",
+                            "migrated there."]),
+                  DeprecationWarning, stacklevel=2)
 
     samples = np.asarray(samples)
     samples = samples[~np.isnan(samples)]
@@ -120,6 +127,12 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
         Circular standard deviation
 
     """
+
+    warnings.warn(' '.join(["utils.stats.nan_circstd is deprecated and will",
+                            "be removed in a future version. This function is",
+                            "part of the scipy 1.4.0 milestones and will be",
+                            "migrated there."]),
+                  DeprecationWarning, stacklevel=2)
 
     samples = np.asarray(samples)
     samples = samples[~np.isnan(samples)]

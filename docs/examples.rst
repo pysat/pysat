@@ -192,7 +192,7 @@ Note the same averaging routine is used for both COSMIC and IVM, and that both 1
                                        [0, 24, 24], 'mlt', ['ionVelmeridional'])
 
   # create COSMIC instrument object
-  cosmic = pysat.Instrument(platform='cosmic2013',
+  cosmic = pysat.Instrument(platform='cosmic',
                             name='gps', tag='ionprf',
                             clean_level='clean',
                             altitude_bin=3)
