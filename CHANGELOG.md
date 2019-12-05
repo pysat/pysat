@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.X.X] - 2019-12-05
+- Bug Fixes
+  - `files._attach_files` now checks for an empty file list before appending
+
 ## [2.X.X] - 2019-10-16
 - New Features
    - Added new velocity format options to utils.coords.scale_units
