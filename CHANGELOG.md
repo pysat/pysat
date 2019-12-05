@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.X.X] - 2019-12-05
 - Bug Fixes
-  - `files._attach_files` now checks for an empty file list before appending
+  - `_files._attach_files` now checks for an empty file list before appending
 
 ## [2.X.X] - 2019-10-16
 - New Features
