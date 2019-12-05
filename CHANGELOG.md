@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.X.X] - 2019-12-05
+- Bug Fixes
+  - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
+
 ## [2.X.X] - 2019-10-16
 - New Features
    - Added new velocity format options to utils.coords.scale_units
