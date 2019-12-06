@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - `_files._attach_files` now checks for an empty file list before appending
   - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
 
-## [2.X.X] - 2019-10-16
+## [2.1.0] - 2019-11-18
 - New Features
    - Added new velocity format options to utils.coords.scale_units
    - Improved failure messages for utils.coords.scale_units
