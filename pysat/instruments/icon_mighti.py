@@ -46,6 +46,9 @@ import warnings
 
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 platform = 'icon'
 name = 'mighti'
@@ -73,7 +76,7 @@ def init(self):
 
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
 
     pass
@@ -110,7 +113,7 @@ def clean(inst, clean_level=None):
     """
 
     if clean_level != 'none':
-        print("Cleaning actions for ICON MIGHTI aren't yet defined.")
+        logger.info("Cleaning actions for ICON MIGHTI aren't yet defined.")
 
     return
 

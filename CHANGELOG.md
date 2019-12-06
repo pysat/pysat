@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.X.X] - 2019-12-05
 - Bug Fixes
   - `_files._attach_files` now checks for an empty file list before appending
+  - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
 
 ## [2.X.X] - 2019-10-16
 - New Features
@@ -18,6 +19,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
      to filter out empty files from the stored file list
    - Added slice and list ability to meta
+   - Converted all print statements to logging statements
    - Updated cleaning routines for C/NOFS IVM
    - Added S4 scintillation data to the cosmic-gps instrument
    - pysat no longer creates a default data directory. User must specify location.

@@ -74,7 +74,7 @@ def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
     """
 
     warnings.warn(' '.join(["utils.stats.nan_circmean is deprecated and will",
-                            "be removed in pysat 3.0.0. This function is",
+                            "be removed in a future version. This function is",
                             "part of the scipy 1.4.0 milestones and will be",
                             "migrated there."]),
                   DeprecationWarning, stacklevel=2)
@@ -129,7 +129,7 @@ def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
     """
 
     warnings.warn(' '.join(["utils.stats.nan_circstd is deprecated and will",
-                            "be removed in pysat 3.0.0. This function is",
+                            "be removed in a future version. This function is",
                             "part of the scipy 1.4.0 milestones and will be",
                             "migrated there."]),
                   DeprecationWarning, stacklevel=2)
