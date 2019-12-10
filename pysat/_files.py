@@ -234,8 +234,12 @@ class Files(object):
             if self.ignore_empty_files:
                 self._filter_empty_files()
             # extract date information
-            self.start_date = self._sat._filter_datetime_input(files_info.index[0])
-            self.stop_date = self._sat._filter_datetime_input(files_info.index[-1])
+            if not self.files.empty:
+                self.start_date = self._sat._filter_datetime_input(self.files.index[0])
+                self.stop_date = self._sat._filter_datetime_input(self.files.index[-1])
+            else:
+                self.start_date = None
+                self.stop_date = None
         else:
             self.start_date = None
             self.stop_date = None
