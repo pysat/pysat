@@ -62,11 +62,11 @@ tags = {'ionprf': '',
         'atmprf': '',
         'scnlv1': ''}
 sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1']}
-test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
-                   'sonprf': pysat.datetime(2008, 1, 1),
-                   'wetprf': pysat.datetime(2008, 1, 1),
-                   'atmprf': pysat.datetime(2008, 1, 1),
-                   'scnlv1': pysat.datetime(2008, 1, 1)}}
+_test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
+                    'sonprf': pysat.datetime(2008, 1, 1),
+                    'wetprf': pysat.datetime(2008, 1, 1),
+                    'atmprf': pysat.datetime(2008, 1, 1),
+                    'scnlv1': pysat.datetime(2008, 1, 1)}}
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):

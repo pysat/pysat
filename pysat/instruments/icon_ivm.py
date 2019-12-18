@@ -55,7 +55,7 @@ tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'a': ['level_2'],
            'b': ['level_2']}
 _test_dates = {'a': {'level_2': pysat.datetime(2018, 1, 1)},
-              'b': {'level_2': pysat.datetime(2018, 1, 1)}}
+               'b': {'level_2': pysat.datetime(2018, 1, 1)}}
 
 
 def init(self):

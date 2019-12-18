@@ -76,7 +76,7 @@ now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
 _test_dates = {'': {'': pysat.datetime(2009, 1, 1),
-                   'forecast': today + pds.DateOffset(days=1)}}
+                    'forecast': today + pds.DateOffset(days=1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
