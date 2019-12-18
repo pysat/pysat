@@ -50,6 +50,23 @@ class TestBasics():
         assert (test_date == pds.datetime(2009, 1, 1)) & \
             (test_date == self.testInst.date)
 
+    @raises(Exception)
+    def test_basic_instrument_load_yr_no_doy(self):
+        self.testInst.load(2009)
+
+    @raises(Exception)
+    def test_basic_instrument_load_no_input(self):
+        self.testInst.load()
+
+    @raises(Exception)
+    def test_basic_instrument_load_by_file_and_multifile(self):
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    update_files=True,
+                                    multi_file_day=True)
+        testInst.load(fname=testInst.files[0])
+
     def test_basic_instrument_load_by_date(self):
         date = pysat.datetime(2009, 1, 1)
         self.testInst.load(date=date)
@@ -272,6 +289,46 @@ class TestBasics():
             assert np.all(self.testInst.index ==
                           self.testInst.data.indexes['time'])
 
+    #--------------------------------------------------------------------------
+    #
+    # Test custom attributes
+    #
+    #--------------------------------------------------------------------------
+
+    def test_create_custom_attribute(self):
+        # check attribute attached to meta
+        self.testInst.my_attr = 'my value'
+        assert self.testInst.my_attr is self.testInst.meta.my_attr
+        assert 'my_attr' not in dir(self.testInst)
+
+        # check underscores attached to instrument
+        self.testInst._nometa = 'non meta value'
+        assert self.testInst._nometa == 'non meta value'
+        assert '_nometa' in dir(self.testInst)
+        assert '_nometa' not in dir(self.testInst.meta)
+
+        # check if underscore stays attached to meta
+        self.testInst.meta._mine = 'stay here'
+        assert self.testInst._mine is self.testInst.meta._mine
+        assert '_mine' not in dir(self.testInst)
+
+        # see if a base attr attached to instrument
+        self.testInst.pad = 1
+        assert self.testInst.pad == 1
+        assert 'pad' in dir(self.testInst)
+        assert 'pad' not in dir(self.testInst.meta)
+
+
+    @raises(AttributeError)
+    def test_retrieve_bad_attribute(self):
+        self.testInst.bad_attr
+
+    def test_base_attr(self):
+        self.testInst._base_attr
+        assert '_base_attr' in dir(self.testInst)
+
+
+
     # --------------------------------------------------------------------------
     #
     # test textual representations
@@ -282,11 +339,19 @@ class TestBasics():
         assert True
 
     def test_repr_w_orbit(self):
-        self.testInst.orbit_info = {'index': 'mlt',
-                                    'kind': 'local time',
-                                    'period': np.timedelta64(97, 'm')}
-        self.testInst.orbits.num = 10
-        print(self.testInst)
+        re_load(pysat.instruments.pysat_testing)
+        orbit_info = {'index': 'mlt',
+                      'kind': 'local time',
+                      'period': np.timedelta64(97, 'm')}
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    update_files=True,
+                                    orbit_info=orbit_info)
+
+        testInst.load(2009, 1)
+        testInst.orbits.next()
+        print(testInst)
         assert True
 
     def test_repr_w_padding(self):
@@ -561,10 +626,38 @@ class TestBasics():
         assert np.all(self.testInst._iter_list == pds.date_range(start, stop,
                                                                  freq='M').tolist())
 
-    @raises(ValueError)
+    @raises(Exception)
     def test_set_bounds_too_few(self):
         start = pysat.datetime(2009, 1, 1)
         self.testInst.bounds = [start]
+
+    @raises(Exception)
+    def test_set_bounds_mixed(self):
+        start = pysat.datetime(2009, 1, 1)
+        self.testInst.bounds = [start, '2009-01-01.nofile']
+
+    @raises(Exception)
+    def test_set_bounds_wrong_type(self):
+        start = pysat.datetime(2009, 1, 1)
+        self.testInst.bounds = [start, 1]
+
+    @raises(Exception)
+    def test_set_bounds_mixed_iterable(self):
+        start = [pysat.datetime(2009, 1, 1)]*2
+        self.testInst.bounds = [start, '2009-01-01.nofile']
+
+    @raises(Exception)
+    def test_set_bounds_mixed_iterabless(self):
+        start = [pysat.datetime(2009, 1, 1)]*2
+        self.testInst.bounds = [start, [pysat.datetime(2009, 1, 1), '2009-01-01.nofile']]
+
+    def test_set_bounds_string_default_start(self):
+        self.testInst.bounds = [None, '2009-01-01.nofile']
+        assert self.testInst.bounds[0][0] == self.testInst.files[0]
+
+    def test_set_bounds_string_default_end(self):
+        self.testInst.bounds = ['2009-01-01.nofile', None]
+        assert self.testInst.bounds[1][0] == self.testInst.files[-1]
 
     @raises(ValueError)
     def test_set_bounds_too_many(self):
@@ -710,11 +803,13 @@ class TestBasics():
         stop_d = pysat.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         dates = []
-        self.testInst.next()
-        dates.append(self.testInst.date)
-        while self.testInst.date < stop_d:
-            self.testInst.next()
-            dates.append(self.testInst.date)
+        loop_next = True
+        while loop_next:
+            try:
+                self.testInst.next()
+                dates.append(self.testInst.date)
+            except StopIteration:
+                loop_next = False
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out)
 
@@ -725,11 +820,13 @@ class TestBasics():
         stop_d = pysat.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         dates = []
-        self.testInst.prev()
-        dates.append(self.testInst.date)
-        while self.testInst.date > start_d:
-            self.testInst.prev()
-            dates.append(self.testInst.date)
+        loop = True
+        while loop:
+            try:
+                self.testInst.prev()
+                dates.append(self.testInst.date)
+            except StopIteration:
+                loop = False
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out[::-1])
 
@@ -1079,6 +1176,25 @@ class TestDataPadding():
                 (self.testInst.index[-1] == self.testInst.date +
                  pds.DateOffset(hours=23, minutes=59, seconds=59) +
                  pds.DateOffset(minutes=5)))
+
+    def test_data_padding_offset_instantiation(self):
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    clean_level='clean',
+                                    pad=pds.DateOffset(minutes=5),
+                                    update_files=True)
+        testInst.load(2009, 2, verifyPad=True)
+        assert ((testInst.index[0] ==
+                 testInst.date - pds.DateOffset(minutes=5)) &
+                (testInst.index[-1] == testInst.date +
+                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
+                 pds.DateOffset(minutes=5)))
+
+    @raises(Exception)
+    def test_data_padding_bad_instantiation(self):
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    clean_level='clean',
+                                    pad=2,
+                                    update_files=True)
 
     def test_yrdoy_data_padding_missing_days(self):
         self.testInst.load(2008, 1)

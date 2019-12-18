@@ -63,7 +63,7 @@ platform = 'cnofs'
 name = 'plp'
 tags = {'': ''}
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
 # support list files routine

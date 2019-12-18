@@ -42,7 +42,7 @@ platform = 'icon'
 name = 'euv'
 tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'': ['level_2']}
-test_dates = {'': {'level_2': pysat.datetime(2017, 5, 27)}}
+_test_dates = {'': {'level_2': pysat.datetime(2017, 5, 27)}}
 
 
 def init(self):

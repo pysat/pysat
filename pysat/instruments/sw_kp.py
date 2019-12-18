@@ -75,8 +75,8 @@ sat_ids = {'': ['', 'forecast', 'recent']}
 now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
-test_dates = {'': {'': pysat.datetime(2009, 1, 1),
-                   'forecast': today + pds.DateOffset(days=1)}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                    'forecast': today + pds.DateOffset(days=1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -304,6 +304,12 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 except ftplib.error_perm as exception:
 
                     if str(exception.args[0]).split(" ", 1)[0] != '550':
+                        # leaving a bare raise below so that ftp errors
+                        # are properly reported as coming from ftp
+                        # and gives the correct line number.
+                        # We aren't expecting any 'normal' ftp errors
+                        # here, other than a 550 'no file' error, thus
+                        # accurately raising FTP issues is the way to go
                         raise
                     else:
                         # file isn't actually there, just let people know

@@ -2,7 +2,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.X.X] - 2019-10-16
+## [3.0.0] - 2019-12-18
+- New Features
+  - Added registry module for registering custom external instruments
+- Documentation
+  - Added info on how to register new instruments
+
+## [2.X.X] - 2019-12-05
+- Bug Fixes
+  - `_files._attach_files` now checks for an empty file list before appending
+  - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
+
+## [2.1.0] - 2019-11-18
 - New Features
    - Added new velocity format options to utils.coords.scale_units
    - Improved failure messages for utils.coords.scale_units
@@ -12,17 +23,24 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Improved compatibility with NASA ICON's file standards
    - Improved file downloading for Kp
    - Added keyword ignore_empty_files to pysat.Instrument and Files objects
-    to filter out empty files from the stored file list
-   - Added registry module for registering custom external instruments
+     to filter out empty files from the stored file list
+   - Added slice and list ability to meta
    - Converted all print statements to logging statements
    - Updated cleaning routines for C/NOFS IVM
-
+   - Added S4 scintillation data to the cosmic-gps instrument
+   - pysat no longer creates a default data directory. User must specify location.
+   - User set custom attributes are transparently stored within Meta object and are
+     available via both Instrument and Meta.
+   - Improved robustness of required library specification across multiple
+     platforms
 - Code Restructure
   - Move `computational_form` to `ssnl`, old version is deprecated
   - Move `scale_units` to `utils._core`, old version is deprecated
   - Replace `season_date_range` with `create_date_range`, old version is deprecated
   - Added deprecation warnings to stat functions
+  - Added deprecation warnings to `ssnl` and `model_utils`
   - Removed `pysat_sgp4` instrument
+  - Added cleaning steps to the C/NOFS IVM ion fraction data
 - Bug fix
    - Fixed implementation of utils routines in model_utils and jro_isr
    - Fixed error catching bug in model_utils
@@ -33,14 +51,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updated travis.yml to work under pysat organization
    - Added missing requirements (matplotlib, netCDF4)
    - Fixed a bug when trying to combine empty kp lists
-   - Updated travis.yml to work with python 2.7.15
+   - Updated travis.yml to work with python 2.7.15 and beyond
    - Unit tests reload pysat_testing_xarray for xarray tests
-   - Updated setup.py to not overwrite defauly `open` command from `codecs`
+   - Updated setup.py to not overwrite default `open` command from `codecs`
    - Updated Travis CI settings to allow forks to run tests on local travis accounts
+   - Fixed keep method to be case insensitive
+   - Fixed a bug with COSMIC GPS downloads
+   - Fixed selection bugs in the DEMETER IAP, CNOFS IVM, and model_utils routines
+   - Updated URL link in setup.py
 - Documentation
   - Added info on how to cite the code and package.
   - Updated instrument docstring
-  - Added info on how to register new instruments
+  - Corrected pysat.Instrument examples using COSMIC
 
 ## [2.0.0] - 2019-07-11
  - New Features

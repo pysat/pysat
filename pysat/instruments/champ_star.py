@@ -35,7 +35,7 @@ platform = 'champ'
 name = 'star'
 tags = {'': ''}
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
 
 
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):

@@ -63,8 +63,8 @@ name = 'hro'
 tags = {'1min': '1-minute time averaged data',
         '5min': '5-minute time averaged data'}
 sat_ids = {'': ['5min']}
-test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
-                   '5min': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
+                    '5min': pysat.datetime(2009, 1, 1)}}
 
 # support list files routine
 # use the default CDAWeb method

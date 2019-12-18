@@ -36,7 +36,7 @@ name = 'pandas'
 tags = {'': 'netCDF4'}
 # dictionary of satellite IDs, list of corresponding tags
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
 def init(self):

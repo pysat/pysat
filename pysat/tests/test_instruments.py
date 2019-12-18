@@ -84,11 +84,11 @@ def init_func_external(self):
             # try and grab basic information about the module so we
             # can iterate over all of the options
             try:
-                info = module.test_dates
+                info = module._test_dates
             except AttributeError:
                 info = {}
                 info[''] = {'': pysat.datetime(2009, 1, 1)}
-                module.test_dates = info
+                module._test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
                     if name in exclude_tags and \
@@ -102,7 +102,7 @@ def init_func_external(self):
                                                     tag=tag,
                                                     sat_id=sat_id,
                                                     temporary_file_list=True)
-                            inst.test_dates = module.test_dates
+                            inst._test_dates = module._test_dates
                             self.instruments.append(inst)
                             self.instrument_modules.append(module)
                         except:
@@ -189,7 +189,7 @@ class TestInstrumentQualifier():
                 yield (f,)
 
                 try:
-                    info = module.test_dates
+                    info = module._test_dates
                 except AttributeError:
                     info = {}
                     info[''] = {'': 'failsafe'}
@@ -235,7 +235,7 @@ class TestInstrumentQualifier():
             yield (self.check_download_presence, module)
 
     def check_module_tdates(self, module):
-        info = module.test_dates
+        info = module._test_dates
         check = []
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
@@ -246,7 +246,7 @@ class TestInstrumentQualifier():
         from unittest.case import SkipTest
         import os
 
-        start = inst.test_dates[inst.sat_id][inst.tag]
+        start = inst._test_dates[inst.sat_id][inst.tag]
         try:
             # check for username
             inst_name = '_'.join((inst.platform, inst.name))
@@ -263,13 +263,13 @@ class TestInstrumentQualifier():
 
             new_path = os.path.join(pysat.__path__[0], 'tests', 'test_data')
             pysat.utils.set_data_dir(new_path, store=False)
-            test_dates = inst.test_dates
+            _test_dates = inst._test_dates
             inst = pysat.Instrument(platform=inst.platform,
                                     name=inst.name,
                                     tag=inst.tag,
                                     sat_id=inst.sat_id,
                                     temporary_file_list=True)
-            inst.test_dates = test_dates
+            inst._test_dates = _test_dates
             pysat.utils.set_data_dir(saved_path, store=False)
             if len(inst.files.files) > 0:
                 print("Found test data.")
@@ -282,7 +282,7 @@ class TestInstrumentQualifier():
     def check_load(self, inst, fuzzy=False):
         # set ringer data
         inst.data = pds.DataFrame([0])
-        start = inst.test_dates[inst.sat_id][inst.tag]
+        start = inst._test_dates[inst.sat_id][inst.tag]
         inst.load(date=start)
         if not fuzzy:
             assert not inst.empty
@@ -299,7 +299,7 @@ class TestInstrumentQualifier():
     def test_download_and_load(self):
         for inst in self.instruments:
             f = partial(self.check_module_tdates, inst)
-            f.description = ' '.join(('Checking for test_dates information',
+            f.description = ' '.join(('Checking for _test_dates information',
                                       'attached to module: ', inst.platform,
                                       inst.name, inst.tag, inst.sat_id))
             yield (f,)

@@ -337,6 +337,14 @@ class TestBasics():
                              'value_min': 0, 'value_max': 1}
         _ = self.meta.pop('new4')
 
+    @raises(KeyError)
+    def test_basic_getitem_w_bad_key_string(self):
+        self.meta['new4']
+
+    @raises(NotImplementedError)
+    def test_basic_getitem_w_integer(self):
+        self.meta[1]
+
     def test_basic_equality(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -455,14 +463,30 @@ class TestBasics():
         assert self.meta['new2'].units == 'hey2'
         assert self.meta['new2'].long_name == 'boo2'
 
+    def test_multiple_meta_retrieval(self):
+        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
+                                      'long_name': ['boo', 'boo2']}
+        self.meta[['new', 'new2']]
+        self.meta[['new', 'new2'],:]
+        self.meta[:, 'units']
+        self.meta['new',('units','long_name')]
+
+    def test_multiple_meta_ho_data_retrieval(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
+        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
+        self.meta[['higher', 'lower']] = {'meta': [meta, None],
+                                          'units': [None, 'boo'],
+                                          'long_name': [None, 'boohoo']}
+        assert self.meta['lower'].units == 'boo'
+        assert self.meta['lower'].long_name == 'boohoo'
+        assert self.meta['higher'].children == meta
+        self.meta['higher',('axis','scale')]
+
     @raises(ValueError)
     def test_multiple_meta_assignment_error(self):
         self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
                                       'long_name': ['boo']}
-        assert self.meta['new'].units == 'hey'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new2'].units == 'hey2'
-        assert self.meta['new2'].long_name == 'boo2'
 
     def test_replace_meta_units(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -947,15 +971,6 @@ class TestBasics():
         self.meta.transfer_attributes_to_instrument(self.testInst)
         self.testInst.__yo_yo == 'yo yo'
 
-    # ensure meta attributes aren't transfered
-    @raises(AttributeError)
-    def test_transfer_attributes_to_instrument_no_meta_attr(self):
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.date = None
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-        self.testInst.ho_data
-
     @raises(RuntimeError)
     def test_transfer_attributes_to_instrument_strict_names(self):
         self.meta.new_attribute = 'hello'
@@ -996,7 +1011,7 @@ class TestBasics():
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
                               'YoYoYO': 'yolo'}
-        self.meta.keep(['NEW21'])
+        self.meta.keep(['new21'])
 
         assert not ('new' in self.meta.data.index)
         assert (self.meta['NEW21'].units == 'hey2')

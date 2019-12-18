@@ -22,7 +22,8 @@ platform : string
 name : string
     'gps' for Radio Occultation profiles
 tag : string
-    Select profile type, one of {'ionprf', 'sonprf', 'wetprf', 'atmprf'}
+    Select profile type, or scintillation, one of:
+    {'ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1'}
 sat_id : string
     None supported
 
@@ -31,7 +32,8 @@ Note
 - 'ionprf: 'ionPrf' ionosphere profiles
 - 'sonprf': 'sonPrf' files
 - 'wetprf': 'wetPrf' files
-- 'atmPrf': 'atmPrf' files
+- 'atmprf': 'atmPrf' files
+- 'scnlv1': 'scnLv1' files
 
 Warnings
 --------
@@ -44,7 +46,6 @@ from __future__ import absolute_import
 import glob
 import numpy as np
 import os
-import pandas as pds
 import sys
 
 import netCDF4
@@ -58,12 +59,14 @@ name = 'gps'
 tags = {'ionprf': '',
         'sonprf': '',
         'wetprf': '',
-        'atmprf': ''}
-sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf']}
-test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
-                   'sonprf': pysat.datetime(2008, 1, 1),
-                   'wetprf': pysat.datetime(2008, 1, 1),
-                   'atmprf': pysat.datetime(2008, 1, 1)}}
+        'atmprf': '',
+        'scnlv1': ''}
+sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1']}
+_test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
+                    'sonprf': pysat.datetime(2008, 1, 1),
+                    'wetprf': pysat.datetime(2008, 1, 1),
+                    'atmprf': pysat.datetime(2008, 1, 1),
+                    'scnlv1': pysat.datetime(2008, 1, 1)}}
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -109,11 +112,17 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         microseconds = [None] * num
         for i, f in enumerate(fnames):
             f2 = f.split('.')
-            year[i] = f2[-6]
-            days[i] = f2[-5]
-            hours[i] = f2[-4]
-            minutes[i] = f2[-3]
             microseconds[i] = i
+            if tag != 'scnlv1':
+                year[i] = f2[-6]
+                days[i] = f2[-5]
+                hours[i] = f2[-4]
+                minutes[i] = f2[-3]
+            else:
+                year[i] = f2[-8]
+                days[i] = f2[-7]
+                hours[i] = f2[-6]
+                minutes[i] = f2[-5]
 
         year = np.array(year).astype(int)
         days = np.array(days).astype(int)
@@ -299,8 +308,10 @@ def download(date_array, tag, sat_id, data_path=None,
         sub_dir = 'sonPrf'
     elif tag == 'wetprf':
         sub_dir = 'wetPrf'
-    elif tag == 'atmPrf':
+    elif tag == 'atmprf':
         sub_dir = 'atmPrf'
+    elif tag == 'scnlv1':
+        sub_dir = 'scnLv1'
     else:
         raise ValueError('Unknown cosmic_gps tag')
 
@@ -322,7 +333,7 @@ def download(date_array, tag, sat_id, data_path=None,
             req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-        # if repsonse is negative, try post-processed data
+            # if repsonse is negative, try post-processed data
             try:
                 dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/",
                                  "rest/tarservice/data/cosmic/"))
@@ -334,24 +345,32 @@ def download(date_array, tag, sat_id, data_path=None,
             except requests.exceptions.HTTPError as err:
                 estr = ''.join(str(err), '\n', 'Data not found')
                 logger.info(estr)
+        # Copy request info to tarball
+        # If data does not exist, will copy info not readable as tar
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
         with open(fname, "wb") as local_file:
             local_file.write(req.content)
             local_file.close()
-        # uncompress files and remove tarball
-        tar = tarfile.open(fname)
-        tar.extractall(path=data_path)
-        tar.close()
+        try:
+            # uncompress files and remove tarball
+            tar = tarfile.open(fname)
+            tar.extractall(path=data_path)
+            tar.close()
+            # move files
+            source_dir = os.path.join(top_dir, sub_dir, yrdoystr)
+            destination_dir = os.path.join(data_path, yrdoystr)
+            if os.path.exists(destination_dir):
+                shutil.rmtree(destination_dir)
+            shutil.move(source_dir, destination_dir)
+            # Get rid of empty directories from tar process
+            shutil.rmtree(top_dir)
+        except tarfile.ReadError:
+            # If file cannot be read as a tarfile, then data does not exist
+            # skip this day since no data to move
+            pass
+        # tar file must be removed (even if download fails)
         os.remove(fname)
-        # move files
-        source_dir = os.path.join(top_dir, sub_dir, yrdoystr)
-        destination_dir = os.path.join(data_path, yrdoystr)
-        if os.path.exists(destination_dir):
-            shutil.rmtree(destination_dir)
-        shutil.move(source_dir, destination_dir)
-        # Get rid of empty directories from tar process
-        shutil.rmtree(top_dir)
 
     return
 
@@ -416,7 +435,7 @@ def clean(inst):
         # filter out any measurements where things have been set to NaN
         inst.data = inst.data[inst.data.edmaxalt.notnull()]
 
-    elif inst.tag == 'scnlvl1':
+    elif inst.tag == 'scnlv1':
         # scintillation files
         if inst.clean_level == 'clean':
             # try and make sure all data is good

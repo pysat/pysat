@@ -270,8 +270,14 @@ class Meta(object):
                 _ = self._ho_data.pop(name)
 
     def keep(self, keep_names):
-        """Keeps variables (keep_names) while dropping other parameters"""
+        """Keeps variables (keep_names) while dropping other parameters
 
+        Parameters
+        ----------
+        keep_names : list-like
+            variables to keep
+        """
+        keep_names = [self.var_case_name(name) for name in keep_names]
         current_names = self._data.index
         drop_names = []
         for name in current_names:
@@ -517,18 +523,38 @@ class Meta(object):
 
             meta[ 'name1', 'units' ]
 
+            meta[[ 'name1', 'name2'], 'units']
+
+            meta[:, 'units']
+
             for higher order data
 
             meta[ 'name1', 'subvar', 'units' ]
 
+            meta[ 'name1', ('units', 'scale') ]
+
         """
         # if key is a tuple, looking at index, column access pattern
+
+        def match_name(func, name, names):
+            """Applies func on name(s) depending on name type"""
+            if isinstance(name, basestring):
+                return func(name)
+            elif isinstance(name, slice):
+                return [func(nn) for nn in names[name]]
+            else:
+                # assume iterable
+                return [func(nn) for nn in name]
+
         if isinstance(key, tuple):
             # if tuple length is 2, index, column
             if len(key) == 2:
-                new_index = self.var_case_name(key[0])
-                new_name = self.attr_case_name(key[1])
+                new_index = match_name(self.var_case_name, key[0],
+                                        self.data.index)
+                new_name = match_name(self.attr_case_name, key[1],
+                                        self.data.columns)
                 return self.data.loc[new_index, new_name]
+
             # if tuple length is 3, index, child_index, column
             elif len(key) == 3:
                 new_index = self.var_case_name(key[0])
@@ -536,7 +562,11 @@ class Meta(object):
                 new_name = self.attr_case_name(key[2])
                 return self.ho_data[new_index].data.loc[new_child_index,
                                                         new_name]
-        else:
+
+        elif isinstance(key, list):
+            return self[key, :]
+
+        elif isinstance(key, basestring):
             # ensure variable is present somewhere
             if key in self:
                 # get case preserved string for variable name
@@ -550,6 +580,7 @@ class Meta(object):
                 else:
                     # empty_meta = Meta()
                     # self.apply_default_labels(empty_meta)
+                    # Following line issues a pandas SettingWithCopyWarning
                     meta_row.at['children'] = None  # empty_meta
                 return meta_row
                 # else:
@@ -557,6 +588,9 @@ class Meta(object):
                 #                       index=['children'])
             else:
                 raise KeyError('Key not found in MetaData')
+        else:
+            raise NotImplementedError("No way to handle MetaData key {}".format(
+                key.__repr__()))
 
     def _label_setter(self, new_label, current_label, attr_label,
                       default=np.NaN, use_names_default=False):
@@ -938,7 +972,9 @@ class Meta(object):
         # store any non-standard attributes in Instrument
         # get list of instrument objects attributes first
         # to check if a duplicate
-        inst_attr = dir(inst)
+
+        # instrument attributes are now inst.meta attributes
+        inst_attr = dir(inst.meta)
         for key in transfer_key:
             if key not in banned:
                 if key not in inst_attr:

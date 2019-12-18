@@ -365,6 +365,49 @@ class Instrument(object):
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
+        # warn about changes coming in the future
+        if not self.strict_time_flag:
+            warnings.warn('Strict times will eventually be enforced upon all'
+                          ' instruments. (strict_time_flag)', DeprecationWarning,
+                          stacklevel=2)
+
+
+    def __setattr__(self, name, value):
+        """Moves instrument attributes onto meta attributes
+
+        If the attribute is not in _base_attrs, add to meta attributes.
+        For all other cases, store as an instrument attribute.
+        """
+
+        if '_base_attr' in dir(self):
+            if name not in self._base_attr:
+                # set attribute on meta
+                if name[0] != '_':
+                    object.__setattr__(self.meta, name, value)
+                else:
+                    object.__setattr__(self, name, value)
+            else:
+                object.__setattr__(self, name, value)
+        else:
+            object.__setattr__(self, name, value)
+
+
+    def __getattr__(self, name):
+        """Gets instrument attributes from meta attributes
+
+        Usually, python only calls __getattr__ if name does not already
+        exist in the instrument, so we only need to check
+        the meta object. However, __copy__ calls __getattr__, so we still have
+        to check for invalid attributes manually.
+        """
+        if name not in self.__dict__:
+            try:
+                return getattr(self.meta, name)
+            except:
+                raise AttributeError("No attribute {}".format(name))
+
+        return getattr(self.meta, name)
+
     def __getitem__(self, key):
         """
         Convenience notation for accessing data; inst['name'] is inst.data.name
@@ -715,16 +758,6 @@ class Instrument(object):
     def concat_data(self, data, *args, **kwargs):
         """Concats data1 and data2 for xarray or pandas as needed
 
-        Note
-        ----
-        For pandas, sort=False is passed along to the underlying
-        pandas.concat method. If sort is supplied as a keyword, the
-        user provided value is used instead.
-
-        For xarray, dim='time' is passed along to xarray.concat
-        except if the user includes a value for dim as a
-        keyword argument.
-
         Parameters
         ----------
         data : pandas or xarray
@@ -734,6 +767,16 @@ class Instrument(object):
         -------
         void
             Instrument.data modified in place.
+
+        Notes
+        -----
+        For pandas, sort=False is passed along to the underlying
+        pandas.concat method. If sort is supplied as a keyword, the
+        user provided value is used instead.
+
+        For xarray, dim='time' is passed along to xarray.concat
+        except if the user includes a value for dim as a
+        keyword argument.
 
         """
 
@@ -1092,12 +1135,25 @@ class Instrument(object):
                                            fname[-1]))
         else:
             # no data signal
-            if bad_datetime:
-                output_str = ' '.join(('Bad datetime for', output_str,
-                                       date.strftime('%d %B %Y')))
+            if date is not None:
+                if bad_datetime:
+                    output_str = ' '.join(('Bad datetime for', output_str,
+                                        date.strftime('%d %B %Y')))
+                else:
+                    output_str = ' '.join(('No', output_str, 'data for',
+                                        date.strftime('%d %B %Y')))
             else:
-                output_str = ' '.join(('No', output_str, 'data for',
-                                       date.strftime('%d %B %Y')))
+                if len(fname) == 1:
+                    output_str = ' '.join(('No', output_str, 'data for',
+                                           fname[0]))
+                elif len(fname) == 0:
+                     output_str = ' '.join(('No', output_str, 'valid',
+                                            'filenames found'))
+                else:
+                    output_str = ' '.join(('No', output_str, 'data for',
+                                            fname[0], '::',
+                                            fname[-1]))
+
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
         logger.info(output_str)
@@ -1364,9 +1420,6 @@ class Instrument(object):
                                  ') or not monotonic increasing (',
                                  not self.index.is_monotonic_increasing,
                                  ')')
-        else:
-            warnings.warn('Strict times will eventually be enforced upon all instruments.'
-                          ' (strict_time_flag)', DeprecationWarning)
 
         # apply default instrument routine, if data present
         if not self.empty:
@@ -1549,7 +1602,7 @@ class Instrument(object):
             if e.errno != errno.EEXIST:
                 raise
 
-        if (start is None) or (stop is None) and (date_array is None):
+        if ((start is None) or (stop is None)) and (date_array is None):
             # defaults for downloads are set here rather than
             # in the method signature since method defaults are
             # only set once! If an Instrument object persists
@@ -2131,10 +2184,9 @@ class Instrument(object):
 
         # check if there are multiple variables with same characters
         # but with different case
-        variables = self.variables
-        variables = [var.lower() for var in variables]
-        unique_variables = np.unique(variables)
-        if len(unique_variables) != len(variables):
+        lower_variables = [var.lower() for var in self.variables]
+        unique_lower_variables = np.unique(lower_variables)
+        if len(unique_lower_variables) != len(lower_variables):
             raise ValueError('There are multiple variables with the same ' +
                              'name but different case which results in a ' +
                              'loss of metadata. Please make the names unique.')
@@ -2362,7 +2414,7 @@ class Instrument(object):
                                                             shuffle=shuffle)
                                 # attach any meta data
                                 try:
-                                    new_dict = export_meta[case_key + '_'+col]
+                                    new_dict = export_meta[case_key + '_' + col]
                                     new_dict['Depend_0'] = epoch_name
                                     new_dict['Depend_1'] = obj_dim_names[-1]
                                     new_dict['Display_Type'] = 'Spectrogram'

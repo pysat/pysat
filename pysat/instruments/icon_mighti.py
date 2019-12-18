@@ -55,8 +55,8 @@ name = 'mighti'
 tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'green': ['level_2 Green Line'],
            'red': ['Level_2 Red Line']}
-test_dates = {'green': {'level_2': pysat.datetime(2017, 5, 27)},
-              'red': {'level_2': pysat.datetime(2017, 5, 27)}}
+_test_dates = {'green': {'level_2': pysat.datetime(2017, 5, 27)},
+               'red': {'level_2': pysat.datetime(2017, 5, 27)}}
 
 
 def init(self):

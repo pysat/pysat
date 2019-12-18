@@ -175,13 +175,13 @@ def test_deprecated_season_date_range():
     start = pds.datetime(2012, 2, 28)
     stop = pds.datetime(2012, 3, 1)
     warnings.simplefilter("always")
-    with warnings.catch_warnings(record=True) as w1:
+    with warnings.catch_warnings(record=True) as war1:
         season1 = pytime.create_date_range(start, stop, freq='D')
-    with warnings.catch_warnings(record=True) as w2:
+    with warnings.catch_warnings(record=True) as war2:
         season2 = pytime.season_date_range(start, stop, freq='D')
 
     assert len(season1) == len(season2)
     assert (season1 == season2).all()
-    assert len(w1) == 0
-    assert len(w2) == 1
-    assert w2[0].category == DeprecationWarning
+    assert len(war1) == 0
+    assert len(war2) == 1
+    assert war2[0].category == DeprecationWarning

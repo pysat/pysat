@@ -88,6 +88,28 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         raise ValueError('A tag name must be passed ')
 
 
+class TestNoDataDir():
+
+    def __init__(self, temporary_file_list=False):
+        self.temporary_file_list = temporary_file_list
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # store current pysat directory
+        self.saved_data_path = pysat.data_dir
+
+        pysat.data_dir = ''
+        re_load(pysat._files)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        pysat.data_dir = self.saved_data_path
+        re_load(pysat._files)
+
+    @raises(Exception)
+    def test_no_data_dir(self):
+        inst = pysat.Instrument()
+
 class TestBasics():
 
     def __init__(self, temporary_file_list=False):
@@ -117,6 +139,7 @@ class TestBasics():
         except:
             pass
         del self.testInst
+
 
     def test_parse_delimited_filename(self):
         """Check ability to parse delimited files"""
