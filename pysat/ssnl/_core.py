@@ -24,6 +24,13 @@ def computational_form(data):
     """
 
     from pysat import DataFrame, Series, Panel
+    import warnings
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatSeasons instead:"
+                            "https://github.com/pysat/pysatSeasons"]),
+                  DeprecationWarning, stacklevel=2)
 
     if isinstance(data.iloc[0], DataFrame):
         dslice = Panel.from_dict(dict([(i, data.iloc[i])

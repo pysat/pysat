@@ -44,9 +44,9 @@ Measurements from a constellation of COSMIC satellites are also available. These
 .. code:: python
 
    # electron density profiles
-   cosmic = pysat.Instrument(platform='cosmic2013', name='gps', tag='ionprf')
+   cosmic = pysat.Instrument(platform='cosmic', name='gps', tag='ionprf')
    # atmosphere profiles
-   cosmic = pysat.Instrument(platform='cosmic2013', name='gps', tag='atmprf')
+   cosmic = pysat.Instrument(platform='cosmic', name='gps', tag='atmprf')
 
 
 
@@ -215,7 +215,7 @@ The same activities may be performed for other instruments in the same manner. I
 
 .. code:: python
 
-   cosmic = pysat.Instrument('cosmic2013', 'gps', tag='ionprf',  clean_level='clean')
+   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf',  clean_level='clean')
    start = pysat.datetime(2009, 1, 2)
    stop = pysat.datetime(2009, 1, 3)
 
@@ -376,7 +376,7 @@ Check the instrument independence using a different instrument. Whatever instrum
 
 .. code:: python
 
-   cosmic = pysat.Instrument('cosmic2013', 'gps', tag='ionprf', clean_level='clean', altitude_bin=3)
+   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf', clean_level='clean', altitude_bin=3)
 
    def filter_cosmic(inst):
        inst.data = inst[(inst['edmaxlat'] > -15) & (inst['edmaxlat'] < 15)]

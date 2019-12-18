@@ -51,11 +51,11 @@ tags = {'drifts': 'Drifts and wind', 'drifts_ave': 'Averaged drifts',
         'oblique_rand': 'Randomized Faraday rotation double-pulse',
         'oblique_long': 'Long pulse Faraday rotation'}
 sat_ids = {'': list(tags.keys())}
-test_dates = {'': {'drifts': pysat.datetime(2010, 1, 19),
-                   'drifts_ave': pysat.datetime(2010, 1, 19),
-                   'oblique_stan': pysat.datetime(2010, 4, 19),
-                   'oblique_rand': pysat.datetime(2000, 11, 9),
-                   'oblique_long': pysat.datetime(2010, 4, 12)}}
+_test_dates = {'': {'drifts': pysat.datetime(2010, 1, 19),
+                    'drifts_ave': pysat.datetime(2010, 1, 19),
+                    'oblique_stan': pysat.datetime(2010, 4, 19),
+                    'oblique_rand': pysat.datetime(2000, 11, 9),
+                    'oblique_long': pysat.datetime(2010, 4, 12)}}
 
 # support list files routine
 # use the default CDAWeb method

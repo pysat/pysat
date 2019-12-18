@@ -1,11 +1,13 @@
 """
 tests the pysat utils area
 """
-import numpy as np
 import os
 import tempfile
-
+import warnings
 from nose.tools import assert_raises, raises
+import numpy as np
+import pandas as pds
+
 import pysat
 
 import sys
@@ -42,18 +44,16 @@ def remove_files(inst):
 def test_deprecation_warning_computational_form():
     """Test if computational form in utils is deprecated"""
 
-    import pandas as pds
-    import warnings
 
     data = pds.Series([0, 1, 2])
     warnings.simplefilter("always")
     dslice1 = pysat.ssnl.computational_form(data)
-    with warnings.catch_warnings(record=True) as w:
+    with warnings.catch_warnings(record=True) as war:
         dslice2 = pysat.utils.computational_form(data)
 
     assert (dslice1 == dslice2).all()
-    assert len(w) == 1
-    assert w[0].category == DeprecationWarning
+    assert len(war) >= 1
+    assert war[0].category == DeprecationWarning
 
 
 class TestBasics():
@@ -427,3 +427,50 @@ class TestBasicNetCDF4():
 
         assert (np.all((test_inst.data == loaded_inst).all()))
         assert np.all(test_list)
+
+    def test_netcdf_attribute_override(self):
+        """Test that attributes in netcdf file may be overridden"""
+        self.testInst.load(2009, 1)
+
+        try:
+            assert self.testInst.bespoke # should raise
+        except AttributeError:
+            pass
+
+        fname = 'output.nc'
+        self.testInst.meta.bespoke = True
+
+        self.testInst.meta.transfer_attributes_to_instrument(self.testInst)
+
+        # ensure custom meta attribute assigned to instrument
+        assert self.testInst.bespoke
+
+        outfile = os.path.join(self.testInst.files.data_path, fname)
+        self.testInst.to_netcdf4(outfile)
+
+        data, meta = pysat.utils.load_netcdf4(outfile)
+
+        # custom attribute correctly read from file
+        assert meta.bespoke
+
+        # assign metadata to new instrument
+        inst = pysat.Instrument()
+
+        inst.data = data
+        inst.meta = meta
+
+
+        meta.transfer_attributes_to_instrument(inst)
+
+        fname2 = 'output2.nc'
+        outfile2 = os.path.join(self.testInst.files.data_path, fname2)
+
+        inst.bespoke = False
+        inst.myattr = True
+
+        inst.to_netcdf4(outfile2)
+
+        data2, meta2 = pysat.utils.load_netcdf4(outfile2)
+
+        assert meta2.myattr
+        assert not meta2.bespoke

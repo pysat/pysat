@@ -1,11 +1,10 @@
 """
 tests the pysat averaging code
 """
-import numpy as np
-
 from nose.tools import raises
+import numpy as np
 import pandas as pds
-
+import warnings
 import pysat
 from pysat.ssnl import avg
 
@@ -88,6 +87,88 @@ class TestBasics():
         self.testInst.bounds = (names[0], names[-1])
         ans = avg.mean_by_file(self.testInst, 'dummy4')
         assert np.all(ans == 86399/2.0)
+
+
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
+    def test_median1D_deprecation_warning(self):
+        """Test generation of deprecation warning for median1D"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.median1D(None, [0., 360., 24.],
+                             'longitude', ['dummy1'])
+            except ValueError:
+                # Setting inst to None should produce a ValueError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_median2D_deprecation_warning(self):
+        """Test generation of deprecation warning for median1D"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.median2D(None, [0., 360., 24.], 'longitude',
+                             [0., 24., 24.], 'mlt', ['dummy1'])
+            except ValueError:
+                # Setting inst to None should produce a ValueError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_mean_by_day_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_day"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.mean_by_day(None, 'dummy1')
+            except TypeError:
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_mean_by_orbit_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_orbit"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.mean_by_orbit(None, 'dummy1')
+            except AttributeError:
+                # Setting inst to None should produce a AttributeError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_mean_by_file_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_file"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.mean_by_file(None, 'dummy1')
+            except TypeError:
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
 
 
 class TestFrameProfileAverages():

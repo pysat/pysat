@@ -69,12 +69,12 @@ now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
 # set test dates
-test_dates = {'': {'': pysat.datetime(2009, 1, 1),
-                   'all': pysat.datetime(2009, 1, 1),
-                   'prelim': pysat.datetime(2009, 1, 1),
-                   'daily': tomorrow,
-                   'forecast': tomorrow,
-                   '45day': tomorrow}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                    'all': pysat.datetime(2009, 1, 1),
+                    'prelim': pysat.datetime(2009, 1, 1),
+                    'daily': tomorrow,
+                    'forecast': tomorrow,
+                    '45day': tomorrow}}
 
 
 def load(fnames, tag=None, sat_id=None):

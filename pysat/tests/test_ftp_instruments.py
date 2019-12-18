@@ -50,11 +50,11 @@ def init_func_external(self):
             # try and grab basic information about the module so we
             # can iterate over all of the options
             try:
-                info = module.test_dates
+                info = module._test_dates
             except AttributeError:
                 info = {}
                 info[''] = {'': pysat.datetime(2009, 1, 1)}
-                module.test_dates = info
+                module._test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
                     try:
@@ -62,7 +62,7 @@ def init_func_external(self):
                                                 tag=tag,
                                                 sat_id=sat_id,
                                                 temporary_file_list=True)
-                        inst.test_dates = module.test_dates
+                        inst._test_dates = module._test_dates
                         self.instruments.append(inst)
                         self.instrument_modules.append(module)
                     except:

@@ -50,7 +50,7 @@ name = 'iap'
 tags = {'survey': 'Survey mode',
         'burst': 'Burst mode'}
 sat_ids = {'': list(tags.keys())}
-test_dates = {'': {'survey': pysat.datetime(2010, 1, 1)}}
+_test_dates = {'': {'survey': pysat.datetime(2010, 1, 1)}}
 
 apid = {'survey': 1140, 'burst': 1139}
 
@@ -273,8 +273,8 @@ def clean(inst):
                 # Need Level 0 files to select data with J >= 1 nA
                 logger.warning("Level 0 files needed to finish cleaning data")
 
-                # Select times with at least two ion species
-                idx, = np.where(nions > 1)
+        # Select times with at least two ion species
+        idx, = np.where(nions > 1)
     else:
         idx = slice(0, inst.index.shape[0])
 

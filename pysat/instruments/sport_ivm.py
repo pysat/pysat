@@ -28,7 +28,7 @@ tags = {'': 'Level-2 IVM Files',
 # only one satellite in this case
 sat_ids = {'': ['']}
 # good day to download test data for. Downloads aren't currently supported
-test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 
 
 def init(self):

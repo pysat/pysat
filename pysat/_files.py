@@ -149,7 +149,10 @@ class Files(object):
                                                  platform=self._sat.platform,
                                                  tag=self._sat.tag,
                                                  sat_id=self._sat.sat_id)
-
+        # ensure we have a path for pysat data directory
+        if data_dir == '':
+            raise RuntimeError(" ".join(("pysat's data_dir is None. Set a directory",
+                                         "using pysat.utils.set_data_dir.")))
         # make sure path always ends with directory seperator
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         if self.data_path[-2] == os.path.sep:
@@ -231,8 +234,12 @@ class Files(object):
             if self.ignore_empty_files:
                 self._filter_empty_files()
             # extract date information
-            self.start_date = self._sat._filter_datetime_input(files_info.index[0])
-            self.stop_date = self._sat._filter_datetime_input(files_info.index[-1])
+            if not self.files.empty:
+                self.start_date = self._sat._filter_datetime_input(self.files.index[0])
+                self.stop_date = self._sat._filter_datetime_input(self.files.index[-1])
+            else:
+                self.start_date = None
+                self.stop_date = None
         else:
             self.start_date = None
             self.stop_date = None
