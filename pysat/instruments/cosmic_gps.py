@@ -232,9 +232,9 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     """
     output = [None] * len(files)
     drop_idx = []
-    for (i, file) in enumerate(files):
+    for (i, fname) in enumerate(files):
         try:
-            data = netCDF4.Dataset(file)
+            data = netCDF4.Dataset(fname)
             # build up dictionary will all ncattrs
             new = {}
             # get list of file attributes
