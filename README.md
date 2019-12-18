@@ -9,7 +9,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/pysat/pysat/badge.svg?branch=master)](https://coveralls.io/github/pysat/pysat?branch=master)
 [![DOI](https://zenodo.org/badge/33449914.svg)](https://zenodo.org/badge/latestdoi/33449914)
 
-
 The Python Satellite Data Analysis Toolkit (pysat) is a package providing a simple and flexible interface
 for downloading, loading, cleaning, managing, processing, and analyzing scientific
 measurements. Although pysat was initially designed for in situ satellite observations, it now supports many different types of ground- and space-based measurements.
