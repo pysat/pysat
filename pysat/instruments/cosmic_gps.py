@@ -188,13 +188,15 @@ def load(fnames, tag=None, sat_id=None):
                     meta[d] = {'units': '', 'long_name': d}
                 keys = data.variables.keys()
                 for key in keys:
-                    profile_meta[key] = {'units': data.variables[key].units,
-                                         'long_name':
-                                         data.variables[key].long_name}
+                    if 'units' in data.variables[key].ncattrs():
+                        profile_meta[key] = {'units': data.variables[key].units,
+                                            'long_name':
+                                            data.variables[key].long_name}
                 repeat = False
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind
                 ind += 1
+
         meta['profiles'] = profile_meta
         return output, meta
     else:
@@ -251,7 +253,24 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
                 else:
                     loadedVars[key] = data.variables[key][:]
 
-            new['profiles'] = pysat.DataFrame(loadedVars)
+            if tag == 'atmprf':
+                # this file has three groups of variable lengths
+                # each goes into its own DataFrame
+                p_keys = ['OL_vec2', 'OL_vec1', 'OL_vec3', 'OL_vec4']
+                p_dict = {}
+                for key in p_keys:
+                    p_dict[key] = loadedVars.pop(key).data
+                new['OL_vecs'] = pysat.DataFrame(p_dict)
+
+                p_keys = ['OL_ipar', 'OL_par']
+                # p_list = [loadedVars.pop(key).data for key in p_keys]
+                p_dict = {}
+                for key in p_keys:
+                    p_dict[key] = loadedVars.pop(key).data
+                new['OL_pars'] = pysat.DataFrame(p_dict)
+                new['profiles'] = pysat.DataFrame(loadedVars)
+            else:
+                new['profiles'] = pysat.DataFrame(loadedVars)
 
             output[i] = new
             data.close()
