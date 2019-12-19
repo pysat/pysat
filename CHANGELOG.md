@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bug Fixes
   - `_files._attach_files` now checks for an empty file list before appending
   - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
+  - Fixed a bug when trying to combine empty f107 lists
 
 ## [2.1.0] - 2019-11-18
 - New Features
