@@ -382,10 +382,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         notes += "{:})".format(itime.date())
 
     # Determine if the beginning or end of the time series needs to be padded
-    if len(f107_times) < 2:
-        freq = None
-    else:
+    if len(f107_times) >= 2:
         freq = pysat.utils.time.calc_freq(f107_times)
+    else:
+        freq = None
     date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
                                 freq=freq)
 
