@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.0] - 2019-12-18
+- New Features
+  - Added registry module for registering custom external instruments
+- Documentation
+  - Added info on how to register new instruments
+
 ## [2.X.X] - 2019-12-05
 - Bug Fixes
   - `_files._attach_files` now checks for an empty file list before appending
