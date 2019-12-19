@@ -204,6 +204,18 @@ def load(fnames, tag=None, sat_id=None):
         return pysat.DataFrame(None), pysat.Meta()
 
 
+def _process_lengths(lengths):
+    """Prep lengths for parsing.
+
+    Internal func used by load_files.
+    """
+
+    lengths = lengths.tolist()
+    lengths.insert(0, 0)
+    lengths = np.array(lengths)
+    lengths[-1] += 1
+    return lengths
+
 # seperate routine for doing actual loading. This was broken off from main load
 # becuase I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
@@ -234,6 +246,10 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     """
     output = [None] * len(files)
     drop_idx = []
+    main_dict = {}
+    main_dict_len = {}
+
+    safe_keys = []
     for (i, fname) in enumerate(files):
         try:
             data = netCDF4.Dataset(fname)
@@ -241,36 +257,28 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             new = {}
             # get list of file attributes
             ncattrsList = data.ncattrs()
+            # these include information about where the profile observed
             for d in ncattrsList:
                 new[d] = data.getncattr(d)
+
+            if i == 0:
+                keys = data.variables.keys()
+                for key in keys:
+                    safe_keys.append(key)
+                    main_dict[key] = []
+                    main_dict_len[key] = []
+
             # load all of the variables in the netCDF
-            loadedVars = {}
-            keys = data.variables.keys()
-            for key in keys:
-                if data.variables[key][:].dtype.byteorder != '=':
-                    loadedVars[key] = \
-                        data.variables[key][:].byteswap().newbyteorder()
+            for key in safe_keys:
+                # grab data
+                t_list = data.variables[key][:]
+                # reverse byte order if needed
+                if t_list.dtype.byteorder != '=':
+                    main_dict[key].append(t_list.byteswap().newbyteorder())
                 else:
-                    loadedVars[key] = data.variables[key][:]
-
-            if tag == 'atmprf':
-                # this file has three groups of variable lengths
-                # each goes into its own DataFrame
-                p_keys = ['OL_vec2', 'OL_vec1', 'OL_vec3', 'OL_vec4']
-                p_dict = {}
-                for key in p_keys:
-                    p_dict[key] = loadedVars.pop(key).data
-                new['OL_vecs'] = pysat.DataFrame(p_dict)
-
-                p_keys = ['OL_ipar', 'OL_par']
-                # p_list = [loadedVars.pop(key).data for key in p_keys]
-                p_dict = {}
-                for key in p_keys:
-                    p_dict[key] = loadedVars.pop(key).data
-                new['OL_pars'] = pysat.DataFrame(p_dict)
-                new['profiles'] = pysat.DataFrame(loadedVars)
-            else:
-                new['profiles'] = pysat.DataFrame(loadedVars)
+                    main_dict[key].append(t_list)
+                # store lengths
+                main_dict_len[key].append(len(main_dict[key][-1]))
 
             output[i] = new
             data.close()
@@ -284,6 +292,74 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     drop_idx.reverse()
     for i in drop_idx:
         del output[i]
+
+    # combine different sub lists in main_dict into one
+    for key in safe_keys:
+        main_dict[key] = np.hstack(main_dict[key])
+        main_dict_len[key] = np.cumsum(main_dict_len[key])
+
+    if tag == 'atmprf':
+        # this file has three groups of variable lengths
+        # each goes into its own DataFrame
+        # two are processed here, last is processed like other
+        # file types
+        # see code just after this if block for more
+        # general explanation on lines just below
+        p_keys = ['OL_vec2', 'OL_vec1', 'OL_vec3', 'OL_vec4']
+        p_dict = {}
+        # get indices needed to parse data
+        plengths = main_dict_len['OL_vec1']
+        max_p_length = np.max(plengths)
+        plengths = _process_lengths(plengths)
+        plengths2 = plengths
+        plengths2[-1] -= 1
+        # collect data
+        for key in p_keys:
+            p_dict[key] = main_dict.pop(key)
+            _ = main_dict_len.pop(key)
+        psub_frame = pysat.DataFrame(p_dict)
+
+        q_keys = ['OL_ipar', 'OL_par']
+        q_dict = {}
+        # get indices needed to parse data
+        qlengths = main_dict_len['OL_par']
+        max_q_length = np.max(qlengths)
+        qlengths = _process_lengths(qlengths)
+        qlengths2 = qlengths
+        qlengths2[-1] -= 1
+        # collect data
+        for key in q_keys:
+            q_dict[key] = main_dict.pop(key)
+            _ = main_dict_len.pop(key)
+        qsub_frame = pysat.DataFrame(q_dict)
+
+        max_length = np.max([max_p_length, max_q_length])
+        length_arr = np.arange(max_length)
+        # small sub DataFrames
+        for i in np.arange(len(output)):
+            output[i]['OL_vecs'] = psub_frame.iloc[plengths[i]:plengths[i+1], :]
+            output[i]['OL_vecs'].index = length_arr[:plengths2[i+1]-plengths2[i]]
+            output[i]['OL_pars'] = qsub_frame.iloc[qlengths[i]:qlengths[i+1], :]
+            output[i]['OL_pars'].index = length_arr[:qlengths2[i+1]-qlengths2[i]]
+
+    # create a single data frame with all bits, then
+    # break into smaller frames using views
+    main_frame = pysat.DataFrame(main_dict)
+    # get indices needed to parse data
+    lengths = main_dict_len[main_dict.keys()[0]]
+    # get largest length and create numpy array with it
+    # used to speed up reindexing below
+    max_length = np.max(lengths)
+    length_arr = np.arange(max_length)
+    # process lengths for ease of parsing
+    lengths = _process_lengths(lengths)
+    # undo some processing so inew ndex may also be easily set
+    lengths2 = lengths
+    lengths2[-1] -= 1
+    # break main profile data into each individual profile
+    for i in np.arange(len(output)):
+        output[i]['profiles'] = main_frame.iloc[lengths[i]:lengths[i+1], :]
+        output[i]['profiles'].index = length_arr[:lengths2[i+1]-lengths2[i]]
 
     if tag == 'ionprf':
         if altitude_bin is not None:
