@@ -71,9 +71,9 @@ sat_ids = {'': ['']}
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
 # _test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
-#                    'L1':pysat.datetime(2019,1,1)},
-#               'b':{'L1':pysat.datetime(2019,1,1),
-#                    'L2':pysat.datetime(2019,1,1),}}
+#                     'L1':pysat.datetime(2019,1,1)},
+#                'b':{'L1':pysat.datetime(2019,1,1),
+#                     'L2':pysat.datetime(2019,1,1),}}
 _test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 
 # Set to False to specify using xarray (not using pandas)
