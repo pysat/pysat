@@ -96,45 +96,36 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     logger.info('{:s}~1s per 100K files'.format(estr))
     sys.stdout.flush()
 
-    # number of files may be large, written with this in mind
-    # only select file that are the cosmic data files and end with _nc
-    fnames = glob.glob(os.path.join(data_path, '*/*_nc'))
-    # need to get date and time from filename to generate index
-    num = len(fnames)
-    if num != 0:
-        logger.info('Estimated time: {} seconds'.format(num * 1.E-5))
-        sys.stdout.flush()
-        # preallocate lists
-        year = [None] * num
-        days = [None] * num
-        hours = [None] * num
-        minutes = [None] * num
-        microseconds = [None] * num
-        for i, f in enumerate(fnames):
-            f2 = f.split('.')
-            microseconds[i] = i
-            if tag != 'scnlv1':
-                year[i] = f2[-6]
-                days[i] = f2[-5]
-                hours[i] = f2[-4]
-                minutes[i] = f2[-3]
-            else:
-                year[i] = f2[-8]
-                days[i] = f2[-7]
-                hours[i] = f2[-6]
-                minutes[i] = f2[-5]
+    if format_str is None:
+        # default COSMIC file format string
+        format_str = ''.join(('{year:04d}.{day:03d}/atmPrf_C???.{year:04d}',
+                              '.{day:03d}.{hour:02d}.{minute:02d}.',
+                              '?{second:02d}_????.????_nc'))
+    # process format string to get string to search for
+    search_dict = pysat._files.construct_searchstring_from_format(format_str,
+                                                                  wildcard=False)
+    search_str = search_dict['search_string']
+    # perform local file search
+    files = pysat._files.search_local_system_formatted_filename(data_path, search_str)
+    # we have a list of files, now we need to extract the information
+    # pull of data from the areas identified by format_str
+    stored = pysat._files.parse_fixed_width_filenames(files, format_str)
 
-        year = np.array(year).astype(int)
-        days = np.array(days).astype(int)
-        uts = (np.array(hours).astype(int) * 3600.
-               + np.array(minutes).astype(int) * 60.)
+    if len(stored['year']) > 0:
+        year = np.array(stored['year'])
+        day = np.array(stored['day'])
+        hour = np.array(stored['hour'])
+        minute = np.array(stored['minute'])
+        second = np.array(stored['second'])
+        uts = hour*3600. + minute*60. + second
         # adding microseconds to ensure each time is unique, not allowed to
         # pass 1.E-3 s
-        uts += np.mod(np.array(microseconds).astype(int) * 4, 8000) * 1.E-5
-        index = pysat.utils.time.create_datetime_index(year=year, day=days,
+        uts += np.mod(np.arange(len(year)).astype(int) * 4, 8000) * 1.E-5
+        index = pysat.utils.time.create_datetime_index(year=year, day=day,
                                                        uts=uts)
-        file_list = pysat.Series(fnames, index=index)
+        file_list = pysat.Series(stored['files'], index=index)
         return file_list
+
     else:
         logger.info('Found no files, check your path or download them.')
         return pysat.Series(None)
