@@ -97,10 +97,16 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     sys.stdout.flush()
 
     if format_str is None:
-        # default COSMIC file format string
-        format_str = ''.join(('{year:04d}.{day:03d}/atmPrf_C???.{year:04d}',
-                              '.{day:03d}.{hour:02d}.{minute:02d}.',
-                              '?{second:02d}_????.????_nc'))
+        # COSMIC file format string
+        if tag == 'scnlv1':
+            format_str = ''.join(('????.???/??????_C???.{year:04d}',
+                        '.{day:03d}.{hour:02d}.{minute:02d}.',
+                        '????.?{second:02d}.??_????.????_nc'))
+        else:
+            format_str = ''.join(('????.???/??????_C???.{year:04d}',
+                                '.{day:03d}.{hour:02d}.{minute:02d}.',
+                                '?{second:02d}_????.????_nc'))
+
     # process format string to get string to search for
     search_dict = pysat._files.construct_searchstring_from_format(format_str,
                                                                   wildcard=False)
@@ -118,9 +124,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         minute = np.array(stored['minute'])
         second = np.array(stored['second'])
         uts = hour*3600. + minute*60. + second
-        # adding microseconds to ensure each time is unique, not allowed to
-        # pass 1.E-3 s
-        uts += np.mod(np.arange(len(year)).astype(int) * 4, 8000) * 1.E-5
+        # adding microseconds to ensure each time is unique
+        uts += np.mod(np.arange(len(year)).astype(int), 8000) * 1.E-5
         index = pysat.utils.time.create_datetime_index(year=year, day=day,
                                                        uts=uts)
         file_list = pysat.Series(stored['files'], index=index)
