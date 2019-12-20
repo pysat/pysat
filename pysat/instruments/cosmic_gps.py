@@ -127,7 +127,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         # adding microseconds to ensure each time is unique
         uts += np.mod(np.arange(len(year)).astype(int), 8000) * 1.E-5
         index = pysat.utils.time.create_datetime_index(year=year, day=day,
-                                                       uts=uts)
+                                                        uts=uts)
         file_list = pysat.Series(stored['files'], index=index)
         return file_list
 
@@ -209,8 +209,9 @@ def _process_lengths(lengths):
     lengths = lengths.tolist()
     lengths.insert(0, 0)
     lengths = np.array(lengths)
+    lengths2 = lengths.copy()
     lengths[-1] += 1
-    return lengths
+    return lengths, lengths2
 
 # seperate routine for doing actual loading. This was broken off from main load
 # becuase I was playing around with multiprocessor loading
@@ -306,9 +307,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
         # get indices needed to parse data
         plengths = main_dict_len['OL_vec1']
         max_p_length = np.max(plengths)
-        plengths = _process_lengths(plengths)
-        plengths2 = plengths
-        plengths2[-1] -= 1
+        plengths, plengths2 = _process_lengths(plengths)
         # collect data
         for key in p_keys:
             p_dict[key] = main_dict.pop(key)
@@ -320,9 +319,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
         # get indices needed to parse data
         qlengths = main_dict_len['OL_par']
         max_q_length = np.max(qlengths)
-        qlengths = _process_lengths(qlengths)
-        qlengths2 = qlengths
-        qlengths2[-1] -= 1
+        qlengths, qlengths2 = _process_lengths(qlengths)
         # collect data
         for key in q_keys:
             q_dict[key] = main_dict.pop(key)
@@ -348,10 +345,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     max_length = np.max(lengths)
     length_arr = np.arange(max_length)
     # process lengths for ease of parsing
-    lengths = _process_lengths(lengths)
-    # undo some processing so inew ndex may also be easily set
-    lengths2 = lengths
-    lengths2[-1] -= 1
+    lengths, lengths2 = _process_lengths(lengths)
     # break main profile data into each individual profile
     for i in np.arange(len(output)):
         output[i]['profiles'] = main_frame.iloc[lengths[i]:lengths[i+1], :]
