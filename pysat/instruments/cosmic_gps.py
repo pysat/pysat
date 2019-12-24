@@ -339,7 +339,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     # break into smaller frames using views
     main_frame = pysat.DataFrame(main_dict)
     # get indices needed to parse data
-    lengths = main_dict_len[main_dict.keys()[0]]
+    lengths = main_dict_len[list(main_dict.keys())[0]]
     # get largest length and create numpy array with it
     # used to speed up reindexing below
     max_length = np.max(lengths)
