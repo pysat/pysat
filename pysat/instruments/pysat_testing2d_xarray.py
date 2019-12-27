@@ -31,8 +31,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     fnames : (list)
         List of filenames
     tag : (str or NoneType)
-        Instrument tag (accepts '' or a number (i.e., '10'), which specifies
-        the number of times to include in the test instrument)
+        Instrument tag (accepts '')
     sat_id : (str or NoneType)
         Instrument satellite ID (accepts '')
 
