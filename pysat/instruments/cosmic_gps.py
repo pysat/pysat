@@ -95,6 +95,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     logger.info('{:s}~1s per 100K files'.format(estr))
     sys.stdout.flush()
 
+    # Note that Files.from_os() could be used here except for the fact
+    # that there are multiple COSMIC files per given time
+    # here, we follow from_os() except a fictional microsecond
+    # is added to file times to help ensure there are no file collisions
+
     if format_str is None:
         # COSMIC file format string
         if tag == 'scnlv1':
@@ -315,6 +320,8 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             _ = main_dict_len.pop(key)
         psub_frame = pysat.DataFrame(p_dict)
 
+        # change in variables in this fiile type
+        # depending upon the processing applied at UCAR
         if 'ies' in main_dict.keys():
             q_keys = ['OL_ipar', 'OL_par', 'ies', 'hes', 'wes']
         else:
