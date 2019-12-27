@@ -38,10 +38,10 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     fnames : (list)
         List of filenames
     tag : (str or NoneType)
-        Instrument tag (accepts '' or a number (i.e., '10'), which specifies
-        the number of times to include in the test instrument)
+        Instrument tag (accepts '')
     sat_id : (str or NoneType)
-        Instrument satellite ID (accepts '')
+        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
+        specifies the number of times to include in the test instrument)
     sim_multi_file_right : (boolean)
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
@@ -51,8 +51,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     malformed_index : (boolean)
         If True, time index will be non-unique and non-monotonic.
     kwargs : dict
-        Additional unspecified keywords supplied to pysat.Instrument upon instantiation
-        are passed here.
+        Additional unspecified keywords supplied to pysat.Instrument upon
+        instantiation are passed here.
 
     Returns
     -------
@@ -91,10 +91,10 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         # non unique
         index[6:9] = [index[6]]*3
 
-    data = xarray.Dataset({'uts': (('time'), index)}, coords={'time':index})
+    data = xarray.Dataset({'uts': (('time'), index)}, coords={'time': index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
-    time_delta = date  - root_date
+    time_delta = date - root_date
     mlt = test.generate_fake_data(time_delta.total_seconds(), num_array,
                                   period=5820, data_range=[0.0, 24.0])
     data['mlt'] = (('time'), mlt)
@@ -143,7 +143,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
                            dtype=np.int32))
     data['int64_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
                            dtype=np.int64))
-    
+
     return data, meta.copy()
 
 
