@@ -126,6 +126,7 @@ def init(inst):
             inst.files.files.index = \
                 inst.files.files.index + pds.DateOffset(minutes=5)
 
+
 def default(inst):
     """The default function is applied first to data as it is loaded.
 

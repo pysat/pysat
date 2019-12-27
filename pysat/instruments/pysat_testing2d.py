@@ -54,7 +54,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     sat_id : (str or NoneType)
         Instrument satellite ID (accepts '')
     malformed_index : bool (False)
-        If True, the time index will be non-unique and non-monotonic. 
+        If True, the time index will be non-unique and non-monotonic.
 
     Returns
     -------

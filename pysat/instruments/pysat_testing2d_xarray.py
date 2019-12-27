@@ -57,8 +57,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     num = 86400//scalar
     num_array = np.arange(num) * scalar
     # seed DataFrame with UT array
-    index = pds.date_range(date, 
-                           date+pds.DateOffset(seconds=num-1), 
+    index = pds.date_range(date,
+                           date+pds.DateOffset(seconds=num-1),
                            freq='S')
     if malformed_index:
         index = index[0:num].tolist()
@@ -66,7 +66,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]]*3
-    data = xr.Dataset({'uts': (('time'), index)}, coords={'time':index})
+    data = xr.Dataset({'uts': (('time'), index)}, coords={'time': index})
 
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
