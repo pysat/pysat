@@ -100,19 +100,20 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         # COSMIC file format string
         if tag == 'scnlv1':
             format_str = ''.join(('????.???/??????_C???.{year:04d}',
-                        '.{day:03d}.{hour:02d}.{minute:02d}.',
-                        '????.?{second:02d}.??_????.????_nc'))
+                                  '.{day:03d}.{hour:02d}.{minute:02d}.',
+                                  '????.?{second:02d}.??_????.????_nc'))
         else:
             format_str = ''.join(('????.???/??????_C???.{year:04d}',
-                                '.{day:03d}.{hour:02d}.{minute:02d}.',
-                                '?{second:02d}_????.????_nc'))
+                                  '.{day:03d}.{hour:02d}.{minute:02d}.',
+                                  '?{second:02d}_????.????_nc'))
 
     # process format string to get string to search for
     search_dict = pysat._files.construct_searchstring_from_format(format_str,
                                                                   wildcard=False)
     search_str = search_dict['search_string']
     # perform local file search
-    files = pysat._files.search_local_system_formatted_filename(data_path, search_str)
+    files = pysat._files.search_local_system_formatted_filename(data_path,
+                                                                search_str)
     # we have a list of files, now we need to extract the information
     # pull of data from the areas identified by format_str
     stored = pysat._files.parse_fixed_width_filenames(files, format_str)
@@ -127,7 +128,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         # adding microseconds to ensure each time is unique
         uts += np.mod(np.arange(len(year)).astype(int), 8000) * 1.E-5
         index = pysat.utils.time.create_datetime_index(year=year, day=day,
-                                                        uts=uts)
+                                                       uts=uts)
         file_list = pysat.Series(stored['files'], index=index)
         return file_list
 
@@ -186,8 +187,8 @@ def load(fnames, tag=None, sat_id=None):
                 for key in keys:
                     if 'units' in data.variables[key].ncattrs():
                         profile_meta[key] = {'units': data.variables[key].units,
-                                            'long_name':
-                                            data.variables[key].long_name}
+                                             'long_name':
+                                             data.variables[key].long_name}
                 repeat = False
             except RuntimeError:
                 # file was empty, try the next one by incrementing ind
@@ -212,6 +213,7 @@ def _process_lengths(lengths):
     lengths2 = lengths.copy()
     lengths[-1] += 1
     return lengths, lengths2
+
 
 # seperate routine for doing actual loading. This was broken off from main load
 # becuase I was playing around with multiprocessor loading
