@@ -43,7 +43,6 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
-import glob
 import numpy as np
 import os
 import sys
@@ -388,7 +387,6 @@ def download(date_array, tag, sat_id, data_path=None,
     """
     import requests
     from requests.auth import HTTPBasicAuth
-    import os
     import tarfile
     import shutil
 
