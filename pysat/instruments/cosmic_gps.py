@@ -314,7 +314,10 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             _ = main_dict_len.pop(key)
         psub_frame = pysat.DataFrame(p_dict)
 
-        q_keys = ['OL_ipar', 'OL_par']
+        if 'ies' in main_dict.keys():
+            q_keys = ['OL_ipar', 'OL_par', 'ies', 'hes', 'wes']
+        else:
+            q_keys = ['OL_ipar', 'OL_par']
         q_dict = {}
         # get indices needed to parse data
         qlengths = main_dict_len['OL_par']
