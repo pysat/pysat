@@ -37,19 +37,6 @@ def set_data_dir(path=None, store=True):
         raise ValueError('Path %s does not lead to a valid directory.' % path)
 
 
-def computational_form(data):
-    """Deprecated function.  Moved to pysat.ssnl.computational_form"""
-
-    import warnings
-
-    warnings.warn(' '.join(["utils.computational_form is deprecated, use",
-                            "pysat.ssnl.computational_form instead"]),
-                  DeprecationWarning, stacklevel=2)
-    dslice = pysat.ssnl.computational_form(data)
-
-    return dslice
-
-
 def scale_units(out_unit, in_unit):
     """ Determine the scaling factor between two units
 
