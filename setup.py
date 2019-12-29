@@ -21,7 +21,7 @@ with codecs.open(os.path.join(here, version_filename)) as version_file:
 # packages to be installed
 # starting with packages common across all setups
 install_requires = ['requests', 'beautifulsoup4',
-                     'lxml', 'netCDF4']
+                    'lxml', 'netCDF4']
 # packages with Fortran code
 fortran_install = ['pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
 # python version specific support libraries
@@ -32,7 +32,7 @@ if sys.version_info.major == 2:
 else:
     # python 3+
     install_requires.extend(['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                             'scipy', 'matplotlib'])
+                             'scipy>=1.4', 'matplotlib'])
 
 # flag, True if on readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'

@@ -51,6 +51,7 @@ from __future__ import absolute_import
 import functools
 import numpy as np
 import pandas as pds
+import scipy.stats as stats
 
 import pysat
 from .methods import nasa_cdaweb as cdw
@@ -224,7 +225,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     ca_std = \
         inst['clock_angle'].rolling(min_periods=min_wnum,
                                     window=steady_window,
-                                    center=True).apply(pystats.nan_circstd,
+                                    center=True).apply(stats.circstd,
                                                        kwargs=circ_kwargs,
                                                        raw=True)
     inst['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
