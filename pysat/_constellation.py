@@ -3,8 +3,6 @@ import importlib
 import numpy as np
 import pandas as pds
 
-from pysat.ssnl.avg import _calc_2d_median
-
 
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
@@ -239,6 +237,7 @@ class Constellation(object):
         binx = None
 
         # TODO modify output
+        # TODO replace _calc_2d_median with actual routine
         out_2d = _calc_2d_median(ans, data_label, binx, biny, xarr, yarr,
                                  zarr, numx, numy, numz)
 
