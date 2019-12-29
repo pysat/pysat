@@ -200,8 +200,6 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
         Y-Z plane (default=0.5)
     """
 
-    from pysat.utils import stats as pystats
-
     # We are not going to interpolate through missing values
     sample_rate = int(inst.tag[0])
     max_wnum = np.floor(steady_window / sample_rate)
