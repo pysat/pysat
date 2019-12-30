@@ -85,33 +85,16 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-import sys
-
-import numpy as np
-import pandas as pds
 
 import pysat
 from .methods import nasa_cdaweb as cdw
 
-# the platform and name strings associated with this instrument
-# need to be defined at the top level
-# these attributes will be copied over to the Instrument object by pysat
-# the strings used here should also be used to name this file
-# platform_name.py
 platform = 'de2'
 name = 'idm'
 
-# dictionary of data 'tags' and corresponding description
 tags = {'': '1 s cadence Neutral Atmosphere Composition Spectrometer data'}
-
-# Let pysat know if there are multiple satellite platforms supported
-# by these routines
-# define a dictionary keyed by satellite ID, each with a list of
-# corresponding tags
-# sat_ids = {'a':['L1', 'L0'], 'b':['L1', 'L2'], 'c':['L1', 'L3']}
 sat_ids = {'': ['']}
-
-test_dates = {'': {'': pysat.datetime(1983, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(1983, 1, 1)}}
 
 fname = 'de2_neutral1s_nacs_{year:04d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}
@@ -120,13 +103,9 @@ supported_tags = {'': {'': fname}}
 list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
 
-#
-# support load routine
-#
 # use the default CDAWeb method
 load = cdw.load
 
-#
 # support download routine
 basic_tag = {'dir': '/pub/data/de/de2/neutral_gas_nacs/neutral1s_nacs_cdaweb',
              'remote_fname': '{year:4d}/' + fname,
