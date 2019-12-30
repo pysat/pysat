@@ -193,7 +193,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
         notes += "{:})".format(itime.date())
 
     # Determine if the beginning or end of the time series needs to be padded
-    
+
     freq = None if len(kp_times) < 2 else pysat.utils.time.calc_freq(kp_times)
     date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
                                 freq=freq)
@@ -382,7 +382,16 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         notes += "{:})".format(itime.date())
 
     # Determine if the beginning or end of the time series needs to be padded
-    freq = pysat.utils.time.calc_freq(f107_times)
+    if len(f107_times) >= 2:
+        freq = pysat.utils.time.calc_freq(f107_times)
+    else:
+        freq = None
+    date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
+                                freq=freq)
+
+    if len(f107_times) == 0:
+        f107_times = date_range
+
     date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
                                 freq=freq)
 
@@ -536,7 +545,7 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
         Metadata object containing information about transformed data
 
     """
-    
+
     # Ap are keys, Kp returned as double (N- = N.6667, N+=N.3333333)
     one_third = 1.0 / 3.0
     two_third = 2.0 / 3.0
@@ -555,7 +564,7 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
         """
         if not np.isfinite(ap_in):
             return fill_val
-        
+
         i = 0
         while ap_keys[i] <= ap_in:
             i += 1

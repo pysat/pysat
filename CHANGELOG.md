@@ -8,14 +8,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation
   - Added info on how to register new instruments
 
-## [2.X.X] - 2019-12-19
+## [2.X.X] - 2019-12-27
 - New Features
-   - Decreased time to load COSMIC GPS data by about 50%
+  - Decreased time to load COSMIC GPS data by about 50%
 - Bug Fix
-   - `_files._attach_files` now checks for an empty file list before appending
-   - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
-   - Fixed loading of COSMIC atmPrf files
-   - Fixed feedback from COSMIC GPS when data not found on remote server
+  - `_files._attach_files` now checks for an empty file list before appending
+  - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
+  - Fixed loading of COSMIC atmPrf files
+  - Fixed feedback from COSMIC GPS when data not found on remote server
+  - Fixed a bug when trying to combine empty f107 lists
 
 ## [2.1.0] - 2019-11-18
 - New Features
