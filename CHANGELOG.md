@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added registry module for registering custom external instruments
 - Documentation
   - Added info on how to register new instruments
+  - Fixed description of tag and sat_id behaviour in testing instruments
 
 ## [2.X.X] - 2019-12-27
 - New Features
