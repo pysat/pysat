@@ -73,14 +73,31 @@ if not os.path.isdir(pysat_dir):
         data_dir = ''
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
-    print(''.join(("\nHi there!  Please inform pysat where you will store "
-                   "(or are storing) science data by "
-                   "running pysat.utils.set_data_dir and specifying "
-                   "a location.")))
+    print(''.join(("\nHi there!  Pysat will nominally store data in the "
+                   "'pysatData' directory at the user's home directory level. "
+                   "Run pysat.utils.set_data_dir to specify a different "
+                   "top-level directory to store science data.")))
+    # user modules file
+    with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
+        f.write('')
+        user_modules = []
+
 else:
     # load up stored data path
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
         data_dir = f.readline()
+    # load up stored user modules
+    user_modules = []
+    modules_file = os.path.join(pysat_dir, 'user_modules.txt')
+    if os.path.exists(modules_file):
+        with open(modules_file, 'r') as f:
+            for _ in f:
+                if _ != '' and (_ is not None):
+                    user_modules.append(_.strip())
+    else:
+        # write user modules file
+        with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
+            f.write('')
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
