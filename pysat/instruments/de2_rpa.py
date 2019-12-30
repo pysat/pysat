@@ -82,7 +82,7 @@ sat_ids = {'': ['']}
 _test_dates = {'': {'': pysat.datetime(1983, 1, 1)}}
 
 fname = 'de2_ion2s_rpa_{year:04d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'': {'': fname}
+supported_tags = {'': {'': fname}}
 
 # use the CDAWeb methods list files routine
 list_files = functools.partial(cdw.list_files,
