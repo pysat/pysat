@@ -47,7 +47,7 @@ platform : string
 name : string
     Supports 'rpa'
 sat_id : string
-    Supports '' and 'duct'
+    Supports ''
 tag : string
     None Supported
 
@@ -77,16 +77,12 @@ from .methods import nasa_cdaweb as cdw
 platform = 'de2'
 name = 'rpa'
 
-tags = {'': '2 sec cadence RPA data',  # this is the default
-        'duct': '16 ms cadence DUCT data'}
-sat_ids = {'': ['', 'duct']}
-_test_dates = {'': {'': pysat.datetime(1983, 1, 1),
-                    'duct': pysat.datetime(1983, 1, 1)}}
+tags = {'': '2 sec cadence RPA data'}  # this is the default
+sat_ids = {'': ['']}
+_test_dates = {'': {'': pysat.datetime(1983, 1, 1)}}
 
 fname = 'de2_ion2s_rpa_{year:04d}{month:02d}{day:02d}_v01.cdf'
-fname_duct = 'de2_duct16ms_rpa_{year:04d}{month:02d}{day:02d}_v01.cdf'
-supported_tags = {'': {'': fname,
-                       'duct': fname_duct}}
+supported_tags = {'': {'': fname}
 
 # use the CDAWeb methods list files routine
 list_files = functools.partial(cdw.list_files,
@@ -99,11 +95,7 @@ load = cdw.load
 basic_tag = {'dir': '/pub/data/de/de2/plasma_rpa/ion2s_cdaweb',
              'remote_fname': '{year:4d}/' + fname,
              'local_fname': fname}
-duct_tag = {'dir': '/pub/data/de/de2/plasma_rpa/rpa16ms_cdaweb',
-            'remote_fname': '{year:4d}/' + fname_duct,
-            'local_fname': fname_duct}
-supported_tags = {'': {'': basic_tag,
-                       'duct': duct_tag}}
+supported_tags = {'': {'': basic_tag}}
 download = functools.partial(cdw.download, supported_tags)
 
 # support listing files currently on CDAWeb
