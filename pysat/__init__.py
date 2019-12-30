@@ -109,4 +109,4 @@ from ._custom import Custom
 from ._orbits import Orbits
 from . import instruments
 
-__all__ = [instruments', 'utils']
+__all__ = ['instruments', 'utils']
