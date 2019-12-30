@@ -41,6 +41,13 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.WARNING)
 
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
@@ -50,6 +57,8 @@ with open(os.path.join(here, 'version.txt')) as version_file:
 
 # get home directory
 home_dir = os.path.expanduser('~')
+# Set directory for test data
+test_data_path = os.path.join(here, 'tests', 'test_data')
 # set pysat directory path in home directory
 pysat_dir = os.path.join(home_dir, '.pysat')
 # make sure a pysat directory exists
@@ -58,16 +67,16 @@ if not os.path.isdir(pysat_dir):
     os.mkdir(pysat_dir)
     print('Created .pysat directory in user home directory to store settings.')
     # create file with default data directory
-    if not (os.environ.get('TRAVIS') == 'true'):
-        data_dir = os.path.join(home_dir, 'pysatData')
+    if (os.environ.get('TRAVIS') == 'true'):
+        data_dir = '/home/travis/build/pysatData'
     else:
-        data_dir = '/home/travis/build/rstoneback/pysatData'
+        data_dir = ''
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
-    print(''.join(("\nHi there!  Pysat will nominally store data in the "
-                   "'pysatData' directory at the user's home directory level. "
-                   "Run pysat.utils.set_data_dir to specify a different "
-                   "top-level directory to store science data.")))
+    print(''.join(("\nHi there!  Please inform pysat where you will store "
+                   "(or are storing) science data by "
+                   "running pysat.utils.set_data_dir and specifying "
+                   "a location.")))
 else:
     # load up stored data path
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:

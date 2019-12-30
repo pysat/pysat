@@ -40,11 +40,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-
-import pandas as pds
 import numpy as np
+import pandas as pds
+import warnings
 
 import pysat
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 platform = 'icon'
@@ -52,8 +55,8 @@ name = 'mighti'
 tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'green': ['level_2 Green Line'],
            'red': ['Level_2 Red Line']}
-test_dates = {'green': {'level_2': pysat.datetime(2017, 5, 27)},
-              'red': {'level_2': pysat.datetime(2017, 5, 27)}}
+_test_dates = {'green': {'level_2': pysat.datetime(2017, 5, 27)},
+               'red': {'level_2': pysat.datetime(2017, 5, 27)}}
 
 
 def init(self):
@@ -73,7 +76,7 @@ def init(self):
 
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
 
     pass
@@ -109,8 +112,8 @@ def clean(inst, clean_level=None):
 
     """
 
-    if clean_level is not 'none':
-        print("Cleaning actions for ICON MIGHTI aren't yet defined.")
+    if clean_level != 'none':
+        logger.info("Cleaning actions for ICON MIGHTI aren't yet defined.")
 
     return
 
@@ -291,6 +294,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    print("Downloads aren't yet available.")
+    warnings.warn("Downloads aren't yet available.")
 
     return

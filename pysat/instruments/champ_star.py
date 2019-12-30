@@ -11,6 +11,8 @@ name : string
     'star'
 tag : string
     None supported
+sat_id : string
+    None supported
 
 Warnings
 --------
@@ -22,11 +24,10 @@ Angeline G. Burrell, Feb 22, 2016, University of Leicester
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import sys
-import os
 
-import pandas as pds
 import numpy as np
+import pandas as pds
+import warnings
 
 import pysat
 
@@ -34,7 +35,7 @@ platform = 'champ'
 name = 'star'
 tags = {'': ''}
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
 
 
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):
@@ -123,10 +124,10 @@ def load(fnames, tag=None, sat_id=None):
                     "nrlmsis_ndens",
                     'Uncertainty in Neutral Density (kg/m^3)': "ndens_err",
                     'Number of Data Points in Current Averaging Bin': "npnts",
-    'Number of Points in Current Averaging Bin that Required Interpolation':
-                     "npnts_interp",
-    'Average Coefficient of Drag Used in Current Averaging Bin':
-                     "avg_drag_coeff", }
+                    ' '.join(('Number of Points in Current Averaging Bin that',
+                              'Required Interpolation')): "npnts_interp",
+                    ' '.join(('Average Coefficient of Drag Used in Current',
+                              'Averaging Bin')): "avg_drag_coeff", }
 
     champ_dtypes = {'year': np.int32, 'doy': np.int32, 'sod': float,
                     'bin_lat': float, 'sat_glat': float, 'sat_lon': float,
@@ -165,7 +166,6 @@ def load(fnames, tag=None, sat_id=None):
     # The header is formatted differently from the rest of the file, read it in
     # first to obtain the necessary meta data
     f = open(fnames[0], "r")
-    vdata = re.split(";|\n", f.readline())
     hdata = re.split(";|\n", f.readline())
     f.close()
     try:
@@ -194,6 +194,30 @@ def load(fnames, tag=None, sat_id=None):
     return data, meta
 
 
+def download(date_array, tag, sat_id, data_path, user=None, password=None):
+    """Routine to download CHAMP STAR data
+
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Returns
+    --------
+    Void : (NoneType)
+        data in inst is modified in-place.
+
+    Notes
+    --------
+    No data download currently available for CHAMP
+    """
+
+    warnings.warn("No data download currently available for CHAMP")
+
+    return None
+
+
 def clean(inst):
     """Routine to return CHAMP STAR data cleaned to the specified level
 
@@ -213,26 +237,6 @@ def clean(inst):
     No cleaning currently available for CHAMP
     """
 
-    return None
-
-
-def download(date_array, tag, sat_id, data_path, user=None, password=None):
-    """Routine to download CHAMP STAR data
-
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    --------
-    No data download currently available for CHAMP
-    """
+    warnings.warn("No cleaning currently available for CHAMP")
 
     return None

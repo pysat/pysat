@@ -9,7 +9,7 @@ seasons, and calculation of solar local time
 
 import numpy as np
 import pandas as pds
-from pysat import DataFrame, Series, datetime
+from pysat import datetime
 
 
 def getyrdoy(date):
@@ -125,6 +125,25 @@ def calc_freq(index):
 
 
 def season_date_range(start, stop, freq='D'):
+    """
+    Deprecated Function, will be removed in future version.
+
+    Replaced by create_date_range
+
+    """
+
+    import warnings
+
+    warnings.warn(' '.join(["utils.time.season_date_range is deprecated, use",
+                            "utils.time.create_date_range instead"]),
+                  DeprecationWarning, stacklevel=2)
+
+    season = create_date_range(start, stop, freq='D')
+
+    return season
+
+
+def create_date_range(start, stop, freq='D'):
     """
     Return array of datetime objects using input frequency from start to stop
 

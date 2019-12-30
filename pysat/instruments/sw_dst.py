@@ -32,11 +32,14 @@ import numpy as np
 
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 platform = 'sw'
 name = 'dst'
 tags = {'': ''}
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -209,7 +212,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         local_fname = fname
         saved_fname = os.path.join(data_path, local_fname)
         try:
-            print('Downloading file for '+date.strftime('%D'))
+            logger.info('Downloading file for '+date.strftime('%D'))
             sys.stdout.flush()
             ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
         except ftplib.error_perm as exception:
@@ -218,7 +221,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 raise
             else:
                 os.remove(saved_fname)
-                print('File not available for ' + date.strftime('%D'))
+                logger.info('File not available for ' + date.strftime('%D'))
 
     ftp.close()
     return

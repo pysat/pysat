@@ -4,9 +4,9 @@
 </div>
 
 # pysat: Python Satellite Data Analysis Toolkit
-[![Build Status](https://travis-ci.org/rstoneback/pysat.svg?branch=master)](https://travis-ci.org/rstoneback/pysat)
+[![Build Status](https://travis-ci.org/pysat/pysat.svg?branch=master)](https://travis-ci.org/pysat/pysat)
 [![Documentation Status](https://readthedocs.org/projects/pysat/badge/?version=latest)](http://pysat.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/rstoneback/pysat/badge.svg?branch=master)](https://coveralls.io/github/rstoneback/pysat?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/pysat/pysat/badge.svg?branch=master)](https://coveralls.io/github/pysat/pysat?branch=master)
 [![DOI](https://zenodo.org/badge/33449914.svg)](https://zenodo.org/badge/latestdoi/33449914)
 
 
@@ -17,6 +17,8 @@ measurements. Although pysat was initially designed for in situ satellite observ
 Full [Documentation](http://pysat.readthedocs.io/en/latest/index.html)
 
 JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
+
+[Citation Info](https://pysat.readthedocs.io/en/latest/citing.html)
 
 # Main Features
 * Instrument independent analysis routines.

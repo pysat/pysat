@@ -17,7 +17,7 @@ to pysat by importing this module and using the functools.partial methods
 to attach these functions to the new instrument model. See
 pysat/instruments/cnofs_ivm.py for more.
 NASA CDAWeb datasets, such as C/NOFS IVM, use the methods within
-pysat/instruments/nasa_cdaweb_methods.py to make adding new CDAWeb instruments
+pysat/instruments/methods/nasa_cdaweb.py to make adding new CDAWeb instruments
 easy.
 
 """
@@ -26,6 +26,9 @@ import pandas as pds
 import numpy as np
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 # pysat required parameters
 platform = 'netcdf'
 name = 'pandas'
@@ -33,7 +36,7 @@ name = 'pandas'
 tags = {'': 'netCDF4'}
 # dictionary of satellite IDs, list of corresponding tags
 sat_ids = {'': ['']}
-test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
 def init(self):
@@ -159,10 +162,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     format_str based upon inputs, then calls this routine passing both
     data_path and format_str.
 
-    Alternately, the list_files routine in nasa_cdaweb_methods may also be
+    Alternately, the list_files routine in methods.nasa_cdaweb may also be
     used and has more built in functionality. Supported tages and format
     strings may be defined within the new instrument module and passed as
-    arguments to nasa_cdaweb_methods.list_files . For an example on using
+    arguments to methods.nasa_cdaweb.list_files . For an example on using
     this routine, see pysat/instrument/cnofs_ivm.py or cnofs_vefi, cnofs_plp,
     omni_hro, timed_see, etc.
 
@@ -207,6 +210,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    print('This is a generic Instrument routine and does not support ' +
+    logger.info('This is a generic Instrument routine and does not support ' +
           'downloading data.')
     pass

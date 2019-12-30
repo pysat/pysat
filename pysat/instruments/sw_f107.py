@@ -43,13 +43,15 @@ is not appropriate for 'forecast' data.
 """
 
 import os
-import functools
 import warnings
 
 import numpy as np
 import pandas as pds
 
 import pysat
+
+import logging
+logger = logging.getLogger(__name__)
 
 platform = 'sw'
 name = 'f107'
@@ -67,12 +69,12 @@ now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
 # set test dates
-test_dates = {'': {'': pysat.datetime(2009, 1, 1),
-                   'all': pysat.datetime(2009, 1, 1),
-                   'prelim': pysat.datetime(2009, 1, 1),
-                   'daily': tomorrow,
-                   'forecast': tomorrow,
-                   '45day': tomorrow}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                    'all': pysat.datetime(2009, 1, 1),
+                    'prelim': pysat.datetime(2009, 1, 1),
+                    'daily': tomorrow,
+                    'forecast': tomorrow,
+                    '45day': tomorrow}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -197,6 +199,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     Called by pysat. Not intended for direct use by user.
 
     """
+    import time
 
     if data_path is not None:
         if tag == '':
@@ -243,7 +246,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             # year of data and use the appended date to select out appropriate
             # data.
             if format_str is None:
-                format_str = 'f107_prelim_{year:04d}_v{version:01d}.txt'
+                format_str = \
+                    'f107_prelim_{year:04d}_{month:02d}_v{version:01d}.txt'
             out = pysat.Files.from_os(data_path=data_path,
                                       format_str=format_str)
 
@@ -255,12 +259,18 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 for orig in orig_files.iteritems():
                     # Version determines each file's valid length
                     version = int(orig[1].split("_v")[1][0])
-                    doff = pds.DateOffset(years=1) if version == 5 \
+                    doff = pds.DateOffset(years=1) if version == 2 \
                         else pds.DateOffset(months=3)
                     istart = orig[0]
-                    if version < 5 and version > 1:
-                        istart += pds.DateOffset(months=(version-1) * 3)
                     iend = istart + doff - pds.DateOffset(days=1)
+
+                    # Ensure the end time does not extend past the number of
+                    # possible days included based on the file's download time
+                    fname = os.path.join(data_path, orig[1])
+                    dend = pds.datetime.utcfromtimestamp(os.path.getctime(fname))
+                    dend = dend - pds.DateOffset(days=1)
+                    if dend < iend:
+                        iend = dend
 
                     # Pad the original file index
                     out.loc[iend] = orig[1]
@@ -360,7 +370,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 raise ValueError('The Download routine must be invoked with ' +
                                  'a freq="MS" option.')
             # download webpage
-            dstr = 'http://lasp.colorado.edu/lisird/latis/'
+            dstr = 'http://lasp.colorado.edu/lisird/latis/dap/'
             dstr += 'noaa_radio_flux.json?time%3E='
             dstr += date.strftime('%Y-%m-%d')
             dstr += 'T00:00:00.000Z&time%3C='
@@ -375,7 +385,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             if data.empty:
                 warnings.warn("no data for {:}".format(date), UserWarning)
             else:
-                times = [pysat.datetime.strptime(time, '%Y %m %d')
+                times = [pysat.datetime.strptime(time, '%Y%m%d')
                          for time in data.pop('time')]
                 data.index = times
                 # replace fill with NaNs
@@ -392,7 +402,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         import json
 
         # download webpage
-        dstr = 'http://lasp.colorado.edu/lisird/latis/'
+        dstr = 'http://lasp.colorado.edu/lisird/latis/dap/'
         dstr += 'noaa_radio_flux.json?time%3E='
         dstr += pysat.datetime(1947, 2, 13).strftime('%Y-%m-%d')
         dstr += 'T00:00:00.000Z&time%3C='
@@ -403,8 +413,14 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # process
         raw_dict = json.loads(r.text)['noaa_radio_flux']
         data = pds.DataFrame.from_dict(raw_dict['samples'])
-        times = [pysat.datetime.strptime(time, '%Y %m %d')
-                 for time in data.pop('time')]
+        try:
+            # This is the new data format
+            times = [pysat.datetime.strptime(time, '%Y%m%d')
+                     for time in data.pop('time')]
+        except ValueError:
+            # Accepts old file formats
+            times = [pysat.datetime.strptime(time, '%Y %m %d')
+                     for time in data.pop('time')]
         data.index = times
         # replace fill with NaNs
         idx, = np.where(data['f107'] == -99999.0)
@@ -424,19 +440,24 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
         bad_fname = list()
 
-        # Get the local files, to ensure that the most recent file is
-        # downloaded again since it will have more data
+        # Get the local files, to ensure that the version 1 files are
+        # downloaded again if more data has been added
         local_files = list_files(tag, sat_id, data_path)
-        got_today = False
 
-        for date in date_array:
+        # To avoid downloading multiple files, cycle dates based on file length
+        date = date_array[0]
+        while date <= date_array[-1]:
             # The file name changes, depending on how recent the requested
             # data is
-            qnum = (date.month-1) / 3 + 1
+            qnum = (date.month-1) // 3 + 1  # Integer floor division
+            qmonth = (qnum-1) * 3 + 1
             quar = 'Q{:d}_'.format(qnum)
             fnames = ['{:04d}{:s}DSD.txt'.format(date.year, ss)
                       for ss in ['_', quar]]
-            versions = ["5", "{:d}".format(qnum)]
+            versions = ["01_v2", "{:02d}_v1".format(qmonth)]
+            vend = [pysat.datetime(date.year, 12, 31),
+                    pysat.datetime(date.year, qmonth, 1)
+                    + pds.DateOffset(months=3) - pds.DateOffset(days=1)]
             downloaded = False
             rewritten = False
 
@@ -448,9 +469,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
                 local_fname = fname
                 saved_fname = os.path.join(data_path, local_fname)
-                outfile = os.path.join(data_path, 'f107_prelim_'
-                                       + "{:04d}_v".format(date.year)
-                                       + versions[iname] + ".txt")
+                ofile = '_'.join(['f107', 'prelim', '{:04d}'.format(date.year),
+                                  '{:s}.txt'.format(versions[iname])])
+                outfile = os.path.join(data_path, ofile)
 
                 if os.path.isfile(outfile):
                     downloaded = True
@@ -459,52 +480,67 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                     checkfile = os.path.split(outfile)[-1]
                     has_file = local_files == checkfile
                     if np.any(has_file):
-                        if has_file[has_file].index[-1] < today or got_today:
-                            rewritten = True
-                            break
+                        if has_file[has_file].index[-1] < vend[iname]:
+                            # This file will be updated again, but only attempt
+                            # to do so if enough time has passed from the
+                            # last time it was downloaded
+                            yesterday = today - pds.DateOffset(days=1)
+                            if has_file[has_file].index[-1] < yesterday:
+                                rewritten = True
+                else:
+                    # The file does not exist, if it can be downloaded, it
+                    # should be 'rewritten'
+                    rewritten = True
+
+                # Attempt to download if the file does not exist or if the
+                # file has been updated
+                if rewritten or not downloaded:
+                    try:
+                        sys.stdout.flush()
+                        ftp.retrbinary('RETR ' + fname,
+                                       open(saved_fname, 'wb').write)
+                        downloaded = True
+                        logger.info('Downloaded file for ' + date.strftime('%x'))
+
+                    except ftplib.error_perm as exception:
+                        # Could not fetch, so cannot rewrite
+                        rewritten = False
+
+                        # Test for an error
+                        if str(exception.args[0]).split(" ", 1)[0] != '550':
+                            raise RuntimeError(exception)
                         else:
-                            got_today = True
+                            # file isn't actually there, try the next name
+                            os.remove(saved_fname)
 
-                try:
-                    print('Downloading file for ' + date.strftime('%x'))
-                    sys.stdout.flush()
-                    ftp.retrbinary('RETR ' + fname,
-                                   open(saved_fname, 'wb').write)
-                    downloaded = True
-
-                except ftplib.error_perm as exception:
-                    # Signal that we don't have today's file
-                    got_today = False
-
-                    # Test for an error
-                    if str(exception.args[0]).split(" ", 1)[0] != '550':
-                        raise RuntimeError(exception)
-                    else:
-                        # file isn't actually there, try the next name
-                        os.remove(saved_fname)
-
-                        # Save this so we don't try again
-                        bad_fname.append(fname)
+                            # Save this so we don't try again
+                            # Because there are two possible filenames for
+                            # each time, it's ok if one isn't there.  We just
+                            # don't want to keep looking for it.
+                            bad_fname.append(fname)
 
                 # If the first file worked, don't try again
                 if downloaded:
                     break
 
             if not downloaded:
-                print('File not available for {:}'.format(date.strftime('%x')))
-            elif not rewritten:
+                logger.info('File not available for {:}'.format(date.strftime('%x')))
+            elif rewritten:
                 with open(saved_fname, 'r') as fprelim:
                     lines = fprelim.read()
 
                 rewrite_daily_file(date.year, outfile, lines)
                 os.remove(saved_fname)
 
+            # Cycle to the next date
+            date = vend[iname] + pds.DateOffset(days=1)
+
         # Close connection after downloading all dates
         ftp.close()
 
     elif tag == 'daily':
         import requests
-        print('This routine can only download the latest 30 day file')
+        logger.info('This routine can only download the latest 30 day file')
 
         # download webpage
         furl = 'https://services.swpc.noaa.gov/text/daily-solar-indices.txt'
@@ -517,7 +553,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     elif tag == 'forecast':
         import requests
-        print('This routine can only download the current forecast, not ' +
+        logger.info('This routine can only download the current forecast, not ' +
               'archived forecasts')
         # download webpage
         furl = 'https://services.swpc.noaa.gov/text/' + \
@@ -547,7 +583,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     elif tag == '45day':
         import requests
-        print('This routine can only download the current forecast, not ' +
+        logger.info('This routine can only download the current forecast, not ' +
               'archived forecasts')
         # download webpage
         furl = 'https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt'

@@ -42,13 +42,17 @@ import numpy as np
 
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 platform = 'superdarn'
 name = 'grdex'
 tags = {'north': '',
         'south': ''}
 sat_ids = {'': ['north', 'south']}
-test_dates = {'': {'north': pysat.datetime(2009, 1, 1),
-                   'south': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'north': pysat.datetime(2009, 1, 1),
+                    'south': pysat.datetime(2009, 1, 1)}}
 
 
 def init(self):
@@ -80,10 +84,10 @@ def init(self):
     # coped from SD Documents area of VT SuperDARN webpage
     # http://vt.superdarn.org/tiki-list_file_gallery.php?galleryId=81
     # How to acknowledge use of SuperDARN Data - 2017
-    print('Authors should acknowledge the use of SuperDARN data. ',
-          'SuperDARN is a collection of radars funded by national scientific ',
-          'funding agencies of Australia, Canada, China, France, Italy, ',
-          'Japan, Norway, South Africa, United Kingdom and the United States ',
+    logger.info('Authors should acknowledge the use of SuperDARN data. ' +
+          'SuperDARN is a collection of radars funded by national scientific ' +
+          'funding agencies of Australia, Canada, China, France, Italy, ' +
+          'Japan, Norway, South Africa, United Kingdom and the United States ' +
           'of America.')
     return
 
@@ -276,34 +280,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     """
 
-    import sys
-    import os
-    import pysftp
-    import davitpy
+    import warnings
 
-    if user is None:
-        user = os.environ['DBREADUSER']
-    if password is None:
-        password = os.environ['DBREADPASS']
-
-    with pysftp.Connection(
-            os.environ['VTDB'],
-            username=user,
-            password=password) as sftp:
-
-        for date in date_array:
-            myDir = '/data/' + date.strftime("%Y") + '/grdex/' + tag + '/'
-            fname = date.strftime("%Y%m%d")+'.' + tag + '.grdex'
-            local_fname = fname + '.bz2'
-            saved_fname = os.path.join(data_path, local_fname)
-            full_fname = os.path.join(data_path, fname)
-            try:
-                print('Downloading file for ' + date.strftime('%d %B %Y'))
-                sys.stdout.flush()
-                sftp.get(myDir + local_fname, saved_fname)
-                os.system('bunzip2 -c ' + saved_fname + ' > ' + full_fname)
-                os.system('rm ' + saved_fname)
-            except IOError:
-                print('File not available for '+date.strftime('%d %B %Y'))
-
-    return
+    warnings.warn(" ".join(("Downloads for SuperDARN currently not supported,",
+                            "but will be added in a future version.")))

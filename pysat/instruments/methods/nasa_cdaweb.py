@@ -8,10 +8,12 @@ intervention.
 from __future__ import absolute_import, division, print_function
 import sys
 
-import numpy as np
 import pandas as pds
 
 import pysat
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
@@ -60,7 +62,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
         supported_tags = {'dc_b': fname}
-        list_files = functools.partial(nasa_cdaweb_methods.list_files,
+        list_files = functools.partial(nasa_cdaweb.list_files,
                                        supported_tags=supported_tags)
 
         fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
@@ -72,10 +74,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     if data_path is not None:
         if format_str is None:
-                try:
-                    format_str = supported_tags[sat_id][tag]
-                except KeyError:
-                    raise ValueError('Unknown tag')
+            try:
+                format_str = supported_tags[sat_id][tag]
+            except KeyError as estr:
+                raise ValueError('Unknown sat_id or tag: ' + estr)
         out = pysat.Files.from_os(data_path=data_path,
                                   format_str=format_str)
 
@@ -227,7 +229,7 @@ def download(supported_tags, date_array, tag, sat_id,
                     'local_fname': ln}
         supported_tags = {'dc_b': dc_b_tag}
 
-        download = functools.partial(nasa_cdaweb_methods.download,
+        download = functools.partial(nasa_cdaweb.download,
                                      supported_tags=supported_tags)
 
     """
@@ -255,16 +257,22 @@ def download(supported_tags, date_array, tag, sat_id,
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year,
                                                      month=date.month,
-                                                     day=date.day)
+                                                     day=date.day,
+                                                     hour=date.hour,
+                                                     min=date.minute,
+                                                     sec=date.second)
         formatted_local_fname = local_fname.format(year=date.year,
                                                    month=date.month,
-                                                   day=date.day)
+                                                   day=date.day,
+                                                   hour=date.hour,
+                                                   min=date.minute,
+                                                   sec=date.second)
         saved_local_fname = os.path.join(data_path, formatted_local_fname)
 
         # perform download
         if not multi_file_day:
             try:
-                print(' '.join(('Attempting to download file for',
+                logger.info(' '.join(('Attempting to download file for',
                                 date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_path = '/'.join((remote_url.strip('/'),
@@ -272,20 +280,21 @@ def download(supported_tags, date_array, tag, sat_id,
                 req = requests.get(remote_path)
                 if req.status_code != 404:
                     open(saved_local_fname, 'wb').write(req.content)
-                    print('Finished.')
+                    logger.info('Finished.')
                 else:
-                    print(' '.join(('File not available for',
+                    logger.info(' '.join(('File not available for',
                                     date.strftime('%d %B %Y'))))
             except requests.exceptions.RequestException as exception:
-                print(' '.join((exception, '- File not available for',
+                logger.info(' '.join((exception, '- File not available for',
                                 date.strftime('%d %B %Y'))))
 
         else:
             try:
-                print(' '.join(('Attempting to download files for',
+                logger.info(' '.join(('Attempting to download files for',
                                 date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_files = list_remote_files(tag=tag, sat_id=sat_id,
+                                                 remote_site=remote_site,
                                                  supported_tags=supported_tags,
                                                  year=date.year,
                                                  month=date.month,
@@ -305,11 +314,11 @@ def download(supported_tags, date_array, tag, sat_id,
                         open(saved_local_fname, 'wb').write(req.content)
                         i += 1
                     else:
-                        print(' '.join(('File not available for',
+                        logger.info(' '.join(('File not available for',
                                         date.strftime('%d %B %Y'))))
-                print('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
+                logger.info('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
             except requests.exceptions.RequestException as exception:
-                print(' '.join((exception, '- Files not available for',
+                logger.info(' '.join((exception, '- Files not available for',
                                 date.strftime('%d %B %Y'))))
 
 
@@ -384,7 +393,7 @@ def list_remote_files(tag, sat_id,
         fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
         supported_tags = {'dc_b': fname}
         list_remote_files = \
-            functools.partial(nasa_cdaweb_methods.list_remote_files,
+            functools.partial(nasa_cdaweb.list_remote_files,
                               supported_tags=supported_tags)
 
         fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
@@ -449,9 +458,21 @@ def list_remote_files(tag, sat_id,
                                        subdir.format(day=day)))
                 n_layers -= 1
 
-    # Find filename extension required by format_str
-    # Storing as list to be extendable to other search targets in future
+    # Start with file extention as prime target
     targets = ['.' + format_str.split('.')[-1]]
+
+    # Extract file preamble as target - those characters left of variables
+    # or wildcards
+    fmt_idx = [format_str.find('{')]
+    fmt_idx.append(format_str.find('?'))
+    fmt_idx.append(format_str.find('*'))
+
+    # Not all characters may exist in a filename.  Remove those that don't.
+    fmt_idx.remove(-1)
+
+    # If preamble exists, add to targets
+    if fmt_idx:
+        targets.append(format_str[0:min(fmt_idx)])
 
     remote_dirs = []
     for level in range(n_layers + 1):
@@ -497,7 +518,6 @@ def list_remote_files(tag, sat_id,
     # process the parsed filenames and return a properly formatted Series
     stored_list = pysat._files.process_parsed_filenames(stored,
                                                         two_digit_year_break)
-
     # Downselect to user-specified dates, if needed
     if year is not None:
         mask = (stored_list.index.year == year)

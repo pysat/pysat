@@ -7,38 +7,41 @@ https://github.com/pypa/sampleproject
 # Always prefer setuptools over distutils
 from setuptools import setup
 # To use a consistent encoding
-from codecs import open
-from os import path
+import codecs
 import os
 import sys
 
-here = path.abspath(path.dirname(__file__))
-with open(path.join(here, 'description.txt'), encoding='utf-8') as f:
+here = os.path.abspath(os.path.dirname(__file__))
+with codecs.open(os.path.join(here, 'description.txt'), encoding='utf-8') as f:
     long_description = f.read()
 version_filename = os.path.join('pysat', 'version.txt')
-with open(os.path.join(here, version_filename)) as version_file:
+with codecs.open(os.path.join(here, version_filename)) as version_file:
     version = version_file.read().strip()
 
-# change setup.py for readthedocs
-on_rtd = os.environ.get('READTHEDOCS') == 'True'
+# packages to be installed
+# starting with packages common across all setups
+install_requires = ['requests', 'beautifulsoup4',
+                     'lxml', 'netCDF4']
+# packages with Fortran code
+fortran_install = ['pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
+# python version specific support libraries
 if sys.version_info.major == 2:
-    install_requires = ['xarray<0.12', 'pandas>=0.19.2, <0.25', 'numpy>=1.12',
-                        'sgp4', 'pyEphem', 'requests', 'beautifulsoup4',
-                        'lxml', 'pysatCDF', 'apexpy', 'aacgmv2',
-                        'pysatMagVect', 'madrigalWeb', 'h5py',
-                        'PyForecastTools', 'pyglow']
+    install_requires.extend(['xarray<0.12', 'pandas>=0.23, <0.25',
+                             'numpy>=1.12, <1.17', 'scipy<1.3',
+                             'matplotlib<3.0'])
 else:
-    install_requires = ['xarray', 'pandas>=0.19.2', 'numpy>=1.12',
-                        'sgp4', 'pyEphem', 'requests', 'beautifulsoup4',
-                        'lxml', 'pysatCDF', 'apexpy', 'aacgmv2',
-                        'pysatMagVect', 'madrigalWeb', 'h5py',
-                        'PyForecastTools', 'pyglow']
+    # python 3+
+    install_requires.extend(['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
+                             'scipy', 'matplotlib'])
 
-# all packages after pysatCDF are excluded if on ReadTheDocs
-if on_rtd:
-    # read the docs doesn't do Fortran
-    # remove pysatCDF through h5py
-    install_requires = install_requires[:-8]
+# flag, True if on readthedocs
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+
+# include Fortran for normal install
+# read the docs doesn't do Fortran
+if not on_rtd:
+    # not on ReadTheDocs, add Fortran
+    install_requires.extend(fortran_install)
 
 setup(
     name='pysat',
@@ -50,7 +53,7 @@ setup(
     description='Supports science data analysis across measurement platforms',
     long_description=long_description,
     # The project's main homepage.
-    url='http://github.com/rstoneback/pysat',
+    url='http://github.com/pysat/pysat',
 
     # Author details
     author='Russell Stoneback',
@@ -86,6 +89,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 
     # What does your project relate to?

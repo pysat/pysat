@@ -3,7 +3,7 @@
 
 To use this routine, you need to know both the Madrigal Instrument code
 as well as the data tag numbers that Madrigal uses to uniquely identify
-data sets. Using these codes, the madrigal_methods.py routines will
+data sets. Using these codes, the methods.madrigal.py routines will
 be used to support downloading and loading of data.
 
 Downloads data from the Madrigal Database.
@@ -80,15 +80,18 @@ from __future__ import absolute_import
 
 import functools
 import pysat
-from . import madrigal_methods as mad_meth
-from . import nasa_cdaweb_methods as cdw
+from .methods import madrigal as mad_meth
+from .methods import nasa_cdaweb as cdw
+
+import logging
+logger = logging.getLogger(__name__)
 
 platform = 'madrigal'
 name = 'pandas'
 tags = {'': 'General Madrigal data access loaded into pysat via pandas.'}
 sat_ids = {'': list(tags.keys())}
 # need to sort out test day setting for unit testing
-test_dates = {'': {'': pysat.datetime(2010, 1, 19)}}
+_test_dates = {'': {'': pysat.datetime(2010, 1, 19)}}
 
 # support list files routine
 # use the default CDAWeb method
@@ -137,7 +140,7 @@ def init(self):
 
     """
 
-    print(mad_meth.cedar_rules())
+    logger.info(mad_meth.cedar_rules())
 
     code = self.kwargs['madrigal_code']
     tag = self.kwargs['madrigal_tag']
@@ -221,6 +224,6 @@ def clean(self):
 
     """
     if self.clean_level in ['clean', 'dusty', 'dirty']:
-        print('WARNING: Generalized Madrigal data support has no cleaning.')
+        logger.warning('Generalized Madrigal data support has no cleaning.')
 
     return

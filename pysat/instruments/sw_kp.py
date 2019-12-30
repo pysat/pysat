@@ -60,20 +60,23 @@ import pandas as pds
 
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 platform = 'sw'
 name = 'kp'
 tags = {'': '',
         'forecast': 'SWPC Forecast data next (3 days)',
         'recent': 'SWPC provided Kp for past 30 days'}
-sat_ids = {'': ['']}
+sat_ids = {'': ['', 'forecast', 'recent']}
 
 # generate todays date to support loading forecast data
 now = pysat.datetime.now()
 today = pysat.datetime(now.year, now.month, now.day)
 # set test dates
-test_dates = {'': {'': pysat.datetime(2009, 1, 1),
-                   'forecast': today + pds.DateOffset(days=1)}}
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+                    'forecast': today + pds.DateOffset(days=1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -284,6 +287,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         ftp = FTP('ftp.gfz-potsdam.de')   # connect to host, default port
         ftp.login()               # user anonymous, passwd anonymous@
         ftp.cwd('/pub/home/obs/kp-ap/tab')
+        dnames = list()
 
         for date in date_array:
             fname = 'kp{year:02d}{month:02d}.tab'
@@ -291,25 +295,33 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                                  month=date.month)
             local_fname = fname
             saved_fname = os.path.join(data_path, local_fname)
-            try:
-                print('Downloading file for '+date.strftime('%x'))
-                sys.stdout.flush()
-                ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
-            except ftplib.error_perm as exception:
+            if not fname in dnames:
+                try:
+                    logger.info('Downloading file for '+date.strftime('%b %Y'))
+                    sys.stdout.flush()
+                    ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
+                    dnames.append(fname)
+                except ftplib.error_perm as exception:
 
-                if str(exception.args[0]).split(" ", 1)[0] != '550':
-                    raise
-                else:
-                    # file isn't actually there, just let people know
-                    # then continue on
-                    os.remove(saved_fname)
-                    print('File not available for '+date.strftime('%x'))
+                    if str(exception.args[0]).split(" ", 1)[0] != '550':
+                        # leaving a bare raise below so that ftp errors
+                        # are properly reported as coming from ftp
+                        # and gives the correct line number.
+                        # We aren't expecting any 'normal' ftp errors
+                        # here, other than a 550 'no file' error, thus
+                        # accurately raising FTP issues is the way to go
+                        raise
+                    else:
+                        # file isn't actually there, just let people know
+                        # then continue on
+                        os.remove(saved_fname)
+                        logger.info('File not available for '+date.strftime('%x'))
 
         ftp.close()
 
     elif tag == 'forecast':
         import requests
-        print('This routine can only download the current forecast, ' +
+        logger.info('This routine can only download the current forecast, ' +
               'not archived forecasts')
         # download webpage
         furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
@@ -348,7 +360,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     elif tag == 'recent':
         import requests
-        print('This routine can only download the current webpage, not ' +
+        logger.info('This routine can only download the current webpage, not ' +
               'archived forecasts')
         # download webpage
         rurl = 'https://services.swpc.noaa.gov/text/' + \
@@ -368,7 +380,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         sub_kps = [[], [], []]
         # iterate through file lines and parse out the info we want
         for line in raw_data:
-            # print (line)
             kp_time.append(pysat.datetime.strptime(line[0:10], '%Y %m %d'))
             # pick out Kp values for each of the three columns
             sub_lines = [line[17:33], line[40:56], line[63:]]
@@ -503,7 +514,7 @@ def convert_3hr_kp_to_ap(kp_inst):
     """
 
     # Kp are keys, where n.3 = n+ and n.6 = (n+1)-. E.g., 0.6 = 1-
-    kp_to_ap = {0: 0, 0.3: 2, 0.6: 4, 1: 4, 1.3: 5, 1.6: 6, 2: 7, 2.3: 9,
+    kp_to_ap = {0: 0, 0.3: 2, 0.6: 3, 1: 4, 1.3: 5, 1.6: 6, 2: 7, 2.3: 9,
                 2.6: 12, 3: 15, 3.3: 18, 3.6: 22, 4: 27, 4.3: 32, 4.6: 39,
                 5: 48, 5.3: 56, 5.6: 67, 6: 80, 6.3: 94, 6.6: 111, 7: 132,
                 7.3: 154, 7.6: 179, 8: 207, 8.3: 236, 8.6: 300, 9: 400}

@@ -12,9 +12,12 @@ import pandas as pds
 import numpy as np
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def cedar_rules():
-    """ General acknowledgement statement for Madrigal data
+    """ General acknowledgement statement for Madrigal data.
 
     Returns
     -------
@@ -22,7 +25,6 @@ def cedar_rules():
         String with general acknowledgement for all CEDAR Madrigal data
 
     """
-
     ackn = "Contact the PI when using this data, in accordance with the CEDAR"
     ackn += " 'Rules of the Road'"
     return ackn
@@ -148,7 +150,7 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
         data.index = time
 
         if np.any(time.duplicated()):
-            print("WARNING: duplicated time indices, consider specifing " +
+            logger.warning("duplicated time indices, consider specifing " +
                   "additional coordinates and storing the data as an xarray" +
                   " DataSet")
 
@@ -217,10 +219,10 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
     # TODO, implement user and password values in test code
     # specific to each instrument
     if user is None:
-        print('No user information supplied for download.')
+        logger.info('No user information supplied for download.')
         user = 'pysat_testing'
     if password is None:
-        print('Please provide email address in password field.')
+        logger.info('Please provide email address in password field.')
         password = 'pysat_testing@not_real_email.org'
 
     try:
@@ -237,16 +239,17 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
                                      date_array[-1].strftime('%m/%d/%Y'),
                                      '--inst=' + inst_code,
                                      '--kindat=' + kindat])
-        print('Feedback from openMadrigal ', a)
-    except OSError as err:
-        print("problem running globalDownload.py, check python path")
+        logger.info('Feedback from openMadrigal %s', a)
+    except OSError as str_err:
+        logger.error(' '.join("problem running globalDownload.py, check python path",
+                       "->", str_err))
 
 
 def list_remote_files(tag, sat_id, inst_code=None, user=None,
                       password=None, supported_tags=None,
                       url="http://cedar.openmadrigal.org",
                       two_digit_year_break=None):
-    """Lists files available from Madrigal.
+    """List files available from Madrigal.
 
     Parameters
     ----------
@@ -279,7 +282,7 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
         and '2000' will be added for years < two_digit_year_break.
 
     Returns
-    --------
+    -------
     Void : (NoneType)
         Downloads data to disk.
 
@@ -304,7 +307,6 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
                                               inst_code=madrigal_inst_code)
 
     """
-
     import madrigalWeb.madrigalWeb
 
     if inst_code is None:
@@ -315,10 +317,10 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     # TODO, implement user and password values in test code
     # specific to each instrument
     if user is None:
-        print('No user information supplied for download.')
+        logger.info('No user information supplied for download.')
         user = 'pysat_testing'
     if password is None:
-        print('Please provide email address in password field.')
+        logger.info('Please provide email address in password field.')
         password = 'pysat_testing@not_real_email.org'
 
     try:
@@ -335,17 +337,17 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
                                        23, 59, 59)
     # iterate over experiments to grab files for each one
     files = []
-    print("Grabbing filenames for each experiment")
-    print("A total of", len(exp_list), "experiments were found")
+    logger.info("Grabbing filenames for each experiment")
+    logger.info("A total of %s %s", len(exp_list), "experiments were found")
     for exp in exp_list:
         file_list = web_data.getExperimentFiles(exp.id)
         files.extend(file_list)
 
     # parse these filenames to grab out the ones we want
-    print("Parsing filenames")
+    logger.info("Parsing filenames")
     stored = pysat._files.parse_fixed_width_filenames(files, format_str)
     # process the parsed filenames and return a properly formatted Series
-    print("Processing filenames")
+    logger.info("Processing filenames")
     return pysat._files.process_parsed_filenames(stored, two_digit_year_break)
 
 
@@ -388,7 +390,7 @@ def filter_data_single_date(self):
     pysat instrument file to this one.
 
     within platform_name.py set
-        default = pysat.instruments.madrigal_methods.filter_data_single_date
+        default = pysat.instruments.methods.madrigal.filter_data_single_date
     at the top level
 
     """

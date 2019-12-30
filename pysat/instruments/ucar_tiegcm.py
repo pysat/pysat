@@ -12,6 +12,8 @@ name : string
     'tiegcm'
 tag : string
     None supported
+sat_id : string
+    None supported
 
 Note
 ----
@@ -28,6 +30,9 @@ from __future__ import absolute_import
 import xarray as xr
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 # the platform and name strings associated with this instrument
 # need to be defined at the top level
 # these attributes will be copied over to the Instrument object by pysat
@@ -37,9 +42,7 @@ platform = 'ucar'
 name = 'tiegcm'
 
 # dictionary of data 'tags' and corresponding description
-tags = {'': 'Level-2 IVM Files',  # this is the default
-        'L1': 'Level-1 IVM Files',
-        'L0': 'Level-0 IVM Files'}
+tags = {'': 'UCAR TIE-GCM file'}
 # dictionary of satellite IDs, list of corresponding tags for each sat_ids
 # example
 # sat_ids = {'a':['L1', 'L0'], 'b':['L1', 'L2'], 'c':['L1', 'L3']}
@@ -47,7 +50,7 @@ sat_ids = {'': ['']}
 # good day to download test data for. Downloads aren't currently supported!
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
-test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 
 # specify using xarray (not using pandas)
 pandas_format = False
@@ -71,7 +74,7 @@ def init(self):
 
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
     return
 
@@ -153,7 +156,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     use by the end user. Arguments are provided by pysat.
 
     Multiple data levels may be supported via the 'tag' input string.
-    Currently defaults to level-2 data, or L2 in the filename.
 
     Parameters
     ----------
@@ -192,7 +194,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     the returned files are up to pysat specifications.
 
     """
-    format_str = 'tiegcm_icon_merg2.0_totTgcm.s_{day:03d}_{year:4d}.nc'
+    
+    if format_str is None:
+        # default file naming
+        format_str = 'tiegcm_icon_merg2.0_totTgcm.s_{day:03d}_{year:4d}.nc'
+        
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 
@@ -236,5 +242,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
 
     """
 
-    print('Not implemented.')
+    import warnings
+
+    warnings.warn('Not implemented in this version.')
     return

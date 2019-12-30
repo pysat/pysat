@@ -9,7 +9,13 @@ with the development of code associated with SPORT and the IVM.
 
 # import pandas as pds
 # import numpy as np
+import warnings
+
 import pysat
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 # pysat required parameters
 platform = 'sport'
@@ -22,7 +28,7 @@ tags = {'': 'Level-2 IVM Files',
 # only one satellite in this case
 sat_ids = {'': ['']}
 # good day to download test data for. Downloads aren't currently supported
-test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
+_test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 
 
 def init(self):
@@ -32,7 +38,7 @@ def init(self):
 
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
 
     pass
@@ -131,7 +137,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """
 
     if format_str is None:
-        if tag is '':
+        if tag == '':
             tag = 'L2'
         format_str = ''.join(['SPORT_', tag, '_IVM_{year:04d}-{month:02d}-'
                               '{day:02d}_v{version:02d}r{revision:04d}.NC'])
@@ -173,5 +179,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    print('Downloads are not currently supported')
+    warnings.warn('Downloads are not currently supported - not launched yet!')
+
     pass

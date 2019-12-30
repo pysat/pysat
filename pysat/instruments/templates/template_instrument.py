@@ -45,6 +45,9 @@ import pandas as pds
 import xarray as xr
 import pysat
 
+import logging
+logger = logging.getLogger(__name__)
+
 # the platform and name strings associated with this instrument
 # need to be defined at the top level
 # these attributes will be copied over to the Instrument object by pysat
@@ -67,11 +70,11 @@ sat_ids = {'': ['']}
 # Define good days to download data for when pysat undergoes testing.
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
-# test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
-#                    'L1':pysat.datetime(2019,1,1)},
-#               'b':{'L1':pysat.datetime(2019,1,1),
-#                    'L2':pysat.datetime(2019,1,1),}}
-test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
+# _test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
+#                     'L1':pysat.datetime(2019,1,1)},
+#                'b':{'L1':pysat.datetime(2019,1,1),
+#                     'L2':pysat.datetime(2019,1,1),}}
+_test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 
 # Set to False to specify using xarray (not using pandas)
 # Set to True if data will be returned via a pandas DataFrame
@@ -96,7 +99,7 @@ def init(self):
 
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
     return
 

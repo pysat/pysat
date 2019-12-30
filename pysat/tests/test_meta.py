@@ -12,13 +12,17 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.meta = pysat.Meta()
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='',
+        self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.testInst
         del self.meta
+
+    @raises(ValueError)
+    def test_setting_nonpandas_metadata(self):
+        self.meta = pysat.Meta(metadata='Not a Panda')
 
     def test_inst_data_assign_meta_default(self):
         self.testInst.load(2009, 1)
@@ -311,12 +315,10 @@ class TestBasics():
         aa = self.meta.pop('new3')
         assert np.all(aa['children'] == meta2)
         # ensure lower metadata created when ho data assigned
-        # print (aa['units'])
         assert aa['units'] == ''
         assert aa['long_name'] == 'new3'
         m1 = self.meta['new2']
         m2 = self.meta.pop('new2')
-        # assert np.all(bb == cc)
         assert m1['children'] is None
         assert m2['children'] is None
         for key in m1.index:
@@ -324,6 +326,24 @@ class TestBasics():
                 assert m1[key] == m2[key]
         # make sure both have the same indexes
         assert np.all(m1.index == m2.index)
+
+    @raises(KeyError)
+    def test_basic_pops_w_bad_key(self):
+
+        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew',
+                             'value_min': 0, 'value_max': 1}
+        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
+                             'description': 'boohoo', 'fill': 1,
+                             'value_min': 0, 'value_max': 1}
+        _ = self.meta.pop('new4')
+
+    @raises(KeyError)
+    def test_basic_getitem_w_bad_key_string(self):
+        self.meta['new4']
+
+    @raises(NotImplementedError)
+    def test_basic_getitem_w_integer(self):
+        self.meta[1]
 
     def test_basic_equality(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
@@ -443,14 +463,30 @@ class TestBasics():
         assert self.meta['new2'].units == 'hey2'
         assert self.meta['new2'].long_name == 'boo2'
 
+    def test_multiple_meta_retrieval(self):
+        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
+                                      'long_name': ['boo', 'boo2']}
+        self.meta[['new', 'new2']]
+        self.meta[['new', 'new2'],:]
+        self.meta[:, 'units']
+        self.meta['new',('units','long_name')]
+
+    def test_multiple_meta_ho_data_retrieval(self):
+        meta = pysat.Meta()
+        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
+        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
+        self.meta[['higher', 'lower']] = {'meta': [meta, None],
+                                          'units': [None, 'boo'],
+                                          'long_name': [None, 'boohoo']}
+        assert self.meta['lower'].units == 'boo'
+        assert self.meta['lower'].long_name == 'boohoo'
+        assert self.meta['higher'].children == meta
+        self.meta['higher',('axis','scale')]
+
     @raises(ValueError)
     def test_multiple_meta_assignment_error(self):
         self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
                                       'long_name': ['boo']}
-        assert self.meta['new'].units == 'hey'
-        assert self.meta['new'].long_name == 'boo'
-        assert self.meta['new2'].units == 'hey2'
-        assert self.meta['new2'].long_name == 'boo2'
 
     def test_replace_meta_units(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -689,7 +725,6 @@ class TestBasics():
     def test_multiple_input_names_null_value_preexisting_values(self):
         self.meta[['test1', 'test2']] = {'units': ['degrees', 'hams'],
                                          'long_name': ['testing', 'further']}
-        # print (self.meta)
         self.meta[['test1', 'test2']] = {}
         check1 = self.meta['test1', 'units'] == 'degrees'
         check2 = self.meta['test2', 'long_name'] == 'further'
@@ -711,8 +746,6 @@ class TestBasics():
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
-        # print ( self.meta['new'])
-        # print (self.meta['new2', 'units'])
         self.meta['new'].units
 
     def test_get_Units_wrong_case(self):
@@ -748,12 +781,10 @@ class TestBasics():
             self.meta['new_%d' % i] = {'units': 'heyhey%d' % i,
                                        'long_name': 'booboo%d' % i}
 
-        # print (self.meta['new'])
         assert self.meta['new'].Units == 'hey9'
         assert self.meta['new'].Long_Name == 'boo9'
         assert self.meta['new_9'].Units == 'heyhey9'
         assert self.meta['new_9'].Long_Name == 'booboo9'
-        # print (self.meta['new_500'])
         assert self.meta['new_5'].Units == 'hey9'
         assert self.meta['new_5'].Long_Name == 'boo9'
 
@@ -763,7 +794,6 @@ class TestBasics():
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        # print(self.meta['new'])
         assert ((self.meta['new'].Units == 'hey') &
                 (self.meta['new'].Long_Name == 'boo') &
                 (self.meta['new2'].Units == 'hey2') &
@@ -777,7 +807,6 @@ class TestBasics():
         self.meta['new2'] = meta2
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        # print(self.meta['new'])
         assert ((self.meta['new'].Units == 'hey') &
                 (self.meta['new'].Long_Name == 'boo') &
                 (self.meta['new2'].children['new21'].Units == 'hey2') &
@@ -792,7 +821,6 @@ class TestBasics():
         self.meta['new2'] = meta2
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        # print(self.meta['new'])
         assert ((self.meta['new'].units == 'hey') &
                 (self.meta['new'].long_name == 'boo') &
                 (self.meta['new2'].children['new21'].units == 'hey2') &
@@ -910,6 +938,7 @@ class TestBasics():
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta[['NEW2', 'new']] = {'units': ['yeppers', 'yep']}
+
         assert (self.meta['new'].units == 'yep')
         assert (self.meta['new'].long_name == 'boo')
         assert (self.meta['new2'].units == 'yeppers')
@@ -921,8 +950,8 @@ class TestBasics():
         self.meta._yo_yo = 'yo yo'
         self.meta.date = None
         self.meta.transfer_attributes_to_instrument(self.testInst)
-        check1 = self.testInst.new_attribute == 'hello'
-        assert check1
+
+        assert self.testInst.new_attribute == 'hello'
 
     # ensure leading hyphens are dropped
     @raises(AttributeError)
@@ -941,15 +970,6 @@ class TestBasics():
         self.meta.date = None
         self.meta.transfer_attributes_to_instrument(self.testInst)
         self.testInst.__yo_yo == 'yo yo'
-
-    # ensure meta attributes aren't transfered
-    @raises(AttributeError)
-    def test_transfer_attributes_to_instrument_no_meta_attr(self):
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.date = None
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-        self.testInst.ho_data
 
     @raises(RuntimeError)
     def test_transfer_attributes_to_instrument_strict_names(self):
@@ -972,6 +992,28 @@ class TestBasics():
 
         assert (self.meta['new'].units == 'hey')
         assert (self.meta['new'].long_name == 'boo')
+        assert (self.meta['NEW21'].units == 'hey2')
+        assert (self.meta['NEW21'].long_name == 'boo2')
+        assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+    def test_drop_meta(self):
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
+                              'YoYoYO': 'yolo'}
+        self.meta.drop(['new'])
+
+        assert not ('new' in self.meta.data.index)
+        assert (self.meta['NEW21'].units == 'hey2')
+        assert (self.meta['NEW21'].long_name == 'boo2')
+        assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+    def test_keep_meta(self):
+        self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
+        self.meta['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
+                              'YoYoYO': 'yolo'}
+        self.meta.keep(['new21'])
+
+        assert not ('new' in self.meta.data.index)
         assert (self.meta['NEW21'].units == 'hey2')
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')

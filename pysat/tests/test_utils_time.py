@@ -6,7 +6,6 @@ import numpy as np
 from nose.tools import raises
 import pandas as pds
 
-import pysat
 from pysat.utils import time as pytime
 
 
@@ -63,7 +62,7 @@ def test_parse_date_4_digit_year():
 def test_parse_date_bad_input():
     """Test the ability to idenitfy a non-physical date"""
 
-    date = pytime.parse_date('194', '15', '31')
+    _ = pytime.parse_date('194', '15', '31')
 
 
 ############
@@ -106,26 +105,26 @@ def test_calc_freq_type_fail():
 
 
 ####################
-# season_date_range
+# create_date_range
 
-def test_season_date_range():
+def test_create_date_range():
     """Test ability to generate season list"""
 
     start = pds.datetime(2012, 2, 28)
     stop = pds.datetime(2012, 3, 1)
-    season = pytime.season_date_range(start, stop, freq='D')
+    season = pytime.create_date_range(start, stop, freq='D')
 
     assert season[0] == start
     assert season[-1] == stop
     assert len(season) == 3
 
 
-def test_season_date_range_w_gaps():
+def test_create_date_range_w_gaps():
     """Test ability to generate season list"""
 
     start = [pds.datetime(2012, 2, 28), pds.datetime(2013, 2, 28)]
     stop = [pds.datetime(2012, 3, 1), pds.datetime(2013, 3, 1)]
-    season = pytime.season_date_range(start, stop, freq='D')
+    season = pytime.create_date_range(start, stop, freq='D')
 
     assert season[0] == start[0]
     assert season[-1] == stop[-1]
@@ -153,7 +152,7 @@ def test_create_datetime_index():
 def test_create_datetime_index_wo_year():
     """Must include a year"""
 
-    dates = pytime.create_datetime_index()
+    _ = pytime.create_datetime_index()
 
 
 def test_create_datetime_index_wo_month_day_uts():
@@ -166,3 +165,23 @@ def test_create_datetime_index_wo_month_day_uts():
     assert dates[0] == pds.datetime(2012, 1, 1)
     assert dates[-1] == pds.datetime(2012, 1, 1)
     assert len(dates) == 4
+
+
+def test_deprecated_season_date_range():
+    """Tests that deprecation of season_date_range is working"""
+
+    import warnings
+
+    start = pds.datetime(2012, 2, 28)
+    stop = pds.datetime(2012, 3, 1)
+    warnings.simplefilter("always")
+    with warnings.catch_warnings(record=True) as war1:
+        season1 = pytime.create_date_range(start, stop, freq='D')
+    with warnings.catch_warnings(record=True) as war2:
+        season2 = pytime.season_date_range(start, stop, freq='D')
+
+    assert len(season1) == len(season2)
+    assert (season1 == season2).all()
+    assert len(war1) == 0
+    assert len(war2) == 1
+    assert war2[0].category == DeprecationWarning

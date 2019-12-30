@@ -1,14 +1,12 @@
 """
-tests the pysat meta object and code
+tests the pysat instruments and code
 """
 from importlib import import_module
 from functools import partial
 import numpy as np
 import os
-import sys
 import warnings
 
-import nose.tools
 import pandas as pds
 import tempfile
 
@@ -19,7 +17,7 @@ import pysat.instruments.pysat_testing
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
                 'cosmic2013_gps', 'de2_idm', 'demeter_iap', 'sport_ivm',
                 'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv',
-                'sw_dst', 'ucar_tiegcm']
+                'supermag_magnetometer', 'sw_dst', 'ucar_tiegcm']
 
 # exclude testing download functionality for specific module name, tag, sat_id
 exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
@@ -87,30 +85,29 @@ def init_func_external(self):
             # try and grab basic information about the module so we
             # can iterate over all of the options
             try:
-                info = module.test_dates
+                info = module._test_dates
             except AttributeError:
                 info = {}
                 info[''] = {'': pysat.datetime(2009, 1, 1)}
-                module.test_dates = info
+                module._test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
-                    if name in exclude_tags:
-                        if tag in exclude_tags[name]['tag'] and \
-                                  sat_id in exclude_tags[name]['sat_id']:
-                            # drop out of for loop
-                            # we don't want to test download for this combo
-                            print(' '.join(['Excluding', name, tag, sat_id]))
-                            break
-                    try:
-                        inst = pysat.Instrument(inst_module=module,
-                                                tag=tag,
-                                                sat_id=sat_id,
-                                                temporary_file_list=True)
-                        inst.test_dates = module.test_dates
-                        self.instruments.append(inst)
-                        self.instrument_modules.append(module)
-                    except:
-                        pass
+                    if name in exclude_tags and \
+                            tag in exclude_tags[name]['tag'] and \
+                            sat_id in exclude_tags[name]['sat_id']:
+                        # we don't want to test download for this combo
+                        print(' '.join(['Excluding', name, tag, sat_id]))
+                    else:
+                        try:
+                            inst = pysat.Instrument(inst_module=module,
+                                                    tag=tag,
+                                                    sat_id=sat_id,
+                                                    temporary_file_list=True)
+                            inst._test_dates = module._test_dates
+                            self.instruments.append(inst)
+                            self.instrument_modules.append(module)
+                        except:
+                            pass
     pysat.utils.set_data_dir(saved_path, store=False)
 
 
@@ -147,12 +144,12 @@ class TestInstrumentQualifier():
         pass
 
     def check_module_loadable(self, module, tag, sat_id):
-        a = pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
+        _ = pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
         assert True
 
     def check_module_importable(self, name):
-        module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
+        _ = import_module(''.join(('.', name)),
+                          package='pysat.instruments')
         assert True
 
     def check_module_info(self, module):
@@ -193,7 +190,7 @@ class TestInstrumentQualifier():
                 yield (f,)
 
                 try:
-                    info = module.test_dates
+                    info = module._test_dates
                 except AttributeError:
                     info = {}
                     info[''] = {'': 'failsafe'}
@@ -239,7 +236,7 @@ class TestInstrumentQualifier():
             yield (self.check_download_presence, module)
 
     def check_module_tdates(self, module):
-        info = module.test_dates
+        info = module._test_dates
         check = []
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
@@ -250,8 +247,7 @@ class TestInstrumentQualifier():
         from unittest.case import SkipTest
         import os
 
-        start = inst.test_dates[inst.sat_id][inst.tag]
-        # print (start)
+        start = inst._test_dates[inst.sat_id][inst.tag]
         try:
             # check for username
             inst_name = '_'.join((inst.platform, inst.name))
@@ -268,13 +264,13 @@ class TestInstrumentQualifier():
 
             new_path = os.path.join(pysat.__path__[0], 'tests', 'test_data')
             pysat.utils.set_data_dir(new_path, store=False)
-            test_dates = inst.test_dates
+            _test_dates = inst._test_dates
             inst = pysat.Instrument(platform=inst.platform,
                                     name=inst.name,
                                     tag=inst.tag,
                                     sat_id=inst.sat_id,
                                     temporary_file_list=True)
-            inst.test_dates = test_dates
+            inst._test_dates = _test_dates
             pysat.utils.set_data_dir(saved_path, store=False)
             if len(inst.files.files) > 0:
                 print("Found test data.")
@@ -287,7 +283,7 @@ class TestInstrumentQualifier():
     def check_load(self, inst, fuzzy=False):
         # set ringer data
         inst.data = pds.DataFrame([0])
-        start = inst.test_dates[inst.sat_id][inst.tag]
+        start = inst._test_dates[inst.sat_id][inst.tag]
         inst.load(date=start)
         if not fuzzy:
             assert not inst.empty
@@ -304,7 +300,7 @@ class TestInstrumentQualifier():
     def test_download_and_load(self):
         for inst in self.instruments:
             f = partial(self.check_module_tdates, inst)
-            f.description = ' '.join(('Checking for test_dates information',
+            f.description = ' '.join(('Checking for _test_dates information',
                                       'attached to module: ', inst.platform,
                                       inst.name, inst.tag, inst.sat_id))
             yield (f,)
@@ -370,7 +366,6 @@ class TestInstrumentQualifier():
                 warnings.warn(' '.join(('Download for', inst.platform,
                                         inst.name, inst.tag, inst.sat_id,
                                         'was not successful.')))
-                # TODO need a warning!
 
     # Optional support
 

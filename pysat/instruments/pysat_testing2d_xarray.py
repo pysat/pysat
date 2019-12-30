@@ -11,6 +11,7 @@ import pandas as pds
 import xarray as xr
 
 import pysat
+from pysat.instruments.methods import testing as test
 
 platform = 'pysat'
 name = 'testing2D_xarray'
@@ -22,7 +23,7 @@ def init(self):
     self.new_thing = True
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, malformed_index=False):
     """ Loads the test files
 
     Parameters
@@ -30,8 +31,7 @@ def load(fnames, tag=None, sat_id=None):
     fnames : (list)
         List of filenames
     tag : (str or NoneType)
-        Instrument tag (accepts '' or a number (i.e., '10'), which specifies
-        the number of times to include in the test instrument)
+        Instrument tag (accepts '')
     sat_id : (str or NoneType)
         Instrument satellite ID (accepts '')
 
@@ -58,8 +58,14 @@ def load(fnames, tag=None, sat_id=None):
     num_array = np.arange(num) * scalar
     # seed DataFrame with UT array
     index = pds.date_range(date,
-                           date + pds.DateOffset(seconds=num-1),
+                           date+pds.DateOffset(seconds=num-1),
                            freq='S')
+    if malformed_index:
+        index = index[0:num].tolist()
+        # nonmonotonic
+        index[0:3], index[3:6] = index[3:6], index[0:3]
+        # non unique
+        index[6:9] = [index[6]]*3
     data = xr.Dataset({'uts': (('time'), index)}, coords={'time': index})
 
     # need to create simple orbits here. Have start of first orbit
@@ -68,27 +74,31 @@ def load(fnames, tag=None, sat_id=None):
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
     time_delta = date - pysat.datetime(2009, 1, 1)
-    # root start
-    uts_root = np.mod(time_delta.total_seconds(), 5820)
+
     # mlt runs 0-24 each orbit.
-    mlt = np.mod(uts_root + np.arange(num) * scalar, 5820) * (24. / 5820.)
+    mlt = test.generate_fake_data(time_delta.total_seconds(),
+                                  np.arange(num)*scalar,
+                                  period=5820, data_range=[0.0, 24.0])
     data['mlt'] = (('time'), mlt)
+
     # do slt, 20 second offset from mlt
-    uts_root = np.mod(time_delta.total_seconds() + 20, 5820)
-    data['slt'] = (('time'),
-                   np.mod(uts_root + np.arange(num) * scalar, 5820) *
-                   (24. / 5820.))
+    slt = test.generate_fake_data(time_delta.total_seconds()+20,
+                                  np.arange(num)*scalar,
+                                  period=5820, data_range=[0.0, 24.0])
+    data['slt'] = (('time'), slt)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    long_uts_root = np.mod(time_delta.total_seconds(), 6240)
-    longitude = np.mod(long_uts_root + num_array, 6240) * (360. / 6240.)
+    longitude = test.generate_fake_data(time_delta.total_seconds(), num_array,
+                                        period=6240, data_range=[0.0, 360.0])
     data['longitude'] = (('time'), longitude)
 
     # create latitude signal for testing polar orbits
-    latitude = 90. * np.cos(np.mod(uts_root + num_array, 5820) *
-                            (2. * np.pi / 5820.))
+    angle = test.generate_fake_data(time_delta.total_seconds(),
+                                    num_array, period=5820,
+                                    data_range=[0.0, 2.0*np.pi])
+    latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
 
     # create some fake data to support testing of averaging routines

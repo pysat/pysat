@@ -1,35 +1,14 @@
 import datetime as dt
 import numpy as np
 import os
-import warnings
 
 from nose.tools import assert_raises
 from nose.plugins import skip
 import pandas as pds
-import tempfile
 
 import pysat
-from pysat.instruments import sw_kp, sw_f107, sw_methods
-
-
-def remove_files(inst):
-    # remove any files downloaded as part of the unit tests
-    temp_dir = inst.files.data_path
-    # Check if there are less than 20 files to ensure this is the testing
-    # directory
-    if len(inst.files.files.values) < 20:
-        for the_file in list(inst.files.files.values):
-            # Check if filename is appended with date for fake_daily data
-            # ie, does an underscore exist to the right of the file extension?
-            if the_file.rfind('_') > the_file.rfind('.'):
-                # If so, trim the appendix to get the original filename
-                the_file = the_file[:the_file.rfind('_')]
-            file_path = os.path.join(temp_dir, the_file)
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-    else:
-        warnings.warn(''.join(('Files > 20.  Not deleted.  Please check to ',
-                              'ensure temp directory is used')))
+from pysat.instruments import sw_kp, sw_f107
+from pysat.instruments.methods import sw as sw_meth
 
 
 class TestSWKp():
@@ -37,13 +16,21 @@ class TestSWKp():
         """Runs before every method to create a clean testing setup"""
         # Load a test instrument
         self.testInst = pysat.Instrument()
-        self.testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0)},
+        self.testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0),
+                                            'ap_nan': np.full(shape=12, \
+                                                            fill_value=np.nan),
+                                            'ap_inf': np.full(shape=12, \
+                                                            fill_value=np.inf)},
                                            index=[pysat.datetime(2009, 1, 1)
                                                   + pds.DateOffset(hours=3*i)
                                                   for i in range(12)])
         self.testInst.meta = pysat.Meta()
         self.testInst.meta.__setitem__('Kp', {self.testInst.meta.fill_label:
                                               np.nan})
+        self.testInst.meta.__setitem__('ap_nan', {self.testInst.meta.fill_label:
+                                                  np.nan})
+        self.testInst.meta.__setitem__('ap_inv', {self.testInst.meta.fill_label:
+                                                  np.inf})
 
         # Load a test Metadata
         self.testMeta = pysat.Meta()
@@ -68,8 +55,8 @@ class TestSWKp():
         """ Test conversion of Kp to ap with fill values"""
 
         # Set the first value to a fill value, then calculate ap
-        self.testInst['Kp'][0] = \
-            self.testInst.meta['Kp'][self.testInst.meta.fill_label]
+        fill_label = self.testInst.meta.fill_label
+        self.testInst['Kp'][0] = self.testInst.meta['Kp'][fill_label]
         sw_kp.convert_3hr_kp_to_ap(self.testInst)
 
         # Test non-fill ap values
@@ -81,14 +68,10 @@ class TestSWKp():
                self.testInst.meta['3hr_ap'][self.testInst.meta.max_label])
 
         # Test the fill value in the data and metadata
-        if np.isnan(self.testInst['Kp'][0]):
-            assert np.isnan(self.testInst['3hr_ap'][0])
-            assert np.isnan( \
-                self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label])
-        else:
-            assert self.testInst['Kp'][0] == self.testInst['3hr_ap'][0]
-            assert(self.testInst.meta['3hr_ap'][self.testInst.meta.fill_label]
-                   == self.testInst.meta['Kp'][self.testInst.meta.fill_label])
+        assert np.isnan(self.testInst['3hr_ap'][0])
+        assert np.isnan(self.testInst.meta['3hr_ap'][fill_label])
+
+        del fill_label
 
     def test_convert_kp_to_ap_bad_input(self):
         """ Test conversion of Kp to ap with bad input"""
@@ -148,51 +131,111 @@ class TestSWKp():
                'High lat Kp')
         del dkey
 
+    def test_convert_ap_to_kp(self):
+        """ Test conversion of ap to Kp"""
+
+        sw_kp.convert_3hr_kp_to_ap(self.testInst)
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['3hr_ap'])
+
+        # Assert original and coverted there and back Kp are equal
+        assert all(abs(kp_out - self.testInst.data['Kp']) < 1.0e-4)
+
+        # Assert the converted Kp meta data exists and is reasonable
+        assert 'Kp' in kp_meta.keys()
+        assert(kp_meta['Kp'][kp_meta.fill_label] == -1)
+
+        del kp_out, kp_meta
+
+    def test_convert_ap_to_kp_middle(self):
+        """ Test conversion of ap to Kp where ap is not an exact Kp value"""
+
+        sw_kp.convert_3hr_kp_to_ap(self.testInst)
+        self.testInst['3hr_ap'][8] += 1
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['3hr_ap'])
+
+        # Assert original and coverted there and back Kp are equal
+        assert all(abs(kp_out - self.testInst.data['Kp']) < 1.0e-4)
+
+        # Assert the converted Kp meta data exists and is reasonable
+        assert 'Kp' in kp_meta.keys()
+        assert(kp_meta['Kp'][kp_meta.fill_label] == -1)
+
+        del kp_out, kp_meta
+
+    def test_convert_ap_to_kp_nan_input(self):
+        """ Test conversion of ap to Kp where ap is NaN"""
+
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['ap_nan'])
+
+        # Assert original and coverted there and back Kp are equal
+        assert all(kp_out == -1)
+
+        # Assert the converted Kp meta data exists and is reasonable
+        assert 'Kp' in kp_meta.keys()
+        assert(kp_meta['Kp'][kp_meta.fill_label] == -1)
+
+        del kp_out, kp_meta
+
+    def test_convert_ap_to_kp_inf_input(self):
+        """ Test conversion of ap to Kp where ap is Inf"""
+
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['ap_inf'])
+
+        # Assert original and coverted there and back Kp are equal
+        assert all(kp_out[1:] == -1)
+
+        # Assert the converted Kp meta data exists and is reasonable
+        assert 'Kp' in kp_meta.keys()
+        assert(kp_meta['Kp'][kp_meta.fill_label] == -1)
+
+        del kp_out, kp_meta
+
+    def test_convert_ap_to_kp_fill_val(self):
+        """ Test conversion of ap to Kp with fill values"""
+
+        # Set the first value to a fill value, then calculate ap
+        fill_label = self.testInst.meta.fill_label
+        self.testInst['Kp'][0] = self.testInst.meta['Kp'][fill_label]
+        sw_kp.convert_3hr_kp_to_ap(self.testInst)
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['3hr_ap'], \
+                            fill_val=self.testInst.meta['Kp'][fill_label])
+
+        # Test non-fill ap values
+        assert all(abs(kp_out[1:] - self.testInst.data['Kp'][1:]) < 1.0e-4)
+
+        # Test the fill value in the data and metadata
+        assert np.isnan(kp_out[0])
+        assert np.isnan(kp_meta['Kp'][fill_label])
+
+        del fill_label, kp_out, kp_meta
+
 
 class TestSwKpCombine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        # create temporary directory
-        dir_name = tempfile.mkdtemp()
+        # Switch to test_data directory
         self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(dir_name, store=False)
+        pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
-                                                 microsecond=0)
+        self.test_day = pysat.datetime(2019, 3, 18)
         self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
                         "recent_inst": pysat.Instrument("sw", "kp", "recent"),
                         "forecast_inst":
                         pysat.Instrument("sw", "kp", "forecast"),
-                        "start": self.today - dt.timedelta(days=30),
-                        "stop": self.today + dt.timedelta(days=3),
+                        "start": self.test_day - dt.timedelta(days=30),
+                        "stop": self.test_day + dt.timedelta(days=3),
                         "fill_val": -1}
-
-        # Download combination testing input
-        self.download = True
-        # Load the instrument objects
-        for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
-            try:
-                self.combine[kk].download(start=self.combine['start'],
-                                          stop=self.combine['stop'])
-            except:
-                self.download = False
-                pass
-
-            if len(self.combine[kk].files.files) == 0:
-                self.download = False
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        for kk in ['standard_inst', 'recent_inst', 'forecast_inst']:
-            remove_files(self.combine[kk])
         pysat.utils.set_data_dir(self.saved_path)
-        del self.combine, self.download, self.today, self.saved_path
+        del self.combine, self.test_day, self.saved_path
 
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
 
-        assert_raises(ValueError, sw_methods.combine_kp)
+        assert_raises(ValueError, sw_meth.combine_kp)
 
     def test_combine_kp_one(self):
         """ Test combine_kp failure when only one instrument is provided"""
@@ -207,7 +250,7 @@ class TestSwKpCombine():
         testInst.meta['Kp'] = {testInst.meta.fill_label: np.nan}
 
         combo_in = {"standard_inst": testInst}
-        assert_raises(ValueError, sw_methods.combine_kp, combo_in)
+        assert_raises(ValueError, sw_meth.combine_kp, combo_in)
 
         del combo_in, testInst
 
@@ -217,49 +260,51 @@ class TestSwKpCombine():
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
-        assert_raises(ValueError, sw_methods.combine_kp, combo_in)
+        assert_raises(ValueError, sw_meth.combine_kp, combo_in)
 
         del combo_in
 
+    def test_combine_kp_no_data(self):
+        """Test combine_kp when no data is present for specified times"""
+
+        combo_in = {kk: self.combine['forecast_inst'] for kk in
+                    ['standard_inst', 'recent_inst', 'forecast_inst']}
+        combo_in['start'] = pysat.datetime(2014, 2, 19)
+        combo_in['stop'] = pysat.datetime(2014, 2, 24)
+        kp_inst = sw_meth.combine_kp(**combo_in)
+
+        assert kp_inst.data.isnull().all()["Kp"]
+
+        del combo_in, kp_inst
+
     def test_combine_kp_inst_time(self):
         """Test combine_kp when times are provided through the instruments"""
-
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
 
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
         combo_in['standard_inst'].load(date=self.combine['start'])
-        combo_in['recent_inst'].load(date=self.today)
-        combo_in['forecast_inst'].load(date=self.today)
+        combo_in['recent_inst'].load(date=self.test_day)
+        combo_in['forecast_inst'].load(date=self.test_day)
         combo_in['stop'] = combo_in['forecast_inst'].index[-1]
 
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
-        assert kp_inst.index[-1] <= self.combine['stop']
+        # kp_inst contains times up to 21:00:00, coombine['stop'] is midnight
+        assert kp_inst.index[-1].date() <= self.combine['stop'].date()
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
 
-        fill_val = combo_in['standard_inst'].meta['Kp'][kp_inst.meta.fill_label]
+        assert np.isnan(kp_inst.meta['Kp'][kp_inst.meta.fill_label])
+        assert len(kp_inst['Kp'][np.isnan(kp_inst['Kp'])]) == 0
 
-        if np.isnan(fill_val):
-            assert np.isnan(kp_inst.meta['Kp'][kp_inst.meta.fill_label])
-            assert len(kp_inst['Kp'][np.isnan(kp_inst['Kp'])]) == 0
-        else:
-            assert kp_inst.meta['Kp'][kp_inst.meta.fill_label] == fill_val
-            assert len(kp_inst['Kp'][kp_inst['Kp'] == fill_val]) == 0
-
-        del combo_in, kp_inst, fill_val
+        del combo_in, kp_inst
 
     def test_combine_kp_all(self):
         """Test combine_kp when all input is provided"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
-
-        kp_inst = sw_methods.combine_kp(**self.combine)
+        kp_inst = sw_meth.combine_kp(**self.combine)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -276,12 +321,9 @@ class TestSwKpCombine():
     def test_combine_kp_no_forecast(self):
         """Test combine_kp when forecasted data is not provided"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
-
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'forecast_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -297,19 +339,16 @@ class TestSwKpCombine():
     def test_combine_kp_no_recent(self):
         """Test combine_kp when recent data is not provided"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
-
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'recent_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
-        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
-               self.combine['fill_val'])
+        assert (kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
+                self.combine['fill_val'])
         assert len(kp_inst['Kp'][kp_inst['Kp']]
                    == self.combine['fill_val']) > 0
 
@@ -318,12 +357,9 @@ class TestSwKpCombine():
     def test_combine_kp_no_standard(self):
         """Test combine_kp when standard data is not provided"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
-
         combo_in = {kk: self.combine[kk] for kk in self.combine.keys()
                     if kk != 'standard_inst'}
-        kp_inst = sw_methods.combine_kp(**combo_in)
+        kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.index[0] >= self.combine['start']
         assert kp_inst.index[-1] < self.combine['stop']
@@ -378,7 +414,8 @@ class TestSWF107():
 
     def test_calc_f107a_high_rate(self):
         """ Test the calc_f107a routine with sub-daily data"""
-        self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 3840)},
+        self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200,
+                                                                3840)},
                                            index=[pysat.datetime(2009, 1, 1)
                                                   + pds.DateOffset(hours=i)
                                                   for i in range(3840)])
@@ -423,64 +460,54 @@ class TestSWF107():
 class TestSWF107Combine():
     def setup(self):
         """Runs before every method to create a clean testing setup"""
-        # create temporary directory
-        dir_name = tempfile.mkdtemp()
+        # Switch to test_data directory
         self.saved_path = pysat.data_dir
-        pysat.utils.set_data_dir(dir_name, store=False)
+        pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.today = dt.datetime.today().replace(hour=0, minute=0, second=0,
-                                                 microsecond=0)
+        self.test_day = pysat.datetime(2019, 3, 16)
         self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
                             for tag in sw_f107.tags.keys()}
-        self.combineTimes = {"start": self.today - dt.timedelta(days=30),
-                             "stop": self.today + dt.timedelta(days=3)}
-
-        # Download combination testing input
-        self.download = True
-        # Load the instrument objects
-        for kk in self.combineInst.keys():
-            try:
-                if kk == '':
-                    self.combineInst[kk].download(self.combineTimes['start'],
-                                                  freq='MS')
-                else:
-                    self.combineInst[kk].download(**self.combineTimes)
-            except:
-                pass
-
-            if len(self.combineInst[kk].files.files) == 0:
-                self.download = False
+        self.combineTimes = {"start": self.test_day - dt.timedelta(days=30),
+                             "stop": self.test_day + dt.timedelta(days=3)}
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        for kk in self.combineInst.keys():
-            remove_files(self.combineInst[kk])
         pysat.utils.set_data_dir(self.saved_path)
-        del self.combineInst, self.download, self.today, self.combineTimes
+        del self.combineInst, self.test_day, self.combineTimes
 
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
 
-        assert_raises(TypeError, sw_methods.combine_f107)
+        assert_raises(TypeError, sw_meth.combine_f107)
 
     def test_combine_f107_no_time(self):
         """Test combine_f107 failure when no times are provided"""
 
-        assert_raises(ValueError, sw_methods.combine_f107,
+        assert_raises(ValueError, sw_meth.combine_f107,
                       self.combineInst[''], self.combineInst['forecast'])
 
-    def test_combine_f107_inst_time(self):
-        """Test combine_f107 with times provided through 'all' and 'forecast'"""
+    def test_combine_f107_no_data(self):
+        """Test combine_f107 when no data is present for specified times"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
+        combo_in = {kk: self.combineInst['forecast'] for kk in
+                    ['standard_inst', 'forecast_inst']}
+        combo_in['start'] = pysat.datetime(2014, 2, 19)
+        combo_in['stop'] = pysat.datetime(2014, 2, 24)
+        f107_inst = sw_meth.combine_f107(**combo_in)
+
+        assert f107_inst.data.isnull().all()["f107"]
+
+        del combo_in, f107_inst
+
+    def test_combine_f107_inst_time(self):
+        """Test combine_f107 with times provided through datasets"""
 
         self.combineInst['all'].load(date=self.combineTimes['start'])
-        self.combineInst['forecast'].load(date=self.today)
+        self.combineInst['forecast'].load(date=self.test_day)
 
-        f107_inst = sw_methods.combine_f107(self.combineInst['all'],
-                                            self.combineInst['forecast'])
+        f107_inst = sw_meth.combine_f107(self.combineInst['all'],
+                                         self.combineInst['forecast'])
 
         assert f107_inst.index[0] == dt.datetime(1947, 2, 13)
         assert f107_inst.index[-1] <= self.combineTimes['stop']
@@ -492,12 +519,9 @@ class TestSWF107Combine():
     def test_combine_f107_all(self):
         """Test combine_f107 when all input is provided with '' and '45day'"""
 
-        if not self.download:
-            raise skip.SkipTest("test needs downloaded data")
-
-        f107_inst = sw_methods.combine_f107(self.combineInst[''],
-                                            self.combineInst['45day'],
-                                            **self.combineTimes)
+        f107_inst = sw_meth.combine_f107(self.combineInst[''],
+                                         self.combineInst['45day'],
+                                         **self.combineTimes)
 
         assert f107_inst.index[0] >= self.combineTimes['start']
         assert f107_inst.index[-1] < self.combineTimes['stop']
@@ -538,7 +562,7 @@ class TestSWAp():
     def test_calc_daily_Ap(self):
         """ Test daily Ap calculation"""
 
-        sw_methods.calc_daily_Ap(self.testInst)
+        sw_meth.calc_daily_Ap(self.testInst)
 
         assert 'Ap' in self.testInst.data.columns
         assert 'Ap' in self.testInst.meta.keys()
@@ -552,11 +576,11 @@ class TestSWAp():
     def test_calc_daily_Ap_bad_3hr(self):
         """ Test daily Ap calculation with bad input key"""
 
-        assert_raises(ValueError, sw_methods.calc_daily_Ap, self.testInst,
+        assert_raises(ValueError, sw_meth.calc_daily_Ap, self.testInst,
                       "no")
 
     def test_calc_daily_Ap_bad_daily(self):
         """ Test daily Ap calculation with bad output key"""
 
-        assert_raises(ValueError, sw_methods.calc_daily_Ap, self.testInst,
+        assert_raises(ValueError, sw_meth.calc_daily_Ap, self.testInst,
                       "3hr_ap", "3hr_ap")

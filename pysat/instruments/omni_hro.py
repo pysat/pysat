@@ -12,6 +12,8 @@ name : string
     'hro'
 tag : string
     Select time between samples, one of {'1min', '5min'}
+sat_id : string
+    None supported
 
 Note
 ----
@@ -45,24 +47,24 @@ calculate_dayside_reconnection : Calculate the dayside reconnection rate
 
 from __future__ import print_function
 from __future__ import absolute_import
-import os
-import sys
+
 import functools
-
-from . import nasa_cdaweb_methods as cdw
-
-import pandas as pds
 import numpy as np
+import pandas as pds
 
 import pysat
+from .methods import nasa_cdaweb as cdw
+
+import logging
+logger = logging.getLogger(__name__)
 
 platform = 'omni'
 name = 'hro'
 tags = {'1min': '1-minute time averaged data',
         '5min': '5-minute time averaged data'}
 sat_ids = {'': ['5min']}
-test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
-                   '5min': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
+                    '5min': pysat.datetime(2009, 1, 1)}}
 
 # support list files routine
 # use the default CDAWeb method
@@ -141,8 +143,8 @@ def time_shift_to_magnetic_poles(inst):
     time_x = inst['BSN_x']*6371.2/-inst['Vx']
     idx, = np.where(np.isnan(time_x))
     if len(idx) > 0:
-        print(time_x[idx])
-        print(time_x)
+        logger.info(time_x[idx])
+        logger.info(time_x)
     time_x_offset = [pds.DateOffset(seconds=time)
                      for time in time_x.astype(int)]
     new_index = []
@@ -204,8 +206,8 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     max_wnum = np.floor(steady_window / sample_rate)
     if max_wnum != steady_window / sample_rate:
         steady_window = max_wnum * sample_rate
-        print("WARNING: sample rate is not a factor of the statistical window")
-        print("new statistical window is {:.1f}".format(steady_window))
+        logger.warning("sample rate is not a factor of the statistical window")
+        logger.warning("new statistical window is {:.1f}".format(steady_window))
 
     min_wnum = int(np.ceil(max_wnum * min_window_frac))
 
@@ -218,7 +220,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
 
     # Calculate the running circular standard deviation of the clock angle
     circ_kwargs = {'high': 360.0, 'low': 0.0}
-    ca = inst['clock_angle'][~np.isnan(inst['clock_angle'])]
+
     ca_std = \
         inst['clock_angle'].rolling(min_periods=min_wnum,
                                     window=steady_window,

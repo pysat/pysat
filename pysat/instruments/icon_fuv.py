@@ -37,18 +37,21 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
-
-import pandas as pds
 import numpy as np
+import pandas as pds
+import warnings
 
 import pysat
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 platform = 'icon'
 name = 'fuv'
 tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'': ['level_2']}
-test_dates = {'': {'level_2': pysat.datetime(2017, 5, 27)}}
+_test_dates = {'': {'level_2': pysat.datetime(2017, 5, 27)}}
 
 
 def init(self):
@@ -68,7 +71,7 @@ def init(self):
 
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
+    logger.info("Mission acknowledgements and data restrictions will be printed " +
           "here when available.")
 
     pass
@@ -104,8 +107,8 @@ def clean(inst, clean_level=None):
 
     """
 
-    if clean_level is not 'none':
-        print("Cleaning actions for ICON FUV aren't yet defined.")
+    if clean_level != 'none':
+        warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
     return
 
 
@@ -287,6 +290,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    print("Downloads aren't yet available.")
+    warnings.warn("Downloads aren't yet available.")
 
     return

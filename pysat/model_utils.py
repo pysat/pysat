@@ -12,12 +12,58 @@ Main Features
 from __future__ import print_function
 from __future__ import absolute_import
 
-import functools
-
 import datetime as dt
 import numpy as np
 import pandas as pds
-import xarray as xr
+import warnings
+
+from pysat import logger
+
+
+def satellite_view_through_model(sat, tie, scoords, tlabels):
+    """Interpolate model values onto satellite orbital path.
+
+    Parameters
+    ----------
+    sat : pysat.Instrument object
+        Instrument object with some form of coordinates
+    tie : ucar_tiegcm object
+        Model run loaded as tie_gcm object
+    scoords : string or list of strings
+        Variable names reflecting coordinates in sat to interpolate model onto
+    tlabels : string or list of strings
+        Variable names from model to interpolate onto sat locations
+    """
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatModelUtils instead:"
+                            "https://github.com/pysat/pysatModelUtils"]),
+                  DeprecationWarning, stacklevel=2)
+
+    # tiegcm is in pressure levels, need in altitude, but on regular
+    # grid
+    import scipy.interpolate as interpolate
+
+    # create input array using satellite time/position
+    if isinstance(scoords, str):
+        scoords = [scoords]
+    coords = [sat[coord] for coord in scoords]
+    coords.insert(0, sat.index.values.astype(int))
+    sat_pts = [inp for inp in zip(*coords)]
+
+    interp = {}
+    if isinstance(tlabels, str):
+        tlabels = [tlabels]
+    for label in tlabels:
+        points = [tie.data.coords[dim].values if dim != 'time' else
+                  tie.data.coords[dim].values.astype(int)
+                  for dim in tie[label].dims]
+        interp[label] = interpolate.RegularGridInterpolator(points,
+                                                            tie[label].values,
+                                                            bounds_error=False,
+                                                            fill_value=None)
+        sat[''.join(('model_', label))] = interp[label](sat_pts)
 
 
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
@@ -78,6 +124,12 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
     """
     import verify  # PyForecastTools
     from pysat import utils
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatModelUtils instead:"
+                            "https://github.com/pysat/pysatModelUtils"]),
+                  DeprecationWarning, stacklevel=2)
 
     method_rout = {"bias": verify.bias, "accuracy": verify.accuracy,
                    "meanPercentageError": verify.meanPercentageError,
@@ -155,25 +207,39 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Ensure no NaN are used in statistics
         inum = np.where(np.isfinite(mod_scaled) & np.isfinite(inst_dat))[0]
 
-        # Calculate all of the desired statistics
-        for mm in methods:
-            try:
-                stat_dict[iname][mm] = method_rout[mm](mod_scaled[inum],
-                                                       inst_dat[inum])
 
-                # Convenience functions add layers to the output, remove
-                # these layers
-                if hasattr(stat_dict[iname][mm], "keys"):
-                    for nn in stat_dict[iname][mm].keys():
-                        new = replace_keys[nn] if nn in replace_keys.keys() \
-                            else nn
-                        stat_dict[iname][new] = stat_dict[iname][mm][nn]
-                    del stat_dict[iname][mm]
-            except ValueError or NotImplementedError as err:
-                # Not all data types can use all statistics.  Print warnings
-                # instead of stopping processing.  Only valid statistics will
-                # be included in output
-                print("{:s} can't use {:s}: {:}".format(iname, mm, err))
+        if inum.shape[0] < 2:
+            # Not all data types can use all statistics.  Print warnings
+            # instead of stopping processing.  Only valid statistics
+            # will be included in output
+            logger.info("{:s} can't calculate stats for {:d} finite samples".format( \
+                                                        iname, inum.shape[0]))
+            stat_dict
+        else:
+            # Calculate all of the desired statistics
+            for mm in methods:
+                try:
+                    stat_dict[iname][mm] = method_rout[mm](mod_scaled[inum],
+                                                           inst_dat[inum])
+
+                    # Convenience functions add layers to the output, remove
+                    # these layers
+                    if hasattr(stat_dict[iname][mm], "keys"):
+                        for nn in stat_dict[iname][mm].keys():
+                            new = replace_keys[nn] if nn in replace_keys.keys()\
+                                else nn
+                            stat_dict[iname][new] = stat_dict[iname][mm][nn]
+                        del stat_dict[iname][mm]
+                except ValueError as verr:
+                    # Not all data types can use all statistics.  Print warnings
+                    # instead of stopping processing.  Only valid statistics
+                    # will be included in output
+                    logger.warning("{:s} can't use {:s}: {:}".format(iname, mm, verr))
+                except NotImplementedError:
+                    # Not all data types can use all statistics.  Print warnings
+                    # instead of stopping processing.  Only valid statistics
+                    # will be included in output
+                    logger.warning("{:s} can't implement {:s}".format(iname, mm))
 
     return stat_dict, data_units
 
@@ -251,6 +317,12 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
     from os import path
     import pysat
 
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatModelUtils instead:"
+                            "https://github.com/pysat/pysatModelUtils"]),
+                  DeprecationWarning, stacklevel=2)
+
     matched_inst = None
 
     # Test the input
@@ -300,16 +372,20 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
         mod_file = start.strftime(model_files)
 
         if path.isfile(mod_file):
-            mdata = model_load_rout(mod_file, start)
-            lon_high = float(mdata.coords[mod_lon_name].max())
-            lon_low = float(mdata.coords[mod_lon_name].min())
+            try:
+                mdata = model_load_rout(mod_file, start)
+                lon_high = float(mdata.coords[mod_lon_name].max())
+                lon_low = float(mdata.coords[mod_lon_name].min())
+            except Exception as err:
+                print("unable to load {:s}: {:}".format(mod_file, err))
+                mdata = None
         else:
             mdata = None
 
         if mdata is not None:
             # Load the instrument data, if needed
             if inst.empty or inst.index[-1] < istart:
-                inst.custom.add(pysat.utils.update_longitude, 'modify',
+                inst.custom.add(pysat.utils.coords.update_longitude, 'modify',
                                 low=lon_low, lon_name=inst_lon_name,
                                 high=lon_high)
                 inst.load(date=istart)
@@ -437,6 +513,12 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
     """
     from scipy import interpolate
     from pysat import utils
+
+    warnings.warn(' '.join(["This function is deprecated here and will be",
+                            "removed in pysat 3.0.0. Please use",
+                            "pysatModelUtils instead:"
+                            "https://github.com/pysat/pysatModelUtils"]),
+                  DeprecationWarning, stacklevel=2)
 
     # Test input
     if inst is None:
@@ -598,7 +680,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     if str(verr).find("requested xi is out of bounds") > 0:
                         # This is acceptable, pad the interpolated data with
                         # NaN
-                        print("Warning: {:} for ".format(verr) +
+                        logger.warning("{:} for ".format(verr) +
                               "{:s} data at {:}".format(mdat, xi))
                         yi = [np.nan]
                     else:

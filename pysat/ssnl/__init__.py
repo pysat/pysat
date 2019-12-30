@@ -16,3 +16,4 @@ Main Features
 from . import occur_prob
 from . import avg
 from . import plot
+from ._core import computational_form

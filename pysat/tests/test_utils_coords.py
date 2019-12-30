@@ -3,9 +3,9 @@ tests the pysat coords area
 """
 import numpy as np
 
-from nose.tools import assert_raises, raises
 import pandas as pds
 
+from nose.tools import raises
 import pysat
 from pysat.utils import coords, time
 
@@ -31,7 +31,8 @@ class TestBasics():
         self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
                           "radians", "h", "hr", "hrs", "hours"]
         self.dist_units = ["m", "km", "cm"]
-        self.vel_units = ["m/s", "cm/s", "km/s"]
+        self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
+                          'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -108,65 +109,21 @@ class TestBasics():
         coords.calc_solar_local_time(self.testInst, lon_name="not longitude",
                                      slt_name='slt')
 
-    #####################################
-    # Scale units
+    def test_deprecation_warning_scale_units(self):
+        """Test deprecation warning for this function"""
 
-    def test_scale_units_same(self):
-        """ Test scale_units when both units are the same """
+        import warnings
 
-        scale = coords.scale_units("happy", "happy")
+        warnings.simplefilter("always")
+        scale1 = pysat.utils.scale_units("happy", "happy")
+        with warnings.catch_warnings(record=True) as war:
+            scale2 = coords.scale_units("happy", "happy")
 
-        assert scale == 1.0
+        assert scale1 == scale2
+        assert len(war) == 1
+        assert war[0].category == DeprecationWarning
 
-    def test_scale_units_angles(self):
-        """Test scale_units for angles """
-
-        for out_unit in self.deg_units:
-            scale = coords.scale_units(out_unit, "deg")
-
-            if out_unit.find("deg") == 0:
-                assert scale == 1.0
-            elif out_unit.find("rad") == 0:
-                assert scale == np.pi / 180.0
-            else:
-                assert scale == 1.0 / 15.0
-
-    def test_scale_units_dist(self):
-        """Test scale_units for distances """
-
-        for out_unit in self.dist_units:
-            scale = coords.scale_units(out_unit, "m")
-
-            if out_unit == "m":
-                assert scale == 1.0
-            elif out_unit.find("km") == 0:
-                assert scale == 0.001
-            else:
-                assert scale == 100.0
-
-    def test_scale_units_vel(self):
-        """Test scale_units for velocities """
-
-        for out_unit in self.vel_units:
-            scale = coords.scale_units(out_unit, "m/s")
-
-            if out_unit == "m/s":
-                assert scale == 1.0
-            elif out_unit.find("km/s") == 0:
-                assert scale == 0.001
-            else:
-                assert scale == 100.0
-
-    def test_scale_units_bad(self):
-        """Test scale_units for mismatched input"""
-
-        assert_raises(ValueError, coords.scale_units, "happy", "m")
-        assert_raises(ValueError, coords.scale_units, "m", "happy")
-        assert_raises(ValueError, coords.scale_units, "m", "m/s")
-        assert_raises(ValueError, coords.scale_units, "m", "deg")
-        assert_raises(ValueError, coords.scale_units, "h", "km/s")
-
-    #####################################
+    ###################################
     # Geodetic / Geocentric conversions
 
     def test_geodetic_to_geocentric_single(self):

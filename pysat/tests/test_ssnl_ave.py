@@ -1,12 +1,10 @@
 """
 tests the pysat averaging code
 """
-import numpy as np
-import sys
-
 from nose.tools import raises
+import numpy as np
 import pandas as pds
-
+import warnings
 import pysat
 from pysat.ssnl import avg
 
@@ -16,7 +14,7 @@ class TestBasics():
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
-        self.bounds1 = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.bounds1 = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
         self.bounds2 = (pysat.datetime(2009, 1, 1), pysat.datetime(2009, 1, 2))
 
     def teardown(self):
@@ -60,7 +58,7 @@ class TestBasics():
 
         # holds here because there are 32 days, no data is discarded,
         # each day holds same amount of data
-        assert(self.testInst.data['dummy1'].size*32 ==
+        assert(self.testInst.data['dummy1'].size*3 ==
                sum([sum(i) for i in results['dummy1']['count']]))
 
         assert np.all(check)
@@ -91,13 +89,95 @@ class TestBasics():
         assert np.all(ans == 86399/2.0)
 
 
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
+    def test_median1D_deprecation_warning(self):
+        """Test generation of deprecation warning for median1D"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.median1D(None, [0., 360., 24.],
+                             'longitude', ['dummy1'])
+            except ValueError:
+                # Setting inst to None should produce a ValueError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_median2D_deprecation_warning(self):
+        """Test generation of deprecation warning for median1D"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.median2D(None, [0., 360., 24.], 'longitude',
+                             [0., 24., 24.], 'mlt', ['dummy1'])
+            except ValueError:
+                # Setting inst to None should produce a ValueError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_mean_by_day_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_day"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.mean_by_day(None, 'dummy1')
+            except TypeError:
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_mean_by_orbit_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_orbit"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.mean_by_orbit(None, 'dummy1')
+            except AttributeError:
+                # Setting inst to None should produce a AttributeError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_mean_by_file_deprecation_warning(self):
+        """Test generation of deprecation warning for mean_by_file"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                avg.mean_by_file(None, 'dummy1')
+            except TypeError:
+                # Setting inst to None should produce a TypeError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+
 class TestFrameProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing2D',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
-                                pysat.datetime(2008, 2, 1))
+                                pysat.datetime(2008, 1, 3))
         self.dname = 'alt_profiles'
         self.test_vals = np.arange(50) * 1.2
         self.test_fracs = np.arange(50) / 50.0
@@ -193,7 +273,7 @@ class TestConstellation:
                                           clean_level='clean'))
         self.testC = pysat.Constellation(instruments=insts)
         self.testI = pysat.Instrument('pysat', 'testing', clean_level='clean')
-        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.testI, self.bounds
@@ -250,7 +330,7 @@ class TestHeterogenousConstellation:
                                           clean_level='clean',
                                           root_date=r_date))
         self.testC = pysat.Constellation(instruments=insts)
-        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.bounds
@@ -320,7 +400,7 @@ class Test2DConstellation:
         insts.append(pysat.Instrument('pysat', 'testing2d',
                      clean_level='clean'))
         self.testC = pysat.Constellation(insts)
-        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 2, 1))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.bounds
@@ -335,7 +415,6 @@ class Test2DConstellation:
         dummy_val = results['uts']['median']
         dummy_dev = results['uts']['avg_abs_dev']
 
-        dummy_x = results['uts']['bin_x']
         dummy_y = results['uts']['bin_y']
 
         # iterate over all y rows
@@ -372,7 +451,7 @@ class TestSeasonalAverageUnevenBins:
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
-                                pysat.datetime(2008, 2, 1))
+                                pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -414,7 +493,7 @@ class TestSeasonalAverageUnevenBins:
 
         # holds here because there are 32 days, no data is discarded,
         # each day holds same amount of data
-        assert(self.testInst.data['dummy1'].size*32 ==
+        assert(self.testInst.data['dummy1'].size*3 ==
                sum([sum(i) for i in results['dummy1']['count']]))
 
         assert np.all(check)

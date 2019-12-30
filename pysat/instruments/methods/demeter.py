@@ -3,10 +3,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pandas as pds
 import numpy as np
 import pysat
-import sys
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,
@@ -15,7 +16,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
     url = 'https://cdpp-archive.cnes.fr/'
-    print('Data must be downloaded by registered users at: {:s}'.format(url))
+    logger.info('Data must be downloaded by registered users at: {:s}'.format(url))
     return
 
 
@@ -39,7 +40,7 @@ def list_remote_files(tag, sat_id):
 
     """
 
-    print('Remote file lists are not supported for Demeter.')
+    logger.info('Remote file lists are not supported for Demeter.')
     return
 
 
@@ -61,10 +62,14 @@ def bytes_to_float(chunk):
     import struct
     import codecs
 
+    chunk_code = codecs.encode(chunk, 'hex')
+
     if sys.version_info.major == 2:
-        decoded = codecs.encode(chunk, 'hex').decode('hex')
+        decoded = chunk_code.decode('hex')
+    elif hasattr(chunk_code, "decode"):
+        decoded = bytes.fromhex(chunk_code.decode('utf-8'))
     else:
-        decoded = bytes.fromhex(codecs.encode(chunk, 'hex'))
+        decoded = bytes.fromhex(chunk_code)
 
     return struct.unpack("!f", decoded)[0]
 
@@ -109,7 +114,7 @@ def load_general_header(fhandle):
     microsec = int(codecs.encode(chunk[20:22], 'hex'), 16) * 1000
     dtime = dt.datetime(year, month, day, hour, minute, sec, microsec)
 
-    data = [int(codecs.encode(chunk[0], 'hex'), 16),  # P field
+    data = [int(codecs.encode(chunk[:1], 'hex'), 16),  # P field
             int(codecs.encode(chunk[1:4], 'hex'), 16),  # Days since 1/1/1950
             int(codecs.encode(chunk[4:8], 'hex'), 16),  # Millisec in day
             dtime,  # UT timestamp
@@ -117,14 +122,14 @@ def load_general_header(fhandle):
             bool(int(codecs.encode(chunk[24:26], 'hex'), 16))]  # Orbit type
 
     meta = {'telemetry station': chunk[26:34],
-            'software processing version': int(codecs.encode(chunk[34], 'hex'),
-                                               16),
-            'software processing subversion': int(codecs.encode(chunk[35],
+            'software processing version': int(codecs.encode(chunk[34:35],
+                                                             'hex'), 16),
+            'software processing subversion': int(codecs.encode(chunk[35:36],
                                                                 'hex'), 16),
-            'calibration file version': int(codecs.encode(chunk[36], 'hex'),
+            'calibration file version': int(codecs.encode(chunk[36:37], 'hex'),
                                             16),
-            'calibration file subversion': int(codecs.encode(chunk[37], 'hex'),
-                                               16),
+            'calibration file subversion': int(codecs.encode(chunk[37:38],
+                                                             'hex'), 16),
             'data names': ['P_field', 'epoch_time', 'time_of_day', 'UT',
                            'orbit_number', 'orbit_type'],
             'data units': {'P_field': 'N/A',
@@ -189,9 +194,9 @@ def load_location_parameters(fhandle):
             bytes_to_float(chunk[80:84]),  # Ys in geographic coordinate system
             bytes_to_float(chunk[84:88])]  # Zs in geographic coordinate system
 
-    meta = {'software processing version': int(codecs.encode(chunk[88], 'hex'),
-                                               16),
-            'software processing subversion': int(codecs.encode(chunk[89],
+    meta = {'software processing version': int(codecs.encode(chunk[88:89],
+                                                             'hex'), 16),
+            'software processing subversion': int(codecs.encode(chunk[89:90],
                                                                 'hex'), 16),
             'data names': ['glat', 'glon', 'altitude', 'LT', 'mlat', 'mlon',
                            'MLT', 'ilat', 'L', 'glat_conj', 'glon_conj',
@@ -199,18 +204,28 @@ def load_location_parameters(fhandle):
                            'glat_conj_S_110km', 'glon_conj_S_110km',
                            'mag_comp_1', 'mag_comp_2', 'mag_comp_3',
                            'proton_gyrofreq', 'Xs', 'Ys', 'Zs'],
-            'data units': {'glat': 'degrees', 'glon': 'degrees',
-                           'altitude': 'km', 'LT': 'h', 'mlat': 'degrees',
-                           'mlon': 'degrees', 'MLT': 'h', 'ilat': 'degrees',
-                           'L': 'Earth_Radii', 'glat_conj': 'degrees',
+            'data units': {'glat': 'degrees',
+                           'glon': 'degrees',
+                           'altitude': 'km',
+                           'LT': 'h',
+                           'mlat': 'degrees',
+                           'mlon': 'degrees',
+                           'MLT': 'h',
+                           'ilat': 'degrees',
+                           'L': 'Earth_Radii',
+                           'glat_conj': 'degrees',
                            'glon_conj': 'degrees',
                            'glat_conj_N_110km': 'degrees',
                            'glon_conj_N_110km': 'degrees',
                            'glat_conj_S_110km': 'degrees',
                            'glon_conj_S_110km': 'degrees',
-                           'mag_comp_1': 'nT', 'mag_comp_2': 'nT',
-                           'mag_comp_3': 'nT', 'proton_gyrofreq': 'Hz',
-                           'Xs': 'N/A', 'Ys': 'N/A', 'Zs': 'N/A'}}
+                           'mag_comp_1': 'nT',
+                           'mag_comp_2': 'nT',
+                           'mag_comp_3': 'nT',
+                           'proton_gyrofreq': 'Hz',
+                           'Xs': 'N/A',
+                           'Ys': 'N/A',
+                           'Zs': 'N/A'}}
 
     return data, meta
 
@@ -272,9 +287,9 @@ def load_attitude_parameters(fhandle):
     data_names.append('attitude_flag')
     data_units[data_names[-1]] = 'unitless'
 
-    meta = {'software processing version': int(codecs.encode(chunk[74], 'hex'),
-                                               16),
-            'software processing subversion': int(codecs.encode(chunk[75],
+    meta = {'software processing version': int(codecs.encode(chunk[74:75],
+                                                             'hex'), 16),
+            'software processing subversion': int(codecs.encode(chunk[75:76],
                                                                 'hex'), 16),
             'data names': data_names, 'data units': data_units}
 
@@ -362,58 +377,58 @@ def set_metadata(name, meta_dict):
     """
 
     # Define the acknowledgements and references
-    ackn = {'iap': ' '.join("This work is based on observations with the",
-                            "plasma analyser IAP embarked on the satellite",
-                            "DEMETER launched by CNES (Centre National",
-                            "d'Etudes Spatiales). The author thanks J.J.",
-                            "Berthelier the PI of this instrument for the use",
-                            "of the data, and CDPP (Centre des Données de la",
-                            "Physique des Plasmas) for the provision of these",
-                            "data."),
-            'ice': ' '.join("This work is based on observations with the",
-                            "electric field instrument ICE embarked on the",
-                            "satellite DEMETER launched by CNES (Centre",
-                            "National d'Etudes Spatiales). The author thanks",
-                            "J.J. Berthelier the PI of this instrument for",
-                            "the use of the data, and CDPP (Centre des",
-                            "Données de la Physique des Plasmas) for the",
-                            "provision of these data."),
-            'imsc': ' '.join("This work is based on observations with the",
-                             "magnetic field instrument IMSC embarked on the",
+    ackn = {'iap': ' '.join(["This work is based on observations with the",
+                             "plasma analyser IAP embarked on the satellite",
+                             "DEMETER launched by CNES (Centre National",
+                             "d'Etudes Spatiales). The author thanks J.J.",
+                             "Berthelier the PI of this instrument for the use",
+                             "of the data, and CDPP (Centre des Données de la",
+                             "Physique des Plasmas) for the provision of these",
+                             "data."]),
+            'ice': ' '.join(["This work is based on observations with the",
+                             "electric field instrument ICE embarked on the",
                              "satellite DEMETER launched by CNES (Centre",
                              "National d'Etudes Spatiales). The author thanks",
-                             "M. Parrot the PI of this instrument for the use",
+                             "J.J. Berthelier the PI of this instrument for",
+                             "the use of the data, and CDPP (Centre des",
+                             "Données de la Physique des Plasmas) for the",
+                             "provision of these data."]),
+            'imsc': ' '.join(["This work is based on observations with the",
+                              "magnetic field instrument IMSC embarked on the",
+                              "satellite DEMETER launched by CNES (Centre",
+                              "National d'Etudes Spatiales). The author thanks",
+                              "M. Parrot the PI of this instrument for the use",
+                              "of the data, and CDPP (Centre des Données de la",
+                              "Physique des Plasmas) for the provision of",
+                              "these data."]),
+            'rnf': ' '.join(["This work is based on observations with the",
+                             "neural network RNF embarked on the satellite",
+                             "DEMETER launched by CNES (Centre National",
+                             "d'Etudes Spatiales). The author thanks J.L.",
+                             "Pinçon the PI of this instrument for the use",
+                             "of the data, and CDPP (Centre des Données de",
+                             "la Physique des Plasmas) for the provision of",
+                             "these data."]),
+            'idp': ' '.join(["This work is based on observations with the",
+                             "particle spectrometer instrument IDP embarked on",
+                             "the satellite DEMETER launched by CNES (Centre",
+                             "National d'Etudes Spatiales). The author thanks",
+                             "J.A. Sauvaud the PI of this instrument for the",
+                             "use of the data, and CDPP (Centre des Données",
+                             "de la Physique des Plasmas) for the provision of",
+                             "these data."]),
+            'isl': ' '.join(["This work is based on observations with the",
+                             "Langmuir probe ISL embarked on the satellite",
+                             "DEMETER launched by CNES (Centre National",
+                             "d'Etudes Spatiales). The author thanks J.P.",
+                             "Lebreton the PI of this instrument for the use",
                              "of the data, and CDPP (Centre des Données de la",
-                             "Physique des Plasmas) for the provision of",
-                             "these data."),
-            'rnf': ' '.join("This work is based on observations with the",
-                            "neural network RNF embarked on the satellite",
-                            "DEMETER launched by CNES (Centre National",
-                            "d'Etudes Spatiales). The author thanks J.L.",
-                            "Pinçon the PI of this instrument for the use",
-                            "of the data, and CDPP (Centre des Données de",
-                            "la Physique des Plasmas) for the provision of",
-                            "these data."),
-            'idp': ' '.join("This work is based on observations with the",
-                            "particle spectrometer instrument IDP embarked on",
-                            "the satellite DEMETER launched by CNES (Centre",
-                            "National d'Etudes Spatiales). The author thanks",
-                            "J.A. Sauvaud the PI of this instrument for the",
-                            "use of the data, and CDPP (Centre des Données",
-                            "de la Physique des Plasmas) for the provision of",
-                            "these data."),
-            'isl': ' '.join("This work is based on observations with the",
-                            "Langmuir probe ISL embarked on the satellite",
-                            "DEMETER launched by CNES (Centre National",
-                            "d'Etudes Spatiales). The author thanks J.P.",
-                            "Lebreton the PI of this instrument for the use",
-                            "of the data, and CDPP (Centre des Données de la",
-                            "Physique des Plasmas) for the provision of these",
-                            "data.")}
+                             "Physique des Plasmas) for the provision of these",
+                             "data."])}
 
-    refs = {'iap': ' '.join('Berthelier at al., 2006. IAP, the thermal plasma',
-                            'analyzer on DEMETER, Planet. and Space Sci.,',
-                            '54(5), pp 487-501.')}
+    refs = {'iap': ' '.join(['Berthelier at al., 2006. IAP, the thermal plasma',
+                             'analyzer on DEMETER, Planet. and Space Sci.,',
+                             '54(5), pp 487-501.'])}
 
     if name not in refs.keys():
         refs[name] = 'Instrument reference information available at ' + \
@@ -435,68 +450,68 @@ def set_metadata(name, meta_dict):
                  'MLT': 'Magnetic Local Time',
                  'ilat': 'Invarient Latitude',
                  'L': 'Mc Ilwain Parameter L',
-                 'glat_conj': ' '.join('Geocentric latitude of the conjugate',
-                                       'point at the satellite altitude'),
-                 'glon_conj': ' '.join('Geocentric longitude of the conjugate',
-                                       'point at the satellite altitude'),
-                 'glat_conj_N_110km': ' '.join('Geocentric latitude of North',
-                                               'conjugate point at altitude',
-                                               '110 km'),
-                 'glon_conj_N_110km': ' '.join('Geocentric longitude of North',
-                                               'conjugate point at altitude',
-                                               '110 km'),
-                 'glat_conj_S_110km': ' '.join('Geocentric latitude of South',
-                                               'conjugate point at altitude',
-                                               '110 km'),
-                 'glon_conj_S_110km': ' '.join('Geocentric longitude of South',
-                                               'conjugate point at altitude',
-                                               '110 km'),
-                 'mag_comp_1': ' '.join('Component of the magnetic field',
-                                        'model at the satellite point'),
-                 'mag_comp_2': ' '.join('Component of the magnetic field',
-                                        'model at the satellite point'),
-                 'mag_comp_3': ' '.join('Component of the magnetic field',
-                                        'model at the satellite point'),
+                 'glat_conj': ' '.join(['Geocentric latitude of the conjugate',
+                                        'point at the satellite altitude']),
+                 'glon_conj': ' '.join(['Geocentric longitude of the conjugate',
+                                        'point at the satellite altitude']),
+                 'glat_conj_N_110km': ' '.join(['Geocentric latitude of North',
+                                                'conjugate point at altitude',
+                                                '110 km']),
+                 'glon_conj_N_110km': ' '.join(['Geocentric longitude of North',
+                                                'conjugate point at altitude',
+                                                '110 km']),
+                 'glat_conj_S_110km': ' '.join(['Geocentric latitude of South',
+                                                'conjugate point at altitude',
+                                                '110 km']),
+                 'glon_conj_S_110km': ' '.join(['Geocentric longitude of South',
+                                                'conjugate point at altitude',
+                                                '110 km']),
+                 'mag_comp_1': ' '.join(['Component of the magnetic field',
+                                         'model at the satellite point']),
+                 'mag_comp_2': ' '.join(['Component of the magnetic field',
+                                         'model at the satellite point']),
+                 'mag_comp_3': ' '.join(['Component of the magnetic field',
+                                         'model at the satellite point']),
                  'proton_gyrofreq': 'Proton gyrofrequency at satellite point',
                  'Xs': 'Solar position in geographic coordinate system',
                  'Ys': 'Solar position in geographic coordinate system',
                  'Zs': 'Solar position in geographic coordinate system',
-                 'sat2geo_11': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'sat2geo_12': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'sat2geo_13': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'sat2geo_21': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'sat2geo_22': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'sat2geo_23': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'sat2geo_31': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'sat2geo_32': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'sat2geo_33': ' '.join('Conversion matrix from satellite to',
-                                        'geographic coordinate system'),
-                 'geo2lgm_11': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
-                 'geo2lgm_12': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
-                 'geo2lgm_13': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
-                 'geo2lgm_21': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
-                 'geo2lgm_22': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
-                 'geo2lgm_23': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
-                 'geo2lgm_31': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
-                 'geo2lgm_32': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
-                 'geo2lgm_33': ' '.join('Conversion matrix from geographic to',
-                                        'geomagnetic coordinate system'),
+                 'sat2geo_11': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'sat2geo_12': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'sat2geo_13': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'sat2geo_21': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'sat2geo_22': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'sat2geo_23': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'sat2geo_31': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'sat2geo_32': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'sat2geo_33': ' '.join(['Conversion matrix from satellite to',
+                                         'geographic coordinate system']),
+                 'geo2lgm_11': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
+                 'geo2lgm_12': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
+                 'geo2lgm_13': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
+                 'geo2lgm_21': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
+                 'geo2lgm_22': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
+                 'geo2lgm_23': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
+                 'geo2lgm_31': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
+                 'geo2lgm_32': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
+                 'geo2lgm_33': ' '.join(['Conversion matrix from geographic to',
+                                         'geomagnetic coordinate system']),
                  'attitude_flag': 'Quality index of attitude parameters',
                  'status_flag_00': 'Housekeeping and status',
                  'status_flag_01': 'Housekeeping and status',
@@ -536,19 +551,19 @@ def set_metadata(name, meta_dict):
                          'O+_density': 'O+ density',
                          'Ion_temperature': 'Ion temperature',
                          'iv_Oz': 'Ion velocity along the satellite z axis',
-                         'iv_negOz_angle': ' '.join('Angle between the ion',
-                                                    'velocity and -z axis',
-                                                    '(ram direction) of',
-                                                    'satellite'),
-                         'iv_xOy_Ox_angle': ' '.join('Angle between',
-                                                     'projection of the ion',
-                                                     'velocity on the x-y',
-                                                     'plane and satellite',
-                                                     'x axis'),
+                         'iv_negOz_angle': ' '.join(['Angle between the ion',
+                                                     'velocity and -z axis',
+                                                     '(ram direction) of',
+                                                     'satellite']),
+                         'iv_xOy_Ox_angle': ' '.join(['Angle between',
+                                                      'projection of the ion',
+                                                      'velocity on the x-y',
+                                                      'plane and satellite',
+                                                      'x axis']),
                          'satellite_potential': 'Satellite potential'}}
 
     if name not in long_inst.keys():
-        print('Warning, no long-form names available for {:s}'.format(name))
+        logger.warning('no long-form names available for {:s}'.format(name))
 
         long_inst[name] = {nn: nn for nn in meta_dict['data names']}
 

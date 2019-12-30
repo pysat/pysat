@@ -21,21 +21,21 @@ General Data Source Methods
 NASA CDAWeb
 -----------
 
-.. automodule:: pysat.instruments.nasa_cdaweb_methods
+.. automodule:: pysat.instruments.methods.nasa_cdaweb
    :members: __doc__, init, load, list_files, list_remote_files, download
 
 
 Madrigal
 --------
 
-.. automodule:: pysat.instruments.madrigal_methods
+.. automodule:: pysat.instruments.methods.madrigal
    :members: __doc__, cedar_rules, load, download, filter_data_single_date
 
 
 Demeter
 -------
 
-.. automodule:: pysat.instruments.demeter_methods
+.. automodule:: pysat.instruments.methods.demeter
    :members: __doc__, download, bytes_to_float, load_general_header, load_location_parameters, load_attitude_parameters, load_binary_file, set_metadata
 
 
@@ -64,12 +64,6 @@ CHAMP-STAR
 ----------
 
 .. automodule:: pysat.instruments.champ_star
-   :members: __doc__
-
-COSMIC 2013 GPS
----------------
-
-.. automodule:: pysat.instruments.cosmic2013_gps
    :members: __doc__
 
 COSMIC GPS
@@ -138,11 +132,6 @@ OMNI
 .. automodule:: pysat.instruments.omni_hro
    :members: __doc__, calculate_clock_angle, calculate_imf_steadiness, time_shift_to_magnetic_poles
 
-PYSAT SGP4
-----------
-
-.. automodule:: pysat.instruments.pysat_sgp4
-   :members: __doc__, load, add_sc_attitude_vectors, calculate_ecef_velocity, add_quasi_dipole_coordinates, add_aacgm_coordinates, add_iri_thermal_plasma, add_hwm_winds_and_ecef_vectors, add_igrf, project_ecef_vector_onto_sc, project_hwm_onto_sc
 
 ROCSAT-1 IVM
 ------------

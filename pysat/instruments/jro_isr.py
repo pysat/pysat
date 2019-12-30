@@ -33,13 +33,15 @@ Note
 
 from __future__ import print_function
 from __future__ import absolute_import
-import numpy as np
-import pandas as pds
-
 import functools
+import numpy as np
+
 import pysat
-from . import madrigal_methods as mad_meth
-from . import nasa_cdaweb_methods as cdw
+from .methods import madrigal as mad_meth
+from .methods import nasa_cdaweb as cdw
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 platform = 'jro'
@@ -49,11 +51,11 @@ tags = {'drifts': 'Drifts and wind', 'drifts_ave': 'Averaged drifts',
         'oblique_rand': 'Randomized Faraday rotation double-pulse',
         'oblique_long': 'Long pulse Faraday rotation'}
 sat_ids = {'': list(tags.keys())}
-test_dates = {'': {'drifts': pysat.datetime(2010, 1, 19),
-                   'drifts_ave': pysat.datetime(2010, 1, 19),
-                   'oblique_stan': pysat.datetime(2010, 4, 19),
-                   'oblique_rand': pysat.datetime(2000, 11, 9),
-                   'oblique_long': pysat.datetime(2010, 4, 12)}}
+_test_dates = {'': {'drifts': pysat.datetime(2010, 1, 19),
+                    'drifts_ave': pysat.datetime(2010, 1, 19),
+                    'oblique_stan': pysat.datetime(2010, 4, 19),
+                    'oblique_rand': pysat.datetime(2000, 11, 9),
+                    'oblique_long': pysat.datetime(2010, 4, 12)}}
 
 # support list files routine
 # use the default CDAWeb method
@@ -115,7 +117,7 @@ def init(self):
 
     """
 
-    print("The Jicamarca Radio Observatory is operated by the Instituto " +
+    logger.info("The Jicamarca Radio Observatory is operated by the Instituto " +
           "Geofisico del Peru, Ministry of Education, with support from the" +
           " National Science Foundation as contracted through Cornell" +
           " University.  " + mad_meth.cedar_rules())
@@ -188,31 +190,30 @@ def clean(self):
     Routine is called by pysat, and not by the end user directly.
 
     """
-    import numpy as np
 
     # Default to selecting all of the data
     idx = {'gdalt': [i for i in range(self.data.indexes['gdalt'].shape[0])]}
 
     if self.tag.find('oblique') == 0:
         # Oblique profile cleaning
-        print('The double pulse, coded pulse, and long pulse modes ' +
+        logger.info('The double pulse, coded pulse, and long pulse modes ' +
               'implemented at Jicamarca have different limitations arising ' +
               'from different degrees of precision and accuracy. Users ' +
               'should consult with the staff to determine which mode is ' +
               'right for their application.')
 
         if self.clean_level in ['clean', 'dusty', 'dirty']:
-            print('WARNING: this level 2 data has no quality flags')
+            logger.warning('this level 2 data has no quality flags')
     else:
         # Ion drift cleaning
         if self.clean_level in ['clean', 'dusty', 'dirty']:
             if self.clean_level in ['clean', 'dusty']:
-                print('WARNING: this level 2 data has no quality flags')
+                logger.warning('this level 2 data has no quality flags')
 
             ida, = np.where((self.data.indexes['gdalt'] > 200.0))
             idx['gdalt'] = np.unique(ida)
         else:
-            print("WARNING: interpretation of drifts below 200 km should " +
+            logger.warning("interpretation of drifts below 200 km should " +
                   "always be done in partnership with the contact people")
 
     # downselect data based upon cleaning conditions above
@@ -230,9 +231,8 @@ def calc_measurement_loc(self):
     have azimuth and elevation keys that match the format 'eldir#' and 'azdir#'
 
     """
-    import numpy as np
-    import pandas as pds
-    from pysat import utils
+
+    from pysat.utils import coords
 
     az_keys = [kk[5:] for kk in list(self.data.keys())
                if kk.find('azdir') == 0]
@@ -245,7 +245,7 @@ def calc_measurement_loc(self):
             try:
                 good_dir.append(int(kk))
             except:
-                print("WARNING: unknown direction number [{:}]".format(kk))
+                logger.warning("unknown direction number [{:}]".format(kk))
 
     # Calculate the geodetic latitude and longitude for each direction
     if len(good_dir) == 0:
@@ -260,13 +260,13 @@ def calc_measurement_loc(self):
         # JRO is located 520 m above sea level (jro.igp.gob.pe./english/)
         # Also, altitude has already been calculated
         gdaltr = np.ones(shape=self['gdlonr'].shape) * 0.52
-        gdlat, gdlon, _ = utils.local_horizontal_to_global_geo(self[az_key],
-                                                               self[el_key],
-                                                               self['range'],
-                                                               self['gdlatr'],
-                                                               self['gdlonr'],
-                                                               gdaltr,
-                                                               geodetic=True)
+        gdlat, gdlon, _ = coords.local_horizontal_to_global_geo(self[az_key],
+                                                                self[el_key],
+                                                                self['range'],
+                                                                self['gdlatr'],
+                                                                self['gdlonr'],
+                                                                gdaltr,
+                                                                geodetic=True)
 
         # Assigning as data, to ensure that the number of coordinates match
         # the number of data dimensions

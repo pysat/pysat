@@ -1,12 +1,13 @@
 """
 tests the pysat utils area
 """
-import numpy as np
 import os
 import tempfile
+import warnings
+from nose.tools import assert_raises, raises
+import numpy as np
+import pandas as pds
 
-import netCDF4
-from nose.tools import raises
 import pysat
 
 import sys
@@ -26,7 +27,6 @@ def prep_dir(inst=None):
     # create data directories
     try:
         os.makedirs(inst.files.data_path)
-        # print ('Made Directory')
     except OSError:
         pass
 
@@ -39,6 +39,21 @@ def remove_files(inst):
             file_path = os.path.join(temp_dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
+
+
+def test_deprecation_warning_computational_form():
+    """Test if computational form in utils is deprecated"""
+
+
+    data = pds.Series([0, 1, 2])
+    warnings.simplefilter("always")
+    dslice1 = pysat.ssnl.computational_form(data)
+    with warnings.catch_warnings(record=True) as war:
+        dslice2 = pysat.utils.computational_form(data)
+
+    assert (dslice1 == dslice2).all()
+    assert len(war) >= 1
+    assert war[0].category == DeprecationWarning
 
 
 class TestBasics():
@@ -104,6 +119,110 @@ class TestBasics():
         assert True
 
 
+class TestScaleUnits():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.deg_units = ["deg", "degree", "degrees", "rad", "radian",
+                          "radians", "h", "hr", "hrs", "hours"]
+        self.dist_units = ["m", "km", "cm"]
+        self.vel_units = ["m/s", "cm/s", "km/s", 'm s$^{-1}$', 'cm s$^{-1}$',
+                          'km s$^{-1}$', 'm s-1', 'cm s-1', 'km s-1']
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.deg_units, self.dist_units, self.vel_units
+
+    def test_scale_units_same(self):
+        """ Test scale_units when both units are the same """
+
+        scale = pysat.utils.scale_units("happy", "happy")
+
+        assert scale == 1.0
+
+    def test_scale_units_angles(self):
+        """Test scale_units for angles """
+
+        for out_unit in self.deg_units:
+            scale = pysat.utils.scale_units(out_unit, "deg")
+
+            if out_unit.find("deg") == 0:
+                assert scale == 1.0
+            elif out_unit.find("rad") == 0:
+                assert scale == np.pi / 180.0
+            else:
+                assert scale == 1.0 / 15.0
+
+    def test_scale_units_dist(self):
+        """Test scale_units for distances """
+
+        for out_unit in self.dist_units:
+            scale = pysat.utils.scale_units(out_unit, "m")
+
+            if out_unit == "m":
+                assert scale == 1.0
+            elif out_unit.find("km") == 0:
+                assert scale == 0.001
+            else:
+                assert scale == 100.0
+
+    def test_scale_units_vel(self):
+        """Test scale_units for velocities """
+
+        for out_unit in self.vel_units:
+            scale = pysat.utils.scale_units(out_unit, "m/s")
+
+            if out_unit.find("m") == 0:
+                assert scale == 1.0
+            elif out_unit.find("km") == 0:
+                assert scale == 0.001
+            else:
+                assert scale == 100.0
+
+    def test_scale_units_bad_output(self):
+        """Test scale_units for unknown output unit"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "happy", "m")
+        try:
+            pysat.utils.scale_units('happy', 'm')
+        except ValueError as verr:
+            assert str(verr).find('output unit') > 0
+
+    def test_scale_units_bad_input(self):
+        """Test scale_units for unknown input unit"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "m", "happy")
+        try:
+            pysat.utils.scale_units('m', 'happy')
+        except ValueError as verr:
+            assert str(verr).find('input unit') > 0
+
+    def test_scale_units_bad_match_pairs(self):
+        """Test scale_units for mismatched input for all pairings"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
+        assert_raises(ValueError, pysat.utils.scale_units, "m", "deg")
+        assert_raises(ValueError, pysat.utils.scale_units, "h", "km/s")
+
+    def test_scale_units_bad_match_message(self):
+        """Test scale_units error message for mismatched input"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
+        try:
+            pysat.utils.scale_units('m', 'm/s')
+        except ValueError as verr:
+            assert str(verr).find('Cannot scale') >= 0
+            assert str(verr).find('unknown units') < 0
+
+    def test_scale_units_both_bad(self):
+        """Test scale_units for bad input and output"""
+
+        assert_raises(ValueError, pysat.utils.scale_units, "happy", "sad")
+        try:
+            pysat.utils.scale_units('happy', 'sad')
+        except ValueError as verr:
+            assert str(verr).find('unknown units') > 0
+
+
 class TestBasicNetCDF4():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -148,6 +267,51 @@ class TestBasicNetCDF4():
         for key in self.testInst.data.columns:
             print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key]))
+
+    def test_basic_write_and_read_netcdf4_mixed_case_format(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        # modify data names in data
+        original = sorted(self.testInst.data.columns)
+        self.testInst.data = self.testInst.data.rename(str.upper, axis='columns')
+        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        self.testInst.data = \
+            self.testInst.data.reindex(sorted(self.testInst.data.columns),
+                                       axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+
+        # check that names are lower case when written
+        assert(np.all(original == loaded_inst.columns))
+
+        for key in self.testInst.data.columns:
+            print('Testing Data Equality to filesystem and back ', key)
+            assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
+
+        # modify metadata names in data
+        self.testInst.meta.data = self.testInst.meta.data.rename(str.upper, axis='index')
+        # write file
+        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+        # load file
+        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+
+        # check that names are upper case when written
+        assert(np.all(sorted(self.testInst.data.columns) == sorted(loaded_inst.columns)))
+
+    @raises(Exception)
+    def test_write_netcdf4_duplicate_variable_names(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst['MLT'] = 1
+        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
+
 
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
@@ -241,8 +405,6 @@ class TestBasicNetCDF4():
 
         # test Series of DataFrames
         test_list = []
-        # print (loaded_inst.columns)
-        # print (loaded_inst)
         for frame1, frame2 in zip(test_inst.data['profiles'],
                                   loaded_inst['profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
@@ -260,10 +422,55 @@ class TestBasicNetCDF4():
         for frame1, frame2 in zip(test_inst.data['series_profiles'],
                                   loaded_inst['series_profiles']):
             test_list.append(np.all((frame1 == frame2).all()))
-            # print frame1, frame2
         loaded_inst.drop('series_profiles', inplace=True, axis=1)
         test_inst.data.drop('series_profiles', inplace=True, axis=1)
 
         assert (np.all((test_inst.data == loaded_inst).all()))
-        # print (test_list)
         assert np.all(test_list)
+
+    def test_netcdf_attribute_override(self):
+        """Test that attributes in netcdf file may be overridden"""
+        self.testInst.load(2009, 1)
+
+        try:
+            assert self.testInst.bespoke # should raise
+        except AttributeError:
+            pass
+
+        fname = 'output.nc'
+        self.testInst.meta.bespoke = True
+
+        self.testInst.meta.transfer_attributes_to_instrument(self.testInst)
+
+        # ensure custom meta attribute assigned to instrument
+        assert self.testInst.bespoke
+
+        outfile = os.path.join(self.testInst.files.data_path, fname)
+        self.testInst.to_netcdf4(outfile)
+
+        data, meta = pysat.utils.load_netcdf4(outfile)
+
+        # custom attribute correctly read from file
+        assert meta.bespoke
+
+        # assign metadata to new instrument
+        inst = pysat.Instrument()
+
+        inst.data = data
+        inst.meta = meta
+
+
+        meta.transfer_attributes_to_instrument(inst)
+
+        fname2 = 'output2.nc'
+        outfile2 = os.path.join(self.testInst.files.data_path, fname2)
+
+        inst.bespoke = False
+        inst.myattr = True
+
+        inst.to_netcdf4(outfile2)
+
+        data2, meta2 = pysat.utils.load_netcdf4(outfile2)
+
+        assert meta2.myattr
+        assert not meta2.bespoke
