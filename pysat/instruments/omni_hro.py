@@ -218,7 +218,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     inst['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
 
     # Calculate the running circular standard deviation of the clock angle
-    circ_kwargs = {'high': 360.0, 'low': 0.0}
+    circ_kwargs = {'high': 360.0, 'low': 0.0, 'nan_policy': 'omit'}
 
     ca_std = \
         inst['clock_angle'].rolling(min_periods=min_wnum,
