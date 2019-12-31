@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.2.0] - 2019-12-31
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
+   - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
@@ -13,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
   - Fixed loading of COSMIC atmPrf files
   - Fixed feedback from COSMIC GPS when data not found on remote server
+  - Fixed deprecation warning for pysat.utils.coords.scale_units
   - Fixed a bug when trying to combine empty f107 lists
 
 ## [2.1.0] - 2019-11-18

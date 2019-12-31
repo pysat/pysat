@@ -6,8 +6,9 @@ modify and analyze science data.  Each instrument
 is contained within a subpackage of this set.
 """
 
-__all__ = ['champ_star', 'cnofs_ivm', 'cnofs_plp', 'cnofs_vefi',
-           'cosmic_gps', 'demeter_iap', 'dmsp_ivm',
+__all__ = ['champ_star', 'cnofs_ivm', 'cnofs_plp', 'cnofs_vefi', 'cosmic_gps',
+           'de2_lang', 'de2_nacs', 'de2_rpa', 'de2_wats',
+           'demeter_iap', 'dmsp_ivm',
            'icon_ivm', 'icon_euv', 'icon_fuv', 'icon_mighti',
            'iss_fpmu',  'jro_isr', 'omni_hro', 'rocsat1_ivm',
            'sport_ivm', 'superdarn_grdex', 'supermag_magnetometer',
