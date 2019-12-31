@@ -338,8 +338,8 @@ class Constellation(object):
                              'bin_x': binx,
                              'bin_y': biny}
 
-        #  End of Excerpt code
-
+        # End of Excerpt code
+        # TODO: unify output codes
         # Transform output
         output = {}
         for i, label in enumerate(data_label):
