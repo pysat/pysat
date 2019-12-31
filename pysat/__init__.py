@@ -100,7 +100,7 @@ else:
             f.write('')
 
 from pandas import Panel, DataFrame, Series, datetime
-from . import utils, model_utils
+from . import utils
 from ._constellation import Constellation
 from ._instrument import Instrument
 from ._meta import Meta
