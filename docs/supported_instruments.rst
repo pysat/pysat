@@ -72,6 +72,30 @@ COSMIC GPS
 .. automodule:: pysat.instruments.cosmic_gps
    :members: __doc__
 
+DE2 LANG
+-----------
+
+.. automodule:: pysat.instruments.de2_lang
+  :members: __doc__
+
+DE2 NACS
+-----------
+
+.. automodule:: pysat.instruments.de2_nacs
+  :members: __doc__
+
+DE2 RPA
+-----------
+
+.. automodule:: pysat.instruments.de2_rpa
+  :members: __doc__
+
+DE2 WATS
+-----------
+
+.. automodule:: pysat.instruments.de2_wats
+  :members: __doc__
+
 Demeter IAP
 -----------
 

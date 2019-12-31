@@ -11,9 +11,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
 
-## [2.X.X] - 2019-12-27
+## [2.2.0] - 2019-12-30
 - New Features
   - Decreased time to load COSMIC GPS data by about 50%
+   - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
 - Bug Fix
   - `_files._attach_files` now checks for an empty file list before appending
   - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
