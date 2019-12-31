@@ -126,6 +126,7 @@ def init(inst):
             inst.files.files.index = \
                 inst.files.files.index + pds.DateOffset(minutes=5)
 
+
 def default(inst):
     """The default function is applied first to data as it is loaded.
 
@@ -143,10 +144,11 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     fnames : (list)
         List of filenames
     tag : (str or NoneType)
-        Instrument tag (accepts '' or a number (i.e., '10'), which specifies
-        the number of times to include in the test instrument)
+        Instrument tag (accepts '' or a string to change the behaviour of
+        dummy1 for constellation testing)
     sat_id : (str or NoneType)
-        Instrument satellite ID (accepts '')
+        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
+        specifies the number of times to include in the test instrument)
     sim_multi_file_right : (boolean)
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
