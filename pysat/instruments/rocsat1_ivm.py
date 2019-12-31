@@ -31,7 +31,7 @@ import warnings
 
 import pysat
 
-from .methods import nasa_cdaweb as cdw
+from pysat.methods import nasa_cdaweb as cdw
 
 platform = 'rocsat1'
 name = 'ivm'

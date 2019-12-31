@@ -45,7 +45,7 @@ import pandas as pds
 import pysat
 
 # CDAWeb methods prewritten for pysat
-from .methods import nasa_cdaweb as cdw
+from pysat.methods import nasa_cdaweb as cdw
 
 # the platform and name strings associated with this instrument
 # need to be defined at the top level

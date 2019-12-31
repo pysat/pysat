@@ -80,8 +80,8 @@ from __future__ import absolute_import
 
 import functools
 import pysat
-from .methods import madrigal as mad_meth
-from .methods import nasa_cdaweb as cdw
+from pysat.methods import madrigal as mad_meth
+from pysat.methods import nasa_cdaweb as cdw
 
 import logging
 logger = logging.getLogger(__name__)
