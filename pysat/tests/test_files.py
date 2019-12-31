@@ -91,11 +91,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
 class TestNoDataDir():
 
-    def __init__(self, temporary_file_list=False):
-        self.temporary_file_list = temporary_file_list
-
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        self.temporary_file_list = False
         # store current pysat directory
         self.saved_data_path = pysat.data_dir
 
@@ -114,8 +112,7 @@ class TestNoDataDir():
 
 class TestBasics():
 
-    def __init__(self, temporary_file_list=False):
-        self.temporary_file_list = temporary_file_list
+    temporary_file_list = False
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -369,14 +366,13 @@ class TestBasics():
 
 
 class TestBasicsNoFileListStorage(TestBasics):
-    def __init__(self, temporary_file_list=True):
-        self.temporary_file_list = temporary_file_list
+
+    temporary_file_list = True
 
 
 class TestInstrumentWithFiles():
 
-    def __init__(self, temporary_file_list=False):
-        self.temporary_file_list = temporary_file_list
+    temporary_file_list = False
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -660,8 +656,8 @@ class TestInstrumentWithFiles():
 
 
 class TestInstrumentWithFilesNoFileListStorage(TestInstrumentWithFiles):
-    def __init__(self, temporary_file_list=True):
-        self.temporary_file_list = temporary_file_list
+
+    temporary_file_list = True
 
 
 # create year doy file set with multiple versions
@@ -725,8 +721,8 @@ def list_versioned_files(tag=None, sat_id=None, data_path=None,
 
 
 class TestInstrumentWithVersionedFiles():
-    def __init__(self, temporary_file_list=False):
-        self.temporary_file_list = temporary_file_list
+
+    temporary_file_list = False
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -982,5 +978,5 @@ class TestInstrumentWithVersionedFiles():
 
 
 class TestInstrumentWithVersionedFilesNoFileListStorage(TestInstrumentWithVersionedFiles):
-    def __init__(self, temporary_file_list=True):
-        self.temporary_file_list = temporary_file_list
+
+    temporary_file_list = True
