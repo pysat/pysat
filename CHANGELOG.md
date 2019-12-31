@@ -2,16 +2,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.X.X] - 2019-12-27
+## [2.2.0] - 2019-12-31
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
+   - Updated `test_files.py` to be pytest compatible
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
-   - `_files._attach_files` now checks for an empty file list before appending
-   - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
-   - Fixed loading of COSMIC atmPrf files
-   - Fixed feedback from COSMIC GPS when data not found on remote server
+  - `_files._attach_files` now checks for an empty file list before appending
+  - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
+  - Fixed loading of COSMIC atmPrf files
+  - Fixed feedback from COSMIC GPS when data not found on remote server
   - Fixed a bug when trying to combine empty f107 lists
 
 ## [2.1.0] - 2019-11-18
