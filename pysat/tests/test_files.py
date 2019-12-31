@@ -45,7 +45,8 @@ def remove_files(inst=None):
 
 
 # create year doy file set
-def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None, content = None):
+def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
+                 content=None):
 
     if freq is None:
         freq = '1D'
@@ -108,7 +109,8 @@ class TestNoDataDir():
 
     @raises(Exception)
     def test_no_data_dir(self):
-        inst = pysat.Instrument()
+        _ = pysat.Instrument()
+
 
 class TestBasics():
 
@@ -139,7 +141,6 @@ class TestBasics():
         except:
             pass
         del self.testInst
-
 
     def test_parse_delimited_filename(self):
         """Check ability to parse delimited files"""
@@ -451,7 +452,7 @@ class TestInstrumentWithFiles():
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
                      root_fname=self.root_fname,
-                     content = 'test')
+                     content='test')
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
@@ -473,12 +474,10 @@ class TestInstrumentWithFiles():
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
                      root_fname=self.root_fname,
-                     content = 'test')
+                     content='test')
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
-
-
 
     def test_refresh_on_unchanged_files(self):
         start = pysat.datetime(2007, 12, 31)
