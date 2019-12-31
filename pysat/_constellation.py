@@ -236,8 +236,9 @@ class Constellation(object):
         xarr = np.arange(numx)
         binx = None
 
-        # TODO modify output
-        #  Begin excerpt code from pysatSeasons 0.1.0
+        ############################################
+        # Begin excerpt code from pysatSeasons 0.1.0
+        # TODO: streamline transition between here and end of code excerpt
         medianAns = [[[None for i in xarr] for j in yarr] for k in zarr]
         countAns = [[[None for i in xarr] for j in yarr] for k in zarr]
         devAns = [[[None for i in xarr] for j in yarr] for k in zarr]
