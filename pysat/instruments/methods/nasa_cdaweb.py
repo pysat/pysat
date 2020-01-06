@@ -273,7 +273,7 @@ def download(supported_tags, date_array, tag, sat_id,
         if not multi_file_day:
             try:
                 logger.info(' '.join(('Attempting to download file for',
-                                date.strftime('%d %B %Y'))))
+                            date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_path = '/'.join((remote_url.strip('/'),
                                         formatted_remote_fname))
@@ -283,15 +283,15 @@ def download(supported_tags, date_array, tag, sat_id,
                     logger.info('Finished.')
                 else:
                     logger.info(' '.join(('File not available for',
-                                    date.strftime('%d %B %Y'))))
+                                date.strftime('%d %B %Y'))))
             except requests.exceptions.RequestException as exception:
                 logger.info(' '.join((exception, '- File not available for',
-                                date.strftime('%d %B %Y'))))
+                            date.strftime('%d %B %Y'))))
 
         else:
             try:
                 logger.info(' '.join(('Attempting to download files for',
-                                date.strftime('%d %B %Y'))))
+                            date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_files = list_remote_files(tag=tag, sat_id=sat_id,
                                                  remote_site=remote_site,
@@ -315,11 +315,11 @@ def download(supported_tags, date_array, tag, sat_id,
                         i += 1
                     else:
                         logger.info(' '.join(('File not available for',
-                                        date.strftime('%d %B %Y'))))
+                                    date.strftime('%d %B %Y'))))
                 logger.info('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
             except requests.exceptions.RequestException as exception:
                 logger.info(' '.join((exception, '- Files not available for',
-                                date.strftime('%d %B %Y'))))
+                            date.strftime('%d %B %Y'))))
 
 
 def list_remote_files(tag, sat_id,
@@ -488,6 +488,7 @@ def list_remote_files(tag, sat_id,
     else:
         n_loops = n_layers + 1
     full_files = []
+
     for level in range(n_loops):
         for directory in remote_dirs[level]:
             temp_url = '/'.join((remote_url.strip('/'), directory))
