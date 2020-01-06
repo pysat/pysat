@@ -141,8 +141,8 @@ def scale_units(out_unit, in_unit):
     import warnings
     from pysat import utils
 
-    warnings.warn(' '.join(["utils.computational_form is deprecated, use",
-                            "pysat.ssnl.computational_form instead"]),
+    warnings.warn(' '.join(["utils.coords.scale_units is deprecated, use",
+                            "pysat.utils.scale_units instead"]),
                   DeprecationWarning, stacklevel=2)
     unit_scale = utils.scale_units(out_unit, in_unit)
 
