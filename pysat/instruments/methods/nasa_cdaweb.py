@@ -526,5 +526,6 @@ def list_remote_files(tag, sat_id,
             mask = mask & (stored_list.index.month == month)
             if day is not None:
                 mask = mask & (stored_list.index.day == day)
+        stored_list = stored_list[mask]
 
-    return stored_list[mask]
+    return stored_list
