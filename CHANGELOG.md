@@ -10,7 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
   - `_files._attach_files` now checks for an empty file list before appending
-  - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
+  - Fixed boolean logic when checking for start and stop dates in `_instrument.download`
   - Fixed loading of COSMIC atmPrf files
   - Fixed feedback from COSMIC GPS when data not found on remote server
   - Fixed deprecation warning for pysat.utils.coords.scale_units
