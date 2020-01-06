@@ -468,7 +468,7 @@ def list_remote_files(tag, sat_id,
     fmt_idx.append(format_str.find('*'))
 
     # Not all characters may exist in a filename.  Remove those that don't.
-    fmt_idx.remove(-1)
+    fmt_idx = [elem for elem in fmt_idx if elem != -1]
 
     # If preamble exists, add to targets
     if fmt_idx:
