@@ -273,7 +273,7 @@ def download(supported_tags, date_array, tag, sat_id,
         if not multi_file_day:
             try:
                 logger.info(' '.join(('Attempting to download file for',
-                            date.strftime('%d %B %Y'))))
+                                      date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_path = '/'.join((remote_url.strip('/'),
                                         formatted_remote_fname))
