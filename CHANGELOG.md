@@ -2,10 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.0] - 2019-12-30
+## [2.2.0] - 2019-12-31
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
+   - Updated `test_files.py` to be pytest compatible
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
@@ -16,6 +17,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed deprecation warning for pysat.utils.coords.scale_units
   - Fixed a bug when trying to combine empty f107 lists
   - Fixed a bug where `remote_file_list` would fail for some instruments.
+  - Made import of methods more robust
 
 ## [2.1.0] - 2019-11-18
 - New Features
