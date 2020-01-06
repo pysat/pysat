@@ -340,7 +340,7 @@ def list_remote_files(tag, sat_id,
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
     sat_id : (string or NoneType)
-        Specifies the satellite ID for a constellation.  Not used.
+        Specifies the satellite ID for a constellation.
         (default=None)
     remote_site : (string or NoneType)
         Remote site to download data from
