@@ -283,15 +283,15 @@ def download(supported_tags, date_array, tag, sat_id,
                     logger.info('Finished.')
                 else:
                     logger.info(' '.join(('File not available for',
-                                date.strftime('%d %B %Y'))))
+                                          date.strftime('%d %B %Y'))))
             except requests.exceptions.RequestException as exception:
                 logger.info(' '.join((exception, '- File not available for',
-                            date.strftime('%d %B %Y'))))
+                                      date.strftime('%d %B %Y'))))
 
         else:
             try:
                 logger.info(' '.join(('Attempting to download files for',
-                            date.strftime('%d %B %Y'))))
+                                      date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_files = list_remote_files(tag=tag, sat_id=sat_id,
                                                  remote_site=remote_site,
@@ -315,11 +315,11 @@ def download(supported_tags, date_array, tag, sat_id,
                         i += 1
                     else:
                         logger.info(' '.join(('File not available for',
-                                    date.strftime('%d %B %Y'))))
+                                              date.strftime('%d %B %Y'))))
                 logger.info('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
             except requests.exceptions.RequestException as exception:
                 logger.info(' '.join((exception, '- Files not available for',
-                            date.strftime('%d %B %Y'))))
+                                      date.strftime('%d %B %Y'))))
 
 
 def list_remote_files(tag, sat_id,
