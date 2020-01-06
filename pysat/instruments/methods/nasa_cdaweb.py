@@ -495,10 +495,9 @@ def list_remote_files(tag, sat_id,
             soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
             links = soup.find_all('a', href=True)
             for link in links:
-                if level < n_layers:
-                    # If there is room to go down, look for directories
-                    if link['href'].count('/') == 1:
-                        remote_dirs[level+1].append(link['href'])
+                # If there is room to go down, look for directories
+                if link['href'].count('/') == 1:
+                    remote_dirs[level+1].append(link['href'])
                 else:
                     # If at the endpoint, add matching files to list
                     add_file = True
