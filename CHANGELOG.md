@@ -18,11 +18,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updated `test_files.py` to be pytest compatible
 - Bug Fix
   - `_files._attach_files` now checks for an empty file list before appending
-  - Fixed boolean logic in when checking for start and stop dates in `_instrument.download`
+  - Fixed boolean logic when checking for start and stop dates in `_instrument.download`
   - Fixed loading of COSMIC atmPrf files
   - Fixed feedback from COSMIC GPS when data not found on remote server
   - Fixed deprecation warning for pysat.utils.coords.scale_units
   - Fixed a bug when trying to combine empty f107 lists
+  - Fixed a bug where `remote_file_list` would fail for some instruments.
   - Made import of methods more robust
 
 ## [2.1.0] - 2019-11-18
