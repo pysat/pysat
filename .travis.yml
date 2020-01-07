@@ -1,7 +1,7 @@
 language: python
 matrix:
   include:
-    - python: 3.5
+    - python: 3.6
       dist: xenial
       services: xvfb
     - python: 3.8
