@@ -52,6 +52,7 @@ import functools
 import numpy as np
 import pandas as pds
 import scipy.stats as stats
+import warnings
 
 import pysat
 from .methods import nasa_cdaweb as cdw
@@ -199,8 +200,6 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
         Maximum coefficient of variation of the IMF magnitude in the GSM
         Y-Z plane (default=0.5)
     """
-
-    import warnings
 
     # We are not going to interpolate through missing values
     sample_rate = int(inst.tag[0])
