@@ -27,12 +27,11 @@ fortran_install = ['pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
 # python version specific support libraries
 if sys.version_info.major == 2:
     install_requires.extend(['xarray<0.12', 'pandas>=0.23, <0.25',
-                             'numpy>=1.12, <1.17', 'scipy<1.3',
-                             'matplotlib<3.0'])
+                             'numpy>=1.12, <1.17', 'scipy<1.3'])
 else:
     # python 3+
     install_requires.extend(['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                             'scipy', 'matplotlib'])
+                             'scipy'])
 
 # flag, True if on readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
