@@ -32,7 +32,7 @@ if sys.version_info.major == 2:
 else:
     # python 3+
     install_requires.extend(['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                             'scipy>=1.4', 'matplotlib'])
+                             'scipy', 'matplotlib'])
 
 # flag, True if on readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
