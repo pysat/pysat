@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - New Features
   - Added registry module for registering custom external instruments
 - Deprecations
+  - Removed utils.stats
   - Removed model_utils
 - Documentation
   - Added info on how to register new instruments
