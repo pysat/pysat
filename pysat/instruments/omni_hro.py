@@ -51,9 +51,11 @@ from __future__ import absolute_import
 import functools
 import numpy as np
 import pandas as pds
+import scipy.stats as stats
+import warnings
 
 import pysat
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import nasa_cdaweb as cdw
 
 import logging
 logger = logging.getLogger(__name__)
@@ -199,8 +201,6 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
         Y-Z plane (default=0.5)
     """
 
-    from pysat.utils import stats as pystats
-
     # We are not going to interpolate through missing values
     sample_rate = int(inst.tag[0])
     max_wnum = np.floor(steady_window / sample_rate)
@@ -219,14 +219,25 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     inst['BYZ_CV'] = pds.Series(byz_std / byz_mean, index=inst.data.index)
 
     # Calculate the running circular standard deviation of the clock angle
-    circ_kwargs = {'high': 360.0, 'low': 0.0}
-
-    ca_std = \
-        inst['clock_angle'].rolling(min_periods=min_wnum,
-                                    window=steady_window,
-                                    center=True).apply(pystats.nan_circstd,
-                                                       kwargs=circ_kwargs,
-                                                       raw=True)
+    circ_kwargs = {'high': 360.0, 'low': 0.0, 'nan_policy': 'omit'}
+    try:
+        ca_std = \
+            inst['clock_angle'].rolling(min_periods=min_wnum,
+                                        window=steady_window,
+                                        center=True).apply(stats.circstd,
+                                                           kwargs=circ_kwargs,
+                                                           raw=True)
+    except TypeError:
+        warnings.warn(' '.join(['To automatically remove NaNs from the',
+                                'calculation, please upgrade to scipy 1.4 or',
+                                'newer']))
+        circ_kwargs.pop('nan_policy')
+        ca_std = \
+            inst['clock_angle'].rolling(min_periods=min_wnum,
+                                        window=steady_window,
+                                        center=True).apply(stats.circstd,
+                                                           kwargs=circ_kwargs,
+                                                           raw=True)
     inst['clock_angle_std'] = pds.Series(ca_std, index=inst.data.index)
 
     # Determine how long the clock angle and IMF magnitude are steady

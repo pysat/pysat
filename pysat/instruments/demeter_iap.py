@@ -40,7 +40,7 @@ import pandas as pds
 import numpy as np
 
 import pysat
-from .methods import demeter
+from pysat.instruments.methods import demeter
 
 import logging
 logger = logging.getLogger(__name__)
