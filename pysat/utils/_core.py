@@ -34,7 +34,7 @@ def set_data_dir(path=None, store=True):
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
     else:
-        raise ValueError('Path %s does not lead to a valid directory.' % path)
+        raise ValueError('Path {:s} does not lead to a valid directory.'.format(path))
 
 
 def scale_units(out_unit, in_unit):
