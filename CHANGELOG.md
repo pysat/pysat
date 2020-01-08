@@ -25,6 +25,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug when trying to combine empty f107 lists
   - Fixed a bug where `remote_file_list` would fail for some instruments.
   - Made import of methods more robust
+  - Fixed `SettingWithCopyWarning` in `cnofs_ivm` cleaning routine
 
 ## [2.1.0] - 2019-11-18
 - New Features
