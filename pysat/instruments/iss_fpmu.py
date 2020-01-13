@@ -28,7 +28,7 @@ import numpy as np
 
 import pysat
 
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import nasa_cdaweb as cdw
 
 platform = 'iss'
 name = 'fpmu'
