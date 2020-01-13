@@ -27,12 +27,11 @@ fortran_install = ['pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
 # python version specific support libraries
 if sys.version_info.major == 2:
     install_requires.extend(['xarray<0.12', 'pandas>=0.23, <0.25',
-                             'numpy>=1.12, <1.17', 'scipy<1.3',
-                             'matplotlib<3.0'])
+                             'numpy>=1.12, <1.17', 'scipy<1.3'])
 else:
     # python 3+
     install_requires.extend(['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                             'scipy', 'matplotlib'])
+                             'scipy'])
 
 # flag, True if on readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
@@ -97,7 +96,7 @@ setup(
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=['pysat', 'pysat.instruments', 'pysat.ssnl'],
+    packages=['pysat', 'pysat.instruments', 'pysat.utils'],
 
     # List run-time dependencies here.  These will be installed by pip when
     # your project is installed. For an analysis of "install_requires" vs pip's

@@ -2,10 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2019-12-18
+## [3.0.0] - 2019-12-31
 - New Features
   - Added registry module for registering custom external instruments
 - Deprecations
+  - Removed ssnl
   - Removed utils.stats
   - Removed model_utils
 - Documentation
