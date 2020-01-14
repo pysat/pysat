@@ -1,16 +1,12 @@
 language: python
+dist: xenial
 matrix:
   include:
     - python: 3.6
-      dist: xenial
-      services: xvfb
     - python: 3.7
-      dist: xenial
-      services: xvfb
     - python: 3.8
-      dist: xenial
-      services: xvfb
-
+      
+services: xvfb
 cache: pip
 
 addons:
