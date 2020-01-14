@@ -28,10 +28,6 @@ install:
   # install pysat
   - python setup.py install
 
-before_script:
-  # set up display screen
-  - export DISPLAY=:99.0
-
 # command to run tests
 script:
  - nosetests -vs --with-coverage --cover-package=pysat
