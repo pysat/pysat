@@ -137,8 +137,7 @@ class TestAdditionSimilarInstruments:
         """
         self.testC = pysat.Constellation(name='test_add_similar')
         self.refC = pysat.Constellation([pysat.Instrument('pysat', 'testing',
-                                                          tag='ascend',
-                                                          clean_level='clean')])
+                                                          tag='ascend')])
 
     def teardown(self):
         del self.testC
