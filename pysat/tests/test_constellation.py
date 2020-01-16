@@ -1,3 +1,4 @@
+import warnings
 from nose.tools import raises
 import numpy as np
 
@@ -280,3 +281,58 @@ class TestDataMod:
         ans = (self.testConst[0].data['doubleMLT'].values ==
                2. * self.testConst[0].data.mlt.values).all()
         assert ans
+
+
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+
+        instruments = [pysat.Instrument(platform='pysat', name='testing',
+                                        sat_id='10', clean_level='clean')
+                       for i in range(2)]
+        self.testC = pysat.Constellation(instruments)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
+        del self.testC
+
+    def test_deprecation_warning_add(self):
+        """Test if constellation.add is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                # initiate function with NoneTypes since function does not
+                # need to run for DeprecationWarning to be thrown
+                # ==> Save time in unit tests
+                _ = self.testC.add(bounds1=None, label1=None, bounds2=None,
+                                   label2=None, bin3=None, label3=None,
+                                   data_label=None)
+            except ValueError:
+                # Setting data_label to None should produce a ValueError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_difference(self):
+        """Test if constellation.difference is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                # initiate function with NoneTypes since function does not
+                # need to run for DeprecationWarning to be thrown
+                # ==> Save time in unit tests
+                _ = self.testC.difference(self.testC[0], self.testC[1],
+                                          bounds=None, data_labels=None,
+                                          cost_function=None)
+            except TypeError:
+                # Setting data_labels to None should produce a TypeError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
