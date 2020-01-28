@@ -305,13 +305,13 @@ class TestDeprecation():
             try:
                 # initiate function with NoneTypes since function does not
                 # need to run for DeprecationWarning to be thrown
-                # ==> Save time in unit tests
-                _ = self.testC.add(bounds1=None, label1=None, bounds2=None,
-                                   label2=None, bin3=None, label3=None,
-                                   data_label=None)
-            except ValueError:
                 # Setting data_label to None should produce a ValueError after
                 # warning is generated
+                # ==> Save time in unit tests
+                self.testC.add(bounds1=None, label1=None, bounds2=None,
+                               label2=None, bin3=None, label3=None,
+                               data_label=None)
+            except ValueError:
                 pass
 
         assert len(war) >= 1
@@ -324,13 +324,13 @@ class TestDeprecation():
             try:
                 # initiate function with NoneTypes since function does not
                 # need to run for DeprecationWarning to be thrown
-                # ==> Save time in unit tests
-                _ = self.testC.difference(self.testC[0], self.testC[1],
-                                          bounds=None, data_labels=None,
-                                          cost_function=None)
-            except TypeError:
                 # Setting data_labels to None should produce a TypeError after
                 # warning is generated
+                # ==> Save time in unit tests
+                self.testC.difference(self.testC[0], self.testC[1],
+                                      bounds=None, data_labels=None,
+                                      cost_function=None)
+            except TypeError:
                 pass
 
         assert len(war) >= 1
