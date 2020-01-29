@@ -35,7 +35,28 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
 
 
 def generate_times(fnames, sat_id, freq='1S'):
-    """Construct list of times for simulated instruments"""
+    """Construct list of times for simulated instruments
+
+    Parameters
+    ----------
+    fnames : (list)
+        List of filenames
+    sat_id : (str or NoneType)
+        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
+        specifies the number of data points to include in the test instrument)
+    freq : string
+        Frequency of temporal output, compatible with pandas.date_range
+        [default : '1S']
+
+    Outputs
+    -------
+    uts : (array)
+        Array of integers representing uts for a given day
+    index : (DatetimeIndex)
+        The DatetimeIndex to be used in the pysta test instrument objects
+    date : (datetime)
+        The requested date reconstructed from the fake file name
+    """
 
     # grab date from filename
     parts = os.path.split(fnames[0])[-1].split('-')
