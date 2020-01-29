@@ -5,7 +5,6 @@ Produces fake instrument data for testing.
 from __future__ import print_function
 from __future__ import absolute_import
 import functools
-import os
 
 import numpy as np
 import pandas as pds
@@ -177,61 +176,48 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     """
 
-    # create an artifical satellite data set
-    parts = os.path.split(fnames[0])[-1].split('-')
-    yr = int(parts[0])
-    month = int(parts[1])
-    day = int(parts[2][0:2])
+    uts, index, date = test.generate_times(fnames, sat_id, freq='1S')
 
     # Specify the date tag locally and determine the desired date range
-    date = pysat.datetime(yr, month, day)
     pds_offset = pds.DateOffset(hours=12)
     if sim_multi_file_right:
         root_date = root_date or _test_dates[''][''] + pds_offset
-        data_date = date + pds_offset
     elif sim_multi_file_left:
         root_date = root_date or _test_dates[''][''] - pds_offset
-        data_date = date - pds_offset
     else:
         root_date = root_date or _test_dates['']['']
-        data_date = date
 
-    # The sat_id can be used to specify the number of indexes to load for
-    # any of the testing objects
-    num = 86400 if sat_id == '' else int(sat_id)
-    num_array = np.arange(num)
-    uts = num_array
     data = pysat.DataFrame(uts, columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
     time_delta = date - root_date
     data['mlt'] = test.generate_fake_data(time_delta.total_seconds(),
-                                          num_array, period=5820,
+                                          uts, period=5820,
                                           data_range=[0.0, 24.0])
 
     # do slt, 20 second offset from mlt
     data['slt'] = test.generate_fake_data(time_delta.total_seconds()+20,
-                                          num_array, period=5820,
+                                          uts, period=5820,
                                           data_range=[0.0, 24.0])
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     data['longitude'] = test.generate_fake_data(time_delta.total_seconds(),
-                                                num_array, period=6240,
+                                                uts, period=6240,
                                                 data_range=[0.0, 360.0])
 
     # create latitude area for testing polar orbits
     angle = test.generate_fake_data(time_delta.total_seconds(),
-                                    num_array, period=5820,
+                                    uts, period=5820,
                                     data_range=[0.0, 2.0*np.pi])
     data['latitude'] = 90.0 * np.cos(angle)
 
     # fake orbit number
     fake_delta = date - (_test_dates[''][''] - pds.DateOffset(years=1))
     data['orbit_num'] = test.generate_fake_data(fake_delta.total_seconds(),
-                                                num_array, period=5820,
+                                                uts, period=5820,
                                                 cyclic=False)
 
     # create some fake data to support testing of averaging routines
@@ -251,7 +237,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         data['dummy1'] = mlt_int
     data['dummy2'] = long_int
     data['dummy3'] = mlt_int + long_int * 1000.0
-    data['dummy4'] = num_array
+    data['dummy4'] = uts
     data['string_dummy'] = ['test'] * len(data)
     data['unicode_dummy'] = [u'test'] * len(data)
     data['int8_dummy'] = np.ones(len(data), dtype=np.int8)
@@ -259,17 +245,14 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
-    index = pds.date_range(data_date,
-                           data_date+pds.DateOffset(seconds=num-1),
-                           freq='S')
     if malformed_index:
-        index = index[0:num].tolist()
+        index = index[:].tolist()
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]]*3
 
-    data.index = index[0:num]
+    data.index = index[:]
     data.index.name = 'Epoch'
     return data, meta.copy()
 

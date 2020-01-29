@@ -1,4 +1,7 @@
+import os
 import numpy as np
+import pandas as pds
+import pysat
 
 
 def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
@@ -29,3 +32,23 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
         data = ((t0 + num_array) / period).astype(int)
 
     return data
+
+
+def generate_times(fnames, sat_id, freq='1S'):
+    """Construct list of times for simulated instruments"""
+
+    # grab date from filename
+    parts = os.path.split(fnames[0])[-1].split('-')
+    yr = int(parts[0])
+    month = int(parts[1])
+    day = int(parts[2][0:2])
+    date = pysat.datetime(yr, month, day)
+
+    # create timing at 1 Hz (defaults to 1 day)
+    # Allow numeric string to set number of time steps
+    num = 86400 if sat_id == '' else int(sat_id)
+    uts = np.arange(num)
+    index = pds.date_range(start=date, end=date+pds.DateOffset(seconds=num-1),
+                           freq=freq)
+
+    return uts, index, date
