@@ -44,11 +44,13 @@ def generate_times(fnames, sat_id, freq='1S'):
     day = int(parts[2][0:2])
     date = pysat.datetime(yr, month, day)
 
-    # create timing at 1 Hz (defaults to 1 day)
-    # Allow numeric string to set number of time steps
-    num = 86400 if sat_id == '' else int(sat_id)
-    uts = np.arange(num)
-    index = pds.date_range(start=date, end=date+pds.DateOffset(seconds=num-1),
+    # Create one day of data at desired frequency
+    index = pds.date_range(start=date, end=date+pds.DateOffset(seconds=86399),
                            freq=freq)
+    # Allow numeric string to select first set of data
+    if sat_id.isnumeric() and (int(sat_id) < 86400):
+        index = index[0:int(sat_id)]
+
+    uts = index.hour*3600 + index.minute*60 + index.second
 
     return uts, index, date
