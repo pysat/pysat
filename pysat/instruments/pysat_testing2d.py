@@ -4,7 +4,6 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import os
 
 import numpy as np
 import pandas as pds
@@ -66,19 +65,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     """
 
     # create an artifical satellite data set
-    parts = os.path.split(fnames[0])[-1].split('-')
-    yr = int(parts[0])
-    month = int(parts[1])
-    day = int(parts[2][0:2])
-    date = pysat.datetime(yr, month, day)
-    # scalar divisor below used to reduce the number of time samples
-    # covered by the simulation per day. The higher the number the lower
-    # the number of samples (86400/scalar)
-    scalar = 100
-    num = 86400/scalar
-    # basic time signal in UTS
-    uts = np.arange(num) * scalar
-    num_array = np.arange(num) * scalar
+    uts, index, date = test.generate_times(fnames, sat_id, freq='900S')
     # seed DataFrame with UT array
     data = pysat.DataFrame(uts, columns=['uts'])
 
@@ -90,32 +77,26 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     time_delta = date - pysat.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
     data['mlt'] = test.generate_fake_data(time_delta.total_seconds(),
-                                          np.arange(num)*scalar,
+                                          np.arange(len(data['uts'])),
                                           period=5820, data_range=[0.0, 24.0])
     # do slt, 20 second offset from mlt
     data['slt'] = test.generate_fake_data(time_delta.total_seconds()+20,
-                                          np.arange(num)*scalar,
+                                          np.arange(len(data['uts'])),
                                           period=5820, data_range=[0.0, 24.0])
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     data['longitude'] = test.generate_fake_data(time_delta.total_seconds(),
-                                                num_array, period=6240,
+                                                uts, period=6240,
                                                 data_range=[0.0, 360.0])
     # create latitude signal for testing polar orbits
     angle = test.generate_fake_data(time_delta.total_seconds(),
-                                    num_array, period=5820,
+                                    uts, period=5820,
                                     data_range=[0.0, 2.0*np.pi])
     data['latitude'] = 90.0 * np.cos(angle)
 
-    # create real UTC time signal
-    index = pds.date_range(date,
-                           date + pds.DateOffset(hours=23,
-                                                 minutes=59,
-                                                 seconds=59),
-                           freq=str(scalar)+'S')
     if malformed_index:
-        index = index[0:num].tolist()
+        index = index[:].tolist()
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
