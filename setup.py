@@ -9,7 +9,6 @@ from setuptools import setup
 # To use a consistent encoding
 import codecs
 import os
-import sys
 
 here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, 'description.txt'), encoding='utf-8') as f:
@@ -20,18 +19,11 @@ with codecs.open(os.path.join(here, version_filename)) as version_file:
 
 # packages to be installed
 # starting with packages common across all setups
-install_requires = ['requests', 'beautifulsoup4',
-                    'lxml', 'netCDF4']
+install_requires = ['requests', 'beautifulsoup4', 'lxml', 'netCDF4']
 # packages with Fortran code
 fortran_install = ['pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
 # python version specific support libraries
-if sys.version_info.major == 2:
-    install_requires.extend(['xarray<0.12', 'pandas>=0.23, <0.25',
-                             'numpy>=1.12, <1.17', 'scipy<1.3'])
-else:
-    # python 3+
-    install_requires.extend(['xarray', 'pandas>=0.23, <0.25', 'numpy>=1.12',
-                             'scipy'])
+install_requires.extend(['numpy>=1.12', 'scipy', 'pandas>=0.23', 'xarray'])
 
 # flag, True if on readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
