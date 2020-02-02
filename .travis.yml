@@ -18,7 +18,7 @@ addons:
 before_install:
   - pip install coveralls
   - pip install future
-  - pip install 'pandas<0.24'
+  - pip install 'pandas<0.25'
   - pip install 'xarray<0.15'
   - pip install pysatCDF >/dev/null
 
