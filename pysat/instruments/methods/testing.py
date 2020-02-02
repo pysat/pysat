@@ -113,8 +113,11 @@ def generate_times(fnames, sat_id, freq='1S'):
     index = pds.date_range(start=date, end=date+pds.DateOffset(seconds=86399),
                            freq=freq)
     # Allow numeric string to select first set of data
-    if sat_id.isnumeric() and (int(sat_id) < 86400):
+    try:
         index = index[0:int(sat_id)]
+    except ValueError:
+        # non-integer sat_id produces ValueError
+        pass
 
     uts = index.hour*3600 + index.minute*60 + index.second
 
