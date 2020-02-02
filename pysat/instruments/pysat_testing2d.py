@@ -5,40 +5,32 @@ Produces fake instrument data for testing.
 from __future__ import print_function
 from __future__ import absolute_import
 
+import functools
 import numpy as np
 import pandas as pds
 
 import pysat
-from pysat.instruments.methods import testing as test
+from pysat.instruments.methods import testing as mm_test
 
 platform = 'pysat'
-name = 'testing'
-
-# create very limited metadata
-meta = pysat.Meta()
-meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
-meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
-meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-series_profile_meta = pysat.Meta()
-series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
-meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
-                           'long_name': 'series'}
-profile_meta = pysat.Meta()
-profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_str'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_ustr'] = {'units': '', 'long_name': 'profiles'}
-meta['profiles'] = {'meta': profile_meta, 'units': '', 'long_name': 'profiles'}
-alt_profile_meta = pysat.Meta()
-alt_profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-alt_profile_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
-meta['alt_profiles'] = {'meta': alt_profile_meta, 'units': '',
-                        'long_name': 'profiles'}
+name = 'testing2d'
+_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
 def init(self):
+    """ Initialization function
+
+    """
+
     self.new_thing = True
+
+
+def default(inst):
+    """The default function is applied first to data as it is loaded.
+
+    """
+
+    pass
 
 
 def load(fnames, tag=None, sat_id=None, malformed_index=False):
@@ -66,7 +58,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     """
 
     # create an artifical satellite data set
-    uts, index, date = test.generate_times(fnames, sat_id, freq='100S')
+    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
     # seed DataFrame with UT array
     data = pysat.DataFrame(uts, columns=['uts'])
 
@@ -77,23 +69,23 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # going to presume there are 5820 seconds per orbit (97 minute period)
     time_delta = date - pysat.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
-    data['mlt'] = test.generate_fake_data(time_delta.total_seconds(),
-                                          np.arange(len(data['uts'])),
-                                          period=5820, data_range=[0.0, 24.0])
+    data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
+                                             period=5820,
+                                             data_range=[0.0, 24.0])
     # do slt, 20 second offset from mlt
-    data['slt'] = test.generate_fake_data(time_delta.total_seconds()+20,
-                                          np.arange(len(data['uts'])),
-                                          period=5820, data_range=[0.0, 24.0])
+    data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds()+20,
+                                             uts, period=5820,
+                                             data_range=[0.0, 24.0])
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    data['longitude'] = test.generate_fake_data(time_delta.total_seconds(),
-                                                uts, period=6240,
-                                                data_range=[0.0, 360.0])
+    data['longitude'] = mm_test.generate_fake_data(time_delta.total_seconds(),
+                                                   uts, period=6240,
+                                                   data_range=[0.0, 360.0])
     # create latitude signal for testing polar orbits
-    angle = test.generate_fake_data(time_delta.total_seconds(),
-                                    uts, period=5820,
-                                    data_range=[0.0, 2.0*np.pi])
+    angle = mm_test.generate_fake_data(time_delta.total_seconds(),
+                                       uts, period=5820,
+                                       data_range=[0.0, 2.0*np.pi])
     data['latitude'] = 90.0 * np.cos(angle)
 
     if malformed_index:
@@ -163,3 +155,24 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
     pass
+# create very limited metadata
+meta = pysat.Meta()
+meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
+meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
+meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
+meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+series_profile_meta = pysat.Meta()
+series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
+meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
+                           'long_name': 'series'}
+profile_meta = pysat.Meta()
+profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
+profile_meta['dummy_str'] = {'units': '', 'long_name': 'profiles'}
+profile_meta['dummy_ustr'] = {'units': '', 'long_name': 'profiles'}
+meta['profiles'] = {'meta': profile_meta, 'units': '', 'long_name': 'profiles'}
+alt_profile_meta = pysat.Meta()
+alt_profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
+alt_profile_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
+meta['alt_profiles'] = {'meta': alt_profile_meta, 'units': '',
+                        'long_name': 'profiles'}

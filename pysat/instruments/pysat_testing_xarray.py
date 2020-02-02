@@ -4,13 +4,13 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+import functools
 
 import numpy as np
-import pandas as pds
 import xarray
 
 import pysat
-from pysat.instruments.methods import testing as test
+from pysat.instruments.methods import testing as mm_test
 
 # pysat required parameters
 platform = 'pysat'
@@ -24,7 +24,19 @@ pandas_format = False
 
 
 def init(self):
+    """ Initialization function
+
+    """
+
     self.new_thing = True
+
+
+def default(inst):
+    """The default function is applied first to data as it is loaded.
+
+    """
+
+    pass
 
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
@@ -63,7 +75,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     """
 
     # create an artifical satellite data set
-    uts, index, date = test.generate_times(fnames, sat_id, freq='1S')
+    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='1S')
 
     if sim_multi_file_right:
         root_date = pysat.datetime(2009, 1, 1, 12)
@@ -83,34 +95,35 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
-    mlt = test.generate_fake_data(time_delta.total_seconds(), uts,
-                                  period=5820, data_range=[0.0, 24.0])
+    mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
+                                     period=5820, data_range=[0.0, 24.0])
     data['mlt'] = (('time'), mlt)
 
     # do slt, 20 second offset from mlt
-    slt = test.generate_fake_data(time_delta.total_seconds()+20, uts,
-                                  period=5820, data_range=[0.0, 24.0])
+    slt = mm_test.generate_fake_data(time_delta.total_seconds()+20, uts,
+                                     period=5820, data_range=[0.0, 24.0])
     data['slt'] = (('time'), slt)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    longitude = test.generate_fake_data(time_delta.total_seconds(), uts,
-                                        period=6240, data_range=[0.0, 360.0])
+    longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
+                                           period=6240,
+                                           data_range=[0.0, 360.0])
     data['longitude'] = (('time'), longitude)
 
     # create latitude area for testing polar orbits
-    angle = test.generate_fake_data(time_delta.total_seconds(),
-                                    uts, period=5820,
-                                    data_range=[0.0, 2.0*np.pi])
+    angle = mm_test.generate_fake_data(time_delta.total_seconds(),
+                                       uts, period=5820,
+                                       data_range=[0.0, 2.0*np.pi])
     latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
 
     # fake orbit number
     fake_delta = date - pysat.datetime(2008, 1, 1)
-    orbit_num = test.generate_fake_data(fake_delta.total_seconds(),
-                                        uts, period=5820,
-                                        cyclic=False)
+    orbit_num = mm_test.generate_fake_data(fake_delta.total_seconds(),
+                                           uts, period=5820,
+                                           cyclic=False)
 
     data['orbit_num'] = (('time'), orbit_num)
 

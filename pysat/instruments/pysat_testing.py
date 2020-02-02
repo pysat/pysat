@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
-from pysat.instruments.methods import testing as test
+from pysat.instruments.methods import testing as mm_test
 
 # pysat required parameters
 platform = 'pysat'
@@ -24,71 +24,11 @@ tags = {'': 'Regular testing data set',
         'plus10': 'Ascending Integers from 10 testing data set',
         'fives': 'All 5s testing data set',
         'mlt_offset': 'dummy1 is offset by five from regular testing set'}
+
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in sat_id to change the number of points per day
 sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
 _test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
-
-meta = pysat.Meta()
-meta['uts'] = {'units': 's',
-               'long_name': 'Universal Time',
-               'custom': False}
-meta['Epoch'] = {'units': 'Milliseconds since 1970-1-1',
-                 'Bin_Location': 0.5,
-                 'notes': 'UTC time at middle of geophysical measurement.',
-                 'desc': 'UTC seconds', }
-meta['mlt'] = {'units': 'hours',
-               'long_name': 'Magnetic Local Time',
-               'label': 'MLT',
-               'axis': 'MLT',
-               'desc': 'Magnetic Local Time',
-               'value_min': 0.0,
-               'value_max': 24.0,
-               'notes': ('Magnetic Local Time is the solar local time of the '
-                         'field line at the location where the field crosses '
-                         'the magnetic equator. In this case we just simulate '
-                         '0-24 with a consistent orbital period and an offste '
-                         'with SLT.'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['slt'] = {'units': 'hours',
-               'long_name': 'Solar Local Time',
-               'label': 'SLT',
-               'axis': 'SLT',
-               'desc': 'Solar Local Time',
-               'value_min': 0.0,
-               'value_max': 24.0,
-               'notes': ('Solar Local Time is the local time (zenith angle of '
-                         'sun) of the given locaiton. Overhead noon, +/- 90 '
-                         'is 6, 18 SLT .'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['orbit_num'] = {'units': '',
-                     'long_name': 'Orbit Number',
-                     'label': 'Orbit Number',
-                     'axis': 'Orbit Number',
-                     'desc': 'Orbit Number',
-                     'value_min': 0.0,
-                     'value_max': 25000.0,
-                     'notes': ('Number of orbits since the start of the '
-                               'mission. For this simulation we use the '
-                               'number of 5820 second periods since the '
-                               'start, 2008-01-01.'),
-                     'fill': np.nan,
-                     'scale': 'linear'}
-
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
-meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}
-meta['dummy3'] = {'units': '', 'long_name': 'dummy3'}
-meta['dummy4'] = {'units': '', 'long_name': 'dummy4'}
-meta['string_dummy'] = {'units': '', 'long_name': 'string_dummy'}
-meta['unicode_dummy'] = {'units': '', 'long_name': 'unicode_dummy'}
-meta['int8_dummy'] = {'units': '', 'long_name': 'int8_dummy'}
-meta['int16_dummy'] = {'units': '', 'long_name': 'int16_dummy'}
-meta['int32_dummy'] = {'units': '', 'long_name': 'int32_dummy'}
-meta['int64_dummy'] = {'units': '', 'long_name': 'int64_dummy'}
 
 
 def init(inst):
@@ -130,6 +70,7 @@ def default(inst):
     """The default function is applied first to data as it is loaded.
 
     """
+
     pass
 
 
@@ -176,7 +117,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     """
 
-    uts, index, date = test.generate_times(fnames, sat_id, freq='1S')
+    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='1S')
 
     # Specify the date tag locally and determine the desired date range
     pds_offset = pds.DateOffset(hours=12)
@@ -192,33 +133,33 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
     time_delta = date - root_date
-    data['mlt'] = test.generate_fake_data(time_delta.total_seconds(),
-                                          uts, period=5820,
-                                          data_range=[0.0, 24.0])
+    data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(),
+                                             uts, period=5820,
+                                             data_range=[0.0, 24.0])
 
     # do slt, 20 second offset from mlt
-    data['slt'] = test.generate_fake_data(time_delta.total_seconds()+20,
-                                          uts, period=5820,
-                                          data_range=[0.0, 24.0])
+    data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds()+20,
+                                             uts, period=5820,
+                                             data_range=[0.0, 24.0])
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    data['longitude'] = test.generate_fake_data(time_delta.total_seconds(),
-                                                uts, period=6240,
-                                                data_range=[0.0, 360.0])
+    data['longitude'] = mm_test.generate_fake_data(time_delta.total_seconds(),
+                                                   uts, period=6240,
+                                                   data_range=[0.0, 360.0])
 
     # create latitude area for testing polar orbits
-    angle = test.generate_fake_data(time_delta.total_seconds(),
-                                    uts, period=5820,
-                                    data_range=[0.0, 2.0*np.pi])
+    angle = mm_test.generate_fake_data(time_delta.total_seconds(),
+                                       uts, period=5820,
+                                       data_range=[0.0, 2.0*np.pi])
     data['latitude'] = 90.0 * np.cos(angle)
 
     # fake orbit number
     fake_delta = date - (_test_dates[''][''] - pds.DateOffset(years=1))
-    data['orbit_num'] = test.generate_fake_data(fake_delta.total_seconds(),
-                                                uts, period=5820,
-                                                cyclic=False)
+    data['orbit_num'] = mm_test.generate_fake_data(fake_delta.total_seconds(),
+                                                   uts, period=5820,
+                                                   cyclic=False)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
@@ -300,3 +241,65 @@ def download(date_array, tag, sat_id, data_path=None,
              user=None, password=None):
     """ Download routine, not used since files are created locally"""
     pass
+
+
+meta = pysat.Meta()
+meta['uts'] = {'units': 's',
+               'long_name': 'Universal Time',
+               'custom': False}
+meta['Epoch'] = {'units': 'Milliseconds since 1970-1-1',
+                 'Bin_Location': 0.5,
+                 'notes': 'UTC time at middle of geophysical measurement.',
+                 'desc': 'UTC seconds', }
+meta['mlt'] = {'units': 'hours',
+               'long_name': 'Magnetic Local Time',
+               'label': 'MLT',
+               'axis': 'MLT',
+               'desc': 'Magnetic Local Time',
+               'value_min': 0.0,
+               'value_max': 24.0,
+               'notes': ('Magnetic Local Time is the solar local time of the '
+                         'field line at the location where the field crosses '
+                         'the magnetic equator. In this case we just simulate '
+                         '0-24 with a consistent orbital period and an offste '
+                         'with SLT.'),
+               'fill': np.nan,
+               'scale': 'linear'}
+meta['slt'] = {'units': 'hours',
+               'long_name': 'Solar Local Time',
+               'label': 'SLT',
+               'axis': 'SLT',
+               'desc': 'Solar Local Time',
+               'value_min': 0.0,
+               'value_max': 24.0,
+               'notes': ('Solar Local Time is the local time (zenith angle of '
+                         'sun) of the given locaiton. Overhead noon, +/- 90 '
+                         'is 6, 18 SLT .'),
+               'fill': np.nan,
+               'scale': 'linear'}
+meta['orbit_num'] = {'units': '',
+                     'long_name': 'Orbit Number',
+                     'label': 'Orbit Number',
+                     'axis': 'Orbit Number',
+                     'desc': 'Orbit Number',
+                     'value_min': 0.0,
+                     'value_max': 25000.0,
+                     'notes': ('Number of orbits since the start of the '
+                               'mission. For this simulation we use the '
+                               'number of 5820 second periods since the '
+                               'start, 2008-01-01.'),
+                     'fill': np.nan,
+                     'scale': 'linear'}
+
+meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
+meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}
+meta['dummy3'] = {'units': '', 'long_name': 'dummy3'}
+meta['dummy4'] = {'units': '', 'long_name': 'dummy4'}
+meta['string_dummy'] = {'units': '', 'long_name': 'string_dummy'}
+meta['unicode_dummy'] = {'units': '', 'long_name': 'unicode_dummy'}
+meta['int8_dummy'] = {'units': '', 'long_name': 'int8_dummy'}
+meta['int16_dummy'] = {'units': '', 'long_name': 'int16_dummy'}
+meta['int32_dummy'] = {'units': '', 'long_name': 'int32_dummy'}
+meta['int64_dummy'] = {'units': '', 'long_name': 'int64_dummy'}
