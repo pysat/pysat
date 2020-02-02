@@ -145,19 +145,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     return data, meta.copy()
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a fake list of files spanning a year"""
-
-    index = pds.date_range(pysat.datetime(2008, 1, 1),
-                           pysat.datetime(2010, 12, 31))
-    names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
-             for date in index]
-    return pysat.Series(names, index=index)
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    pass
+list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
+download = functools.partial(mm_test.download)
 
 
 # create very limited metadata

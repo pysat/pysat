@@ -198,49 +198,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     return data, meta.copy()
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
-               file_date_range=None):
-    """Produce a fake list of files spanning a year
-
-    Parameters
-    ----------
-    tag : (str)
-        pysat instrument tag (default=None)
-    sat_id : (str)
-        pysat satellite ID tag (default=None)
-    data_path : (str)
-        pysat data path (default=None)
-    format_str : (str)
-        file format string (default=None)
-    file_date_range : (pds.date_range)
-        File date range (default=None)
-
-    Returns
-    -------
-    Series of filenames indexed by file time
-
-    """
-
-    # Determine the appropriate date range for the fake files
-    if file_date_range is None:
-        start = _test_dates[''][''] - pds.DateOffset(years=1)
-        stop = _test_dates[''][''] + pds.DateOffset(years=2) \
-            - pds.DateOffset(days=1)
-        file_date_range = pds.date_range(start, stop)
-
-    index = file_date_range
-
-    # Create the list of fake filenames
-    names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
-             for date in index]
-
-    return pysat.Series(names, index=index)
-
-
-def download(date_array, tag, sat_id, data_path=None,
-             user=None, password=None):
-    """ Download routine, not used since files are created locally"""
-    pass
+list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
+download = functools.partial(mm_test.download)
 
 
 meta = pysat.Meta()
