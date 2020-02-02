@@ -16,21 +16,20 @@ class TestSWKp():
         """Runs before every method to create a clean testing setup"""
         # Load a test instrument
         self.testInst = pysat.Instrument()
-        self.testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0),
-                                            'ap_nan': np.full(shape=12, \
-                                                            fill_value=np.nan),
-                                            'ap_inf': np.full(shape=12, \
-                                                            fill_value=np.inf)},
-                                           index=[pysat.datetime(2009, 1, 1)
-                                                  + pds.DateOffset(hours=3*i)
-                                                  for i in range(12)])
+        self.testInst.data = \
+            pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0),
+                           'ap_nan': np.full(shape=12, fill_value=np.nan),
+                           'ap_inf': np.full(shape=12, fill_value=np.inf)},
+                          index=[pysat.datetime(2009, 1, 1)
+                                 + pds.DateOffset(hours=3*i)
+                                 for i in range(12)])
         self.testInst.meta = pysat.Meta()
         self.testInst.meta.__setitem__('Kp', {self.testInst.meta.fill_label:
                                               np.nan})
-        self.testInst.meta.__setitem__('ap_nan', {self.testInst.meta.fill_label:
-                                                  np.nan})
-        self.testInst.meta.__setitem__('ap_inv', {self.testInst.meta.fill_label:
-                                                  np.inf})
+        self.testInst.meta.__setitem__('ap_nan',
+                                       {self.testInst.meta.fill_label: np.nan})
+        self.testInst.meta.__setitem__('ap_inv',
+                                       {self.testInst.meta.fill_label: np.inf})
 
         # Load a test Metadata
         self.testMeta = pysat.Meta()
