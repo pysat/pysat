@@ -38,6 +38,7 @@ Custom Functions
 """
 
 from __future__ import print_function, absolute_import
+import datetime as dt
 import pandas as pds
 import numpy as np
 from os import path
@@ -339,8 +340,8 @@ def load_csv_data(fname, tag):
 
         # Open and read the file
         with open(fname, "r") as fopen:
-            dtime = pds.datetime.strptime(fname.split("_")[-1].split(".")[0],
-                                          "%Y")
+            dtime = dt.datetime.strptime(fname.split("_")[-1].split(".")[0],
+                                         "%Y")
 
             for fline in fopen.readlines():
                 sline = [ll for ll in re.split(r'[,\n]+', fline)
@@ -419,8 +420,8 @@ def load_ascii_data(fname, tag):
         date_list = list()
 
         if tag == "stations":
-            dtime = pds.datetime.strptime(fname.split("_")[-1].split(".")[0],
-                                          "%Y")
+            dtime = dt.datetime.strptime(fname.split("_")[-1].split(".")[0],
+                                         "%Y")
 
         for fline in fopen.readlines():
             # Cycle past the header
@@ -768,8 +769,8 @@ def append_ascii_data(file_strings, tag):
     while i < len(out_lines) - 1:
         idates.append(i)
         lsplit = re.split('\t+', out_lines[i])
-        dtime = pds.datetime.strptime(" ".join(lsplit[0:-1]),
-                                      "%Y %m %d %H %M %S")
+        dtime = dt.datetime.strptime(" ".join(lsplit[0:-1]),
+                                     "%Y %m %d %H %M %S")
         date_list.append(dtime)
         num_stations.append(int(lsplit[-1]))
         i += num_stations[-1] + 1 + ind_num
@@ -792,8 +793,8 @@ def append_ascii_data(file_strings, tag):
             elif len(line) > 0:
                 lsplit = re.split('\t+', line)
                 if snum == 0:
-                    dtime = pds.datetime.strptime(" ".join(lsplit[0:-1]),
-                                                  "%Y %m %d %H %M %S")
+                    dtime = dt.datetime.strptime(" ".join(lsplit[0:-1]),
+                                                 "%Y %m %d %H %M %S")
                     try:
                         idate = date_list.index(dtime)
                     except:

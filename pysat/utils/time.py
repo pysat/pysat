@@ -7,6 +7,7 @@ the pysat package, including interactions with datetime objects,
 seasons, and calculation of solar local time
 """
 
+import datetime as dt
 import numpy as np
 import pandas as pds
 from pysat import datetime
@@ -61,13 +62,13 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
 
     Returns
     -------
-    out_date : pds.datetime
-        Pandas datetime object
+    out_date : dt.datetime
+        datetime object
 
     """
 
     yr = int(str_yr) + century if len(str_yr) == 2 else int(str_yr)
-    out_date = pds.datetime(yr, int(str_mo), int(str_day), int(str_hr),
+    out_date = dt.datetime(yr, int(str_mo), int(str_day), int(str_hr),
                             int(str_min), int(str_sec))
 
     return out_date

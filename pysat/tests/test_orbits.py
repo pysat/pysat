@@ -1,4 +1,5 @@
 from dateutil.relativedelta import relativedelta as relativedelta
+import datetime as dt
 from nose.tools import raises
 import numpy as np
 import pandas as pds
@@ -120,33 +121,33 @@ class TestSpecificUTOrbits():
     def test_single_orbit_call_by_0_index(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits[0]
-        ans = (self.testInst.index[0] == pds.datetime(2009, 1, 1))
-        ans2 = (self.testInst.index[-1] == pds.datetime(2009, 1, 1, 1, 36, 59))
+        ans = (self.testInst.index[0] == dt.datetime(2009, 1, 1))
+        ans2 = (self.testInst.index[-1] == dt.datetime(2009, 1, 1, 1, 36, 59))
         assert ans & ans2
 
     def test_single_orbit_call_by_1_index(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits[1]
-        ans = (self.testInst.index[0] == pds.datetime(2009, 1, 1, 1, 37))
-        ans2 = (self.testInst.index[-1] == pds.datetime(2009, 1, 1, 3, 13, 59))
+        ans = (self.testInst.index[0] == dt.datetime(2009, 1, 1, 1, 37))
+        ans2 = (self.testInst.index[-1] == dt.datetime(2009, 1, 1, 3, 13, 59))
         assert ans & ans2
 
     def test_single_orbit_call_by_negative_1_index(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits[-1]
         ans = (self.testInst.index[0] ==
-               (pds.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
+               (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
         ans2 = (self.testInst.index[-1] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
         assert ans & ans2
 
     def test_single_orbit_call_by_last_index(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits[14]
         assert (self.testInst.index[0] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
+                (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
         assert (self.testInst.index[-1] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
 
     @raises(Exception)
     def test_single_orbit_call_too_many(self):
@@ -182,10 +183,10 @@ class TestSpecificUTOrbits():
                 break
             print('Loaded orbit ', self.testInst.orbits.current)
             ans.append(self.testInst.index[0] ==
-                       (pds.datetime(2009, 1, 1) +
+                       (dt.datetime(2009, 1, 1) +
                        i*relativedelta(hours=1, minutes=37)))
             ans2.append(self.testInst.index[-1] ==
-                        (pds.datetime(2009, 1, 1) +
+                        (dt.datetime(2009, 1, 1) +
                         (i + 1) * relativedelta(hours=1, minutes=37) -
                         relativedelta(seconds=1)))
 
@@ -193,30 +194,30 @@ class TestSpecificUTOrbits():
 
     def test_orbit_next_call_no_loaded_data(self):
         self.testInst.orbits.next()
-        assert (self.testInst.index[0] == pds.datetime(2008, 1, 1))
-        assert (self.testInst.index[-1] == pds.datetime(2008, 1, 1, 0, 38, 59))
+        assert (self.testInst.index[0] == dt.datetime(2008, 1, 1))
+        assert (self.testInst.index[-1] == dt.datetime(2008, 1, 1, 0, 38, 59))
 
     def test_orbit_prev_call_no_loaded_data(self):
         self.testInst.orbits.prev()
         # this isn't a full orbit
         assert (self.testInst.index[-1] ==
-                pds.datetime(2010, 12, 31, 23, 59, 59))
-        assert (self.testInst.index[0] == pds.datetime(2010, 12, 31, 23, 49))
+                dt.datetime(2010, 12, 31, 23, 59, 59))
+        assert (self.testInst.index[0] == dt.datetime(2010, 12, 31, 23, 49))
 
     def test_single_orbit_call_orbit_starts_0_UT_using_next(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits.next()
-        assert (self.testInst.index[0] == pds.datetime(2009, 1, 1))
-        assert (self.testInst.index[-1] == pds.datetime(2009, 1, 1, 1, 36, 59))
+        assert (self.testInst.index[0] == dt.datetime(2009, 1, 1))
+        assert (self.testInst.index[-1] == dt.datetime(2009, 1, 1, 1, 36, 59))
 
     def test_single_orbit_call_orbit_starts_0_UT_using_prev(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits.prev()
         assert (self.testInst.index[0] ==
-                (pds.datetime(2009, 1, 1) +
+                (dt.datetime(2009, 1, 1) +
                 14 * relativedelta(hours=1, minutes=37)))
         assert (self.testInst.index[-1] ==
-                (pds.datetime(2009, 1, 1) +
+                (dt.datetime(2009, 1, 1) +
                 15 * relativedelta(hours=1, minutes=37) -
                 relativedelta(seconds=1)))
 
@@ -224,18 +225,18 @@ class TestSpecificUTOrbits():
         from dateutil.relativedelta import relativedelta as relativedelta
         self.testInst.load(2008, 366)
         self.testInst.orbits.next()
-        assert (self.testInst.index[0] == pds.datetime(2008, 12, 30, 23, 45))
+        assert (self.testInst.index[0] == dt.datetime(2008, 12, 30, 23, 45))
         assert (self.testInst.index[-1] ==
-                (pds.datetime(2008, 12, 30, 23, 45) +
+                (dt.datetime(2008, 12, 30, 23, 45) +
                 relativedelta(hours=1, minutes=36, seconds=59)))
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_prev(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits.prev()
         assert (self.testInst.index[0] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
+                (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
         assert (self.testInst.index[-1] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
 
 
 class TestGeneralOrbitsMLT():

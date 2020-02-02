@@ -27,6 +27,7 @@ of the National Science Foundation.
 """
 
 import os
+import datetime as dt
 import pandas as pds
 import numpy as np
 
@@ -105,8 +106,8 @@ def load(fnames, tag=None, sat_id=None):
 
             # f.close()
 
-            start = pds.datetime(yr[0], mo[0], day[0], ut[0])
-            stop = pds.datetime(yr[-1], mo[-1], day[-1], ut[-1])
+            start = dt.datetime(yr[0], mo[0], day[0], ut[0])
+            stop = dt.datetime(yr[-1], mo[-1], day[-1], ut[-1])
             dates = pds.date_range(start, stop, freq='H')
 
             new_data = pds.DataFrame(dst, index=dates, columns=['dst'])

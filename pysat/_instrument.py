@@ -11,6 +11,7 @@ import string
 import os
 import copy
 import sys
+import datetime as dt
 
 import pkgutil
 import pandas as pds
@@ -990,9 +991,9 @@ class Instrument(object):
             return date
         else:
             if hasattr(date, '__iter__'):
-                return [pds.datetime(da.year, da.month, da.day) for da in date]
+                return [dt.datetime(da.year, da.month, da.day) for da in date]
             else:
-                return pds.datetime(date.year, date.month, date.day)
+                return dt.datetime(date.year, date.month, date.day)
 
     def today(self):
         """Returns today's date, with no hour, minute, second, etc.
@@ -1008,7 +1009,7 @@ class Instrument(object):
 
         """
 
-        return self._filter_datetime_input(pds.datetime.today())
+        return self._filter_datetime_input(dt.datetime.today())
 
     def tomorrow(self):
         """Returns tomorrow's date, with no hour, minute, second, etc.
@@ -1245,7 +1246,7 @@ class Instrument(object):
             inc = pds.DateOffset(days=1)
             curr = self._filter_datetime_input(date)
         elif (yr is not None) & (doy is not None):
-            date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
+            date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
             self._set_load_parameters(date=date, fid=None)
             # increment
             inc = pds.DateOffset(days=1)
@@ -1408,7 +1409,7 @@ class Instrument(object):
                 temp = first_time
             else:
                 temp = self.index[0]
-            self.date = pds.datetime(temp.year, temp.month, temp.day)
+            self.date = dt.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.time.getyrdoy(self.date)
 
         # ensure data is unique and monotonic
@@ -1724,7 +1725,7 @@ class Instrument(object):
             if isinstance(start[0], str):
                 self._iter_type = 'file'
                 self._iter_list = self.files.get_file_array(start, end)
-            elif isinstance(start[0], pds.datetime):
+            elif isinstance(start[0], dt.datetime):
                 self._iter_type = 'date'
                 start = self._filter_datetime_input(start)
                 end = self._filter_datetime_input(end)
@@ -1741,8 +1742,8 @@ class Instrument(object):
                              'bound is iterable')
 
         elif isinstance(start, str) or isinstance(end, str):
-            if isinstance(start, pds.datetime) or \
-                    isinstance(end, pds.datetime):
+            if isinstance(start, dt.datetime) or \
+                    isinstance(end, dt.datetime):
                 raise ValueError('Not allowed to mix file and date bounds')
             if start is None:
                 start = self.files[0]
@@ -1754,7 +1755,7 @@ class Instrument(object):
                                                         self._iter_stop)
             self._iter_type = 'file'
 
-        elif isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
+        elif isinstance(start, dt.datetime) or isinstance(end, dt.datetime):
             if start is None:
                 start = self.files.start_date
             if end is None:

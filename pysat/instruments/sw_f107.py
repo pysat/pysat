@@ -43,6 +43,7 @@ is not appropriate for 'forecast' data.
 """
 
 import os
+import datetime as dt
 import warnings
 
 import numpy as np
@@ -267,7 +268,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                     # Ensure the end time does not extend past the number of
                     # possible days included based on the file's download time
                     fname = os.path.join(data_path, orig[1])
-                    dend = pds.datetime.utcfromtimestamp(os.path.getctime(fname))
+                    dend = dt.datetime.utcfromtimestamp(os.path.getctime(fname))
                     dend = dend - pds.DateOffset(days=1)
                     if dend < iend:
                         iend = dend

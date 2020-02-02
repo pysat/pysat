@@ -6,6 +6,7 @@ import os
 import weakref
 import re
 import glob
+import datetime as dt
 import numpy as np
 import pandas as pds
 from pysat import data_dir as data_dir
@@ -426,7 +427,7 @@ class Files(object):
                 raise IndexError(''.join((str(err), '\n',
                                           'Date requested outside file ',
                                           'bounds.')))
-            if isinstance(key.start, pds.datetime):
+            if isinstance(key.start, dt.datetime):
                 # enforce exclusive slicing on datetime
                 if len(out) > 1:
                     if out.index[-1] >= key.stop:

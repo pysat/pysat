@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Test some of the basic _core functions
 import numpy as np
+import datetime as dt
 import sys
 
 from nose.tools import raises
@@ -47,7 +48,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2009, 1, 1)) & \
+        assert (test_date == dt.datetime(2009, 1, 1)) & \
             (test_date == self.testInst.date)
 
     @raises(Exception)
@@ -73,7 +74,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2009, 1, 1))
+        assert (test_date == dt.datetime(2009, 1, 1))
         assert (test_date == self.testInst.date)
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
@@ -83,14 +84,14 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2009, 1, 1))
+        assert (test_date == dt.datetime(2009, 1, 1))
         assert (test_date == self.testInst.date)
 
     def test_basic_instrument_load_data(self):
         """Test if the correct day is being loaded (checking data down to the
         second)."""
         self.testInst.load(2009, 1)
-        assert self.testInst.index[0] == pds.datetime(2009, 1, 1, 0, 0, 0)
+        assert self.testInst.index[0] == dt.datetime(2009, 1, 1, 0, 0, 0)
 
     def test_basic_instrument_load_leap_year(self):
         """Test if the correct day is being loaded (Leap-Year)."""
@@ -98,7 +99,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2008, 12, 31)) & \
+        assert (test_date == dt.datetime(2008, 12, 31)) & \
             (test_date == self.testInst.date)
 
     def test_next_load_default(self):
@@ -107,7 +108,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert test_date == pds.datetime(2008, 1, 1)
+        assert test_date == dt.datetime(2008, 1, 1)
 
     def test_prev_load_default(self):
         """Test if last day is loaded by default when first invoking .prev."""
@@ -115,7 +116,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert test_date == pds.datetime(2010, 12, 31)
+        assert test_date == dt.datetime(2010, 12, 31)
 
     def test_basic_fid_instrument_load(self):
         """Test if first day is loaded by default when first invoking .next."""
@@ -123,7 +124,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2008, 1, 1)) & \
+        assert (test_date == dt.datetime(2008, 1, 1)) & \
             (test_date == self.testInst.date)
 
     def test_next_fid_load_default(self):
@@ -133,7 +134,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2008, 1, 2)) & \
+        assert (test_date == dt.datetime(2008, 1, 2)) & \
             (test_date == self.testInst.date)
 
     def test_prev_fid_load_default(self):
@@ -143,14 +144,14 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2008, 1, 3)) & \
+        assert (test_date == dt.datetime(2008, 1, 3)) & \
             (test_date == self.testInst.date)
 
     def test_filename_load(self):
         """Test if file is loadable by filename, relative to
         top_data_dir/platform/name/tag"""
         self.testInst.load(fname='2010-12-31.nofile')
-        assert self.testInst.index[0] == pds.datetime(2010, 12, 31)
+        assert self.testInst.index[0] == dt.datetime(2010, 12, 31)
 
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
@@ -159,7 +160,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2010, 12, 31)) & \
+        assert (test_date == dt.datetime(2010, 12, 31)) & \
             (test_date == self.testInst.date)
 
     def test_prev_filename_load_default(self):
@@ -170,7 +171,7 @@ class TestBasics():
         test_date = self.testInst.index[0]
         test_date = pysat.datetime(test_date.year, test_date.month,
                                    test_date.day)
-        assert (test_date == pds.datetime(2009, 1, 3))
+        assert (test_date == dt.datetime(2009, 1, 3))
         assert (test_date == self.testInst.date)
 
     # --------------------------------------------------------------------------
