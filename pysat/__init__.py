@@ -40,6 +40,8 @@ Main Features
 from __future__ import print_function
 from __future__ import absolute_import
 import os
+from pandas import Panel, DataFrame, Series
+from datetime import datetime
 
 import logging
 logger = logging.getLogger(__name__)
@@ -99,7 +101,6 @@ else:
         with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
             f.write('')
 
-from pandas import Panel, DataFrame, Series, datetime
 from . import utils
 from ._constellation import Constellation
 from ._instrument import Instrument
