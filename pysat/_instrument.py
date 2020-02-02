@@ -369,9 +369,8 @@ class Instrument(object):
         # warn about changes coming in the future
         if not self.strict_time_flag:
             warnings.warn('Strict times will eventually be enforced upon all'
-                          ' instruments. (strict_time_flag)', DeprecationWarning,
-                          stacklevel=2)
-
+                          ' instruments. (strict_time_flag)',
+                          DeprecationWarning, stacklevel=2)
 
     def __setattr__(self, name, value):
         """Moves instrument attributes onto meta attributes
@@ -391,7 +390,6 @@ class Instrument(object):
                 object.__setattr__(self, name, value)
         else:
             object.__setattr__(self, name, value)
-
 
     def __getattr__(self, name):
         """Gets instrument attributes from meta attributes
@@ -1729,7 +1727,8 @@ class Instrument(object):
                 self._iter_type = 'date'
                 start = self._filter_datetime_input(start)
                 end = self._filter_datetime_input(end)
-                self._iter_list = utils.time.create_date_range(start, end, freq=step)
+                self._iter_list = utils.time.create_date_range(start, end,
+                                                               freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')

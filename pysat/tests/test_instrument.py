@@ -230,15 +230,20 @@ class TestBasics():
             # test for concatenation
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
-            assert (self.testInst[0:len1, data1.columns] == data1.values[:, :]).all().all()
-            assert (self.testInst[len1:, data2.columns] == data2.values[:, :]).all().all()
+            assert (self.testInst[0:len1, data1.columns]
+                    == data1.values[:, :]).all().all()
+            assert (self.testInst[len1:, data2.columns]
+                    == data2.values[:, :]).all().all()
         else:
 
             # first, check for concat just before if else
-            assert (self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all()
-            assert (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()
+            assert (self.testInst[0:len1, :]
+                    == data1.to_array()[:, :]).all().all()
+            assert (self.testInst[len1:, :]
+                    == data2.to_array()[:, :]).all().all()
 
-            # concat together while also specifying a different concatentation dimension
+            # concat together while also specifying a different concatentation
+            # dimension
             # xarray specific functionality
             # change name of main dim to support test for dim keyword
             data1 = data1.rename({'time': 'time2'})
@@ -253,8 +258,10 @@ class TestBasics():
             # Instrument.data must have a 'time' index
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
-            assert (self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all()
-            assert (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()
+            assert (self.testInst[0:len1, :]
+                    == data1.to_array()[:, :]).all().all()
+            assert (self.testInst[len1:, :]
+                    == data2.to_array()[:, :]).all().all()
 
     # --------------------------------------------------------------------------
     #
@@ -290,11 +297,11 @@ class TestBasics():
             assert np.all(self.testInst.index ==
                           self.testInst.data.indexes['time'])
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
     # Test custom attributes
     #
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def test_create_custom_attribute(self):
         # check attribute attached to meta
@@ -319,7 +326,6 @@ class TestBasics():
         assert 'pad' in dir(self.testInst)
         assert 'pad' not in dir(self.testInst.meta)
 
-
     @raises(AttributeError)
     def test_retrieve_bad_attribute(self):
         self.testInst.bad_attr
@@ -327,8 +333,6 @@ class TestBasics():
     def test_base_attr(self):
         self.testInst._base_attr
         assert '_base_attr' in dir(self.testInst)
-
-
 
     # --------------------------------------------------------------------------
     #
@@ -390,7 +394,7 @@ class TestBasics():
         testInst = pysat.Instrument(inst_module=test, tag='',
                                     clean_level='clean')
         testInst.load(2009, 32)
-        assert testInst.date == pds.datetime(2009, 2, 1)
+        assert testInst.date == dt.datetime(2009, 2, 1)
 
     @raises(AttributeError)
     def test_custom_instrument_load_2(self):
@@ -624,8 +628,8 @@ class TestBasics():
         start = pysat.datetime(2009, 1, 1)
         stop = pysat.datetime(2010, 1, 15)
         self.testInst.bounds = (start, stop, 'M')
-        assert np.all(self.testInst._iter_list == pds.date_range(start, stop,
-                                                                 freq='M').tolist())
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop, freq='M').tolist())
 
     @raises(Exception)
     def test_set_bounds_too_few(self):
@@ -650,7 +654,8 @@ class TestBasics():
     @raises(Exception)
     def test_set_bounds_mixed_iterabless(self):
         start = [pysat.datetime(2009, 1, 1)]*2
-        self.testInst.bounds = [start, [pysat.datetime(2009, 1, 1), '2009-01-01.nofile']]
+        self.testInst.bounds = [start, [pysat.datetime(2009, 1, 1),
+                                        '2009-01-01.nofile']]
 
     def test_set_bounds_string_default_start(self):
         self.testInst.bounds = [None, '2009-01-01.nofile']
@@ -1192,10 +1197,8 @@ class TestDataPadding():
 
     @raises(Exception)
     def test_data_padding_bad_instantiation(self):
-        testInst = pysat.Instrument(platform='pysat', name='testing',
-                                    clean_level='clean',
-                                    pad=2,
-                                    update_files=True)
+        pysat.Instrument(platform='pysat', name='testing',
+                         clean_level='clean', pad=2, update_files=True)
 
     def test_yrdoy_data_padding_missing_days(self):
         self.testInst.load(2008, 1)

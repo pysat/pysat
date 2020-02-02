@@ -14,7 +14,7 @@ class TestOrbitsUserInterface():
         info = {'index': 'mlt', 'kind': 'cats'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
-                                         orbit_info=info, update_files=True)        
+                                         orbit_info=info, update_files=True)
 
     @raises(ValueError)
     def test_orbit_long_w_bad_variable(self):
@@ -103,7 +103,7 @@ class TestOrbitsUserInterface():
         self.testInst.orbits.orbit_index = None
         self.testInst.load(2009, 1)
         self.testInst.orbits.next()
-        
+
 
 class TestSpecificUTOrbits():
 
@@ -170,7 +170,7 @@ class TestSpecificUTOrbits():
                 break
             test_vals.append(self.testInst.orbits.current)
             print('Loaded orbit ', self.testInst.orbits.current)
- 
+
         assert np.all(test_vals == true_vals)
 
     def test_all_single_orbit_calls_in_day(self):
@@ -282,7 +282,7 @@ class TestGeneralOrbitsMLT():
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
-        assert d1check 
+        assert d1check
 
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
         # create situation where the < 1 orbit split across two days
@@ -309,7 +309,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(2009, 4)
         self.testInst.orbits[0]
         assert all(self.testInst.data == saved_data.data)
-        
+
         self.testInst.load(2009, 5)
         self.testInst.orbits.prev()
         if self.testInst.orbits.num == 1:

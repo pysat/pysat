@@ -476,7 +476,7 @@ def load_ascii_data(fname, tag):
                     else:
                         date_list.extend([dtime for i in range(snum)])
                 elif len(lsplit) == ndata['indices']:
-                    if tag is not '':
+                    if tag != '':
                         if lsplit[0] not in ddict.keys():
                             ddict[lsplit[0]] = list()
 
@@ -812,9 +812,8 @@ def append_ascii_data(file_strings, tag):
                     num_stations[idate] += snum
 
                     # Adjust date line for new number of station lines
-                    oline = "{:s}\t{:d}".format( \
-                                    dtime.strftime("%Y\t%m\t%d\t%H\t%M\t%S"),
-                                    num_stations[idate])
+                    sdate = dtime.strftime("%Y\t%m\t%d\t%H\t%M\t%S")
+                    oline = "{:s}\t{:d}".format(sdate, num_stations[idate])
                     out_lines[idates[idate]] = oline
                 else:
                     if inum > 0:
