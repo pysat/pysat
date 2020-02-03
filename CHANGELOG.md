@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed ssnl
   - Removed utils.stats
   - Removed model_utils
+  - Removed deprecated pandas.Panel
+  - imports datetime from datetime, not pandas (deprecated)
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
