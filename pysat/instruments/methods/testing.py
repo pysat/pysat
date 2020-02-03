@@ -6,7 +6,7 @@ import pysat
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                file_date_range=None, test_dates=None):
-    """Produce a fake list of files spanning a year
+    """Produce a fake list of files spanning three years
 
     Parameters
     ----------
@@ -19,7 +19,13 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     format_str : (str)
         file format string (default=None)
     file_date_range : (pds.date_range)
-        File date range (default=None)
+        File date range. The default mode generates a list of 3 years of daily
+        files (1 year back, 2 years forward) based on the test_dates passed
+        through below.  Otherwise, accepts a range of files specified by the
+        user.
+        (default=None)
+    test_dates : (dt.datetime)
+        The datetime associated with the test date in the main instrument file
 
     Returns
     -------
@@ -45,6 +51,43 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
 def download(date_array, tag, sat_id, data_path=None, user=None,
              password=None):
+    """Simple pass function for pysat compatibility for test instruments.
+
+    This routine is invoked by pysat and is not intended for direct use by the
+    end user.
+
+    Parameters
+    ----------
+    date_array : array-like
+        list of datetimes to download data for. The sequence of dates need not
+        be contiguous.
+    tag : string ('')
+        Tag identifier used for particular dataset. This input is provided by
+        pysat.
+    sat_id : string  ('')
+        Satellite ID string identifier used for particular dataset. This input
+        is provided by pysat.
+    data_path : string (None)
+        Path to directory to download data to.
+    user : string (None)
+        User string input used for download. Provided by user and passed via
+        pysat. If an account
+        is required for dowloads this routine here must error if user not
+        supplied.
+    password : string (None)
+        Password for data download.
+    **kwargs : dict
+        Additional keywords supplied by user when invoking the download
+        routine attached to a pysat.Instrument object are passed to this
+        routine via kwargs.
+
+    Returns
+    --------
+    Void : (NoneType)
+        Downloads data to disk.
+
+    """
+
     pass
 
 
@@ -66,6 +109,9 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
         Not used for non-cyclic functions.
         (default = 24.0)
     cyclic : bool
+        If True, assume that fake data is a cyclic function (ie, longitude,
+        slt) that will reset to data_range[0] once it reached data_range[1].
+        If False, continue to monotonically increase
     """
 
     if cyclic:
@@ -84,7 +130,8 @@ def generate_times(fnames, sat_id, freq='1S'):
     Parameters
     ----------
     fnames : (list)
-        List of filenames
+        List of filenames.  Currently, only the first is used.  Does not
+        support multi-file days as of yet.
     sat_id : (str or NoneType)
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
@@ -97,7 +144,7 @@ def generate_times(fnames, sat_id, freq='1S'):
     uts : (array)
         Array of integers representing uts for a given day
     index : (DatetimeIndex)
-        The DatetimeIndex to be used in the pysta test instrument objects
+        The DatetimeIndex to be used in the pysat test instrument objects
     date : (datetime)
         The requested date reconstructed from the fake file name
     """

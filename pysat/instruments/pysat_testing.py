@@ -31,8 +31,10 @@ sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
 _test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
-def init(inst):
-    """ Initialization function
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
 
     Shifts time index of files by 5-minutes if mangle_file_dates
     set to True at pysat.Instrument instantiation.
@@ -42,32 +44,55 @@ def init(inst):
 
     Parameters
     ----------
+    inst : pysat.Instrument
+        This object
     file_date_range : (pds.date_range)
         Optional keyword argument that specifies the range of dates for which
         test files will be created
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
 
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+
+
     """
-    inst.new_thing = True
+
+    self.new_thing = True
 
     # work on file index if keyword present
-    if 'file_date_range' in inst.kwargs:
+    if 'file_date_range' in self.kwargs:
         # set list files routine to desired date range
         # attach to the instrument object
-        fdr = inst.kwargs['file_date_range']
-        inst._list_rtn = functools.partial(list_files, file_date_range=fdr)
-        inst.files.refresh()
+        fdr = self.kwargs['file_date_range']
+        self._list_rtn = functools.partial(list_files, file_date_range=fdr)
+        self.files.refresh()
 
     # mess with file dates if kwarg option present
-    if 'mangle_file_dates' in inst.kwargs:
-        if inst.kwargs['mangle_file_dates']:
-            inst.files.files.index = \
-                inst.files.files.index + pds.DateOffset(minutes=5)
+    if 'mangle_file_dates' in self.kwargs:
+        if self.kwargs['mangle_file_dates']:
+            self.files.files.index = \
+                self.files.files.index + pds.DateOffset(minutes=5)
 
 
-def default(inst):
-    """The default function is applied first to data as it is loaded.
+def default(self):
+    """Default customization function.
+
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue).
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+
 
     """
 
@@ -187,13 +212,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
     if malformed_index:
-        index = index[:].tolist()
+        index = index.tolist()
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]]*3
 
-    data.index = index[:]
+    data.index = index
     data.index.name = 'Epoch'
     return data, meta.copy()
 
@@ -232,7 +257,7 @@ meta['slt'] = {'units': 'hours',
                'value_min': 0.0,
                'value_max': 24.0,
                'notes': ('Solar Local Time is the local time (zenith angle of '
-                         'sun) of the given locaiton. Overhead noon, +/- 90 '
+                         'sun) of the given location. Overhead noon, +/- 90 '
                          'is 6, 18 SLT .'),
                'fill': np.nan,
                'scale': 'linear'}

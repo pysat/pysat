@@ -18,7 +18,20 @@ _test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
 def init(self):
-    """ Initialization function
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+
 
     """
 
@@ -26,7 +39,21 @@ def init(self):
 
 
 def default(inst):
-    """The default function is applied first to data as it is loaded.
+    """Default customization function.
+
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue).
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+
 
     """
 
@@ -89,7 +116,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     data['latitude'] = 90.0 * np.cos(angle)
 
     if malformed_index:
-        index = index[:].tolist()
+        index = index.tolist()
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
