@@ -40,8 +40,9 @@ Main Features
 from __future__ import print_function
 from __future__ import absolute_import
 import os
-from pandas import DataFrame, Series
+# Convenience structures for use in pysat
 from datetime import datetime
+from pandas import DataFrame, Series
 
 import logging
 logger = logging.getLogger(__name__)
