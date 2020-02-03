@@ -6,6 +6,7 @@ pysat.coords contains a number of coordinate-transformation
 functions used throughout the pysat package.
 """
 
+import datetime as dt
 import numpy as np
 import pandas as pds
 
@@ -93,8 +94,6 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     updates instrument data in column specified by slt_name
 
     """
-
-    import datetime as dt
 
     if lon_name not in inst.data.keys():
         raise ValueError('uknown longitude variable name')

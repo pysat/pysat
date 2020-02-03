@@ -25,6 +25,7 @@ Angeline G. Burrell, Feb 22, 2016, University of Leicester
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import numpy as np
 import pandas as pds
 import warnings
@@ -153,7 +154,6 @@ def load(fnames, tag=None, sat_id=None):
     def parse_champdate(y, d, s):
         '''parse CHAMP date string (YY DDD SSSSS) into a datetime object
         '''
-        import datetime as dt
 
         t = dt.datetime.strptime("{:02d} {:03d}".format(int(y), int(d)),
                                  "%y %j")
