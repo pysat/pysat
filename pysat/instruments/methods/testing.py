@@ -35,8 +35,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     # Determine the appropriate date range for the fake files
     if file_date_range is None:
-        start = test_dates[tag][sat_id] - pds.DateOffset(years=1)
-        stop = (test_dates[tag][sat_id] + pds.DateOffset(years=2)
+        start = test_dates[''][''] - pds.DateOffset(years=1)
+        stop = (test_dates[''][''] + pds.DateOffset(years=2)
                 - pds.DateOffset(days=1))
         file_date_range = pds.date_range(start, stop)
 
