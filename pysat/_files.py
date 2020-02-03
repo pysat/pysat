@@ -59,8 +59,8 @@ class Files(object):
         inst.files[0]
 
         # files from start up to stop (exclusive on stop)
-        start = pysat.datetime(2009,1,1)
-        stop = pysat.datetime(2009,1,3)
+        start = dt.datetime(2009,1,1)
+        stop = dt.datetime(2009,1,3)
         print(vefi.files[start:stop])
 
         # files for date

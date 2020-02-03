@@ -4,6 +4,7 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import os
 
 import numpy as np
@@ -70,7 +71,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     yr = int(parts[0])
     month = int(parts[1])
     day = int(parts[2][0:2])
-    date = pysat.datetime(yr, month, day)
+    date = dt.datetime(yr, month, day)
     # scalar divisor below used to reduce the number of time samples
     # covered by the simulation per day. The higher the number the lower
     # the number of samples (86400/scalar)
@@ -87,7 +88,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # figure out how far in time from the root start
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
-    time_delta = date - pysat.datetime(2009, 1, 1)
+    time_delta = date - dt.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
     data['mlt'] = test.generate_fake_data(time_delta.total_seconds(),
                                           np.arange(num)*scalar,
@@ -171,8 +172,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
 
-    index = pds.date_range(pysat.datetime(2008, 1, 1),
-                           pysat.datetime(2010, 12, 31))
+    index = pds.date_range(dt.datetime(2008, 1, 1),
+                           dt.datetime(2010, 12, 31))
     names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
              for date in index]
     return pysat.Series(names, index=index)

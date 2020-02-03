@@ -161,7 +161,7 @@ class TestSpecificUTOrbits():
 
     def test_oribt_number_via_current_multiple_orbit_calls_in_day(self):
         self.testInst.load(2009, 1)
-        self.testInst.bounds = (pysat.datetime(2009, 1, 1), None)
+        self.testInst.bounds = (dt.datetime(2009, 1, 1), None)
         true_vals = np.arange(15)
         true_vals[-1] = 0
         test_vals = []
@@ -177,7 +177,7 @@ class TestSpecificUTOrbits():
         self.testInst.load(2009, 1)
         ans = []
         ans2 = []
-        self.testInst.bounds = (pysat.datetime(2009, 1, 1), None)
+        self.testInst.bounds = (dt.datetime(2009, 1, 1), None)
         for i, inst in enumerate(self.testInst.orbits):
             if i > 14:
                 break
@@ -265,7 +265,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.orbits.next()
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
-        assert self.testInst.date == pysat.datetime(2009, 1, 1)
+        assert self.testInst.date == dt.datetime(2009, 1, 1)
 
     def test_less_than_one_orbit_of_data_two_ways(self):
         def filter_data(inst):
@@ -287,9 +287,9 @@ class TestGeneralOrbitsMLT():
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
         # create situation where the < 1 orbit split across two days
         def filter_data(inst):
-            if inst.date == pysat.datetime(2009, 1, 5):
+            if inst.date == dt.datetime(2009, 1, 5):
                 inst.data = inst[0:20]
-            elif inst.date == pysat.datetime(2009, 1, 4):
+            elif inst.date == dt.datetime(2009, 1, 4):
                 inst.data = inst[-20:]
 
         self.testInst.custom.add(filter_data, 'modify')
@@ -559,22 +559,22 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 def filter_data(inst):
     """Remove data from instrument, simulating gaps"""
 
-    times = [[pysat.datetime(2009, 1, 1, 10),
-              pysat.datetime(2009, 1, 1, 12)],
-             [pysat.datetime(2009, 1, 1, 4),
-              pysat.datetime(2009, 1, 2, 5, 37)],
-             [pysat.datetime(2009, 1, 1, 1, 37),
-              pysat.datetime(2009, 1, 1, 3, 14)],
-             [pysat.datetime(2009, 1, 1, 15),
-              pysat.datetime(2009, 1, 1, 16)],
-             [pysat.datetime(2009, 1, 1, 22),
-              pysat.datetime(2009, 1, 2, 2)],
-             [pysat.datetime(2009, 1, 13),
-              pysat.datetime(2009, 1, 15)],
-             [pysat.datetime(2009, 1, 20, 1),
-              pysat.datetime(2009, 1, 25, 23)],
-             [pysat.datetime(2009, 1, 25, 23, 30),
-              pysat.datetime(2009, 1, 26, 3)]
+    times = [[dt.datetime(2009, 1, 1, 10),
+              dt.datetime(2009, 1, 1, 12)],
+             [dt.datetime(2009, 1, 1, 4),
+              dt.datetime(2009, 1, 2, 5, 37)],
+             [dt.datetime(2009, 1, 1, 1, 37),
+              dt.datetime(2009, 1, 1, 3, 14)],
+             [dt.datetime(2009, 1, 1, 15),
+              dt.datetime(2009, 1, 1, 16)],
+             [dt.datetime(2009, 1, 1, 22),
+              dt.datetime(2009, 1, 2, 2)],
+             [dt.datetime(2009, 1, 13),
+              dt.datetime(2009, 1, 15)],
+             [dt.datetime(2009, 1, 20, 1),
+              dt.datetime(2009, 1, 25, 23)],
+             [dt.datetime(2009, 1, 25, 23, 30),
+              dt.datetime(2009, 1, 26, 3)]
              ]
     for time in times:
         idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
@@ -623,13 +623,13 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info)
-        times = [[pysat.datetime(2008, 12, 31, 4),
-                  pysat.datetime(2008, 12, 31, 5, 37)],
-                 [pysat.datetime(2009, 1, 1),
-                  pysat.datetime(2009, 1, 1, 1, 37)]
+        times = [[dt.datetime(2008, 12, 31, 4),
+                  dt.datetime(2008, 12, 31, 5, 37)],
+                 [dt.datetime(2009, 1, 1),
+                  dt.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = pysat.datetime(2009, 1, 2) + \
+            day = dt.datetime(2009, 1, 2) + \
                 pds.DateOffset(days=int(seconds))
             times.append([day, day +
                           pds.DateOffset(hours=1, minutes=37,
@@ -650,13 +650,13 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info)
-        times = [[pysat.datetime(2008, 12, 31, 4),
-                  pysat.datetime(2008, 12, 31, 5, 37)],
-                 [pysat.datetime(2009, 1, 1),
-                  pysat.datetime(2009, 1, 1, 1, 37)]
+        times = [[dt.datetime(2008, 12, 31, 4),
+                  dt.datetime(2008, 12, 31, 5, 37)],
+                 [dt.datetime(2009, 1, 1),
+                  dt.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = pysat.datetime(2009, 1, 2) + \
+            day = dt.datetime(2009, 1, 2) + \
                 pds.DateOffset(days=int(seconds))
             times.append([day, day +
                           pds.DateOffset(hours=1, minutes=37,

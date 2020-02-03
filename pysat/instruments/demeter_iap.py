@@ -36,6 +36,7 @@ Example
 
 from __future__ import print_function, absolute_import
 
+import datetime as dt
 import pandas as pds
 import numpy as np
 
@@ -50,7 +51,7 @@ name = 'iap'
 tags = {'survey': 'Survey mode',
         'burst': 'Burst mode'}
 sat_ids = {'': list(tags.keys())}
-_test_dates = {'': {'survey': pysat.datetime(2010, 1, 1)}}
+_test_dates = {'': {'survey': dt.datetime(2010, 1, 1)}}
 
 apid = {'survey': 1140, 'burst': 1139}
 

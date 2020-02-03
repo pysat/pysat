@@ -50,8 +50,8 @@ class Orbits(object):
         info = {'index':'longitude', 'kind':'longitude'}
         vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                                 clean_level=None, orbit_info=info)
-        start = pysat.datetime(2009,1,1)
-        stop = pysat.datetime(2009,1,10)
+        start = dt.datetime(2009,1,1)
+        stop = dt.datetime(2009,1,10)
         vefi.load(date=start)
         vefi.bounds(start, stop)
 
@@ -492,9 +492,9 @@ class Orbits(object):
                         self._getBasicOrbit(self.num - 1)
                         self.next()
                     else:
-                        # only one complete orbit in file, or less                        
+                        # only one complete orbit in file, or less
                         # check if we are close to begining or end of day
-                        date = self.sat.date                        
+                        date = self.sat.date
                         delta_start = self.sat.index[-1] - date
                         delta_end = date + pds.DateOffset(days=1) \
                                     - self.sat.index[0]
@@ -508,10 +508,10 @@ class Orbits(object):
                                 # we could go back a day, iterate over orbit,
                                 # as above, and the data we have is the wrong day
                                 # In this case, move forward again.
-                                # happens when previous day doesn't have data 
+                                # happens when previous day doesn't have data
                                 # near end of the day
                                 self.next()
-                                
+
                         elif delta_end <= self.orbit_period*1.05:
                             # near end
                             # load next file, then go back one orbit
@@ -519,14 +519,14 @@ class Orbits(object):
                             self.prev()
                             if self.sat.index[0] > date + pds.DateOffset(days=1) \
                                                    - delta_end:
-                                # we could go forward a day, iterate over orbit, 
+                                # we could go forward a day, iterate over orbit,
                                 # as above, and the data we have is the wrong day
                                 # In this case, move back again.
-                                # happens when next day doesn't have data 
+                                # happens when next day doesn't have data
                                 # near begining of the day
                                 self.prev()
                         else:
-                            # not near begining or end, just get the last orbit 
+                            # not near begining or end, just get the last orbit
                             # available (only one)
                             self._getBasicOrbit(orbit=-1)
 

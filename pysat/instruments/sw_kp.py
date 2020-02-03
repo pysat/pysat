@@ -52,6 +52,7 @@ of the National Science Foundation.
 
 """
 
+import datetime as dt
 import functools
 import numpy as np
 import os
@@ -72,10 +73,10 @@ tags = {'': '',
 sat_ids = {'': ['', 'forecast', 'recent']}
 
 # generate todays date to support loading forecast data
-now = pysat.datetime.now()
-today = pysat.datetime(now.year, now.month, now.day)
+now = dt.datetime.now()
+today = dt.datetime(now.year, now.month, now.day)
 # set test dates
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1),
+_test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'forecast': today + pds.DateOffset(days=1)}}
 
 
@@ -121,7 +122,7 @@ def load(fnames, tag=None, sat_id=None):
             # parse off the last date, load month of data, downselect to the
             # desired day
             fname = filename[0:-11]
-            date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
+            date = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
 
             temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,
                                 header=None, parse_dates=[[0, 1, 2]],
@@ -328,12 +329,12 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         r = requests.get(furl)
         # parse text to get the date the prediction was generated
         date_str = r.text.split(':Issued: ')[-1].split(' UTC')[0]
-        date = pysat.datetime.strptime(date_str, '%Y %b %d %H%M')
+        date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
         # data is the forecast value for the next three days
         raw_data = r.text.split('NOAA Kp index forecast ')[-1]
         # get date of the forecasts
         date_str = raw_data[0:6] + ' ' + str(date.year)
-        forecast_date = pysat.datetime.strptime(date_str, '%d %b %Y')
+        forecast_date = dt.datetime.strptime(date_str, '%d %b %Y')
         # strings we will use to parse the downloaded text
         lines = ['00-03UT', '03-06UT', '06-09UT', '09-12UT', '12-15UT',
                  '15-18UT', '18-21UT', '21-00UT']
@@ -368,7 +369,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         r = requests.get(rurl)
         # parse text to get the date the prediction was generated
         date_str = r.text.split(':Issued: ')[-1].split('\n')[0]
-        date = pysat.datetime.strptime(date_str, '%H%M UT %d %b %Y')
+        date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
         # data is the forecast value for the next three days
         raw_data = r.text.split('#  Date ')[-1]
         # keep only the middle bits that matter
@@ -380,7 +381,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         sub_kps = [[], [], []]
         # iterate through file lines and parse out the info we want
         for line in raw_data:
-            kp_time.append(pysat.datetime.strptime(line[0:10], '%Y %m %d'))
+            kp_time.append(dt.datetime.strptime(line[0:10], '%Y %m %d'))
             # pick out Kp values for each of the three columns
             sub_lines = [line[17:33], line[40:56], line[63:]]
             for sub_line, sub_kp in zip(sub_lines, sub_kps):

@@ -1,5 +1,4 @@
 from nose.tools import raises
-import numpy as np
 
 import pysat
 

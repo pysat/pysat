@@ -54,7 +54,7 @@ tags = {'indices': 'SMU and SML indices',
         'all': 'magnetometer measurements and indices',
         'stations': 'magnetometer stations'}
 sat_ids = {'': tags.keys()}
-_test_dates = {'': {kk: pysat.datetime(2009, 1, 1) for kk in tags.keys()}}
+_test_dates = {'': {kk: dt.datetime(2009, 1, 1) for kk in tags.keys()}}
 
 
 def init(self):
@@ -139,8 +139,8 @@ def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None,
 
     # given the function of SuperMAG, create a fake list of files
     # starting 01 Jan 1970, through today
-    now = pysat.datetime.now()
-    now = pysat.datetime(now.year, now.month, now.day)
+    now = dt.datetime.now()
+    now = dt.datetime(now.year, now.month, now.day)
     if tag == 'stations':
         # yearly
         freq = 'Y'
@@ -148,7 +148,7 @@ def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None,
         # daily
         freq = 'D'
     # create a list of dates with appropriate frequency
-    index = pds.period_range(pysat.datetime(1970, 1, 1), now, freq=freq)
+    index = pds.period_range(dt.datetime(1970, 1, 1), now, freq=freq)
     # pre fill in blank strings
     remote_files = pds.Series([''] * len(index), index=index)
 
@@ -369,7 +369,7 @@ def load_csv_data(fname, tag):
     else:
         # Define the date parser
         def parse_smag_date(dd):
-            return pysat.datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
+            return dt.datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
 
         # Load the file into a data frame
         data = pds.read_csv(fname, parse_dates={'datetime': [0]},
@@ -466,7 +466,7 @@ def load_ascii_data(fname, tag):
                 if dflag:
                     dflag = False  # Unset the date flag
                     dstring = " ".join(lsplit[:6])
-                    dtime = pysat.datetime.strptime(dstring,
+                    dtime = dt.datetime.strptime(dstring,
                                                     "%Y %m %d %H %M %S")
                     snum = int(lsplit[6])  # Set the number of stations
 

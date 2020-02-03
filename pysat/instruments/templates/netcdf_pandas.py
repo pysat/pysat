@@ -22,8 +22,7 @@ easy.
 
 """
 
-import pandas as pds
-import numpy as np
+import datetime as dt
 import pysat
 
 import logging
@@ -36,7 +35,7 @@ name = 'pandas'
 tags = {'': 'netCDF4'}
 # dictionary of satellite IDs, list of corresponding tags
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 def init(self):
@@ -211,5 +210,5 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     """
 
     logger.info('This is a generic Instrument routine and does not support ' +
-          'downloading data.')
+                'downloading data.')
     pass

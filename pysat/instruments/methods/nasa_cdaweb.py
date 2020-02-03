@@ -158,7 +158,7 @@ def load(fnames, tag=None, sat_id=None,
         if fake_daily_files_from_monthly:
             # parse out date from filename
             fname = fnames[0][0:-11]
-            date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
+            date = dt.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
             with pysatCDF.CDF(fname) as cdf:
                 # convert data to pysat format
                 data, meta = cdf.to_pysat(flatten_twod=flatten_twod)

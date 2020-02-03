@@ -331,7 +331,7 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     # open connection to Madrigal
     web_data = madrigalWeb.madrigalWeb.MadrigalData(url)
     # get list of experiments for instrument from 1900 till now
-    now = pysat.datetime.now()
+    now = dt.datetime.now()
     exp_list = web_data.getExperiments(inst_code, 1900, 1, 1, 0, 0, 0,
                                        now.year, now.month, now.day,
                                        23, 59, 59)

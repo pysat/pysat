@@ -24,7 +24,7 @@ Example
 -------
     import pysat
     mighti = pysat.Instrument('icon', 'mighti', clean_level='clean')
-    mighti.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
+    mighti.download(dt.datetime(2019, 1, 30), dt.datetime(2019, 12, 31))
     mighti.load(2017,363)
 
 Authors
@@ -39,6 +39,7 @@ Conversion to MIGHTI, Oct 8th, 2028, University of Texas at Dallas
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
@@ -55,8 +56,8 @@ name = 'mighti'
 tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'green': ['level_2 Green Line'],
            'red': ['Level_2 Red Line']}
-_test_dates = {'green': {'level_2': pysat.datetime(2017, 5, 27)},
-               'red': {'level_2': pysat.datetime(2017, 5, 27)}}
+_test_dates = {'green': {'level_2': dt.datetime(2017, 5, 27)},
+               'red': {'level_2': dt.datetime(2017, 5, 27)}}
 
 
 def init(self):

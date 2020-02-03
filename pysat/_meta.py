@@ -550,9 +550,9 @@ class Meta(object):
             # if tuple length is 2, index, column
             if len(key) == 2:
                 new_index = match_name(self.var_case_name, key[0],
-                                        self.data.index)
+                                       self.data.index)
                 new_name = match_name(self.attr_case_name, key[1],
-                                        self.data.columns)
+                                      self.data.columns)
                 return self.data.loc[new_index, new_name]
 
             # if tuple length is 3, index, child_index, column

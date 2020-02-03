@@ -33,6 +33,7 @@ are constituted from what it is thought to be good data.
 
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import sys
 import os
 import functools
@@ -51,8 +52,8 @@ name = 'grdex'
 tags = {'north': '',
         'south': ''}
 sat_ids = {'': ['north', 'south']}
-_test_dates = {'': {'north': pysat.datetime(2009, 1, 1),
-                    'south': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'north': dt.datetime(2009, 1, 1),
+                    'south': dt.datetime(2009, 1, 1)}}
 
 
 def init(self):
@@ -119,10 +120,10 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
 
     # given the function of SuperMAG, create a fake list of files
     # starting 01 Jan 1970, through today
-    now = pysat.datetime.now()
-    now = pysat.datetime(now.year, now.month, now.day)
+    now = dt.datetime.now()
+    now = dt.datetime(now.year, now.month, now.day)
     # create a list of dates with appropriate frequency
-    index = pds.period_range(pysat.datetime(1985, 1, 1), now, freq='D')
+    index = pds.period_range(dt.datetime(1985, 1, 1), now, freq='D')
     # pre fill in blank strings
     remote_files = pds.Series([''] * len(index), index=index)
 
@@ -193,9 +194,9 @@ def load(fnames, tag=None, sat_id=None):
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames) == 1:
 
-        myPtr = davitpy.pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980, 1, 1),
+        myPtr = davitpy.pydarn.sdio.sdDataPtr(sTime=dt.datetime(1980, 1, 1),
                                               fileType='grdex',
-                                              eTime=pysat.datetime(2250, 1, 1),
+                                              eTime=dt.datetime(2250, 1, 1),
                                               hemi=tag,
                                               fileName=fnames[0])
         myPtr.open()

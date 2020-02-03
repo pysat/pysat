@@ -4,6 +4,7 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import os
 
@@ -28,7 +29,7 @@ tags = {'': 'Regular testing data set',
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in sat_id to change the number of points per day
 sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 meta = pysat.Meta()
 meta['uts'] = {'units': 's',
@@ -184,7 +185,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     day = int(parts[2][0:2])
 
     # Specify the date tag locally and determine the desired date range
-    date = pysat.datetime(yr, month, day)
+    date = dt.datetime(yr, month, day)
     pds_offset = pds.DateOffset(hours=12)
     if sim_multi_file_right:
         root_date = root_date or _test_dates[''][''] + pds_offset

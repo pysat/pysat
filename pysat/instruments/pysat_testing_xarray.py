@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os
 
+import datetime as dt
 import numpy as np
 import pandas as pds
 import xarray
@@ -20,7 +21,7 @@ name = 'testing_xarray'
 tags = {'': 'Regular testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
 
 
@@ -69,15 +70,15 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     month = int(parts[1])
     day = int(parts[2][0:2])
 
-    date = pysat.datetime(yr, month, day)
+    date = dt.datetime(yr, month, day)
     if sim_multi_file_right:
-        root_date = pysat.datetime(2009, 1, 1, 12)
+        root_date = dt.datetime(2009, 1, 1, 12)
         data_date = date + pds.DateOffset(hours=12)
     elif sim_multi_file_left:
-        root_date = pysat.datetime(2008, 12, 31, 12)
+        root_date = dt.datetime(2008, 12, 31, 12)
         data_date = date - pds.DateOffset(hours=12)
     else:
-        root_date = pysat.datetime(2009, 1, 1)
+        root_date = dt.datetime(2009, 1, 1)
         data_date = date
     num = 86400 if sat_id == '' else int(sat_id)
     num_array = np.arange(num)
@@ -119,7 +120,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['latitude'] = (('time'), latitude)
 
     # fake orbit number
-    fake_delta = date - pysat.datetime(2008, 1, 1)
+    fake_delta = date - dt.datetime(2008, 1, 1)
     orbit_num = test.generate_fake_data(fake_delta.total_seconds(),
                                         num_array, period=5820,
                                         cyclic=False)
@@ -150,8 +151,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a fake list of files spanning a year"""
 
-    index = pds.date_range(pysat.datetime(2008, 1, 1),
-                           pysat.datetime(2010, 12, 31))
+    index = pds.date_range(dt.datetime(2008, 1, 1),
+                           dt.datetime(2010, 12, 31))
     names = [data_path+date.strftime('%Y-%m-%d')+'.nofile' for date in index]
     return pysat.Series(names, index=index)
 

@@ -66,13 +66,13 @@ tags = {'': 'Daily LASP value of F10.7',
 sat_ids = {'': ['', 'all', 'prelim', 'daily', 'forecast', '45day']}
 # dict keyed by sat_id that lists supported tags and a good day of test data
 # generate todays date to support loading forecast data
-now = pysat.datetime.now()
-today = pysat.datetime(now.year, now.month, now.day)
+now = dt.datetime.now()
+today = dt.datetime(now.year, now.month, now.day)
 tomorrow = today + pds.DateOffset(days=1)
 # set test dates
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1),
-                    'all': pysat.datetime(2009, 1, 1),
-                    'prelim': pysat.datetime(2009, 1, 1),
+_test_dates = {'': {'': dt.datetime(2009, 1, 1),
+                    'all': dt.datetime(2009, 1, 1),
+                    'prelim': dt.datetime(2009, 1, 1),
                     'daily': tomorrow,
                     'forecast': tomorrow,
                     '45day': tomorrow}}
@@ -108,7 +108,7 @@ def load(fnames, tag=None, sat_id=None):
         # the daily date is attached to filename
         # parse off the last date, load month of data, downselect to desired
         # day
-        date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
+        date = dt.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
         data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True)
         idx, = np.where((data.index >= date) &
                         (data.index < date + pds.DateOffset(days=1)))
@@ -233,7 +233,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                 out = out.iloc[-1:]
                 # first day of data is 2-14, ensure same file for first and
                 # most recent day
-                out.loc[pysat.datetime(1947, 2, 13)] = out.iloc[0]
+                out.loc[dt.datetime(1947, 2, 13)] = out.iloc[0]
                 # make sure things are in order and copy latest filename for
                 # all days, thus no matter which day with data the user loads
                 # they get the most recent F10.7 file
@@ -386,7 +386,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             if data.empty:
                 warnings.warn("no data for {:}".format(date), UserWarning)
             else:
-                times = [pysat.datetime.strptime(time, '%Y%m%d')
+                times = [dt.datetime.strptime(time, '%Y%m%d')
                          for time in data.pop('time')]
                 data.index = times
                 # replace fill with NaNs
@@ -405,9 +405,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # download webpage
         dstr = 'http://lasp.colorado.edu/lisird/latis/dap/'
         dstr += 'noaa_radio_flux.json?time%3E='
-        dstr += pysat.datetime(1947, 2, 13).strftime('%Y-%m-%d')
+        dstr += dt.datetime(1947, 2, 13).strftime('%Y-%m-%d')
         dstr += 'T00:00:00.000Z&time%3C='
-        now = pysat.datetime.utcnow()
+        now = dt.datetime.utcnow()
         dstr += now.strftime('%Y-%m-%dT%H:%M:%S.000Z')
         # data returned as json
         r = requests.get(dstr)
@@ -416,11 +416,11 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame.from_dict(raw_dict['samples'])
         try:
             # This is the new data format
-            times = [pysat.datetime.strptime(time, '%Y%m%d')
+            times = [dt.datetime.strptime(time, '%Y%m%d')
                      for time in data.pop('time')]
         except ValueError:
             # Accepts old file formats
-            times = [pysat.datetime.strptime(time, '%Y %m %d')
+            times = [dt.datetime.strptime(time, '%Y %m %d')
                      for time in data.pop('time')]
         data.index = times
         # replace fill with NaNs
@@ -456,8 +456,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             fnames = ['{:04d}{:s}DSD.txt'.format(date.year, ss)
                       for ss in ['_', quar]]
             versions = ["01_v2", "{:02d}_v1".format(qmonth)]
-            vend = [pysat.datetime(date.year, 12, 31),
-                    pysat.datetime(date.year, qmonth, 1)
+            vend = [dt.datetime(date.year, 12, 31),
+                    dt.datetime(date.year, qmonth, 1)
                     + pds.DateOffset(months=3) - pds.DateOffset(days=1)]
             downloaded = False
             rewritten = False
@@ -562,10 +562,10 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         r = requests.get(furl)
         # parse text to get the date the prediction was generated
         date_str = r.text.split(':Issued: ')[-1].split(' UTC')[0]
-        date = pysat.datetime.strptime(date_str, '%Y %b %d %H%M')
+        date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
         # get starting date of the forecasts
         raw_data = r.text.split(':Prediction_dates:')[-1]
-        forecast_date = pysat.datetime.strptime(raw_data[3:14], '%Y %b %d')
+        forecast_date = dt.datetime.strptime(raw_data[3:14], '%Y %b %d')
         # times for output data
         times = pds.date_range(forecast_date, periods=3, freq='1D')
         # string data is the forecast value for the next three days
@@ -591,7 +591,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         r = requests.get(furl)
         # parse text to get the date the prediction was generated
         date_str = r.text.split(':Issued: ')[-1].split(' UTC')[0]
-        date = pysat.datetime.strptime(date_str, '%Y %b %d %H%M')
+        date = dt.datetime.strptime(date_str, '%Y %b %d %H%M')
         # get to the forecast data
         raw_data = r.text.split('45-DAY AP FORECAST')[-1]
         # grab AP part
@@ -648,7 +648,7 @@ def parse_45day_block(block_lines):
         split_line = line.split()
 
         # Format the dates
-        dates.extend([pysat.datetime.strptime(tt, "%d%b%y")
+        dates.extend([dt.datetime.strptime(tt, "%d%b%y")
                       for tt in split_line[::2]])
 
         # Format the data values
@@ -677,7 +677,7 @@ def rewrite_daily_file(year, outfile, lines):
 
     # Parse text to get the date the prediction was generated
     date_str = lines.split(':Issued: ')[-1].split('\n')[0]
-    date = pysat.datetime.strptime(date_str, '%H%M UT %d %b %Y')
+    date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
 
     # get to the solar index data
     if year > 2000:
@@ -742,7 +742,7 @@ def parse_daily_solar_data(data_lines, year, optical):
 
         # Format the date
         dfmt = "%Y %m %d" if year > 1996 else "%d %b %y"
-        dates.append(pysat.datetime.strptime(" ".join(split_line[0:3]), dfmt))
+        dates.append(dt.datetime.strptime(" ".join(split_line[0:3]), dfmt))
 
         # Format the data values
         j = 0

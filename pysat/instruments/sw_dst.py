@@ -40,7 +40,7 @@ platform = 'sw'
 name = 'dst'
 tags = {'': ''}
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -112,7 +112,7 @@ def load(fnames, tag=None, sat_id=None):
 
             new_data = pds.DataFrame(dst, index=dates, columns=['dst'])
             # pull out specific day
-            new_date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
+            new_date = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
             idx, = np.where((new_data.index >= new_date) &
                             (new_data.index < new_date+pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx, :]

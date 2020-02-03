@@ -1,6 +1,7 @@
 """
 tests the pysat instruments and code
 """
+import datetime as dt
 from importlib import import_module
 from functools import partial
 import numpy as np
@@ -87,7 +88,7 @@ def init_func_external(self):
                 info = module._test_dates
             except AttributeError:
                 info = {}
-                info[''] = {'': pysat.datetime(2009, 1, 1)}
+                info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
@@ -239,7 +240,7 @@ class TestInstrumentQualifier():
         check = []
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
-                check.append(isinstance(info[sat_id][tag], pysat.datetime))
+                check.append(isinstance(info[sat_id][tag], dt.datetime))
         assert np.all(check)
 
     def check_download(self, inst):
