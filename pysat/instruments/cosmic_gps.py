@@ -100,14 +100,17 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # here, we follow from_os() except a fictional microsecond
     # is added to file times to help ensure there are no file collisions
 
+    # overloading revision keyword below
+    # avoiding the use of version since including version triggers pysat
+    # to filter filenames to get most recent version number
     if format_str is None:
         # COSMIC file format string
         if tag == 'scnlv1':
-            format_str = ''.join(('????.???/??????_C???.{year:04d}',
+            format_str = ''.join(('????.???/??????_C{revision:03d}.{year:04d}',
                                   '.{day:03d}.{hour:02d}.{minute:02d}.',
                                   '????.?{second:02d}.??_????.????_nc'))
         else:
-            format_str = ''.join(('????.???/??????_C???.{year:04d}',
+            format_str = ''.join(('????.???/??????_C{revision:03d}.{year:04d}',
                                   '.{day:03d}.{hour:02d}.{minute:02d}.',
                                   '?{second:02d}_????.????_nc'))
 
@@ -128,11 +131,15 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         hour = np.array(stored['hour'])
         minute = np.array(stored['minute'])
         second = np.array(stored['second'])
-        uts = hour*3600. + minute*60. + second
+        uts = hour*3600. + minute*60. + second + np.array(stored['revision'])*1.E-1
         # adding microseconds to ensure each time is unique
-        uts += np.mod(np.arange(len(year)).astype(int), 100000) * 1.E-6
+        shift_uts = np.mod(np.arange(len(year)).astype(int) + 1, 1E3) * 1.E-5 + 1.E-5
+        uts += shift_uts
+
         index = pysat.utils.time.create_datetime_index(year=year, day=day,
                                                        uts=uts)
+        if not index.is_unique:
+            raise ValueError('Generated non-unique datetimes for COSMIC within list_files.')
         file_list = pysat.Series(stored['files'], index=index)
         return file_list
 
