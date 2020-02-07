@@ -130,7 +130,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         second = np.array(stored['second'])
         uts = hour*3600. + minute*60. + second
         # adding microseconds to ensure each time is unique
-        uts += np.mod(np.arange(len(year)).astype(int), 8000) * 1.E-5
+        uts += np.mod(np.arange(len(year)).astype(int), 100000) * 1.E-6
         index = pysat.utils.time.create_datetime_index(year=year, day=day,
                                                        uts=uts)
         file_list = pysat.Series(stored['files'], index=index)
@@ -169,11 +169,22 @@ def load(fnames, tag=None, sat_id=None):
         # multiprocessor load, not included and only benefits about 20%
         output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
+        # add unique offset based upon occulting satellite and cosmic satellite
+        # trivial amount of time change at user level, ensures unique times
+        # add 1E-6 seconds to time based upon occulting_sat_id
+        # additional 1E-7 seconds added based upon cosmic ID
+        # get cosmic satellite ID
+        c_id = np.array([snip[3] for snip in output.fileStamp]).astype(int)
+        # time offset
+        utsec += output.occulting_sat_id*1.e-6 + c_id*1.e-7
+        # move to Index
         output.index = \
             pysat.utils.time.create_datetime_index(year=output.year,
                                                    month=output.month,
                                                    day=output.day,
                                                    uts=utsec)
+        if not output.index.is_unique:
+            raise ValueError('Datetimes returned by load_files not unique.')
         # make sure UTS strictly increasing
         output.sort_index(inplace=True)
         # use the first available file to pick out meta information
@@ -219,8 +230,8 @@ def _process_lengths(lengths):
     return lengths, lengths2
 
 
-# seperate routine for doing actual loading. This was broken off from main load
-# becuase I was playing around with multiprocessor loading
+# separate routine for doing actual loading. This was broken off from main load
+# because I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
 def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     """Load COSMIC data files directly from a given list.
@@ -320,7 +331,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             _ = main_dict_len.pop(key)
         psub_frame = pysat.DataFrame(p_dict)
 
-        # change in variables in this fiile type
+        # change in variables in this file type
         # depending upon the processing applied at UCAR
         if 'ies' in main_dict.keys():
             q_keys = ['OL_ipar', 'OL_par', 'ies', 'hes', 'wes']
@@ -428,7 +439,7 @@ def download(date_array, tag, sat_id, data_path=None,
             req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            # if repsonse is negative, try post-processed data
+            # if response is negative, try post-processed data
             try:
                 dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/",
                                  "rest/tarservice/data/cosmic/"))
