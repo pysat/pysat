@@ -101,8 +101,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # is added to file times to help ensure there are no file collisions
 
     # overloading revision keyword below
-    # avoiding the use of version since including version triggers pysat
-    # to filter filenames to get most recent version number
     if format_str is None:
         # COSMIC file format string
         if tag == 'scnlv1':
