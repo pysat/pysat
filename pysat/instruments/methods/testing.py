@@ -25,7 +25,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         user.
         (default=None)
     test_dates : (dt.datetime)
-        The datetime associated with the test date in the main instrument file
+        Pass the _test_date object through from the test instrument files
 
     Returns
     -------
