@@ -128,17 +128,25 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         day = np.array(stored['day'])
         hour = np.array(stored['hour'])
         minute = np.array(stored['minute'])
+        # the ground station number in the file encoded as number of seconds
         second = np.array(stored['second'])
+        # the cosmic satellite number is stored as 0.X, where x is cosmic id
         uts = hour*3600. + minute*60. + second + np.array(stored['revision'])*1.E-1
-        # adding microseconds to ensure each time is unique
-        shift_uts = np.mod(np.arange(len(year)).astype(int) + 1, 1E3) * 1.E-5 + 1.E-5
-        uts += shift_uts
+        # do a pre-sort on uts to get files that may conflict with eachother
+        # close together in array order
+        # this ensures that we can make the times all unique
+        idx = np.argsort(uts)
+        # adding linearly increasing offsets
+        shift_uts = np.mod(np.arange(len(year)).astype(int), 1E3) * 1.E-5 + 1.E-5
+        uts[idx] += shift_uts
 
-        index = pysat.utils.time.create_datetime_index(year=year, day=day,
-                                                       uts=uts)
+        index = pysat.utils.time.create_datetime_index(year=year[idx], day=day[idx],
+                                                       uts=uts[idx])
         if not index.is_unique:
             raise ValueError('Generated non-unique datetimes for COSMIC within list_files.')
-        file_list = pysat.Series(stored['files'], index=index)
+        # store sorted file names with unique times in index
+        file_list = np.array(stored['files'])[idx]
+        file_list = pysat.Series(file_list, index=index)
         return file_list
 
     else:
