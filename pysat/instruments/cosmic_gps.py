@@ -182,14 +182,22 @@ def load(fnames, tag=None, sat_id=None):
         # multiprocessor load, not included and only benefits about 20%
         output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
-        # add unique offset based upon occulting satellite and cosmic satellite
-        # trivial amount of time change at user level, ensures unique times
-        # add 1E-6 seconds to time based upon occulting_sat_id
-        # additional 1E-7 seconds added based upon cosmic ID
-        # get cosmic satellite ID
-        c_id = np.array([snip[3] for snip in output.fileStamp]).astype(int)
-        # time offset
-        utsec += output.occulting_sat_id*1.e-6 + c_id*1.e-7
+        # make times unique by adding a unique amount of time less than a second
+        if tag != 'scnlv1':
+            # add 1E-6 seconds to time based upon occulting_sat_id
+            # additional 1E-7 seconds added based upon cosmic ID
+            # get cosmic satellite ID
+            c_id = np.array([snip[3] for snip in output.fileStamp]).astype(int)
+            # time offset
+            utsec += output.occulting_sat_id*1.e-6 + c_id*1.e-7
+        else:
+            # construct time out of three different parameters
+            # duration must be less than 10,000
+            # prn_id is allowed two characters
+            # antenna_id gets one
+            # prn_id and antenna_id are not sufficient for a unique time
+            utsec += output.prn_id*1.e-2 + output.duration.astype(int)*1.E-6
+            utsec += output.antenna_id*1.E-7
         # move to Index
         output.index = \
             pysat.utils.time.create_datetime_index(year=output.year,
