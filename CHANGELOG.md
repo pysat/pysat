@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
+   - Added check to ensure non-pysat keywords supplied at instantiation
+     are supported by underlying data set methods
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
@@ -19,6 +21,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug where `remote_file_list` would fail for some instruments.
   - Made import of methods more robust
   - Fixed `SettingWithCopyWarning` in `cnofs_ivm` cleaning routine
+  - Fixed method definition
+  - Fixed cosmic load method definition to include altitude_bin
+  - Fixed pysat_testing method definition to include mangle_file_dates keyword
 
 ## [2.1.0] - 2019-11-18
 - New Features
