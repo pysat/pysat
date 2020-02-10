@@ -7,6 +7,7 @@ try:
 except NameError:
     basestring = str
 
+import inspect
 import string
 import os
 import copy
@@ -353,6 +354,9 @@ class Instrument(object):
         self._export_meta_post_processing = None
 
         # store kwargs, passed to load routine
+        # first, check if keywords are  valid
+        _check_if_keywords_supported(self._load_rtn, **kwargs)
+        # store
         self.kwargs = kwargs
 
         # run instrument init function, a basic pass function is used
@@ -2582,3 +2586,70 @@ class Instrument(object):
             # attach attributes
             out_data.setncatts(adict)
         return
+
+#
+# ----------------------------------------------
+#   Utilities supporting the Instrument Object
+# ----------------------------------------------
+#
+
+
+def _get_supported_keywords(load_func):
+    """Return a list of supported keywords
+
+    Intended to be used on the supporting instrument
+    functions that enable the general Instrument object
+    to load and work with a particular data set.
+
+    Parameters
+    ----------
+    load_func: method
+        Method used to load data within pysat
+
+    Returns
+    -------
+    list
+        list of keyword argument strings
+
+    """
+
+    # modified from code on
+    # https://stackoverflow.com/questions/196960/can-you-list-the-keyword-arguments-a-function-receives
+    if sys.version_info.major == 2:
+        args, varargs, varkw, defaults = inspect.getargspec(load_func)
+    else:
+        args, varargs, varkw, defaults = inspect.signature(load_func)
+
+    if defaults:
+        args = args[-len(defaults):]
+    # *args and **kwargs are not required, so ignore them.
+    return args
+
+
+def _check_if_keywords_supported(func, **kwargs):
+    """Checks if keywords supported by function
+
+    Parameters
+    ----------
+    func: method
+        Method to be checked against
+    **kwargs : keyword args
+        keyword arguments dictionary
+
+    Returns
+    -------
+    bool
+        If true, all keywords supported
+
+    """
+
+    # get list of supported keywords
+    supp = _get_supported_keywords(func)
+    # check if kwargs are in list
+    for name in kwargs.keys():
+        if name not in supp:
+            estr = ' '.join((name, 'is not a supported keyword by pysat or',
+                             'by the underlying supporting load routine.',
+                             'Please double check the keyword inputs.'))
+            raise ValueError(estr)
+    return True
