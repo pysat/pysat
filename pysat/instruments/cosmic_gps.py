@@ -168,7 +168,8 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
     # input check
     if altitude_bin is not None:
         if tag != 'ionprf':
-            raise ValueError('altitude_bin only supported for "tag=ionprf"')
+            estr = 'altitude_bin keyword only supported for "tag=ionprf"'
+            raise ValueError(estr)
 
     num = len(fnames)
     # make sure there are files to read
