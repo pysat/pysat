@@ -40,6 +40,7 @@ Main Features
 from __future__ import print_function
 from __future__ import absolute_import
 import os
+from ._queue import queued
 
 import logging
 logger = logging.getLogger(__name__)
@@ -49,10 +50,18 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.WARNING)
 
+
+
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'version.txt')) as version_file:
-    __version__ = version_file.read().strip()
+
+@queued
+def init_version(here):
+    with open(os.path.join(here, 'version.txt')) as version_file:
+        __version__ = version_file.read().strip()
+    return __version__
+
+__version__ = init_version(here)
 
 
 # get home directory
@@ -61,43 +70,49 @@ home_dir = os.path.expanduser('~')
 test_data_path = os.path.join(here, 'tests', 'test_data')
 # set pysat directory path in home directory
 pysat_dir = os.path.join(home_dir, '.pysat')
-# make sure a pysat directory exists
-if not os.path.isdir(pysat_dir):
-    # create directory
-    os.mkdir(pysat_dir)
-    print('Created .pysat directory in user home directory to store settings.')
-    # create file with default data directory
-    if (os.environ.get('TRAVIS') == 'true'):
-        data_dir = '/home/travis/build/pysatData'
-    else:
-        data_dir = ''
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
-        f.write(data_dir)
-    print(''.join(("\nHi there!  Pysat will nominally store data in the "
-                   "'pysatData' directory at the user's home directory level. "
-                   "Run pysat.utils.set_data_dir to specify a different "
-                   "top-level directory to store science data.")))
-    # user modules file
-    with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
-        f.write('')
-        user_modules = []
 
-else:
-    # load up stored data path
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
-        data_dir = f.readline()
-    # load up stored user modules
-    user_modules = []
-    modules_file = os.path.join(pysat_dir, 'user_modules.txt')
-    if os.path.exists(modules_file):
-        with open(modules_file, 'r') as f:
-            for _ in f:
-                if _ != '' and (_ is not None):
-                    user_modules.append(_.strip())
-    else:
-        # write user modules file
+@queued
+def init_pysat_dir(pysat_dir):
+    # make sure a pysat directory exists
+    if not os.path.isdir(pysat_dir):
+        # create directory
+        os.mkdir(pysat_dir)
+        print('Created .pysat directory in user home directory to store settings.')
+        # create file with default data directory
+        if (os.environ.get('TRAVIS') == 'true'):
+            data_dir = '/home/travis/build/pysatData'
+        else:
+            data_dir = ''
+        with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
+            f.write(data_dir)
+        print(''.join(("\nHi there!  Pysat will nominally store data in the "
+                       "'pysatData' directory at the user's home directory level. "
+                       "Run pysat.utils.set_data_dir to specify a different "
+                       "top-level directory to store science data.")))
+        # user modules file
         with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
             f.write('')
+            user_modules = []
+
+    else:
+        # load up stored data path
+        with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
+            data_dir = f.readline()
+        # load up stored user modules
+        user_modules = []
+        modules_file = os.path.join(pysat_dir, 'user_modules.txt')
+        if os.path.exists(modules_file):
+            with open(modules_file, 'r') as f:
+                for _ in f:
+                    if _ != '' and (_ is not None):
+                        user_modules.append(_.strip())
+        else:
+            # write user modules file
+            with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
+                f.write('')
+    return data_dir, user_modules
+
+data_dir, user_modules = init_pysat_dir(pysat_dir)
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils
