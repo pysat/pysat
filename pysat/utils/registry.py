@@ -36,8 +36,10 @@ checking the user_modules registry.
 
 import pysat
 import os
+from pysat import queued
 
 
+@queued
 def load_saved_modules():
     """get list of modules from user_modules.txt"""
     saved_modules = []
@@ -47,7 +49,7 @@ def load_saved_modules():
                 saved_modules.append(line.strip())
     return saved_modules
 
-
+@queued
 def store():
     """Rewrite user_modules.txt based on current listing"""
     with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'w') as f:
