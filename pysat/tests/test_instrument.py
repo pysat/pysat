@@ -319,6 +319,7 @@ class TestBasics():
         assert 'pad' not in dir(self.testInst.meta)
 
     def test_custom_attribute_retained_on_load(self):
+        # check attribute remains attached to meta after loading data
         self.testInst.my_attr = 'my value'
         self.testInst.load(2009, 2)
         assert 'my_attr' in dir(self.testInst.meta)
