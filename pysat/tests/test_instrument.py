@@ -318,6 +318,11 @@ class TestBasics():
         assert 'pad' in dir(self.testInst)
         assert 'pad' not in dir(self.testInst.meta)
 
+    def test_custom_attribute_retained_on_load(self):
+        self.testInst.my_attr = 'my value'
+        self.testInst.load(2009, 2)
+        assert 'my_attr' in dir(self.testInst.meta)
+
 
     @raises(AttributeError)
     def test_retrieve_bad_attribute(self):
