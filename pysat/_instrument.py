@@ -1371,6 +1371,13 @@ class Instrument(object):
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid)
             if not self.empty:
+                cur_meta = dir(self.meta)
+                new_meta = dir(meta)
+                xtra_meta = [item for item in cur_meta if item not in new_meta]
+                if xtra_meta:
+                    for key in xtra_meta:
+                        xmet_attr = self.meta.__getattribute__(key)
+                        meta.__setattr__(key, xmet_attr)
                 self.meta = meta
 
         # check if load routine actually returns meta
