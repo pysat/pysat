@@ -36,23 +36,24 @@ checking the user_modules registry.
 
 import pysat
 import os
-from pysat import queued
+from portalocker import Lock
 
 
-@queued
 def load_saved_modules():
     """get list of modules from user_modules.txt"""
     saved_modules = []
-    with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'r') as f:
+    user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
+    with Lock(user_modules_file, 'r', pysat.file_timeout) as f:
         for line in f:
             if line != '' and (line is not None):
                 saved_modules.append(line.strip())
     return saved_modules
 
-@queued
+
 def store():
     """Rewrite user_modules.txt based on current listing"""
-    with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'w') as f:
+    user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
+    with Lock(user_modules_file, 'w', pysat.file_timeout) as f:
         for mod in pysat.user_modules:
             f.write(mod + '\n')
 

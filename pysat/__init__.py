@@ -40,6 +40,7 @@ Main Features
 from __future__ import print_function
 from __future__ import absolute_import
 import os
+from portalocker import Lock
 
 import logging
 logger = logging.getLogger(__name__)
@@ -49,9 +50,13 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.WARNING)
 
+# file lock timeout (seconds)
+file_timeout = 10
+
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'version.txt')) as version_file:
+version_filename = os.path.join(here, 'version.txt')
+with Lock(version_filename, 'r', file_timeout) as version_file:
     __version__ = version_file.read().strip()
 
 
@@ -71,32 +76,35 @@ if not os.path.isdir(pysat_dir):
         data_dir = '/home/travis/build/pysatData'
     else:
         data_dir = ''
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
+    data_path_file = os.path.join(pysat_dir, 'data_path.txt')
+    with Lock(data_path_file, 'w', file_timeout) as f:
         f.write(data_dir)
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
                    "Run pysat.utils.set_data_dir to specify a different "
                    "top-level directory to store science data.")))
-    # user modules file
-    with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
+
+    modules_file = os.path.join(pysat_dir, 'user_modules.txt')
+    with Lock(modules_file, 'w', file_timeout) as f:
         f.write('')
         user_modules = []
 
 else:
     # load up stored data path
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
+    data_path_file = os.path.join(pysat_dir, 'data_path.txt')
+    with Lock(data_path_file, 'r', file_timeout) as f:
         data_dir = f.readline()
     # load up stored user modules
     user_modules = []
     modules_file = os.path.join(pysat_dir, 'user_modules.txt')
     if os.path.exists(modules_file):
-        with open(modules_file, 'r') as f:
+        with Lock(modules_file, 'r', file_timeout) as f:
             for _ in f:
                 if _ != '' and (_ is not None):
                     user_modules.append(_.strip())
     else:
         # write user modules file
-        with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
+        with Lock(modules_file, 'w', file_timeout) as f:
             f.write('')
 
 from pandas import Panel, DataFrame, Series, datetime
