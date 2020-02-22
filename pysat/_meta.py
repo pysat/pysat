@@ -387,6 +387,10 @@ class Meta(object):
                     default_nan, default_nan]
         self._data.loc[input_name, labels] = defaults
 
+
+    # def __setattr__(self, name, value):
+    #     raise NotImplementedError
+
     def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
 
