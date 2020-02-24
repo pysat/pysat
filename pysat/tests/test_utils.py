@@ -413,8 +413,8 @@ class TestBasicNetCDF4():
         assert (np.all((test_inst.data == loaded_inst).all()))
         assert np.all(test_list)
 
-    def test_netcdf_attribute_override(self):
-        """Test that attributes in netcdf file may be overridden"""
+    def test_netcdf_prevent_attribute_override(self):
+        """Test that attributes will not be overridden by default"""
         self.testInst.load(2009, 1)
 
         try:
@@ -422,7 +422,19 @@ class TestBasicNetCDF4():
         except AttributeError:
             pass
 
-        fname = 'output.nc'
+        # instrument meta attributes immutable upon load
+        assert self.testInst.meta.mutable == False
+        try:
+            self.testInst.meta.bespoke = True
+        except AttributeError:
+            pass
+
+
+    def test_netcdf_attribute_override(self):
+        """Test that attributes in netcdf file may be overridden"""
+        self.testInst.load(2009, 1)
+
+        self.testInst.meta.mutable = True
         self.testInst.meta.bespoke = True
 
         self.testInst.meta.transfer_attributes_to_instrument(self.testInst)
@@ -430,6 +442,7 @@ class TestBasicNetCDF4():
         # ensure custom meta attribute assigned to instrument
         assert self.testInst.bespoke
 
+        fname = 'output.nc'
         outfile = os.path.join(self.testInst.files.data_path, fname)
         self.testInst.to_netcdf4(outfile)
 
@@ -438,24 +451,3 @@ class TestBasicNetCDF4():
         # custom attribute correctly read from file
         assert meta.bespoke
 
-        # assign metadata to new instrument
-        inst = pysat.Instrument()
-
-        inst.data = data
-        inst.meta = meta
-
-
-        meta.transfer_attributes_to_instrument(inst)
-
-        fname2 = 'output2.nc'
-        outfile2 = os.path.join(self.testInst.files.data_path, fname2)
-
-        inst.bespoke = False
-        inst.myattr = True
-
-        inst.to_netcdf4(outfile2)
-
-        data2, meta2 = pysat.utils.load_netcdf4(outfile2)
-
-        assert meta2.myattr
-        assert not meta2.bespoke
