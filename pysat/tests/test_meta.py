@@ -1017,3 +1017,38 @@ class TestBasics():
         assert (self.meta['NEW21'].units == 'hey2')
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+
+    def test_meta_mutable(self):
+        assert self.meta.mutable
+
+        greeting = '...listen!'
+        self.meta.hey = greeting
+        assert self.meta.hey == greeting
+
+        self.meta.mutable = False
+        try:
+          self.hey = greeting
+        except AttributeError:
+          pass
+
+        meta_immutable = pysat.Meta(mutable = False)
+
+        assert not meta_immutable.mutable
+
+        try:
+          self.hey = greeting
+        except AttributeError:
+          pass
+
+    def test_meta_mutable_properties(self):
+        m = pysat.Meta(mutable = False)
+
+        m.data = pds.DataFrame()
+        m.ho_data = {}
+        m.units_label = 'nT'
+        m.name_label = 'my name'
+
+
+
+
