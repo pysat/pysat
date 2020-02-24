@@ -181,7 +181,7 @@ class Meta(object):
 
         # # set mutability of object attributes
         # super().__setattr__('_mutable', mutable)
-        self._mutable = is_mutable
+        self.mutable = True
 
         # set units and name labels directly
         self._units_label = units_label
@@ -224,17 +224,7 @@ class Meta(object):
         # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
-
-    @property
-    def mutable(self):
-        # return self.__dict__['_mutable']
-        return self._mutable
-
-    @mutable.setter
-    def mutable(self, is_mutable):
-        # avoid call to Meta.__setattr__
-        # self.__dict__['_mutable'] = is_mutable 
-        self._mutable = is_mutable
+        self.mutable = is_mutable
 
 
     @property
@@ -410,13 +400,31 @@ class Meta(object):
 
 
     def __setattr__(self, name, value):
-        if name != '_mutable':
+        """Conditionally sets attributes based on _mutable property
+
+        @properties are assumed to be mutable.
+
+        We avoid recursively setting properties using
+        method from https://stackoverflow.com/a/15751135
+        """
+
+        # _mutable handled explicitly to avoid recursion
+        if name != 'mutable':
             propobj = getattr(self.__class__, name, None)
             if isinstance(propobj, property):
                 # print("setting attr {} using property's fset".format(name))
                 if propobj.fset is None:
                     raise AttributeError("can't set attribute - property has no fset")
+
+                # temporarily make mutable
+                mutable_tmp = self.mutable
+                self.mutable = True
+
+                # set the property
                 propobj.fset(self, value)
+
+                # restore mutability
+                self.mutable = mutable_tmp
             else:
                 if self.mutable:
                     # print("setting attr {}".format(name))
