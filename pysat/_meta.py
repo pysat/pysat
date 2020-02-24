@@ -415,14 +415,14 @@ class Meta(object):
             if isinstance(propobj, property):
                 # print("setting attr {} using property's fset".format(name))
                 if propobj.fset is None:
-                    raise AttributeError("can't set attribute")
+                    raise AttributeError("can't set attribute - property has no fset")
                 propobj.fset(self, value)
             else:
                 if self.mutable:
                     # print("setting attr {}".format(name))
                     super(Meta, self).__setattr__(name, value)
                 else:
-                    print("can't set attribute - Meta object attributes are immutable")
+                    raise AttributeError("cannot set attribute - object's attributes are immutable")
         else:
             super(Meta, self).__setattr__(name, value)
         
