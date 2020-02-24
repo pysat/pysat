@@ -176,7 +176,13 @@ class Meta(object):
                  name_label='long_name', notes_label='notes',
                  desc_label='desc', plot_label='label', axis_label='axis',
                  scale_label='scale', min_label='value_min',
-                 max_label='value_max', fill_label='fill'):
+                 max_label='value_max', fill_label='fill',
+                 is_mutable = True):
+
+        # # set mutability of object attributes
+        # super().__setattr__('_mutable', mutable)
+        self._mutable = is_mutable
+
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label
@@ -213,9 +219,23 @@ class Meta(object):
                                                   self._max_label,
                                                   self._fill_label])
 
+
+
         # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
+
+    @property
+    def mutable(self):
+        # return self.__dict__['_mutable']
+        return self._mutable
+
+    @mutable.setter
+    def mutable(self, is_mutable):
+        # avoid call to Meta.__setattr__
+        # self.__dict__['_mutable'] = is_mutable 
+        self._mutable = is_mutable
+
 
     @property
     def ho_data(self):
@@ -388,8 +408,24 @@ class Meta(object):
         self._data.loc[input_name, labels] = defaults
 
 
-    # def __setattr__(self, name, value):
-    #     raise NotImplementedError
+
+    def __setattr__(self, name, value):
+        if name != '_mutable':
+            propobj = getattr(self.__class__, name, None)
+            if isinstance(propobj, property):
+                # print("setting attr {} using property's fset".format(name))
+                if propobj.fset is None:
+                    raise AttributeError("can't set attribute")
+                propobj.fset(self, value)
+            else:
+                if self.mutable:
+                    # print("setting attr {}".format(name))
+                    super(Meta, self).__setattr__(name, value)
+                else:
+                    print("can't set attribute - Meta object attributes are immutable")
+        else:
+            super(Meta, self).__setattr__(name, value)
+        
 
     def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
