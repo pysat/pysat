@@ -1407,6 +1407,7 @@ class Instrument(object):
 
         # transfer any extra attributes in meta to the Instrument object
         self.meta.transfer_attributes_to_instrument(self)
+        self.meta.mutable = False
         sys.stdout.flush()
         return
 
