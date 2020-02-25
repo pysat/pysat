@@ -400,7 +400,7 @@ class Meta(object):
 
 
     def __setattr__(self, name, value):
-        """Conditionally sets attributes based on _mutable property
+        """Conditionally sets attributes based on self.mutable flag 
 
         @properties are assumed to be mutable.
 
@@ -408,26 +408,29 @@ class Meta(object):
         method from https://stackoverflow.com/a/15751135
         """
 
-        # _mutable handled explicitly to avoid recursion
+        # mutable handled explicitly to avoid recursion
         if name != 'mutable':
+
+            # check if this attribute is a property
             propobj = getattr(self.__class__, name, None)
             if isinstance(propobj, property):
-                # print("setting attr {} using property's fset".format(name))
+                # check if the property is settable
                 if propobj.fset is None:
                     raise AttributeError("can't set attribute - property has no fset")
 
-                # temporarily make mutable
+                # make mutable in case fset needs it to be
                 mutable_tmp = self.mutable
                 self.mutable = True
 
                 # set the property
                 propobj.fset(self, value)
 
-                # restore mutability
+                # restore mutability flag
                 self.mutable = mutable_tmp
             else:
+                # a normal attribute
                 if self.mutable:
-                    # print("setting attr {}".format(name))
+                    # use Object to avoid recursion
                     super(Meta, self).__setattr__(name, value)
                 else:
                     raise AttributeError("cannot set attribute - object's attributes are immutable")
