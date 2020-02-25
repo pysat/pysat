@@ -85,6 +85,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     """
 
     # create an artifical satellite data set
+    iperiod = mm_test.define_period()
+    drange = mm_test.define_range()
     uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
     # seed DataFrame with UT array
     data = pysat.DataFrame(uts, columns=['uts'])
@@ -97,22 +99,22 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     time_delta = date - pysat.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
-                                             period=5820,
-                                             data_range=[0.0, 24.0])
+                                             period=iperiod['lt'],
+                                             data_range=drange['lt'])
     # do slt, 20 second offset from mlt
     data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds()+20,
-                                             uts, period=5820,
-                                             data_range=[0.0, 24.0])
+                                             uts, period=iperiod['lt'],
+                                             data_range=drange['lt'])
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     data['longitude'] = mm_test.generate_fake_data(time_delta.total_seconds(),
-                                                   uts, period=6240,
-                                                   data_range=[0.0, 360.0])
+                                                   uts, period=iperiod['lon'],
+                                                   data_range=drange['lon'])
     # create latitude signal for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(),
-                                       uts, period=5820,
-                                       data_range=[0.0, 2.0*np.pi])
+                                       uts, period=iperiod['angle'],
+                                       data_range=drange['angle'])
     data['latitude'] = 90.0 * np.cos(angle)
 
     if malformed_index:

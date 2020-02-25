@@ -171,3 +171,45 @@ def generate_times(fnames, sat_id, freq='1S'):
     uts = index.hour*3600 + index.minute*60 + index.second
 
     return uts, index, date
+
+
+def define_period():
+    """Define the default periods for the fake data functions
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    period : dict
+        Dictionary of periods to use in test instruments
+
+    """
+
+    period = {'lt': 5820,
+              'lon': 6240,
+              'angle': 5820}
+
+    return period
+
+
+def define_range():
+    """Define the default ranges for the fake data functions
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    range : dict
+        Dictionary of periods to use in test instruments
+
+    """
+
+    range = {'lt': [0.0, 24.0],
+             'lon': [0.0, 360.0],
+             'angle': [0.0, 2.0*np.pi]}
+
+    return range
