@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import numpy as np
 import pysat
-
+from portalocker import Lock, TemporaryFileLock
 
 def set_data_dir(path=None, store=True):
     """
@@ -27,9 +27,11 @@ def set_data_dir(path=None, store=True):
 
     if os.path.isdir(path):
         if store:
-            with open(os.path.join(os.path.expanduser('~'), '.pysat',
-                                   'data_path.txt'), 'w') as f:
+            data_path_file = os.path.join(os.path.expanduser('~'),
+                                          '.pysat', 'data_path.txt')
+            with Lock(data_path_file, 'w', pysat.file_timeout) as f:
                 f.write(path)
+
         pysat.data_dir = path
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
@@ -213,7 +215,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     three_d_dims = []
 
     for fname in fnames:
-        with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
+        with TemporaryFileLock(fname + '.Lock', pysat.file_timeout) as tfl, \
+            netCDF4.Dataset(fname, mode='r', format=file_format) as data:
             # build up dictionary with all global ncattrs
             # and add those attributes to a pysat meta object
             ncattrsList = data.ncattrs()
