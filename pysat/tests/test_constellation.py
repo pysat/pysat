@@ -97,7 +97,7 @@ class TestDataMod:
             d.name = 'doubleMLT'
             return d
 
-        self.add(custom1, 'add')
+        self.attach(custom1, 'add')
         self.testConst.load(2009, 1)
         ans = (self.testConst[0].data['doubleMLT'].values ==
                2. * self.testConst[0].data.mlt.values).all()

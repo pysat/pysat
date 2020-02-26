@@ -54,8 +54,8 @@ class Custom(object):
         # keyword arguments to functions
         self._kwargs = []
 
-    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
-        """Add a function to custom processing queue.
+    def attach(self, function, kind='add', at_pos='end', *args, **kwargs):
+        """Attach a function to custom processing queue.
 
         Custom functions are applied automatically to associated
         pysat instrument whenever instrument.load command called.
