@@ -85,7 +85,7 @@ class TestDataMod:
         """Runs after every method to clean up previous testing."""
         del self.testConst
 
-    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
+    def attach(self, function, kind='add', at_pos='end', *args, **kwargs):
         """Adds a function to the object's custom queue"""
         self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
 
