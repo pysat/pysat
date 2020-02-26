@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed model_utils
   - Removed deprecated pandas.Panel
   - imports datetime from datetime, not pandas (deprecated)
+  - import DataFrame and Series directly from pandas, not pysat
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
