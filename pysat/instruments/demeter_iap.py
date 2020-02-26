@@ -143,7 +143,7 @@ def load(fnames, tag='survey', sat_id=''):
 
     if len(fnames) == 0:
         logger.info('need list of filenames')
-        return pysat.DataFrame(None), None
+        return pds.DataFrame(None), None
 
     # Load the desired data and cast as a DataFrame
     data = list()
@@ -153,7 +153,7 @@ def load(fnames, tag='survey', sat_id=''):
         data.extend(fdata)
 
     data = np.vstack(data)
-    data = pysat.DataFrame(data, index=data[:, 3], columns=fmeta['data names'])
+    data = pds.DataFrame(data, index=data[:, 3], columns=fmeta['data names'])
 
     # Assign metadata
     if len(data.columns) > 0:

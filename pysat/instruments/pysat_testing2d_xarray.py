@@ -151,7 +151,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                            dt.datetime(2010, 12, 31))
     names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
              for date in index]
-    return pysat.Series(names, index=index)
+    return pds.Series(names, index=index)
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,

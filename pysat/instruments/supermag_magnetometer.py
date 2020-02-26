@@ -269,7 +269,7 @@ def load(fnames, tag='', sat_id=None):
 
     # Ensure that there are files to load
     if len(fnames) <= 0:
-        return pysat.DataFrame(None), pysat.Meta(None)
+        return pds.DataFrame(None), pysat.Meta(None)
 
     # Ensure that the files are in a list
     if isinstance(fnames, str):

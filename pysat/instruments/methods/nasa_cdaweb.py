@@ -147,7 +147,7 @@ def load(fnames, tag=None, sat_id=None,
     import pysatCDF
 
     if len(fnames) <= 0:
-        return pysat.DataFrame(None), None
+        return pds.DataFrame(None), None
     else:
         # going to use pysatCDF to load the CDF and format
         # data and metadata for pysat using some assumptions.

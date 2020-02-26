@@ -5,7 +5,6 @@ import functools
 
 import numpy as np
 import pandas as pds
-from pysat import Series
 from pysat import logger
 
 
@@ -198,7 +197,7 @@ class Orbits(object):
             lt_diff = lt_diff.to_pandas()
         lt_diff = lt_diff.diff()
         # universal time values, from datetime index
-        ut_vals = Series(self.sat.index)
+        ut_vals = pds.Series(self.sat.index)
         # UT difference
         ut_diff = ut_vals.diff()
 
@@ -335,7 +334,7 @@ class Orbits(object):
         ind, = np.where(change)
         ind += 1
 
-        ut_diff = Series(self.sat.index).diff()
+        ut_diff = pds.Series(self.sat.index).diff()
         ut_ind, = np.where(ut_diff / self.orbit_period > 0.95)
 
         if len(ut_ind) > 0:

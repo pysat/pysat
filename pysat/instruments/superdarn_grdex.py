@@ -191,7 +191,7 @@ def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
 def load(fnames, tag=None, sat_id=None):
     import davitpy
     if len(fnames) <= 0:
-        return pysat.DataFrame(None), pysat.Meta(None)
+        return pds.DataFrame(None), pysat.Meta(None)
     elif len(fnames) == 1:
 
         myPtr = davitpy.pydarn.sdio.sdDataPtr(sTime=dt.datetime(1980, 1, 1),

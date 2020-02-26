@@ -81,7 +81,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     uts = np.arange(num) * scalar
     num_array = np.arange(num) * scalar
     # seed DataFrame with UT array
-    data = pysat.DataFrame(uts, columns=['uts'])
+    data = pds.DataFrame(uts, columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
@@ -176,7 +176,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                            dt.datetime(2010, 12, 31))
     names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
              for date in index]
-    return pysat.Series(names, index=index)
+    return pds.Series(names, index=index)
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,

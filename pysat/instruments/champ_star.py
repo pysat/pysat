@@ -99,7 +99,7 @@ def load(fnames, tag=None, sat_id=None):
     """
     import re
     if len(fnames) <= 0:
-        return pysat.DataFrame(None), pysat.Meta(None)
+        return pds.DataFrame(None), pysat.Meta(None)
 
     if isinstance(fnames, str):
         fnames = [fnames]

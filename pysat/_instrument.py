@@ -24,7 +24,6 @@ from pysat import _files
 from pysat import _orbits
 from pysat import _meta
 from pysat import utils
-from pysat import DataFrame
 from pysat import user_modules as user_modules
 from pysat import logger
 
@@ -261,8 +260,8 @@ class Instrument(object):
         # set up empty data and metadata
         # check if pandas or xarray format
         if self.pandas_format:
-            self._null_data = DataFrame(None)
-            self._data_library = DataFrame
+            self._null_data = pds.DataFrame(None)
+            self._data_library = pds.DataFrame
         else:
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset

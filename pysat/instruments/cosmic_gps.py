@@ -49,6 +49,7 @@ import sys
 
 import numpy as np
 import netCDF4
+import pandas as pds
 import pysat
 
 import logging
@@ -134,12 +135,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         uts += np.mod(np.arange(len(year)).astype(int), 8000) * 1.E-5
         index = pysat.utils.time.create_datetime_index(year=year, day=day,
                                                        uts=uts)
-        file_list = pysat.Series(stored['files'], index=index)
+        file_list = pds.Series(stored['files'], index=index)
         return file_list
 
     else:
         logger.info('Found no files, check your path or download them.')
-        return pysat.Series(None)
+        return pds.Series(None)
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -168,7 +169,7 @@ def load(fnames, tag=None, sat_id=None):
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
+        output = pds.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
         output.index = \
             pysat.utils.time.create_datetime_index(year=output.year,
@@ -203,7 +204,7 @@ def load(fnames, tag=None, sat_id=None):
         return output, meta
     else:
         # no data
-        return pysat.DataFrame(None), pysat.Meta()
+        return pds.DataFrame(None), pysat.Meta()
 
 
 def _process_lengths(lengths):
@@ -319,7 +320,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
         for key in p_keys:
             p_dict[key] = main_dict.pop(key)
             _ = main_dict_len.pop(key)
-        psub_frame = pysat.DataFrame(p_dict)
+        psub_frame = pds.DataFrame(p_dict)
 
         # change in variables in this fiile type
         # depending upon the processing applied at UCAR
@@ -336,7 +337,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
         for key in q_keys:
             q_dict[key] = main_dict.pop(key)
             _ = main_dict_len.pop(key)
-        qsub_frame = pysat.DataFrame(q_dict)
+        qsub_frame = pds.DataFrame(q_dict)
 
         max_length = np.max([max_p_length, max_q_length])
         length_arr = np.arange(max_length)
@@ -349,7 +350,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
     # create a single data frame with all bits, then
     # break into smaller frames using views
-    main_frame = pysat.DataFrame(main_dict)
+    main_frame = pds.DataFrame(main_dict)
     # get indices needed to parse data
     lengths = main_dict_len[list(main_dict.keys())[0]]
     # get largest length and create numpy array with it
