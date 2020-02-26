@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0] - 2019-12-31
 - New Features
   - Added registry module for registering custom external instruments
+  - custom.attach replaces custom.add
 - Deprecations
   - Removed ssnl
   - Removed utils.stats

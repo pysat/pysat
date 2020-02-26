@@ -85,7 +85,7 @@ class Custom(object):
 
         Note
         ----
-        Allowed `add` function returns:
+        Allowed `attach` function returns:
 
         - {'data' : pandas Series/DataFrame/array_like,
           'units' : string/array_like of strings,
