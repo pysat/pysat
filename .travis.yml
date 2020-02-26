@@ -18,6 +18,7 @@ addons:
 before_install:
   - pip install coveralls
   - pip install future
+  - pip install 'xarray<0.15' # Temporary for pysat 2.x, will remove for 3.0
   - pip install pysatCDF >/dev/null
 
 # command to install dependencies
