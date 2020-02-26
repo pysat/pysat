@@ -9,6 +9,7 @@ if sys.version_info[0] >= 3:
 else:
     re_load = reload
 
+import pysat
 
 def set_data_dir(path=None, store=True):
     """
