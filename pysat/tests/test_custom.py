@@ -17,7 +17,7 @@ class TestBasics():
         del self.testInst
 
     def attach(self, function, kind='add', at_pos='end', *args, **kwargs):
-        '''Adds a function to the object's custom queue'''
+        """Adds a function to the object's custom queue"""
         self.testInst.custom.attach(function, kind, at_pos, *args, **kwargs)
 
     @raises(ValueError)
