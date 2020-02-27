@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
+- Deprecation Warning
+  - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
