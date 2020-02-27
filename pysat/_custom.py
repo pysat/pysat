@@ -26,17 +26,17 @@ class Custom(object):
 
         def custom_func(inst, opt_param1=False, opt_param2=False):
             return None
-        instrument.custom.add(custom_func, 'modify', opt_param1=True)
+        instrument.custom.attach(custom_func, 'modify', opt_param1=True)
 
         def custom_func2(inst, opt_param1=False, opt_param2=False):
             return data_to_be_added
-        instrument.custom.add(custom_func2, 'add', opt_param2=True)
+        instrument.custom.attach(custom_func2, 'add', opt_param2=True)
         instrument.load(date=date)
         print(instrument['data_to_be_added'])
 
     See Also
     --------
-    Custom.add
+    Custom.attach
 
     Note
     ----
