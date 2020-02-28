@@ -11,17 +11,20 @@ import string
 import os
 import copy
 import sys
+
+import pkgutil
 import pandas as pds
 import numpy as np
 import xarray as xr
 import warnings
 
-from . import _custom
-from . import _files
-from . import _orbits
-from . import _meta
-from . import utils
+from pysat import _custom
+from pysat import _files
+from pysat import _orbits
+from pysat import _meta
+from pysat import utils
 from pysat import DataFrame
+from pysat import user_modules as user_modules
 from pysat import logger
 
 
@@ -798,7 +801,6 @@ class Instrument(object):
     def _assign_funcs(self, by_name=False, inst_module=None):
         """Assign all external science instrument methods to Instrument object.
         """
-
         import importlib
         # set defaults
         self._list_rtn = self._pass_func
@@ -817,9 +819,30 @@ class Instrument(object):
 
         if by_name:
             # look for code with filename name, any errors passed up
-            inst = importlib.import_module(''.join(('.', self.platform, '_',
-                                           self.name)),
-                                           package='pysat.instruments')
+            # start with local areas
+            import_success = False
+            try:
+                inst = importlib.import_module(''.join(('.', self.platform, '_',
+                                            self.name)),
+                                            package='pysat.instruments')
+                import_success = True
+            except:
+                # iterate through user set modules
+                for mod in user_modules:
+                    # get my.package.name from my.package.name.platform_name
+                    package_name = '.'.join(mod.split('.')[:-1])
+                    try:
+                        inst = importlib.import_module(mod)
+                        if ((inst.platform == self.platform) & (inst.name == self.name)):
+                            import_success = True
+                            # done!
+                            break
+                    except ImportError:
+                        pass
+                if not import_success:
+                    raise ImportError(
+                        "Could not find a registered module for {} {}\nAvailable modules:{}".format(
+                            self.platform, self.name, user_modules))
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
             inst = inst_module
@@ -1208,7 +1231,7 @@ class Instrument(object):
         Note
         ----
         Loads data for a chosen instrument into .data. Any functions chosen
-        by the user and added to the custom processing queue (.custom.add)
+        by the user and added to the custom processing queue (.custom.attach)
         are automatically applied to the data before it is available to
         user in .data.
 
