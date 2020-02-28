@@ -1,5 +1,6 @@
 import importlib
 
+
 class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
 
@@ -136,4 +137,3 @@ class Constellation(object):
 
         for instrument in self.instruments:
             instrument.load(*args, **kwargs)
-
