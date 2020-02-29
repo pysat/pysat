@@ -87,7 +87,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
+    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='1S')
     # seed DataFrame with UT array
     data = pysat.DataFrame(uts, columns=['uts'])
 
