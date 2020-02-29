@@ -151,6 +151,7 @@ def generate_times(fnames, sat_id, freq='1S'):
         The requested date reconstructed from the fake file name
     """
 
+    # TODO: Expand for multi-file days
     # grab date from filename
     parts = os.path.split(fnames[0])[-1].split('-')
     yr = int(parts[0])
@@ -187,8 +188,8 @@ def define_period():
 
     """
 
-    period = {'lt': 5820,
-              'lon': 6240,
+    period = {'lt': 5820, # 97 minutes
+              'lon': 6240, # 104 minutes
               'angle': 5820}
 
     return period
