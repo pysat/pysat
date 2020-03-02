@@ -2636,22 +2636,27 @@ def _get_supported_keywords(load_func):
     if sys.version_info.major == 2:
         args, varargs, varkw, defaults = inspect.getargspec(load_func)
     else:
-        args, varargs, varkw, defaults = inspect.signature(load_func)
+        sig = inspect.getfullargspec(load_func)
+        # args are first
+        args = sig.args
 
-    if defaults:
-        args = args[-len(defaults):]
-
-     # account for keywords already set since input was a partial function
+    pop_list = []
+    # account for keywords that exist for every load function
+    pre_kws = ['fnames', 'sat_id', 'tag']
+    # account for keywords already set since input was a partial function
     if existing_kws is not None:
-        pop_list = []
-        for i, arg in enumerate(args):
-            if arg in existing_kws:
-                pop_list.append(i)
-        # go backwards so we don't mess with the location of data we
-        # are trying to remove
-        if len(pop_list) > 0:
-            for pop in pop_list.reverse():
-                args.pop(pop)
+        pre_kws.extend(existing_kws.keys())
+    # remove pre-existing keywords from output
+    # first identify locations
+    for i, arg in enumerate(args):
+        if arg in pre_kws:
+            pop_list.append(i)
+    # remove identified locations
+    # go backwards so we don't mess with the location of data we
+    # are trying to remove
+    if len(pop_list) > 0:
+        for pop in pop_list[::-1]:
+            args.pop(pop)
 
     # *args and **kwargs are not required, so ignore them.
     return args
