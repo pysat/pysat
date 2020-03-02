@@ -6,17 +6,33 @@
 Adding a New Instrument
 =======================
 
+.. role:: python(code)
+   :language: python
+
 pysat works by calling modules written for specific instruments
 that load and process the data consistent with the pysat standard. The name
 of the module corresponds to the combination 'platform_name' provided when
 initializing a pysat instrument object. The module should be placed in the
-pysat instruments directory or in the user specified location (via
-mechanism to be added) for automatic discovery. A compatible module may
-also be supplied directly to pysat.Instrument(inst_module=input module) if
-it also contains attributes platform and name.
+pysat instruments directory or registered (see below) for automatic discovery. Some data repositories 
+have pysat templates prepared to assist in integrating a new instrument. See :ref:`supported-data-templates` for more.
 
-Some data repositories have pysat templates prepared to assist in integrating
-a new instrument. See Supported Templates for more.
+A compatible module may be supplied directly to :python:`pysat.Instrument(inst_module = myInstrument)`
+if it also contains attributes platform and name. Such modules may be registered as 
+part of pysat's user instrument registry using the following syntax:
+
+.. code-block:: python
+
+  from pysat.utils import registry
+  registry.register('my.package.myInstrument')
+
+After registry, the instrument module name is stored in the user's home directory
+under :code:`~.pysat/user_modules.txt`. The instrument may then be instantiated with 
+the instrument's platform and name:
+
+.. code-block:: python
+
+  inst = Instrument('myplatform', 'myname')
+
 
 Naming Conventions
 ------------------
@@ -286,6 +302,8 @@ Acknowledging the source of data is key for scientific collaboration.  This can
 generally be put in the `init` function of each instrument.  Relevant
 citations should be included in the instrument docstring.
 
+
+.. _supported-data-templates:
 
 Supported Data Templates
 ========================

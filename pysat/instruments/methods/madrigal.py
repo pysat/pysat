@@ -520,7 +520,7 @@ def filter_data_single_date(self):
     This routine is intended to be added to the Instrument
     nanokernel processing queue via
         inst = pysat.Instrument()
-        inst.custom.add(filter_data_single_date, 'modify')
+        inst.custom.attach(filter_data_single_date, 'modify')
     This function will then be automatically applied to the
     Instrument object data on every load by the pysat nanokernel.
 
