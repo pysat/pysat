@@ -1,6 +1,5 @@
 import collections
 import importlib
-import warnings
 import numpy as np
 import pandas as pds
 
@@ -176,12 +175,6 @@ class Constellation(object):
             dictionary with keys 'median', 'count', 'avg_abs_dev', and
             'bin' (the values of the bin edges.)
         """
-
-        warnings.warn(' '.join(["constellation.add is deprecated and will be",
-                                "removed in pysat 3.0.0. This functionality",
-                                "will be added to pysatSeasons in the"
-                                "future."]),
-                      DeprecationWarning, stacklevel=2)
 
         # TODO Update for 2.7 compatability.
         if isinstance(data_label, str):
@@ -393,12 +386,6 @@ class Constellation(object):
 
         return { 'data': data_df, 'start':start, 'end':end }
         """
-
-        warnings.warn(' '.join(["constellation.difference is deprecated and",
-                                "will be removed in pysat 3.0.0. This",
-                                "functionality will be added to pysatSeasons"
-                                "in the future."]),
-                      DeprecationWarning, stacklevel=2)
 
         labels = [dl1 for dl1, dl2 in data_labels] + \
             ['1_' + b[0] for b in bounds] + ['2_' + b[1] for b in bounds] + \
