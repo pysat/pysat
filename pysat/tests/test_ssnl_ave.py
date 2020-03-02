@@ -14,8 +14,8 @@ class TestBasics():
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
-        self.bounds1 = (dt.datetime(2008, 1, 1), dt.datetime(2008, 1, 3))
-        self.bounds2 = (dt.datetime(2009, 1, 1), dt.datetime(2009, 1, 2))
+        self.bounds1 = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
+        self.bounds2 = (pysat.datetime(2009, 1, 1), pysat.datetime(2009, 1, 2))
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -175,10 +175,9 @@ class TestFrameProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing2D',
-                                         sat_id='500',
                                          clean_level='clean')
-        self.testInst.bounds = (dt.datetime(2008, 1, 1),
-                                dt.datetime(2008, 1, 3))
+        self.testInst.bounds = (pysat.datetime(2008, 1, 1),
+                                pysat.datetime(2008, 1, 3))
         self.dname = 'alt_profiles'
         self.test_vals = np.arange(50) * 1.2
         self.test_fracs = np.arange(50) / 50.0
@@ -226,10 +225,9 @@ class TestSeriesProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing2D',
-                                         sat_id='500',
                                          clean_level='clean')
-        self.testInst.bounds = (dt.datetime(2008, 1, 1),
-                                dt.datetime(2008, 2, 1))
+        self.testInst.bounds = (pysat.datetime(2008, 1, 1),
+                                pysat.datetime(2008, 2, 1))
         self.dname = 'series_profiles'
 
     def teardown(self):
@@ -275,7 +273,7 @@ class TestConstellation:
                                           clean_level='clean'))
         self.testC = pysat.Constellation(instruments=insts)
         self.testI = pysat.Instrument('pysat', 'testing', clean_level='clean')
-        self.bounds = (dt.datetime(2008, 1, 1), dt.datetime(2008, 1, 3))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.testI, self.bounds
@@ -327,12 +325,12 @@ class TestHeterogenousConstellation:
     def setup(self):
         insts = []
         for i in range(2):
-            r_date = dt.datetime(2009, 1, i+1)
+            r_date = pysat.datetime(2009, 1, i+1)
             insts.append(pysat.Instrument('pysat', 'testing',
                                           clean_level='clean',
                                           root_date=r_date))
         self.testC = pysat.Constellation(instruments=insts)
-        self.bounds = (dt.datetime(2008, 1, 1), dt.datetime(2008, 1, 3))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.bounds
@@ -400,10 +398,9 @@ class Test2DConstellation:
     def setup(self):
         insts = []
         insts.append(pysat.Instrument('pysat', 'testing2d',
-                     sat_id='500',
                      clean_level='clean'))
         self.testC = pysat.Constellation(insts)
-        self.bounds = (dt.datetime(2008, 1, 1), dt.datetime(2008, 1, 3))
+        self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         del self.testC, self.bounds
@@ -453,8 +450,8 @@ class TestSeasonalAverageUnevenBins:
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
-        self.testInst.bounds = (dt.datetime(2008, 1, 1),
-                                dt.datetime(2008, 1, 3))
+        self.testInst.bounds = (pysat.datetime(2008, 1, 1),
+                                pysat.datetime(2008, 1, 3))
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -531,8 +528,8 @@ class TestInstMed1D():
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          update_files=True)
-        self.testInst.bounds = (dt.datetime(2008, 1, 1),
-                                dt.datetime(2008, 1, 31))
+        self.testInst.bounds = (pysat.datetime(2008, 1, 1),
+                                pysat.datetime(2008, 1, 31))
         self.test_bins = [0, 24, 24]
         self.test_label = 'slt'
         self.test_data = ['dummy1', 'dummy2']
