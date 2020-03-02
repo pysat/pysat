@@ -175,7 +175,7 @@ class TestFrameProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing2D',
-                                         sat_id='864', clean_level='clean')
+                                         clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
                                 pysat.datetime(2008, 1, 3))
         self.dname = 'alt_profiles'
@@ -225,7 +225,7 @@ class TestSeriesProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing2D',
-                                         sat_id='864', clean_level='clean')
+                                         clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
                                 pysat.datetime(2008, 2, 1))
         self.dname = 'series_profiles'
@@ -398,7 +398,7 @@ class Test2DConstellation:
     def setup(self):
         insts = []
         insts.append(pysat.Instrument(platform='pysat', name='testing2D',
-                                      sat_id='864', clean_level='clean'))
+                                      clean_level='clean'))
         self.testC = pysat.Constellation(insts)
         self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
