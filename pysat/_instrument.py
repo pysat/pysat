@@ -2649,8 +2649,9 @@ def _get_supported_keywords(load_func):
                 pop_list.append(i)
         # go backwards so we don't mess with the location of data we
         # are trying to remove
-        for pop in pop_list.reverse():
-            args.pop(pop)
+        if len(pop_list) > 0:
+            for pop in pop_list.reverse():
+                args.pop(pop)
 
     # *args and **kwargs are not required, so ignore them.
     return args
