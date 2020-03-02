@@ -23,6 +23,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug where `remote_file_list` would fail for some instruments.
   - Made import of methods more robust
   - Fixed `SettingWithCopyWarning` in `cnofs_ivm` cleaning routine
+  - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
   - Updates to Travis CI environment
 
 ## [2.1.0] - 2019-11-18
