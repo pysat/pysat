@@ -3,7 +3,6 @@ import numpy as np
 
 import pysat
 
-
 class TestConstellation:
     """Test the Constellation class."""
     def setup(self):
@@ -70,6 +69,7 @@ class TestAdditionIdenticalInstruments:
     def teardown(self):
         del self.const1
         del self.const2
+
 
 
 class TestDataMod:
