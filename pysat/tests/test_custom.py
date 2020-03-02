@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 from nose.tools import raises
 import pandas as pds
@@ -335,3 +336,31 @@ class ConstellationTestBasics(TestBasics):
     def add(self, function, kind='add', at_pos='end', *args, **kwargs):
         """ Add a function to the object's custom queue"""
         self.testConst.data_mod(function, kind, at_pos, *args, **kwargs)
+
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
+    def test_deprecation_warning_custom_add(self):
+        """Test if custom.add is deprecated"""
+
+        def func():
+            """Fake function to attach"""
+            print('Hi!')
+
+        testInst = pysat.Instrument(platform='pysat', name='testing')
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                testInst.custom.add(func)
+            except AttributeError:
+                # Setting inst to None should produce a AttributeError after
+                # warning is generated
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning

@@ -5,6 +5,7 @@ try:
     basestring
 except NameError:
     basestring = str
+import warnings
 
 import pandas as pds
 import xarray as xr
@@ -98,6 +99,10 @@ class Custom(object):
 
         - (string/list of strings, numpy array/list of arrays)
         """
+
+        warnings.warn(' '.join(["custom.add is deprecated and will be",
+                                "renamed in pysat 3.0.0 as custom.attach"]),
+                      DeprecationWarning, stacklevel=2)
 
         if isinstance(function, str):
             # convert string to function object
