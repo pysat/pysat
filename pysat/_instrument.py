@@ -2603,7 +2603,7 @@ def _get_supported_keywords(load_func):
 
     Parameters
     ----------
-    load_func: method
+    load_func: Python method or functools.partial
         Method used to load data within pysat
 
     Returns
@@ -2611,17 +2611,52 @@ def _get_supported_keywords(load_func):
     list
         list of keyword argument strings
 
+
+    Notes
+    -----
+        If the input is a partial function then the
+        list of keywords returned only includes keywords
+        that have not already been set as part of
+        the functools.partial instantiation.
+
     """
+
+    # check if partial function
+    if isinstance(load_func, functools.partial):
+        # get keyword arguments already applied to function
+        existing_kws = load_func.keywords
+        # pull out python function portion
+        load_func = load_func.func
+    else:
+        existing_kws = None
 
     # modified from code on
     # https://stackoverflow.com/questions/196960/can-you-list-the-keyword-arguments-a-function-receives
     if sys.version_info.major == 2:
         args, varargs, varkw, defaults = inspect.getargspec(load_func)
     else:
-        args, varargs, varkw, defaults = inspect.signature(load_func)
+        sig = inspect.getfullargspec(load_func)
+        # args are first
+        args = sig.args
 
-    if defaults:
-        args = args[-len(defaults):]
+    pop_list = []
+    # account for keywords that exist for every load function
+    pre_kws = ['fnames', 'sat_id', 'tag']
+    # account for keywords already set since input was a partial function
+    if existing_kws is not None:
+        pre_kws.extend(existing_kws.keys())
+    # remove pre-existing keywords from output
+    # first identify locations
+    for i, arg in enumerate(args):
+        if arg in pre_kws:
+            pop_list.append(i)
+    # remove identified locations
+    # go backwards so we don't mess with the location of data we
+    # are trying to remove
+    if len(pop_list) > 0:
+        for pop in pop_list[::-1]:
+            args.pop(pop)
+
     # *args and **kwargs are not required, so ignore them.
     return args
 
@@ -2653,3 +2688,4 @@ def _check_if_keywords_supported(func, **kwargs):
                              'Please double check the keyword inputs.'))
             raise ValueError(estr)
     return True
+
