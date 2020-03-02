@@ -12,7 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation
-   - Fixed description of tag and sat_id behaviour in testing instruments
+  - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
   - `_files._attach_files` now checks for an empty file list before appending
   - Fixed boolean logic when checking for start and stop dates in `_instrument.download`
