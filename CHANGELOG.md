@@ -25,13 +25,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug where `remote_file_list` would fail for some instruments.
   - Made import of methods more robust
   - Fixed `SettingWithCopyWarning` in `cnofs_ivm` cleaning routine
-<<<<<<< HEAD
-  - Fixed method definition
   - Fixed cosmic load method definition to include altitude_bin
   - Fixed pysat_testing method definition to include mangle_file_dates keyword
-=======
   - Updates to Travis CI environment
->>>>>>> develop
+
 
 ## [2.1.0] - 2019-11-18
 - New Features
