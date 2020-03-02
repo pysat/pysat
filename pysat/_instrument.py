@@ -8,6 +8,7 @@ except NameError:
     basestring = str
 
 import inspect
+import functools
 import string
 import os
 import copy
@@ -2603,7 +2604,7 @@ def _get_supported_keywords(load_func):
 
     Parameters
     ----------
-    load_func: method
+    load_func: Python method or functools.partial
         Method used to load data within pysat
 
     Returns
@@ -2611,7 +2612,24 @@ def _get_supported_keywords(load_func):
     list
         list of keyword argument strings
 
+
+    Notes
+    -----
+        If the input is a partial function then the
+        list of keywords returned only includes keywords
+        that have not already been set as part of
+        the functools.partial instantiation.
+
     """
+
+    # check if partial function
+    if isinstance(load_func, functools.partial):
+        # get keyword arguments already applied to function
+        existing_kws = load_func.keywords
+        # pull out python function portion
+        load_func = load_func.func
+    else:
+        existing_kws = None
 
     # modified from code on
     # https://stackoverflow.com/questions/196960/can-you-list-the-keyword-arguments-a-function-receives
@@ -2622,6 +2640,18 @@ def _get_supported_keywords(load_func):
 
     if defaults:
         args = args[-len(defaults):]
+
+     # account for keywords already set since input was a partial function
+    if existing_kws is not None:
+        pop_list = []
+        for i, arg in enumerate(args):
+            if arg in existing_kws:
+                pop_list.append(i)
+        # go backwards so we don't mess with the location of data we
+        # are trying to remove
+        for pop in pop_list.reverse():
+            args.pop(pop)
+
     # *args and **kwargs are not required, so ignore them.
     return args
 
