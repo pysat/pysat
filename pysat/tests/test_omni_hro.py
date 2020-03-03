@@ -7,7 +7,6 @@ import pysat
 from pysat.instruments import omni_hro
 
 
-
 class TestOMNICustom():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
