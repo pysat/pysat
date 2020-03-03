@@ -138,7 +138,7 @@ def season_date_range(start, stop, freq='D'):
                             "utils.time.create_date_range instead"]),
                   DeprecationWarning, stacklevel=2)
 
-    season = create_date_range(start, stop, freq='D')
+    season = create_date_range(start, stop, freq=freq)
 
     return season
 

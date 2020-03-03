@@ -38,6 +38,12 @@ Note
 Warnings
 --------
 - Routine was not produced by COSMIC team
+- More recent versions of netCDF4 and numpy limit the casting of some variable 
+  types into others. This issue could prevent data loading for some variables
+  such as 'MSL_Altitude' in the 'sonprf' and 'wetprf' files. The default UserWarning
+  when this occurs is 
+    'UserWarning: WARNING: missing_value not used since it cannot be safely cast 
+    to variable data type'
 
 """
 
@@ -100,14 +106,15 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # here, we follow from_os() except a fictional microsecond
     # is added to file times to help ensure there are no file collisions
 
+    # overloading revision keyword below
     if format_str is None:
         # COSMIC file format string
         if tag == 'scnlv1':
-            format_str = ''.join(('????.???/??????_C???.{year:04d}',
+            format_str = ''.join(('????.???/??????_C{revision:03d}.{year:04d}',
                                   '.{day:03d}.{hour:02d}.{minute:02d}.',
                                   '????.?{second:02d}.??_????.????_nc'))
         else:
-            format_str = ''.join(('????.???/??????_C???.{year:04d}',
+            format_str = ''.join(('????.???/??????_C{revision:03d}.{year:04d}',
                                   '.{day:03d}.{hour:02d}.{minute:02d}.',
                                   '?{second:02d}_????.????_nc'))
 
@@ -127,13 +134,25 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         day = np.array(stored['day'])
         hour = np.array(stored['hour'])
         minute = np.array(stored['minute'])
+        # the ground station number in the file encoded as number of seconds
         second = np.array(stored['second'])
-        uts = hour*3600. + minute*60. + second
-        # adding microseconds to ensure each time is unique
-        uts += np.mod(np.arange(len(year)).astype(int), 8000) * 1.E-5
-        index = pysat.utils.time.create_datetime_index(year=year, day=day,
-                                                       uts=uts)
-        file_list = pysat.Series(stored['files'], index=index)
+        # the cosmic satellite number is stored as 0.X, where x is cosmic id
+        uts = hour*3600. + minute*60. + second + np.array(stored['revision'])*1.E-1
+        # do a pre-sort on uts to get files that may conflict with eachother
+        # close together in array order
+        # this ensures that we can make the times all unique
+        idx = np.argsort(uts)
+        # adding linearly increasing offsets
+        shift_uts = np.mod(np.arange(len(year)).astype(int), 1E3) * 1.E-5 + 1.E-5
+        uts[idx] += shift_uts
+
+        index = pysat.utils.time.create_datetime_index(year=year[idx], day=day[idx],
+                                                       uts=uts[idx])
+        if not index.is_unique:
+            raise ValueError('Generated non-unique datetimes for COSMIC within list_files.')
+        # store sorted file names with unique times in index
+        file_list = np.array(stored['files'])[idx]
+        file_list = pysat.Series(file_list, index=index)
         return file_list
 
     else:
@@ -179,11 +198,30 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
         output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id,
                                             altitude_bin=altitude_bin))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
+        # make times unique by adding a unique amount of time less than a second
+        if tag != 'scnlv1':
+            # add 1E-6 seconds to time based upon occulting_sat_id
+            # additional 1E-7 seconds added based upon cosmic ID
+            # get cosmic satellite ID
+            c_id = np.array([snip[3] for snip in output.fileStamp]).astype(int)
+            # time offset
+            utsec += output.occulting_sat_id*1.e-6 + c_id*1.e-7
+        else:
+            # construct time out of three different parameters
+            # duration must be less than 10,000
+            # prn_id is allowed two characters
+            # antenna_id gets one
+            # prn_id and antenna_id are not sufficient for a unique time
+            utsec += output.prn_id*1.e-2 + output.duration.astype(int)*1.E-6
+            utsec += output.antenna_id*1.E-7
+        # move to Index
         output.index = \
             pysat.utils.time.create_datetime_index(year=output.year,
                                                    month=output.month,
                                                    day=output.day,
                                                    uts=utsec)
+        if not output.index.is_unique:
+            raise ValueError('Datetimes returned by load_files not unique.')
         # make sure UTS strictly increasing
         output.sort_index(inplace=True)
         # use the first available file to pick out meta information
@@ -229,8 +267,8 @@ def _process_lengths(lengths):
     return lengths, lengths2
 
 
-# seperate routine for doing actual loading. This was broken off from main load
-# becuase I was playing around with multiprocessor loading
+# separate routine for doing actual loading. This was broken off from main load
+# because I was playing around with multiprocessor loading
 # yielded about 20% improvement in execution time
 def load_files(files, tag=None, sat_id=None, altitude_bin=None):
     """Load COSMIC data files directly from a given list.
@@ -330,7 +368,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
             _ = main_dict_len.pop(key)
         psub_frame = pysat.DataFrame(p_dict)
 
-        # change in variables in this fiile type
+        # change in variables in this file type
         # depending upon the processing applied at UCAR
         if 'ies' in main_dict.keys():
             q_keys = ['OL_ipar', 'OL_par', 'ies', 'hes', 'wes']
@@ -438,7 +476,7 @@ def download(date_array, tag, sat_id, data_path=None,
             req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
             req.raise_for_status()
         except requests.exceptions.HTTPError:
-            # if repsonse is negative, try post-processed data
+            # if response is negative, try post-processed data
             try:
                 dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/",
                                  "rest/tarservice/data/cosmic/"))

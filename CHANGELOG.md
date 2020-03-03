@@ -27,6 +27,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed `SettingWithCopyWarning` in `cnofs_ivm` cleaning routine
   - Fixed cosmic load method definition to include altitude_bin
   - Fixed pysat_testing method definition to include mangle_file_dates keyword
+  - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
   - Updates to Travis CI environment
 
 
