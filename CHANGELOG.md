@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2019-12-31
+## [3.0.0] - 2020-03-02
 - New Features
   - Added registry module for registering custom external instruments
   - custom.attach replaces custom.add
@@ -10,6 +10,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed ssnl
   - Removed utils.stats
   - Removed model_utils
+  - Removed coords.scale_units
+  - Removed time.season_date_range
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
