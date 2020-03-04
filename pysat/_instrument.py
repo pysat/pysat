@@ -7,16 +7,17 @@ try:
 except NameError:
     basestring = str
 
+import copy
 import functools
 import inspect
-import string
 import os
-import copy
+import string
 import sys
-import pandas as pds
-import numpy as np
-import xarray as xr
 import warnings
+
+import numpy as np
+import pandas as pds
+import xarray as xr
 
 from . import _custom
 from . import _files
