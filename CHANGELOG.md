@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updated `test_files.py` to be pytest compatible
    - Added check to ensure non-pysat keywords supplied at instantiation
      are supported by underlying data set methods
+   - Updates to instrument testing objects for consistency
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
      calling it externally
 - Deprecation Warning
