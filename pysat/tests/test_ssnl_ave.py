@@ -174,7 +174,7 @@ class TestDeprecation():
 class TestFrameProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing2D',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing2D',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
                                 pysat.datetime(2008, 1, 3))
@@ -224,7 +224,7 @@ class TestFrameProfileAverages():
 class TestSeriesProfileAverages():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.testInst = pysat.Instrument('pysat', 'testing2D',
+        self.testInst = pysat.Instrument(platform='pysat', name='testing2D',
                                          clean_level='clean')
         self.testInst.bounds = (pysat.datetime(2008, 1, 1),
                                 pysat.datetime(2008, 2, 1))
@@ -397,8 +397,8 @@ class TestHeterogenousConstellation:
 class Test2DConstellation:
     def setup(self):
         insts = []
-        insts.append(pysat.Instrument('pysat', 'testing2d',
-                     clean_level='clean'))
+        insts.append(pysat.Instrument(platform='pysat', name='testing2D',
+                                      clean_level='clean'))
         self.testC = pysat.Constellation(insts)
         self.bounds = (pysat.datetime(2008, 1, 1), pysat.datetime(2008, 1, 3))
 
