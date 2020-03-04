@@ -7,8 +7,8 @@ try:
 except NameError:
     basestring = str
 
-import inspect
 import functools
+import inspect
 import string
 import os
 import copy
