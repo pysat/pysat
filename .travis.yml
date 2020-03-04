@@ -17,6 +17,8 @@ addons:
 before_install:
   - pip install coveralls
   - pip install future
+  - pip install 'pandas<0.25'
+  - pip install 'xarray<0.15'
   - pip install pysatCDF >/dev/null
   # Travis CI currently not working with netCDF4 1.5.3
   - pip install 'netCDF4<1.5.3'
