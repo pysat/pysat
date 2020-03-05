@@ -7,11 +7,11 @@ try:
 except NameError:
     basestring = str
 
-import inspect
-import functools
-import string
-import os
 import copy
+import functools
+import inspect
+import os
+import string
 import sys
 
 import pkgutil
