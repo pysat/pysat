@@ -16,15 +16,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
 
-## [2.2.0] - 2019-12-31
+## [2.2.0] - 2020-2-29
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
      calling it externally
+- Deprecation Warning
+  - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation
-   - Fixed description of tag and sat_id behaviour in testing instruments
+  - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
   - `_files._attach_files` now checks for an empty file list before appending
   - Fixed boolean logic when checking for start and stop dates in `_instrument.download`
@@ -35,6 +37,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug where `remote_file_list` would fail for some instruments.
   - Made import of methods more robust
   - Fixed `SettingWithCopyWarning` in `cnofs_ivm` cleaning routine
+  - Updates to Travis CI environment
   - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
 
 ## [2.1.0] - 2019-11-18
