@@ -1028,16 +1028,7 @@ class TestBasics():
         assert self.meta.hey == greeting
 
         self.meta.mutable = False
-        
         self.meta.hey = greeting
-    
-    @raises(AttributeError)
-    def test_meta_immutable_kwarg(self):
-        meta_immutable = pysat.Meta(mutable = False)
-
-        assert not meta_immutable.mutable
-
-        meta_immutable.hey = '...listen!'
         
 
     def test_meta_mutable_properties(self):

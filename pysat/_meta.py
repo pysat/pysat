@@ -177,10 +177,9 @@ class Meta(object):
                  desc_label='desc', plot_label='label', axis_label='axis',
                  scale_label='scale', min_label='value_min',
                  max_label='value_max', fill_label='fill',
-                 mutable = True):
+                 ):
 
-        # # set mutability of object attributes
-        # super().__setattr__('_mutable', mutable)
+        # set mutability of Meta attributes
         self.mutable = True
 
         # set units and name labels directly
@@ -224,7 +223,6 @@ class Meta(object):
         # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
-        self.mutable = mutable
 
 
     @property
