@@ -47,7 +47,7 @@ import warnings
 
 import numpy as np
 import pandas as pds
-
+from portalocker import Lock, TemporaryFileLock
 import pysat
 
 import logging
@@ -497,8 +497,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 if rewritten or not downloaded:
                     try:
                         sys.stdout.flush()
-                        ftp.retrbinary('RETR ' + fname,
-                                       open(saved_fname, 'wb').write)
+                        with TemporaryFileLock(fname + '.Lock', pysat.file_timeout) as tfl:
+                            ftp.retrbinary('RETR ' + fname,
+                                           open(saved_fname, 'wb').write)
                         downloaded = True
                         logger.info('Downloaded file for ' + date.strftime('%x'))
 
@@ -526,7 +527,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             if not downloaded:
                 logger.info('File not available for {:}'.format(date.strftime('%x')))
             elif rewritten:
-                with open(saved_fname, 'r') as fprelim:
+                with Lock(saved_fname, 'r', pysat.file_timeout) as fprelim:
                     lines = fprelim.read()
 
                 rewrite_daily_file(date.year, outfile, lines)

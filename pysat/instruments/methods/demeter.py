@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 import pysat
+from portalocker import Lock
 
 import logging
 logger = logging.getLogger(__name__)
@@ -317,7 +318,7 @@ def load_binary_file(fname, load_experiment_data):
     data = list()
     meta = dict()
 
-    with open(fname, "rb") as f:
+    with Lock(fname, 'rb', pysat.file_timeout) as f:
         # Cycle through teach time, which consists of four blocks
         gdata, meta = load_general_header(f)
 

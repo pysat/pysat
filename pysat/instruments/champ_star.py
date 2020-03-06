@@ -28,6 +28,7 @@ from __future__ import absolute_import
 import numpy as np
 import pandas as pds
 import warnings
+from portalocker import Lock
 
 import pysat
 
@@ -165,9 +166,8 @@ def load(fnames, tag=None, sat_id=None):
 
     # The header is formatted differently from the rest of the file, read it in
     # first to obtain the necessary meta data
-    f = open(fnames[0], "r")
-    hdata = re.split(";|\n", f.readline())
-    f.close()
+    with Lock(fnames[0], 'r', pysat.file_timeout) as f:
+        hdata = re.split(";|\n", f.readline())
     try:
         hdata.pop(hdata.index(''))
     except:

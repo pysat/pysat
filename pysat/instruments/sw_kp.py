@@ -57,7 +57,7 @@ import numpy as np
 import os
 
 import pandas as pds
-
+from portalocker import TemporaryFileLock
 import pysat
 
 import logging
@@ -299,8 +299,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 try:
                     logger.info('Downloading file for '+date.strftime('%b %Y'))
                     sys.stdout.flush()
-                    ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
-                    dnames.append(fname)
+                    with TemporaryFileLock(fname + '.Lock', pysat.file_timeout) as tfl:
+                        ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
+                        dnames.append(fname)
                 except ftplib.error_perm as exception:
 
                     if str(exception.args[0]).split(" ", 1)[0] != '550':

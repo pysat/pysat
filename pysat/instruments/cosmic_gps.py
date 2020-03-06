@@ -46,6 +46,7 @@ from __future__ import absolute_import
 import numpy as np
 import os
 import sys
+from portalocker import Lock, TemporaryFileLock
 
 import netCDF4
 import pysat
@@ -444,14 +445,15 @@ def download(date_array, tag, sat_id, data_path=None,
         # If data does not exist, will copy info not readable as tar
         fname = os.path.join(data_path,
                              'cosmic_' + sub_dir + '_' + yrdoystr + '.tar')
-        with open(fname, "wb") as local_file:
+        with Lock(fname, 'wb', pysat.file_timeout) as local_file:
             local_file.write(req.content)
             local_file.close()
         try:
             # uncompress files and remove tarball
-            tar = tarfile.open(fname)
-            tar.extractall(path=data_path)
-            tar.close()
+            with TemporaryFileLock(fname + '.Lock', pysat.file_timeout) as tfl, \
+                tarfile.open(fname) as tar:
+                tar.extractall(path=data_path)
+            
             # move files
             source_dir = os.path.join(top_dir, sub_dir, yrdoystr)
             destination_dir = os.path.join(data_path, yrdoystr)

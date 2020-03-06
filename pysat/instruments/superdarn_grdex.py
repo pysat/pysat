@@ -36,6 +36,7 @@ from __future__ import absolute_import
 import sys
 import os
 import functools
+from portalocker import TemporaryFileLock
 
 import pandas as pds
 import numpy as np
@@ -192,72 +193,72 @@ def load(fnames, tag=None, sat_id=None):
     if len(fnames) <= 0:
         return pysat.DataFrame(None), pysat.Meta(None)
     elif len(fnames) == 1:
+        with TemporaryFileLock(fnames[0] + '.Lock', pysat.file_timeout) as tfl:
+            myPtr = davitpy.pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980, 1, 1),
+                                                  fileType='grdex',
+                                                  eTime=pysat.datetime(2250, 1, 1),
+                                                  hemi=tag,
+                                                  fileName=fnames[0])
+            myPtr.open()
 
-        myPtr = davitpy.pydarn.sdio.sdDataPtr(sTime=pysat.datetime(1980, 1, 1),
-                                              fileType='grdex',
-                                              eTime=pysat.datetime(2250, 1, 1),
-                                              hemi=tag,
-                                              fileName=fnames[0])
-        myPtr.open()
+            in_list = []
+            in_dict = {'stid': [],
+                       'channel': [],
+                       'noisemean': [],
+                       'noisesd': [],
+                       'gsct': [],
+                       'nvec': [],
+                       'pmax': [],
+                       'start_time': [],
+                       'end_time': [],
+                       'vemax': [],
+                       'vemin': [],
+                       'pmin': [],
+                       'programid': [],
+                       'wmax': [],
+                       'wmin': [],
+                       'freq': []}
 
-        in_list = []
-        in_dict = {'stid': [],
-                   'channel': [],
-                   'noisemean': [],
-                   'noisesd': [],
-                   'gsct': [],
-                   'nvec': [],
-                   'pmax': [],
-                   'start_time': [],
-                   'end_time': [],
-                   'vemax': [],
-                   'vemin': [],
-                   'pmin': [],
-                   'programid': [],
-                   'wmax': [],
-                   'wmin': [],
-                   'freq': []}
+            while True:
+                info = myPtr.readRec()
+                if info is None:
+                    myPtr.close()
+                    break
 
-        while True:
-            info = myPtr.readRec()
-            if info is None:
-                myPtr.close()
-                break
+                drift_frame = pds.DataFrame.from_records(info.vector.__dict__,
+                                                         nrows=len(info.pmax),
+                                                         index=info.vector.index)
+                drift_frame['partial'] = 1
+                drift_frame.drop('index', axis=1, inplace=True)
+                drift_frame.index.name = 'index'
+                sum_vec = 0
+                for nvec in info.nvec:
+                    in_list.append(drift_frame.iloc[sum_vec:sum_vec+nvec])
+                    sum_vec += nvec
 
-            drift_frame = pds.DataFrame.from_records(info.vector.__dict__,
-                                                     nrows=len(info.pmax),
-                                                     index=info.vector.index)
-            drift_frame['partial'] = 1
-            drift_frame.drop('index', axis=1, inplace=True)
-            drift_frame.index.name = 'index'
-            sum_vec = 0
-            for nvec in info.nvec:
-                in_list.append(drift_frame.iloc[sum_vec:sum_vec+nvec])
-                sum_vec += nvec
+                in_dict['stid'].extend(info.stid)
+                in_dict['channel'].extend(info.channel)
+                in_dict['noisemean'].extend(info.noisemean)
+                in_dict['noisesd'].extend(info.noisesd)
+                in_dict['gsct'].extend(info.gsct)
+                in_dict['nvec'].extend(info.nvec)
+                in_dict['pmax'].extend(info.pmax)
+                in_dict['start_time'].extend([info.sTime]*len(info.pmax))
+                in_dict['end_time'].extend([info.eTime]*len(info.pmax))
+                in_dict['vemax'].extend(info.vemax)
+                in_dict['vemin'].extend(info.vemin)
+                in_dict['pmin'].extend(info.pmin)
+                in_dict['programid'].extend(info.programid)
+                in_dict['wmax'].extend(info.wmax)
+                in_dict['wmin'].extend(info.wmin)
+                in_dict['freq'].extend(info.freq)
 
-            in_dict['stid'].extend(info.stid)
-            in_dict['channel'].extend(info.channel)
-            in_dict['noisemean'].extend(info.noisemean)
-            in_dict['noisesd'].extend(info.noisesd)
-            in_dict['gsct'].extend(info.gsct)
-            in_dict['nvec'].extend(info.nvec)
-            in_dict['pmax'].extend(info.pmax)
-            in_dict['start_time'].extend([info.sTime]*len(info.pmax))
-            in_dict['end_time'].extend([info.eTime]*len(info.pmax))
-            in_dict['vemax'].extend(info.vemax)
-            in_dict['vemin'].extend(info.vemin)
-            in_dict['pmin'].extend(info.pmin)
-            in_dict['programid'].extend(info.programid)
-            in_dict['wmax'].extend(info.wmax)
-            in_dict['wmin'].extend(info.wmin)
-            in_dict['freq'].extend(info.freq)
+            output = pds.DataFrame(in_dict)
+            output['vector'] = in_list
+            output.index = output.start_time
+            output.drop('start_time', axis=1, inplace=True)
 
-        output = pds.DataFrame(in_dict)
-        output['vector'] = in_list
-        output.index = output.start_time
-        output.drop('start_time', axis=1, inplace=True)
-
-        return output, pysat.Meta()
+            return output, pysat.Meta()
     else:
         raise ValueError('Only one filename currently supported.')
 

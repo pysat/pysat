@@ -29,6 +29,7 @@ of the National Science Foundation.
 import os
 import pandas as pds
 import numpy as np
+from portalocker import Lock, TemporaryFileLock
 
 import pysat
 
@@ -72,8 +73,7 @@ def load(fnames, tag=None, sat_id=None):
     for filename in fnames:
         # need to remove date appended to dst filename
         fname = filename[0:-11]
-        # f = open(fname)
-        with open(fname) as f:
+        with Lock(fname, 'r', pysat.file_timeout) as f:
             lines = f.readlines()
             idx = 0
             # check if all lines are good
@@ -211,17 +211,18 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         fname = fname.format(year=date.year)
         local_fname = fname
         saved_fname = os.path.join(data_path, local_fname)
-        try:
-            logger.info('Downloading file for '+date.strftime('%D'))
-            sys.stdout.flush()
-            ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
-        except ftplib.error_perm as exception:
-            # if exception[0][0:3] != '550':
-            if str(exception.args[0]).split(" ", 1)[0] != '550':
-                raise
-            else:
-                os.remove(saved_fname)
-                logger.info('File not available for ' + date.strftime('%D'))
+        with TemporaryFileLock(saved_fname + '.Lock', pysat.file_timeout) as tfl:
+            try:
+                logger.info('Downloading file for '+date.strftime('%D'))
+                sys.stdout.flush()
+                ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
+            except ftplib.error_perm as exception:
+                # if exception[0][0:3] != '550':
+                if str(exception.args[0]).split(" ", 1)[0] != '550':
+                    raise
+                else:
+                    os.remove(saved_fname)
+                    logger.info('File not available for ' + date.strftime('%D'))
 
     ftp.close()
     return

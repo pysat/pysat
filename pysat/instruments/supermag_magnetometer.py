@@ -43,6 +43,7 @@ import numpy as np
 from os import path
 import functools
 import warnings
+from portalocker import Lock
 
 import pysat
 
@@ -338,7 +339,7 @@ def load_csv_data(fname, tag):
         date_list = list()
 
         # Open and read the file
-        with open(fname, "r") as fopen:
+        with Lock(fname, 'r', pysat.file_timeout) as fopen:
             dtime = pds.datetime.strptime(fname.split("_")[-1].split(".")[0],
                                           "%Y")
 
@@ -409,7 +410,7 @@ def load_ascii_data(fname, tag):
 
     # Read in the text data, processing the header, indices, and
     # magnetometer data (as desired)
-    with open(fname, "r") as fopen:
+    with Lock(fname, 'r', pysat.file_timeout) as fopen:
         # Set the processing flags
         hflag = True  # header lines
         pflag = False  # parameter line

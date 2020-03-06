@@ -5,6 +5,7 @@ import glob
 import numpy as np
 import os
 import sys
+from portalocker import Lock
 
 from nose.tools import raises
 import pandas as pds
@@ -66,7 +67,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
         fname = os.path.join(inst.files.data_path, root_fname.format(year=yr,
                              day=doy, month=date.month, hour=date.hour,
                              minute=date.minute, second=date.second))
-        with open(fname, 'w') as f:
+        with Lock(fname, 'w', pysat.file_timeout) as f:
             if content is not None:
                 f.write(content)
 
@@ -697,7 +698,7 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
                                                        second=date.second,
                                                        version=version,
                                                        revision=revision))
-                with open(fname, 'w') as f:
+                with Lock(fname, 'w', pysat.file_timeout) as f:
                     pass
 
 
