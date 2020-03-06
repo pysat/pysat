@@ -1032,13 +1032,19 @@ class TestBasics():
         
 
     def test_meta_mutable_properties(self):
-        m = pysat.Meta(mutable = False)
-
+        """check that @properties are always mutable"""
+        m = pysat.Meta()
+        m.mutable = False
         m.data = pds.DataFrame()
         m.ho_data = {}
         m.units_label = 'nT'
         m.name_label = 'my name'
 
+    def test_inst_attributes_not_overridden(self):
+        greeting = '... listen!'
+        self.testInst.hey = greeting
+        self.testInst.load(2009, 1)
+        assert self.testInst.hey == greeting
 
 
 

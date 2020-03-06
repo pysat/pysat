@@ -414,7 +414,8 @@ class Meta(object):
             if isinstance(propobj, property):
                 # check if the property is settable
                 if propobj.fset is None:
-                    raise AttributeError("can't set attribute - property has no fset")
+                    raise AttributeError(''.join("can't set attribute - ",
+                                        "property has no fset"))
 
                 # make mutable in case fset needs it to be
                 mutable_tmp = self.mutable
@@ -431,7 +432,8 @@ class Meta(object):
                     # use Object to avoid recursion
                     super(Meta, self).__setattr__(name, value)
                 else:
-                    raise AttributeError("cannot set attribute - object's attributes are immutable")
+                    raise AttributeError(''.join("cannot set attribute - ",
+                                "object's attributes are immutable"))
         else:
             super(Meta, self).__setattr__(name, value)
         
