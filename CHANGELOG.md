@@ -2,10 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-03-02
+## [3.0.0] - 2020-03-07
 - New Features
   - Added registry module for registering custom external instruments
   - custom.attach replaces custom.add
+  - Unit tests are now pytest compatible
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
