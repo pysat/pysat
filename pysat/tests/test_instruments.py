@@ -16,11 +16,7 @@ import pysat
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
                 'demeter_iap', 'sport_ivm',
                 'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv',
-                'supermag_magnetometer', 'sw_dst']
-
-# exclude testing download functionality for specific module name, tag, sat_id
-exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
-                'sw_kp': {'tag': [''], 'sat_id': ['']}}
+                'supermag_magnetometer']
 
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
@@ -46,7 +42,7 @@ def remove_files(inst):
                               'ensure temp directory is used')))
 
 
-def generate_instrument_list(exclude_list, exclude_tags):
+def generate_instrument_list(exclude_list):
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
 
@@ -89,22 +85,21 @@ def generate_instrument_list(exclude_list, exclude_tags):
                 module._test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
-                    if name in exclude_tags and \
-                            tag in exclude_tags[name]['tag'] and \
-                            sat_id in exclude_tags[name]['sat_id']:
-                        # we don't want to test download for this combo
-                        print(' '.join(['Excluding', name, tag, sat_id]))
-                    else:
-                        try:
-                            inst = pysat.Instrument(inst_module=module,
-                                                    tag=tag,
-                                                    sat_id=sat_id,
-                                                    temporary_file_list=True)
+                    try:
+                        inst = pysat.Instrument(inst_module=module,
+                                                tag=tag,
+                                                sat_id=sat_id,
+                                                temporary_file_list=True)
+                        if inst._test_download:
                             inst._test_dates = module._test_dates
                             instruments.append(inst)
                             instrument_modules.append(module)
-                        except:
-                            pass
+                        else:
+                            # we don't want to test download for this combo
+                            print(' '.join(['Excluding', platform, name,
+                                            sat_id, tag]))
+                    except:
+                        pass
     pysat.utils.set_data_dir(saved_path, store=False)
 
     output = {'list': instruments,
@@ -116,7 +111,7 @@ def generate_instrument_list(exclude_list, exclude_tags):
 
 class TestInstrumentQualifier():
 
-    instruments = generate_instrument_list(exclude_list, exclude_tags)
+    instruments = generate_instrument_list(exclude_list)
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
