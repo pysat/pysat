@@ -897,17 +897,21 @@ class Instrument(object):
 
         # Check for download flags for tests
         try:
-            if (os.environ.get('TRAVIS') == 'true'):
-                # Used for tests which required FTP access
-                self._test_download = \
-                    inst._test_download_travis[self.sat_id][self.tag]
-            else:
-                # Used for instruments without download access
-                self._test_download = \
-                    inst._test_download[self.sat_id][self.tag]
+            # Used for instruments without download access
+            self._test_download = \
+                inst._test_download[self.sat_id][self.tag]
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
-            self._test_download = True
+            if (os.environ.get('TRAVIS') == 'true'):
+                # Used for tests which required FTP access
+                try:
+                    self._test_download = \
+                        inst._test_download_travis[self.sat_id][self.tag]
+                except (AttributeError, KeyError):
+                    # Either flags are not specified, or this combo is not
+                    self._test_download = True
+            else:
+                self._test_download = True
 
     def __str__(self):
 
