@@ -159,18 +159,18 @@ class Instrument(object):
 
         # 1-second thermal plasma parameters
         ivm = pysat.Instrument(platform='cnofs',
-                                name='ivm',
-                                tag='',
-                                clean_level='clean')
+                               name='ivm',
+                               tag='',
+                               clean_level='clean')
         ivm.download(start,stop)
         ivm.load(2009,1)
         print(ivm['ionVelmeridional'])
 
         # Ionosphere profiles from GPS occultation
         cosmic = pysat.Instrument('cosmic',
-                                    'gps',
-                                    'ionprf',
-                                    altitude_bin=3)
+                                  'gps',
+                                  'ionprf',
+                                  altitude_bin=3)
         # bins profile using 3 km step
         cosmic.download(start, stop, user=user, password=password)
         cosmic.load(date=start)
