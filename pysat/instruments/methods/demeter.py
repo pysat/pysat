@@ -4,6 +4,8 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
+import warnings
+
 import pysat
 
 import logging
@@ -16,7 +18,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
     url = 'https://cdpp-archive.cnes.fr/'
-    logger.info('Data must be downloaded by registered users at: {:s}'.format(url))
+    warnings.warn('Data must be downloaded by registered users at: {:s}'.format(url))
     return
 
 
