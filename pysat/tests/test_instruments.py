@@ -182,7 +182,7 @@ class TestInstrumentQualifier():
                     self.check_module_loadable(module, tag, sat_id)
 
     @pytest.mark.parametrize("name", pysat.instruments.__all__)
-    def test_required_function_presence(self, module):
+    def test_required_function_presence(self, name):
         """Check if each required function is present and callable"""
         module = import_module(''.join(('.', name)),
                                package='pysat.instruments')
