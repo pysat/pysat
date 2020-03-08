@@ -684,7 +684,7 @@ def clean(supermag):
     return
 
 
-def download(date_array):
+def download(date_array, tag, sat_id, data_path):
     """Routine to download SuperMAG data
 
     Parameters
