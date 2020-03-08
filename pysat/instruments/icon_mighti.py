@@ -57,6 +57,8 @@ sat_ids = {'green': ['level_2 Green Line'],
            'red': ['Level_2 Red Line']}
 _test_dates = {'green': {'level_2': pysat.datetime(2017, 5, 27)},
                'red': {'level_2': pysat.datetime(2017, 5, 27)}}
+_test_download = {'green': {kk: False for kk in tags.keys()},
+                  'red': {kk: False for kk in tags.keys()}}
 
 
 def init(self):
