@@ -36,20 +36,17 @@ def remove_files(inst):
                               'ensure temp directory is used')))
 
 
-def generate_instrument_list():
+def generate_instrument_list(instrument_names=[]):
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
 
     """
 
-    # names of all the instrument modules
-    instrument_names = pysat.instruments.__all__
-
     print('The following instrument modules will be tested : ',
           instrument_names)
 
-    instruments = []
-    instrument_modules = []
+    instrument_download = []
+    instrument_no_download = []
 
     # create temporary directory
     dir_name = tempfile.mkdtemp()
@@ -79,27 +76,29 @@ def generate_instrument_list():
                                                 tag=tag,
                                                 sat_id=sat_id,
                                                 temporary_file_list=True)
+                        inst._test_dates = module._test_dates
                         if inst._test_download:
-                            inst._test_dates = module._test_dates
-                            instruments.append(inst)
-                            instrument_modules.append(module)
+                            instrument_download.append(inst)
                         else:
                             # we don't want to test download for this combo
-                            print(' '.join(['Excluding', platform, name,
-                                            sat_id, tag]))
+                            print(' '.join(['Excluding', name,
+                                            sat_id, tag, 'from downloads']))
+                            instrument_no_download.append(inst)
                     except:
                         pass
     pysat.utils.set_data_dir(saved_path, store=False)
 
-    output = {'list': instruments,
-              'modules': instrument_modules}
+    output = {'names': instrument_names,
+              'download': instrument_download,
+              'no_download': instrument_no_download}
 
     return output
 
 
 class TestInstrumentQualifier():
 
-    instruments = generate_instrument_list()
+    instruments = \
+        generate_instrument_list(instrument_names=pysat.instruments.__all__)
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -109,7 +108,7 @@ class TestInstrumentQualifier():
         """Runs after every method to clean up previous testing."""
         pass
 
-    @pytest.mark.parametrize("name", pysat.instruments.__all__)
+    @pytest.mark.parametrize("name", instruments['names'])
     def test_modules_loadable(self, name):
 
         # ensure that each module is at minimum importable
@@ -135,7 +134,7 @@ class TestInstrumentQualifier():
                                         sat_id=sat_id)
                 assert True
 
-    @pytest.mark.parametrize("name", pysat.instruments.__all__)
+    @pytest.mark.parametrize("name", instruments['names'])
     def test_required_function_presence(self, name):
         """Check if each required function is present and callable"""
         module = import_module(''.join(('.', name)),
@@ -144,7 +143,7 @@ class TestInstrumentQualifier():
         assert hasattr(module, 'list_files') & callable(module.list_files)
         assert hasattr(module, 'download') & callable(module.download)
 
-    @pytest.mark.parametrize("name", pysat.instruments.__all__)
+    @pytest.mark.parametrize("name", instruments['names'])
     def test_instrument_tdates(self, name):
         module = import_module(''.join(('.', name)),
                                package='pysat.instruments')
@@ -204,7 +203,7 @@ class TestInstrumentQualifier():
         # clear data
         inst.data = pds.DataFrame(None)
 
-    @pytest.mark.parametrize("inst", instruments['list'])
+    @pytest.mark.parametrize("inst", instruments['download'])
     def test_download_and_load(self, inst):
         print(' '.join(('Checking download routine functionality for module: ',
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
@@ -248,6 +247,23 @@ class TestInstrumentQualifier():
             warnings.warn(' '.join(('Download for', inst.platform,
                                     inst.name, inst.tag, inst.sat_id,
                                     'was not successful.')))
+
+    @pytest.mark.parametrize("inst", instruments['no_download'])
+    def test_download_warning(self, inst):
+        print(' '.join(('Checking download routine warnings for module: ',
+                        inst.platform, inst.name, inst.tag, inst.sat_id)))
+        start = inst._test_dates[inst.sat_id][inst.tag]
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                inst.download(start, start)
+            except ValueError as strerr:
+                if str(strerr).find('CDAAC') >= 0:
+                    warnings.warn("COSMIC data detected")
+                else:
+                    raise strerr
+
+        assert len(war) >= 1
+        assert war[0].category == UserWarning
 
     # Optional support
 
