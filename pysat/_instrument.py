@@ -1231,7 +1231,7 @@ class Instrument(object):
         Note
         ----
         Loads data for a chosen instrument into .data. Any functions chosen
-        by the user and added to the custom processing queue (.custom.add)
+        by the user and added to the custom processing queue (.custom.attach)
         are automatically applied to the data before it is available to
         user in .data.
 

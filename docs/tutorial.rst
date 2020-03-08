@@ -279,10 +279,10 @@ Science analysis is built upon custom data processing. To simplify this task and
 
 .. code:: python
 
-   ivm.custom.add(custom_func_modify, 'modify', optional_param2=True)
+   ivm.custom.attach(custom_func_modify, 'modify', optional_param2=True)
    ivm.load(2009, 1)
    print(ivm['double_mlt'])
-   ivm.custom.add(custom_func_add, 'add', optional_param2=True)
+   ivm.custom.attach(custom_func_add, 'add', optional_param2=True)
    ivm.bounds = (start, stop)
    custom_complicated_analysis_over_season(ivm)
 
@@ -305,7 +305,7 @@ We can repeat the earlier VEFI example, this time using nano-kernel functionalit
        return
 
    # attach filter to vefi object, function is run upon every load
-   vefi.custom.add(filter_vefi, 'modify')
+   vefi.custom.attach(filter_vefi, 'modify')
 
    # create empty series to hold result
    mean_dB = pandas.Series()
@@ -360,7 +360,7 @@ Note the same result is obtained. The VEFI instrument object and analysis are pe
        return
 
    # attach filter to vefi object, function is run upon every load
-   vefi.custom.add(filter_vefi, 'modify')
+   vefi.custom.attach(filter_vefi, 'modify')
 
    # make a plot of daily dB_mer
    mean_dB = daily_mean(vefi, start, stop, 'dB_mer')
@@ -383,7 +383,7 @@ Check the instrument independence using a different instrument. Whatever instrum
        inst.data = inst[(inst['edmaxlat'] > -15) & (inst['edmaxlat'] < 15)]
        return
 
-   cosmic.custom.add(filter_cosmic, 'modify')
+   cosmic.custom.attach(filter_cosmic, 'modify')
    data_label = 'edmax'
    mean_max_dens = daily_mean(cosmic, start, stop, data_label)
 
