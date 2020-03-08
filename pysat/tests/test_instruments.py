@@ -12,12 +12,6 @@ import tempfile
 
 import pysat
 
-# module in list below are excluded from download checks
-exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
-                'demeter_iap', 'sport_ivm',
-                'icon_euv', 'icon_ivm', 'icon_mighti', 'icon_fuv',
-                'supermag_magnetometer']
-
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
 
@@ -42,7 +36,7 @@ def remove_files(inst):
                               'ensure temp directory is used')))
 
 
-def generate_instrument_list(exclude_list):
+def generate_instrument_list():
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
 
@@ -50,11 +44,6 @@ def generate_instrument_list(exclude_list):
 
     # names of all the instrument modules
     instrument_names = pysat.instruments.__all__
-    temp = []
-    for name in instrument_names:
-        if name not in exclude_list:
-            temp.append(name)
-    instrument_names = temp
 
     print('The following instrument modules will be tested : ',
           instrument_names)
@@ -72,10 +61,10 @@ def generate_instrument_list(exclude_list):
             module = import_module(''.join(('.', name)),
                                    package='pysat.instruments')
         except ImportError:
-            print("Couldn't import instrument module")
+            print(' '.join(["Couldn't import", name]))
             pass
         else:
-            # try and grab basic information about the module so we
+            # try to grab basic information about the module so we
             # can iterate over all of the options
             try:
                 info = module._test_dates
@@ -103,7 +92,6 @@ def generate_instrument_list(exclude_list):
     pysat.utils.set_data_dir(saved_path, store=False)
 
     output = {'list': instruments,
-              'names': instrument_names,
               'modules': instrument_modules}
 
     return output
@@ -111,7 +99,7 @@ def generate_instrument_list(exclude_list):
 
 class TestInstrumentQualifier():
 
-    instruments = generate_instrument_list(exclude_list)
+    instruments = generate_instrument_list()
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
