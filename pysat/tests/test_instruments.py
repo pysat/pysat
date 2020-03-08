@@ -2,7 +2,6 @@
 tests the pysat instruments and code
 """
 from importlib import import_module
-import numpy as np
 import os
 from unittest.case import SkipTest
 import warnings
