@@ -189,6 +189,10 @@ class Instrument(object):
                  min_label='value_min', max_label='value_max',
                  fill_label='fill', *arg, **kwargs):
 
+        # Set default tag and sat_id
+        self.tag = tag.lower() if tag is not None else ''
+        self.sat_id = sat_id.lower() if sat_id is not None else ''
+
         if inst_module is None:
             # use strings to look up module name
             if isinstance(platform, str) and isinstance(name, str):
@@ -220,8 +224,6 @@ class Instrument(object):
             self._assign_funcs(inst_module=inst_module)
 
         # more reasonable defaults for optional parameters
-        self.tag = tag.lower() if tag is not None else ''
-        self.sat_id = sat_id.lower() if sat_id is not None else ''
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else 'none')
 
@@ -893,7 +895,19 @@ class Instrument(object):
         except AttributeError:
             pass
 
-        return
+        # Check for download flags for tests
+        try:
+            if (os.environ.get('TRAVIS') == 'true'):
+                # Used for tests which required FTP access
+                self._test_download = \
+                    inst._test_download_travis[self.sat_id][self.tag]
+            else:
+                # Used for instruments without download access
+                self._test_download = \
+                    inst._test_download[self.sat_id][self.tag]
+        except (AttributeError, KeyError):
+            # Either flags are not specified, or this combo is not
+            self._test_download = True
 
     def __str__(self):
 
