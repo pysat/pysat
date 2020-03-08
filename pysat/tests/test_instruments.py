@@ -46,7 +46,7 @@ def remove_files(inst):
                               'ensure temp directory is used')))
 
 
-def init_func_external():
+def generate_instrument_list(exclude_list, exclude_tags):
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
 
@@ -113,10 +113,10 @@ def init_func_external():
 
     return output
 
-instruments = init_func_external()
-
 
 class TestInstrumentQualifier():
+
+    instruments = generate_instrument_list(exclude_list, exclude_tags)
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
