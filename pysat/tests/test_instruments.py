@@ -182,31 +182,13 @@ class TestInstrumentQualifier():
                     self.check_module_loadable(module, tag, sat_id)
 
     @pytest.mark.parametrize("name", pysat.instruments.__all__)
-    def test_load_presence(self, module):
-        print(' '.join(('\nChecking for load routine for module: ',
-                        module.platform, module.name)))
+    def test_required_function_presence(self, module):
+        """Check if each required function is present and callable"""
         module = import_module(''.join(('.', name)),
                                package='pysat.instruments')
-        _ = module.load
-        assert True
-
-    @pytest.mark.parametrize("name", pysat.instruments.__all__)
-    def test_list_files_presence(self, module):
-        print(' '.join(('\nChecking for list_files routine for',
-                        'module: ', module.platform, module.name)))
-        module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
-        _ = module.list_files
-        assert True
-
-    @pytest.mark.parametrize("name", pysat.instruments.__all__)
-    def test_download_presence(self, module):
-        print(' '.join(('\nChecking for download routine for',
-                        'module: ', module.platform, module.name)))
-        module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
-        _ = module.download
-        assert True
+        assert hasattr(module, 'load') & callable(module.load)
+        assert hasattr(module, 'list_files') & callable(module.list_files)
+        assert hasattr(module, 'download') & callable(module.download)
 
     def check_module_tdates(self, module):
         info = module._test_dates
