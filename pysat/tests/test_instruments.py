@@ -181,21 +181,21 @@ class TestInstrumentQualifier():
                                     'tag:', tag, 'sat id:', sat_id)))
                     self.check_module_loadable(module, tag, sat_id)
 
-    @pytest.mark.parametrize("module", instruments['modules'])
+    @pytest.mark.parametrize("module", pysat.instruments.__all__)
     def test_load_presence(self, module):
         print(' '.join(('\nChecking for load routine for module: ',
                         module.platform, module.name)))
         _ = module.load
         assert True
 
-    @pytest.mark.parametrize("module", instruments['modules'])
+    @pytest.mark.parametrize("module", pysat.instruments.__all__)
     def test_list_files_presence(self, module):
         print(' '.join(('\nChecking for list_files routine for',
                         'module: ', module.platform, module.name)))
         _ = module.list_files
         assert True
 
-    @pytest.mark.parametrize("module", instruments['modules'])
+    @pytest.mark.parametrize("module", pysat.instruments.__all__)
     def test_download_presence(self, module):
         print(' '.join(('\nChecking for download routine for',
                         'module: ', module.platform, module.name)))
