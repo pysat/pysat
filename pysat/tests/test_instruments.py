@@ -2,16 +2,15 @@
 tests the pysat instruments and code
 """
 from importlib import import_module
-from functools import partial
 import numpy as np
 import os
 import warnings
 
 import pandas as pds
+import pytest
 import tempfile
 
 import pysat
-import pysat.instruments.pysat_testing
 
 # module in list below are excluded from download checks
 exclude_list = ['champ_star', 'superdarn_grdex', 'cosmic_gps',
@@ -47,7 +46,7 @@ def remove_files(inst):
                               'ensure temp directory is used')))
 
 
-def init_func_external(self):
+def init_func_external():
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
 
@@ -64,9 +63,8 @@ def init_func_external(self):
     print('The following instrument modules will be tested : ',
           instrument_names)
 
-    self.instrument_names = temp
-    self.instruments = []
-    self.instrument_modules = []
+    instruments = []
+    instrument_modules = []
 
     # create temporary directory
     dir_name = tempfile.mkdtemp()
@@ -103,36 +101,22 @@ def init_func_external(self):
                                                     sat_id=sat_id,
                                                     temporary_file_list=True)
                             inst._test_dates = module._test_dates
-                            self.instruments.append(inst)
-                            self.instrument_modules.append(module)
+                            instruments.append(inst)
+                            instrument_modules.append(module)
                         except:
                             pass
     pysat.utils.set_data_dir(saved_path, store=False)
 
+    output = {'list': instruments,
+              'names': instrument_names,
+              'modules': instrument_modules}
 
-init_inst = None
-init_mod = None
-init_names = None
+    return output
+
+instruments = init_func_external()
 
 
 class TestInstrumentQualifier():
-
-    def __init__(self):
-        """Iterate through and create all of the test Instruments needed"""
-        global init_inst
-        global init_mod
-        global init_names
-
-        if init_inst is None:
-            init_func_external(self)
-            init_inst = self.instruments
-            init_mod = self.instrument_modules
-            init_names = self.instrument_names
-
-        else:
-            self.instruments = init_inst
-            self.instrument_modules = init_mod
-            self.instrument_names = init_names
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -165,74 +149,58 @@ class TestInstrumentQualifier():
         # that contains lists
         assert np.all(check)
 
-    def test_modules_loadable(self):
+    @pytest.mark.parametrize("name", pysat.instruments.__all__)
+    def test_modules_loadable(self, name):
 
         # ensure that all modules are at minimum importable
-        for name in pysat.instruments.__all__:
-            f = partial(self.check_module_importable, name)
-            f.description = ' '.join(('Checking importability for module:',
-                                      name))
-            yield (f,)
+        print(' '.join(('\nChecking importability for module:', name)))
+        self.check_module_importable(name)
+
+        try:
+            module = import_module(''.join(('.', name)),
+                                   package='pysat.instruments')
+        except ImportError:
+            pass
+        else:
+            # try and grab basic information about the module so we
+            # can iterate over all of the options
+            print(' '.join(('Checking module has platform,',
+                                      'name, tags, sat_ids. Testing',
+                                      'module:', name)))
+            self.check_module_info(module)
 
             try:
-                module = import_module(''.join(('.', name)),
-                                       package='pysat.instruments')
-            except ImportError:
-                pass
-            else:
-                # try and grab basic information about the module so we
-                # can iterate over all of the options
-                f = partial(self.check_module_info, module)
-                f.description = ' '.join(('Checking module has platform,',
-                                          'name, tags, sat_ids. Testing',
-                                          'module:', name))
-                yield (f,)
+                info = module._test_dates
+            except AttributeError:
+                info = {}
+                info[''] = {'': 'failsafe'}
+            for sat_id in info.keys():
+                for tag in info[sat_id].keys():
+                    print(' '.join(('Checking pysat.Instrument',
+                                    'instantiation for module:', name,
+                                    'tag:', tag, 'sat id:', sat_id)))
+                    self.check_module_loadable(module, tag, sat_id)
 
-                try:
-                    info = module._test_dates
-                except AttributeError:
-                    info = {}
-                    info[''] = {'': 'failsafe'}
-                for sat_id in info.keys():
-                    for tag in info[sat_id].keys():
-                        f = partial(self.check_module_loadable, module, tag,
-                                    sat_id)
-                        f.description = ' '.join(('Checking pysat.Instrument',
-                                                  'instantiation for module:',
-                                                  name, 'tag:', tag, 'sat id:',
-                                                  sat_id))
-                        yield (f, )
-
-    def check_load_presence(self, inst):
-        _ = inst.load
+    @pytest.mark.parametrize("module", instruments['modules'])
+    def test_load_presence(self, module):
+        print(' '.join(('\nChecking for load routine for module: ',
+                        module.platform, module.name)))
+        _ = module.load
         assert True
 
-    def test_load_presence(self):
-        for module in self.instrument_modules:
-            f = partial(self.check_load_presence, module)
-            f.description = ' '.join(('Checking for load routine for module: ',
-                                      module.platform, module.name))
-            yield (f,)
-
-    def check_list_files_presence(self, module):
+    @pytest.mark.parametrize("module", instruments['modules'])
+    def test_list_files_presence(self, module):
+        print(' '.join(('\nChecking for list_files routine for',
+                        'module: ', module.platform, module.name)))
         _ = module.list_files
         assert True
 
-    def test_list_files_presence(self):
-        for module in self.instrument_modules:
-            f = partial(self.check_list_files_presence, module)
-            f.description = ' '.join(('Checking for list_files routine for',
-                                      'module: ', module.platform,
-                                      module.name))
-            yield (f,)
-
-    def check_download_presence(self, inst):
-        _ = inst.download
+    @pytest.mark.parametrize("module", instruments['modules'])
+    def test_download_presence(self, module):
+        print(' '.join(('\nChecking for download routine for',
+                        'module: ', module.platform, module.name)))
+        _ = module.download
         assert True
-
-    def test_download_presence(self):
-        for module in self.instrument_modules:
-            yield (self.check_download_presence, module)
 
     def check_module_tdates(self, module):
         info = module._test_dates
@@ -296,75 +264,55 @@ class TestInstrumentQualifier():
         # clear data
         inst.data = pds.DataFrame(None)
 
-    def test_download_and_load(self):
-        for inst in self.instruments:
-            f = partial(self.check_module_tdates, inst)
-            f.description = ' '.join(('Checking for _test_dates information',
-                                      'attached to module: ', inst.platform,
-                                      inst.name, inst.tag, inst.sat_id))
-            yield (f,)
+    @pytest.mark.parametrize("inst", instruments['list'])
+    def test_download_and_load(self, inst):
+        print(' '.join(('Checking for _test_dates information attached to'
+                        'module: ', inst.platform, inst.name, inst.tag,
+                        inst.sat_id)))
+        self.check_module_tdates(inst)
 
-            f = partial(self.check_download, inst)
-            f.description = ' '.join(('Checking download routine',
-                                      'functionality for module: ',
-                                      inst.platform, inst.name, inst.tag,
-                                      inst.sat_id))
-            yield (f,)
+        print(' '.join(('Checking download routine functionality for module: ',
+                        inst.platform, inst.name, inst.tag, inst.sat_id)))
+        self.check_download(inst)
 
-            # make sure download was successful
-            if len(inst.files.files) > 0:
-                f = partial(self.check_load, inst, fuzzy=True)
-                f.description = ' '.join(('Checking load routine',
-                                          'functionality for module: ',
-                                          inst.platform, inst.name, inst.tag,
-                                          inst.sat_id))
-                yield (f,)
+        # make sure download was successful
+        if len(inst.files.files) > 0:
+            print(' '.join(('Checking load routine functionality for module: ',
+                            inst.platform, inst.name, inst.tag, inst.sat_id)))
+            self.check_load(inst, fuzzy=True)
 
-                inst.clean_level = 'none'
-                f = partial(self.check_load, inst)
-                f.description = ' '.join(('Checking load routine',
-                                          'functionality for module with',
-                                          'clean level "none": ',
-                                          inst.platform, inst.name, inst.tag,
-                                          inst.sat_id))
-                yield (f,)
+            inst.clean_level = 'none'
+            print(' '.join(('Checking load routine functionality for module',
+                            'with clean level "none": ',
+                            inst.platform, inst.name, inst.tag, inst.sat_id)))
+            self.check_load(inst)
 
-                inst.clean_level = 'dirty'
-                f = partial(self.check_load, inst, fuzzy=True)
-                f.description = ' '.join(('Checking load routine',
-                                          'functionality for module with',
-                                          'clean level "dirty": ',
-                                          inst.platform, inst.name, inst.tag,
-                                          inst.sat_id))
-                yield (f,)
+            inst.clean_level = 'dirty'
+            print(' '.join(('Checking load routine functionality for module',
+                            'with clean level "dirty": ',
+                            inst.platform, inst.name, inst.tag, inst.sat_id)))
+            self.check_load(inst, fuzzy=True)
 
-                inst.clean_level = 'dusty'
-                f = partial(self.check_load, inst, fuzzy=True)
-                f.description = ' '.join(('Checking load routine',
-                                          'functionality for module with',
-                                          'clean level "dusty": ',
-                                          inst.platform, inst.name, inst.tag,
-                                          inst.sat_id))
-                yield (f,)
+            inst.clean_level = 'dusty'
+            print(' '.join(('Checking load routine functionality for module',
+                            'with clean level "dusty": ',
+                            inst.platform, inst.name, inst.tag, inst.sat_id)))
+            self.check_load(inst, fuzzy=True)
 
-                inst.clean_level = 'clean'
-                f = partial(self.check_load, inst, fuzzy=True)
-                f.description = ' '.join(('Checking load routine',
-                                          'functionality for module with',
-                                          'clean level "clean": ',
-                                          inst.platform, inst.name, inst.tag,
-                                          inst.sat_id))
-                yield (f,)
+            inst.clean_level = 'clean'
+            print(' '.join(('Checking load routine functionality for module',
+                            'with clean level "clean": ',
+                            inst.platform, inst.name, inst.tag, inst.sat_id)))
+            self.check_load(inst, fuzzy=True)
 
-                remove_files(inst)
-            else:
-                print('Unable to actually download a file.')
-                # raise RuntimeWarning(' '.join(('Download for', inst.platform,
-                # inst.name, inst.tag, inst.sat_id, 'was not successful.')))
-                import warnings
-                warnings.warn(' '.join(('Download for', inst.platform,
-                                        inst.name, inst.tag, inst.sat_id,
-                                        'was not successful.')))
+            remove_files(inst)
+        else:
+            print('Unable to actually download a file.')
+            # raise RuntimeWarning(' '.join(('Download for', inst.platform,
+            # inst.name, inst.tag, inst.sat_id, 'was not successful.')))
+            warnings.warn(' '.join(('Download for', inst.platform,
+                                    inst.name, inst.tag, inst.sat_id,
+                                    'was not successful.')))
 
     # Optional support
 
