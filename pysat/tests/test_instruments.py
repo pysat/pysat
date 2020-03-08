@@ -4,6 +4,7 @@ tests the pysat instruments and code
 from importlib import import_module
 import numpy as np
 import os
+from unittest.case import SkipTest
 import warnings
 
 import pandas as pds
@@ -126,60 +127,31 @@ class TestInstrumentQualifier():
         """Runs after every method to clean up previous testing."""
         pass
 
-    def check_module_loadable(self, module, tag, sat_id):
-        _ = pysat.Instrument(inst_module=module, tag=tag, sat_id=sat_id)
-        assert True
-
-    def check_module_importable(self, name):
-        _ = import_module(''.join(('.', name)),
-                          package='pysat.instruments')
-        assert True
-
-    def check_module_info(self, module):
-        platform = module.platform
-        name = module.name
-        tags = module.tags
-        sat_ids = module.sat_ids
-        check = []
-        # check tags is a dict
-        check.append(isinstance(tags, dict))
-        # that contains strings
-        # check sat_ids is a dict
-        check.append(isinstance(sat_ids, dict))
-        # that contains lists
-        assert np.all(check)
-
     @pytest.mark.parametrize("name", pysat.instruments.__all__)
     def test_modules_loadable(self, name):
 
-        # ensure that all modules are at minimum importable
-        print(' '.join(('\nChecking importability for module:', name)))
-        self.check_module_importable(name)
+        # ensure that each module is at minimum importable
+        module = import_module(''.join(('.', name)),
+                               package='pysat.instruments')
+        # Check for presence of basic platform / name / tags / sat_id
+        assert isinstance(module.platform, str)
+        assert isinstance(module.name, str)
+        assert isinstance(module.tags, dict)
+        assert isinstance(module.sat_ids, dict)
 
         try:
-            module = import_module(''.join(('.', name)),
-                                   package='pysat.instruments')
-        except ImportError:
-            pass
-        else:
-            # try and grab basic information about the module so we
-            # can iterate over all of the options
-            print(' '.join(('Checking module has platform,',
-                                      'name, tags, sat_ids. Testing',
-                                      'module:', name)))
-            self.check_module_info(module)
-
-            try:
-                info = module._test_dates
-            except AttributeError:
-                info = {}
-                info[''] = {'': 'failsafe'}
-            for sat_id in info.keys():
-                for tag in info[sat_id].keys():
-                    print(' '.join(('Checking pysat.Instrument',
-                                    'instantiation for module:', name,
-                                    'tag:', tag, 'sat id:', sat_id)))
-                    self.check_module_loadable(module, tag, sat_id)
+            info = module._test_dates
+        except AttributeError:
+            info = {}
+            info[''] = {'': 'failsafe'}
+        for sat_id in info.keys():
+            for tag in info[sat_id].keys():
+                print(' '.join(('Checking pysat.Instrument',
+                                'instantiation for module:', name,
+                                'tag:', tag, 'sat id:', sat_id)))
+                inst = pysat.Instrument(inst_module=module, tag=tag,
+                                        sat_id=sat_id)
+                assert True
 
     @pytest.mark.parametrize("name", pysat.instruments.__all__)
     def test_required_function_presence(self, name):
@@ -190,18 +162,16 @@ class TestInstrumentQualifier():
         assert hasattr(module, 'list_files') & callable(module.list_files)
         assert hasattr(module, 'download') & callable(module.download)
 
-    def check_module_tdates(self, module):
+    @pytest.mark.parametrize("name", pysat.instruments.__all__)
+    def test_instrument_tdates(self, name):
+        module = import_module(''.join(('.', name)),
+                               package='pysat.instruments')
         info = module._test_dates
-        check = []
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
-                check.append(isinstance(info[sat_id][tag], pysat.datetime))
-        assert np.all(check)
+                assert isinstance(info[sat_id][tag], pds.datetime)
 
     def check_download(self, inst):
-        from unittest.case import SkipTest
-        import os
-
         start = inst._test_dates[inst.sat_id][inst.tag]
         try:
             # check for username
@@ -212,7 +182,7 @@ class TestInstrumentQualifier():
                               password=user_download_dict[inst_name][1])
             else:
                 inst.download(start, start)
-        except Exception as e:
+        except Exception as strerr:
             # couldn't run download, try to find test data instead
             print("Couldn't download data, trying to find test data.")
             saved_path = pysat.data_dir
@@ -232,7 +202,7 @@ class TestInstrumentQualifier():
                 raise SkipTest
             else:
                 print("No test data found.")
-                raise e
+                raise strerr
         assert True
 
     def check_load(self, inst, fuzzy=False):
@@ -254,11 +224,6 @@ class TestInstrumentQualifier():
 
     @pytest.mark.parametrize("inst", instruments['list'])
     def test_download_and_load(self, inst):
-        print(' '.join(('Checking for _test_dates information attached to'
-                        'module: ', inst.platform, inst.name, inst.tag,
-                        inst.sat_id)))
-        self.check_module_tdates(inst)
-
         print(' '.join(('Checking download routine functionality for module: ',
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
         self.check_download(inst)
