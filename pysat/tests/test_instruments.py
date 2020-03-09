@@ -255,6 +255,7 @@ class TestInstrumentQualifier():
 
     @pytest.mark.no_download
     @pytest.mark.parametrize("inst", instruments['no_download'])
+    @pytest.mark.skip(reason="Need to update flags to recognize Travis")
     def test_download_warning(self, inst):
         print(' '.join(('Checking download routine warnings for module: ',
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
