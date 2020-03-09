@@ -77,8 +77,14 @@ def generate_instrument_list(instrument_names=[], package='pysat.instruments'):
                                                 sat_id=sat_id,
                                                 temporary_file_list=True)
                         inst._test_dates = module._test_dates
+                        travis_skip = ((os.environ.get('TRAVIS') == 'true')
+                                       and not inst._test_download_travis)
                         if inst._test_download:
-                            instrument_download.append(inst)
+                            if not travis_skip:
+                                instrument_download.append(inst)
+                            else:
+                                print(' '.join(['Skipping', name, sat_id, tag,
+                                                'on Travis CI']))
                         else:
                             # we don't want to test download for this combo
                             print(' '.join(['Excluding', name,

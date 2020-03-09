@@ -902,16 +902,15 @@ class Instrument(object):
                 inst._test_download[self.sat_id][self.tag]
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
-            if (os.environ.get('TRAVIS') == 'true'):
-                # Used for tests which required FTP access
-                try:
-                    self._test_download = \
-                        inst._test_download_travis[self.sat_id][self.tag]
-                except (AttributeError, KeyError):
-                    # Either flags are not specified, or this combo is not
-                    self._test_download = True
             else:
                 self._test_download = True
+        try:
+            # Used for tests which required FTP access
+            self._test_download_travis = \
+                inst._test_download_travis[self.sat_id][self.tag]
+        except (AttributeError, KeyError):
+            # Either flags are not specified, or this combo is not
+            self._test_download_travis = True
 
     def __str__(self):
 
