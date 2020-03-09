@@ -902,8 +902,7 @@ class Instrument(object):
                 inst._test_download[self.sat_id][self.tag]
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
-            else:
-                self._test_download = True
+            self._test_download = True
         try:
             # Used for tests which required FTP access
             self._test_download_travis = \
