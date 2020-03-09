@@ -109,11 +109,10 @@ class TestInstrumentQualifier():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.package = 'pysat.instruments'
-        pass
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        pass
+        del self.package
 
     @pytest.mark.all
     @pytest.mark.parametrize("name", instruments['names'])
