@@ -36,7 +36,7 @@ def remove_files(inst):
                               'ensure temp directory is used')))
 
 
-def generate_instrument_list(instrument_names=[]):
+def generate_instrument_list(instrument_names=[], package='pysat.instruments'):
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
 
@@ -56,7 +56,7 @@ def generate_instrument_list(instrument_names=[]):
     for name in instrument_names:
         try:
             module = import_module(''.join(('.', name)),
-                                   package='pysat.instruments')
+                                   package=package)
         except ImportError:
             print(' '.join(["Couldn't import", name]))
             pass
@@ -94,26 +94,28 @@ def generate_instrument_list(instrument_names=[]):
 
     return output
 
+instruments = \
+    generate_instrument_list(instrument_names=pysat.instruments.__all__)
 
 class TestInstrumentQualifier():
 
-    instruments = \
-        generate_instrument_list(instrument_names=pysat.instruments.__all__)
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        self.package = 'pysat.instruments'
         pass
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pass
 
+    @pytest.mark.all
     @pytest.mark.parametrize("name", instruments['names'])
     def test_modules_loadable(self, name):
 
         # ensure that each module is at minimum importable
         module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
+                               package=self.package)
         # Check for presence of basic platform / name / tags / sat_id
         assert isinstance(module.platform, str)
         assert isinstance(module.name, str)
@@ -138,7 +140,7 @@ class TestInstrumentQualifier():
     def test_required_function_presence(self, name):
         """Check if each required function is present and callable"""
         module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
+                               package=self.package)
         assert hasattr(module, 'load') & callable(module.load)
         assert hasattr(module, 'list_files') & callable(module.list_files)
         assert hasattr(module, 'download') & callable(module.download)
@@ -146,7 +148,7 @@ class TestInstrumentQualifier():
     @pytest.mark.parametrize("name", instruments['names'])
     def test_instrument_tdates(self, name):
         module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
+                               package=self.package)
         info = module._test_dates
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
