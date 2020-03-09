@@ -263,7 +263,7 @@ class TestInstrumentQualifier():
     @pytest.mark.parametrize("inst", instruments['no_download'])
     # @pytest.mark.skip(reason="Need to update flags to recognize Travis")
     def test_download_warning(self, inst):
-        print(' '.join(('Checking download routine warnings for module: ',
+        print(' '.join(('\nChecking download routine warnings for module: ',
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
         start = inst._test_dates[inst.sat_id][inst.tag]
         with warnings.catch_warnings(record=True) as war:
@@ -276,7 +276,8 @@ class TestInstrumentQualifier():
                     raise strerr
 
         assert len(war) >= 1
-        assert war[0].category == UserWarning
+        categories = [war[j].category for j in range(0, len(war))]
+        assert UserWarning in categories
 
     # Optional support
 
