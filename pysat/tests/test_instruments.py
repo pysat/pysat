@@ -216,7 +216,7 @@ class TestInstrumentQualifier():
     @pytest.mark.download
     @pytest.mark.parametrize("inst", instruments['download'])
     def test_download_and_load(self, inst):
-        print(' '.join(('Checking download routine functionality for module: ',
+        print(' '.join(('\nChecking download routine functionality for module: ',
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
         self.check_download(inst)
 
@@ -261,7 +261,6 @@ class TestInstrumentQualifier():
 
     @pytest.mark.no_download
     @pytest.mark.parametrize("inst", instruments['no_download'])
-    # @pytest.mark.skip(reason="Need to update flags to recognize Travis")
     def test_download_warning(self, inst):
         print(' '.join(('\nChecking download routine warnings for module: ',
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
