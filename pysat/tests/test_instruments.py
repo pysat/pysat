@@ -136,6 +136,7 @@ class TestInstrumentQualifier():
                                         sat_id=sat_id)
                 assert True
 
+    @pytest.mark.all
     @pytest.mark.parametrize("name", instruments['names'])
     def test_required_function_presence(self, name):
         """Check if each required function is present and callable"""
@@ -145,6 +146,7 @@ class TestInstrumentQualifier():
         assert hasattr(module, 'list_files') & callable(module.list_files)
         assert hasattr(module, 'download') & callable(module.download)
 
+    @pytest.mark.all
     @pytest.mark.parametrize("name", instruments['names'])
     def test_instrument_tdates(self, name):
         module = import_module(''.join(('.', name)),
@@ -205,6 +207,7 @@ class TestInstrumentQualifier():
         # clear data
         inst.data = pds.DataFrame(None)
 
+    @pytest.mark.download
     @pytest.mark.parametrize("inst", instruments['download'])
     def test_download_and_load(self, inst):
         print(' '.join(('Checking download routine functionality for module: ',
@@ -250,6 +253,7 @@ class TestInstrumentQualifier():
                                     inst.name, inst.tag, inst.sat_id,
                                     'was not successful.')))
 
+    @pytest.mark.no_download
     @pytest.mark.parametrize("inst", instruments['no_download'])
     def test_download_warning(self, inst):
         print(' '.join(('Checking download routine warnings for module: ',
