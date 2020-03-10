@@ -142,7 +142,7 @@ JRO ISR
 -------
 
 .. automodule:: pysat.instruments.jro_isr
-    :members: __doc__
+   :members: __doc__
 
 netCDF Pandas
 -------------
@@ -209,7 +209,7 @@ TIMED/SEE
 ---------
 
 .. automodule:: pysat.instruments.timed_see
-  :members: __doc__
+   :members: __doc__
 
 UCAR TIEGCM
 -----------
