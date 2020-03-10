@@ -76,31 +76,31 @@ DE2 LANG
 -----------
 
 .. automodule:: pysat.instruments.de2_lang
-  :members: __doc__
+   :members: __doc__
 
 DE2 NACS
 -----------
 
 .. automodule:: pysat.instruments.de2_nacs
-  :members: __doc__
+   :members: __doc__
 
 DE2 RPA
 -----------
 
 .. automodule:: pysat.instruments.de2_rpa
-  :members: __doc__
+   :members: __doc__
 
 DE2 WATS
 -----------
 
 .. automodule:: pysat.instruments.de2_wats
-  :members: __doc__
+   :members: __doc__
 
 Demeter IAP
 -----------
 
 .. automodule:: pysat.instruments.demeter_iap
-    :members: __doc__, add_drift_sat_coord, add_drift_lgm_coord, add_drift_geo_coord
+   :members: __doc__, add_drift_sat_coord, add_drift_lgm_coord, add_drift_geo_coord
 
 DMSP IVM
 --------
@@ -142,7 +142,7 @@ JRO ISR
 -------
 
 .. automodule:: pysat.instruments.jro_isr
-    :members: __doc__
+   :members: __doc__
 
 netCDF Pandas
 -------------
@@ -209,7 +209,7 @@ TIMED/SEE
 ---------
 
 .. automodule:: pysat.instruments.timed_see
-  :members: __doc__
+   :members: __doc__
 
 UCAR TIEGCM
 -----------
