@@ -23,8 +23,8 @@ exclude_tags = {'sw_f107': {'tag': ['prelim'], 'sat_id': ['']},
                 'sw_kp': {'tag': [''], 'sat_id': ['']}}
 
 # dict, keyed by pysat instrument, with a list of usernames and passwords
-user_download_dict = {'supermag_magnetometer': ['rstoneback', None]}
-
+user_download_dict = {'supermag_magnetometer': {'user': 'rstoneback',
+                                                'password': 'None'}}
 
 def remove_files(inst):
     # remove any files downloaded as part of the unit tests
@@ -138,19 +138,18 @@ class TestInstrumentQualifier():
         assert isinstance(module.tags, dict)
         assert isinstance(module.sat_ids, dict)
 
-        try:
-            info = module._test_dates
-        except AttributeError:
-            info = {}
-            info[''] = {'': 'failsafe'}
-        for sat_id in info.keys():
-            for tag in info[sat_id].keys():
+        for sat_id in module.sat_ids.keys():
+            for tag in module.sat_ids[sat_id]:
                 print(' '.join(('Checking pysat.Instrument',
                                 'instantiation for module:', name,
                                 'tag:', tag, 'sat id:', sat_id)))
                 inst = pysat.Instrument(inst_module=module, tag=tag,
                                         sat_id=sat_id)
-                assert True
+                assert isinstance(inst, pysat.Instrument)
+                assert inst.platform == module.platform
+                assert inst.name == module.name
+                assert inst.sat_id == sat_id
+                assert inst.tag == tag
 
     @pytest.mark.parametrize("name", pysat.instruments.__all__)
     def test_required_function_presence(self, name):
@@ -175,12 +174,8 @@ class TestInstrumentQualifier():
         try:
             # check for username
             inst_name = '_'.join((inst.platform, inst.name))
-            if inst_name in user_download_dict:
-                inst.download(start, start,
-                              user=user_download_dict[inst_name][0],
-                              password=user_download_dict[inst_name][1])
-            else:
-                inst.download(start, start)
+            dl_dict = user_download_dict[inst_name] if inst_name in user_download_dict.keys() else {}
+            inst.download(start, start, **dl_dict)
         except Exception as strerr:
             # couldn't run download, try to find test data instead
             print("Couldn't download data, trying to find test data.")
@@ -223,7 +218,7 @@ class TestInstrumentQualifier():
 
     @pytest.mark.parametrize("inst", instruments['list'])
     def test_download_and_load(self, inst):
-        print(' '.join(('Checking download routine functionality for module: ',
+        print(' '.join(('\nChecking download routine functionality for module: ',
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
         self.check_download(inst)
 
@@ -265,16 +260,3 @@ class TestInstrumentQualifier():
             warnings.warn(' '.join(('Download for', inst.platform,
                                     inst.name, inst.tag, inst.sat_id,
                                     'was not successful.')))
-
-    # Optional support
-
-    # directory_format string
-
-    # multiple file days
-
-    # orbit information
-
-        # self.directory_format = None
-        # self.file_format = None
-        # self.multi_file_day = False
-        # self.orbit_info = None
