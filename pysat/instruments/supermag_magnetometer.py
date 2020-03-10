@@ -43,7 +43,7 @@ import numpy as np
 from os import path
 import functools
 import warnings
-from pysat import NetworkLock as Lock
+from pysat.utils import NetworkLock as Lock
 
 import pysat
 

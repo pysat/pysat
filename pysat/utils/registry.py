@@ -36,7 +36,7 @@ checking the user_modules registry.
 
 import pysat
 import os
-from pysat import NetworkLock as Lock
+from portalocker import Lock
 
 
 def load_saved_modules():
@@ -56,6 +56,10 @@ def store():
     with Lock(user_modules_file, 'w', pysat.file_timeout) as f:
         for mod in pysat.user_modules:
             f.write(mod + '\n')
+
+        # in case of network file system
+        f.flush() 
+        os.fsync(f.fileno())
 
 
 def register(module_name):

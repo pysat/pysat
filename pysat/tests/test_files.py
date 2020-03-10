@@ -5,7 +5,7 @@ import glob
 import numpy as np
 import os
 import sys
-from pysat import NetworkLock as Lock
+from pysat.utils import NetworkLock as Lock
 
 from nose.tools import raises
 import pandas as pds

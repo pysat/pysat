@@ -30,7 +30,7 @@ import os
 import pandas as pds
 import numpy as np
 from portalocker import TemporaryFileLock
-from pysat import NetworkLock as Lock
+from pysat.utils import NetworkLock as Lock
 
 import pysat
 
