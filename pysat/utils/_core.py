@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import numpy as np
 import pysat
 from portalocker import Lock, TemporaryFileLock
+import os
 
 def set_data_dir(path=None, store=True):
     """
@@ -475,3 +476,23 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         out.append(pds.DataFrame.from_records(item, index=epoch_name))
     out = pds.concat(out, axis=0)
     return out, mdata
+
+
+class NetworkLock(Lock):
+    def __init__(self, *args, **kwargs):
+        '''Lock manager compatible with networked file systems
+        '''
+        super(NetworkLock, self).__init__(*args, **kwargs)
+        
+    def release(self):
+        '''Releases the Lock so the file system
+        
+        From portalocker docs:
+          On some networked filesystems it might be needed to force
+          a `os.fsync()` before closing the file so it's 
+          actually written before another client reads the file.
+        '''
+        self.fh.flush()
+        os.fsync(self.fh.fileno())
+        
+        super(NetworkLock, self).release()

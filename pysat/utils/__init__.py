@@ -10,4 +10,4 @@ for the pysat data directory structure.
 """
 
 from . import coords, time, registry
-from ._core import set_data_dir, scale_units, load_netcdf4
+from ._core import set_data_dir, scale_units, load_netcdf4, NetworkLock

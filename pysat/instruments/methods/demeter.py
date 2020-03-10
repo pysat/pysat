@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 import pysat
-from portalocker import Lock
+from pysat import NetworkFileLock as Lock
 
 import logging
 logger = logging.getLogger(__name__)

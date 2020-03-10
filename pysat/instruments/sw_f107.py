@@ -47,7 +47,8 @@ import warnings
 
 import numpy as np
 import pandas as pds
-from portalocker import Lock, TemporaryFileLock
+from portalocker import TemporaryFileLock
+from pysat import NetworkLock as Lock
 import pysat
 
 import logging

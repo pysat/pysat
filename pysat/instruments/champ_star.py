@@ -28,7 +28,7 @@ from __future__ import absolute_import
 import numpy as np
 import pandas as pds
 import warnings
-from portalocker import Lock
+from pysat import NetworkLock as Lock
 
 import pysat
 

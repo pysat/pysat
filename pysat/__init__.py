@@ -56,6 +56,8 @@ file_timeout = 10
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
 version_filename = os.path.join(here, 'version.txt')
+
+
 with Lock(version_filename, 'r', file_timeout) as version_file:
     __version__ = version_file.read().strip()
 
@@ -79,6 +81,11 @@ if not os.path.isdir(pysat_dir):
     data_path_file = os.path.join(pysat_dir, 'data_path.txt')
     with Lock(data_path_file, 'w', file_timeout) as f:
         f.write(data_dir)
+        
+        # in case of network files system
+        f.flush()
+        os.fsync(f.fileno())
+
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
                    "Run pysat.utils.set_data_dir to specify a different "
@@ -88,6 +95,11 @@ if not os.path.isdir(pysat_dir):
     with Lock(modules_file, 'w', file_timeout) as f:
         f.write('')
         user_modules = []
+        
+        # in case of network files system
+        f.flush()
+        os.fsync(f.fileno())
+
 
 else:
     # load up stored data path
@@ -106,6 +118,11 @@ else:
         # write user modules file
         with Lock(modules_file, 'w', file_timeout) as f:
             f.write('')
+            
+            # in case of network files system
+            f.flush()
+            os.fsync(f.fileno())
+
 
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils

@@ -46,7 +46,8 @@ from __future__ import absolute_import
 import numpy as np
 import os
 import sys
-from portalocker import Lock, TemporaryFileLock
+from portalocker import TemporaryFileLock
+from pysat import NetworkLock as Lock
 
 import netCDF4
 import pysat

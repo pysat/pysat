@@ -29,7 +29,8 @@ of the National Science Foundation.
 import os
 import pandas as pds
 import numpy as np
-from portalocker import Lock, TemporaryFileLock
+from portalocker import TemporaryFileLock
+from pysat import NetworkLock as Lock
 
 import pysat
 

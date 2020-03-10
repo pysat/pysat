@@ -36,7 +36,7 @@ checking the user_modules registry.
 
 import pysat
 import os
-from portalocker import Lock
+from pysat import NetworkLock as Lock
 
 
 def load_saved_modules():

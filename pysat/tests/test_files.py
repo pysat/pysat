@@ -5,7 +5,7 @@ import glob
 import numpy as np
 import os
 import sys
-from portalocker import Lock
+from pysat import NetworkLock as Lock
 
 from nose.tools import raises
 import pandas as pds
