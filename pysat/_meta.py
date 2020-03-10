@@ -432,8 +432,8 @@ class Meta(object):
                     # use Object to avoid recursion
                     super(Meta, self).__setattr__(name, value)
                 else:
-                    raise AttributeError(''.join("cannot set attribute - ",
-                                "object's attributes are immutable"))
+                    raise AttributeError(''.join(("cannot set attribute - ",
+                                                    "object's attributes are immutable")))
         else:
             super(Meta, self).__setattr__(name, value)
         
