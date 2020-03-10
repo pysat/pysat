@@ -9,6 +9,7 @@ from __future__ import absolute_import, division, print_function
 import sys
 
 import pandas as pds
+from portalocker import TemporaryFileLock
 
 import pysat
 
@@ -279,8 +280,9 @@ def download(supported_tags, date_array, tag, sat_id,
                                         formatted_remote_fname))
                 req = requests.get(remote_path)
                 if req.status_code != 404:
-                    open(saved_local_fname, 'wb').write(req.content)
-                    logger.info('Finished.')
+                    with TemporaryFileLock(saved_local_fname + '.Lock', pysat.file_timeout) as tfl:
+                        open(saved_local_fname, 'wb').write(req.content)
+                        logger.info('Finished.')
                 else:
                     logger.info(' '.join(('File not available for',
                                           date.strftime('%d %B %Y'))))
@@ -311,8 +313,9 @@ def download(supported_tags, date_array, tag, sat_id,
                     saved_local_fname = os.path.join(data_path, remote_file)
                     req = requests.get(remote_file_path)
                     if req.status_code != 404:
-                        open(saved_local_fname, 'wb').write(req.content)
-                        i += 1
+                        with TemporaryFileLock(saved_local_fname + '.Lock', pysat.file_timeout) as tfl:
+                            open(saved_local_fname, 'wb').write(req.content)
+                            i += 1
                     else:
                         logger.info(' '.join(('File not available for',
                                               date.strftime('%d %B %Y'))))
