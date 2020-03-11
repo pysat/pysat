@@ -196,7 +196,8 @@ class TestInstrumentsDownload():
             start = inst._test_dates[inst.sat_id][inst.tag]
             inst.load(date=start)
             if clean_level == "none":
-                assert not inst.data.empty
+                # Something should be in the file
+                assert not inst.empty
             else:
                 # Alternate check since cleaning may remove all data
                 try:
