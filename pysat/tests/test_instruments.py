@@ -3,12 +3,11 @@ tests the pysat instruments and code
 """
 from importlib import import_module
 import os
-from unittest.case import SkipTest
+import tempfile
 import warnings
 
 import pandas as pds
 import pytest
-import tempfile
 
 import pysat
 
@@ -113,25 +112,24 @@ def generate_instrument_list(exclude_list, exclude_tags):
 
     return output
 
+instruments = generate_instrument_list(exclude_list, exclude_tags)
 
-class TestInstrumentQualifier():
-
-    instruments = generate_instrument_list(exclude_list, exclude_tags)
+class TestInstrumentsAll():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        pass
+        self.package = 'pysat.instruments'
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        pass
+        del self.package
 
     @pytest.mark.parametrize("name", pysat.instruments.__all__)
     def test_modules_loadable(self, name):
 
         # ensure that each module is at minimum importable
         module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
+                               package=self.instruments)
         # Check for presence of basic platform / name / tags / sat_id
         assert isinstance(module.platform, str)
         assert isinstance(module.name, str)
@@ -155,7 +153,7 @@ class TestInstrumentQualifier():
     def test_required_function_presence(self, name):
         """Check if each required function is present and callable"""
         module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
+                               package=self.instruments)
         assert hasattr(module, 'load') & callable(module.load)
         assert hasattr(module, 'list_files') & callable(module.list_files)
         assert hasattr(module, 'download') & callable(module.download)
@@ -163,100 +161,43 @@ class TestInstrumentQualifier():
     @pytest.mark.parametrize("name", pysat.instruments.__all__)
     def test_instrument_tdates(self, name):
         module = import_module(''.join(('.', name)),
-                               package='pysat.instruments')
+                               package=self.instruments)
         info = module._test_dates
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
                 assert isinstance(info[sat_id][tag], pds.datetime)
 
-    def check_download(self, inst):
-        start = inst._test_dates[inst.sat_id][inst.tag]
-        try:
-            # check for username
-            inst_name = '_'.join((inst.platform, inst.name))
-            dl_dict = user_download_dict[inst_name] if inst_name in user_download_dict.keys() else {}
-            inst.download(start, start, **dl_dict)
-        except Exception as strerr:
-            # couldn't run download, try to find test data instead
-            print("Couldn't download data, trying to find test data.")
-            saved_path = pysat.data_dir
+class TestInstrumentsDownload():
 
-            new_path = os.path.join(pysat.__path__[0], 'tests', 'test_data')
-            pysat.utils.set_data_dir(new_path, store=False)
-            _test_dates = inst._test_dates
-            inst = pysat.Instrument(platform=inst.platform,
-                                    name=inst.name,
-                                    tag=inst.tag,
-                                    sat_id=inst.sat_id,
-                                    temporary_file_list=True)
-            inst._test_dates = _test_dates
-            pysat.utils.set_data_dir(saved_path, store=False)
-            if len(inst.files.files) > 0:
-                print("Found test data.")
-                raise SkipTest
-            else:
-                print("No test data found.")
-                raise strerr
-        assert True
-
-    def check_load(self, inst, fuzzy=False):
-        # set ringer data
-        inst.data = pds.DataFrame([0])
-        start = inst._test_dates[inst.sat_id][inst.tag]
-        inst.load(date=start)
-        if not fuzzy:
-            assert not inst.empty
-        else:
-            try:
-                assert inst.data != pds.DataFrame([0])
-            except:
-                # if there is an error, they aren't the same
-                assert True
-
-        # clear data
-        inst.data = pds.DataFrame(None)
-
+    @pytest.mark.first
     @pytest.mark.parametrize("inst", instruments['list'])
-    def test_download_and_load(self, inst):
+    def test_download(self, inst):
         print(' '.join(('\nChecking download routine functionality for module: ',
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
-        self.check_download(inst)
+        start = inst._test_dates[inst.sat_id][inst.tag]
+        # check for username
+        inst_name = '_'.join((inst.platform, inst.name))
+        dl_dict = user_download_dict[inst_name] if inst_name in user_download_dict.keys() else {}
+        inst.download(start, start, **dl_dict)
+        assert len(inst.files.files) > 0
 
+    @pytest.mark.second
+    @pytest.mark.parametrize("inst", instruments['list'])
+    @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty',
+                                             'clean'])
+    def test_load(self, inst, clean_level):
         # make sure download was successful
         if len(inst.files.files) > 0:
-            print(' '.join(('Checking load routine functionality for module: ',
+            inst.clean_level = clean_level
+            print(' '.join(('\nChecking load routine functionality for module',
                             inst.platform, inst.name, inst.tag, inst.sat_id)))
-            self.check_load(inst, fuzzy=True)
-
-            inst.clean_level = 'none'
-            print(' '.join(('Checking load routine functionality for module',
-                            'with clean level "none": ',
-                            inst.platform, inst.name, inst.tag, inst.sat_id)))
-            self.check_load(inst)
-
-            inst.clean_level = 'dirty'
-            print(' '.join(('Checking load routine functionality for module',
-                            'with clean level "dirty": ',
-                            inst.platform, inst.name, inst.tag, inst.sat_id)))
-            self.check_load(inst, fuzzy=True)
-
-            inst.clean_level = 'dusty'
-            print(' '.join(('Checking load routine functionality for module',
-                            'with clean level "dusty": ',
-                            inst.platform, inst.name, inst.tag, inst.sat_id)))
-            self.check_load(inst, fuzzy=True)
-
-            inst.clean_level = 'clean'
-            print(' '.join(('Checking load routine functionality for module',
-                            'with clean level "clean": ',
-                            inst.platform, inst.name, inst.tag, inst.sat_id)))
-            self.check_load(inst, fuzzy=True)
-
-            remove_files(inst)
+            inst.data = pds.DataFrame([0])
+            start = inst._test_dates[inst.sat_id][inst.tag]
+            inst.load(date=start)
+            assert not inst.empty
+            if clean_level == "clean":
+                remove_files(inst)
         else:
-            print('Unable to actually download a file.')
-            # raise RuntimeWarning(' '.join(('Download for', inst.platform,
-            # inst.name, inst.tag, inst.sat_id, 'was not successful.')))
             warnings.warn(' '.join(('Download for', inst.platform,
                                     inst.name, inst.tag, inst.sat_id,
                                     'was not successful.')))
