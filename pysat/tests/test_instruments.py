@@ -177,7 +177,8 @@ class TestInstrumentsDownload():
         start = inst._test_dates[inst.sat_id][inst.tag]
         # check for username
         inst_name = '_'.join((inst.platform, inst.name))
-        dl_dict = user_download_dict[inst_name] if inst_name in user_download_dict.keys() else {}
+        dl_dict = user_download_dict[inst_name] if inst_name in \
+            user_download_dict.keys() else {}
         inst.download(start, start, **dl_dict)
         assert len(inst.files.files) > 0
 
