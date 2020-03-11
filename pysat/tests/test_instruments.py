@@ -129,7 +129,7 @@ class TestInstrumentsAll():
 
         # ensure that each module is at minimum importable
         module = import_module(''.join(('.', name)),
-                               package=self.instruments)
+                               package=self.package)
         # Check for presence of basic platform / name / tags / sat_id
         assert isinstance(module.platform, str)
         assert isinstance(module.name, str)
@@ -153,7 +153,7 @@ class TestInstrumentsAll():
     def test_required_function_presence(self, name):
         """Check if each required function is present and callable"""
         module = import_module(''.join(('.', name)),
-                               package=self.instruments)
+                               package=self.package)
         assert hasattr(module, 'load') & callable(module.load)
         assert hasattr(module, 'list_files') & callable(module.list_files)
         assert hasattr(module, 'download') & callable(module.download)
@@ -161,7 +161,7 @@ class TestInstrumentsAll():
     @pytest.mark.parametrize("name", pysat.instruments.__all__)
     def test_instrument_tdates(self, name):
         module = import_module(''.join(('.', name)),
-                               package=self.instruments)
+                               package=self.package)
         info = module._test_dates
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
