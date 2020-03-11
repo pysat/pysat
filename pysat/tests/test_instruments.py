@@ -187,10 +187,10 @@ class TestInstrumentsDownload():
                                              'clean'])
     def test_load(self, inst, clean_level):
         # make sure download was successful
+        print(' '.join(('\nChecking load routine functionality for module',
+                        inst.platform, inst.name, inst.tag, inst.sat_id)))
         if len(inst.files.files) > 0:
             inst.clean_level = clean_level
-            print(' '.join(('\nChecking load routine functionality for module',
-                            inst.platform, inst.name, inst.tag, inst.sat_id)))
             inst.data = pds.DataFrame([0])
             start = inst._test_dates[inst.sat_id][inst.tag]
             inst.load(date=start)
@@ -198,6 +198,4 @@ class TestInstrumentsDownload():
             if clean_level == "clean":
                 remove_files(inst)
         else:
-            warnings.warn(' '.join(('Download for', inst.platform,
-                                    inst.name, inst.tag, inst.sat_id,
-                                    'was not successful.')))
+            pytest.skip("Download data not available")
