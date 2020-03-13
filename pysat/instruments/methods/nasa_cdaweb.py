@@ -95,6 +95,336 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         raise ValueError(estr)
 
 
+import cdflib
+
+import re
+import numpy as np
+
+def convert_ndimensional(data, index = None, columns = None):
+    """converts high-dimensional data to a Dataframe"""
+    if columns is None:
+        columns = [range(i) for i in data.shape[1:]]
+        columns = pds.MultiIndex.from_product(columns)
+
+    return pds.DataFrame(data.T.reshape(data.shape[0], -1), 
+        columns = columns, index = index)
+
+class CDF(object):
+    """cdflib wrapper for loading time series data
+
+    Loading routines borrow heavily from pyspedas's cdf_to_tplot function
+    """
+
+    def __init__(self, filename, 
+                varformat = '*', # regular expressions
+                var_types = ['data', 'support_data'], 
+                center_measurement = False,
+                raise_errors = False,
+                regnames = None,
+                datetime = True,
+                **kwargs):
+        self._raise_errors = raise_errors
+        self._filename = filename
+        self._varformat = varformat
+        self._var_types = var_types
+        self._datetime = datetime
+        self._var_types = var_types
+        self._center_measurement = center_measurement
+
+        #registration names map from file parameters to kamodo-compatible names
+        if regnames is None:
+            regnames = {}
+        self._regnames = regnames 
+
+        self._cdf_file = cdflib.CDF(self._filename)
+        self._cdf_info = self._cdf_file.cdf_info()
+        self.data = {} #python-in-Heliophysics Community data standard
+        self.meta = {} #python-in-Heliophysics Community metadata standard
+        self._dependencies = {}
+
+        self._variable_names = self._cdf_info['rVariables'] +\
+            self._cdf_info['zVariables']
+        
+        
+        self.load_variables()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        pass
+        
+    def get_dependency(self, x_axis_var):
+        """Retrieves variable dependency unique to filename"""
+        return self._dependencies.get(self._filename + x_axis_var)
+
+    def set_dependency(self, x_axis_var, x_axis_data):
+        """Sets variable dependency unique to filename"""
+        self._dependencies[self._filename + x_axis_var] = x_axis_data
+    
+    def set_epoch(self, x_axis_var):
+        """Stores epoch dependency"""
+
+        data_type_description \
+            = self._cdf_file.varinq(x_axis_var)['Data_Type_Description']
+
+        center_measurement = self._center_measurement
+        cdf_file = self._cdf_file
+        if self.get_dependency(x_axis_var) is None:
+            delta_plus_var = 0.0
+            delta_minus_var = 0.0
+            delta_time = 0.0
+
+            xdata = cdf_file.varget(x_axis_var)
+            epoch_var_atts = cdf_file.varattsget(x_axis_var)
+
+            # check for DELTA_PLUS_VAR/DELTA_MINUS_VAR attributes
+            if center_measurement:
+                if 'DELTA_PLUS_VAR' in epoch_var_atts:
+                    delta_plus_var = cdf_file.varget(
+                        epoch_var_atts['DELTA_PLUS_VAR'])
+                    delta_plus_var_att = cdf_file.varattsget(
+                        epoch_var_atts['DELTA_PLUS_VAR'])
+
+                    # check if a conversion to seconds is required
+                    if 'SI_CONVERSION' in delta_plus_var_att:
+                        si_conv = delta_plus_var_att['SI_CONVERSION']
+                        delta_plus_var = delta_plus_var.astype(float) \
+                            * np.float(si_conv.split('>')[0])
+                    elif 'SI_CONV' in delta_plus_var_att:
+                        si_conv = delta_plus_var_att['SI_CONV']
+                        delta_plus_var = delta_plus_var.astype(float) \
+                            * np.float(si_conv.split('>')[0])
+
+                if 'DELTA_MINUS_VAR' in epoch_var_atts:
+                    delta_minus_var = cdf_file.varget(
+                        epoch_var_atts['DELTA_MINUS_VAR'])
+                    delta_minus_var_att = cdf_file.varattsget(
+                        epoch_var_atts['DELTA_MINUS_VAR'])
+
+                    # check if a conversion to seconds is required
+                    if 'SI_CONVERSION' in delta_minus_var_att:
+                        si_conv = delta_minus_var_att['SI_CONVERSION']
+                        delta_minus_var = \
+                            delta_minus_var.astype(float) \
+                            * np.float(si_conv.split('>')[0])
+                    elif 'SI_CONV' in delta_minus_var_att:
+                        si_conv = delta_minus_var_att['SI_CONV']
+                        delta_minus_var = \
+                            delta_minus_var.astype(float) \
+                            * np.float(si_conv.split('>')[0])
+
+                # sometimes these are specified as arrays
+                if isinstance(delta_plus_var, np.ndarray) \
+                        and isinstance(delta_minus_var, np.ndarray):
+                    delta_time = (delta_plus_var
+                                  - delta_minus_var) / 2.0
+                else:  # and sometimes constants
+                    if delta_plus_var != 0.0 or delta_minus_var != 0.0:
+                        delta_time = (delta_plus_var
+                                      - delta_minus_var) / 2.0
+
+        if self.get_dependency(x_axis_var) is None:
+            if ('CDF_TIME' in data_type_description) or \
+                    ('CDF_EPOCH' in data_type_description):
+                xdata = cdflib.cdfepoch.unixtime(xdata)
+                xdata = np.array(xdata) + delta_time
+                if self._datetime:
+                    xdata = pds.to_datetime(xdata,  unit = 's')
+                self.set_dependency(x_axis_var, xdata)
+
+    def get_index(self, variable_name):
+        var_atts = self._cdf_file.varattsget(variable_name)
+
+        if "DEPEND_TIME" in var_atts:
+            x_axis_var = var_atts["DEPEND_TIME"]
+            self.set_epoch(x_axis_var)
+        elif "DEPEND_0" in var_atts:
+            x_axis_var = var_atts["DEPEND_0"]
+            self.set_epoch(x_axis_var)
+
+        dependencies = []
+        for suffix in ['TIME'] + list('0123'):
+            dependency = "DEPEND_{}".format(suffix)
+            dependency_name = var_atts.get(dependency)
+            if dependency_name is not None:
+                dependency_data = self.get_dependency(dependency_name)
+                if dependency_data is None:
+                    dependency_data = self._cdf_file.varget(dependency_name)
+                    # get first unique row
+                    dependency_data = pds.DataFrame(dependency_data).drop_duplicates().values[0]
+                    self.set_dependency(dependency_name, dependency_data)
+                dependencies.append(dependency_data)
+
+        index_ = None
+        if len(dependencies) == 0:
+            pass
+        elif len(dependencies) == 1:
+            index_ = dependencies[0]
+        else:
+            index_ = pds.MultiIndex.from_product(dependencies)
+
+        return index_
+
+
+    def load_variables(self):
+        """loads cdf variables based on varformat
+
+        """
+        varformat = self._varformat
+        if varformat is None:
+            varformat = ".*"
+
+        varformat = varformat.replace("*", ".*")
+        var_regex = re.compile(varformat)
+
+        for variable_name in self._variable_names:
+            if not re.match(var_regex, variable_name):
+                # skip this variable
+                continue
+            var_atts = self._cdf_file.varattsget(variable_name)
+
+            if 'VAR_TYPE' not in var_atts:
+#                 print('skipping {} (no VAR_TYPE)'.format(variable_name))
+                continue
+
+            if var_atts['VAR_TYPE'] not in self._var_types:
+#                 print('skipping {} ({})'.format(variable_name, var_atts['VAR_TYPE']))
+                continue
+
+            var_properties = self._cdf_file.varinq(variable_name)
+
+            try:
+                ydata = self._cdf_file.varget(variable_name)
+            except (TypeError):
+#                 print('skipping {} (TypeError)'.format(variable_name))
+                continue
+
+            if ydata is None:
+#                 print('skipping {} (empty)'.format(variable_name))
+                continue
+                
+
+            if "FILLVAL" in var_atts:
+                if (var_properties['Data_Type_Description'] == 'CDF_FLOAT'
+                    or var_properties['Data_Type_Description']
+                    == 'CDF_REAL4'
+                    or var_properties['Data_Type_Description']
+                    == 'CDF_DOUBLE'
+                    or var_properties['Data_Type_Description']
+                    == 'CDF_REAL8'):
+                    if ydata[ydata == var_atts["FILLVAL"]].size != 0:
+                        ydata[ydata == var_atts["FILLVAL"]] = np.nan
+            
+            index = self.get_index(variable_name)
+
+            
+            try:
+                if isinstance(index, pds.MultiIndex):
+                    self.data[variable_name] = pds.DataFrame(ydata.ravel(), index = index)
+                else:
+                    if len(ydata.shape) == 1:
+                        self.data[variable_name] = pds.Series(ydata, index = index)
+                    elif len(ydata.shape) == 2:
+                        self.data[variable_name] = pds.DataFrame(ydata, index = index)
+                    elif len(ydata.shape) >2:
+                        self.data[variable_name] = convert_ndimensional(ydata, index = index)
+                    else:
+                        raise NotImplementedError('Cannot handle {} with shape {}'.format(variable_name, ydata.shape))
+            except:
+                self.data[variable_name] = {'ydata':ydata, 'index':index}
+                if self._raise_errors:
+                    raise
+
+            self.meta[variable_name] = var_atts
+            
+    def to_pysat(self, flatten_twod=True, units_label='UNITS', name_label='long_name',
+                        fill_label='FILLVAL', plot_label='FieldNam', 
+                        min_label='ValidMin', max_label='ValidMax', 
+                        notes_label='Var_Notes', desc_label='CatDesc',
+                        axis_label = 'LablAxis'):
+        """
+        Exports loaded CDF data into data, meta for pysat module
+        
+        Notes
+        -----
+        The *_labels should be set to the values in the file, if present.
+        Note that once the meta object returned from this function is attached
+        to a pysat.Instrument object then the *_labels on the Instrument
+        are assigned to the newly attached Meta object.
+        
+        The pysat Meta object will use data with labels that match the patterns
+        in *_labels even if the case does not match.
+
+        Parameters
+        ----------
+        flatten_twod : bool (True)
+            If True, then two dimensional data is flattened across 
+            columns. Name mangling is used to group data, first column
+            is 'name', last column is 'name_end'. In between numbers are 
+            appended 'name_1', 'name_2', etc. All data for a given 2D array
+            may be accessed via, data.ix[:,'item':'item_end']
+            If False, then 2D data is stored as a series of DataFrames, 
+            indexed by Epoch. data.ix[0, 'item']
+        units_label : str
+            Identifier within metadata for units. Defults to CDAWab standard.
+        name_label : str
+            Identifier within metadata for variable name. Defults to 'long_name',
+            not normally present within CDAWeb files. If not, will use values
+            from the variable name in the file.
+        fill_label : str
+            Identifier within metadata for Fill Values. Defults to CDAWab standard.
+        plot_label : str
+            Identifier within metadata for variable name used when plotting.
+            Defults to CDAWab standard.
+        min_label : str
+            Identifier within metadata for minimim variable value. 
+            Defults to CDAWab standard.
+        max_label : str
+            Identifier within metadata for maximum variable value.
+            Defults to CDAWab standard.
+        notes_label : str
+            Identifier within metadata for notes. Defults to CDAWab standard.
+        desc_label : str
+            Identifier within metadata for a variable description.
+            Defults to CDAWab standard.
+        axis_label : str
+            Identifier within metadata for axis name used when plotting. 
+            Defults to CDAWab standard.
+            
+                             
+        Returns
+        -------
+        pandas.DataFrame, pysat.Meta
+            Data and Metadata suitable for attachment to a pysat.Instrument
+            object.
+        
+        """
+
+ 
+        import pysat
+        import pandas as pds
+
+        # create pysat.Meta object using data above
+        # and utilizing the attribute labels provided by the user
+        meta = pysat.Meta(pysat.DataFrame.from_dict(self.meta, orient='index'),
+                          units_label=units_label, name_label=name_label,
+                          fill_label=fill_label, plot_label=plot_label,
+                          min_label=min_label, max_label=max_label,
+                          notes_label=notes_label, desc_label=desc_label,
+                          axis_label=axis_label)
+        data = dict()
+        for varname, df in self.data.items():
+            if varname != 'Epoch':
+                if type(df) == pds.Series:
+                    data[varname] = df
+                    
+        data = pds.DataFrame(data) 
+        
+        return data, meta
+
+
+
 def load(fnames, tag=None, sat_id=None,
          fake_daily_files_from_monthly=False,
          flatten_twod=True):
@@ -168,7 +498,7 @@ def load(fnames, tag=None, sat_id=None,
                 return data, meta
         else:
             # basic data return
-            with pysatCDF.CDF(fnames[0]) as cdf:
+            with CDF(fnames[0]) as cdf:
                 return cdf.to_pysat(flatten_twod=flatten_twod)
 
 
