@@ -92,7 +92,7 @@ def generate_instrument_list(exclude_list, exclude_tags):
                             tag in exclude_tags[name]['tag'] and \
                             sat_id in exclude_tags[name]['sat_id']:
                         # we don't want to test download for this combo
-                        print(' '.join(['Excluding', name, tag, sat_id]))
+                        pass
                     else:
                         try:
                             inst = pysat.Instrument(inst_module=module,
@@ -138,9 +138,6 @@ class TestInstrumentsAll():
 
         for sat_id in module.sat_ids.keys():
             for tag in module.sat_ids[sat_id]:
-                print(' '.join(('Checking pysat.Instrument',
-                                'instantiation for module:', name,
-                                'tag:', tag, 'sat id:', sat_id)))
                 inst = pysat.Instrument(inst_module=module, tag=tag,
                                         sat_id=sat_id)
                 assert isinstance(inst, pysat.Instrument)
