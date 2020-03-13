@@ -185,7 +185,11 @@ def define_period():
     -------
     period : dict
         Dictionary of periods to use in test instruments
-
+   
+    Notes
+    -----
+    Local time and longitude slightly out of sync to simulate motion of Earth
+    
     """
 
     period = {'lt': 5820, # 97 minutes
