@@ -192,22 +192,17 @@ class TestInstrumentsDownload():
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
         if len(inst.files.files) > 0:
             inst.clean_level = clean_level
-            inst.data = pds.DataFrame([0])
+            target = 'Fake Data to be cleared'
+            inst.data = [target]
             start = inst._test_dates[inst.sat_id][inst.tag]
             inst.load(date=start)
+            # Make sure fake data is cleared
+            assert target not in inst.data
+            # If cleaning not used, something should be in the file
+            # Not used for other levels since cleaning may remove all data
             if clean_level == "none":
-                # Something should be in the file
                 assert not inst.empty
-            else:
-                # Alternate check since cleaning may remove all data
-                try:
-                    assert inst.data != pds.DataFrame([0])
-                except (ValueError, AssertionError):
-                    # if objects cannot be compared, not the same
-                    # ValueError when wrong pandas object is here
-                    # AssertionaError if xarray
-                    assert True
-
+            # For last parametrized clean_level, remove files
             if clean_level == "clean":
                 remove_files(inst)
         else:
