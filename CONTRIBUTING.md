@@ -54,7 +54,8 @@ To set up `pysat` for local development:
    for the OMNI HRO data are tested in ``pysat/tests/test_omni_hro.py``.  If no
    test file exists, then you should create one.  This testing uses pytest,
    which will run tests on any python file in the test directory that starts
-   with ``test_``.
+   with ``test``.  Classes must begin with ``Test``, and methods must begin 
+   with ``test`` as well.
 
 4. When you're done making changes, run all the checks to ensure that nothing
    is broken on your local system::

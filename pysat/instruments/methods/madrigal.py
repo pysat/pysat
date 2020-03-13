@@ -345,7 +345,7 @@ def get_remote_filenames(inst_code=None, kindat=None, user=None,
 
     # iterate over experiments to grab files for each one
     files = list()
-    print("Found {:d} Madrigal experiments".format(len(exp_list)))
+    logger.info("Found {:d} Madrigal experiments".format(len(exp_list)))
     for exp in exp_list:
         if good_exp(exp, date_array=date_array):
             file_list = web_data.getExperimentFiles(exp.id)

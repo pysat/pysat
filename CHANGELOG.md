@@ -22,6 +22,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
+   - Added check to ensure non-pysat keywords supplied at instantiation
+     are supported by underlying data set methods
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
      calling it externally
 - Deprecation Warning
@@ -38,6 +40,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug where `remote_file_list` would fail for some instruments.
   - Made import of methods more robust
   - Fixed `SettingWithCopyWarning` in `cnofs_ivm` cleaning routine
+  - Fixed cosmic load method definition to include altitude_bin
+  - Fixed pysat_testing method definition to include mangle_file_dates keyword
   - Updates to Travis CI environment
   - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
 
