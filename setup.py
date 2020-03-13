@@ -19,7 +19,7 @@ with codecs.open(os.path.join(here, version_filename)) as version_file:
 
 # packages to be installed
 # starting with packages common across all setups
-install_requires = ['requests', 'beautifulsoup4', 'lxml', 'netCDF4']
+install_requires = ['requests', 'beautifulsoup4', 'lxml', 'netCDF4', 'cdflib']
 # packages with Fortran code
 fortran_install = ['pysatCDF', 'madrigalWeb', 'h5py', 'PyForecastTools']
 # python version specific support libraries
