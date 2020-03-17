@@ -117,9 +117,8 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     if inst.pandas_format:
         inst[slt_name] = pds.Series(slt, index=inst.data.index)
     else:
-        data = inst.data.assign(pysat_slt=(inst.data.coords.keys(), slt))
-        data.rename({"pysat_slt": slt_name}, inplace=True)
-        inst.data = data
+        inst.data = inst.data.assign({pysat_slt: (inst.data.coords.keys(),
+                                                  slt)})
 
     # Add units to the metadata
     inst.meta[slt_name] = {inst.meta.units_label: 'h',
