@@ -112,7 +112,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
         (default = 24.0)
     cyclic : bool
         If True, assume that fake data is a cyclic function (ie, longitude,
-        slt) that will reset to data_range[0] once it reached data_range[1].
+        slt) that will reset to data_range[0] once it reaches data_range[1].
         If False, continue to monotonically increase
     """
 
