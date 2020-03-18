@@ -5,7 +5,6 @@ try:
     basestring
 except NameError:
     basestring = str
-import warnings
 
 import pandas as pds
 import xarray as xr
@@ -27,17 +26,17 @@ class Custom(object):
 
         def custom_func(inst, opt_param1=False, opt_param2=False):
             return None
-        instrument.custom.add(custom_func, 'modify', opt_param1=True)
+        instrument.custom.attach(custom_func, 'modify', opt_param1=True)
 
         def custom_func2(inst, opt_param1=False, opt_param2=False):
             return data_to_be_added
-        instrument.custom.add(custom_func2, 'add', opt_param2=True)
+        instrument.custom.attach(custom_func2, 'add', opt_param2=True)
         instrument.load(date=date)
         print(instrument['data_to_be_added'])
 
     See Also
     --------
-    Custom.add
+    Custom.attach
 
     Note
     ----
@@ -55,8 +54,8 @@ class Custom(object):
         # keyword arguments to functions
         self._kwargs = []
 
-    def add(self, function, kind='add', at_pos='end', *args, **kwargs):
-        """Add a function to custom processing queue.
+    def attach(self, function, kind='add', at_pos='end', *args, **kwargs):
+        """Attach a function to custom processing queue.
 
         Custom functions are applied automatically to associated
         pysat instrument whenever instrument.load command called.
@@ -86,7 +85,7 @@ class Custom(object):
 
         Note
         ----
-        Allowed `add` function returns:
+        Allowed `attach` function returns:
 
         - {'data' : pandas Series/DataFrame/array_like,
           'units' : string/array_like of strings,
@@ -99,10 +98,6 @@ class Custom(object):
 
         - (string/list of strings, numpy array/list of arrays)
         """
-
-        warnings.warn(' '.join(["custom.add is deprecated and will be",
-                                "renamed in pysat 3.0.0 as custom.attach"]),
-                      DeprecationWarning, stacklevel=2)
 
         if isinstance(function, str):
             # convert string to function object

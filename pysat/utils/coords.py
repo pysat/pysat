@@ -133,20 +133,6 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     return
 
 
-def scale_units(out_unit, in_unit):
-    """Deprecated function, moved to pysat.utils._core"""
-
-    import warnings
-    from pysat import utils
-
-    warnings.warn(' '.join(["utils.coords.scale_units is deprecated, use",
-                            "pysat.utils.scale_units instead"]),
-                  DeprecationWarning, stacklevel=2)
-    unit_scale = utils.scale_units(out_unit, in_unit)
-
-    return unit_scale
-
-
 def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     """Converts position from geodetic to geocentric or vice-versa.
 

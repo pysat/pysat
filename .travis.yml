@@ -1,12 +1,11 @@
 language: python
+dist: xenial
 matrix:
   include:
-    - python: 2.7
-      services: xvfb
+    - python: 3.6
     - python: 3.7
-      dist: xenial
-      services: xvfb
 
+services: xvfb
 cache: pip
 
 addons:
@@ -18,8 +17,6 @@ addons:
 before_install:
   - pip install coveralls
   - pip install future
-  - pip install 'pandas<0.25' # Temporary for pysat 2.x, remove in 3.0.0
-  - pip install 'xarray<0.15' # Temporary for pysat 2.x, remove in 3.0.0
   - pip install pysatCDF >/dev/null
   # Travis CI currently not working with netCDF4 1.5.3
   - pip install 'netCDF4<1.5.3'
@@ -31,14 +28,6 @@ install:
   - mkdir /home/travis/build/pysatData
   # install pysat
   - python setup.py install
-
-before_script:
-  # set up display screen
-  - export DISPLAY=:99.0
-  - if [[ $TRAVIS_PYTHON_VERSION < "3.7" ]]; then
-      sh -e /etc/init.d/xvfb start;
-      sleep 3;
-    fi
 
 # command to run tests
 script:

@@ -124,25 +124,6 @@ def calc_freq(index):
     return freq
 
 
-def season_date_range(start, stop, freq='D'):
-    """
-    Deprecated Function, will be removed in future version.
-
-    Replaced by create_date_range
-
-    """
-
-    import warnings
-
-    warnings.warn(' '.join(["utils.time.season_date_range is deprecated, use",
-                            "utils.time.create_date_range instead"]),
-                  DeprecationWarning, stacklevel=2)
-
-    season = create_date_range(start, stop, freq=freq)
-
-    return season
-
-
 def create_date_range(start, stop, freq='D'):
     """
     Return array of datetime objects using input frequency from start to stop

@@ -2,14 +2,28 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.0.0] - 2020-03-02
+- New Features
+  - Added registry module for registering custom external instruments
+  - custom.attach replaces custom.add
+- Deprecations
+  - Removed ssnl
+  - Removed utils.stats
+  - Removed model_utils
+  - Removed coords.scale_units
+  - Removed time.season_date_range
+- Documentation
+  - Added info on how to register new instruments
+  - Fixed description of tag and sat_id behaviour in testing instruments
+
 ## [2.2.0] - 2020-2-29
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
+   - Updates to instrument testing objects for consistency
    - Added check to ensure non-pysat keywords supplied at instantiation
      are supported by underlying data set methods
-   - Updates to instrument testing objects for consistency
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
      calling it externally
 - Deprecation Warning

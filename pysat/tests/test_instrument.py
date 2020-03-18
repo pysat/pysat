@@ -370,7 +370,7 @@ class TestBasics():
     def test_repr_w_custom_func(self):
         def testfunc(self):
             pass
-        self.testInst.custom.add(testfunc, 'modify')
+        self.testInst.custom.attach(testfunc, 'modify')
         print(self.testInst)
         assert True
 
