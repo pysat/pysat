@@ -1995,12 +1995,29 @@ class Instrument(object):
         if (coltype == type(' ')) or (coltype == type(u' ')):
             # if isinstance(coltype, str):
             remove = True
+            warnings.warn('FillValue is not an acceptable '
+                          'parameter for strings it will be removed')
+        
         # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
                 mdata_dict.pop('_FillValue')
             else:
+                if not np.can_cast(mdata_dict['_FillValue'], coltype):
+                    if 'FieldNam' in mdata_dict:
+                         warnings.warn('FillValue for %s (%s) cannot be safely '
+                                      'casted to %s Casting anyways. '
+                                      'This may result in unexpected behavior'
+                                      % (mdata_dict['FieldNam'],
+                                         str(mdata_dict['_FillValue']),
+                                         coltype))
+                    else:
+                        warnings.warn('FillValue %s cannot be safely '
+                                      'casted to %s. Casting anyways. '
+                                      'This may result in unexpected behavior'
+                                      % (str(mdata_dict['_FillValue']),
+                                         coltype))
                 mdata_dict['_FillValue'] = \
                     np.array(mdata_dict['_FillValue']).astype(coltype)
         if u'FillVal' in mdata_dict.keys():
