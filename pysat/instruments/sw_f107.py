@@ -674,10 +674,6 @@ def rewrite_daily_file(year, outfile, lines):
 
     """
 
-    # Parse text to get the date the prediction was generated
-    date_str = lines.split(':Issued: ')[-1].split('\n')[0]
-    date = pysat.datetime.strptime(date_str, '%H%M UT %d %b %Y')
-
     # get to the solar index data
     if year > 2000:
         raw_data = lines.split('#---------------------------------')[-1]
