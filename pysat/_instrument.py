@@ -13,12 +13,12 @@ import inspect
 import os
 import string
 import sys
-
 import pkgutil
-import pandas as pds
-import numpy as np
-import xarray as xr
 import warnings
+
+import numpy as np
+import pandas as pds
+import xarray as xr
 
 from pysat import _custom
 from pysat import _files
