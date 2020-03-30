@@ -58,10 +58,6 @@ def generate_instrument_list(exclude_list, exclude_tags):
         if name not in exclude_list:
             temp.append(name)
     instrument_names = temp
-
-    print('The following instrument modules will be tested : ',
-          instrument_names)
-
     instruments = []
     instrument_modules = []
 
