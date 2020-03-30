@@ -117,9 +117,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     if inst.pandas_format:
         inst[slt_name] = pds.Series(slt, index=inst.data.index)
     else:
-        data = inst.data.assign(pysat_slt=(inst.data.coords.keys(), slt))
-        data.rename({"pysat_slt": slt_name}, inplace=True)
-        inst.data = data
+        inst.data = inst.data.assign({slt_name: (inst.data.coords.keys(),slt)})
 
     # Add units to the metadata
     inst.meta[slt_name] = {inst.meta.units_label: 'h',
@@ -133,20 +131,6 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
                            inst.meta.fill_label: np.nan}
 
     return
-
-
-def scale_units(out_unit, in_unit):
-    """Deprecated function, moved to pysat.utils._core"""
-
-    import warnings
-    from pysat import utils
-
-    warnings.warn(' '.join(["utils.coords.scale_units is deprecated, use",
-                            "pysat.utils.scale_units instead"]),
-                  DeprecationWarning, stacklevel=2)
-    unit_scale = utils.scale_units(out_unit, in_unit)
-
-    return unit_scale
 
 
 def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):

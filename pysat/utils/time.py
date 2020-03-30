@@ -7,9 +7,9 @@ the pysat package, including interactions with datetime objects,
 seasons, and calculation of solar local time
 """
 
+import datetime as dt
 import numpy as np
 import pandas as pds
-from pysat import datetime
 
 
 def getyrdoy(date):
@@ -30,7 +30,7 @@ def getyrdoy(date):
     """
 
     try:
-        doy = date.toordinal() - datetime(date.year, 1, 1).toordinal() + 1
+        doy = date.toordinal() - dt.datetime(date.year, 1, 1).toordinal() + 1
     except AttributeError:
         raise AttributeError("Must supply a pandas datetime object or " +
                              "equivalent")
@@ -67,8 +67,8 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
     """
 
     yr = int(str_yr) + century if len(str_yr) == 2 else int(str_yr)
-    out_date = pds.datetime(yr, int(str_mo), int(str_day), int(str_hr),
-                            int(str_min), int(str_sec))
+    out_date = dt.datetime(yr, int(str_mo), int(str_day), int(str_hr),
+                           int(str_min), int(str_sec))
 
     return out_date
 
@@ -122,25 +122,6 @@ def calc_freq(index):
         freq = "{:.0f}N".format(freq_sec * 1.0e9)
 
     return freq
-
-
-def season_date_range(start, stop, freq='D'):
-    """
-    Deprecated Function, will be removed in future version.
-
-    Replaced by create_date_range
-
-    """
-
-    import warnings
-
-    warnings.warn(' '.join(["utils.time.season_date_range is deprecated, use",
-                            "utils.time.create_date_range instead"]),
-                  DeprecationWarning, stacklevel=2)
-
-    season = create_date_range(start, stop, freq='D')
-
-    return season
 
 
 def create_date_range(start, stop, freq='D'):
@@ -219,15 +200,15 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     idx2 = np.hstack((idx, len(year) + 1))
     # computes UTC seconds offset for each unique set of year and month
     for _idx, _idx2 in zip(idx[1:], idx2[2:]):
-        temp = (datetime(year[_idx], month[_idx], 1) -
-                datetime(year[0], month[0], 1))
+        temp = (dt.datetime(year[_idx], month[_idx], 1) -
+                dt.datetime(year[0], month[0], 1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
     uts_del += (day - 1) * 86400
     # add in seconds since unix epoch to first day
-    uts_del += (datetime(year[0], month[0], 1) -
-                datetime(1970, 1, 1)).total_seconds()
+    uts_del += (dt.datetime(year[0], month[0], 1) -
+                dt.datetime(1970, 1, 1)).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)

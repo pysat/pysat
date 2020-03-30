@@ -73,7 +73,7 @@ class Constellation(object):
         a function for data modification, it passes the call to each
         instrument and registers it in the instrument's pysat.Custom queue.
 
-        (Wraps pysat.Custom.add; documentation of that function is
+        (Wraps pysat.Custom.attach; documentation of that function is
         reproduced here.)
 
         Parameters
@@ -112,7 +112,7 @@ class Constellation(object):
         """
 
         for instrument in self.instruments:
-            instrument.custom.add(*args, **kwargs)
+            instrument.custom.attach(*args, **kwargs)
 
     def load(self, *args, **kwargs):
         """

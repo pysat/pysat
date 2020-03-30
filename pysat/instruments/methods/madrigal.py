@@ -4,17 +4,23 @@ pysat, reducing the amount of user intervention.
 
  """
 
-from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import print_function
 
-import sys
-import pandas as pds
+import datetime as dt
+import logging
 import numpy as np
+import os
+import pandas as pds
+import subprocess
+import sys
+
+import h5py
+from madrigalWeb import madrigalWeb
+    
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
-
 
 def cedar_rules():
     """ General acknowledgement statement for Madrigal data.
@@ -69,8 +75,6 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
         inst.load(2010,18)
 
     """
-    import h5py
-    import numpy as np
 
     # Ensure 'time' wasn't included as a coordinate, since it is the default
     if 'time' in xarray_coords:
@@ -206,8 +210,6 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
 
     """
 
-    import subprocess
-
     if inst_code is None:
         raise ValueError("Must supply Madrigal instrument code")
 
@@ -225,30 +227,179 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
         logger.info('Please provide email address in password field.')
         password = 'pysat_testing@not_real_email.org'
 
-    try:
-        a = subprocess.check_output(["globalDownload.py", "--verbose",
-                                     "--url=" + url,
-                                     '--outputDir=' + data_path,
-                                     '--user_fullname=' + user,
-                                     '--user_email=' + password,
-                                     '--user_affiliation=pysat',
-                                     '--format=' + file_format,
-                                     '--startDate=' +
-                                     date_array[0].strftime('%m/%d/%Y'),
-                                     '--endDate=' +
-                                     date_array[-1].strftime('%m/%d/%Y'),
-                                     '--inst=' + inst_code,
-                                     '--kindat=' + kindat])
-        logger.info('Feedback from openMadrigal %s', a)
-    except OSError as str_err:
-        logger.error(' '.join("problem running globalDownload.py, check python path",
-                       "->", str_err))
+    # Initialize the connection to Madrigal
+    web_data = madrigalWeb.MadrigalData(url)
+
+    # Get the list of desired remote files
+    start = date_array.min()
+    stop = date_array.max()
+    if start == stop:
+        stop += dt.timedelta(days=1)
+    files = get_remote_filenames(inst_code=inst_code, kindat=kindat, user=user,
+                                 password=password, web_data=web_data, url=url,
+                                 start=start, stop=stop)
+
+    for mad_file in files:
+        local_file = os.path.join(data_path, os.path.basename(mad_file.name))
+
+        if not os.path.isfile(local_file):
+            web_data.downloadFile(mad_file.name, local_file, user, password,
+                                  "pysat", format=file_format)
 
 
-def list_remote_files(tag, sat_id, inst_code=None, user=None,
+def get_remote_filenames(inst_code=None, kindat=None, user=None,
+                         password=None, web_data=None,
+                         url="http://cedar.openmadrigal.org",
+                         start=dt.datetime(1900,1,1), stop=dt.datetime.now(),
+                         date_array=None):
+    """Retrieve the remote filenames for a specified Madrigal instrument
+    (and experiment)
+
+    Parameters
+    ----------
+    inst_code : string (None)
+        Madrigal instrument code(s), cast as a string.  If multiple are used,
+        separate them with commas.
+    kindat : string (None)
+        Madrigal experiment code(s), cast as a string.  If multiple are used,
+        separate them with commas.  If not supplied, all will be returned.
+    data_path : string (None)
+        Path to directory to download data to.
+    user : string (None)
+        User string input used for download. Provided by user and passed via
+        pysat. If an account
+        is required for dowloads this routine here must error if user not
+        supplied.
+    password : string (None)
+        Password for data download.
+    web_data : MadrigalData (None)
+        Open connection to Madrigal database or None (will initiate using url)
+    url : string ('http://cedar.openmadrigal.org')
+        URL for Madrigal site
+    start : dt.datetime
+        Starting time for file list (defaults to 01-01-1900)
+    stop : dt.datetime
+        Ending time for the file list (defaults to time of run)
+    date_array : dt.datetime (None)
+        Array of datetimes to download data for. The sequence of dates need not
+        be contiguous and will be used instead of start and stop if supplied.
+
+    Returns
+    -------
+    Void : (NoneType)
+        Downloads data to disk.
+
+    Notes
+    -----
+    The user's names should be provided in field user. Ruby Payne-Scott should
+    be entered as Ruby+Payne-Scott
+
+    The password field should be the user's email address. These parameters
+    are passed to Madrigal when downloading.
+
+    The affiliation field is set to pysat to enable tracking of pysat
+    downloads.
+
+
+    """
+
+    if inst_code is None:
+        raise ValueError("Must supply Madrigal instrument code")
+
+    if kindat is None:
+        kindat = []
+    else:
+        kindat = [int(kk) for kk in kindat.split(",")]
+
+    # currently passes things along if no user and password supplied
+    # need to do this for testing
+    # TODO, implement user and password values in test code
+    # specific to each instrument
+    if user is None:
+        print('No user information supplied for download.')
+        user = 'pysat_testing'
+    if password is None:
+        print('Please provide email address in password field.')
+        password = 'pysat_testing@not_real_email.org'
+
+    # If date_array supplied, overwrite start and stop
+    if date_array is not None:
+        if len(date_array) == 0:
+            raise ValueError('unknown date_array supplied: {:}'.format(
+                date_array))
+        start = date_array.min()
+        stop = date_array.max()
+        if start == stop:
+            stop += dt.timedelta(days=1)
+
+    # open connection to Madrigal
+    if web_data is None:
+        web_data = madrigalWeb.MadrigalData(url)
+
+    # get list of experiments for instrument from 1900 till now
+    exp_list = web_data.getExperiments(inst_code, start.year, start.month,
+                                       start.day, start.hour, start.minute,
+                                       start.second, stop.year, stop.month,
+                                       stop.day, stop.hour, stop.minute,
+                                       stop.second)
+
+    # iterate over experiments to grab files for each one
+    files = list()
+    print("Found {:d} Madrigral experiments".format(len(exp_list)))
+    for exp in exp_list:
+        if good_exp(exp, date_array=date_array):
+            file_list = web_data.getExperimentFiles(exp.id)
+
+            if len(kindat) == 0:
+                files.extend(file_list)
+            else:
+                for file_obj in file_list:
+                    if file_obj.kindat in kindat:
+                        files.append(file_obj)
+
+    return files
+
+def good_exp(exp, date_array=None):
+    """ Determine if a Madrigal experiment has good data for specified dates
+
+    Parameters
+    ----------
+    exp : MadrigalExperimentFile
+        MadrigalExperimentFile object
+    date_array : array-like
+        list of datetimes to download data for. The sequence of dates need not
+        be contiguous.
+
+    Returns
+    -------
+    gflag : boolean
+        True if good, False if bad
+
+    """
+
+    gflag = False
+
+    if exp.id != -1:
+        if date_array is None:
+            gflag = True
+        else:
+            exp_start = dt.datetime(exp.startyear, exp.startmonth, exp.startday,
+                                    exp.starthour, exp.startmin, exp.startsec)
+            exp_end = dt.datetime(exp.endyear, exp.endmonth, exp.endday,
+                                  exp.endhour, exp.endmin, exp.endsec)
+
+            for date_val in date_array:
+                if date_val >= exp_start and date_val < exp_end:
+                    gflag = True
+                    break
+
+    return gflag
+
+def list_remote_files(tag, sat_id, inst_code=None, kindat=None, user=None,
                       password=None, supported_tags=None,
                       url="http://cedar.openmadrigal.org",
-                      two_digit_year_break=None):
+                      two_digit_year_break=None, start=dt.datetime(1900,1,1),
+                      stop=dt.datetime.now()):
     """List files available from Madrigal.
 
     Parameters
@@ -262,6 +413,9 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
     inst_code : string (None)
         Madrigal instrument code(s), cast as a string.  If multiple are used,
         separate them with commas.
+    kindat : string (None)
+        Madrigal experiment code(s), cast as a string.  If multiple are used,
+        separate them with commas.  If not supplied, all will be returned.
     data_path : string (None)
         Path to directory to download data to.
     user : string (None)
@@ -280,6 +434,10 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
+    start : (dt.datetime)
+        Starting time for file list (defaults to 01-01-1900)
+    stop : (dt.datetime)
+        Ending time for the file list (defaults to time of run)
 
     Returns
     -------
@@ -307,8 +465,6 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
                                               inst_code=madrigal_inst_code)
 
     """
-    import madrigalWeb.madrigalWeb
-
     if inst_code is None:
         raise ValueError("Must supply Madrigal instrument code")
 
@@ -323,29 +479,21 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
         logger.info('Please provide email address in password field.')
         password = 'pysat_testing@not_real_email.org'
 
+    # Test input
     try:
         format_str = supported_tags[sat_id][tag]
     except KeyError:
         raise ValueError('Problem parsing supported_tags')
 
-    # open connection to Madrigal
-    web_data = madrigalWeb.madrigalWeb.MadrigalData(url)
-    # get list of experiments for instrument from 1900 till now
-    now = pysat.datetime.now()
-    exp_list = web_data.getExperiments(inst_code, 1900, 1, 1, 0, 0, 0,
-                                       now.year, now.month, now.day,
-                                       23, 59, 59)
-    # iterate over experiments to grab files for each one
-    files = []
-    logger.info("Grabbing filenames for each experiment")
-    logger.info("A total of %s %s", len(exp_list), "experiments were found")
-    for exp in exp_list:
-        file_list = web_data.getExperimentFiles(exp.id)
-        files.extend(file_list)
+    # Retrieve remote file list
+    files = get_remote_filenames(inst_code=inst_code, kindat=kindat, user=user,
+                                 password=password, url=url, start=start,
+                                 stop=stop)
 
     # parse these filenames to grab out the ones we want
     logger.info("Parsing filenames")
     stored = pysat._files.parse_fixed_width_filenames(files, format_str)
+
     # process the parsed filenames and return a properly formatted Series
     logger.info("Processing filenames")
     return pysat._files.process_parsed_filenames(stored, two_digit_year_break)
@@ -354,6 +502,13 @@ def list_remote_files(tag, sat_id, inst_code=None, user=None,
 def filter_data_single_date(self):
     """Filters data to a single date.
 
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Note
+    ----
     Madrigal serves multiple days within a single JRO file
     to counter this, we will filter each loaded day so that it only
     contains the relevant day of data. This is only applied if loading
@@ -362,24 +517,10 @@ def filter_data_single_date(self):
     data padding is enabled the final data available within the instrument
     will be downselected by pysat to only include the date specified.
 
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
-    Note
-    ----
     This routine is intended to be added to the Instrument
     nanokernel processing queue via
         inst = pysat.Instrument()
-        inst.custom.add(filter_data_single_date, 'modify')
+        inst.custom.attach(filter_data_single_date, 'modify')
     This function will then be automatically applied to the
     Instrument object data on every load by the pysat nanokernel.
 
