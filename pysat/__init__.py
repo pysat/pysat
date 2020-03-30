@@ -82,6 +82,7 @@ else:
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
         data_dir = f.readline()
 
+import netCDF4
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
 from ._constellation import Constellation
