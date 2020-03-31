@@ -45,6 +45,7 @@ install:
 
 # command to run tests
 script:
+ - conda activate test-environment
  - nosetests -vs --with-coverage --cover-package=pysat
 
 after_success:
