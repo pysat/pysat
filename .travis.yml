@@ -32,6 +32,8 @@ install:
   - conda activate test-environment
   - conda install coveralls
   - conda install future
+  - pip install madrigalWeb
+  - pip install PyForecastTools
   - pip install pysatCDF >/dev/null
   # set up data directory
   - mkdir /home/travis/build/pysatData
