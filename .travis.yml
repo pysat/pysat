@@ -28,11 +28,9 @@ before_install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray requests beautifulsoup4 lxml netCDF4 madrigalWeb h5py PyForecastTools
   - conda install coveralls
   - conda install future
-  # Travis CI currently not working with netCDF4 1.5.3
-  - conda install netCDF4
   - pip install pysatCDF >/dev/null
 
 # command to install dependencies
@@ -45,7 +43,6 @@ install:
 
 # command to run tests
 script:
- - conda activate test-environment
  - nosetests -vs --with-coverage --cover-package=pysat
 
 after_success:
