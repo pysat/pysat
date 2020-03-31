@@ -14,7 +14,7 @@ addons:
     - gfortran
     - libncurses5-dev
 
-before_install:
+install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
@@ -29,13 +29,10 @@ before_install:
 
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray requests beautifulsoup4 lxml netCDF4 h5py
+  - conda activate test-environment
   - conda install coveralls
   - conda install future
   - pip install pysatCDF >/dev/null
-
-# command to install dependencies
-install:
-  - conda activate test-environment
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
