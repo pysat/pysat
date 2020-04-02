@@ -52,6 +52,14 @@ class TestBasics():
             (test_date == self.testInst.date)
 
     @raises(Exception)
+    def test_basic_instrument_bad_keyword(self):
+        """Checks for error when instantiating with bad load_rtn keywords"""
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    unsupported_keyword_yeah=True)
+
+    @raises(Exception)
     def test_basic_instrument_load_yr_no_doy(self):
         self.testInst.load(2009)
 
@@ -297,34 +305,12 @@ class TestBasics():
             assert np.all(self.testInst.index ==
                           self.testInst.data.indexes['time'])
 
-    # --------------------------------------------------------------------------
-    #
-    # Test custom attributes
-    #
-    # --------------------------------------------------------------------------
+    # #--------------------------------------------------------------------------
+    # #
+    # # Test custom attributes
+    # #
+    # #--------------------------------------------------------------------------
 
-    def test_create_custom_attribute(self):
-        # check attribute attached to meta
-        self.testInst.my_attr = 'my value'
-        assert self.testInst.my_attr is self.testInst.meta.my_attr
-        assert 'my_attr' not in dir(self.testInst)
-
-        # check underscores attached to instrument
-        self.testInst._nometa = 'non meta value'
-        assert self.testInst._nometa == 'non meta value'
-        assert '_nometa' in dir(self.testInst)
-        assert '_nometa' not in dir(self.testInst.meta)
-
-        # check if underscore stays attached to meta
-        self.testInst.meta._mine = 'stay here'
-        assert self.testInst._mine is self.testInst.meta._mine
-        assert '_mine' not in dir(self.testInst)
-
-        # see if a base attr attached to instrument
-        self.testInst.pad = 1
-        assert self.testInst.pad == 1
-        assert 'pad' in dir(self.testInst)
-        assert 'pad' not in dir(self.testInst.meta)
 
     @raises(AttributeError)
     def test_retrieve_bad_attribute(self):

@@ -162,7 +162,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         return pds.Series(None)
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, altitude_bin=None):
     """Load COSMIC GPS files.
 
     Parameters
@@ -173,6 +173,9 @@ def load(fnames, tag=None, sat_id=None):
         tag or None (default=None)
     sat_id : (str or NoneType)
         satellite id or None (default=None)
+    altitude_bin : integer
+        Number of kilometers to bin altitude profiles by when loading.
+        Currently only supported for tag='ionprf'.
 
     Returns
     -------
@@ -183,12 +186,19 @@ def load(fnames, tag=None, sat_id=None):
 
     """
 
+    # input check
+    if altitude_bin is not None:
+        if tag != 'ionprf':
+            estr = 'altitude_bin keyword only supported for "tag=ionprf"'
+            raise ValueError(estr)
+
     num = len(fnames)
     # make sure there are files to read
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pds.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id))
+        output = pds.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id,
+                                          altitude_bin=altitude_bin))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
         # make times unique by adding a unique amount of time less than a second
         if tag != 'scnlv1':

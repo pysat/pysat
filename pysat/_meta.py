@@ -174,7 +174,12 @@ class Meta(object):
                  name_label='long_name', notes_label='notes',
                  desc_label='desc', plot_label='label', axis_label='axis',
                  scale_label='scale', min_label='value_min',
-                 max_label='value_max', fill_label='fill'):
+                 max_label='value_max', fill_label='fill',
+                 ):
+
+        # set mutability of Meta attributes
+        self.mutable = True
+
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label
@@ -211,9 +216,12 @@ class Meta(object):
                                                       self._max_label,
                                                       self._fill_label])
 
+
+
         # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
+
 
     @property
     def ho_data(self):
@@ -384,6 +392,49 @@ class Meta(object):
                     input_name, input_name, 'linear', default_nan,
                     default_nan, default_nan]
         self._data.loc[input_name, labels] = defaults
+
+
+
+    def __setattr__(self, name, value):
+        """Conditionally sets attributes based on self.mutable flag 
+
+        @properties are assumed to be mutable.
+
+        We avoid recursively setting properties using
+        method from https://stackoverflow.com/a/15751135
+        """
+
+        # mutable handled explicitly to avoid recursion
+        if name != 'mutable':
+
+            # check if this attribute is a property
+            propobj = getattr(self.__class__, name, None)
+            if isinstance(propobj, property):
+                # check if the property is settable
+                if propobj.fset is None:
+                    raise AttributeError(''.join("can't set attribute - ",
+                                        "property has no fset"))
+
+                # make mutable in case fset needs it to be
+                mutable_tmp = self.mutable
+                self.mutable = True
+
+                # set the property
+                propobj.fset(self, value)
+
+                # restore mutability flag
+                self.mutable = mutable_tmp
+            else:
+                # a normal attribute
+                if self.mutable:
+                    # use Object to avoid recursion
+                    super(Meta, self).__setattr__(name, value)
+                else:
+                    raise AttributeError(''.join(("cannot set attribute - ",
+                                                    "object's attributes are immutable")))
+        else:
+            super(Meta, self).__setattr__(name, value)
+        
 
     def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
@@ -971,8 +1022,9 @@ class Meta(object):
         # get list of instrument objects attributes first
         # to check if a duplicate
 
-        # instrument attributes are now inst.meta attributes
-        inst_attr = dir(inst.meta)
+        # instrument attributes stay with instrument
+        inst_attr = dir(inst)
+        
         for key in transfer_key:
             if key not in banned:
                 if key not in inst_attr:

@@ -244,7 +244,7 @@ def calc_measurement_loc(self):
         if kk in el_keys:
             try:
                 good_dir.append(int(kk))
-            except:
+            except ValueError:
                 logger.warning("unknown direction number [{:}]".format(kk))
 
     # Calculate the geodetic latitude and longitude for each direction
@@ -270,9 +270,7 @@ def calc_measurement_loc(self):
 
         # Assigning as data, to ensure that the number of coordinates match
         # the number of data dimensions
-        self.data = self.data.assign(lat_key=gdlat, lon_key=gdlon)
-        self.data.rename({"lat_key": lat_key, "lon_key": lon_key},
-                         inplace=True)
+        self.data = self.data.assign({lat_key: gdlat, lon_key: gdlon})
 
         # Add metadata for the new data values
         bm_label = "Beam {:d} ".format(dd)
