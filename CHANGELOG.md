@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0] - 2020-03-02
 - New Features
   - Added registry module for registering custom external instruments
+  - Added Meta.mutable flag to control attribute mutability
   - custom.attach replaces custom.add
 - Deprecations
   - Removed ssnl
@@ -15,6 +16,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
+- Bug Fix
+  - Fixed custom instrument attribute persistence upon load
 
 ## [2.2.0] - 2020-2-29
 - New Features
