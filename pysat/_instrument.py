@@ -880,6 +880,13 @@ class Instrument(object):
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
             self._test_download_travis = True
+        try:
+            # Used for tests which require password access
+            self._password_req = \
+                inst._password_req[self.sat_id][self.tag]
+        except (AttributeError, KeyError):
+            # Either flags are not specified, or this combo is not
+            self._password_req = False
 
     def __str__(self):
 
@@ -2694,4 +2701,3 @@ def _check_if_keywords_supported(func, **kwargs):
                              'Please double check the keyword inputs.'))
             raise ValueError(estr)
     return True
-

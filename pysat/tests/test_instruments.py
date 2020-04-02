@@ -81,10 +81,10 @@ def generate_instrument_list(instrument_names=[], package=None):
                         if inst._test_download:
                             if not travis_skip:
                                 instrument_download.append(inst)
-                        else:
+                        elif not inst._password_req:
                             # we don't want to test download for this combo
-                            print(' '.join(['Excluding', name,
-                                            sat_id, tag, 'from downloads']))
+                            # But we do want to test the download warnings
+                            # for instruments without a password requirement
                             instrument_no_download.append(inst)
                     except:
                         pass
