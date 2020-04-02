@@ -132,7 +132,6 @@ class TestInstrumentsAll():
                 assert inst.sat_id == sat_id
                 assert inst.tag == tag
 
-    @pytest.mark.all
     @pytest.mark.parametrize("name", instruments['names'])
     def test_required_function_presence(self, name):
         """Check if each required function is present and callable"""
@@ -142,7 +141,6 @@ class TestInstrumentsAll():
         assert hasattr(module, 'list_files') & callable(module.list_files)
         assert hasattr(module, 'download') & callable(module.download)
 
-    @pytest.mark.all
     @pytest.mark.parametrize("name", instruments['names'])
     def test_instrument_tdates(self, name):
         module = import_module(''.join(('.', name)),
