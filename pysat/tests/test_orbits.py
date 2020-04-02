@@ -450,15 +450,12 @@ class TestGeneralOrbitsMLT():
         for j in range(40):
             n_time.append(self.testInst.index[0])
             self.testInst.orbits.next()
-            print(j)
 
         for j in range(40):
             self.testInst.orbits.prev()
             p_time.append(self.testInst.index[0])
-            print(j)
 
         check = np.all(p_time == n_time[::-1])
-        print('check!')
         assert all(control.data == self.testInst.data) & check
 
 
