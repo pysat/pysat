@@ -101,6 +101,11 @@ instruments = \
 
 
 class TestInstrumentsAll():
+    """Provides basic tests to ensure instruments behave like pysat
+    instruments.  These tests should be run on all instruments to ensure that
+    they are configured with appropriate properties.
+
+    """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -151,6 +156,11 @@ class TestInstrumentsAll():
                 assert isinstance(info[sat_id][tag], pds.datetime)
 
 class TestInstrumentsDownload():
+    """Provides additional tests for instruments with fully supported download
+    routines in pysat.  Instruments with password access that should not be
+    stored in a public location should not be included here.
+
+    """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -212,6 +222,12 @@ class TestInstrumentsDownload():
 
 
 class TestInstrumentsNoDownload():
+    """Provides additional tests for instruments where downloads are not
+    currently available.  May be used for models that are locally run,
+    instruments not yet publically available, or instruments that require a
+    download interface not yet supported by pysat.
+
+    """
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
