@@ -32,7 +32,7 @@ def remove_files(inst):
                 os.unlink(file_path)
     else:
         warnings.warn(''.join(('Files > 20.  Not deleted.  Please check to ',
-                              'ensure temp directory is used')))
+                               'ensure temp directory is used')))
 
 
 def generate_instrument_list(instrument_names=[], package=None):
