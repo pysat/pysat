@@ -35,11 +35,14 @@ def remove_files(inst):
                               'ensure temp directory is used')))
 
 
-def generate_instrument_list(instrument_names=[], package='pysat.instruments'):
+def generate_instrument_list(instrument_names=[], package=None):
     """Iterate through and create all of the test Instruments needed.
        Only want to do this once.
 
     """
+
+    if package == None:
+        package = 'pysat.instruments'
 
     print('The following instrument modules will be tested : ',
           instrument_names)
