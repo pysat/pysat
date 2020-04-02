@@ -19,6 +19,7 @@ before_install:
   - pip install future
   - pip install pysatCDF >/dev/null
   # Travis CI currently not working with netCDF4 1.5.3
+  - pip install 'cftime==1.1.1'
   - pip install 'netCDF4<1.5.3'
 
 # command to install dependencies
