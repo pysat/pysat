@@ -44,9 +44,6 @@ def generate_instrument_list(instrument_names=[], package=None):
     if package == None:
         package = 'pysat.instruments'
 
-    print('The following instrument modules will be tested : ',
-          instrument_names)
-
     instrument_download = []
     instrument_no_download = []
 
@@ -168,15 +165,21 @@ class TestInstrumentsDownload():
     @pytest.mark.first
     @pytest.mark.parametrize("inst", instruments['download'])
     def test_download(self, inst):
-        print(' '.join(('\nChecking download routine functionality for module: ',
-                        inst.platform, inst.name, inst.tag, inst.sat_id)))
-        start = inst._test_dates[inst.sat_id][inst.tag]
-        # check for username
-        inst_name = '_'.join((inst.platform, inst.name))
-        dl_dict = user_download_dict[inst_name] if inst_name in \
-            user_download_dict.keys() else {}
-        inst.download(start, start, **dl_dict)
-        assert len(inst.files.files) > 0
+        try:
+            start = inst._test_dates[inst.sat_id][inst.tag]
+            # check for username
+            inst_name = '_'.join((inst.platform, inst.name))
+            dl_dict = user_download_dict[inst_name] if inst_name in \
+                user_download_dict.keys() else {}
+            inst.download(start, start, **dl_dict)
+            assert len(inst.files.files) > 0
+        except AssertionError as merr:
+            # Let users know which instrument is failing, as instrument
+            # list is opaque
+            print(' '.join(('\nProblem with downloading:', inst.platform,
+                            inst.name, inst.tag, inst.sat_id)))
+            raise merr
+
 
     @pytest.mark.second
     @pytest.mark.parametrize("inst", instruments['download'])
@@ -184,23 +187,28 @@ class TestInstrumentsDownload():
                                              'clean'])
     def test_load(self, inst, clean_level):
         # make sure download was successful
-        print(' '.join(('\nChecking load routine functionality for module',
-                        inst.platform, inst.name, inst.tag, inst.sat_id)))
         if len(inst.files.files) > 0:
-            inst.clean_level = clean_level
-            target = 'Fake Data to be cleared'
-            inst.data = [target]
-            start = inst._test_dates[inst.sat_id][inst.tag]
-            inst.load(date=start)
-            # Make sure fake data is cleared
-            assert target not in inst.data
-            # If cleaning not used, something should be in the file
-            # Not used for other levels since cleaning may remove all data
-            if clean_level == "none":
-                assert not inst.empty
-            # For last parametrized clean_level, remove files
-            if clean_level == "clean":
-                remove_files(inst)
+            try:
+                inst.clean_level = clean_level
+                target = 'Fake Data to be cleared'
+                inst.data = [target]
+                start = inst._test_dates[inst.sat_id][inst.tag]
+                inst.load(date=start)
+                # Make sure fake data is cleared
+                assert target not in inst.data
+                # If cleaning not used, something should be in the file
+                # Not used for clean levels since cleaning may remove all data
+                if clean_level == "none":
+                    assert not inst.empty
+                # For last parametrized clean_level, remove files
+                if clean_level == "clean":
+                    remove_files(inst)
+            except AssertionError as merr:
+                # Let users know which instrument is failing, as instrument
+                # list is opaque
+                print(' '.join(('\nProblem with loading:', inst.platform,
+                                inst.name, inst.tag, inst.sat_id)))
+                raise merr
         else:
             pytest.skip("Download data not available")
 

@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0] - 2020-03-07
 - New Features
   - Added registry module for registering custom external instruments
+  - Added Meta.mutable flag to control attribute mutability
   - custom.attach replaces custom.add
   - Unit tests are now pytest compatible
 - Deprecations
@@ -16,12 +17,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
+- Bug Fix
+  - Fixed custom instrument attribute persistence upon load
 
 ## [2.2.0] - 2020-2-29
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
+   - Updates to instrument testing objects for consistency
    - Added check to ensure non-pysat keywords supplied at instantiation
      are supported by underlying data set methods
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
@@ -42,8 +46,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed `SettingWithCopyWarning` in `cnofs_ivm` cleaning routine
   - Fixed cosmic load method definition to include altitude_bin
   - Fixed pysat_testing method definition to include mangle_file_dates keyword
-  - Updates to Travis CI environment
   - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
+  - Updates to Travis CI environment
+  - Removed `inplace` use in xarray `assign` function, which is no longer allowed
+
 
 ## [2.1.0] - 2019-11-18
 - New Features
