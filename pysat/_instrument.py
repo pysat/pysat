@@ -874,7 +874,7 @@ class Instrument(object):
             # Either flags are not specified, or this combo is not
             self._test_download = True
         try:
-            # Used for tests which required FTP access
+            # Used for tests which require FTP access
             self._test_download_travis = \
                 inst._test_download_travis[self.sat_id][self.tag]
         except (AttributeError, KeyError):
