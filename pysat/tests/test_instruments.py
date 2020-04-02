@@ -220,6 +220,16 @@ class TestInstrumentsDownload():
         else:
             pytest.skip("Download data not available")
 
+    @pytest.mark.parametrize("inst", instruments['download'])
+    def test_remote_file_list(self, inst):
+        print(' '.join(('\nTrying:', inst.platform,
+                        inst.name, inst.tag, inst.sat_id)))
+        name = '_'.join((inst.platform, inst.name))
+        if hasattr(getattr(pysat.instruments, name), 'list_remote_files'):
+            assert callable(inst.remote_file_list)
+        else:
+            pytest.skip("list_remote_files not available")
+
 
 class TestInstrumentsNoDownload():
     """Provides additional tests for instruments where downloads are not
