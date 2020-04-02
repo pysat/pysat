@@ -1,7 +1,9 @@
+import datetime as dt
 from dateutil.relativedelta import relativedelta as relativedelta
 import datetime as dt
 from nose.tools import raises
 import numpy as np
+
 import pandas as pds
 
 import pysat
@@ -559,22 +561,12 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 def filter_data(inst):
     """Remove data from instrument, simulating gaps"""
 
-    times = [[dt.datetime(2009, 1, 1, 10),
-              dt.datetime(2009, 1, 1, 12)],
-             [dt.datetime(2009, 1, 1, 4),
-              dt.datetime(2009, 1, 2, 5, 37)],
-             [dt.datetime(2009, 1, 1, 1, 37),
-              dt.datetime(2009, 1, 1, 3, 14)],
-             [dt.datetime(2009, 1, 1, 15),
-              dt.datetime(2009, 1, 1, 16)],
-             [dt.datetime(2009, 1, 1, 22),
-              dt.datetime(2009, 1, 2, 2)],
-             [dt.datetime(2009, 1, 13),
-              dt.datetime(2009, 1, 15)],
-             [dt.datetime(2009, 1, 20, 1),
-              dt.datetime(2009, 1, 25, 23)],
-             [dt.datetime(2009, 1, 25, 23, 30),
-              dt.datetime(2009, 1, 26, 3)]
+    times = [[dt.datetime(2009, 1, 1, 1, 37), dt.datetime(2009, 1, 1, 3, 14)],
+             [dt.datetime(2009, 1, 1, 10), dt.datetime(2009, 1, 1, 12)],
+             [dt.datetime(2009, 1, 1, 22), dt.datetime(2009, 1, 2, 2)],
+             [dt.datetime(2009, 1, 13), dt.datetime(2009, 1, 15)],
+             [dt.datetime(2009, 1, 20, 1), dt.datetime(2009, 1, 25, 23)],
+             [dt.datetime(2009, 1, 25, 23, 30), dt.datetime(2009, 1, 26, 3)]
              ]
     for time in times:
         idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
