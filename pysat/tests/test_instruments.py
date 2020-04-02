@@ -1,12 +1,12 @@
 """
 tests the pysat instruments and code
 """
+import datetime as dt
 from importlib import import_module
 import os
 import tempfile
 import warnings
 
-import pandas as pds
 import pytest
 
 import pysat
@@ -153,7 +153,7 @@ class TestInstrumentsAll():
         info = module._test_dates
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
-                assert isinstance(info[sat_id][tag], pds.datetime)
+                assert isinstance(info[sat_id][tag], dt.datetime)
 
 class TestInstrumentsDownload():
     """Provides additional tests for instruments with fully supported download
