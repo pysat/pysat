@@ -227,13 +227,7 @@ class TestInstrumentsNoDownload():
                         inst.platform, inst.name, inst.tag, inst.sat_id)))
         start = inst._test_dates[inst.sat_id][inst.tag]
         with warnings.catch_warnings(record=True) as war:
-            try:
-                inst.download(start, start)
-            except ValueError as strerr:
-                if str(strerr).find('CDAAC') >= 0:
-                    warnings.warn("COSMIC data detected")
-                else:
-                    raise strerr
+            inst.download(start, start)
 
         assert len(war) >= 1
         categories = [war[j].category for j in range(0, len(war))]
