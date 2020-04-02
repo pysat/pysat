@@ -1,7 +1,8 @@
+import datetime as dt
 from dateutil.relativedelta import relativedelta as relativedelta
 from nose.tools import raises
-import datetime as dt
 import numpy as np
+
 import pandas as pds
 
 import pysat
