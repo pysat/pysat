@@ -76,7 +76,7 @@ init_names = None
 
 # this environment variable is set by the TRAVIS CI folks
 if not (os.environ.get('TRAVIS') == 'true'):
-    class TestFTPInstrumentQualifier(test_inst.TestInstrumentQualifier):
+    class TestFTPInstrumentQualifier(test_inst.TestInstrumentsAll):
 
         def __init__(self):
             """Iterate through and create all of the test Instruments needed"""
