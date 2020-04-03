@@ -228,7 +228,7 @@ class TestInstrumentsDownload():
         if hasattr(getattr(pysat.instruments, name), 'list_remote_files'):
             assert callable(inst.remote_file_list)
         else:
-            pytest.skip("list_remote_files not available")
+            pytest.skip("remote_file_list not available")
 
 
 class TestInstrumentsNoDownload():
