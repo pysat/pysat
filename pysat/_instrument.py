@@ -868,6 +868,7 @@ class Instrument(object):
         # Check for download flags for tests
         try:
             # Used for instruments without download access
+            # Assume we test download routines regardless of env unless specified otherwise
             self._test_download = \
                 inst._test_download[self.sat_id][self.tag]
         except (AttributeError, KeyError):
@@ -875,6 +876,7 @@ class Instrument(object):
             self._test_download = True
         try:
             # Used for tests which require FTP access
+            # Assume we test download routines on travis unless specified otherwise
             self._test_download_travis = \
                 inst._test_download_travis[self.sat_id][self.tag]
         except (AttributeError, KeyError):
@@ -882,6 +884,7 @@ class Instrument(object):
             self._test_download_travis = True
         try:
             # Used for tests which require password access
+            # Assume password not required unless specified otherwise
             self._password_req = \
                 inst._password_req[self.sat_id][self.tag]
         except (AttributeError, KeyError):
