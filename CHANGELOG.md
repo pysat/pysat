@@ -12,6 +12,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updates to instrument testing objects for consistency
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
      calling it externally
+   - Added warning when FillValue metadata could lead to unexpected results
+     when writing a netCDF4 file
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation
