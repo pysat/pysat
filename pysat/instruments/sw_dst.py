@@ -26,10 +26,10 @@ of the National Science Foundation.
 
 """
 
-import os
 import datetime as dt
-import pandas as pds
+import os
 import numpy as np
+import pandas as pds
 
 import pysat
 

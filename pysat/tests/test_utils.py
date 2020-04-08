@@ -2,9 +2,9 @@
 tests the pysat utils area
 """
 import os
-import tempfile
 from nose.tools import assert_raises, raises
 import numpy as np
+import tempfile
 
 import pysat
 
@@ -448,4 +448,3 @@ class TestBasicNetCDF4():
 
         # custom attribute correctly read from file
         assert meta.bespoke
-

@@ -3,9 +3,8 @@ Demonstrates iterating over an instrument data set by orbit and plotting the
 results.
 """
 
-import os
 import datetime as dt
-
+import os
 import matplotlib.pyplot as plt
 
 import pysat

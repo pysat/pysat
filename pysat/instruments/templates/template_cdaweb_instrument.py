@@ -38,8 +38,8 @@ Authors
 from __future__ import print_function
 from __future__ import absolute_import
 
-import functools
 import datetime as dt
+import functools
 
 # CDAWeb methods prewritten for pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw

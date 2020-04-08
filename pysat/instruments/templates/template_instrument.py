@@ -40,13 +40,11 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import datetime as dt
-# pandas support
+import logging
 import pandas as pds
-# xarray support
 import xarray as xr
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 # the platform and name strings associated with this instrument

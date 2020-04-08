@@ -152,8 +152,8 @@ def load(fnames, tag=None, sat_id=None):
     # Define the routine needed to create datetime object from the
     # CHAMP time (YY DDD SSSSS)
     def parse_champdate(y, d, s):
-        '''parse CHAMP date string (YY DDD SSSSS) into a datetime object
-        '''
+        """parse CHAMP date string (YY DDD SSSSS) into a datetime object
+        """
 
         t = dt.datetime.strptime("{:02d} {:03d}".format(int(y), int(d)),
                                  "%y %j")

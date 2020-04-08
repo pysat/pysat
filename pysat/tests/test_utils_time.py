@@ -1,10 +1,9 @@
 """
 tests the pysat utils.time area
 """
-import numpy as np
-
-from nose.tools import raises
 import datetime as dt
+from nose.tools import raises
+import numpy as np
 
 from pysat.utils import time as pytime
 

@@ -1,13 +1,13 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import string
-import os
-import weakref
-import re
-import glob
 import datetime as dt
+import glob
 import numpy as np
+import os
+import re
+import string
+import weakref
 import pandas as pds
 from pysat import data_dir as data_dir
 

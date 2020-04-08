@@ -12,8 +12,8 @@ Plotting a series of orbit-by-orbit plots is a great way to become familiar with
 
    import datetime as dt
    import os
-   import pysat
    import matplotlib.pyplot as plt
+   import pysat
 
    # set the directory to save plots to
    results_dir = ''

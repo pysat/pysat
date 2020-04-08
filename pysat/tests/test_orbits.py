@@ -1,6 +1,5 @@
 import datetime as dt
 from dateutil.relativedelta import relativedelta as relativedelta
-import datetime as dt
 from nose.tools import raises
 import numpy as np
 
