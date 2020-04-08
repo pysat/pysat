@@ -21,6 +21,7 @@ before_install:
   # Temporary limits for pysat 2.x, remove in 3.0.0
   - pip install 'pandas<0.25'
   - pip install 'xarray<0.15'
+  - pip install 'pyparsing<3.0.0'
   - pip install 'kiwisolver<1.2.0'
   - pip install 'beautifulsoup4<4.9.0'
   # End of temporary limits
