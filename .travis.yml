@@ -30,6 +30,8 @@ install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray requests beautifulsoup4 lxml netCDF4 h5py nose
   - conda activate test-environment
+  - conda install pytest-cov
+  - conda install pytest-ordering
   - conda install coveralls
   - conda install future
   - pip install madrigalWeb
@@ -42,7 +44,7 @@ install:
 
 # command to run tests
 script:
- - nosetests -vs --with-coverage --cover-package=pysat
+ - pytest -vs --cov=pysat/
 
 after_success:
  - coveralls
