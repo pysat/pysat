@@ -96,8 +96,8 @@ def generate_instrument_list(instrument_names=[], package=None):
 
     return output
 
-instruments = \
-    generate_instrument_list(instrument_names=pysat.instruments.__all__)
+names = pysat.instruments.__all__
+instruments = generate_instrument_list(instrument_names=names)
 
 
 class TestInstrumentsAll():
