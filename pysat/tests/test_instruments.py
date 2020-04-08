@@ -249,12 +249,16 @@ class TestInstrumentsNoDownload():
 
     @pytest.mark.parametrize("inst", instruments['no_download'])
     def test_download_warning(self, inst):
-        print(' '.join(('\nChecking download routine warnings for module: ',
-                        inst.platform, inst.name, inst.tag, inst.sat_id)))
         start = inst._test_dates[inst.sat_id][inst.tag]
-        with warnings.catch_warnings(record=True) as war:
-            inst.download(start, start)
-
-        assert len(war) >= 1
-        categories = [war[j].category for j in range(0, len(war))]
-        assert UserWarning in categories
+        try:
+            with warnings.catch_warnings(record=True) as war:
+                inst.download(start, start)
+            assert len(war) >= 1
+            categories = [war[j].category for j in range(0, len(war))]
+            assert UserWarning in categories
+        except AssertionError as merr:
+            # Let users know which instrument is failing, as instrument
+            # list is opaque
+            print(' '.join(('\nProblem with checking:', inst.platform,
+                            inst.name, inst.tag, inst.sat_id)))
+            raise merr
