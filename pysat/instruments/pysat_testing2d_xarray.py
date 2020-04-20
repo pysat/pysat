@@ -134,6 +134,11 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
 
+    # create constant altitude at 400 km
+    alt0 = 400.0
+    altitude = alt0 * np.ones(data['latitude'].shape)
+    data['altitude'] = (('time'), altitude)
+
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.).astype(int)
@@ -145,15 +150,15 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # create altitude 'profile' at each location
     num = len(data['uts'])
     data['profiles'] = \
-        (('time', 'altitude'),
+        (('time', 'altitude_profile'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['altitude'] = ('altitude', np.arange(15))
+    data.coords['altitude_profile'] = ('altitude_profile', np.arange(15))
 
     # profiles that could have different altitude values
     data['variable_profiles'] = \
         (('time', 'z'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['altitude2'] = \
+    data.coords['altitude_profile2'] = \
         (('time', 'z'),
          np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
 
@@ -188,6 +193,7 @@ meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
 meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
 meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
 meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
 series_profile_meta = pysat.Meta()
 series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
 meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
