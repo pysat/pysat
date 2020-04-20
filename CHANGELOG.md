@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added Meta.mutable flag to control attribute mutability
   - custom.attach replaces custom.add
   - Unit tests are now pytest compatible
+  - Added altitudes to test instruments
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
