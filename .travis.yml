@@ -24,12 +24,8 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray requests beautifulsoup4 lxml netCDF4 h5py nose
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray requests beautifulsoup4 lxml netCDF4 h5py nose pytest-cov pytest-ordering coveralls future
   - conda activate test-environment
-  - conda install pytest-cov
-  - conda install pytest-ordering
-  - conda install coveralls
-  - conda install future
   - pip install madrigalWeb
   - pip install PyForecastTools
   - pip install pysatCDF >/dev/null
