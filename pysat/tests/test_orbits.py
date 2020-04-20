@@ -1,6 +1,8 @@
+import datetime as dt
 from dateutil.relativedelta import relativedelta as relativedelta
 from nose.tools import raises
 import numpy as np
+
 import pandas as pds
 
 import pysat
@@ -13,7 +15,7 @@ class TestOrbitsUserInterface():
         info = {'index': 'mlt', 'kind': 'cats'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
-                                         orbit_info=info, update_files=True)        
+                                         orbit_info=info, update_files=True)
 
     @raises(ValueError)
     def test_orbit_long_w_bad_variable(self):
@@ -102,7 +104,7 @@ class TestOrbitsUserInterface():
         self.testInst.orbits.orbit_index = None
         self.testInst.load(2009, 1)
         self.testInst.orbits.next()
-        
+
 
 class TestSpecificUTOrbits():
 
@@ -169,7 +171,7 @@ class TestSpecificUTOrbits():
                 break
             test_vals.append(self.testInst.orbits.current)
             print('Loaded orbit ', self.testInst.orbits.current)
- 
+
         assert np.all(test_vals == true_vals)
 
     def test_all_single_orbit_calls_in_day(self):
@@ -281,7 +283,7 @@ class TestGeneralOrbitsMLT():
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
-        assert d1check 
+        assert d1check
 
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
         # create situation where the < 1 orbit split across two days
@@ -308,7 +310,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.load(2009, 4)
         self.testInst.orbits[0]
         assert all(self.testInst.data == saved_data.data)
-        
+
         self.testInst.load(2009, 5)
         self.testInst.orbits.prev()
         if self.testInst.orbits.num == 1:
@@ -558,22 +560,12 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 def filter_data(inst):
     """Remove data from instrument, simulating gaps"""
 
-    times = [[pysat.datetime(2009, 1, 1, 10),
-              pysat.datetime(2009, 1, 1, 12)],
-             [pysat.datetime(2009, 1, 1, 4),
-              pysat.datetime(2009, 1, 2, 5, 37)],
-             [pysat.datetime(2009, 1, 1, 1, 37),
-              pysat.datetime(2009, 1, 1, 3, 14)],
-             [pysat.datetime(2009, 1, 1, 15),
-              pysat.datetime(2009, 1, 1, 16)],
-             [pysat.datetime(2009, 1, 1, 22),
-              pysat.datetime(2009, 1, 2, 2)],
-             [pysat.datetime(2009, 1, 13),
-              pysat.datetime(2009, 1, 15)],
-             [pysat.datetime(2009, 1, 20, 1),
-              pysat.datetime(2009, 1, 25, 23)],
-             [pysat.datetime(2009, 1, 25, 23, 30),
-              pysat.datetime(2009, 1, 26, 3)]
+    times = [[dt.datetime(2009, 1, 1, 1, 37), dt.datetime(2009, 1, 1, 3, 14)],
+             [dt.datetime(2009, 1, 1, 10), dt.datetime(2009, 1, 1, 12)],
+             [dt.datetime(2009, 1, 1, 22), dt.datetime(2009, 1, 2, 2)],
+             [dt.datetime(2009, 1, 13), dt.datetime(2009, 1, 15)],
+             [dt.datetime(2009, 1, 20, 1), dt.datetime(2009, 1, 25, 23)],
+             [dt.datetime(2009, 1, 25, 23, 30), dt.datetime(2009, 1, 26, 3)]
              ]
     for time in times:
         idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))

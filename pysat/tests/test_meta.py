@@ -1017,3 +1017,34 @@ class TestBasics():
         assert (self.meta['NEW21'].units == 'hey2')
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+    
+    @raises(AttributeError)
+    def test_meta_immutable(self):
+        assert self.meta.mutable
+
+        greeting = '...listen!'
+        self.meta.hey = greeting
+        assert self.meta.hey == greeting
+
+        self.meta.mutable = False
+        self.meta.hey = greeting
+        
+
+    def test_meta_mutable_properties(self):
+        """check that @properties are always mutable"""
+        m = pysat.Meta()
+        m.mutable = False
+        m.data = pds.DataFrame()
+        m.ho_data = {}
+        m.units_label = 'nT'
+        m.name_label = 'my name'
+
+    def test_inst_attributes_not_overridden(self):
+        greeting = '... listen!'
+        self.testInst.hey = greeting
+        self.testInst.load(2009, 1)
+        assert self.testInst.hey == greeting
+
+
+
