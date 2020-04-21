@@ -370,13 +370,6 @@ class Instrument(object):
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
-        # warn about changes coming in the future
-        if not self.strict_time_flag:
-            warnings.warn('Strict times will eventually be enforced upon all'
-                          ' instruments. (strict_time_flag)', DeprecationWarning,
-                          stacklevel=2)
-
-
 
     def __getitem__(self, key):
         """
@@ -2678,4 +2671,3 @@ def _check_if_keywords_supported(func, **kwargs):
                              'Please double check the keyword inputs.'))
             raise ValueError(estr)
     return True
-
