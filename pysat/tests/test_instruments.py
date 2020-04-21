@@ -173,7 +173,7 @@ class TestInstrumentsDownload():
                 user_download_dict.keys() else {}
             inst.download(start, start, **dl_dict)
             assert len(inst.files.files) > 0
-        except Error as merr:
+        except Exception as merr:
             # Let users know which instrument is failing, as instrument
             # list is opaque
             print(' '.join(('\nProblem with downloading:', inst.platform,
@@ -203,7 +203,7 @@ class TestInstrumentsDownload():
                 # For last parametrized clean_level, remove files
                 if clean_level == "clean":
                     remove_files(inst)
-            except Error as merr:
+            except Exception as merr:
                 # Let users know which instrument is failing, as instrument
                 # list is opaque
                 print(' '.join(('\nProblem with loading:', inst.platform,
