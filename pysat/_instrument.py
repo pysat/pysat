@@ -62,9 +62,9 @@ class Instrument(object):
     temporary_file_list : boolean, optional
         If true, the list of Instrument files will not be written to disk.
         Prevents a race condition when running multiple pysat processes.
-    strict_time_flag : boolean, option (False)
+    strict_time_flag : boolean, option (True)
         If true, pysat will check data to ensure times are unique and
-        monotonic. In future versions, this will be fixed to True.
+        monotonic.
     multi_file_day : boolean, optional
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
@@ -183,7 +183,7 @@ class Instrument(object):
                  clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
-                 temporary_file_list=False, strict_time_flag=False,
+                 temporary_file_list=False, strict_time_flag=True,
                  ignore_empty_files=False,
                  units_label='units', name_label='long_name',
                  notes_label='notes', desc_label='desc',
