@@ -90,7 +90,7 @@ import functools
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 platform = 'de2'
-name = 'idm'
+name = 'nacs'
 
 tags = {'': '1 s cadence Neutral Atmosphere Composition Spectrometer data'}
 sat_ids = {'': ['']}
