@@ -15,29 +15,39 @@ addons:
     - gfortran
     - libncurses5-dev
 
-before_install:
-  - pip install coveralls
-  - pip install future
-  - pip install 'pandas<0.25' # Temporary for pysat 2.x, remove in 3.0.0
-  - pip install 'xarray<0.15' # Temporary for pysat 2.x, remove in 3.0.0
-  - pip install pysatCDF >/dev/null
-  # Travis CI currently not working with cftime > 1.1.1
-  - pip install 'cftime==1.1.1'
-  # Travis CI currently not working with netCDF4 1.5.3
-  - pip install 'netCDF4<1.5.3'
-
-# command to install dependencies
 install:
-  - source activate test-environment
+  - sudo apt-get update
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  - conda config --set always_yes True --set changeps1 False
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+  # Create conda test environment
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray requests beautifulsoup4 lxml netCDF4 h5py nose pytest-cov pytest-ordering coveralls future
+  - conda activate test-environment
+  # Dependencies not available through conda, install through pip
+  - pip install madrigalWeb
+  - pip install PyForecastTools
+  - pip install pysatCDF >/dev/null
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
   - python setup.py install
 
+
 before_script:
   # set up display screen
   - export DISPLAY=:99.0
-  - if [[ $TRAVIS_PYTHON_VERSION < "3.7" ]]; then
+  - if [[ $TRAVIS_PYTHON_VERSION < "3.0" ]]; then
       sh -e /etc/init.d/xvfb start;
       sleep 3;
     fi
