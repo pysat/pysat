@@ -311,7 +311,6 @@ class TestBasics():
     # #
     # #--------------------------------------------------------------------------
 
-
     @raises(AttributeError)
     def test_retrieve_bad_attribute(self):
         self.testInst.bad_attr
