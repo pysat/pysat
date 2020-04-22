@@ -62,7 +62,7 @@ def generate_instrument_list(instrument_names=[], package=None):
 
     """
 
-    if package == None:
+    if package is None:
         package = 'pysat.instruments'
 
     instrument_download = []
@@ -193,7 +193,6 @@ class InstTestClass():
             print(' '.join(('\nProblem with downloading:', inst.platform,
                             inst.name, inst.tag, inst.sat_id)))
             raise merr
-
 
     @pytest.mark.second
     @pytest.mark.download

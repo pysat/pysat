@@ -13,7 +13,7 @@ method_list = [func for func in dir(InstTestClass)
 for method in method_list:
     if hasattr(getattr(InstTestClass, method), 'pytestmark'):
         # Get list of names of pytestmarks
-        Nargs =  len(getattr(InstTestClass, method).pytestmark)
+        Nargs = len(getattr(InstTestClass, method).pytestmark)
         names = [getattr(InstTestClass, method).pytestmark[j].name
                  for j in range(0, Nargs)]
         # Add instruments from your library
