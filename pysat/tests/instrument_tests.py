@@ -66,7 +66,7 @@ def generate_instrument_list(instrument_names=[], package=None):
                 info = module._test_dates
             except AttributeError:
                 info = {}
-                info[''] = {'': pysat.datetime(2009, 1, 1)}
+                info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
