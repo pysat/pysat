@@ -148,6 +148,11 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     data['dummy3'] = (('time'), mlt_int + long_int * 1000.)
     data['dummy4'] = (('time'), uts)
 
+    # Add dummy coords
+    data.coords['x'] = (('x'), np.arange(17))
+    data.coords['y'] = (('y'), np.arange(17))
+    data.coords['z'] = (('z'), np.arange(15))
+
     # create altitude 'profile' at each location to simulate remote data
     num = len(data['uts'])
     data['profiles'] = \
