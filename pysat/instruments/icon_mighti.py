@@ -53,8 +53,8 @@ logger = logging.getLogger(__name__)
 platform = 'icon'
 name = 'mighti'
 tags = {'level_2': 'Level 2 public geophysical data'}
-sat_ids = {'green': ['level_2 Green Line'],
-           'red': ['Level_2 Red Line']}
+sat_ids = {'green': ['level_2'],
+           'red': ['level_2']}
 _test_dates = {'green': {'level_2': pysat.datetime(2017, 5, 27)},
                'red': {'level_2': pysat.datetime(2017, 5, 27)}}
 
