@@ -118,6 +118,10 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
                                        data_range=drange['angle'])
     data['latitude'] = 90.0 * np.cos(angle)
 
+    # create constant altitude at 400 km
+    alt0 = 400.0
+    data['altitude'] = alt0 * np.ones(data['latitude'].shape)
+
     if malformed_index:
         index = index.tolist()
         # nonmonotonic
@@ -183,6 +187,7 @@ meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
 meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
 meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
 meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
 series_profile_meta = pysat.Meta()
 series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
 meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
