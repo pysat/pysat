@@ -6,7 +6,6 @@ results.
 import datetime as dt
 import os
 import matplotlib.pyplot as plt
-
 import pysat
 
 # set the directory to save plots to
