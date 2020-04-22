@@ -32,8 +32,11 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   # Create conda test environment
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas<0.25 xarray<0.15 requests beautifulsoup4 lxml netCDF4 h5py nose pytest-cov pytest-ordering coveralls future
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy requests beautifulsoup4 lxml netCDF4 h5py nose pytest-cov pytest-ordering coveralls future
   - conda activate test-environment
+  # Install version limited packages
+  - conda install 'pandas<0.25'
+  - conda install 'xarray<0.15'
   # Dependencies not available through conda, install through pip
   - pip install madrigalWeb
   - pip install PyForecastTools
