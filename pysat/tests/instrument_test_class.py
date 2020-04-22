@@ -91,24 +91,21 @@ def generate_instrument_list(instrument_names=[], package=None):
                 module._test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():
-                    try:
-                        inst = pysat.Instrument(inst_module=module,
-                                                tag=tag,
-                                                sat_id=sat_id,
-                                                temporary_file_list=True)
-                        inst._test_dates = module._test_dates
-                        travis_skip = ((os.environ.get('TRAVIS') == 'true')
-                                       and not inst._test_download_travis)
-                        if inst._test_download:
-                            if not travis_skip:
-                                instrument_download.append(inst)
-                        elif not inst._password_req:
-                            # we don't want to test download for this combo
-                            # But we do want to test the download warnings
-                            # for instruments without a password requirement
-                            instrument_no_download.append(inst)
-                    except:
-                        pass
+                    inst = pysat.Instrument(inst_module=module,
+                                            tag=tag,
+                                            sat_id=sat_id,
+                                            temporary_file_list=True)
+                    inst._test_dates = module._test_dates
+                    travis_skip = ((os.environ.get('TRAVIS') == 'true')
+                                   and not inst._test_download_travis)
+                    if inst._test_download:
+                        if not travis_skip:
+                            instrument_download.append(inst)
+                    elif not inst._password_req:
+                        # we don't want to test download for this combo
+                        # But we do want to test the download warnings
+                        # for instruments without a password requirement
+                        instrument_no_download.append(inst)
     pysat.utils.set_data_dir(saved_path, store=False)
 
     output = {'names': instrument_names,
@@ -116,9 +113,6 @@ def generate_instrument_list(instrument_names=[], package=None):
               'no_download': instrument_no_download}
 
     return output
-
-names = pysat.instruments.__all__
-instruments = generate_instrument_list(instrument_names=names)
 
 
 class InstTestClass():
