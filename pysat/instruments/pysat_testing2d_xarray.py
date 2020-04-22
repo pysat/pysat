@@ -159,7 +159,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     data['variable_profiles'] = \
         (('time', 'z'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['profile_height2'] = \
+    data.coords['variable_profile_height'] = \
         (('time', 'z'),
          np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
 
