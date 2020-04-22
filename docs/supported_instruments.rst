@@ -200,7 +200,7 @@ SW Kp
    :members: __doc__, filter_geoquiet
 
 TIMED/SABER
----------
+-----------
 
 .. automodule:: pysat.instruments.timed_saber
    :members: __doc__
@@ -209,10 +209,4 @@ TIMED/SEE
 ---------
 
 .. automodule:: pysat.instruments.timed_see
-   :members: __doc__
-
-UCAR TIEGCM
------------
-
-.. automodule:: pysat.instruments.ucar_tiegcm
    :members: __doc__

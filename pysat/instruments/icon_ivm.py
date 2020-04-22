@@ -21,11 +21,11 @@ Warnings
 
 Example
 -------
-    import pysat
-    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2',
-                           clean_level='clean')
-    ivm.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
-    ivm.load(2017,363)
+import pysat
+ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2',
+                       clean_level='clean')
+ivm.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
+ivm.load(2017,363)
 
 Author
 ------

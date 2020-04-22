@@ -36,13 +36,14 @@ Warnings
 - Module not written by OMNI team.
 
 Custom Functions
------------------
+----------------
 time_shift_to_magnetic_poles : Shift time from bowshock to intersection with
                                one of the magnetic poles
 calculate_clock_angle : Calculate the clock angle and IMF mag in the YZ plane
 calculate_imf_steadiness : Calculate the IMF steadiness using clock angle and
                            magnitude in the YZ plane
 calculate_dayside_reconnection : Calculate the dayside reconnection rate
+
 """
 
 from __future__ import print_function
