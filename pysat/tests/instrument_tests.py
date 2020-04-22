@@ -101,10 +101,7 @@ instruments = generate_instrument_list(instrument_names=names)
 
 
 class InstTestClass():
-    """Provides basic tests to ensure instruments behave like pysat
-    instruments.  These tests should be run on all instruments to ensure that
-    they are configured with appropriate properties.
-
+    """Provides standardized tests for pysat instrument libraries.
     """
 
     def setup(self):
@@ -116,7 +113,9 @@ class InstTestClass():
         del self.package
 
     @pytest.mark.all_inst
-    def test_modules_loadable(self, name):
+    def test_modules_standard(self, name):
+        """Checks that modules are importable and have standard properties.
+        """
         # ensure that each module is at minimum importable
         module = import_module(''.join(('.', name)),
                                package=self.package)
@@ -146,7 +145,8 @@ class InstTestClass():
         assert hasattr(module, 'download') & callable(module.download)
 
     @pytest.mark.all_inst
-    def test_instrument_tdates(self, name):
+    def test_instrument_test_dates(self, name):
+        """Check that module has structured test dates correctly."""
         module = import_module(''.join(('.', name)),
                                package=self.package)
         info = module._test_dates
@@ -157,6 +157,7 @@ class InstTestClass():
     @pytest.mark.first
     @pytest.mark.download
     def test_download(self, inst):
+        """Check that instruments are downloadable."""
         try:
             start = inst._test_dates[inst.sat_id][inst.tag]
             # check for username
@@ -178,6 +179,7 @@ class InstTestClass():
     @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty',
                                              'clean'])
     def test_load(self, clean_level, inst):
+        """Check that instruments load at each cleaning level."""
         # make sure download was successful
         if len(inst.files.files) > 0:
             try:
@@ -206,6 +208,8 @@ class InstTestClass():
 
     @pytest.mark.download
     def test_remote_file_list(self, inst):
+        """Check if optional list_remote_files routine exists and is callable.
+        """
         try:
             name = '_'.join((inst.platform, inst.name))
             if hasattr(getattr(pysat.instruments, name), 'list_remote_files'):
@@ -219,6 +223,7 @@ class InstTestClass():
 
     @pytest.mark.no_download
     def test_download_warning(self, inst):
+        """Check that instruments without download support have a warning."""
         start = inst._test_dates[inst.sat_id][inst.tag]
         try:
             with warnings.catch_warnings(record=True) as war:
