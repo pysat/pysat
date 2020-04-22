@@ -150,15 +150,15 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # create altitude 'profile' at each location
     num = len(data['uts'])
     data['profiles'] = \
-        (('time', 'altitude_profile'),
+        (('time', 'profile_height'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['altitude_profile'] = ('altitude_profile', np.arange(15))
+    data.coords['profile_height'] = ('profile_height', np.arange(15))
 
     # profiles that could have different altitude values
     data['variable_profiles'] = \
         (('time', 'z'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['altitude_profile2'] = \
+    data.coords['profile_height2'] = \
         (('time', 'z'),
          np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
 
