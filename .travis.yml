@@ -37,6 +37,7 @@ install:
   # Install version limited packages
   - conda install 'pandas<0.25'
   - conda install 'xarray<0.15'
+  - conda install 'kiwisolver<1.2'
   # Dependencies not available through conda, install through pip
   - pip install madrigalWeb
   - pip install PyForecastTools
