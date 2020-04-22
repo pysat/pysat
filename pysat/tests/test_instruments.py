@@ -7,8 +7,6 @@ from pysat.tests.instrument_tests import InstTestClass
 instruments = generate_instrument_list(pysat.instruments.__all__,
                                        package='pysat.instruments')
 
-# Need to turn off __test__ so that tests are not run until modified
-InstTestClass.__test__ = False
 method_list = [func for func in dir(InstTestClass)
                if callable(getattr(InstTestClass, func))]
 # Search tests for iteration via pytestmark, update instrument list
@@ -31,8 +29,6 @@ for method in method_list:
 
 
 class TestInstruments(InstTestClass):
-
-    __test__ = True
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
