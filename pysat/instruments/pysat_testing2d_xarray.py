@@ -119,7 +119,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
                                      data_range=drange['lt'])
     data['slt'] = (('time'), slt)
 
-    # create a fake longitude, resets every 6240 seconds
+    # create a fake longitude of satellite, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
@@ -127,7 +127,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
                                            data_range=drange['lon'])
     data['longitude'] = (('time'), longitude)
 
-    # create latitude signal for testing polar orbits
+    # create fake latitude of satellite for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
@@ -147,7 +147,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     data['dummy3'] = (('time'), mlt_int + long_int * 1000.)
     data['dummy4'] = (('time'), uts)
 
-    # create altitude 'profile' at each location
+    # create altitude 'profile' at each location to simulate remote data
     num = len(data['uts'])
     data['profiles'] = \
         (('time', 'profile_height'),
@@ -162,18 +162,19 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         (('time', 'z'),
          np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
 
-    # basic image simulation
+    # Create fake image type data, projected to lat / lon at some location
+    # from satellite
     data['images'] = \
         (('time', 'x', 'y'),
          data['dummy3'].values[:,
                                np.newaxis,
                                np.newaxis] * np.ones((num, 17, 17)))
-    data.coords['latitude'] = \
+    data.coords['image_lat'] = \
         (('time', 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
                        :]*np.ones((num, 17, 17)))
-    data.coords['longitude'] = \
+    data.coords['image_lon'] = \
         (('time', 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
