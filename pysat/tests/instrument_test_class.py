@@ -16,7 +16,8 @@ user_download_dict = {'supermag_magnetometer': {'user': 'rstoneback',
                                                 'password': 'None'}}
 
 def remove_files(inst):
-    # remove any files downloaded as part of the unit tests
+    """Remove any files downloaded as part of the unit tests.
+    """
     temp_dir = inst.files.data_path
     # Check if there are less than 20 files to ensure this is the testing
     # directory
