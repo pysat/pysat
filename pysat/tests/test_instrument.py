@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Test some of the basic _core functions
-import numpy as np
 import datetime as dt
+import numpy as np
 import sys
 
 from nose.tools import raises
