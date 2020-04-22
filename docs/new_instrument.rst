@@ -10,14 +10,15 @@ Adding a New Instrument
    :language: python
 
 pysat works by calling modules written for specific instruments
-that load and process the data consistent with the pysat standard. The name
-of the module corresponds to the combination 'platform_name' provided when
-initializing a pysat instrument object. The module should be placed in the
-pysat instruments directory or registered (see below) for automatic discovery. Some data repositories 
-have pysat templates prepared to assist in integrating a new instrument. See :ref:`supported-data-templates` for more.
+that load and process the data consistent with the pysat standard. The
+name of the module corresponds to the combination 'platform_name' provided
+when initializing a pysat instrument object. The module should be placed in
+the pysat instruments directory or registered (see below) for automatic
+discovery. Some data repositories have pysat templates prepared to assist
+in integrating a new instrument. See :ref:`supported-data-templates` for more.
 
 A compatible module may be supplied directly to :python:`pysat.Instrument(inst_module = myInstrument)`
-if it also contains attributes platform and name. Such modules may be registered as 
+if it also contains attributes platform and name. Such modules may be registered as
 part of pysat's user instrument registry using the following syntax:
 
 .. code-block:: python
@@ -26,12 +27,21 @@ part of pysat's user instrument registry using the following syntax:
   registry.register('my.package.myInstrument')
 
 After registry, the instrument module name is stored in the user's home directory
-under :code:`~.pysat/user_modules.txt`. The instrument may then be instantiated with 
+under :code:`~.pysat/user_modules.txt`. The instrument may then be instantiated with
 the instrument's platform and name:
 
 .. code-block:: python
 
   inst = Instrument('myplatform', 'myname')
+
+
+Instrument Libraries
+--------------------
+Pysat instruments can reside in external libraries.  The registry methods
+described  above can be used to provide links to these instrument libraries
+for rapid access.  For instance, pysat instruments which handle the outputs
+of geophysical models (such as the TIE-GCM model) reside in the pysatModels
+package.
 
 
 Naming Conventions
@@ -258,7 +268,7 @@ This method is called by several internal `pysat` functions, and can be directly
 
 
 Testing Support
----------------
+===============
 All modules defined in the __init__.py for pysat/instruments are automatically
 tested when pysat code is tested. To support testing all of the required
 routines, additional information is required by pysat.
@@ -277,11 +287,11 @@ as a tag to delineate that the data contains the UTD developed quality flags.
    sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
               'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
               'f18': ['']}
-   _test_dates = {'f11': {'utd': pysat.datetime(1998, 1, 2)},
-                  'f12': {'utd': pysat.datetime(1998, 1, 2)},
-                  'f13': {'utd': pysat.datetime(1998, 1, 2)},
-                  'f14': {'utd': pysat.datetime(1998, 1, 2)},
-                  'f15': {'utd': pysat.datetime(2017, 12, 30)}}
+   _test_dates = {'f11': {'utd': dt.datetime(1998, 1, 2)},
+                  'f12': {'utd': dt.datetime(1998, 1, 2)},
+                  'f13': {'utd': dt.datetime(1998, 1, 2)},
+                  'f14': {'utd': dt.datetime(1998, 1, 2)},
+                  'f15': {'utd': dt.datetime(2017, 12, 30)}}
 
     # support load routine
     def load(fnames, tag=None, sat_id=None):
@@ -291,9 +301,95 @@ The rationale behind the variable names is explained above under Naming
 Conventions.  What is important here are the _test_dates.  Each of these points
 to a specific date for which the unit tests will attempt to download and load
 data as part of end-to-end testing.  Make sure that the data exists for the
-given date. The tags without test dates will not be tested. The leading underscore
-in _test_dates ensures that this information is not added to the instrument's meta
-attributes, so it will not be present in IO operations.
+given date. The tags without test dates will not be tested. The leading
+underscore in _test_dates ensures that this information is not added to the
+instrument's meta attributes, so it will not be present in IO operations.
+
+The standardized pysat tests are available in pysat.tests.instrument_test_class.
+The test collection test_instruments.py imports this class, collects a list of
+all available instruments (including potential tag / sat_id combinations),
+and run the tests using pytestmark.  By default, pysat assumes that your
+instrument has a fully functional download  routine, and will run an end-to-end
+test.  If this is not the case, see the next section.
+
+Special Test Configurations
+---------------------------
+**No Download Available**
+
+Some instruments simply don't have download routines available.  It could be
+that data is not yet publicly available, or it may be a model run that is
+locally generated.  To let the test routines know this is the case, the
+:python:`_test_download` flag is used.  This flag uses the same dictionary
+structure as :python:`_test_dates`.
+
+For instance, say we have an instrument team that wants to use pysat to
+manage their data products.  Level 1 data is locally generated by the team,
+and Level 2 data is provided to a public repository.  The instrument should
+be set up as follows:
+
+.. code:: python
+
+   platform = 'newsat'
+   name = 'data'
+   tags = {'Level_1': 'Level 1 data, locally generated',
+           'Level_2': 'Level 2 data, available via the web'}
+   sat_ids = {'': ['Level_1', 'Level_2']}
+   _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
+                       'Level_2': dt.datetime(2020, 1, 1)}}
+   _test_download = {'': {'Level_1': False,
+                          'Level_2': True}}
+
+
+This tells the test routines to skip the download / load tests for Level 1 data.
+Instead, the download function for this flag will be tested to see if it has an
+appropriate user warning that downloads are not available.
+
+Note that pysat assumes that this flag is True if no variable is present.  Thus
+specifying only :python:`_test_download = {'': {'Level_1': False}}` has the
+same effect, and Level 2 tests will still be run.
+
+**FTP Access**
+
+Another thing to note about testing is that the Travis CI environment used to
+automate the tests is not compatible with FTP downloads.  For this reason,
+HTTPS access is preferred whenever possible.  However, if this is not the case,
+the :python:`_test_download_travis` flag can be used.  This has a similar
+function, except that it skips the download tests if on Travis CI, but will
+run those tests if run locally.
+
+.. code:: python
+
+   platform = 'newsat'
+   name = 'data'
+   tags = {'Level_1': 'Level 1 data, FTP accessible',
+           'Level_2': 'Level 2 data, available via the web'}
+   sat_ids = {'': ['Level_1', 'Level_2']}
+   _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
+                       'Level_2': dt.datetime(2020, 1, 1)}}
+   _test_download_travis = {'': {'Level_1': False}}
+
+Note that here we use the streamlined flag definition and only call out the
+tag that is False.  The other is True by default.
+
+**Password Protected Data**
+
+Another potential issue is that some instruments have download routines,
+but should not undergo automated download tests because it would require
+the  user to save a password in a potentially public location.  The
+:python:`_password_req` flag is used to skip both the download tests and
+the download warning message tests, since a functional download routine is
+present.
+
+.. code:: python
+
+   platform = 'newsat'
+   name = 'data'
+   tags = {'Level_1': 'Level 1 data, password protected',
+           'Level_2': 'Level 2 data, available via the web'}
+   sat_ids = {'': ['Level_1', 'Level_2']}
+   _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
+                       'Level_2': dt.datetime(2020, 1, 1)}}
+   _password_req = {'': {'Level_1': False}}
 
 Data Acknowledgements
 =====================
@@ -332,7 +428,7 @@ where supported_tags is defined as dictated by the download function. See the ro
    :members:
 
 Madrigal
------------
+--------
 
 A template for Madrigal pysat support is provided. Several of the routines within are intended to be used with functools.partial in the new instrument support code. When writing custom routines with a new instrument file download support would be added via
 
