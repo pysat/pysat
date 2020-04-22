@@ -1,5 +1,7 @@
 """
-tests the pysat instruments and code
+Standardized class and functions to test instruments for pysat libraries.  Not
+directly called by pytest, but imported as part of test_instruments.py.  Can
+be imported directly for external instrument libraries of pysat instruments.
 """
 import datetime as dt
 from importlib import import_module
@@ -15,8 +17,14 @@ import pysat
 user_download_dict = {'supermag_magnetometer': {'user': 'rstoneback',
                                                 'password': 'None'}}
 
+
 def remove_files(inst):
     """Remove any files downloaded as part of the unit tests.
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        The instrument object that is being tested
     """
     temp_dir = inst.files.data_path
     # Check if there are less than 20 files to ensure this is the testing
@@ -38,7 +46,19 @@ def remove_files(inst):
 
 def generate_instrument_list(instrument_names=[], package=None):
     """Iterate through and create all of the test Instruments needed.
-       Only want to do this once.
+
+
+    Parameters
+    ----------
+    instrument_names : List of strings
+        The instrument names under consideration for testing.  Usually found by
+        invoking instrument_library.__all__
+    package : string
+        The name of the instrument library package, eg, 'pysat.instruments'
+
+    Notes
+    -----
+    Only want to do this once per instrument library being tested.
 
     """
 
