@@ -13,9 +13,11 @@ import pysat
 from pysat.instruments.methods import testing as mm_test
 
 platform = 'pysat'
-name = 'testing2D_xarray'
+name = 'testing2d_xarray'
 
 pandas_format = False
+tags = {'': 'Regular testing data set'}
+sat_ids = {'': ['']}
 _test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
