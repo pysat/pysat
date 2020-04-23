@@ -234,7 +234,7 @@ class TestSwKpCombine():
         """ Test combine_kp failure when no input is provided"""
 
         with pytest.raises(ValueError):
-            sw_meth.combine_kp
+            sw_meth.combine_kp()
 
     def test_combine_kp_one(self):
         """ Test combine_kp failure when only one instrument is provided"""
@@ -482,7 +482,7 @@ class TestSWF107Combine():
         """ Test combine_f107 failure when no input is provided"""
 
         with pytest.raises(TypeError):
-            sw_meth.combine_f107
+            sw_meth.combine_f107()
 
     def test_combine_f107_no_time(self):
         """Test combine_f107 failure when no times are provided"""
