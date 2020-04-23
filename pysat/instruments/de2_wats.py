@@ -87,7 +87,7 @@ import pysat
 from .methods import nasa_cdaweb as cdw
 
 platform = 'de2'
-name = 'idm'
+name = 'wats'
 
 tags = {'': '2 s cadence Wind and Temperature Spectrometer data'}
 sat_ids = {'': ['']}
