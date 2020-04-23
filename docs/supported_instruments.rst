@@ -5,14 +5,26 @@ Instrument Templates
 General Instrument
 ------------------
 
-.. automodule:: pysat.instruments.template_instrument
+.. automodule:: pysat.instruments.templates.template_instrument
    :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
+
+Madrigal Pandas
+-------------
+
+.. automodule:: pysat.instruments.templates.madirgal_pandas
+ :members: __doc__, init, load, list_files, download
 
 NASA CDAWeb Instrument
 ----------------------
 
-.. automodule:: pysat.instruments.template_cdaweb_instrument
+.. automodule:: pysat.instruments.templates.template_cdaweb_instrument
    :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
+
+netCDF Pandas
+-------------
+
+.. automodule:: pysat.instruments.templates.netcdf_pandas
+  :members: __doc__, init, load, list_files, download
 
 
 General Data Source Methods
@@ -112,13 +124,13 @@ ICON EUV
 --------
 
 .. automodule:: pysat.instruments.icon_euv
-   :members: __doc__, remove_icon_names
+   :members: __doc__
 
 ICON FUV
 --------
 
 .. automodule:: pysat.instruments.icon_fuv
-   :members: __doc__, remove_icon_names
+   :members: __doc__
 
 ICON IVM
 --------
@@ -130,7 +142,7 @@ ICON MIGHTI
 -----------
 
 .. automodule:: pysat.instruments.icon_mighti
-   :members: __doc__, remove_icon_names
+   :members: __doc__
 
 ISS-FPMU
 --------
@@ -143,12 +155,6 @@ JRO ISR
 
 .. automodule:: pysat.instruments.jro_isr
    :members: __doc__
-
-netCDF Pandas
--------------
-
-.. automodule:: pysat.instruments.netcdf_pandas
-   :members: __doc__, init, load, list_files, download
 
 OMNI
 ----

@@ -29,15 +29,15 @@ sat_id : string
 
 Example
 -------
-    import pysat
-    dmsp = pysat.Instrument('dmsp', 'ivm', 'utd', 'f15', clean_level='clean')
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
-                  user='Firstname+Lastname', password='email@address.com')
-    dmsp.load(2017,363)
+import pysat
+dmsp = pysat.Instrument('dmsp', 'ivm', 'utd', 'f15', clean_level='clean')
+dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
+              user='Firstname+Lastname', password='email@address.com')
+dmsp.load(2017,363)
 
 Note
 ----
-    Please provide name and email when downloading data with this routine.
+Please provide name and email when downloading data with this routine.
 
 Code development supported by NSF grant 1259508
 
