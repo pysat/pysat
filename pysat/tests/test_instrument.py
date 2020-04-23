@@ -462,7 +462,7 @@ class TestBasics():
                                                    index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
 
-        self.testInst['blankMLT'] = pds.Series(None)
+        self.testInst['blankMLT'] = pds.Series(None, dtype='float64')
         assert np.all(np.isnan(self.testInst['blankMLT']))
 
     def test_setting_pandas_dataframe_by_names(self):

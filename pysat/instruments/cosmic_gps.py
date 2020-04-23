@@ -159,7 +159,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     else:
         logger.info('Found no files, check your path or download them.')
-        return pysat.Series(None)
+        return pysat.Series(None, dtype='object')
 
 
 def load(fnames, tag=None, sat_id=None, altitude_bin=None):
