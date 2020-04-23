@@ -99,6 +99,7 @@ else:
         with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
             f.write('')
 
+from datetime import datetime
 from . import utils
 from ._constellation import Constellation
 from ._instrument import Instrument
