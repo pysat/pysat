@@ -67,12 +67,12 @@ class TestBasics():
             self.testInst.load()
 
     def test_basic_instrument_load_by_file_and_multifile(self):
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    update_files=True,
+                                    multi_file_day=True)
         with pytest.raises(ValueError):
-            testInst = pysat.Instrument(platform='pysat', name='testing',
-                                        sat_id='10',
-                                        clean_level='clean',
-                                        update_files=True,
-                                        multi_file_day=True)
             testInst.load(fname=testInst.files[0])
 
     def test_basic_instrument_load_by_date(self):
@@ -610,28 +610,28 @@ class TestBasics():
                       == pds.date_range(start, stop, freq='M').tolist())
 
     def test_set_bounds_too_few(self):
+        start = dt.datetime(2009, 1, 1)
         with pytest.raises(ValueError):
-            start = dt.datetime(2009, 1, 1)
             self.testInst.bounds = [start]
 
     def test_set_bounds_mixed(self):
+        start = dt.datetime(2009, 1, 1)
         with pytest.raises(ValueError):
-            start = dt.datetime(2009, 1, 1)
             self.testInst.bounds = [start, '2009-01-01.nofile']
 
     def test_set_bounds_wrong_type(self):
+        start = dt.datetime(2009, 1, 1)
         with pytest.raises(AttributeError):
-            start = dt.datetime(2009, 1, 1)
             self.testInst.bounds = [start, 1]
 
     def test_set_bounds_mixed_iterable(self):
+        start = [dt.datetime(2009, 1, 1)]*2
         with pytest.raises(ValueError):
-            start = [dt.datetime(2009, 1, 1)]*2
             self.testInst.bounds = [start, '2009-01-01.nofile']
 
     def test_set_bounds_mixed_iterabless(self):
+        start = [dt.datetime(2009, 1, 1)]*2
         with pytest.raises(ValueError):
-            start = [dt.datetime(2009, 1, 1)]*2
             self.testInst.bounds = [start, [dt.datetime(2009, 1, 1),
                                             '2009-01-01.nofile']]
 
@@ -644,10 +644,10 @@ class TestBasics():
         assert self.testInst.bounds[1][0] == self.testInst.files[-1]
 
     def test_set_bounds_too_many(self):
+        start = dt.datetime(2009, 1, 1)
+        stop = dt.datetime(2009, 1, 1)
+        huh = dt.datetime(2009, 1, 1)
         with pytest.raises(ValueError):
-            start = dt.datetime(2009, 1, 1)
-            stop = dt.datetime(2009, 1, 1)
-            huh = dt.datetime(2009, 1, 1)
             self.testInst.bounds = [start, stop, huh]
 
     def test_set_bounds_by_date(self):

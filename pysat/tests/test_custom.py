@@ -28,8 +28,8 @@ class TestBasics():
             inst.data['doubleMLT'] = 2.0 * inst.data.mlt
             return 5.0 * inst.data['mlt']
 
+        self.testInst.custom.attach(custom1, 'modify')
         with pytest.raises(ValueError):
-            self.testInst.custom.attach(custom1, 'modify')
             self.testInst.load(2009, 1)
 
     def test_single_adding_custom_function(self):
@@ -117,8 +117,8 @@ class TestBasics():
         if not self.testInst.pandas_format:
             pytest.skip(' '.join(('xarray does not enforce the same number',
                                   'of elements on all params in dataset.')))
+        self.testInst.custom.attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.testInst.custom.attach(custom1, 'add')
             self.testInst.load(2009, 1)
 
     def test_add_function_tuple_return_style_too_many_elements(self):
@@ -131,8 +131,8 @@ class TestBasics():
         if not self.testInst.pandas_format:
             pytest.skip(' '.join(('xarray does not enforce the same number',
                                   'of elements on all params in dataset.')))
+        self.testInst.custom.attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.testInst.custom.attach(custom1, 'add')
             self.testInst.load(2009, 1)
 
     def test_add_dataframe(self):
@@ -211,8 +211,8 @@ class TestBasics():
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
 
+        self.attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.attach(custom1, 'add')
             self.testInst.load(2009, 1)
 
     def test_add_numpy_array_w_meta_name_in_dict(self):
@@ -232,8 +232,8 @@ class TestBasics():
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
 
+        self.attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.attach(custom1, 'add')
             self.testInst.load(2009, 1)
 
     def test_add_list_w_meta_name_in_dict(self):
@@ -253,8 +253,8 @@ class TestBasics():
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
 
+        self.testInst.custom.attach(custom1, 'add')
         with pytest.raises(ValueError):
-            self.testInst.custom.attach(custom1, 'add')
             self.testInst.load(2009, 1)
 
     def test_clear_functions(self):
@@ -283,8 +283,8 @@ class TestBasics():
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
 
+        self.testInst.custom.attach(custom1, 'pass')
         with pytest.raises(ValueError):
-            self.testInst.custom.attach(custom1, 'pass')
             self.testInst.load(2009, 1)
 
     def test_add_multiple_functions_one_not_at_end(self):

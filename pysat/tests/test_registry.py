@@ -19,7 +19,8 @@ def create_fake_module(full_module_name,  platform, name):
     package_name, module_name = full_module_name.split('.')
 
     try:
-        # python 3.5+ implementation from https://stackoverflow.com/a/51575963
+        # python 3.5+
+        # implementation from https://stackoverflow.com/a/51575963
         importlib.machinery.SOURCE_SUFFIXES.append('')  # empty string to allow any file
         spec = importlib.util.spec_from_file_location(module_name, file_path)
         instrument = importlib.util.module_from_spec(spec)

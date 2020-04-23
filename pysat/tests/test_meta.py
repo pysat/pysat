@@ -374,13 +374,13 @@ class TestBasics():
         assert (self.meta['new3'].units == 'hey3')
 
     def test_concat_w_name_collision_strict(self):
+        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
+        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
+                             'description': 'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new2'] = {'units': 'hey2', 'long_name': 'crew_brew'}
+        meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
         with pytest.raises(RuntimeError):
-            self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-            self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                                 'description': 'boohoo'}
-            meta2 = pysat.Meta()
-            meta2['new2'] = {'units': 'hey2', 'long_name': 'crew_brew'}
-            meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
             self.meta = self.meta.concat(meta2, strict=True)
 
     def test_basic_concat_w_ho(self):
@@ -399,17 +399,17 @@ class TestBasics():
         assert (self.meta['new4'].children['new41'].units == 'hey4')
 
     def test_basic_concat_w_ho_collision_strict(self):
+        self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
+        self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
+                             'description': 'boohoo'}
+        meta2 = pysat.Meta()
+        meta2['new31'] = {'units': 'hey3', 'long_name': 'crew_brew'}
+        self.meta['new3'] = meta2
+        meta3 = pysat.Meta()
+        meta3['new31'] = {'units': 'hey4', 'long_name': 'crew_brew',
+                          'bob_level': 'max'}
+        meta2['new3'] = meta3
         with pytest.raises(RuntimeError):
-            self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
-            self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
-                                 'description': 'boohoo'}
-            meta2 = pysat.Meta()
-            meta2['new31'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-            self.meta['new3'] = meta2
-            meta3 = pysat.Meta()
-            meta3['new31'] = {'units': 'hey4', 'long_name': 'crew_brew',
-                              'bob_level': 'max'}
-            meta2['new3'] = meta3
             self.meta = self.meta.concat(meta2, strict=True)
 
     def test_basic_concat_w_ho_collision_not_strict(self):
@@ -736,16 +736,15 @@ class TestBasics():
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
 
-        assert ((self.meta['new'].Units == 'hey') &
-                (self.meta['new'].Long_Name == 'boo') &
-                (self.meta['new2'].Units == 'hey2') &
-                (self.meta['new2'].Long_Name == 'boo2'))
+        assert (self.meta['new'].Units == 'hey')
+        assert (self.meta['new'].Long_Name == 'boo')
+        assert (self.meta['new2'].Units == 'hey2')
+        assert (self.meta['new2'].Long_Name == 'boo2')
 
     def test_assign_Units_no_units(self):
+        self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
+        self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         with pytest.raises(AttributeError):
-            self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
-            self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
-            self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
             self.meta['new'].units
 
     def test_get_Units_wrong_case(self):
@@ -753,10 +752,10 @@ class TestBasics():
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
 
-        assert ((self.meta['new', 'units'] == 'hey') &
-                (self.meta['new', 'long_name'] == 'boo') &
-                (self.meta['new2', 'units'] == 'hey2') &
-                (self.meta['new2', 'long_name'] == 'boo2'))
+        assert (self.meta['new', 'units'] == 'hey')
+        assert (self.meta['new', 'long_name'] == 'boo')
+        assert (self.meta['new2', 'units'] == 'hey2')
+        assert (self.meta['new2', 'long_name'] == 'boo2')
 
     def test_set_Units_wrong_case(self):
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
@@ -1033,8 +1032,8 @@ class TestBasics():
         self.meta.hey = greeting
         assert self.meta.hey == greeting
 
+        self.meta.mutable = False
         with pytest.raises(AttributeError):
-            self.meta.mutable = False
             self.meta.hey = greeting
 
     def test_meta_mutable_properties(self):
