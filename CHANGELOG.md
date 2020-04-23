@@ -2,13 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-03-07
+## [3.0.0] - 2020-04-23
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
   - custom.attach replaces custom.add
   - Unit tests are now pytest compatible
   - Added altitudes to test instruments
+  - New flags added to instruments to streamline unit testing: `_test_download`, `_test_download_travis`, `_password_req`
 - Deprecations
   - Removed ssnl
   - Removed utils.stats

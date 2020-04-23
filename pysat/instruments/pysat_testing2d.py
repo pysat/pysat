@@ -14,6 +14,8 @@ from pysat.instruments.methods import testing as mm_test
 
 platform = 'pysat'
 name = 'testing2d'
+tags = {'': 'Regular testing data set'}
+sat_ids = {'': ['']}
 _test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 
 
