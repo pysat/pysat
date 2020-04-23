@@ -436,7 +436,13 @@ class Meta(object):
                         to_be_set = input_data[key][i]
                         if hasattr(to_be_set, '__iter__') and \
                                 not isinstance(to_be_set, basestring):
-                            if isinstance(to_be_set[0], basestring):
+                                   
+                            if not to_be_set:
+                                to_be_set = ' '
+                            
+                            if isinstance(to_be_set[0], basestring) or isinstance(to_be_set, bytes):
+                                if isinstance(to_be_set, bytes):
+                                    to_be_set = to_be_set.decode("utf-8") 
                                 self._data.loc[name, key] = \
                                     '\n\n'.join(to_be_set)
                             else:
