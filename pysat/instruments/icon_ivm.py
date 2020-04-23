@@ -57,6 +57,8 @@ sat_ids = {'a': ['level_2'],
            'b': ['level_2']}
 _test_dates = {'a': {'level_2': dt.datetime(2018, 1, 1)},
                'b': {'level_2': dt.datetime(2018, 1, 1)}}
+_test_download = {'a': {kk: False for kk in tags.keys()},
+                  'b': {kk: False for kk in tags.keys()}}
 
 
 def init(self):

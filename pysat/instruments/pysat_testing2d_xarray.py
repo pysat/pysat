@@ -14,9 +14,11 @@ import pysat
 from pysat.instruments.methods import testing as mm_test
 
 platform = 'pysat'
-name = 'testing2D_xarray'
+name = 'testing2d_xarray'
 
 pandas_format = False
+tags = {'': 'Regular testing data set'}
+sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
@@ -120,7 +122,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
                                      data_range=drange['lt'])
     data['slt'] = (('time'), slt)
 
-    # create a fake longitude, resets every 6240 seconds
+    # create a fake satellite longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
     longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
@@ -128,12 +130,18 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
                                            data_range=drange['lon'])
     data['longitude'] = (('time'), longitude)
 
-    # create latitude signal for testing polar orbits
+    # create fake satellite latitude for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
     latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
+
+    # create constant altitude at 400 km for a satellite that has yet
+    # to experience orbital decay
+    alt0 = 400.0
+    altitude = alt0 * np.ones(data['latitude'].shape)
+    data['altitude'] = (('time'), altitude)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
@@ -143,33 +151,39 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     data['dummy3'] = (('time'), mlt_int + long_int * 1000.)
     data['dummy4'] = (('time'), uts)
 
-    # create altitude 'profile' at each location
+    # Add dummy coords
+    data.coords['x'] = (('x'), np.arange(17))
+    data.coords['y'] = (('y'), np.arange(17))
+    data.coords['z'] = (('z'), np.arange(15))
+
+    # create altitude 'profile' at each location to simulate remote data
     num = len(data['uts'])
     data['profiles'] = \
-        (('time', 'altitude'),
+        (('time', 'profile_height'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['altitude'] = ('altitude', np.arange(15))
+    data.coords['profile_height'] = ('profile_height', np.arange(15))
 
     # profiles that could have different altitude values
     data['variable_profiles'] = \
         (('time', 'z'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
-    data.coords['altitude2'] = \
+    data.coords['variable_profile_height'] = \
         (('time', 'z'),
          np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
 
-    # basic image simulation
+    # Create fake image type data, projected to lat / lon at some location
+    # from satellite
     data['images'] = \
         (('time', 'x', 'y'),
          data['dummy3'].values[:,
                                np.newaxis,
                                np.newaxis] * np.ones((num, 17, 17)))
-    data.coords['latitude'] = \
+    data.coords['image_lat'] = \
         (('time', 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
                        :]*np.ones((num, 17, 17)))
-    data.coords['longitude'] = \
+    data.coords['image_lon'] = \
         (('time', 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
@@ -189,6 +203,7 @@ meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
 meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
 meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
 meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
 series_profile_meta = pysat.Meta()
 series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
 meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',

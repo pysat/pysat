@@ -53,6 +53,7 @@ name = 'fuv'
 tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'': ['level_2']}
 _test_dates = {'': {'level_2': dt.datetime(2017, 5, 27)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 
 def init(self):

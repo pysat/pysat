@@ -55,6 +55,7 @@ tags = {'indices': 'SMU and SML indices',
         'stations': 'magnetometer stations'}
 sat_ids = {'': tags.keys()}
 _test_dates = {'': {kk: dt.datetime(2009, 1, 1) for kk in tags.keys()}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 
 def init(self):
@@ -684,7 +685,7 @@ def clean(supermag):
     return
 
 
-def download(date_array):
+def download(date_array, tag, sat_id, data_path):
     """Routine to download SuperMAG data
 
     Parameters

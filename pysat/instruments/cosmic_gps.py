@@ -74,6 +74,8 @@ _test_dates = {'': {'ionprf': dt.datetime(2008, 1, 1),
                     'wetprf': dt.datetime(2008, 1, 1),
                     'atmprf': dt.datetime(2008, 1, 1),
                     'scnlv1': dt.datetime(2008, 1, 1)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
+_password_req = {'': {kk: True for kk in tags.keys()}}
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):

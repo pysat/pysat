@@ -41,6 +41,8 @@ name = 'dst'
 tags = {'': ''}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
+# Other tags assumed to be True
+_test_download_travis = {'': {'': False}}
 
 
 def load(fnames, tag=None, sat_id=None):

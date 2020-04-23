@@ -54,6 +54,7 @@ tags = {'north': '',
 sat_ids = {'': ['north', 'south']}
 _test_dates = {'': {'north': dt.datetime(2009, 1, 1),
                     'south': dt.datetime(2009, 1, 1)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 
 def init(self):

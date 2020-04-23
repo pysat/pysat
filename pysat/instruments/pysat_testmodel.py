@@ -17,7 +17,8 @@ from pysat.instruments.methods import testing as mm_test
 
 platform = 'pysat'
 name = 'testmodel'
-
+tags = {'': 'Regular testing data set'}
+sat_ids = {'': ['']}
 pandas_format = False
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 

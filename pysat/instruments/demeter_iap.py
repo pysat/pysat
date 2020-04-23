@@ -52,6 +52,7 @@ tags = {'survey': 'Survey mode',
         'burst': 'Burst mode'}
 sat_ids = {'': list(tags.keys())}
 _test_dates = {'': {'survey': dt.datetime(2010, 1, 1)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 apid = {'survey': 1140, 'burst': 1139}
 

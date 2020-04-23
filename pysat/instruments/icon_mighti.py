@@ -58,6 +58,8 @@ sat_ids = {'green': ['level_2'],
            'red': ['level_2']}
 _test_dates = {'green': {'level_2': dt.datetime(2017, 5, 27)},
                'red': {'level_2': dt.datetime(2017, 5, 27)}}
+_test_download = {'green': {kk: False for kk in tags.keys()},
+                  'red': {kk: False for kk in tags.keys()}}
 
 
 def init(self):

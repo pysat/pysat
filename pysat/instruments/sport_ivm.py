@@ -30,6 +30,7 @@ tags = {'': 'Level-2 IVM Files',
 sat_ids = {'': ['']}
 # good day to download test data for. Downloads aren't currently supported
 _test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 
 def init(self):

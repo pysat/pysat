@@ -151,6 +151,11 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
 
+    # create constant altitude at 400 km
+    alt0 = 400.0
+    altitude = alt0 * np.ones(data['latitude'].shape)
+    data['altitude'] = (('time'), altitude)
+
     # fake orbit number
     fake_delta = date - dt.datetime(2008, 1, 1)
     orbit_num = mm_test.generate_fake_data(fake_delta.total_seconds(),
@@ -234,6 +239,7 @@ meta['orbit_num'] = {'units': '',
 
 meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
 meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
 meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
 meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}
 meta['dummy3'] = {'units': '', 'long_name': 'dummy3'}
