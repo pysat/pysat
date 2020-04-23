@@ -372,14 +372,6 @@ class Instrument(object):
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
-        # warn about changes coming in the future
-        if not self.strict_time_flag:
-            warnings.warn('Strict times will eventually be enforced upon all'
-                          ' instruments. (strict_time_flag)', DeprecationWarning,
-                          stacklevel=2)
-
-
-
     def __getitem__(self, key):
         """
         Convenience notation for accessing data; inst['name'] is inst.data.name
@@ -1410,12 +1402,26 @@ class Instrument(object):
         # ensure data is unique and monotonic
         # check occurs after all the data padding loads, or individual load
         # thus it can potentially check issues with padding or with raw data
-        if self.strict_time_flag:
-            if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
-                raise ValueError('Loaded data is not unique (',not self.index.is_unique,
-                                 ') or not monotonic increasing (',
-                                 not self.index.is_monotonic_increasing,
-                                 ')')
+        if (not self.index.is_monotonic_increasing):
+            if self.strict_time_flag:
+                raise ValueError('Loaded data is not monotonic increasing')
+            else:
+                # warn about changes coming in the future
+                warnings.warn(' '.join(('Strict times will eventually be',
+                                        'enforced upon all instruments.',
+                                        '(strict_time_flag)')),
+                              DeprecationWarning,
+                              stacklevel=2)
+        if (not self.index.is_unique):
+            if self.strict_time_flag:
+                raise ValueError('Loaded data is not unique')
+            else:
+                # warn about changes coming in the future
+                warnings.warn(' '.join(('Strict times will eventually be',
+                                        'enforced upon all instruments.',
+                                        '(strict_time_flag)')),
+                              DeprecationWarning,
+                              stacklevel=2)
 
         # apply default instrument routine, if data present
         if not self.empty:
