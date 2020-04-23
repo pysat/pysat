@@ -22,6 +22,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
+  - Specify dtype for pandas.Series(None) for forward compatibility
 
 ## [2.2.0] - 2020-2-29
 - New Features
