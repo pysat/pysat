@@ -35,7 +35,7 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy requests beautifulsoup4 lxml netCDF4 h5py nose pytest-cov pytest-ordering coveralls future
   - conda activate test-environment
   # Install version limited packages
-  - conda install 'pandas<0.25'
+  - conda install 'pandas>=0.23, <0.25'
   - conda install 'xarray<0.15'
   - conda install 'kiwisolver<1.2'
   # Dependencies not available through conda, install through pip
