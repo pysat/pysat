@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed model_utils
   - Removed coords.scale_units
   - Removed time.season_date_range
+  - DeprecationWarning for strict_time_flag only triggered if sloppy data is found
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
