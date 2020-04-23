@@ -153,7 +153,7 @@ class TestSpecificUTOrbits():
 
     def test_single_orbit_call_too_many(self):
         self.testInst.load(2008, 366)
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             self.testInst.orbits[17]
 
     def test_single_orbit_no_input(self):
