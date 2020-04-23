@@ -25,6 +25,7 @@ def remove_files(inst):
     ----------
     inst : pysat.Instrument
         The instrument object that is being tested
+
     """
     temp_dir = inst.files.data_path
     # Check if there are less than 20 files to ensure this is the testing
@@ -182,11 +183,14 @@ class InstTestClass():
             inst.download(start, start, **dl_dict)
             assert len(inst.files.files) > 0
         except Exception as merr:
-            # Let users know which instrument is failing, as instrument
+            # Let users know which instrument is failing, since instrument
             # list is opaque
-            print(' '.join(('\nProblem with downloading:', inst.platform,
-                            inst.name, inst.tag, inst.sat_id)))
-            raise merr
+            raise type(merr)(' '.join((str(merr),
+                                       '\nProblem with downloading:',
+                                       inst.platform,
+                                       inst.name,
+                                       inst.tag,
+                                       inst.sat_id)))
 
     @pytest.mark.second
     @pytest.mark.download
@@ -212,11 +216,14 @@ class InstTestClass():
                 if clean_level == "clean":
                     remove_files(inst)
             except Exception as merr:
-                # Let users know which instrument is failing, as instrument
+                # Let users know which instrument is failing, since instrument
                 # list is opaque
-                print(' '.join(('\nProblem with loading:', inst.platform,
-                                inst.name, inst.tag, inst.sat_id)))
-                raise merr
+                raise type(merr)(' '.join((str(merr),
+                                           '\nProblem with loading:',
+                                           inst.platform,
+                                           inst.name,
+                                           inst.tag,
+                                           inst.sat_id)))
         else:
             pytest.skip("Download data not available")
 
@@ -231,9 +238,14 @@ class InstTestClass():
             else:
                 pytest.skip("remote_file_list not available")
         except Exception as merr:
-            print(' '.join(('\nProblem with checking:', inst.platform,
-                            inst.name, inst.tag, inst.sat_id)))
-            raise merr
+            # Let users know which instrument is failing, since instrument
+            # list is opaque
+            raise type(merr)(' '.join((str(merr),
+                                       '\nProblem with checking:',
+                                       inst.platform,
+                                       inst.name,
+                                       inst.tag,
+                                       inst.sat_id)))
 
     @pytest.mark.no_download
     def test_download_warning(self, inst):
@@ -246,8 +258,11 @@ class InstTestClass():
             categories = [war[j].category for j in range(0, len(war))]
             assert UserWarning in categories
         except Exception as merr:
-            # Let users know which instrument is failing, as instrument
+            # Let users know which instrument is failing, since instrument
             # list is opaque
-            print(' '.join(('\nProblem with checking:', inst.platform,
-                            inst.name, inst.tag, inst.sat_id)))
-            raise merr
+            raise type(merr)(' '.join((str(merr),
+                                       '\nProblem with checking:',
+                                       inst.platform,
+                                       inst.name,
+                                       inst.tag,
+                                       inst.sat_id)))
