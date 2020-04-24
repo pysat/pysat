@@ -123,33 +123,33 @@ class TestSpecificUTOrbits():
     def test_single_orbit_call_by_0_index(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits[0]
-        ans = (self.testInst.index[0] == pds.datetime(2009, 1, 1))
-        ans2 = (self.testInst.index[-1] == pds.datetime(2009, 1, 1, 1, 36, 59))
+        ans = (self.testInst.index[0] == dt.datetime(2009, 1, 1))
+        ans2 = (self.testInst.index[-1] == dt.datetime(2009, 1, 1, 1, 36, 59))
         assert ans & ans2
 
     def test_single_orbit_call_by_1_index(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits[1]
-        ans = (self.testInst.index[0] == pds.datetime(2009, 1, 1, 1, 37))
-        ans2 = (self.testInst.index[-1] == pds.datetime(2009, 1, 1, 3, 13, 59))
+        ans = (self.testInst.index[0] == dt.datetime(2009, 1, 1, 1, 37))
+        ans2 = (self.testInst.index[-1] == dt.datetime(2009, 1, 1, 3, 13, 59))
         assert ans & ans2
 
     def test_single_orbit_call_by_negative_1_index(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits[-1]
         ans = (self.testInst.index[0] ==
-               (pds.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
+               (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
         ans2 = (self.testInst.index[-1] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
         assert ans & ans2
 
     def test_single_orbit_call_by_last_index(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits[14]
         assert (self.testInst.index[0] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
+                (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
         assert (self.testInst.index[-1] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
 
     def test_single_orbit_call_too_many(self):
         self.testInst.load(2008, 366)
@@ -163,7 +163,7 @@ class TestSpecificUTOrbits():
 
     def test_oribt_number_via_current_multiple_orbit_calls_in_day(self):
         self.testInst.load(2009, 1)
-        self.testInst.bounds = (pysat.datetime(2009, 1, 1), None)
+        self.testInst.bounds = (dt.datetime(2009, 1, 1), None)
         true_vals = np.arange(15)
         true_vals[-1] = 0
         test_vals = []
@@ -179,16 +179,16 @@ class TestSpecificUTOrbits():
         self.testInst.load(2009, 1)
         ans = []
         ans2 = []
-        self.testInst.bounds = (pysat.datetime(2009, 1, 1), None)
+        self.testInst.bounds = (dt.datetime(2009, 1, 1), None)
         for i, inst in enumerate(self.testInst.orbits):
             if i > 14:
                 break
             print('Loaded orbit ', self.testInst.orbits.current)
             ans.append(self.testInst.index[0] ==
-                       (pds.datetime(2009, 1, 1) +
+                       (dt.datetime(2009, 1, 1) +
                        i*relativedelta(hours=1, minutes=37)))
             ans2.append(self.testInst.index[-1] ==
-                        (pds.datetime(2009, 1, 1) +
+                        (dt.datetime(2009, 1, 1) +
                         (i + 1) * relativedelta(hours=1, minutes=37) -
                         relativedelta(seconds=1)))
 
@@ -196,30 +196,30 @@ class TestSpecificUTOrbits():
 
     def test_orbit_next_call_no_loaded_data(self):
         self.testInst.orbits.next()
-        assert (self.testInst.index[0] == pds.datetime(2008, 1, 1))
-        assert (self.testInst.index[-1] == pds.datetime(2008, 1, 1, 0, 38, 59))
+        assert (self.testInst.index[0] == dt.datetime(2008, 1, 1))
+        assert (self.testInst.index[-1] == dt.datetime(2008, 1, 1, 0, 38, 59))
 
     def test_orbit_prev_call_no_loaded_data(self):
         self.testInst.orbits.prev()
         # this isn't a full orbit
         assert (self.testInst.index[-1] ==
-                pds.datetime(2010, 12, 31, 23, 59, 59))
-        assert (self.testInst.index[0] == pds.datetime(2010, 12, 31, 23, 49))
+                dt.datetime(2010, 12, 31, 23, 59, 59))
+        assert (self.testInst.index[0] == dt.datetime(2010, 12, 31, 23, 49))
 
     def test_single_orbit_call_orbit_starts_0_UT_using_next(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits.next()
-        assert (self.testInst.index[0] == pds.datetime(2009, 1, 1))
-        assert (self.testInst.index[-1] == pds.datetime(2009, 1, 1, 1, 36, 59))
+        assert (self.testInst.index[0] == dt.datetime(2009, 1, 1))
+        assert (self.testInst.index[-1] == dt.datetime(2009, 1, 1, 1, 36, 59))
 
     def test_single_orbit_call_orbit_starts_0_UT_using_prev(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits.prev()
         assert (self.testInst.index[0] ==
-                (pds.datetime(2009, 1, 1) +
+                (dt.datetime(2009, 1, 1) +
                 14 * relativedelta(hours=1, minutes=37)))
         assert (self.testInst.index[-1] ==
-                (pds.datetime(2009, 1, 1) +
+                (dt.datetime(2009, 1, 1) +
                 15 * relativedelta(hours=1, minutes=37) -
                 relativedelta(seconds=1)))
 
@@ -227,18 +227,18 @@ class TestSpecificUTOrbits():
         from dateutil.relativedelta import relativedelta as relativedelta
         self.testInst.load(2008, 366)
         self.testInst.orbits.next()
-        assert (self.testInst.index[0] == pds.datetime(2008, 12, 30, 23, 45))
+        assert (self.testInst.index[0] == dt.datetime(2008, 12, 30, 23, 45))
         assert (self.testInst.index[-1] ==
-                (pds.datetime(2008, 12, 30, 23, 45) +
+                (dt.datetime(2008, 12, 30, 23, 45) +
                 relativedelta(hours=1, minutes=36, seconds=59)))
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_prev(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits.prev()
         assert (self.testInst.index[0] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
+                (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
         assert (self.testInst.index[-1] ==
-                (pds.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
 
 
 class TestGeneralOrbitsMLT():
@@ -267,7 +267,7 @@ class TestGeneralOrbitsMLT():
         self.testInst.orbits.next()
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
-        assert self.testInst.date == pysat.datetime(2009, 1, 1)
+        assert self.testInst.date == dt.datetime(2009, 1, 1)
 
     def test_less_than_one_orbit_of_data_two_ways(self):
         def filter_data(inst):
@@ -289,9 +289,9 @@ class TestGeneralOrbitsMLT():
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
         # create situation where the < 1 orbit split across two days
         def filter_data(inst):
-            if inst.date == pysat.datetime(2009, 1, 5):
+            if inst.date == dt.datetime(2009, 1, 5):
                 inst.data = inst[0:20]
-            elif inst.date == pysat.datetime(2009, 1, 4):
+            elif inst.date == dt.datetime(2009, 1, 4):
                 inst.data = inst[-20:]
 
         self.testInst.custom.attach(filter_data, 'modify')
@@ -615,13 +615,13 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info)
-        times = [[pysat.datetime(2008, 12, 31, 4),
-                  pysat.datetime(2008, 12, 31, 5, 37)],
-                 [pysat.datetime(2009, 1, 1),
-                  pysat.datetime(2009, 1, 1, 1, 37)]
+        times = [[dt.datetime(2008, 12, 31, 4),
+                  dt.datetime(2008, 12, 31, 5, 37)],
+                 [dt.datetime(2009, 1, 1),
+                  dt.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = pysat.datetime(2009, 1, 2) + \
+            day = dt.datetime(2009, 1, 2) + \
                 pds.DateOffset(days=int(seconds))
             times.append([day, day +
                           pds.DateOffset(hours=1, minutes=37,
@@ -642,13 +642,13 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info=info)
-        times = [[pysat.datetime(2008, 12, 31, 4),
-                  pysat.datetime(2008, 12, 31, 5, 37)],
-                 [pysat.datetime(2009, 1, 1),
-                  pysat.datetime(2009, 1, 1, 1, 37)]
+        times = [[dt.datetime(2008, 12, 31, 4),
+                  dt.datetime(2008, 12, 31, 5, 37)],
+                 [dt.datetime(2009, 1, 1),
+                  dt.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = pysat.datetime(2009, 1, 2) + \
+            day = dt.datetime(2009, 1, 2) + \
                 pds.DateOffset(days=int(seconds))
             times.append([day, day +
                           pds.DateOffset(hours=1, minutes=37,

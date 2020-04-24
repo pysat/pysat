@@ -4,6 +4,7 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import numpy as np
 
@@ -16,7 +17,7 @@ platform = 'pysat'
 name = 'testing2d'
 tags = {'': 'Regular testing data set'}
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 def init(self):
@@ -92,14 +93,14 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # Using 100s frequency for compatibility with seasonal analysis unit tests
     uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
     # seed DataFrame with UT array
-    data = pysat.DataFrame(uts, columns=['uts'])
+    data = pds.DataFrame(uts, columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     # figure out how far in time from the root start
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
-    time_delta = date - pysat.datetime(2009, 1, 1)
+    time_delta = date - dt.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                              period=iperiod['lt'],

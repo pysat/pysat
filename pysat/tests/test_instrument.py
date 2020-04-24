@@ -46,10 +46,10 @@ class TestBasics():
         data)."""
         self.testInst.load(2009, 1)
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2009, 1, 1)) & \
-            (test_date == self.testInst.date)
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2009, 1, 1))
+        assert (test_date == self.testInst.date)
 
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
@@ -76,99 +76,99 @@ class TestBasics():
             testInst.load(fname=testInst.files[0])
 
     def test_basic_instrument_load_by_date(self):
-        date = pysat.datetime(2009, 1, 1)
+        date = dt.datetime(2009, 1, 1)
         self.testInst.load(date=date)
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2009, 1, 1))
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2009, 1, 1))
         assert (test_date == self.testInst.date)
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
         # put in a date that has more than year, month, day
-        date = pysat.datetime(2009, 1, 1, 1, 1, 1)
+        date = dt.datetime(2009, 1, 1, 1, 1, 1)
         self.testInst.load(date=date)
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2009, 1, 1))
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2009, 1, 1))
         assert (test_date == self.testInst.date)
 
     def test_basic_instrument_load_data(self):
         """Test if the correct day is being loaded (checking data down to the
         second)."""
         self.testInst.load(2009, 1)
-        assert self.testInst.index[0] == pds.datetime(2009, 1, 1, 0, 0, 0)
+        assert self.testInst.index[0] == dt.datetime(2009, 1, 1, 0, 0, 0)
 
     def test_basic_instrument_load_leap_year(self):
         """Test if the correct day is being loaded (Leap-Year)."""
         self.testInst.load(2008, 366)
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2008, 12, 31)) & \
-            (test_date == self.testInst.date)
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2008, 12, 31))
+        assert (test_date == self.testInst.date)
 
     def test_next_load_default(self):
         """Test if first day is loaded by default when first invoking .next."""
         self.testInst.next()
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert test_date == pds.datetime(2008, 1, 1)
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert test_date == dt.datetime(2008, 1, 1)
 
     def test_prev_load_default(self):
         """Test if last day is loaded by default when first invoking .prev."""
         self.testInst.prev()
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert test_date == pds.datetime(2010, 12, 31)
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert test_date == dt.datetime(2010, 12, 31)
 
     def test_basic_fid_instrument_load(self):
         """Test if first day is loaded by default when first invoking .next."""
         self.testInst.load(fid=0)
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2008, 1, 1)) & \
-            (test_date == self.testInst.date)
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2008, 1, 1))
+        assert (test_date == self.testInst.date)
 
     def test_next_fid_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.testInst.load(fid=0)
         self.testInst.next()
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2008, 1, 2)) & \
-            (test_date == self.testInst.date)
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2008, 1, 2))
+        assert (test_date == self.testInst.date)
 
     def test_prev_fid_load_default(self):
         """Test prev day is loaded when invoking .prev."""
         self.testInst.load(fid=3)
         self.testInst.prev()
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2008, 1, 3)) & \
-            (test_date == self.testInst.date)
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2008, 1, 3))
+        assert (test_date == self.testInst.date)
 
     def test_filename_load(self):
         """Test if file is loadable by filename, relative to
         top_data_dir/platform/name/tag"""
         self.testInst.load(fname='2010-12-31.nofile')
-        assert self.testInst.index[0] == pds.datetime(2010, 12, 31)
+        assert self.testInst.index[0] == dt.datetime(2010, 12, 31)
 
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.testInst.load(fname='2010-12-30.nofile')
         self.testInst.next()
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2010, 12, 31)) & \
-            (test_date == self.testInst.date)
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2010, 12, 31))
+        assert (test_date == self.testInst.date)
 
     def test_prev_filename_load_default(self):
         """Test prev day is loaded when invoking .prev."""
@@ -176,9 +176,9 @@ class TestBasics():
         # print(self.testInst.date)
         self.testInst.prev()
         test_date = self.testInst.index[0]
-        test_date = pysat.datetime(test_date.year, test_date.month,
-                                   test_date.day)
-        assert (test_date == pds.datetime(2009, 1, 3))
+        test_date = dt.datetime(test_date.year, test_date.month,
+                                test_date.day)
+        assert (test_date == dt.datetime(2009, 1, 3))
         assert (test_date == self.testInst.date)
 
     # --------------------------------------------------------------------------
@@ -187,20 +187,20 @@ class TestBasics():
     #
     # --------------------------------------------------------------------------
     def test_today_yesterday_and_tomorrow(self):
-        now = pysat.datetime.now()
-        today = pysat.datetime(now.year, now.month, now.day)
+        now = dt.datetime.now()
+        today = dt.datetime(now.year, now.month, now.day)
         assert today == self.testInst.today()
         assert today - pds.DateOffset(days=1) == self.testInst.yesterday()
         assert today + pds.DateOffset(days=1) == self.testInst.tomorrow()
 
     def test_filter_datetime(self):
-        now = pysat.datetime.now()
-        today = pysat.datetime(now.year, now.month, now.day)
+        now = dt.datetime.now()
+        today = dt.datetime(now.year, now.month, now.day)
         assert today == self.testInst._filter_datetime_input(now)
 
     def test_filtered_date_attribute(self):
-        now = pysat.datetime.now()
-        today = pysat.datetime(now.year, now.month, now.day)
+        now = dt.datetime.now()
+        today = dt.datetime(now.year, now.month, now.day)
         self.testInst.date = now
         assert today == self.testInst.date
 
@@ -261,8 +261,10 @@ class TestBasics():
             # Instrument.data must have a 'time' index
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
-            assert (self.testInst[0:len1, :] == data1.to_array()[:, :]).all().all()
-            assert (self.testInst[len1:, :] == data2.to_array()[:, :]).all().all()
+            assert (self.testInst[0:len1, :]
+                    == data1.to_array()[:, :]).all().all()
+            assert (self.testInst[len1:, :]
+                    == data2.to_array()[:, :]).all().all()
 
     # --------------------------------------------------------------------------
     #
@@ -438,14 +440,14 @@ class TestBasics():
 
     def test_data_access_by_datetime_and_name(self):
         self.testInst.load(2009, 1)
-        ind = pysat.datetime(2009, 1, 1, 0, 0, 0)
+        ind = dt.datetime(2009, 1, 1, 0, 0, 0)
         assert np.all(self.testInst[ind, 'uts'] ==
                       self.testInst.data['uts'].values[0])
 
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
-        start = pysat.datetime(2009, 1, 1, 0, 0, 0)
-        stop = pysat.datetime(2009, 1, 1, 0, 0, 10)
+        start = dt.datetime(2009, 1, 1, 0, 0, 0)
+        stop = dt.datetime(2009, 1, 1, 0, 0, 10)
         assert np.all(self.testInst[start:stop, 'uts'] ==
                       self.testInst.data['uts'].values[0:11])
 
@@ -460,7 +462,7 @@ class TestBasics():
                                                    index=self.testInst.index)
         assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
 
-        self.testInst['blankMLT'] = pds.Series(None)
+        self.testInst['blankMLT'] = pds.Series(None, dtype='float64')
         assert np.all(np.isnan(self.testInst['blankMLT']))
 
     def test_setting_pandas_dataframe_by_names(self):
@@ -494,8 +496,8 @@ class TestBasics():
         cloneInst = self.testInst
         if self.testInst.pandas_format:
             self.testInst[0:3] = 0
-            assert (np.all(self.testInst[3:] == cloneInst[3:]) &
-                    np.all(self.testInst[0:3] == 0))
+            assert np.all(self.testInst[3:] == cloneInst[3:])
+            assert np.all(self.testInst[0:3] == 0)
         else:
             # This command does not work for xarray
             assert True
@@ -543,7 +545,7 @@ class TestBasics():
     def test_setting_partial_data_by_datetime_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0), 'doubleMLT'] = 0
+        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0), 'doubleMLT'] = 0
         assert np.all(self.testInst[0, 'doubleMLT'] ==
                       2. * self.testInst[0, 'mlt'])
         assert np.all(self.testInst[0, 'doubleMLT'] == 0)
@@ -551,8 +553,8 @@ class TestBasics():
     def test_setting_partial_data_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[pysat.datetime(2009, 1, 1, 0, 0, 0):
-                      pysat.datetime(2009, 1, 1, 0, 0, 10),
+        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0):
+                      dt.datetime(2009, 1, 1, 0, 0, 10),
                       'doubleMLT'] = 0
         assert np.all(self.testInst[11:, 'doubleMLT'] ==
                       2. * self.testInst[11:, 'mlt'])
@@ -674,8 +676,8 @@ class TestBasics():
                       pds.date_range(start, stop).tolist())
 
     def test_set_bounds_by_date_extra_time(self):
-        start = pysat.datetime(2009, 1, 1, 1, 10)
-        stop = pysat.datetime(2009, 1, 15, 1, 10)
+        start = dt.datetime(2009, 1, 1, 1, 10)
+        stop = dt.datetime(2009, 1, 15, 1, 10)
         self.testInst.bounds = (start, stop)
         start = self.testInst._filter_datetime_input(start)
         stop = self.testInst._filter_datetime_input(stop)
@@ -683,8 +685,8 @@ class TestBasics():
                       pds.date_range(start, stop).tolist())
 
     def test_iterate_over_bounds_set_by_date(self):
-        start = pysat.datetime(2009, 1, 1)
-        stop = pysat.datetime(2009, 1, 15)
+        start = dt.datetime(2009, 1, 1)
+        stop = dt.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -693,8 +695,8 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_iterate_over_bounds_set_by_date2(self):
-        start = pysat.datetime(2008, 1, 1)
-        stop = pysat.datetime(2010, 12, 31)
+        start = dt.datetime(2008, 1, 1)
+        stop = dt.datetime(2010, 12, 31)
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -713,18 +715,18 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_set_bounds_by_date_season(self):
-        start = [pysat.datetime(2009, 1, 1), pysat.datetime(2009, 2, 1)]
-        stop = [pysat.datetime(2009, 1, 15), pysat.datetime(2009, 2, 15)]
+        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
+        stop = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
         self.testInst.bounds = (start, stop)
         out = pds.date_range(start[0], stop[0]).tolist()
         out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(self.testInst._iter_list == out)
 
     def test_set_bounds_by_date_season_extra_time(self):
-        start = [pysat.datetime(2009, 1, 1, 1, 10),
-                 pysat.datetime(2009, 2, 1, 1, 10)]
-        stop = [pysat.datetime(2009, 1, 15, 1, 10),
-                pysat.datetime(2009, 2, 15, 1, 10)]
+        start = [dt.datetime(2009, 1, 1, 1, 10),
+                 dt.datetime(2009, 2, 1, 1, 10)]
+        stop = [dt.datetime(2009, 1, 15, 1, 10),
+                dt.datetime(2009, 2, 15, 1, 10)]
         self.testInst.bounds = (start, stop)
         start = self.testInst._filter_datetime_input(start)
         stop = self.testInst._filter_datetime_input(stop)
@@ -733,8 +735,8 @@ class TestBasics():
         assert np.all(self.testInst._iter_list == out)
 
     def test_iterate_over_bounds_set_by_date_season(self):
-        start = [pysat.datetime(2009, 1, 1), pysat.datetime(2009, 2, 1)]
-        stop = [pysat.datetime(2009, 1, 15), pysat.datetime(2009, 2, 15)]
+        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
+        stop = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -744,10 +746,10 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_iterate_over_bounds_set_by_date_season_extra_time(self):
-        start = [pysat.datetime(2009, 1, 1, 1, 10),
-                 pysat.datetime(2009, 2, 1, 1, 10)]
-        stop = [pysat.datetime(2009, 1, 15, 1, 10),
-                pysat.datetime(2009, 2, 15, 1, 10)]
+        start = [dt.datetime(2009, 1, 1, 1, 10),
+                 dt.datetime(2009, 2, 1, 1, 10)]
+        stop = [dt.datetime(2009, 1, 15, 1, 10),
+                dt.datetime(2009, 2, 15, 1, 10)]
         self.testInst.bounds = (start, stop)
         # filter
         start = self.testInst._filter_datetime_input(start)
@@ -771,8 +773,8 @@ class TestBasics():
     def test_iterate_over_bounds_set_by_fname(self):
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
-        start_d = pysat.datetime(2009, 1, 1)
-        stop_d = pysat.datetime(2009, 1, 15)
+        start_d = dt.datetime(2009, 1, 1)
+        stop_d = dt.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -783,8 +785,8 @@ class TestBasics():
     def test_iterate_over_bounds_set_by_fname_via_next(self):
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
-        start_d = pysat.datetime(2009, 1, 1)
-        stop_d = pysat.datetime(2009, 1, 15)
+        start_d = dt.datetime(2009, 1, 1)
+        stop_d = dt.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         dates = []
         loop_next = True
@@ -800,8 +802,8 @@ class TestBasics():
     def test_iterate_over_bounds_set_by_fname_via_prev(self):
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
-        start_d = pysat.datetime(2009, 1, 1)
-        stop_d = pysat.datetime(2009, 1, 15)
+        start_d = dt.datetime(2009, 1, 1)
+        stop_d = dt.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
         dates = []
         loop = True
@@ -826,8 +828,8 @@ class TestBasics():
     def test_iterate_over_bounds_set_by_fname_season(self):
         start = ['2009-01-01.nofile', '2009-02-01.nofile']
         stop = ['2009-01-15.nofile', '2009-02-15.nofile']
-        start_d = [pysat.datetime(2009, 1, 1), pysat.datetime(2009, 2, 1)]
-        stop_d = [pysat.datetime(2009, 1, 15), pysat.datetime(2009, 2, 15)]
+        start_d = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
+        stop_d = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -980,19 +982,19 @@ class TestDataPaddingbyFile():
     def test_fid_data_padding(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.rawInst.load(fid=1)
-        assert ((self.testInst.index[0] ==
-                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] ==
+                self.rawInst.index[0] - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] ==
+                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
 
     def test_fid_data_padding_next(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fid=2)
-        assert ((self.testInst.index[0] ==
-                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] ==
+                self.rawInst.index[0] - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] ==
+                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
 
     def test_fid_data_padding_multi_next(self):
         """This also tests that _prev_data and _next_data cacheing"""
@@ -1000,10 +1002,10 @@ class TestDataPaddingbyFile():
         self.testInst.next()
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fid=3)
-        assert ((self.testInst.index[0] ==
-                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] ==
+                self.rawInst.index[0] - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] ==
+                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
 
     def test_fid_data_padding_prev(self):
         self.testInst.load(fid=2, verifyPad=True)
@@ -1020,19 +1022,19 @@ class TestDataPaddingbyFile():
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fid=8)
-        assert ((self.testInst.index[0] ==
-                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] ==
+                self.rawInst.index[0] - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] ==
+                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
 
     def test_fid_data_padding_jump(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.load(fid=10, verifyPad=True)
         self.rawInst.load(fid=10)
-        assert ((self.testInst.index[0] ==
-                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] ==
+                self.rawInst.index[0] - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] ==
+                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
 
     def test_fid_data_padding_uniqueness(self):
         self.testInst.load(fid=1, verifyPad=True)
@@ -1150,11 +1152,11 @@ class TestDataPadding():
 
     def test_data_padding(self):
         self.testInst.load(2009, 2, verifyPad=True)
-        assert ((self.testInst.index[0] ==
-                 self.testInst.date - pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] == self.testInst.date +
-                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                 pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] ==
+                self.testInst.date - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] == self.testInst.date +
+                pds.DateOffset(hours=23, minutes=59, seconds=59) +
+                pds.DateOffset(minutes=5))
 
     def test_data_padding_offset_instantiation(self):
         testInst = pysat.Instrument(platform='pysat', name='testing',
@@ -1162,11 +1164,11 @@ class TestDataPadding():
                                     pad=pds.DateOffset(minutes=5),
                                     update_files=True)
         testInst.load(2009, 2, verifyPad=True)
-        assert ((testInst.index[0] ==
-                 testInst.date - pds.DateOffset(minutes=5)) &
-                (testInst.index[-1] == testInst.date +
-                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                 pds.DateOffset(minutes=5)))
+        assert (testInst.index[0] ==
+                testInst.date - pds.DateOffset(minutes=5))
+        assert (testInst.index[-1] == testInst.date +
+                pds.DateOffset(hours=23, minutes=59, seconds=59) +
+                pds.DateOffset(minutes=5))
 
     def test_data_padding_bad_instantiation(self):
         with pytest.raises(ValueError):
@@ -1200,53 +1202,53 @@ class TestDataPadding():
     def test_data_padding_next(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.next(verifyPad=True)
-        assert ((self.testInst.index[0] == self.testInst.date -
-                 pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] == self.testInst.date +
-                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                 pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] == self.testInst.date
+                - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] == self.testInst.date
+                + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                + pds.DateOffset(minutes=5))
 
     def test_data_padding_multi_next(self):
         """This also tests that _prev_data and _next_data cacheing"""
         self.testInst.load(2009, 2)
         self.testInst.next()
         self.testInst.next(verifyPad=True)
-        assert ((self.testInst.index[0] == self.testInst.date -
-                 pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] == self.testInst.date +
-                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                 pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] == self.testInst.date
+                - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] == self.testInst.date
+                + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                + pds.DateOffset(minutes=5))
 
     def test_data_padding_prev(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.prev(verifyPad=True)
         print(self.testInst.index)
-        assert ((self.testInst.index[0] == self.testInst.date -
-                 pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] == self.testInst.date +
-                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                 pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] == self.testInst.date
+                - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] == self.testInst.date
+                + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                + pds.DateOffset(minutes=5))
 
     def test_data_padding_multi_prev(self):
         """This also tests that _prev_data and _next_data cacheing"""
         self.testInst.load(2009, 10)
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
-        assert ((self.testInst.index[0] == self.testInst.date -
-                 pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] == self.testInst.date +
-                 pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                 pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] == self.testInst.date -
+                pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] == self.testInst.date +
+                pds.DateOffset(hours=23, minutes=59, seconds=59) +
+                pds.DateOffset(minutes=5))
 
     def test_data_padding_jump(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.load(2009, 11, verifyPad=True)
-        assert ((self.testInst.index[0] ==
-                 self.testInst.date - pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] ==
-                 self.testInst.date
-                 + pds.DateOffset(hours=23, minutes=59, seconds=59)
-                 + pds.DateOffset(minutes=5)))
+        assert (self.testInst.index[0] ==
+                self.testInst.date - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] ==
+                self.testInst.date
+                + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                + pds.DateOffset(minutes=5))
 
     def test_data_padding_uniqueness(self):
         self.testInst.load(2009, 1, verifyPad=True)
@@ -1261,8 +1263,8 @@ class TestDataPadding():
     def test_data_padding_removal(self):
         self.testInst.load(2009, 1)
         # print(self.testInst.index)
-        assert (self.testInst.index[0] == self.testInst.date) & \
-               (self.testInst.index[-1] == self.testInst.date +
+        assert (self.testInst.index[0] == self.testInst.date)
+        assert (self.testInst.index[-1] == self.testInst.date +
                 pds.DateOffset(hour=23, minutes=59, seconds=59))
 
 

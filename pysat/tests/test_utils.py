@@ -1,10 +1,10 @@
 """
 tests the pysat utils area
 """
-import os
-import tempfile
 import numpy as np
+import os
 import pytest
+import tempfile
 
 import pysat
 

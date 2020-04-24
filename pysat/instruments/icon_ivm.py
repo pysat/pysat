@@ -24,7 +24,7 @@ Example
     import pysat
     ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2',
                            clean_level='clean')
-    ivm.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
+    ivm.download(dt.datetime(2019, 1, 30), dt.datetime(2019, 12, 31))
     ivm.load(2017,363)
 
 Author
@@ -36,6 +36,7 @@ R. A. Stoneback
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
@@ -54,8 +55,8 @@ tags = {'level_2': 'Level 2 public geophysical data'}
 # dictionary of sat_ids ad tags supported by each
 sat_ids = {'a': ['level_2'],
            'b': ['level_2']}
-_test_dates = {'a': {'level_2': pysat.datetime(2018, 1, 1)},
-               'b': {'level_2': pysat.datetime(2018, 1, 1)}}
+_test_dates = {'a': {'level_2': dt.datetime(2018, 1, 1)},
+               'b': {'level_2': dt.datetime(2018, 1, 1)}}
 _test_download = {'a': {kk: False for kk in tags.keys()},
                   'b': {kk: False for kk in tags.keys()}}
 

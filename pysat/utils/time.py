@@ -61,8 +61,8 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
 
     Returns
     -------
-    out_date : pds.datetime
-        Pandas datetime object
+    out_date : dt.datetime
+        datetime object
 
     """
 

@@ -137,7 +137,7 @@ class TestBasics():
 
     def test_add_dataframe(self):
         def custom1(inst):
-            out = pysat.DataFrame({'doubleMLT': inst.data.mlt * 2,
+            out = pds.DataFrame({'doubleMLT': inst.data.mlt * 2,
                                    'tripleMLT': inst.data.mlt * 3},
                                   index=inst.index)
             return out
@@ -150,7 +150,7 @@ class TestBasics():
 
     def test_add_dataframe_w_meta(self):
         def custom1(inst):
-            out = pysat.DataFrame({'doubleMLT': inst.data.mlt * 2,
+            out = pds.DataFrame({'doubleMLT': inst.data.mlt * 2,
                                    'tripleMLT': inst.data.mlt * 3},
                                   index=inst.index)
             return {'data': out,
@@ -167,7 +167,7 @@ class TestBasics():
 
     def test_add_series_w_meta(self):
         def custom1(inst):
-            out = pysat.Series(inst.data.mlt * 2,
+            out = pds.Series(inst.data.mlt * 2,
                                index=inst.index)
             out.name = 'doubleMLT'
             return {'data': out, 'long_name': 'doubleMLTlong',
@@ -180,7 +180,7 @@ class TestBasics():
 
     def test_add_series_w_meta_missing_long_name(self):
         def custom1(inst):
-            out = pysat.Series(2.0 * inst.data.mlt.values,
+            out = pds.Series(2.0 * inst.data.mlt.values,
                                index=inst.index)
             out.name = 'doubleMLT'
             return {'data': out,
@@ -193,7 +193,7 @@ class TestBasics():
 
     def test_add_series_w_meta_name_in_dict(self):
         def custom1(inst):
-            out = pysat.Series(2.0 * inst.data.mlt.values,
+            out = pds.Series(2.0 * inst.data.mlt.values,
                                index=inst.index)
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
@@ -205,7 +205,7 @@ class TestBasics():
 
     def test_add_series_w_meta_no_name_error(self):
         def custom1(inst):
-            out = pysat.Series({'doubleMLT': inst.data.mlt * 2},
+            out = pds.Series({'doubleMLT': inst.data.mlt * 2},
                                index=inst.index)
             # out.name = 'doubleMLT'
             return {'data': out, 'long_name': 'doubleMLTlong',

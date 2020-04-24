@@ -8,11 +8,13 @@ except NameError:
     basestring = str
 
 import copy
+import datetime as dt
 import functools
 import inspect
 import os
 import string
 import sys
+
 import pkgutil
 import warnings
 
@@ -25,7 +27,6 @@ from pysat import _files
 from pysat import _orbits
 from pysat import _meta
 from pysat import utils
-from pysat import DataFrame
 from pysat import user_modules as user_modules
 from pysat import logger
 
@@ -152,8 +153,8 @@ class Instrument(object):
                                 name='vefi',
                                 tag='dc_b',
                                 clean_level='clean')
-        start = pysat.datetime(2009,1,1)
-        stop = pysat.datetime(2009,1,2)
+        start = dt.datetime(2009,1,1)
+        stop = dt.datetime(2009,1,2)
         vefi.download(start, stop)
         vefi.load(date=start)
         print(vefi['dB_mer'])
@@ -264,8 +265,8 @@ class Instrument(object):
         # set up empty data and metadata
         # check if pandas or xarray format
         if self.pandas_format:
-            self._null_data = DataFrame(None)
-            self._data_library = DataFrame
+            self._null_data = pds.DataFrame(None)
+            self._data_library = pds.DataFrame
         else:
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset
@@ -464,7 +465,7 @@ class Instrument(object):
                 except:
                     try:
                         return self.data.sel(time=key[0])[key[1]]
-                    except TypeError: # construct dataset from names
+                    except TypeError:  # construct dataset from names
                         return self.data[self.variables[key[1]]]
             else:
                 # multidimensional indexing
@@ -677,6 +678,7 @@ class Instrument(object):
                 return len(data.indexes['time']) == 0
             else:
                 return True
+
     @property
     def date(self):
         """Date for loaded data."""
@@ -786,9 +788,10 @@ class Instrument(object):
             # start with local areas
             import_success = False
             try:
-                inst = importlib.import_module(''.join(('.', self.platform, '_',
-                                            self.name)),
-                                            package='pysat.instruments')
+                inst = \
+                    importlib.import_module(''.join(('.', self.platform, '_',
+                                                     self.name)),
+                                                     package='pysat.instruments')
                 import_success = True
             except:
                 # iterate through user set modules
@@ -978,9 +981,9 @@ class Instrument(object):
             return date
         else:
             if hasattr(date, '__iter__'):
-                return [pds.datetime(da.year, da.month, da.day) for da in date]
+                return [dt.datetime(da.year, da.month, da.day) for da in date]
             else:
-                return pds.datetime(date.year, date.month, date.day)
+                return dt.datetime(date.year, date.month, date.day)
 
     def today(self):
         """Returns today's date, with no hour, minute, second, etc.
@@ -996,7 +999,7 @@ class Instrument(object):
 
         """
 
-        return self._filter_datetime_input(pds.datetime.today())
+        return self._filter_datetime_input(dt.datetime.today())
 
     def tomorrow(self):
         """Returns tomorrow's date, with no hour, minute, second, etc.
@@ -1126,21 +1129,21 @@ class Instrument(object):
             if date is not None:
                 if bad_datetime:
                     output_str = ' '.join(('Bad datetime for', output_str,
-                                        date.strftime('%d %B %Y')))
+                                           date.strftime('%d %B %Y')))
                 else:
                     output_str = ' '.join(('No', output_str, 'data for',
-                                        date.strftime('%d %B %Y')))
+                                           date.strftime('%d %B %Y')))
             else:
                 if len(fname) == 1:
                     output_str = ' '.join(('No', output_str, 'data for',
                                            fname[0]))
                 elif len(fname) == 0:
-                     output_str = ' '.join(('No', output_str, 'valid',
-                                            'filenames found'))
+                    output_str = ' '.join(('No', output_str, 'valid',
+                                           'filenames found'))
                 else:
                     output_str = ' '.join(('No', output_str, 'data for',
-                                            fname[0], '::',
-                                            fname[-1]))
+                                           fname[0], '::',
+                                           fname[-1]))
 
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
@@ -1233,7 +1236,7 @@ class Instrument(object):
             inc = pds.DateOffset(days=1)
             curr = self._filter_datetime_input(date)
         elif (yr is not None) & (doy is not None):
-            date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
+            date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
             self._set_load_parameters(date=date, fid=None)
             # increment
             inc = pds.DateOffset(days=1)
@@ -1396,7 +1399,7 @@ class Instrument(object):
                 temp = first_time
             else:
                 temp = self.index[0]
-            self.date = pds.datetime(temp.year, temp.month, temp.day)
+            self.date = dt.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.time.getyrdoy(self.date)
 
         # ensure data is unique and monotonic
@@ -1671,12 +1674,12 @@ class Instrument(object):
             inst = pysat.Instrument(platform=platform,
                                     name=name,
                                     tag=tag)
-            start = pysat.datetime(2009,1,1)
-            stop = pysat.datetime(2009,1,31)
+            start = dt.datetime(2009,1,1)
+            stop = dt.datetime(2009,1,31)
             inst.bounds = (start,stop)
 
             start2 = pysat.datetetime(2010,1,1)
-            stop2 = pysat.datetime(2010,2,14)
+            stop2 = dt.datetime(2010,2,14)
             inst.bounds = ([start, start2], [stop, stop2])
 
         """
@@ -1721,11 +1724,12 @@ class Instrument(object):
             if isinstance(start[0], str):
                 self._iter_type = 'file'
                 self._iter_list = self.files.get_file_array(start, end)
-            elif isinstance(start[0], pds.datetime):
+            elif isinstance(start[0], dt.datetime):
                 self._iter_type = 'date'
                 start = self._filter_datetime_input(start)
                 end = self._filter_datetime_input(end)
-                self._iter_list = utils.time.create_date_range(start, end, freq=step)
+                self._iter_list = utils.time.create_date_range(start, end,
+                                                               freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1738,8 +1742,8 @@ class Instrument(object):
                              'bound is iterable')
 
         elif isinstance(start, str) or isinstance(end, str):
-            if isinstance(start, pds.datetime) or \
-                    isinstance(end, pds.datetime):
+            if isinstance(start, dt.datetime) or \
+                    isinstance(end, dt.datetime):
                 raise ValueError('Not allowed to mix file and date bounds')
             if start is None:
                 start = self.files[0]
@@ -1751,7 +1755,7 @@ class Instrument(object):
                                                         self._iter_stop)
             self._iter_type = 'file'
 
-        elif isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
+        elif isinstance(start, dt.datetime) or isinstance(end, dt.datetime):
             if start is None:
                 start = self.files.start_date
             if end is None:
@@ -1786,8 +1790,8 @@ class Instrument(object):
             inst = pysat.Instrument(platform=platform,
                                     name=name,
                                     tag=tag)
-            start = pysat.datetime(2009,1,1)
-            stop = pysat.datetime(2009,1,31)
+            start = dt.datetime(2009,1,1)
+            stop = dt.datetime(2009,1,31)
             inst.bounds = (start,stop)
             for inst in inst:
                 print('Another day loaded', inst.date)
@@ -2174,7 +2178,7 @@ class Instrument(object):
             export_desc_labels = self._meta_translation_table['desc_label']
             export_notes_labels = self._meta_translation_table['notes_label']
             logger.info('Using Metadata Translation Table: ' +
-                  str(self._meta_translation_table))
+                        str(self._meta_translation_table))
         # Apply instrument specific post-processing to the export_meta
         if hasattr(self._export_meta_post_processing, '__call__'):
             export_meta = self._export_meta_post_processing(export_meta)
@@ -2576,13 +2580,13 @@ class Instrument(object):
                     _ = adict.pop(item)
 
             adict['Date_End'] = \
-                pysat.datetime.strftime(self.index[-1],
+                dt.datetime.strftime(self.index[-1],
                                         '%a, %d %b %Y,  ' +
                                         '%Y-%m-%dT%H:%M:%S.%f')
             adict['Date_End'] = adict['Date_End'][:-3] + ' UTC'
 
             adict['Date_Start'] = \
-                pysat.datetime.strftime(self.index[0],
+                dt.datetime.strftime(self.index[0],
                                         '%a, %d %b %Y,  ' +
                                         '%Y-%m-%dT%H:%M:%S.%f')
             adict['Date_Start'] = adict['Date_Start'][:-3] + ' UTC'
@@ -2592,7 +2596,7 @@ class Instrument(object):
                                         '%Y-%m-%dT%H:%M:%S.%f')
             adict['File_Date'] = adict['File_Date'][:-3] + ' UTC'
             adict['Generation_Date'] = \
-                pysat.datetime.utcnow().strftime('%Y%m%d')
+                dt.datetime.utcnow().strftime('%Y%m%d')
             adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
 
             # check for binary types, convert when found

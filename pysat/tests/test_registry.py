@@ -2,6 +2,7 @@
 tests the registration of user-defined modules
 """
 import pytest
+import sys
 
 from pysat import user_modules
 from pysat.utils import registry
@@ -47,7 +48,6 @@ def create_fake_module(full_module_name,  platform, name):
 
     setattr(package, module_name, instrument)
 
-    import sys
     sys.modules[package_name] = package
     sys.modules['.'.join([package_name, module_name])] = instrument
 

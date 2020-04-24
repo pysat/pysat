@@ -14,6 +14,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed ssnl
   - Removed utils.stats
   - Removed model_utils
+  - Removed deprecated pandas.Panel
+  - imports datetime from datetime, not pandas (deprecated)
+  - import DataFrame and Series directly from pandas, not pysat
   - Removed coords.scale_units
   - Removed time.season_date_range
   - DeprecationWarning for strict_time_flag only triggered if sloppy data is found
@@ -22,6 +25,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
+- Maintenance
+  - Specify dtype for pandas.Series(None) for forward compatibility
 
 ## [2.2.0] - 2020-2-29
 - New Features

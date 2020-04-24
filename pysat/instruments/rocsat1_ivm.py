@@ -26,10 +26,9 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import warnings
-
-import pysat
 
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
@@ -37,7 +36,7 @@ platform = 'rocsat1'
 name = 'ivm'
 tags = {'': ''}
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2002, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2002, 1, 1)}}
 
 
 # support list files routine

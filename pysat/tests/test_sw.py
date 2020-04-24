@@ -18,7 +18,7 @@ class TestSWKp():
             pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0),
                            'ap_nan': np.full(shape=12, fill_value=np.nan),
                            'ap_inf': np.full(shape=12, fill_value=np.inf)},
-                          index=[pysat.datetime(2009, 1, 1)
+                          index=[dt.datetime(2009, 1, 1)
                                  + pds.DateOffset(hours=3*i)
                                  for i in range(12)])
         self.testInst.meta = pysat.Meta()
@@ -216,7 +216,7 @@ class TestSwKpCombine():
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.test_day = pysat.datetime(2019, 3, 18)
+        self.test_day = dt.datetime(2019, 3, 18)
         self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
                         "recent_inst": pysat.Instrument("sw", "kp", "recent"),
                         "forecast_inst":
@@ -242,7 +242,7 @@ class TestSwKpCombine():
         # Load a test instrument
         testInst = pysat.Instrument()
         testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0)},
-                                      index=[pysat.datetime(2009, 1, 1)
+                                      index=[dt.datetime(2009, 1, 1)
                                              + pds.DateOffset(hours=3*i)
                                              for i in range(12)])
         testInst.meta = pysat.Meta()
@@ -270,8 +270,8 @@ class TestSwKpCombine():
 
         combo_in = {kk: self.combine['forecast_inst'] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
-        combo_in['start'] = pysat.datetime(2014, 2, 19)
-        combo_in['stop'] = pysat.datetime(2014, 2, 24)
+        combo_in['start'] = dt.datetime(2014, 2, 19)
+        combo_in['stop'] = dt.datetime(2014, 2, 24)
         kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.data.isnull().all()["Kp"]
@@ -380,7 +380,7 @@ class TestSWF107():
         # Load a test instrument
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
-                                           index=[pysat.datetime(2009, 1, 1)
+                                           index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(days=i)
                                                   for i in range(160)])
 
@@ -418,7 +418,7 @@ class TestSWF107():
         """ Test the calc_f107a routine with sub-daily data"""
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200,
                                                                 3840)},
-                                           index=[pysat.datetime(2009, 1, 1)
+                                           index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(hours=i)
                                                   for i in range(3840)])
         sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
@@ -439,7 +439,7 @@ class TestSWF107():
         """ Test the calc_f107a routine with some daily data missing"""
 
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
-                                           index=[pysat.datetime(2009, 1, 1)
+                                           index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(days=2*i+1)
                                                   for i in range(160)])
         sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
@@ -467,7 +467,7 @@ class TestSWF107Combine():
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.test_day = pysat.datetime(2019, 3, 16)
+        self.test_day = dt.datetime(2019, 3, 16)
         self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
                             for tag in sw_f107.tags.keys()}
         self.combineTimes = {"start": self.test_day - dt.timedelta(days=30),
@@ -496,8 +496,8 @@ class TestSWF107Combine():
 
         combo_in = {kk: self.combineInst['forecast'] for kk in
                     ['standard_inst', 'forecast_inst']}
-        combo_in['start'] = pysat.datetime(2014, 2, 19)
-        combo_in['stop'] = pysat.datetime(2014, 2, 24)
+        combo_in['start'] = dt.datetime(2014, 2, 19)
+        combo_in['stop'] = dt.datetime(2014, 2, 24)
         f107_inst = sw_meth.combine_f107(**combo_in)
 
         assert f107_inst.data.isnull().all()["f107"]
@@ -542,7 +542,7 @@ class TestSWAp():
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'3hr_ap': [0, 2, 3, 4, 5, 6, 7, 9,
                                                        12, 15]},
-                                           index=[pysat.datetime(2009, 1, 1)
+                                           index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(hours=3*i)
                                                   for i in range(10)])
         self.testInst.meta = pysat.Meta()
