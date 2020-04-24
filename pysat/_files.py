@@ -124,7 +124,7 @@ class Files(object):
         self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
         self.start_date = None
         self.stop_date = None
-        self.files = pds.Series(None)
+        self.files = pds.Series(None, dtype='object')
         # location of stored files
         self.stored_file_name = ''.join((self._sat.platform, '_',
                                          self._sat.name, '_', self._sat.tag,
@@ -649,7 +649,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
         else:
             return pds.Series(files, index=index)
     else:
-        return pds.Series(None)
+        return pds.Series(None, dtype='object')
 
 
 def parse_fixed_width_filenames(files, format_str):
