@@ -11,8 +11,6 @@ try:
 except NameError:
     basestring = str
 
-from pysat import DataFrame, Series
-
 
 class Meta(object):
     """ Stores metadata for Instrument instance, similar to CF-1.6 netCDFdata
@@ -198,7 +196,7 @@ class Meta(object):
         # use any user provided data to instantiate object with data
         # attirube unit and name labels are called within
         if metadata is not None:
-            if isinstance(metadata, DataFrame):
+            if isinstance(metadata, pds.DataFrame):
                 self._data = metadata
                 # make sure defaults are taken care of for required metadata
                 self.accept_default_labels(self)
@@ -207,16 +205,16 @@ class Meta(object):
                                           'type. See other constructors for',
                                           ' alternate inputs.')))
         else:
-            self._data = DataFrame(None, columns=[self._units_label,
-                                                  self._name_label,
-                                                  self._desc_label,
-                                                  self._plot_label,
-                                                  self._axis_label,
-                                                  self._scale_label,
-                                                  self.notes_label,
-                                                  self._min_label,
-                                                  self._max_label,
-                                                  self._fill_label])
+            self._data = pds.DataFrame(None, columns=[self._units_label,
+                                                      self._name_label,
+                                                      self._desc_label,
+                                                      self._plot_label,
+                                                      self._axis_label,
+                                                      self._scale_label,
+                                                      self.notes_label,
+                                                      self._min_label,
+                                                      self._max_label,
+                                                      self._fill_label])
 
 
 
@@ -509,7 +507,7 @@ class Meta(object):
                             # heads to if Meta instance call
                             self[item] = val
 
-        elif isinstance(input_data, Series):
+        elif isinstance(input_data, pds.Series):
             # outputs from Meta object are a Series.
             # thus this takes in input from a Meta object
             # set data usind standard assignment via a dict
@@ -601,9 +599,9 @@ class Meta(object):
             # if tuple length is 2, index, column
             if len(key) == 2:
                 new_index = match_name(self.var_case_name, key[0],
-                                        self.data.index)
+                                       self.data.index)
                 new_name = match_name(self.attr_case_name, key[1],
-                                        self.data.columns)
+                                      self.data.columns)
                 return self.data.loc[new_index, new_name]
 
             # if tuple length is 3, index, child_index, column

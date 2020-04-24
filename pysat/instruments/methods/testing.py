@@ -1,9 +1,8 @@
+import datetime as dt
 import numpy as np
 import os
 
 import pandas as pds
-
-import pysat
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
@@ -48,7 +47,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
              for date in index]
 
-    return pysat.Series(names, index=index)
+    return pds.Series(names, index=index)
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,
@@ -157,7 +156,7 @@ def generate_times(fnames, sat_id, freq='1S'):
     yr = int(parts[0])
     month = int(parts[1])
     day = int(parts[2][0:2])
-    date = pysat.datetime(yr, month, day)
+    date = dt.datetime(yr, month, day)
 
     # Create one day of data at desired frequency
     index = pds.date_range(start=date, end=date+pds.DateOffset(seconds=86399),
@@ -185,11 +184,11 @@ def define_period():
     -------
     period : dict
         Dictionary of periods to use in test instruments
-   
+
     Notes
     -----
     Local time and longitude slightly out of sync to simulate motion of Earth
-    
+
     """
 
     period = {'lt': 5820, # 97 minutes

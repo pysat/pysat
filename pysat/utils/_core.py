@@ -2,8 +2,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import numpy as np
-import pysat
+import os
+import sys
+if sys.version_info[0] >= 3:
+    from importlib import reload as re_load
+else:
+    re_load = reload
 
+import pysat
 
 def set_data_dir(path=None, store=True):
     """
@@ -16,14 +22,6 @@ def set_data_dir(path=None, store=True):
     store : bool
         if True, store data directory for future runs
     """
-
-    import os
-    import sys
-    import pysat
-    if sys.version_info[0] >= 3:
-        from importlib import reload as re_load
-    else:
-        re_load = reload
 
     if os.path.isdir(path):
         if store:

@@ -53,17 +53,17 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import numpy as np
 
-import pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 platform = 'cnofs'
 name = 'plp'
 tags = {'': ''}
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 # support list files routine

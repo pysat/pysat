@@ -1,12 +1,13 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import string
-import os
-import weakref
-import re
+import datetime as dt
 import glob
 import numpy as np
+import os
+import re
+import string
+import weakref
 import pandas as pds
 from pysat import data_dir as data_dir
 
@@ -58,8 +59,8 @@ class Files(object):
         inst.files[0]
 
         # files from start up to stop (exclusive on stop)
-        start = pysat.datetime(2009,1,1)
-        stop = pysat.datetime(2009,1,3)
+        start = dt.datetime(2009,1,1)
+        stop = dt.datetime(2009,1,3)
         print(vefi.files[start:stop])
 
         # files for date
@@ -426,7 +427,7 @@ class Files(object):
                 raise IndexError(''.join((str(err), '\n',
                                           'Date requested outside file ',
                                           'bounds.')))
-            if isinstance(key.start, pds.datetime):
+            if isinstance(key.start, dt.datetime):
                 # enforce exclusive slicing on datetime
                 if len(out) > 1:
                     if out.index[-1] >= key.stop:

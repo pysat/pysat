@@ -21,7 +21,7 @@ Example
 -------
     import pysat
     dmsp = pysat.Instrument('jro', 'isr', 'drifts', clean_level='clean')
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
+    dmsp.download(dt.datetime(2017, 12, 30), dt.datetime(2017, 12, 31),
                   user='Firstname+Lastname', password='email@address.com')
     dmsp.load(2017,363)
 
@@ -33,10 +33,10 @@ Note
 
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import numpy as np
 
-import pysat
 from pysat.instruments.methods import madrigal as mad_meth
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
@@ -51,11 +51,11 @@ tags = {'drifts': 'Drifts and wind', 'drifts_ave': 'Averaged drifts',
         'oblique_rand': 'Randomized Faraday rotation double-pulse',
         'oblique_long': 'Long pulse Faraday rotation'}
 sat_ids = {'': list(tags.keys())}
-_test_dates = {'': {'drifts': pysat.datetime(2010, 1, 19),
-                    'drifts_ave': pysat.datetime(2010, 1, 19),
-                    'oblique_stan': pysat.datetime(2010, 4, 19),
-                    'oblique_rand': pysat.datetime(2000, 11, 9),
-                    'oblique_long': pysat.datetime(2010, 4, 12)}}
+_test_dates = {'': {'drifts': dt.datetime(2010, 1, 19),
+                    'drifts_ave': dt.datetime(2010, 1, 19),
+                    'oblique_stan': dt.datetime(2010, 4, 19),
+                    'oblique_rand': dt.datetime(2000, 11, 9),
+                    'oblique_long': dt.datetime(2010, 4, 12)}}
 
 # support list files routine
 # use the default CDAWeb method
