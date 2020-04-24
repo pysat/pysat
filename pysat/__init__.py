@@ -99,7 +99,6 @@ else:
         with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
             f.write('')
 
-import netCDF4
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils
 from ._constellation import Constellation
