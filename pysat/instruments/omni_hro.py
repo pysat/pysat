@@ -48,13 +48,13 @@ calculate_dayside_reconnection : Calculate the dayside reconnection rate
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
 import scipy.stats as stats
 import warnings
 
-import pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
@@ -66,8 +66,8 @@ name = 'hro'
 tags = {'1min': '1-minute time averaged data',
         '5min': '5-minute time averaged data'}
 sat_ids = {'': ['5min']}
-_test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
-                    '5min': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'1min': dt.datetime(2009, 1, 1),
+                    '5min': dt.datetime(2009, 1, 1)}}
 
 # support list files routine
 # use the default CDAWeb method

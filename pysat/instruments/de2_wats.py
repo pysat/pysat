@@ -81,9 +81,9 @@ Authors
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 
-import pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
@@ -92,7 +92,7 @@ name = 'wats'
 
 tags = {'': '2 s cadence Wind and Temperature Spectrometer data'}
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(1983, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(1983, 1, 1)}}
 
 fname = 'de2_wind2s_wats_{year:04d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}

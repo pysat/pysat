@@ -4,6 +4,7 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import numpy as np
 import os
@@ -19,7 +20,7 @@ name = 'testmodel'
 tags = {'': 'Regular testing data set'}
 sat_ids = {'': ['']}
 pandas_format = False
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 def init(self):
