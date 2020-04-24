@@ -31,6 +31,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
   - Updates to Travis CI environment
   - Removed `inplace` use in xarray `assign` function, which is no longer allowed
+  - Removed old code and incorrect comments from F10.7 support
 
 
 ## [2.1.0] - 2019-11-18
