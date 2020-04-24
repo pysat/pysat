@@ -16,6 +16,7 @@ import sys
 import pkgutil
 import warnings
 
+import netCDF4
 import numpy as np
 import pandas as pds
 import xarray as xr
@@ -2171,7 +2172,6 @@ class Instrument(object):
 
         """
 
-        import netCDF4
         import pysat
 
         file_format = 'NETCDF4'
