@@ -57,6 +57,7 @@ import functools
 import numpy as np
 
 import pysat
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 platform = 'cnofs'
@@ -70,7 +71,7 @@ _test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 # use the default CDAWeb method
 fname = 'cnofs_plp_plasma_1sec_{year:04d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 # support load routine
 # use the default CDAWeb method
