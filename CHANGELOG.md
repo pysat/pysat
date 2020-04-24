@@ -12,6 +12,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Updates to instrument testing objects for consistency
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
      calling it externally
+   - Added warning when FillValue metadata could lead to unexpected results
+     when writing a netCDF4 file
+   - Use conda to manage Travis CI test environment
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation
@@ -32,6 +35,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Updates to Travis CI environment
   - Removed `inplace` use in xarray `assign` function, which is no longer allowed
   - Removed old code and incorrect comments from F10.7 support
+  - Updated use of numpy.linspace to be compatible with numpy 1.18.
 
 
 ## [2.1.0] - 2019-11-18

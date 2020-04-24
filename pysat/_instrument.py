@@ -375,42 +375,6 @@ class Instrument(object):
                           stacklevel=2)
 
 
-    def __setattr__(self, name, value):
-        """Moves instrument attributes onto meta attributes
-
-        If the attribute is not in _base_attrs, add to meta attributes.
-        For all other cases, store as an instrument attribute.
-        """
-
-        if '_base_attr' in dir(self):
-            if name not in self._base_attr:
-                # set attribute on meta
-                if name[0] != '_':
-                    object.__setattr__(self.meta, name, value)
-                else:
-                    object.__setattr__(self, name, value)
-            else:
-                object.__setattr__(self, name, value)
-        else:
-            object.__setattr__(self, name, value)
-
-
-    def __getattr__(self, name):
-        """Gets instrument attributes from meta attributes
-
-        Usually, python only calls __getattr__ if name does not already
-        exist in the instrument, so we only need to check
-        the meta object. However, __copy__ calls __getattr__, so we still have
-        to check for invalid attributes manually.
-        """
-        if name not in self.__dict__:
-            try:
-                return getattr(self.meta, name)
-            except:
-                raise AttributeError("No attribute {}".format(name))
-
-        return getattr(self.meta, name)
-
     def __getitem__(self, key):
         """
         Convenience notation for accessing data; inst['name'] is inst.data.name
@@ -1425,6 +1389,7 @@ class Instrument(object):
 
         # transfer any extra attributes in meta to the Instrument object
         self.meta.transfer_attributes_to_instrument(self)
+        self.meta.mutable = False
         sys.stdout.flush()
         return
 
@@ -1995,12 +1960,29 @@ class Instrument(object):
         if (coltype == type(' ')) or (coltype == type(u' ')):
             # if isinstance(coltype, str):
             remove = True
+            warnings.warn('FillValue is not an acceptable '
+                          'parameter for strings it will be removed')
+        
         # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
                 mdata_dict.pop('_FillValue')
             else:
+                if not np.can_cast(mdata_dict['_FillValue'], coltype):
+                    if 'FieldNam' in mdata_dict:
+                         warnings.warn('FillValue for %s (%s) cannot be safely '
+                                      'casted to %s Casting anyways. '
+                                      'This may result in unexpected behavior'
+                                      % (mdata_dict['FieldNam'],
+                                         str(mdata_dict['_FillValue']),
+                                         coltype))
+                    else:
+                        warnings.warn('FillValue %s cannot be safely '
+                                      'casted to %s. Casting anyways. '
+                                      'This may result in unexpected behavior'
+                                      % (str(mdata_dict['_FillValue']),
+                                         coltype))
                 mdata_dict['_FillValue'] = \
                     np.array(mdata_dict['_FillValue']).astype(coltype)
         if u'FillVal' in mdata_dict.keys():
