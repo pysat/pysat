@@ -100,6 +100,7 @@ else:
             f.write('')
 
 from datetime import datetime
+from pandas import DataFrame
 from . import utils
 from ._constellation import Constellation
 from ._instrument import Instrument
