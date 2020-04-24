@@ -31,7 +31,7 @@ Example
 -------
     import pysat
     dmsp = pysat.Instrument('dmsp', 'ivm', 'utd', 'f15', clean_level='clean')
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
+    dmsp.download(dt.datetime(2017, 12, 30), dt.datetime(2017, 12, 31),
                   user='Firstname+Lastname', password='email@address.com')
     dmsp.load(2017,363)
 
@@ -46,11 +46,11 @@ Code development supported by NSF grant 1259508
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
 
-import pysat
 from pysat.instruments.methods import madrigal as mad_meth
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
@@ -63,11 +63,11 @@ tags = {'utd': 'UTDallas DMSP data processing', '': 'Level 2 data processing'}
 sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
            'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
            'f18': ['']}
-_test_dates = {'f11': {'utd': pysat.datetime(1998, 1, 2)},
-               'f12': {'utd': pysat.datetime(1998, 1, 2)},
-               'f13': {'utd': pysat.datetime(1998, 1, 2)},
-               'f14': {'utd': pysat.datetime(1998, 1, 2)},
-               'f15': {'utd': pysat.datetime(2017, 12, 30)}}
+_test_dates = {'f11': {'utd': dt.datetime(1998, 1, 2)},
+               'f12': {'utd': dt.datetime(1998, 1, 2)},
+               'f13': {'utd': dt.datetime(1998, 1, 2)},
+               'f14': {'utd': dt.datetime(1998, 1, 2)},
+               'f15': {'utd': dt.datetime(2017, 12, 30)}}
 
 
 # support list files routine

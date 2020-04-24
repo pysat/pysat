@@ -12,19 +12,19 @@ from nose.tools import assert_raises
 
 def create_fake_module(full_module_name,  platform, name):
     """Creates fake module and package from test instrument"""
-    
+
     # use pysat_testing as base instrument
     file_path = pysat_testing.__file__.split('.py')[0] + '.py'
 
     package_name, module_name = full_module_name.split('.')
 
-    try: #python 3.5+
+    try: # python 3.5+
         # implementation from https://stackoverflow.com/a/51575963
         importlib.machinery.SOURCE_SUFFIXES.append('') # empty string to allow any file
         spec = importlib.util.spec_from_file_location(module_name, file_path)
         instrument = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(instrument)
-        
+
         # update the platform and name
         instrument.platform = platform
         instrument.name = name
@@ -34,19 +34,19 @@ def create_fake_module(full_module_name,  platform, name):
 
     except AttributeError:
         import imp
-        # python 2.7        
+        # python 2.7
         instrument = imp.load_source(module_name, file_path)
-        
+
         # update the platform and name
         instrument.platform = platform
         instrument.name = name
-        
+
         package = imp.new_module(package_name)
-        
-        
+
+
     setattr(package, module_name, instrument)
 
-    
+
     import sys
     sys.modules[package_name] = package
     sys.modules['.'.join([package_name, module_name])] = instrument
@@ -103,6 +103,3 @@ def test_multi_registration():
     for module_name in module_names:
         assert module_name not in user_modules
         assert module_name not in saved_modules
-
-
-

@@ -61,8 +61,9 @@ Let's download some data. VEFI data is hosted by the NASA Coordinated Data Analy
 .. code:: python
 
    # define date range to download data and download
-   start = pysat.datetime(2009,5,6)
-   stop = pysat.datetime(2009,5,9)
+   import datetime as dt
+   start = dt.datetime(2009,5,6)
+   stop = dt.datetime(2009,5,9)
    vefi.download(start, stop)
 
 The data is downloaded to pysat_data_dir/platform/name/tag/, in this case pysat_data_dir/cnofs/vefi/dc_b/. At the end of the download, pysat will update the list of files associated with VEFI.
@@ -216,8 +217,8 @@ The same activities may be performed for other instruments in the same manner. I
 .. code:: python
 
    cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf',  clean_level='clean')
-   start = pysat.datetime(2009, 1, 2)
-   stop = pysat.datetime(2009, 1, 3)
+   start = dt.datetime(2009, 1, 2)
+   stop = dt.datetime(2009, 1, 3)
 
    # requires CDAAC account
    cosmic.download(start, stop, user='', password='')
