@@ -372,9 +372,9 @@ class Instrument(object):
 
         # warn about changes coming in the future
         if not self.strict_time_flag:
-            warnings.warn('Strict times will eventually be enforced upon all'
-                          ' instruments. (strict_time_flag)', DeprecationWarning,
-                          stacklevel=2)
+            warnings.warning('Strict times will eventually be enforced upon all'
+                             ' instruments. (strict_time_flag)', DeprecationWarning,
+                             stacklevel=2)
 
 
     def __setattr__(self, name, value):
@@ -2017,8 +2017,8 @@ class Instrument(object):
         if (coltype == type(' ')) or (coltype == type(u' ')):
             # if isinstance(coltype, str):
             remove = True
-            warnings.warn('FillValue is not an acceptable '
-                          'parameter for strings it will be removed')
+            warnings.warning('FillValue is not an acceptable '
+                             'parameter for strings it will be removed')
         
         # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
@@ -2028,18 +2028,18 @@ class Instrument(object):
             else:
                 if not np.can_cast(mdata_dict['_FillValue'], coltype):
                     if 'FieldNam' in mdata_dict:
-                         warnings.warn('FillValue for %s (%s) cannot be safely '
-                                      'casted to %s Casting anyways. '
-                                      'This may result in unexpected behavior'
-                                      % (mdata_dict['FieldNam'],
-                                         str(mdata_dict['_FillValue']),
-                                         coltype))
+                         warnings.warning('FillValue for %s (%s) cannot be safely '
+                                          'casted to %s Casting anyways. '
+                                          'This may result in unexpected behavior'
+                                          % (mdata_dict['FieldNam'],
+                                             str(mdata_dict['_FillValue']),
+                                             coltype))
                     else:
-                        warnings.warn('FillValue %s cannot be safely '
-                                      'casted to %s. Casting anyways. '
-                                      'This may result in unexpected behavior'
-                                      % (str(mdata_dict['_FillValue']),
-                                         coltype))
+                        warnings.warning('FillValue %s cannot be safely '
+                                         'casted to %s. Casting anyways. '
+                                         'This may result in unexpected behavior'
+                                         % (str(mdata_dict['_FillValue']),
+                                            coltype))
                 mdata_dict['_FillValue'] = \
                     np.array(mdata_dict['_FillValue']).astype(coltype)
         if u'FillVal' in mdata_dict.keys():
