@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added altitudes to test instruments
   - New flags added to instruments to streamline unit testing: `_test_download`, `_test_download_travis`, `_password_req`
   - Madrigal instruments migrated to pysatMadrigal
+  - methods.nasa_cdaweb.list_files moved to methods.general
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
