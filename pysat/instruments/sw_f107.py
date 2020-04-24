@@ -75,7 +75,8 @@ _test_dates = {'': {'': pysat.datetime(2009, 1, 1),
                     'daily': tomorrow,
                     'forecast': tomorrow,
                     '45day': tomorrow}}
-
+# Other tags assumed to be True
+_test_download_travis = {'': {'prelim': False}}
 
 def load(fnames, tag=None, sat_id=None):
     """Load F10.7 index files
