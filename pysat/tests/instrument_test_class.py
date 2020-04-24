@@ -233,7 +233,7 @@ class InstTestClass():
         """
         try:
             name = '_'.join((inst.platform, inst.name))
-            if hasattr(getattr(pysat.instruments, name), 'list_remote_files'):
+            if hasattr(getattr(self.package, name), 'list_remote_files'):
                 assert callable(inst.remote_file_list)
             else:
                 pytest.skip("remote_file_list not available")
