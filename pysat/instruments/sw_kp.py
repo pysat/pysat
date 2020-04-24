@@ -140,7 +140,7 @@ def load(fnames, tag=None, sat_id=None):
         # each column increments UT by three hours
         # produce a single data series that has Kp value monotonically
         # increasing in time with appropriate datetime indices
-        s = pds.Series()
+        s = pds.Series(dtype='float64')
         for i in np.arange(8):
             temp = pds.Series(data.iloc[:, i].values,
                               index=data.index+pds.DateOffset(hours=int(3*i)))
