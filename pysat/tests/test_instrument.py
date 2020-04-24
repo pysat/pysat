@@ -590,17 +590,17 @@ class TestBasics():
     # --------------------------------------------------------------------------
     def test_left_bounds_with_prev(self):
         """Test if passing bounds raises StopIteration."""
+        # load first data
+        self.testInst.next()
         with pytest.raises(StopIteration):
-            # load first data
-            self.testInst.next()
             # go back to no data
             self.testInst.prev()
 
     def test_right_bounds_with_next(self):
         """Test if passing bounds raises StopIteration."""
+        # load last data
+        self.testInst.prev()
         with pytest.raises(StopIteration):
-            # load last data
-            self.testInst.prev()
             # move on to future data that doesn't exist
             self.testInst.next()
 
@@ -982,19 +982,17 @@ class TestDataPaddingbyFile():
     def test_fid_data_padding(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.rawInst.load(fid=1)
-        assert (self.testInst.index[0] ==
-                self.rawInst.index[0] - pds.DateOffset(minutes=5))
-        assert (self.testInst.index[-1] ==
-                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
+        delta = pds.DateOffset(minutes=5)
+        assert (self.testInst.index[0] == self.rawInst.index[0] - delta)
+        assert (self.testInst.index[-1] == self.rawInst.index[-1] + delta)
 
     def test_fid_data_padding_next(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fid=2)
-        assert (self.testInst.index[0] ==
-                self.rawInst.index[0] - pds.DateOffset(minutes=5))
-        assert (self.testInst.index[-1] ==
-                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
+        delta = pds.DateOffset(minutes=5)
+        assert (self.testInst.index[0] == self.rawInst.index[0] - delta)
+        assert (self.testInst.index[-1] == self.rawInst.index[-1] + delta)
 
     def test_fid_data_padding_multi_next(self):
         """This also tests that _prev_data and _next_data cacheing"""
@@ -1002,19 +1000,17 @@ class TestDataPaddingbyFile():
         self.testInst.next()
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fid=3)
-        assert (self.testInst.index[0] ==
-                self.rawInst.index[0] - pds.DateOffset(minutes=5))
-        assert (self.testInst.index[-1] ==
-                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
+        delta = pds.DateOffset(minutes=5)
+        assert (self.testInst.index[0] == self.rawInst.index[0] - delta)
+        assert (self.testInst.index[-1] == self.rawInst.index[-1] + delta)
 
     def test_fid_data_padding_prev(self):
         self.testInst.load(fid=2, verifyPad=True)
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fid=1)
-        assert ((self.testInst.index[0] ==
-                 self.rawInst.index[0] - pds.DateOffset(minutes=5)) &
-                (self.testInst.index[-1] ==
-                 self.rawInst.index[-1] + pds.DateOffset(minutes=5)))
+        delta = pds.DateOffset(minutes=5)
+        assert (self.testInst.index[0] == self.rawInst.index[0] - delta)
+        assert (self.testInst.index[-1] == self.rawInst.index[-1] + delta)
 
     def test_fid_data_padding_multi_prev(self):
         """This also tests that _prev_data and _next_data cacheing"""
@@ -1022,19 +1018,17 @@ class TestDataPaddingbyFile():
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fid=8)
-        assert (self.testInst.index[0] ==
-                self.rawInst.index[0] - pds.DateOffset(minutes=5))
-        assert (self.testInst.index[-1] ==
-                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
+        delta = pds.DateOffset(minutes=5)
+        assert (self.testInst.index[0] == self.rawInst.index[0] - delta)
+        assert (self.testInst.index[-1] == self.rawInst.index[-1] + delta)
 
     def test_fid_data_padding_jump(self):
         self.testInst.load(fid=1, verifyPad=True)
         self.testInst.load(fid=10, verifyPad=True)
         self.rawInst.load(fid=10)
-        assert (self.testInst.index[0] ==
-                self.rawInst.index[0] - pds.DateOffset(minutes=5))
-        assert (self.testInst.index[-1] ==
-                self.rawInst.index[-1] + pds.DateOffset(minutes=5))
+        delta = pds.DateOffset(minutes=5)
+        assert (self.testInst.index[0] == self.rawInst.index[0] - delta)
+        assert (self.testInst.index[-1] == self.rawInst.index[-1] + delta)
 
     def test_fid_data_padding_uniqueness(self):
         self.testInst.load(fid=1, verifyPad=True)
