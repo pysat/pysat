@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Test some of the basic _core functions
 import datetime as dt
+from importlib import reload as re_load
 import numpy as np
-import sys
 
 import pandas as pds
 import pytest
@@ -10,11 +10,6 @@ import pytest
 import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
-
-if sys.version_info[0] >= 3:
-    from importlib import reload as re_load
-else:
-    re_load = reload
 
 
 # ------------------------------------------------------------------------------
