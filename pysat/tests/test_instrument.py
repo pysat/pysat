@@ -384,9 +384,8 @@ class TestBasics():
         del test.list_files
 
         with pytest.raises(AttributeError):
-            testIn = pysat.Instrument(inst_module=test, tag='',
-                                      clean_level='clean')
-            testIn.load(2009, 1)
+            pysat.Instrument(inst_module=test, tag='',
+                             clean_level='clean')
 
     def test_custom_instrument_load_3(self):
         """
@@ -397,9 +396,8 @@ class TestBasics():
         del test.load
 
         with pytest.raises(AttributeError):
-            testIn = pysat.Instrument(inst_module=test, tag='',
-                                      clean_level='clean')
-            testIn.load(2009, 1)
+            pysat.Instrument(inst_module=test, tag='',
+                             clean_level='clean')
 
     # --------------------------------------------------------------------------
     #
