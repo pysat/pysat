@@ -959,8 +959,8 @@ class TestMalformedIndexXarray(TestMalformedIndex):
 # ------------------------------------------------------------------------------
 class TestDataPaddingbyFile():
     def setup(self):
-        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
+        re_load(pysat.instruments.pysat_testing)
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          clean_level='clean',
                                          pad={'minutes': 5},
@@ -1054,8 +1054,8 @@ class TestDataPaddingbyFile():
 
 class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
     def setup(self):
-        re_load(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
+        re_load(pysat.instruments.pysat_testing_xarray)
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          clean_level='clean',
