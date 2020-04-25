@@ -25,6 +25,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
+  - Fixed output of orbit_info during print(inst)
 - Maintenance
   - Specify dtype for pandas.Series(None) for forward compatibility
 
