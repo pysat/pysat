@@ -1052,7 +1052,7 @@ class TestDataPaddingbyFile():
 #
 # ------------------------------------------------------------------------------
 
-class TestDataPaddingbyFileXarray():
+class TestDataPaddingbyFileXarray(TestDataPaddingbyFile):
     def setup(self):
         re_load(pysat.instruments.pysat_testing_xarray)
         """Runs before every method to create a clean testing setup."""
