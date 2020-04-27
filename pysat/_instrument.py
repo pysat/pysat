@@ -344,6 +344,7 @@ class Instrument(object):
                 # default provided by instrument module
                 orbit_info = self.orbit_info
         self.orbits = _orbits.Orbits(self, **orbit_info)
+        self.orbit_info = orbit_info
 
         # Create empty placeholder for meta translation table
         # gives information about how to label metadata for netcdf export
@@ -865,7 +866,7 @@ class Instrument(object):
 
         output_str += '\nOrbit Settings' + '\n'
         output_str += '--------------' + '\n'
-        if self.orbit_info is None:
+        if self.orbits.orbit_index is None:
             output_str += 'Orbit properties not set.\n'
         else:
             output_str += 'Orbit Kind: ' + self.orbit_info['kind'] + '\n'
@@ -1962,7 +1963,7 @@ class Instrument(object):
             remove = True
             warnings.warn('FillValue is not an acceptable '
                           'parameter for strings it will be removed')
-        
+
         # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
