@@ -7,8 +7,8 @@ import numpy as np
 import os
 import sys
 
-from nose.tools import raises
 import pandas as pds
+import pytest
 import tempfile
 
 import pysat
@@ -106,9 +106,9 @@ class TestNoDataDir():
         pysat.data_dir = self.saved_data_path
         re_load(pysat._files)
 
-    @raises(Exception)
     def test_no_data_dir(self):
-        _ = pysat.Instrument()
+        with pytest.raises(Exception):
+            _ = pysat.Instrument()
 
 
 class TestBasics():
@@ -631,29 +631,29 @@ class TestInstrumentWithFiles():
 
         assert (np.all(self.testInst.files.files.index == dates))
 
-    @raises(ValueError)
     def test_files_non_standard_file_format_template_misformatted(self):
 
         pysat.instruments.pysat_testing.list_files = list_files
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             file_format=''.join(('pysat_testing_unique_',
-                                                  'junk_stuff.pysat_testing',
-                                                  '_file')),
-                             update_files=True,
-                             temporary_file_list=self.temporary_file_list)
+        with pytest.raises(ValueError):
+            self.testInst = \
+                pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                                 clean_level='clean',
+                                 file_format=''.join(('pysat_testing_unique_',
+                                                      'junk_stuff.',
+                                                      'pysat_testing_file')),
+                                 update_files=True,
+                                 temporary_file_list=self.temporary_file_list)
 
-    @raises(ValueError)
     def test_files_non_standard_file_format_template_misformatted_2(self):
 
         pysat.instruments.pysat_testing.list_files = list_files
-        self.testInst = \
-            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             file_format=15,
-                             update_files=True,
-                             temporary_file_list=self.temporary_file_list)
+        with pytest.raises(ValueError):
+            self.testInst = \
+                pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                                 clean_level='clean',
+                                 file_format=15,
+                                 update_files=True,
+                                 temporary_file_list=self.temporary_file_list)
 
 
 class TestInstrumentWithFilesNoFileListStorage(TestInstrumentWithFiles):

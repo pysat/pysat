@@ -1,7 +1,6 @@
 import numpy as np
-
-from nose.tools import raises
 import pandas as pds
+import pytest
 
 import pysat
 
@@ -20,8 +19,7 @@ class TestBasics():
         """Adds a function to the object's custom queue"""
         self.testInst.custom.attach(function, kind, at_pos, *args, **kwargs)
 
-    @raises(ValueError)
-    def test_single_modifying_custom_function(self):
+    def test_single_modifying_custom_function_error(self):
         """Test if custom function works correctly. Modify function that
         returns pandas object. Modify function returns an object which will
         produce an Error.
@@ -31,7 +29,8 @@ class TestBasics():
             return 5.0 * inst.data['mlt']
 
         self.testInst.custom.attach(custom1, 'modify')
-        self.testInst.load(2009, 1)
+        with pytest.raises(ValueError):
+            self.testInst.load(2009, 1)
 
     def test_single_adding_custom_function(self):
         """Test if custom function works correctly. Add function that returns
@@ -108,33 +107,33 @@ class TestBasics():
         assert (self.testInst.data['tripleMLT'] == 3.0 *
                 self.testInst['mlt']).all()
 
-    @raises(ValueError)
     def test_add_function_tuple_return_style_too_few_elements(self):
         """Test if custom function works correctly. Add function that returns
         name and numpy array.
         """
         def custom1(inst):
             return ('doubleMLT', 2.0 * inst.data.mlt.values[0:-5])
-        self.testInst.custom.attach(custom1, 'add')
-        self.testInst.load(2009, 1)
-        if not self.testInst.pandas_format:
-            print("Warning! Xarray doesn't enforce the same number of " +
-                  "elements on all parameters in dataset.")
-            raise ValueError
 
-    @raises(ValueError)
+        if not self.testInst.pandas_format:
+            pytest.skip(' '.join(('xarray does not enforce the same number',
+                                  'of elements on all params in dataset.')))
+        self.testInst.custom.attach(custom1, 'add')
+        with pytest.raises(ValueError):
+            self.testInst.load(2009, 1)
+
     def test_add_function_tuple_return_style_too_many_elements(self):
         """Test if custom function works correctly. Add function that returns
         name and numpy array.
         """
         def custom1(inst):
             return ('doubleMLT', np.arange(2.0 * len(inst.data.mlt)))
-        self.testInst.custom.attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+
         if not self.testInst.pandas_format:
-            print("Warning! Xarray doesn't enforce the same number of " +
-                  "elements on all parameters in dataset.")
-            raise ValueError
+            pytest.skip(' '.join(('xarray does not enforce the same number',
+                                  'of elements on all params in dataset.')))
+        self.testInst.custom.attach(custom1, 'add')
+        with pytest.raises(ValueError):
+            self.testInst.load(2009, 1)
 
     def test_add_dataframe(self):
         def custom1(inst):
@@ -204,16 +203,17 @@ class TestBasics():
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
 
-    @raises(ValueError)
-    def test_add_series_w_meta_no_name(self):
+    def test_add_series_w_meta_no_name_error(self):
         def custom1(inst):
             out = pds.Series({'doubleMLT': inst.data.mlt * 2},
                                index=inst.index)
             # out.name = 'doubleMLT'
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
+
         self.attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        with pytest.raises(ValueError):
+            self.testInst.load(2009, 1)
 
     def test_add_numpy_array_w_meta_name_in_dict(self):
         def custom1(inst):
@@ -226,14 +226,15 @@ class TestBasics():
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
 
-    @raises(ValueError)
-    def test_add_numpy_array_w_meta_no_name_in_dict(self):
+    def test_add_numpy_array_w_meta_no_name_in_dict_error(self):
         def custom1(inst):
             out = (inst.data.mlt * 2).values
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
+
         self.attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        with pytest.raises(ValueError):
+            self.testInst.load(2009, 1)
 
     def test_add_list_w_meta_name_in_dict(self):
         def custom1(inst):
@@ -246,14 +247,15 @@ class TestBasics():
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
 
-    @raises(ValueError)
-    def test_add_list_w_meta_no_name_in_dict(self):
+    def test_add_list_w_meta_no_name_in_dict_error(self):
         def custom1(inst):
             out = (inst.data.mlt * 2).values.tolist()
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
+
         self.testInst.custom.attach(custom1, 'add')
-        self.testInst.load(2009, 1)
+        with pytest.raises(ValueError):
+            self.testInst.load(2009, 1)
 
     def test_clear_functions(self):
         def custom1(inst):
@@ -269,21 +271,22 @@ class TestBasics():
         def custom1(inst):
             out = (inst.data.mlt * 2).values
             return
+
         self.testInst.custom.attach(custom1, 'pass')
         self.testInst.load(2009, 1)
 
         assert True
 
-    @raises(ValueError)
-    def test_pass_functions_no_return_allowed(self):
+    def test_pass_functions_no_return_allowed_error(self):
         def custom1(inst):
             out = (inst.data.mlt * 2).values
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
-        self.testInst.custom.attach(custom1, 'pass')
-        self.testInst.load(2009, 1)
 
-    @raises(AttributeError)
+        self.testInst.custom.attach(custom1, 'pass')
+        with pytest.raises(ValueError):
+            self.testInst.load(2009, 1)
+
     def test_add_multiple_functions_one_not_at_end(self):
         def custom1(inst):
             out = (inst.data.mlt * 2).values
@@ -299,12 +302,14 @@ class TestBasics():
             out = (inst.data.tripleMLT * 2).values
             return {'data': out, 'long_name': 'quadMLTlong',
                     'units': 'hours1', 'name': 'quadMLT'}
+
         self.testInst.custom.attach(custom1, 'add')
         self.testInst.custom.attach(custom2, 'add')
         # if this runs correctly, an error will be thrown
         # since the data required by custom3 won't be present yet
         self.testInst.custom.attach(custom3, 'add', at_pos=1)
-        self.testInst.load(2009, 1)
+        with pytest.raises(AttributeError):
+            self.testInst.load(2009, 1)
 
 
 class TestBasicsXarray(TestBasics):

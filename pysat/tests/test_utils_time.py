@@ -2,8 +2,9 @@
 tests the pysat utils.time area
 """
 import datetime as dt
-from nose.tools import raises
 import numpy as np
+
+import pytest
 
 from pysat.utils import time as pytime
 
@@ -57,11 +58,11 @@ def test_parse_date_4_digit_year():
     assert date == dt.datetime(1994, 10, 31)
 
 
-@raises(ValueError)
 def test_parse_date_bad_input():
     """Test the ability to idenitfy a non-physical date"""
 
-    _ = pytime.parse_date('194', '15', '31')
+    with pytest.raises(ValueError):
+        _ = pytime.parse_date('194', '15', '31')
 
 
 ############
@@ -89,18 +90,18 @@ def test_calc_freq_ns():
     assert freq.find("10000000N") == 0
 
 
-@raises(ValueError)
 def test_calc_freq_len_fail():
     """Test index frequency calculation with empty list"""
 
-    pytime.calc_freq(list())
+    with pytest.raises(ValueError):
+        pytime.calc_freq(list())
 
 
-@raises(AttributeError)
 def test_calc_freq_type_fail():
     """Test index frequency calculation with non-datetime list"""
 
-    pytime.calc_freq([1, 2, 3, 4])
+    with pytest.raises(AttributeError):
+        pytime.calc_freq([1, 2, 3, 4])
 
 
 ####################
@@ -147,11 +148,11 @@ def test_create_datetime_index():
     assert len(dates) == 4
 
 
-@raises(ValueError)
 def test_create_datetime_index_wo_year():
     """Must include a year"""
 
-    _ = pytime.create_datetime_index()
+    with pytest.raises(ValueError):
+        _ = pytime.create_datetime_index()
 
 
 def test_create_datetime_index_wo_month_day_uts():
