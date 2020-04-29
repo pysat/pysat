@@ -26,9 +26,10 @@ of the National Science Foundation.
 
 """
 
+import datetime as dt
 import os
-import pandas as pds
 import numpy as np
+import pandas as pds
 
 import pysat
 
@@ -39,7 +40,7 @@ platform = 'sw'
 name = 'dst'
 tags = {'': ''}
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
 # Other tags assumed to be True
 _test_download_travis = {'': {'': False}}
 
@@ -107,13 +108,13 @@ def load(fnames, tag=None, sat_id=None):
 
             # f.close()
 
-            start = pds.datetime(yr[0], mo[0], day[0], ut[0])
-            stop = pds.datetime(yr[-1], mo[-1], day[-1], ut[-1])
+            start = dt.datetime(yr[0], mo[0], day[0], ut[0])
+            stop = dt.datetime(yr[-1], mo[-1], day[-1], ut[-1])
             dates = pds.date_range(start, stop, freq='H')
 
             new_data = pds.DataFrame(dst, index=dates, columns=['dst'])
             # pull out specific day
-            new_date = pysat.datetime.strptime(filename[-10:], '%Y-%m-%d')
+            new_date = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
             idx, = np.where((new_data.index >= new_date) &
                             (new_data.index < new_date+pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx, :]

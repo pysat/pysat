@@ -3,9 +3,10 @@ Demonstrates iterating over an instrument data set by orbit and plotting the
 results.
 """
 
+import datetime as dt
 import os
-import pysat
 import matplotlib.pyplot as plt
+import pysat
 
 # set the directory to save plots to
 results_dir = ''
@@ -17,8 +18,8 @@ vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                         clean_level=None, orbit_info=orbit_info)
 
 # set limits on dates analysis will cover, inclusive
-start = pysat.datetime(2010, 5, 9)
-stop = pysat.datetime(2010, 5, 12)
+start = dt.datetime(2010, 5, 9)
+stop = dt.datetime(2010, 5, 12)
 
 # if there is no vefi dc magnetometer data on your system, then run command
 # below where start and stop are pandas datetimes (from above)

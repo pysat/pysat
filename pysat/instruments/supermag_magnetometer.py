@@ -38,6 +38,7 @@ Custom Functions
 """
 
 from __future__ import print_function, absolute_import
+import datetime as dt
 import pandas as pds
 import numpy as np
 from os import path
@@ -53,7 +54,7 @@ tags = {'indices': 'SMU and SML indices',
         'all': 'magnetometer measurements and indices',
         'stations': 'magnetometer stations'}
 sat_ids = {'': tags.keys()}
-_test_dates = {'': {kk: pysat.datetime(2009, 1, 1) for kk in tags.keys()}}
+_test_dates = {'': {kk: dt.datetime(2009, 1, 1) for kk in tags.keys()}}
 _test_download = {'': {kk: False for kk in tags.keys()}}
 
 
@@ -139,8 +140,8 @@ def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None,
 
     # given the function of SuperMAG, create a fake list of files
     # starting 01 Jan 1970, through today
-    now = pysat.datetime.now()
-    now = pysat.datetime(now.year, now.month, now.day)
+    now = dt.datetime.now()
+    now = dt.datetime(now.year, now.month, now.day)
     if tag == 'stations':
         # yearly
         freq = 'Y'
@@ -148,7 +149,7 @@ def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None,
         # daily
         freq = 'D'
     # create a list of dates with appropriate frequency
-    index = pds.period_range(pysat.datetime(1970, 1, 1), now, freq=freq)
+    index = pds.period_range(dt.datetime(1970, 1, 1), now, freq=freq)
     # pre fill in blank strings
     remote_files = pds.Series([''] * len(index), index=index)
 
@@ -269,7 +270,7 @@ def load(fnames, tag='', sat_id=None):
 
     # Ensure that there are files to load
     if len(fnames) <= 0:
-        return pysat.DataFrame(None), pysat.Meta(None)
+        return pds.DataFrame(None), pysat.Meta(None)
 
     # Ensure that the files are in a list
     if isinstance(fnames, str):
@@ -340,8 +341,8 @@ def load_csv_data(fname, tag):
 
         # Open and read the file
         with open(fname, "r") as fopen:
-            dtime = pds.datetime.strptime(fname.split("_")[-1].split(".")[0],
-                                          "%Y")
+            dtime = dt.datetime.strptime(fname.split("_")[-1].split(".")[0],
+                                         "%Y")
 
             for fline in fopen.readlines():
                 sline = [ll for ll in re.split(r'[,\n]+', fline)
@@ -369,7 +370,7 @@ def load_csv_data(fname, tag):
     else:
         # Define the date parser
         def parse_smag_date(dd):
-            return pysat.datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
+            return dt.datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
 
         # Load the file into a data frame
         data = pds.read_csv(fname, parse_dates={'datetime': [0]},
@@ -420,8 +421,8 @@ def load_ascii_data(fname, tag):
         date_list = list()
 
         if tag == "stations":
-            dtime = pds.datetime.strptime(fname.split("_")[-1].split(".")[0],
-                                          "%Y")
+            dtime = dt.datetime.strptime(fname.split("_")[-1].split(".")[0],
+                                         "%Y")
 
         for fline in fopen.readlines():
             # Cycle past the header
@@ -466,7 +467,7 @@ def load_ascii_data(fname, tag):
                 if dflag:
                     dflag = False  # Unset the date flag
                     dstring = " ".join(lsplit[:6])
-                    dtime = pysat.datetime.strptime(dstring,
+                    dtime = dt.datetime.strptime(dstring,
                                                     "%Y %m %d %H %M %S")
                     snum = int(lsplit[6])  # Set the number of stations
 
@@ -476,7 +477,7 @@ def load_ascii_data(fname, tag):
                     else:
                         date_list.extend([dtime for i in range(snum)])
                 elif len(lsplit) == ndata['indices']:
-                    if tag is not '':
+                    if tag != '':
                         if lsplit[0] not in ddict.keys():
                             ddict[lsplit[0]] = list()
 
@@ -769,8 +770,8 @@ def append_ascii_data(file_strings, tag):
     while i < len(out_lines) - 1:
         idates.append(i)
         lsplit = re.split('\t+', out_lines[i])
-        dtime = pds.datetime.strptime(" ".join(lsplit[0:-1]),
-                                      "%Y %m %d %H %M %S")
+        dtime = dt.datetime.strptime(" ".join(lsplit[0:-1]),
+                                     "%Y %m %d %H %M %S")
         date_list.append(dtime)
         num_stations.append(int(lsplit[-1]))
         i += num_stations[-1] + 1 + ind_num
@@ -793,8 +794,8 @@ def append_ascii_data(file_strings, tag):
             elif len(line) > 0:
                 lsplit = re.split('\t+', line)
                 if snum == 0:
-                    dtime = pds.datetime.strptime(" ".join(lsplit[0:-1]),
-                                                  "%Y %m %d %H %M %S")
+                    dtime = dt.datetime.strptime(" ".join(lsplit[0:-1]),
+                                                 "%Y %m %d %H %M %S")
                     try:
                         idate = date_list.index(dtime)
                     except:
@@ -812,9 +813,8 @@ def append_ascii_data(file_strings, tag):
                     num_stations[idate] += snum
 
                     # Adjust date line for new number of station lines
-                    oline = "{:s}\t{:d}".format( \
-                                    dtime.strftime("%Y\t%m\t%d\t%H\t%M\t%S"),
-                                    num_stations[idate])
+                    sdate = dtime.strftime("%Y\t%m\t%d\t%H\t%M\t%S")
+                    oline = "{:s}\t{:d}".format(sdate, num_stations[idate])
                     out_lines[idates[idate]] = oline
                 else:
                     if inum > 0:

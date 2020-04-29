@@ -38,7 +38,7 @@ Examples
     dmsp = pysat.Instrument('madrigal', 'pandas',
                             madrigal_code=8100,
                             madrigal_tag=10241)
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
+    dmsp.download(dt.datetime(2017, 12, 30), dt.datetime(2017, 12, 31),
                   user='Firstname+Lastname', password='email@address.com')
     dmsp.load(2017,363)
 
@@ -78,8 +78,9 @@ Note
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
-import pysat
+
 from pysat.instruments.methods import madrigal as mad_meth
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
@@ -91,7 +92,7 @@ name = 'pandas'
 tags = {'': 'General Madrigal data access loaded into pysat via pandas.'}
 sat_ids = {'': list(tags.keys())}
 # need to sort out test day setting for unit testing
-_test_dates = {'': {'': pysat.datetime(2010, 1, 19)}}
+_test_dates = {'': {'': dt.datetime(2010, 1, 19)}}
 
 # support list files routine
 # use the default CDAWeb method

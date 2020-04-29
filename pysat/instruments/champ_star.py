@@ -25,6 +25,7 @@ Angeline G. Burrell, Feb 22, 2016, University of Leicester
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import numpy as np
 import pandas as pds
 import warnings
@@ -35,8 +36,9 @@ platform = 'champ'
 name = 'star'
 tags = {'': ''}
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2007, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
 _test_download = {'': {'': False}}
+
 
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
@@ -98,7 +100,7 @@ def load(fnames, tag=None, sat_id=None):
     """
     import re
     if len(fnames) <= 0:
-        return pysat.DataFrame(None), pysat.Meta(None)
+        return pds.DataFrame(None), pysat.Meta(None)
 
     if isinstance(fnames, str):
         fnames = [fnames]
@@ -151,9 +153,8 @@ def load(fnames, tag=None, sat_id=None):
     # Define the routine needed to create datetime object from the
     # CHAMP time (YY DDD SSSSS)
     def parse_champdate(y, d, s):
-        '''parse CHAMP date string (YY DDD SSSSS) into a datetime object
-        '''
-        import datetime as dt
+        """parse CHAMP date string (YY DDD SSSSS) into a datetime object
+        """
 
         t = dt.datetime.strptime("{:02d} {:03d}".format(int(y), int(d)),
                                  "%y %j")

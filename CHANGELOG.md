@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-04-23
+## [3.0.0] - 2020-04-24
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -14,13 +14,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed ssnl
   - Removed utils.stats
   - Removed model_utils
+  - Removed deprecated pandas.Panel
+  - imports datetime from datetime, not pandas (deprecated)
+  - import DataFrame and Series directly from pandas, not pysat
   - Removed coords.scale_units
   - Removed time.season_date_range
+  - DeprecationWarning for strict_time_flag only triggered if sloppy data is found
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
+- Maintenance
+  - nose dependency removed from unit tests
+  - Specify dtype for empty pandas.Series for forward compatibility
 
 ## [2.2.0] - 2020-2-29
 - New Features
@@ -51,6 +58,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
   - Updates to Travis CI environment
   - Removed `inplace` use in xarray `assign` function, which is no longer allowed
+  - Fixed output of orbit_info during print(inst)
 
 
 ## [2.1.0] - 2019-11-18

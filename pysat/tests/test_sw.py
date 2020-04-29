@@ -1,10 +1,8 @@
 import datetime as dt
 import numpy as np
-import os
 
-from nose.tools import assert_raises
-from nose.plugins import skip
 import pandas as pds
+import pytest
 
 import pysat
 from pysat.instruments import sw_kp, sw_f107
@@ -16,21 +14,20 @@ class TestSWKp():
         """Runs before every method to create a clean testing setup"""
         # Load a test instrument
         self.testInst = pysat.Instrument()
-        self.testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0),
-                                            'ap_nan': np.full(shape=12, \
-                                                            fill_value=np.nan),
-                                            'ap_inf': np.full(shape=12, \
-                                                            fill_value=np.inf)},
-                                           index=[pysat.datetime(2009, 1, 1)
-                                                  + pds.DateOffset(hours=3*i)
-                                                  for i in range(12)])
+        self.testInst.data = \
+            pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0),
+                           'ap_nan': np.full(shape=12, fill_value=np.nan),
+                           'ap_inf': np.full(shape=12, fill_value=np.inf)},
+                          index=[dt.datetime(2009, 1, 1)
+                                 + pds.DateOffset(hours=3*i)
+                                 for i in range(12)])
         self.testInst.meta = pysat.Meta()
-        self.testInst.meta.__setitem__('Kp', {self.testInst.meta.fill_label:
-                                              np.nan})
-        self.testInst.meta.__setitem__('ap_nan', {self.testInst.meta.fill_label:
-                                                  np.nan})
-        self.testInst.meta.__setitem__('ap_inv', {self.testInst.meta.fill_label:
-                                                  np.inf})
+        self.testInst.meta.__setitem__('Kp',
+                                       {self.testInst.meta.fill_label: np.nan})
+        self.testInst.meta.__setitem__('ap_nan',
+                                       {self.testInst.meta.fill_label: np.nan})
+        self.testInst.meta.__setitem__('ap_inv',
+                                       {self.testInst.meta.fill_label: np.inf})
 
         # Load a test Metadata
         self.testMeta = pysat.Meta()
@@ -78,7 +75,8 @@ class TestSWKp():
 
         self.testInst.data.rename(columns={"Kp": "bad"}, inplace=True)
 
-        assert_raises(ValueError, sw_kp.convert_3hr_kp_to_ap, self.testInst)
+        with pytest.raises(ValueError):
+            sw_kp.convert_3hr_kp_to_ap(self.testInst)
 
     def test_initialize_kp_metadata(self):
         """Test default Kp metadata initialization"""
@@ -218,7 +216,7 @@ class TestSwKpCombine():
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.test_day = pysat.datetime(2019, 3, 18)
+        self.test_day = dt.datetime(2019, 3, 18)
         self.combine = {"standard_inst": pysat.Instrument("sw", "kp", ""),
                         "recent_inst": pysat.Instrument("sw", "kp", "recent"),
                         "forecast_inst":
@@ -235,7 +233,8 @@ class TestSwKpCombine():
     def test_combine_kp_none(self):
         """ Test combine_kp failure when no input is provided"""
 
-        assert_raises(ValueError, sw_meth.combine_kp)
+        with pytest.raises(ValueError):
+            sw_meth.combine_kp()
 
     def test_combine_kp_one(self):
         """ Test combine_kp failure when only one instrument is provided"""
@@ -243,14 +242,15 @@ class TestSwKpCombine():
         # Load a test instrument
         testInst = pysat.Instrument()
         testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0)},
-                                      index=[pysat.datetime(2009, 1, 1)
+                                      index=[dt.datetime(2009, 1, 1)
                                              + pds.DateOffset(hours=3*i)
                                              for i in range(12)])
         testInst.meta = pysat.Meta()
         testInst.meta['Kp'] = {testInst.meta.fill_label: np.nan}
 
         combo_in = {"standard_inst": testInst}
-        assert_raises(ValueError, sw_meth.combine_kp, combo_in)
+        with pytest.raises(ValueError):
+            sw_meth.combine_kp(combo_in)
 
         del combo_in, testInst
 
@@ -260,7 +260,8 @@ class TestSwKpCombine():
         combo_in = {kk: self.combine[kk] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
 
-        assert_raises(ValueError, sw_meth.combine_kp, combo_in)
+        with pytest.raises(ValueError):
+            sw_meth.combine_kp(combo_in)
 
         del combo_in
 
@@ -269,8 +270,8 @@ class TestSwKpCombine():
 
         combo_in = {kk: self.combine['forecast_inst'] for kk in
                     ['standard_inst', 'recent_inst', 'forecast_inst']}
-        combo_in['start'] = pysat.datetime(2014, 2, 19)
-        combo_in['stop'] = pysat.datetime(2014, 2, 24)
+        combo_in['start'] = dt.datetime(2014, 2, 19)
+        combo_in['stop'] = dt.datetime(2014, 2, 24)
         kp_inst = sw_meth.combine_kp(**combo_in)
 
         assert kp_inst.data.isnull().all()["Kp"]
@@ -379,7 +380,7 @@ class TestSWF107():
         # Load a test instrument
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
-                                           index=[pysat.datetime(2009, 1, 1)
+                                           index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(days=i)
                                                   for i in range(160)])
 
@@ -390,13 +391,14 @@ class TestSWF107():
     def test_calc_f107a_bad_inname(self):
         """ Test the calc_f107a with a bad input name """
 
-        assert_raises(ValueError, sw_f107.calc_f107a, self.testInst, 'bad')
+        with pytest.raises(ValueError):
+            sw_f107.calc_f107a(self.testInst, 'bad')
 
     def test_calc_f107a_bad_outname(self):
         """ Test the calc_f107a with a bad output name """
 
-        assert_raises(ValueError, sw_f107.calc_f107a, self.testInst, 'f107',
-                      'f107')
+        with pytest.raises(ValueError):
+            sw_f107.calc_f107a(self.testInst, 'f107', 'f107')
 
     def test_calc_f107a_daily(self):
         """ Test the calc_f107a routine with daily data"""
@@ -416,7 +418,7 @@ class TestSWF107():
         """ Test the calc_f107a routine with sub-daily data"""
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200,
                                                                 3840)},
-                                           index=[pysat.datetime(2009, 1, 1)
+                                           index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(hours=i)
                                                   for i in range(3840)])
         sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
@@ -437,7 +439,7 @@ class TestSWF107():
         """ Test the calc_f107a routine with some daily data missing"""
 
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
-                                           index=[pysat.datetime(2009, 1, 1)
+                                           index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(days=2*i+1)
                                                   for i in range(160)])
         sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
@@ -465,7 +467,7 @@ class TestSWF107Combine():
         pysat.utils.set_data_dir(pysat.test_data_path, store=False)
 
         # Set combination testing input
-        self.test_day = pysat.datetime(2019, 3, 16)
+        self.test_day = dt.datetime(2019, 3, 16)
         self.combineInst = {tag: pysat.Instrument("sw", "f107", tag)
                             for tag in sw_f107.tags.keys()}
         self.combineTimes = {"start": self.test_day - dt.timedelta(days=30),
@@ -479,21 +481,23 @@ class TestSWF107Combine():
     def test_combine_f107_none(self):
         """ Test combine_f107 failure when no input is provided"""
 
-        assert_raises(TypeError, sw_meth.combine_f107)
+        with pytest.raises(TypeError):
+            sw_meth.combine_f107()
 
     def test_combine_f107_no_time(self):
         """Test combine_f107 failure when no times are provided"""
 
-        assert_raises(ValueError, sw_meth.combine_f107,
-                      self.combineInst[''], self.combineInst['forecast'])
+        with pytest.raises(ValueError):
+            sw_meth.combine_f107(self.combineInst[''],
+                                 self.combineInst['forecast'])
 
     def test_combine_f107_no_data(self):
         """Test combine_f107 when no data is present for specified times"""
 
         combo_in = {kk: self.combineInst['forecast'] for kk in
                     ['standard_inst', 'forecast_inst']}
-        combo_in['start'] = pysat.datetime(2014, 2, 19)
-        combo_in['stop'] = pysat.datetime(2014, 2, 24)
+        combo_in['start'] = dt.datetime(2014, 2, 19)
+        combo_in['stop'] = dt.datetime(2014, 2, 24)
         f107_inst = sw_meth.combine_f107(**combo_in)
 
         assert f107_inst.data.isnull().all()["f107"]
@@ -538,7 +542,7 @@ class TestSWAp():
         self.testInst = pysat.Instrument()
         self.testInst.data = pds.DataFrame({'3hr_ap': [0, 2, 3, 4, 5, 6, 7, 9,
                                                        12, 15]},
-                                           index=[pysat.datetime(2009, 1, 1)
+                                           index=[dt.datetime(2009, 1, 1)
                                                   + pds.DateOffset(hours=3*i)
                                                   for i in range(10)])
         self.testInst.meta = pysat.Meta()
@@ -576,11 +580,11 @@ class TestSWAp():
     def test_calc_daily_Ap_bad_3hr(self):
         """ Test daily Ap calculation with bad input key"""
 
-        assert_raises(ValueError, sw_meth.calc_daily_Ap, self.testInst,
-                      "no")
+        with pytest.raises(ValueError):
+            sw_meth.calc_daily_Ap(self.testInst, "no")
 
     def test_calc_daily_Ap_bad_daily(self):
         """ Test daily Ap calculation with bad output key"""
 
-        assert_raises(ValueError, sw_meth.calc_daily_Ap, self.testInst,
-                      "3hr_ap", "3hr_ap")
+        with pytest.raises(ValueError):
+            sw_meth.calc_daily_Ap(self.testInst, "3hr_ap", "3hr_ap")

@@ -4,6 +4,7 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import numpy as np
 import os
@@ -19,7 +20,7 @@ name = 'testmodel'
 tags = {'': 'Regular testing data set'}
 sat_ids = {'': ['']}
 pandas_format = False
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 def init(self):
@@ -81,8 +82,8 @@ def load(fnames, tag=None, sat_id=None):
     for i, ut in enumerate(uts):
         for j, long in enumerate(longitude):
             slt[i, j] = np.mod(ut / 3600.0 + long / 15.0, 24.0)
-    data['slt'] = (('time', 'longtiude'), slt)
-    data['mlt'] = (('time', 'longtiude'), np.mod(slt+0.2, 24.0))
+    data['slt'] = (('time', 'longitude'), slt)
+    data['mlt'] = (('time', 'longitude'), np.mod(slt+0.2, 24.0))
 
     # Fake 3D data consisting of values between 0 and 21 everywhere
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)

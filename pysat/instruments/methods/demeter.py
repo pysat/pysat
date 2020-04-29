@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime as dt
 import numpy as np
 import warnings
 
@@ -98,7 +99,6 @@ def load_general_header(fhandle):
 
     """
     import codecs  # ensures encode is python 2/3 compliant
-    import datetime as dt
 
     block_size = 38  # Position block is 38 bytes
     chunk = fhandle.read(block_size)
