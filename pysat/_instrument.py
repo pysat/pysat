@@ -7,9 +7,11 @@ try:
 except NameError:
     basestring = str
 
-import string
-import os
 import copy
+import functools
+import inspect
+import os
+import string
 import sys
 
 import pkgutil
@@ -356,6 +358,9 @@ class Instrument(object):
         self._export_meta_post_processing = None
 
         # store kwargs, passed to load routine
+        # first, check if keywords are  valid
+        _check_if_keywords_supported(self._load_rtn, **kwargs)
+        # store
         self.kwargs = kwargs
 
         # run instrument init function, a basic pass function is used
@@ -1231,7 +1236,7 @@ class Instrument(object):
         Note
         ----
         Loads data for a chosen instrument into .data. Any functions chosen
-        by the user and added to the custom processing queue (.custom.add)
+        by the user and added to the custom processing queue (.custom.attach)
         are automatically applied to the data before it is available to
         user in .data.
 
@@ -2605,3 +2610,106 @@ class Instrument(object):
             # attach attributes
             out_data.setncatts(adict)
         return
+
+#
+# ----------------------------------------------
+#   Utilities supporting the Instrument Object
+# ----------------------------------------------
+#
+
+
+def _get_supported_keywords(load_func):
+    """Return a list of supported keywords
+
+    Intended to be used on the supporting instrument
+    functions that enable the general Instrument object
+    to load and work with a particular data set.
+
+    Parameters
+    ----------
+    load_func: Python method or functools.partial
+        Method used to load data within pysat
+
+    Returns
+    -------
+    list
+        list of keyword argument strings
+
+
+    Notes
+    -----
+        If the input is a partial function then the
+        list of keywords returned only includes keywords
+        that have not already been set as part of
+        the functools.partial instantiation.
+
+    """
+
+    # check if partial function
+    if isinstance(load_func, functools.partial):
+        # get keyword arguments already applied to function
+        existing_kws = load_func.keywords
+        # pull out python function portion
+        load_func = load_func.func
+    else:
+        existing_kws = None
+
+    # modified from code on
+    # https://stackoverflow.com/questions/196960/can-you-list-the-keyword-arguments-a-function-receives
+    if sys.version_info.major == 2:
+        args, varargs, varkw, defaults = inspect.getargspec(load_func)
+    else:
+        sig = inspect.getfullargspec(load_func)
+        # args are first
+        args = sig.args
+
+    pop_list = []
+    # account for keywords that exist for every load function
+    pre_kws = ['fnames', 'sat_id', 'tag']
+    # account for keywords already set since input was a partial function
+    if existing_kws is not None:
+        pre_kws.extend(existing_kws.keys())
+    # remove pre-existing keywords from output
+    # first identify locations
+    for i, arg in enumerate(args):
+        if arg in pre_kws:
+            pop_list.append(i)
+    # remove identified locations
+    # go backwards so we don't mess with the location of data we
+    # are trying to remove
+    if len(pop_list) > 0:
+        for pop in pop_list[::-1]:
+            args.pop(pop)
+
+    # *args and **kwargs are not required, so ignore them.
+    return args
+
+
+def _check_if_keywords_supported(func, **kwargs):
+    """Checks if keywords supported by function
+
+    Parameters
+    ----------
+    func: method
+        Method to be checked against
+    **kwargs : keyword args
+        keyword arguments dictionary
+
+    Returns
+    -------
+    bool
+        If true, all keywords supported
+
+    """
+
+    # get list of supported keywords
+    supp = _get_supported_keywords(func)
+    # check if kwargs are in list
+    for name in kwargs.keys():
+        if name not in supp:
+            estr = ' '.join((name, 'is not a supported keyword by pysat or',
+                             'by the underlying supporting load routine.',
+                             'Please double check the keyword inputs.'))
+            raise ValueError(estr)
+    return True
+

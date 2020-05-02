@@ -51,6 +51,14 @@ class TestBasics():
             (test_date == self.testInst.date)
 
     @raises(Exception)
+    def test_basic_instrument_bad_keyword(self):
+        """Checks for error when instantiating with bad load_rtn keywords"""
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    unsupported_keyword_yeah=True)
+
+    @raises(Exception)
     def test_basic_instrument_load_yr_no_doy(self):
         self.testInst.load(2009)
 
@@ -362,7 +370,7 @@ class TestBasics():
     def test_repr_w_custom_func(self):
         def testfunc(self):
             pass
-        self.testInst.custom.add(testfunc, 'modify')
+        self.testInst.custom.attach(testfunc, 'modify')
         print(self.testInst)
         assert True
 

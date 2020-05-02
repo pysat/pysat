@@ -136,7 +136,7 @@ def default(inst):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, **kwargs):
+         malformed_index=False, mangle_file_dates=False, **kwargs):
     """ Loads the test files
 
     Parameters
@@ -160,10 +160,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         (default=None)
     file_date_range : (pds.date_range or NoneType)
         Range of dates for files or None, if this optional arguement is not
-        used
+        used. Shift actually performed by the init function.
         (default=None)
     malformed_index : bool (default=False)
         If True, time index for simulation will be non-unique and non-monotonic
+    mangle_file_dates : bool
+        If True, the loaded file list time index is shifted by 5-minutes.
+        This shift is actually performed by the init function.
     **kwargs : Additional keywords
         Additional keyword arguments supplied at pyast.Instrument instantiation
         are passed here
