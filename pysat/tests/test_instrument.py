@@ -1365,48 +1365,5 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
         del self.testInst
 
 
-def create_instrument(j):
-    """This function must be in the top level to be picklable
-
-    update_files should update the file list in .pysat
-    """
-    date = pds.to_datetime('2009, 5, 6')
-    for i in range(20):
-        testInst = pysat.Instrument('cnofs', 'vefi', 'dc_b',
-                                     update_files=True)
-        testInst.load(date=date)
-    return "{} {}".format('vefi', i)
-
-def multi_run_wrapper(args):
-   return create_instrument(*args)
-
-class TestRaceCondition():
-
-    def setup(self):
-        pass
- 
-    def test_race_condition(self):
-        # from pysat import logger, logging
-        # logger.setLevel(logging.DEBUG)
-        from multiprocessing import Pool
-        processes = 5
-        p = Pool(processes)
-
-        platform, name, tag = 'cnofs', 'vefi', 'dc_b'
-
-        vefi = pysat.Instrument(platform, name, tag)
-        start = pysat.datetime(2009,5,6)
-        stop = pysat.datetime(2009,5,7)
-        vefi.download(start, stop)
-
-        result = p.map(create_instrument, range(processes))
-        print(result)
-
-        # for i in range(processes):
-        #     assert(result[i] == 'testing {}'.format(iterations_ - 1))
-        
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        pass
 
 
