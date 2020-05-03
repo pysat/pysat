@@ -282,7 +282,9 @@ class CDF(object):
             if not re.match(var_regex, variable_name):
                 # skip this variable
                 continue
-            var_atts = self._cdf_file.varattsget(variable_name)
+            var_atts = self._cdf_file.varattsget(variable_name, to_np = False)
+            for k in var_atts:
+                var_atts[k] = var_atts[k][0]
 
             if 'VAR_TYPE' not in var_atts:
 #                 print('skipping {} (no VAR_TYPE)'.format(variable_name))
@@ -303,7 +305,7 @@ class CDF(object):
             if ydata is None:
 #                 print('skipping {} (empty)'.format(variable_name))
                 continue
-                
+            
 
             if "FILLVAL" in var_atts:
                 if (var_properties['Data_Type_Description'] == 'CDF_FLOAT'
@@ -413,8 +415,17 @@ class CDF(object):
                           min_label=min_label, max_label=max_label,
                           notes_label=notes_label, desc_label=desc_label,
                           axis_label=axis_label)
+
+        cdata = self.data.copy()
+        lower_names = [name.lower() for name in meta.keys()] 
+        for name, true_name in zip(lower_names, meta.keys()):
+            if name == 'epoch':
+                meta.data.rename(index={true_name: 'Epoch'}, inplace=True)
+                epoch = cdata.pop(true_name)
+                cdata['Epoch'] = epoch
+
         data = dict()
-        for varname, df in self.data.items():
+        for varname, df in cdata.items():
             if varname != 'Epoch':
                 if type(df) == pds.Series:
                     data[varname] = df
