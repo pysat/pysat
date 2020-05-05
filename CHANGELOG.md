@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-04-23
+## [3.0.0] - 2020-04-24
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -28,7 +28,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
 - Maintenance
-  - Specify dtype for pandas.Series(None) for forward compatibility
+  - nose dependency removed from unit tests
+  - Specify dtype for empty pandas.Series for forward compatibility
 
 ## [2.2.0] - 2020-2-29
 - New Features
@@ -59,6 +60,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
   - Updates to Travis CI environment
   - Removed `inplace` use in xarray `assign` function, which is no longer allowed
+  - Fixed output of orbit_info during print(inst)
 
 
 ## [2.1.0] - 2019-11-18
