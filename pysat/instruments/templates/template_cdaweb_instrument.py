@@ -88,7 +88,7 @@ supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
 # the command below presets some of the methods inputs, leaving
 # those provided by pysat available when invoked
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 #

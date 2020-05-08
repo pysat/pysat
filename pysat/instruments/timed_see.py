@@ -41,6 +41,7 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 # include basic instrument info
@@ -55,7 +56,7 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 # use the default CDAWeb method
 fname = 'timed_l3a_see_{year:04d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags,
                                fake_daily_files_from_monthly=True)
 

@@ -55,6 +55,7 @@ import pandas as pds
 import scipy.stats as stats
 import warnings
 
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 import logging
@@ -74,7 +75,7 @@ fname1 = 'omni_hro_1min_{year:4d}{month:02d}{day:02d}_v01.cdf'
 fname5 = 'omni_hro_5min_{year:4d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'1min': fname1,
                        '5min': fname5}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags,
                                fake_daily_files_from_monthly=True)
 
