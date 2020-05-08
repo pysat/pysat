@@ -52,8 +52,9 @@ directly into the library, updating the instrument library name as indicated.
 The ``setup.py`` file should include pysat as a dependency, as well as any
 other packages required by the instruments.
 
-A more complicated structure could include analysis routines, like the
-External hyperlinks, like the `pysatModels <https://github.com/pysat/pysatModels>`_ package.  The structure then could look like:
+A more complicated structure could include analysis routines,
+like the `pysatModels <https://github.com/pysat/pysatModels>`_ package.
+The structure then could look like:
 
 .. code::
 
