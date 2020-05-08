@@ -1,3 +1,4 @@
+.. _new_inst:
 
 .. |br| raw:: html
 
