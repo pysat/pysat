@@ -17,8 +17,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                two_digit_year_break=None):
     """Return a Pandas Series of every file for chosen satellite data.
 
-    This routine is intended to be used by pysat instrument modules supporting
-    a particular NASA CDAWeb dataset.
+    This routine provides a standard interfacefor pysat instrument modules.
 
     Parameters
     -----------
