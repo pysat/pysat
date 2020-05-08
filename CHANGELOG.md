@@ -25,6 +25,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
+  - Added a tutorial for developers of instrument libraries for pysat
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
 - Maintenance
