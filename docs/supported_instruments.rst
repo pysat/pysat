@@ -8,12 +8,6 @@ General Instrument
 .. automodule:: pysat.instruments.templates.template_instrument
    :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
 
-Madrigal Pandas
--------------
-
-.. automodule:: pysat.instruments.templates.madirgal_pandas
- :members: __doc__, init, load, list_files, download
-
 NASA CDAWeb Instrument
 ----------------------
 
@@ -30,18 +24,18 @@ netCDF Pandas
 General Data Source Methods
 ===========================
 
+General
+-------
+
+.. automodule:: pysat.instruments.methods.general
+   :members: __doc__, list_files,
+
+
 NASA CDAWeb
 -----------
 
 .. automodule:: pysat.instruments.methods.nasa_cdaweb
-   :members: __doc__, init, load, list_files, list_remote_files, download
-
-
-Madrigal
---------
-
-.. automodule:: pysat.instruments.methods.madrigal
-   :members: __doc__, cedar_rules, load, download, filter_data_single_date
+  :members: __doc__, init, load, list_remote_files, download
 
 
 Demeter
@@ -114,12 +108,6 @@ Demeter IAP
 .. automodule:: pysat.instruments.demeter_iap
    :members: __doc__, add_drift_sat_coord, add_drift_lgm_coord, add_drift_geo_coord
 
-DMSP IVM
---------
-
-.. automodule:: pysat.instruments.dmsp_ivm
-   :members: __doc__, smooth_ram_drifts, update_DMSP_ephemeris, add_drift_unit_vectors, add_drifts_polar_cap_x_y
-
 ICON EUV
 --------
 
@@ -148,12 +136,6 @@ ISS-FPMU
 --------
 
 .. automodule:: pysat.instruments.iss_fpmu
-   :members: __doc__
-
-JRO ISR
--------
-
-.. automodule:: pysat.instruments.jro_isr
    :members: __doc__
 
 OMNI
