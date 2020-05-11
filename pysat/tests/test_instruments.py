@@ -39,8 +39,7 @@ class TestInstruments(InstTestClass):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Developers for instrument libraries should update the following line
-        # to point to their own library package
-        # e.g.,
+        # to point to their own library package, e.g.,
         # self.package = mypackage.instruments
         self.package = pysat.instruments
 

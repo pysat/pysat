@@ -28,7 +28,7 @@ General
 -------
 
 .. automodule:: pysat.instruments.methods.general
-   :members: __doc__, list_files,
+   :members: __doc__, list_files
 
 
 NASA CDAWeb
