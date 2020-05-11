@@ -51,10 +51,11 @@ J. Klenzing, 4 March 2019
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 
-import pysat
 # CDAWeb methods prewritten for pysat
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 # the platform and name strings associated with this instrument
@@ -78,11 +79,11 @@ sat_ids = {'': ['']}
 # Define good days to download data for when pysat undergoes testing.
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
-# _test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
-#                     'L1':pysat.datetime(2019,1,2)},
-#                'b':{'L1':pysat.datetime(2019,3,1),
-#                     'L2':pysat.datetime(2019,11,23),}}
-_test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
+# _test_dates = {'a':{'L0':dt.datetime(2019,1,1),
+#                     'L1':dt.datetime(2019,1,2)},
+#                'b':{'L1':dt.datetime(2019,3,1),
+#                     'L2':dt.datetime(2019,11,23),}}
+_test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
 
 # Additional information needs to be defined
 # to support the CDAWeb list files routine
@@ -101,7 +102,7 @@ supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
 # the command below presets some of the methods inputs, leaving
 # those provided by pysat available when invoked
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 # let pysat know that data is spread across more than one file

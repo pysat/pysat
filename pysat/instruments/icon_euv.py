@@ -27,6 +27,7 @@ Russell Stoneback, Mar 23, 2018, University of Texas at Dallas
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
@@ -42,7 +43,8 @@ platform = 'icon'
 name = 'euv'
 tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'': ['level_2']}
-_test_dates = {'': {'level_2': pysat.datetime(2017, 5, 27)}}
+_test_dates = {'': {'level_2': dt.datetime(2017, 5, 27)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 
 def init(self):
@@ -61,8 +63,8 @@ def init(self):
         modified in-place, as desired.
 
     """
-    logger.info("Mission acknowledgements and data restrictions will be printed " +
-          "here when available.")
+    logger.info(' '.join(['Mission acknowledgements and data restrictions',
+                          'will be printed here when available.']))
     pass
 
 

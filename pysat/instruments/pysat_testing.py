@@ -4,6 +4,7 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import numpy as np
 
@@ -28,7 +29,7 @@ tags = {'': 'Regular testing data set',
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in sat_id to change the number of points per day
 sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 def init(self):
@@ -159,7 +160,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     else:
         root_date = root_date or _test_dates['']['']
 
-    data = pysat.DataFrame(uts, columns=['uts'])
+    data = pds.DataFrame(uts, columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
@@ -185,6 +186,10 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
                                        uts, period=iperiod['angle'],
                                        data_range=drange['angle'])
     data['latitude'] = 90.0 * np.cos(angle)
+
+    # create constant altitude at 400 km
+    alt0 = 400.0
+    data['altitude'] = alt0 * np.ones(data['latitude'].shape)
 
     # fake orbit number
     fake_delta = date - (_test_dates[''][''] - pds.DateOffset(years=1))
@@ -283,6 +288,7 @@ meta['orbit_num'] = {'units': '',
 
 meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
 meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
 meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
 meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}
 meta['dummy3'] = {'units': '', 'long_name': 'dummy3'}

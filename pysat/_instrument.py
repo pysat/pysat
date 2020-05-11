@@ -8,11 +8,13 @@ except NameError:
     basestring = str
 
 import copy
+import datetime as dt
 import functools
 import inspect
 import os
 import string
 import sys
+
 import pkgutil
 import warnings
 
@@ -25,7 +27,6 @@ from pysat import _files
 from pysat import _orbits
 from pysat import _meta
 from pysat import utils
-from pysat import DataFrame
 from pysat import user_modules as user_modules
 from pysat import logger
 
@@ -152,8 +153,8 @@ class Instrument(object):
                                 name='vefi',
                                 tag='dc_b',
                                 clean_level='clean')
-        start = pysat.datetime(2009,1,1)
-        stop = pysat.datetime(2009,1,2)
+        start = dt.datetime(2009,1,1)
+        stop = dt.datetime(2009,1,2)
         vefi.download(start, stop)
         vefi.load(date=start)
         print(vefi['dB_mer'])
@@ -161,18 +162,18 @@ class Instrument(object):
 
         # 1-second thermal plasma parameters
         ivm = pysat.Instrument(platform='cnofs',
-                                name='ivm',
-                                tag='',
-                                clean_level='clean')
+                               name='ivm',
+                               tag='',
+                               clean_level='clean')
         ivm.download(start,stop)
         ivm.load(2009,1)
         print(ivm['ionVelmeridional'])
 
         # Ionosphere profiles from GPS occultation
         cosmic = pysat.Instrument('cosmic',
-                                    'gps',
-                                    'ionprf',
-                                    altitude_bin=3)
+                                  'gps',
+                                  'ionprf',
+                                  altitude_bin=3)
         # bins profile using 3 km step
         cosmic.download(start, stop, user=user, password=password)
         cosmic.load(date=start)
@@ -190,6 +191,10 @@ class Instrument(object):
                  plot_label='label', axis_label='axis', scale_label='scale',
                  min_label='value_min', max_label='value_max',
                  fill_label='fill', *arg, **kwargs):
+
+        # Set default tag and sat_id
+        self.tag = tag.lower() if tag is not None else ''
+        self.sat_id = sat_id.lower() if sat_id is not None else ''
 
         if inst_module is None:
             # use strings to look up module name
@@ -222,8 +227,6 @@ class Instrument(object):
             self._assign_funcs(inst_module=inst_module)
 
         # more reasonable defaults for optional parameters
-        self.tag = tag.lower() if tag is not None else ''
-        self.sat_id = sat_id.lower() if sat_id is not None else ''
         self.clean_level = (clean_level.lower() if clean_level is not None
                             else 'none')
 
@@ -262,8 +265,8 @@ class Instrument(object):
         # set up empty data and metadata
         # check if pandas or xarray format
         if self.pandas_format:
-            self._null_data = DataFrame(None)
-            self._data_library = DataFrame
+            self._null_data = pds.DataFrame(None)
+            self._data_library = pds.DataFrame
         else:
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset
@@ -346,6 +349,7 @@ class Instrument(object):
                 # default provided by instrument module
                 orbit_info = self.orbit_info
         self.orbits = _orbits.Orbits(self, **orbit_info)
+        self.orbit_info = orbit_info
 
         # Create empty placeholder for meta translation table
         # gives information about how to label metadata for netcdf export
@@ -369,7 +373,6 @@ class Instrument(object):
 
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
-
 
     def __getitem__(self, key):
         """
@@ -463,7 +466,7 @@ class Instrument(object):
                 except:
                     try:
                         return self.data.sel(time=key[0])[key[1]]
-                    except TypeError: # construct dataset from names
+                    except TypeError:  # construct dataset from names
                         return self.data[self.variables[key[1]]]
             else:
                 # multidimensional indexing
@@ -676,6 +679,7 @@ class Instrument(object):
                 return len(data.indexes['time']) == 0
             else:
                 return True
+
     @property
     def date(self):
         """Date for loaded data."""
@@ -785,9 +789,10 @@ class Instrument(object):
             # start with local areas
             import_success = False
             try:
-                inst = importlib.import_module(''.join(('.', self.platform, '_',
-                                            self.name)),
-                                            package='pysat.instruments')
+                inst = \
+                    importlib.import_module(''.join(('.', self.platform, '_',
+                                                     self.name)),
+                                                     package='pysat.instruments')
                 import_success = True
             except:
                 # iterate through user set modules
@@ -856,7 +861,31 @@ class Instrument(object):
         except AttributeError:
             pass
 
-        return
+        # Check for download flags for tests
+        try:
+            # Used for instruments without download access
+            # Assume we test download routines regardless of env unless specified otherwise
+            self._test_download = \
+                inst._test_download[self.sat_id][self.tag]
+        except (AttributeError, KeyError):
+            # Either flags are not specified, or this combo is not
+            self._test_download = True
+        try:
+            # Used for tests which require FTP access
+            # Assume we test download routines on travis unless specified otherwise
+            self._test_download_travis = \
+                inst._test_download_travis[self.sat_id][self.tag]
+        except (AttributeError, KeyError):
+            # Either flags are not specified, or this combo is not
+            self._test_download_travis = True
+        try:
+            # Used for tests which require password access
+            # Assume password not required unless specified otherwise
+            self._password_req = \
+                inst._password_req[self.sat_id][self.tag]
+        except (AttributeError, KeyError):
+            # Either flags are not specified, or this combo is not
+            self._password_req = False
 
     def __str__(self):
 
@@ -881,7 +910,7 @@ class Instrument(object):
 
         output_str += '\nOrbit Settings' + '\n'
         output_str += '--------------' + '\n'
-        if self.orbit_info is None:
+        if self.orbits.orbit_index is None:
             output_str += 'Orbit properties not set.\n'
         else:
             output_str += 'Orbit Kind: ' + self.orbit_info['kind'] + '\n'
@@ -953,9 +982,9 @@ class Instrument(object):
             return date
         else:
             if hasattr(date, '__iter__'):
-                return [pds.datetime(da.year, da.month, da.day) for da in date]
+                return [dt.datetime(da.year, da.month, da.day) for da in date]
             else:
-                return pds.datetime(date.year, date.month, date.day)
+                return dt.datetime(date.year, date.month, date.day)
 
     def today(self):
         """Returns today's date, with no hour, minute, second, etc.
@@ -971,7 +1000,7 @@ class Instrument(object):
 
         """
 
-        return self._filter_datetime_input(pds.datetime.today())
+        return self._filter_datetime_input(dt.datetime.today())
 
     def tomorrow(self):
         """Returns tomorrow's date, with no hour, minute, second, etc.
@@ -1101,21 +1130,21 @@ class Instrument(object):
             if date is not None:
                 if bad_datetime:
                     output_str = ' '.join(('Bad datetime for', output_str,
-                                        date.strftime('%d %B %Y')))
+                                           date.strftime('%d %B %Y')))
                 else:
                     output_str = ' '.join(('No', output_str, 'data for',
-                                        date.strftime('%d %B %Y')))
+                                           date.strftime('%d %B %Y')))
             else:
                 if len(fname) == 1:
                     output_str = ' '.join(('No', output_str, 'data for',
                                            fname[0]))
                 elif len(fname) == 0:
-                     output_str = ' '.join(('No', output_str, 'valid',
-                                            'filenames found'))
+                    output_str = ' '.join(('No', output_str, 'valid',
+                                           'filenames found'))
                 else:
                     output_str = ' '.join(('No', output_str, 'data for',
-                                            fname[0], '::',
-                                            fname[-1]))
+                                           fname[0], '::',
+                                           fname[-1]))
 
         # remove extra spaces, if any
         output_str = " ".join(output_str.split())
@@ -1208,7 +1237,7 @@ class Instrument(object):
             inc = pds.DateOffset(days=1)
             curr = self._filter_datetime_input(date)
         elif (yr is not None) & (doy is not None):
-            date = pds.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
+            date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy-1))
             self._set_load_parameters(date=date, fid=None)
             # increment
             inc = pds.DateOffset(days=1)
@@ -1371,18 +1400,26 @@ class Instrument(object):
                 temp = first_time
             else:
                 temp = self.index[0]
-            self.date = pds.datetime(temp.year, temp.month, temp.day)
+            self.date = dt.datetime(temp.year, temp.month, temp.day)
             self.yr, self.doy = utils.time.getyrdoy(self.date)
 
         # ensure data is unique and monotonic
         # check occurs after all the data padding loads, or individual load
         # thus it can potentially check issues with padding or with raw data
-        if self.strict_time_flag:
-            if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
-                raise ValueError('Loaded data is not unique (',not self.index.is_unique,
+        if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
+            if self.strict_time_flag:
+                raise ValueError('Loaded data is not unique (',
+                                 not self.index.is_unique,
                                  ') or not monotonic increasing (',
                                  not self.index.is_monotonic_increasing,
                                  ')')
+            else:
+                # warn about changes coming in the future
+                warnings.warn(' '.join(('Strict times will eventually be',
+                                        'enforced upon all instruments.',
+                                        '(strict_time_flag)')),
+                              DeprecationWarning,
+                              stacklevel=2)
 
         # apply default instrument routine, if data present
         if not self.empty:
@@ -1638,12 +1675,12 @@ class Instrument(object):
             inst = pysat.Instrument(platform=platform,
                                     name=name,
                                     tag=tag)
-            start = pysat.datetime(2009,1,1)
-            stop = pysat.datetime(2009,1,31)
+            start = dt.datetime(2009,1,1)
+            stop = dt.datetime(2009,1,31)
             inst.bounds = (start,stop)
 
             start2 = pysat.datetetime(2010,1,1)
-            stop2 = pysat.datetime(2010,2,14)
+            stop2 = dt.datetime(2010,2,14)
             inst.bounds = ([start, start2], [stop, stop2])
 
         """
@@ -1688,11 +1725,12 @@ class Instrument(object):
             if isinstance(start[0], str):
                 self._iter_type = 'file'
                 self._iter_list = self.files.get_file_array(start, end)
-            elif isinstance(start[0], pds.datetime):
+            elif isinstance(start[0], dt.datetime):
                 self._iter_type = 'date'
                 start = self._filter_datetime_input(start)
                 end = self._filter_datetime_input(end)
-                self._iter_list = utils.time.create_date_range(start, end, freq=step)
+                self._iter_list = utils.time.create_date_range(start, end,
+                                                               freq=step)
             else:
                 raise ValueError('Input is not a known type, string or ' +
                                  'datetime')
@@ -1705,8 +1743,8 @@ class Instrument(object):
                              'bound is iterable')
 
         elif isinstance(start, str) or isinstance(end, str):
-            if isinstance(start, pds.datetime) or \
-                    isinstance(end, pds.datetime):
+            if isinstance(start, dt.datetime) or \
+                    isinstance(end, dt.datetime):
                 raise ValueError('Not allowed to mix file and date bounds')
             if start is None:
                 start = self.files[0]
@@ -1718,7 +1756,7 @@ class Instrument(object):
                                                         self._iter_stop)
             self._iter_type = 'file'
 
-        elif isinstance(start, pds.datetime) or isinstance(end, pds.datetime):
+        elif isinstance(start, dt.datetime) or isinstance(end, dt.datetime):
             if start is None:
                 start = self.files.start_date
             if end is None:
@@ -1753,8 +1791,8 @@ class Instrument(object):
             inst = pysat.Instrument(platform=platform,
                                     name=name,
                                     tag=tag)
-            start = pysat.datetime(2009,1,1)
-            stop = pysat.datetime(2009,1,31)
+            start = dt.datetime(2009,1,1)
+            stop = dt.datetime(2009,1,31)
             inst.bounds = (start,stop)
             for inst in inst:
                 print('Another day loaded', inst.date)
@@ -2141,7 +2179,7 @@ class Instrument(object):
             export_desc_labels = self._meta_translation_table['desc_label']
             export_notes_labels = self._meta_translation_table['notes_label']
             logger.info('Using Metadata Translation Table: ' +
-                  str(self._meta_translation_table))
+                        str(self._meta_translation_table))
         # Apply instrument specific post-processing to the export_meta
         if hasattr(self._export_meta_post_processing, '__call__'):
             export_meta = self._export_meta_post_processing(export_meta)
@@ -2543,13 +2581,13 @@ class Instrument(object):
                     _ = adict.pop(item)
 
             adict['Date_End'] = \
-                pysat.datetime.strftime(self.index[-1],
+                dt.datetime.strftime(self.index[-1],
                                         '%a, %d %b %Y,  ' +
                                         '%Y-%m-%dT%H:%M:%S.%f')
             adict['Date_End'] = adict['Date_End'][:-3] + ' UTC'
 
             adict['Date_Start'] = \
-                pysat.datetime.strftime(self.index[0],
+                dt.datetime.strftime(self.index[0],
                                         '%a, %d %b %Y,  ' +
                                         '%Y-%m-%dT%H:%M:%S.%f')
             adict['Date_Start'] = adict['Date_Start'][:-3] + ' UTC'
@@ -2559,7 +2597,7 @@ class Instrument(object):
                                         '%Y-%m-%dT%H:%M:%S.%f')
             adict['File_Date'] = adict['File_Date'][:-3] + ' UTC'
             adict['Generation_Date'] = \
-                pysat.datetime.utcnow().strftime('%Y%m%d')
+                dt.datetime.utcnow().strftime('%Y%m%d')
             adict['Logical_File_ID'] = os.path.split(fname)[-1].split('.')[:-1]
 
             # check for binary types, convert when found

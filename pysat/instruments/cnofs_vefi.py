@@ -54,23 +54,24 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import numpy as np
 
-import pysat
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 platform = 'cnofs'
 name = 'vefi'
 tags = {'dc_b': 'DC Magnetometer data - 1 second'}
 sat_ids = {'': ['dc_b']}
-_test_dates = {'': {'dc_b': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'dc_b': dt.datetime(2009, 1, 1)}}
 
 # support list files routine
 # use the default CDAWeb method
 fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
 supported_tags = {'': {'dc_b': fname}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 # support load routine
 # use the default CDAWeb method
