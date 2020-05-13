@@ -4,42 +4,63 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import os
-
+import datetime as dt
+import functools
 import numpy as np
+
 import pandas as pds
 
 import pysat
-from pysat.instruments.methods import testing as test
+from pysat.instruments.methods import testing as mm_test
 
 platform = 'pysat'
-name = 'testing'
-
-# create very limited metadata
-meta = pysat.Meta()
-meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
-meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
-meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-series_profile_meta = pysat.Meta()
-series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
-meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
-                           'long_name': 'series'}
-profile_meta = pysat.Meta()
-profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_str'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_ustr'] = {'units': '', 'long_name': 'profiles'}
-meta['profiles'] = {'meta': profile_meta, 'units': '', 'long_name': 'profiles'}
-alt_profile_meta = pysat.Meta()
-alt_profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-alt_profile_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
-meta['alt_profiles'] = {'meta': alt_profile_meta, 'units': '',
-                        'long_name': 'profiles'}
+name = 'testing2d'
+tags = {'': 'Regular testing data set'}
+sat_ids = {'': ['']}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
 def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+
+
+    """
+
     self.new_thing = True
+
+
+def default(inst):
+    """Default customization function.
+
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue).
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    Returns
+    --------
+    Void : (NoneType)
+        Object modified in place.
+
+
+    """
+
+    pass
 
 
 def load(fnames, tag=None, sat_id=None, malformed_index=False):
@@ -52,7 +73,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     tag : (str or NoneType)
         Instrument tag (accepts '')
     sat_id : (str or NoneType)
-        Instrument satellite ID (accepts '')
+        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
+        specifies the number of data points to include in the test instrument)
     malformed_index : bool (False)
         If True, the time index will be non-unique and non-monotonic.
 
@@ -66,56 +88,45 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     """
 
     # create an artifical satellite data set
-    parts = os.path.split(fnames[0])[-1].split('-')
-    yr = int(parts[0])
-    month = int(parts[1])
-    day = int(parts[2][0:2])
-    date = pysat.datetime(yr, month, day)
-    # scalar divisor below used to reduce the number of time samples
-    # covered by the simulation per day. The higher the number the lower
-    # the number of samples (86400/scalar)
-    scalar = 100
-    num = 86400/scalar
-    # basic time signal in UTS
-    uts = np.arange(num) * scalar
-    num_array = np.arange(num) * scalar
+    iperiod = mm_test.define_period()
+    drange = mm_test.define_range()
+    # Using 100s frequency for compatibility with seasonal analysis unit tests
+    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
     # seed DataFrame with UT array
-    data = pysat.DataFrame(uts, columns=['uts'])
+    data = pds.DataFrame(uts, columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     # figure out how far in time from the root start
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
-    time_delta = date - pysat.datetime(2009, 1, 1)
+    time_delta = date - dt.datetime(2009, 1, 1)
     # mlt runs 0-24 each orbit.
-    data['mlt'] = test.generate_fake_data(time_delta.total_seconds(),
-                                          np.arange(num)*scalar,
-                                          period=5820, data_range=[0.0, 24.0])
+    data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
+                                             period=iperiod['lt'],
+                                             data_range=drange['lt'])
     # do slt, 20 second offset from mlt
-    data['slt'] = test.generate_fake_data(time_delta.total_seconds()+20,
-                                          np.arange(num)*scalar,
-                                          period=5820, data_range=[0.0, 24.0])
+    data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds()+20,
+                                             uts, period=iperiod['lt'],
+                                             data_range=drange['lt'])
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
     # to go around full longitude
-    data['longitude'] = test.generate_fake_data(time_delta.total_seconds(),
-                                                num_array, period=6240,
-                                                data_range=[0.0, 360.0])
+    data['longitude'] = mm_test.generate_fake_data(time_delta.total_seconds(),
+                                                   uts, period=iperiod['lon'],
+                                                   data_range=drange['lon'])
     # create latitude signal for testing polar orbits
-    angle = test.generate_fake_data(time_delta.total_seconds(),
-                                    num_array, period=5820,
-                                    data_range=[0.0, 2.0*np.pi])
+    angle = mm_test.generate_fake_data(time_delta.total_seconds(),
+                                       uts, period=iperiod['angle'],
+                                       data_range=drange['angle'])
     data['latitude'] = 90.0 * np.cos(angle)
 
-    # create real UTC time signal
-    index = pds.date_range(date,
-                           date + pds.DateOffset(hours=23,
-                                                 minutes=59,
-                                                 seconds=59),
-                           freq=str(scalar)+'S')
+    # create constant altitude at 400 km
+    alt0 = 400.0
+    data['altitude'] = alt0 * np.ones(data['latitude'].shape)
+
     if malformed_index:
-        index = index[0:num].tolist()
+        index = index.tolist()
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
@@ -168,16 +179,29 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     return data, meta.copy()
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a fake list of files spanning a year"""
-
-    index = pds.date_range(pysat.datetime(2008, 1, 1),
-                           pysat.datetime(2010, 12, 31))
-    names = [data_path + date.strftime('%Y-%m-%d') + '.nofile'
-             for date in index]
-    return pysat.Series(names, index=index)
+list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
+download = functools.partial(mm_test.download)
 
 
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    pass
+# create very limited metadata
+meta = pysat.Meta()
+meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
+meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
+meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
+meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+series_profile_meta = pysat.Meta()
+series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
+meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
+                           'long_name': 'series'}
+profile_meta = pysat.Meta()
+profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
+profile_meta['dummy_str'] = {'units': '', 'long_name': 'profiles'}
+profile_meta['dummy_ustr'] = {'units': '', 'long_name': 'profiles'}
+meta['profiles'] = {'meta': profile_meta, 'units': '', 'long_name': 'profiles'}
+alt_profile_meta = pysat.Meta()
+alt_profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
+alt_profile_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
+meta['alt_profiles'] = {'meta': alt_profile_meta, 'units': '',
+                        'long_name': 'profiles'}

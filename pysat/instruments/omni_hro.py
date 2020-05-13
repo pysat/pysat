@@ -28,7 +28,6 @@ Any opinions, findings, and conclusions or recommendations expressed in this
 material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
 
-
 Warnings
 --------
 - Currently no cleaning routine. Though the CDAWEB description indicates that
@@ -36,25 +35,27 @@ Warnings
 - Module not written by OMNI team.
 
 Custom Functions
------------------
+----------------
 time_shift_to_magnetic_poles : Shift time from bowshock to intersection with
                                one of the magnetic poles
 calculate_clock_angle : Calculate the clock angle and IMF mag in the YZ plane
 calculate_imf_steadiness : Calculate the IMF steadiness using clock angle and
                            magnitude in the YZ plane
 calculate_dayside_reconnection : Calculate the dayside reconnection rate
+
 """
 
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
 import scipy.stats as stats
 import warnings
 
-import pysat
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 import logging
@@ -65,8 +66,8 @@ name = 'hro'
 tags = {'1min': '1-minute time averaged data',
         '5min': '5-minute time averaged data'}
 sat_ids = {'': ['5min']}
-_test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
-                    '5min': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'1min': dt.datetime(2009, 1, 1),
+                    '5min': dt.datetime(2009, 1, 1)}}
 
 # support list files routine
 # use the default CDAWeb method
@@ -74,7 +75,7 @@ fname1 = 'omni_hro_1min_{year:4d}{month:02d}{day:02d}_v01.cdf'
 fname5 = 'omni_hro_5min_{year:4d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'1min': fname1,
                        '5min': fname5}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags,
                                fake_daily_files_from_monthly=True)
 

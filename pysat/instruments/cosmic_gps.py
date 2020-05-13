@@ -49,13 +49,15 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
-import numpy as np
+import datetime as dt
 import os
 import sys
 from portalocker import TemporaryFileLock
 from pysat.utils import NetworkLock as Lock
 
+import numpy as np
 import netCDF4
+import pandas as pds
 import pysat
 
 import logging
@@ -69,11 +71,13 @@ tags = {'ionprf': '',
         'atmprf': '',
         'scnlv1': ''}
 sat_ids = {'': ['ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1']}
-_test_dates = {'': {'ionprf': pysat.datetime(2008, 1, 1),
-                    'sonprf': pysat.datetime(2008, 1, 1),
-                    'wetprf': pysat.datetime(2008, 1, 1),
-                    'atmprf': pysat.datetime(2008, 1, 1),
-                    'scnlv1': pysat.datetime(2008, 1, 1)}}
+_test_dates = {'': {'ionprf': dt.datetime(2008, 1, 1),
+                    'sonprf': dt.datetime(2008, 1, 1),
+                    'wetprf': dt.datetime(2008, 1, 1),
+                    'atmprf': dt.datetime(2008, 1, 1),
+                    'scnlv1': dt.datetime(2008, 1, 1)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
+_password_req = {'': {kk: True for kk in tags.keys()}}
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
@@ -154,12 +158,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             raise ValueError('Generated non-unique datetimes for COSMIC within list_files.')
         # store sorted file names with unique times in index
         file_list = np.array(stored['files'])[idx]
-        file_list = pysat.Series(file_list, index=index)
+        file_list = pds.Series(file_list, index=index)
         return file_list
 
     else:
         logger.info('Found no files, check your path or download them.')
-        return pysat.Series(None)
+        return pds.Series(None, dtype='object')
 
 
 def load(fnames, tag=None, sat_id=None, altitude_bin=None):
@@ -197,8 +201,8 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
     if num != 0:
         # call separate load_files routine, segemented for possible
         # multiprocessor load, not included and only benefits about 20%
-        output = pysat.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id,
-                                            altitude_bin=altitude_bin))
+        output = pds.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id,
+                                          altitude_bin=altitude_bin))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
         # make times unique by adding a unique amount of time less than a second
         if tag != 'scnlv1':
@@ -252,7 +256,7 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
         return output, meta
     else:
         # no data
-        return pysat.DataFrame(None), pysat.Meta()
+        return pds.DataFrame(None), pysat.Meta()
 
 
 def _process_lengths(lengths):
@@ -368,7 +372,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
         for key in p_keys:
             p_dict[key] = main_dict.pop(key)
             _ = main_dict_len.pop(key)
-        psub_frame = pysat.DataFrame(p_dict)
+        psub_frame = pds.DataFrame(p_dict)
 
         # change in variables in this file type
         # depending upon the processing applied at UCAR
@@ -385,7 +389,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
         for key in q_keys:
             q_dict[key] = main_dict.pop(key)
             _ = main_dict_len.pop(key)
-        qsub_frame = pysat.DataFrame(q_dict)
+        qsub_frame = pds.DataFrame(q_dict)
 
         max_length = np.max([max_p_length, max_q_length])
         length_arr = np.arange(max_length)
@@ -398,7 +402,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
     # create a single data frame with all bits, then
     # break into smaller frames using views
-    main_frame = pysat.DataFrame(main_dict)
+    main_frame = pds.DataFrame(main_dict)
     # get indices needed to parse data
     lengths = main_dict_len[list(main_dict.keys())[0]]
     # get largest length and create numpy array with it

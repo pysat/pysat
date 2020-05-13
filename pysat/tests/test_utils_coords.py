@@ -4,8 +4,8 @@ tests the pysat coords area
 import numpy as np
 
 import pandas as pds
+import pytest
 
-from nose.tools import raises
 import pysat
 from pysat.utils import coords, time
 
@@ -71,11 +71,11 @@ class TestBasics():
         assert np.all(self.testInst.data['longitude'] < 180.0)
         assert np.all(self.testInst.data['longitude'] >= -180.0)
 
-    @raises(ValueError)
     def test_bad_lon_name_update_longitude(self):
         """Test update_longitude with a bad longitude name"""
 
-        coords.update_longitude(self.testInst, lon_name="not longitude")
+        with pytest.raises(ValueError):
+            coords.update_longitude(self.testInst, lon_name="not longitude")
 
     #########################
     # calc_solar_local_time
@@ -102,12 +102,13 @@ class TestBasics():
         assert (abs(self.testInst['slt']
                     - self.testInst['slt2'])).max() < 1.0e-6
 
-    @raises(ValueError)
     def test_bad_lon_name_calc_solar_local_time(self):
         """Test calc_solar_local_time with a bad longitude name"""
 
-        coords.calc_solar_local_time(self.testInst, lon_name="not longitude",
-                                     slt_name='slt')
+        with pytest.raises(ValueError):
+            coords.calc_solar_local_time(self.testInst,
+                                         lon_name="not longitude",
+                                         slt_name='slt')
 
     ###################################
     # Geodetic / Geocentric conversions

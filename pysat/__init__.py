@@ -124,7 +124,8 @@ else:
             os.fsync(f.fileno())
 
 
-from pandas import Panel, DataFrame, Series, datetime
+from datetime import datetime  # TODO: remove before 3.0 release!
+from pandas import DataFrame  # TODO: remove before 3.0 release!
 from . import utils
 from ._constellation import Constellation
 from ._instrument import Instrument
