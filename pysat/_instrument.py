@@ -1406,20 +1406,20 @@ class Instrument(object):
         # ensure data is unique and monotonic
         # check occurs after all the data padding loads, or individual load
         # thus it can potentially check issues with padding or with raw data
-        if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
+        if not (self.index.is_monotonic_increasing and self.index.is_unique):
+            message = ''
+            if not self.index.is_unique:
+                message = ' '.join((message, 'Loaded data is not unique.'))
+            if not self.index.is_monotonic_increasing:
+                message = ' '.join((message, 'Loaded data is not monotonic',
+                                   'increasing. '))
             if self.strict_time_flag:
-                raise ValueError('Loaded data is not unique (',
-                                 not self.index.is_unique,
-                                 ') or not monotonic increasing (',
-                                 not self.index.is_monotonic_increasing,
-                                 ')')
+                raise ValueError(' '.join((message, 'To continue to use data,'
+                                           'set inst.strict_time_flag=False',
+                                           'before loading data')))
             else:
-                # warn about changes coming in the future
-                warnings.warn(' '.join(('Strict times will eventually be',
-                                        'enforced upon all instruments.',
-                                        '(strict_time_flag)')),
-                              DeprecationWarning,
-                              stacklevel=2)
+                # warn
+                warnings.warn(message, stacklevel=2)
 
         # apply default instrument routine, if data present
         if not self.empty:
