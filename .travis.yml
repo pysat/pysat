@@ -42,6 +42,8 @@ install:
   - pip install madrigalWeb
   - pip install PyForecastTools
   - pip install pysatCDF >/dev/null
+  # Get latest coveralls from pip, not conda
+  - pip install coveralls
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
