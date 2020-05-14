@@ -31,6 +31,7 @@ install:
   - conda activate test-environment
   # Dependencies not available through conda, install through pip
   - pip install pysatCDF >/dev/null
+  - pip install python-coveralls
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
@@ -39,4 +40,6 @@ install:
 # command to run tests
 script:
  - pytest -vs --cov=pysat/
+
+after_success:
  - coveralls
