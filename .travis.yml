@@ -39,6 +39,4 @@ install:
 # command to run tests
 script:
  - pytest -vs --cov=pysat/
-
-after_success:
  - coveralls
