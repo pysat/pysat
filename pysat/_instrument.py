@@ -65,7 +65,7 @@ class Instrument(object):
         Prevents a race condition when running multiple pysat processes.
     strict_time_flag : boolean, option (True)
         If true, pysat will check data to ensure times are unique and
-        monotonic.
+        monotonically increasing.
     multi_file_day : boolean, optional
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
@@ -1411,14 +1411,13 @@ class Instrument(object):
             if not self.index.is_unique:
                 message = ' '.join((message, 'Loaded data is not unique.'))
             if not self.index.is_monotonic_increasing:
-                message = ' '.join((message, 'Loaded data is not monotonic',
-                                   'increasing. '))
+                message = ' '.join((message, 'Loaded data is not',
+                                   'monotonically increasing. '))
             if self.strict_time_flag:
                 raise ValueError(' '.join((message, 'To continue to use data,'
                                            'set inst.strict_time_flag=False',
                                            'before loading data')))
             else:
-                # warn
                 warnings.warn(message, stacklevel=2)
 
         # apply default instrument routine, if data present
