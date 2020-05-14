@@ -101,13 +101,13 @@ else:
 
 from datetime import datetime  # TODO: remove before 3.0 release!
 from pandas import DataFrame  # TODO: remove before 3.0 release!
-from . import utils
-from ._constellation import Constellation
-from ._instrument import Instrument
-from ._meta import Meta
-from ._files import Files
-from ._custom import Custom
-from ._orbits import Orbits
-from . import instruments
+from pysat import utils
+from pysat._constellation import Constellation
+from pysat._instrument import Instrument
+from pysat._meta import Meta
+from pysat._files import Files
+from pysat._custom import Custom
+from pysat._orbits import Orbits
+from pysat import instruments
 
 __all__ = ['instruments', 'utils']
