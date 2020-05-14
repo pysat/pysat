@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-05-13
+## [3.0.0] - 2020-05-14
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -23,6 +23,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed coords.scale_units
   - Removed time.season_date_range
   - DeprecationWarning for strict_time_flag only triggered if sloppy data is found
+  - Remove convenience methods imported from pandas
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
@@ -32,6 +33,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
+  - Remove wildcard imports, relative imports
 
 ## [2.2.0] - 2020-2-29
 - New Features
