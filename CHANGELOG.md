@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-04-24
+## [3.0.0] - 2020-05-13
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - New flags added to instruments to streamline unit testing: `_test_download`, `_test_download_travis`, `_password_req`
   - Madrigal instruments migrated to pysatMadrigal
   - methods.nasa_cdaweb.list_files moved to methods.general
+  - `strict_time_flag` now defaults to True
 - Deprecations
   - Removed ssnl
   - Removed utils.stats

@@ -203,7 +203,17 @@ class InstTestClass():
                 target = 'Fake Data to be cleared'
                 inst.data = [target]
                 start = inst._test_dates[inst.sat_id][inst.tag]
-                inst.load(date=start)
+                try:
+                    inst.load(date=start)
+                except ValueError as verr:
+                    # Check if instrument is failing due to strict time flag
+                    if str(verr).find('Loaded data') > 0:
+                        inst.strict_time_flag = False
+                        inst.load(date=start)
+                    else:
+                        # If error message does not match, raise error anyway
+                        raise(verr)
+
                 # Make sure fake data is cleared
                 assert target not in inst.data
                 # If cleaning not used, something should be in the file
