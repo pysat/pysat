@@ -99,8 +99,6 @@ else:
         with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
             f.write('')
 
-from datetime import datetime  # TODO: remove before 3.0 release!
-from pandas import DataFrame  # TODO: remove before 3.0 release!
 from pysat import utils
 from pysat._constellation import Constellation
 from pysat._instrument import Instrument
