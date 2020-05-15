@@ -380,21 +380,9 @@ def list_remote_files(tag, sat_id,
                                        subdir.format(day=day)))
                 n_layers -= 1
 
-    # Start with file extention as prime target
-    targets = ['.' + format_str.split('.')[-1]]
-
-    # Extract file preamble as target - those characters left of variables
-    # or wildcards
-    fmt_idx = [format_str.find('{')]
-    fmt_idx.append(format_str.find('?'))
-    fmt_idx.append(format_str.find('*'))
-
-    # Not all characters may exist in a filename.  Remove those that don't.
-    fmt_idx = [elem for elem in fmt_idx if elem != -1]
-
-    # If preamble exists, add to targets
-    if fmt_idx:
-        targets.append(format_str[0:min(fmt_idx)])
+    # Generate list of targets to identify files
+    search_dict = pysat._files.construct_searchstring_from_format(format_str)
+    targets = [x for x in search_dict['string_blocks'] if len(x) > 0]
 
     remote_dirs = []
     for level in range(n_layers + 1):
