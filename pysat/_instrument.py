@@ -2256,6 +2256,15 @@ class Instrument(object):
                         new_dict['Var_Type'] = 'data'
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
+                        # remove any metadata with a value of nan not present in _export_nan
+                        for key, value in new_dict.items():
+                            try:
+                                if np.isnan(value):
+                                    if key not in self.meta._export_nan:
+                                        new_dict.pop(key)
+                            except TypeError:
+                                #if typerror thrown, it's not nan
+                                pass
                         cdfkey.setncatts(new_dict)
                     except KeyError as err:
                         logger.info(' '.join((str(err), '\n',
