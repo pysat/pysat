@@ -285,12 +285,13 @@ class TestBasics():
         """Test successful clearance of custom functions
         """
         def custom1(inst, imult, out_units='hours'):
-            out = (inst.data.mlt * imult).values
-            return {'data': out, 'long_name': 'doubleMLTlong',
+            return {'data': (inst.data.mlt * imult).values,
+                    'long_name': 'doubleMLTlong',
                     'units': out_units, 'name': 'doubleMLT'}
 
         self.testInst.custom.attach(custom1, 'add', args=[2],
                                     kwargs={"out_units": "hours1"})
+
         # Test to see that the custom function was attached
         assert len(self.testInst.custom._functions) == 1
         assert len(self.testInst.custom._kind) == 1
@@ -337,26 +338,21 @@ class TestBasics():
     def test_add_multiple_functions_one_not_at_end(self):
         """Test for error if custom functions are run in the wrong order
         """
-        def custom1(inst):
-            out = (inst.data.mlt * 2).values
-            return {'data': out, 'long_name': 'doubleMLTlong',
-                    'units': 'hours1', 'name': 'doubleMLT'}
+        def custom1(inst, imult):
+            out = (inst.data.mlt * imult).values
+            return {'data': out, 'long_name': 'MLT x {:d}'.format(int(imult)),
+                    'units': 'hours', 'name': 'MLTx{:d}'.format(int(imult))}
 
-        def custom2(inst):
-            out = (inst.data.mlt * 3).values
-            return {'data': out, 'long_name': 'tripleMLTlong',
-                    'units': 'hours1', 'name': 'tripleMLT'}
+        def custom2(inst, imult):
+            out = (inst.data.MLTx2 * imult).values
+            return {'data': out, 'long_name': 'MLT x {:d}'.format(int(imult)),
+                    'units': 'hours', 'name': 'MLTx{:d}'.format(int(imult))}
 
-        def custom3(inst):
-            out = (inst.data.tripleMLT * 2).values
-            return {'data': out, 'long_name': 'quadMLTlong',
-                    'units': 'hours1', 'name': 'quadMLT'}
-
-        self.testInst.custom.attach(custom1, 'add')
-        self.testInst.custom.attach(custom2, 'add')
+        self.testInst.custom.attach(custom1, 'add', args=[4])
+        self.testInst.custom.attach(custom1, 'add', args=[2])
         # if this runs correctly, an error will be thrown
         # since the data required by custom3 won't be present yet
-        self.testInst.custom.attach(custom3, 'add', at_pos=1)
+        self.testInst.custom.attach(custom2, 'add', at_pos=1, args=[2])
         with pytest.raises(AttributeError):
             self.testInst.load(2009, 1)
 
