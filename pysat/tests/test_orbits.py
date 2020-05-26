@@ -628,7 +628,7 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
                                          seconds=int(seconds)) -
                           pds.DateOffset(seconds=20)])
 
-        self.testInst.custom.attach(filter_data2, 'modify', times=times)
+        self.testInst.custom.attach(filter_data2, kwargs={'times': times})
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -655,7 +655,7 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
                                          seconds=int(seconds)) -
                           pds.DateOffset(seconds=20)])
 
-        self.testInst.custom.attach(filter_data2, 'modify', times=times)
+        self.testInst.custom.attach(filter_data2, kwargs={'times': times})
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
