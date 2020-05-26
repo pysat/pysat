@@ -25,11 +25,9 @@ class TestLogging():
     def test_custom_pos_warning(self):
         """Test for logging warning if inappropriate position specified
         """
-        def custom1(inst):
-            inst.data['doubleMLT'] = 2.0 * inst.data.mlt
-            return 5.0 * inst.data['mlt']
 
-        self.testInst.custom.attach(custom1, 'add', at_pos=3)
+        self.testInst.custom.attach(lambda inst: inst.data['mlt'] * 2.0,
+                                    'add', at_pos=3)
         self.out = self.log_capture.getvalue()
 
         assert self.out.find(
@@ -315,12 +313,11 @@ class TestBasics():
     def test_clear_functions(self):
         """Test successful clearance of custom functions
         """
-        def custom1(inst, imult, out_units='hours'):
-            return {'data': (inst.data.mlt * imult).values,
-                    'long_name': 'doubleMLTlong',
-                    'units': out_units, 'name': 'doubleMLT'}
-
-        self.testInst.custom.attach(custom1, 'add', args=[2],
+        self.testInst.custom.attach(lambda inst, imult, out_units='h':
+                                    {'data': (inst.data.mlt * imult).values,
+                                     'long_name': 'doubleMLTlong',
+                                     'units': out_units, 'name': 'doubleMLT'},
+                                    'add', args=[2],
                                     kwargs={"out_units": "hours1"})
 
         # Test to see that the custom function was attached
@@ -374,16 +371,18 @@ class TestBasics():
             return {'data': out, 'long_name': 'MLT x {:d}'.format(int(imult)),
                     'units': 'hours', 'name': 'MLTx{:d}'.format(int(imult))}
 
-        def custom2(inst, imult):
-            out = (inst.data.MLTx2 * imult).values
-            return {'data': out, 'long_name': 'MLT x {:d}'.format(int(imult)),
-                    'units': 'hours', 'name': 'MLTx{:d}'.format(int(imult))}
-
         self.testInst.custom.attach(custom1, 'add', args=[4])
         self.testInst.custom.attach(custom1, 'add', args=[2])
-        # if this runs correctly, an error will be thrown
-        # since the data required by custom3 won't be present yet
-        self.testInst.custom.attach(custom2, 'add', at_pos=1, args=[2])
+        self.testInst.custom.attach(lambda inst, imult:
+                                    {'data': (inst.data.MLTx2 * imult).values,
+                                     'long_name': 'MLT x {:d}'.format(imult),
+                                     'units': 'h',
+                                     'name': 'MLTx{:d}'.format(imult)},
+                                    'add', args=[2], at_pos=1)
+
+        # An AttributeError should be thrown, since the data required by the
+        # last attached function (inst.data.MLTx2) won't be present yet
+        
         with pytest.raises(AttributeError):
             self.testInst.load(2009, 1)
 
