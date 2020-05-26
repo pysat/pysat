@@ -163,14 +163,14 @@ class Custom(object):
                                 sat[newData['data'].columns] = newData
                             # if a series is returned, add it as a column
                             elif isinstance(newData['data'], pds.Series):
-                                # look for name attached to series first
-                                if newData['data'].name is not None:
-                                    sat[newData['data'].name] = newData
-                                # look if name is provided as part of dict
-                                # returned from function
-                                elif 'name' in newData.keys():
+                                # Look if name is provided as part of dict
+                                # returned from function first
+                                if 'name' in newData.keys():
                                     name = newData.pop('name')
                                     sat[name] = newData
+                                # look for name attached to Series second
+                                elif newData['data'].name is not None:
+                                    sat[newData['data'].name] = newData
                                 # couldn't find name information
                                 else:
                                     raise ValueError(
