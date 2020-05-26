@@ -1,8 +1,39 @@
+import logging
+from io import StringIO
 import numpy as np
 import pandas as pds
 import pytest
 
 import pysat
+
+class TestLogging():
+    def setup(self):
+        """Runs before every method to create a clean testing setup.
+        """
+        self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
+                                         clean_level='clean')
+        self.out = ''
+        self.log_capture = StringIO()
+        pysat.logger.addHandler(logging.StreamHandler(self.log_capture))
+        pysat.logger.setLevel(logging.WARNING)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing.
+        """
+        del self.testInst, self.out, self.log_capture
+
+    def test_custom_pos_warning(self):
+        """Test for logging warning if inappropriate position specified
+        """
+        def custom1(inst):
+            inst.data['doubleMLT'] = 2.0 * inst.data.mlt
+            return 5.0 * inst.data['mlt']
+
+        self.testInst.custom.attach(custom1, 'add', at_pos=3)
+        self.out = self.log_capture.getvalue()
+
+        assert self.out.find(
+            "unknown position specified, including function at end") >= 0
 
 
 class TestBasics():
