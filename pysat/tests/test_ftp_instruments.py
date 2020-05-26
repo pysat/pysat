@@ -3,6 +3,7 @@ tests the pysat meta object and code for instruments with ftp downloads.
 
 Intended to be run locally, excluded from Travis CI
 """
+import datetime as dt
 from importlib import import_module
 import os
 import tempfile
@@ -53,7 +54,7 @@ def init_func_external(self):
                 info = module._test_dates
             except AttributeError:
                 info = {}
-                info[''] = {'': pysat.datetime(2009, 1, 1)}
+                info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
             for sat_id in info.keys():
                 for tag in info[sat_id].keys():

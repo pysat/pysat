@@ -1,10 +1,9 @@
 """
 tests the pysat utils.time area
 """
-import numpy as np
-
+import datetime as dt
 from nose.tools import raises
-import pandas as pds
+import numpy as np
 
 from pysat.utils import time as pytime
 
@@ -15,7 +14,7 @@ from pysat.utils import time as pytime
 def test_getyrdoy_1():
     """Test the date to year, day of year code functionality"""
 
-    date = pds.datetime(2009, 1, 1)
+    date = dt.datetime(2009, 1, 1)
     yr, doy = pytime.getyrdoy(date)
 
     assert ((yr == 2009) & (doy == 1))
@@ -24,7 +23,7 @@ def test_getyrdoy_1():
 def test_getyrdoy_leap_year():
     """Test the date to year, day of year code functionality (leap_year)"""
 
-    date = pds.datetime(2008, 12, 31)
+    date = dt.datetime(2008, 12, 31)
     yr, doy = pytime.getyrdoy(date)
 
     assert ((yr == 2008) & (doy == 366))
@@ -38,7 +37,7 @@ def test_parse_date_2_digit_year():
 
     date = pytime.parse_date('14', '10', '31')
 
-    assert date == pds.datetime(2014, 10, 31)
+    assert date == dt.datetime(2014, 10, 31)
 
 
 def test_parse_date_2_digit_year_last_century():
@@ -47,7 +46,7 @@ def test_parse_date_2_digit_year_last_century():
 
     date = pytime.parse_date('94', '10', '31', century=1900)
 
-    assert date == pds.datetime(1994, 10, 31)
+    assert date == dt.datetime(1994, 10, 31)
 
 
 def test_parse_date_4_digit_year():
@@ -55,7 +54,7 @@ def test_parse_date_4_digit_year():
 
     date = pytime.parse_date('1994', '10', '31')
 
-    assert date == pds.datetime(1994, 10, 31)
+    assert date == dt.datetime(1994, 10, 31)
 
 
 @raises(ValueError)
@@ -110,8 +109,8 @@ def test_calc_freq_type_fail():
 def test_create_date_range():
     """Test ability to generate season list"""
 
-    start = pds.datetime(2012, 2, 28)
-    stop = pds.datetime(2012, 3, 1)
+    start = dt.datetime(2012, 2, 28)
+    stop = dt.datetime(2012, 3, 1)
     season = pytime.create_date_range(start, stop, freq='D')
 
     assert season[0] == start
@@ -122,8 +121,8 @@ def test_create_date_range():
 def test_create_date_range_w_gaps():
     """Test ability to generate season list"""
 
-    start = [pds.datetime(2012, 2, 28), pds.datetime(2013, 2, 28)]
-    stop = [pds.datetime(2012, 3, 1), pds.datetime(2013, 3, 1)]
+    start = [dt.datetime(2012, 2, 28), dt.datetime(2013, 2, 28)]
+    stop = [dt.datetime(2012, 3, 1), dt.datetime(2013, 3, 1)]
     season = pytime.create_date_range(start, stop, freq='D')
 
     assert season[0] == start[0]
@@ -143,8 +142,8 @@ def test_create_datetime_index():
     dates = pytime.create_datetime_index(year=2012*arr, month=2*arr,
                                          day=28*arr, uts=np.arange(0, 4))
 
-    assert dates[0] == pds.datetime(2012, 2, 28)
-    assert dates[-1] == pds.datetime(2012, 2, 28, 0, 0, 3)
+    assert dates[0] == dt.datetime(2012, 2, 28)
+    assert dates[-1] == dt.datetime(2012, 2, 28, 0, 0, 3)
     assert len(dates) == 4
 
 
@@ -162,6 +161,6 @@ def test_create_datetime_index_wo_month_day_uts():
 
     dates = pytime.create_datetime_index(year=2012*arr)
 
-    assert dates[0] == pds.datetime(2012, 1, 1)
-    assert dates[-1] == pds.datetime(2012, 1, 1)
+    assert dates[0] == dt.datetime(2012, 1, 1)
+    assert dates[-1] == dt.datetime(2012, 1, 1)
     assert len(dates) == 4

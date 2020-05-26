@@ -39,13 +39,12 @@ Authors
 from __future__ import print_function
 from __future__ import absolute_import
 
-# pandas support
+import datetime as dt
+import logging
 import pandas as pds
-# xarray support
 import xarray as xr
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 # the platform and name strings associated with this instrument
@@ -70,11 +69,11 @@ sat_ids = {'': ['']}
 # Define good days to download data for when pysat undergoes testing.
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
-# _test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
-#                     'L1':pysat.datetime(2019,1,1)},
-#                'b':{'L1':pysat.datetime(2019,1,1),
-#                     'L2':pysat.datetime(2019,1,1),}}
-_test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
+# _test_dates = {'a':{'L0':dt.datetime(2019,1,1),
+#                     'L1':dt.datetime(2019,1,1)},
+#                'b':{'L1':dt.datetime(2019,1,1),
+#                     'L2':dt.datetime(2019,1,1),}}
+_test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
 
 # Set to False to specify using xarray (not using pandas)
 # Set to True if data will be returned via a pandas DataFrame

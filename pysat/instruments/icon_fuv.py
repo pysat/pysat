@@ -21,7 +21,7 @@ Example
 -------
     import pysat
     fuv = pysat.Instrument('icon', 'fuv', clean_level='clean')
-    fuv.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
+    fuv.download(dt.datetime(2019, 1, 30), dt.datetime(2019, 12, 31))
     fuv.load(2017,363)
 
 Authors
@@ -36,6 +36,7 @@ Conversion to FUV, Oct 8th, 2028, University of Texas at Dallas
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
@@ -51,7 +52,8 @@ platform = 'icon'
 name = 'fuv'
 tags = {'level_2': 'Level 2 public geophysical data'}
 sat_ids = {'': ['level_2']}
-_test_dates = {'': {'level_2': pysat.datetime(2017, 5, 27)}}
+_test_dates = {'': {'level_2': dt.datetime(2017, 5, 27)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 
 def init(self):

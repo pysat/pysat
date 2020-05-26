@@ -4,6 +4,7 @@ Produces fake instrument data for testing.
 """
 from __future__ import print_function
 from __future__ import absolute_import
+import datetime as dt
 import functools
 import numpy as np
 
@@ -19,7 +20,7 @@ name = 'testing_xarray'
 tags = {'': 'Regular testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
 sat_ids = {'': ['']}
-_test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
 
 
@@ -107,11 +108,11 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     uts, index, date = mm_test.generate_times(fnames, sat_id=sat_id, freq='1S')
 
     if sim_multi_file_right:
-        root_date = pysat.datetime(2009, 1, 1, 12)
+        root_date = dt.datetime(2009, 1, 1, 12)
     elif sim_multi_file_left:
-        root_date = pysat.datetime(2008, 12, 31, 12)
+        root_date = dt.datetime(2008, 12, 31, 12)
     else:
-        root_date = pysat.datetime(2009, 1, 1)
+        root_date = dt.datetime(2009, 1, 1)
 
     if malformed_index:
         index = index.tolist()
@@ -150,8 +151,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     latitude = 90.0 * np.cos(angle)
     data['latitude'] = (('time'), latitude)
 
+    # create constant altitude at 400 km
+    alt0 = 400.0
+    altitude = alt0 * np.ones(data['latitude'].shape)
+    data['altitude'] = (('time'), altitude)
+
     # fake orbit number
-    fake_delta = date - pysat.datetime(2008, 1, 1)
+    fake_delta = date - dt.datetime(2008, 1, 1)
     orbit_num = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                            uts, period=iperiod['lt'],
                                            cyclic=False)
@@ -233,6 +239,7 @@ meta['orbit_num'] = {'units': '',
 
 meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
 meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
 meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
 meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}
 meta['dummy3'] = {'units': '', 'long_name': 'dummy3'}

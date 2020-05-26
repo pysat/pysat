@@ -3,7 +3,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime as dt
 import numpy as np
+import warnings
+
 import pysat
 
 import logging
@@ -16,7 +19,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
     url = 'https://cdpp-archive.cnes.fr/'
-    logger.info('Data must be downloaded by registered users at: {:s}'.format(url))
+    warnings.warn('Data must be downloaded by registered users at: {:s}'.format(url))
     return
 
 
@@ -96,7 +99,6 @@ def load_general_header(fhandle):
 
     """
     import codecs  # ensures encode is python 2/3 compliant
-    import datetime as dt
 
     block_size = 38  # Position block is 38 bytes
     chunk = fhandle.read(block_size)

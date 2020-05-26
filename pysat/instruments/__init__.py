@@ -13,6 +13,7 @@ __all__ = ['champ_star', 'cnofs_ivm', 'cnofs_plp', 'cnofs_vefi', 'cosmic_gps',
            'iss_fpmu',  'jro_isr', 'omni_hro', 'rocsat1_ivm',
            'sport_ivm', 'superdarn_grdex', 'supermag_magnetometer',
            'sw_dst', 'sw_kp', 'sw_f107', 'timed_saber', 'timed_see',
-           ]
+           'pysat_testing', 'pysat_testing_xarray', 'pysat_testing2d',
+           'pysat_testing2d_xarray', 'pysat_testmodel']
 
 from . import *
