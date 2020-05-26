@@ -5,7 +5,12 @@ Tutorial
 Basics
 ------
 
-The core functionality of pysat is exposed through the pysat.Instrument object. The intent of the Instrument object is to offer a single interface for interacting with science data that is independent of measurement platform. The layer of abstraction presented by the Instrument object allows for things to occur in the background that can make science data analysis simpler and more rigorous.
+The core functionality of pysat is exposed through the pysat.Instrument object.
+The intent of the Instrument object is to offer a single interface for
+interacting with science data that is independent of measurement platform. The
+layer of abstraction presented by the Instrument object allows for things to
+occur in the background that can make science data analysis simpler and more
+rigorous.
 
 To begin,
 
@@ -13,7 +18,8 @@ To begin,
 
    import pysat
 
-The data directory pysat looks in for data (pysat_data_dir) needs to be set upon the first import,
+The data directory pysat looks in for data (pysat_data_dir) needs to be set
+upon the first import,
 
 .. code:: python
 
@@ -23,23 +29,35 @@ The data directory pysat looks in for data (pysat_data_dir) needs to be set upon
 
 ----
 
-To create a pysat.Instrument object, select a platform, instrument name, and measurement type to be analyzed from the list of :doc:`supported_instruments`. To work with Magnetometer data from the Vector Electric Field Instrument onboard the Communications/Navigation Outage Forecasting System (C/NOFS), use:
+To create a pysat.Instrument object, select a platform, instrument name, and
+measurement type to be analyzed from the list of :doc:`supported_instruments`.
+To work with Magnetometer data from the Vector Electric Field Instrument
+onboard the Communications/Navigation Outage Forecasting System (C/NOFS), use:
 
 .. code:: python
 
    vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
 
-Behind the scenes pysat uses a python module named cnofs_vefi that understands how to interact with 'dc_b' data. VEFI also measures electric fields in several modes that offer different data products. Though these measurements are not currently supported by the cnofs_vefi module, when they are, they can be selected via the tag string.
+Behind the scenes pysat uses a python module named cnofs_vefi that understands
+how to interact with 'dc_b' data. VEFI also measures electric fields in several
+modes that offer different data products. Though these measurements are not
+currently supported by the cnofs_vefi module, when they are, they can be
+selected via the tag string.
 
-To load measurements from a different instrument on C/NOFS, the Ion Velocity Meter, which measures thermal plasma parameters, use:
+To load measurements from a different instrument on C/NOFS, the Ion Velocity
+Meter, which measures thermal plasma parameters, use:
 
 .. code:: python
 
    ivm = pysat.Instrument(platform='cnofs', name='ivm')
 
-In the background pysat uses the module cnofs_ivm to handle this data. There is only one measurement option from IVM, so no tag string is required.
+In the background pysat uses the module cnofs_ivm to handle this data. There is
+only one measurement option from IVM, so no tag string is required.
 
-Measurements from a constellation of COSMIC satellites are also available. These satellites measure GPS signals as they travel through the atmosphere. A number of different data sets are available from COSMIC, and are also supported by the relevant module.
+Measurements from a constellation of COSMIC satellites are also available.
+These satellites measure GPS signals as they travel through the atmosphere. A
+number of different data sets are available from COSMIC, and are also supported
+by the relevant module.
 
 .. code:: python
 
@@ -50,13 +68,19 @@ Measurements from a constellation of COSMIC satellites are also available. These
 
 
 
-Though the particulars of VEFI magnetometer data, IVM plasma parameters, and COSMIC atmospheric measurements are going to be quite different, the processes demonstrated below with VEFI also apply equally to IVM and COSMIC.
+Though the particulars of VEFI magnetometer data, IVM plasma parameters, and
+COSMIC atmospheric measurements are going to be quite different, the processes
+demonstrated below with VEFI also apply equally to IVM and COSMIC.
 
 **Download**
 
 ----
 
-Let's download some data. VEFI data is hosted by the NASA Coordinated Data Analysis Web (CDAWeb) at http://cdaweb.gsfc.nasa.gov. The proper process for downloading VEFI data is built into the cnofs_vefi module, which is handled by pysat. All we have to do is invoke the .download method attached to the VEFI object, or any other pysat Instrument.
+Let's download some data. VEFI data is hosted by the NASA Coordinated Data
+Analysis Web (CDAWeb) at http://cdaweb.gsfc.nasa.gov. The proper process for
+downloading VEFI data is built into the cnofs_vefi module, which is handled by
+pysat. All we have to do is invoke the .download method attached to the VEFI
+object, or any other pysat Instrument.
 
 .. code:: python
 
@@ -66,9 +90,12 @@ Let's download some data. VEFI data is hosted by the NASA Coordinated Data Analy
    stop = dt.datetime(2009,5,9)
    vefi.download(start, stop)
 
-The data is downloaded to pysat_data_dir/platform/name/tag/, in this case pysat_data_dir/cnofs/vefi/dc_b/. At the end of the download, pysat will update the list of files associated with VEFI.
+The data is downloaded to pysat_data_dir/platform/name/tag/, in this case
+pysat_data_dir/cnofs/vefi/dc_b/. At the end of the download, pysat will update
+the list of files associated with VEFI.
 
-Note that some datasets, like COSMIC, require registration with a username and password.  Pysat supports this as well.
+Note that some datasets, like COSMIC, require registration with a username and
+password.  Pysat supports this as well.
 .. code:: python
 
   # download COSMIC data, which requires username and password
@@ -79,7 +106,8 @@ Note that some datasets, like COSMIC, require registration with a username and p
 
 ----
 
-Data is loaded into vefi using the .load method using year, day of year; date; or filename.
+Data is loaded into vefi using the .load method using year, day of year; date;
+or filename.
 
 .. code:: python
 
@@ -87,7 +115,10 @@ Data is loaded into vefi using the .load method using year, day of year; date; o
    vefi.load(date=start)
    vefi.load(fname='cnofs_vefi_bfield_1sec_20090506_v05.cdf')
 
-When the pysat load routine runs it stores the instrument data into vefi.data. The data structure is a pandas DataFrame_, a highly capable structure with labeled rows and columns. Convenience access to the data is also available at the instrument level.
+When the pysat load routine runs it stores the instrument data into vefi.data.
+The data structure is a pandas DataFrame_, a highly capable structure with
+labeled rows and columns. Convenience access to the data is also available at
+the instrument level.
 
 .. _DataFrame: http://pandas.pydata.org/pandas-docs/stable/dsintro.html#dataframe
 
@@ -107,7 +138,8 @@ When the pysat load routine runs it stores the instrument data into vefi.data. T
 
 See :any:`Instrument` for more.
 
-To load data over a season, pysat provides a convenience function that returns an array of dates over a season. The season need not be continuous.
+To load data over a season, pysat provides a convenience function that returns
+an array of dates over a season. The season need not be continuous.
 
 .. code:: python
 
@@ -123,8 +155,8 @@ To load data over a season, pysat provides a convenience function that returns a
 
    # iterate over season, calculate the mean absolute perturbation in
    # meridional magnetic field
-   for date in date_array:
-	vefi.load(date=date)
+   for vdate in date_array:
+	vefi.load(date=vdate)
 	if not vefi.data.empty:
 	    # isolate data to locations near geographic equator
 	    idx, = np.where((vefi['latitude'] < 5) & (vefi['latitude'] > -5))
@@ -136,7 +168,8 @@ To load data over a season, pysat provides a convenience function that returns a
    mean_dB.plot(title='Mean Absolute Perturbation in Meridional Magnetic Field')
    plt.ylabel('Mean Absolute Perturbation ('+vefi.meta['dB_mer'].units+')')
 
-Note, the numpy.where may be removed using the convenience access to the attached pandas data object.
+Note, the numpy.where may be removed using the convenience access to the
+attached pandas data object.
 
 .. code:: python
 
@@ -154,7 +187,8 @@ is equivalent to
 
 -----
 
-Before data is available in .data it passes through an instrument specific cleaning routine. The amount of cleaning is set by the clean_level keyword,
+Before data is available in .data it passes through an instrument specific
+cleaning routine. The amount of cleaning is set by the clean_level keyword,
 
 .. code:: python
 
@@ -204,19 +238,21 @@ Data may be assigned to the instrument, with or without metadata.
 
    vefi['new_data'] = new_data
 
-The same activities may be performed for other instruments in the same manner. In particular, for measurements from the Ion Velocity Meter and profiles of electron density from COSMIC, use
+The same activities may be performed for other instruments in the same manner.
+In particular, for measurements from the Ion Velocity Meter and profiles of
+electron density from COSMIC, use
 
 .. code:: python
 
    # assignment with metadata
    ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='')
-   ivm.load(date=date)
+   ivm.load(date=start)
    ivm['double_mlt'] = {'data': 2.*inst['mlt'], 'long_name': 'Double MLT',
                         'units': 'hours'}
 
 .. code:: python
 
-   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf',  clean_level='clean')
+   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf', clean_level='clean')
    start = dt.datetime(2009, 1, 2)
    stop = dt.datetime(2009, 1, 3)
 
@@ -247,16 +283,20 @@ Output for both print statements:
 Custom Functions
 ----------------
 
-Science analysis is built upon custom data processing. To simplify this task and enable instrument independent analysis, custom functions may be attached to the Instrument object. Each function is run automatically when new data is loaded before it is made available in .data.
+Science analysis is built upon custom data processing. To simplify this task and
+enable instrument independent analysis, custom functions may be attached to the
+Instrument object. Each function is run automatically when new data is loaded
+before it is made available in .data.
 
 **Modify Functions**
 
-	The instrument object is passed to function without copying, modify in place.
+	The instrument object is modified within the function, nothing is returned.
 
 .. code:: python
 
-   def custom_func_modify(inst, optional_param=False):
-       inst['double_mlt'] = 2.0 * inst['mlt']
+   def modify_double(inst, data_name='mlt'):
+       inst['double_{:s}'.format(data_name)] = 2.0 * inst[data_name]
+       return
 
 **Add Functions**
 
@@ -264,31 +304,52 @@ Science analysis is built upon custom data processing. To simplify this task and
 
 .. code:: python
 
-   def custom_func_add(inst, optional_param=False):
-       return 2.0 * inst['mlt']
+   def add_double(inst, data_name='mlt'):
+       return 2.0 * inst[data_name]
 
 **Add Function Including Metadata**
 
 .. code:: python
 
-   def custom_func_add(inst, optional_param1=False, optional_param2=False):
-       return {'data': 2.*inst['mlt'], 'name': 'double_mlt',
-               'long_name': 'doubledouble', 'units': 'hours'}
+   def add_multiply(inst, imult, data_name='mlt'):
+       return {'data': imult*inst[data_name],
+               'name': '{:s}x{:d}'.format(data_name, int(imult)),
+               'long_name': '{:s} x {:d}'.format(data_name, int(imult)),
+               'units': inst.meta[data_name].units}
 
 **Attaching Custom Function**
+You can attach custom functions in any order, with the default behavior running
+the custom functions in the order they are specified.  However, you can insert
+a function earlier into the running queue using the `at_pos` keyword arguement.
 
 .. code:: python
 
-   ivm.custom.attach(custom_func_modify, 'modify', optional_param2=True)
-   ivm.load(2009, 1)
-   print(ivm['double_mlt'])
-   ivm.custom.attach(custom_func_add, 'add', optional_param2=True)
-   ivm.bounds = (start, stop)
-   custom_complicated_analysis_over_season(ivm)
+   # Determine the data provided by default
+   ivm.load(date=start)
+   default_data = [cc for cc in ivm.data.columns]
 
-The output of custom_func_modify will always be available from instrument object, regardless of what level the science analysis is performed.
+   # Add custom functions
+   ivm.custom.attach(modify_double, 'modify', kwargs={'data_name': 'mlt'})
+   ivm.custom.attach(add_double, 'add', kwargs={'data_name': 'mlt'})
+   ivm.custom.attach(add_multiply, 'add', args=[3.0],
+                     kwargs={'data_name': 'mlt'}, at_pos=1)
+   ivm.load(date=start)
+   print([cc for cc in ivm.data.columns if cc not in ivm_cols])
+   print("Original Max MLT was: ",
+         np.unique([ivm.data['mlt'].max()/2.0, ivm.data['double_mlt'].max()/2.0,
+                    ivm.data['mltx3'].max()/3.0]))
 
-We can repeat the earlier VEFI example, this time using nano-kernel functionality.
+Note that despite three calculations being made, only two new data columns were
+added.  The `modify_double` function saves the newly calculated data to a new
+data column.  The `add_double` function overwrites the input data column (in
+this example, 'mlt').  The `add_multiply` function supplies a new name as a
+part of the output meta data (the 'name' option in the dictionary), and so a
+new data column is added.  A `kind='add'` custom function can also specify
+a new output data column by modifying the `name` label of the metadata of the
+output data structure (e.g., xarray `name` or pandas.Series `name`).
+
+We can repeat the earlier VEFI example, this time using nano-kernel
+functionality.
 
 .. code:: python
 
@@ -315,8 +376,8 @@ We can repeat the earlier VEFI example, this time using nano-kernel functionalit
 
    # iterate over season, calculate the mean absolute perturbation in
    # meridional magnetic field
-   for date in date_array:
-	vefi.load(date=date)
+   for vdate in date_array:
+	vefi.load(date=vdate)
 	if not vefi.data.empty:
             # compute mean absolute db_Mer using pandas functions and store
             mean_dB[vefi.date] = vefi['dB_mer'].abs().mean(skipna=True)
@@ -325,7 +386,10 @@ We can repeat the earlier VEFI example, this time using nano-kernel functionalit
    mean_dB.plot(title='Mean Absolute Perturbation in Meridional Magnetic Field')
    plt.ylabel('Mean Absolute Perturbation (' + vefi.meta['dB_mer'].units + ')')
 
-Note the same result is obtained. The VEFI instrument object and analysis are performed at the same level, so there is no strict gain by using the pysat nano-kernel in this simple demonstration. However, we can  use the nano-kernel to translate this daily mean into an versatile instrument independent function.
+Note the same result is obtained. The VEFI instrument object and analysis are
+performed at the same level, so there is no strict gain by using the pysat
+nano-kernel in this simple demonstration. However, we can  use the nano-kernel
+to translate this daily mean into an versatile instrument independent function.
 
 **Adding Instrument Independence**
 
@@ -344,8 +408,8 @@ Note the same result is obtained. The VEFI instrument object and analysis are pe
       date_array = pysat.utils.time.create_date_range(start, stop)
 
       # iterate over season, calculate the mean
-      for date in date_array:
-	   inst.load(date=date)
+      for idate in date_array:
+	   inst.load(date=idate)
 	   if not inst.data.empty:
                # compute mean absolute db_Mer using pandas functions and store
                mean_val[inst.date] = inst[data_label].abs().mean(skipna=True)
@@ -371,13 +435,16 @@ Note the same result is obtained. The VEFI instrument object and analysis are pe
    plt.ylabel('Absolute Daily Mean (' + vefi.meta['dB_mer'].units + ')')
 
 
-The pysat nano-kernel lets you modify any data set as needed so that you can get the daily mean you desire, without having to modify the daily_mean function.
+The pysat nano-kernel lets you modify any data set as needed so that you can
+get the daily mean you desire, without having to modify the daily_mean function.
 
-Check the instrument independence using a different instrument. Whatever instrument is supplied may be modified in arbitrary ways by the nano-kernel.
+Check the instrument independence using a different instrument. Whatever
+instrument is supplied may be modified in arbitrary ways by the nano-kernel.
 
 .. code:: python
 
-   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf', clean_level='clean', altitude_bin=3)
+   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf', clean_level='clean',
+                             altitude_bin=3)
 
    def filter_cosmic(inst):
        inst.data = inst[(inst['edmaxlat'] > -15) & (inst['edmaxlat'] < 15)]
@@ -388,10 +455,11 @@ Check the instrument independence using a different instrument. Whatever instrum
    mean_max_dens = daily_mean(cosmic, start, stop, data_label)
 
    # plot the result using pandas functionality
-   mean_max_dens.plot(title='Absolute Daily Mean of ' + cosmic.meta[data_label].long_name)
-   plt.ylabel('Absolute Daily Mean (' + cosmic.meta[data_label].units + ')')
+   mean_max_dens.plot(title='Absolute Daily Mean of {:s}'.format(cosmic.meta[data_label].long_name))
+   plt.ylabel('Absolute Daily Mean ({:s}).format(cosmic.meta[data_label].units))
 
-daily_mean now works for any instrument, as long as the data to be averaged is 1D. This can be fixed.
+daily_mean now works for any instrument, as long as the data to be averaged is
+1D. This can be fixed.
 
 **Partial Independence from Dimensionality**
 
@@ -407,11 +475,11 @@ daily_mean now works for any instrument, as long as the data to be averaged is 1
        # get list of dates between start and stop
        date_array = pysat.utils.time.create_date_range(start, stop)
        # iterate over season, calculate the mean
-       for date in date_array:
-           inst.load(date=date)
+       for idate in date_array:
+           inst.load(date=idate)
 	   if not inst.data.empty:
-               # compute mean absolute using pandas functions and store
-               # data could be an image, or lower dimension, account for 2D and lower
+               # compute mean absolute using pandas functions and store data
+               # could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
                if isinstance(data.iloc[0], pandas.DataFrame):
 	           # 3D data, 2D data at every time
@@ -428,7 +496,15 @@ daily_mean now works for any instrument, as long as the data to be averaged is 1
 
    return mean_val
 
-This code works for 1D, 2D, and 3D datasets, regardless of instrument platform, with only some minor changes from the initial VEFI specific code. In-situ measurements, remote profiles, and remote images. It is true the nested if statements aren't the most elegant. Particularly the 3D case. However this code puts the data into an appropriate structure for pandas to align each of the profiles/images by their respective indices before performing the average. Note that the line to obtain the arithmetic mean is the same in all cases, .mean(axis=0, skipna=True). There is an opportunity here for pysat to clean up the little mess caused by dimensionality.
+This code works for 1D, 2D, and 3D datasets, regardless of instrument platform,
+with only some minor changes from the initial VEFI specific code. In-situ
+measurements, remote profiles, and remote images. It is true the nested if
+statements aren't the most elegant. Particularly the 3D case. However this code
+puts the data into an appropriate structure for pandas to align each of the
+profiles/images by their respective indices before performing the average. Note
+that the line to obtain the arithmetic mean is the same in all cases,
+.mean(axis=0, skipna=True). There is an opportunity here for pysat to clean up
+the little mess caused by dimensionality.
 
 .. code:: python
 
@@ -442,11 +518,11 @@ This code works for 1D, 2D, and 3D datasets, regardless of instrument platform, 
        # get list of dates between start and stop
        date_array = pysat.utils.time.create_date_range(start, stop)
        # iterate over season, calculate the mean
-       for date in date_array:
-           inst.load(date=date)
+       for idate in date_array:
+           inst.load(date=idate)
 	   if not inst.data.empty:
-               # compute mean absolute using pandas functions and store
-               # data could be an image, or lower dimension, account for 2D and lower
+               # compute mean absolute using pandas functions and store data
+               # could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
                data = pysat.ssnl.computational_form(data)
                mean_val[inst.date] = data.abs().mean(axis=0, skipna=True)
@@ -468,18 +544,23 @@ The seasonal analysis loop is repeated commonly:
 .. code:: python
 
    date_array = pysat.utils.time.create_date_range(start,stop)
-   for date in date_array:
-       vefi.load(date=date)
+   for vdate in date_array:
+       vefi.load(date=vdate)
        print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
-Iteration support is built into the Instrument object to support this and similar cases. The whole VEFI data set may be iterated over on a daily basis using
+Iteration support is built into the Instrument object to support this and
+similar cases. The whole VEFI data set may be iterated over on a daily basis
+using
 
 .. code:: python
 
     for vefi in vefi:
 	print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
-Each loop of the python for iteration initiates a vefi.load() for the next date, starting with the first available date. By default the instrument instance will iterate over all available data. To control the range, set the instrument bounds,
+Each loop of the python for iteration initiates a vefi.load() for the next
+date, starting with the first available date. By default the instrument
+instance will iterate over all available data. To control the range, set the
+instrument bounds,
 
 .. code:: python
 
@@ -504,7 +585,11 @@ The output is,
    Returning cnofs vefi dc_b data for 05/12/10
    Maximum meridional magnetic perturbation  26.583
 
-So far, the iteration support has only saved a single line of code, the .load line. However, this line in the examples above is tied to loading by date. What if we wanted to load by file instead? This would require changing the code. However, with the abstraction provided by the Instrument iteration, that is no longer the case.
+So far, the iteration support has only saved a single line of code, the .load
+line. However, this line in the examples above is tied to loading by date. What
+if we wanted to load by file instead? This would require changing the code.
+However, with the abstraction provided by the Instrument iteration, that is no
+longer the case.
 
 .. code:: python
 
@@ -512,7 +597,9 @@ So far, the iteration support has only saved a single line of code, the .load li
    for vefi in vefi:
        print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
-For VEFI there is only one file per day so there is no practical difference between the previous example. However, for instruments that have more than one file a day, there is a difference.
+For VEFI there is only one file per day so there is no practical difference
+between the previous example. However, for instruments that have more than one
+file a day, there is a difference.
 
 Building support for this iteration into the mean_day example is easy.
 
@@ -528,15 +615,18 @@ Building support for this iteration into the mean_day example is easy.
 
        for inst in inst:
 	   if not inst.data.empty:
-               # compute mean absolute using pandas functions and store
-               # data could be an image, or lower dimension, account for 2D and lower
+               # compute mean absolute using pandas functions and store data
+               # could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
                data = pysat.ssnl.computational_form(data)
                mean_val[inst.date] = data.abs().mean(axis=0, skipna=True)
 
        return mean_val
 
-Since bounds are attached to the Instrument object, the start and stop dates for the season are no longer required as inputs. If a user forgets to specify the bounds, the loop will start on the first day of data and end on the last day.
+Since bounds are attached to the Instrument object, the start and stop dates
+for the season are no longer required as inputs. If a user forgets to specify
+the bounds, the loop will start on the first day of data and end on the last
+day.
 
 .. code:: python
 
@@ -549,14 +639,19 @@ Since bounds are attached to the Instrument object, the start and stop dates for
    	        + vefi.meta['dB_mer'].long_name)
    plt.ylabel('Absolute Daily Mean ('+vefi.meta['dB_mer'].units+')')
 
-The abstraction provided by the iteration support is also used for the next section on orbit data.
+The abstraction provided by the iteration support is also used for the next
+section on orbit data.
 
 
 
 Orbit Support
 -------------
 
-Pysat has functionality to determine orbits on the fly from loaded data. These orbits will span day breaks as needed (generally). Information about the orbit needs to be provided at initialization. The 'index' is the name of the data to be used for determining orbits, and 'kind' indicates type of orbit. See :any:`pysat.Orbits` for latest inputs.
+Pysat has functionality to determine orbits on the fly from loaded data. These
+orbits will span day breaks as needed (generally). Information about the orbit
+needs to be provided at initialization. The 'index' is the name of the data to
+be used for determining orbits, and 'kind' indicates type of orbit.
+See :any:`pysat.Orbits` for latest inputs.
 
 There are several orbits to choose from,
 
@@ -568,22 +663,27 @@ longitude      Uses negative gradients to delineate orbits
 polar	       Uses sign changes to delineate orbits
 ===========   ================
 
-Changes in universal time are also used to delineate orbits. Pysat compares any gaps to the supplied orbital period, nominally assumed to be 97 minutes. As orbit periods aren't constant, a 100% success rate is not be guaranteed.
+Changes in universal time are also used to delineate orbits. Pysat compares any
+gaps to the supplied orbital period, nominally assumed to be 97 minutes. As
+orbit periods aren't constant, a 100% success rate is not be guaranteed.
 
 This section of pysat is still under development.
 
 .. code:: python
 
    info = {'index': 'mlt', 'kind': 'local time'}
-   ivm = pysat.Instrument(platform='cnofs', name='ivm', orbit_info=info, clean_level='None')
+   ivm = pysat.Instrument(platform='cnofs', name='ivm', orbit_info=info,
+                          clean_level='None')
 
-Orbit determination acts upon data loaded in the ivm object, so to begin we must load some data.
+Orbit determination acts upon data loaded in the ivm object, so to begin we
+must load some data.
 
 .. code:: python
 
    ivm.load(date=start)
 
-Orbits may be selected directly from the attached .orbit class. The data for the orbit is stored in .data.
+Orbits may be selected directly from the attached .orbit class. The data for
+the orbit is stored in .data.
 
 .. code:: ipython
 
@@ -593,7 +693,10 @@ Orbits may be selected directly from the attached .orbit class. The data for the
    Returning cnofs ivm  data for 12/28/12
    Loaded Orbit:1
 
-Note that getting the first orbit caused pysat to load the day previous, and then back to the current day. Orbits are one indexed though this will change. Pysat is checking here if the first orbit for 12/28/2012 actually started on 12/27/2012. In this case it does.
+Note that getting the first orbit caused pysat to load the day previous, and
+then back to the current day. Orbits are one indexed though this will change.
+Pysat is checking here if the first orbit for 12/28/2012 actually started on
+12/27/2012. In this case it does.
 
 .. code:: ipython
 
@@ -633,7 +736,8 @@ Let's go back an orbit.
    2012-12-27 23:05:13.584000    23.998516
    Name: mlt, dtype: float32
 
-pysat loads the previous day, as needed, and returns the last orbit for 12/27/2012 that does not (or should not) extend into 12/28.
+pysat loads the previous day, as needed, and returns the last orbit for
+12/27/2012 that does not (or should not) extend into 12/28/2012.
 
 If we continue to iterate orbits using
 
@@ -641,7 +745,8 @@ If we continue to iterate orbits using
 
    ivm.orbits.next()
 
-eventually the next day will be loaded to try and form a complete orbit. You can skip the iteration and just go for the last orbit of a day,
+eventually the next day will be loaded to try and form a complete orbit. You
+can skip the iteration and just go for the last orbit of a day,
 
 .. code:: ipython
 
@@ -670,14 +775,18 @@ eventually the next day will be loaded to try and form a complete orbit. You can
    2012-12-29 00:40:17.119000    23.997608
    Name: mlt, dtype: float32
 
-Pysat loads the next day of data to see if the last orbit on 12/28/12 extends into 12/29/12, which it does. Note that the last orbit of 12/28/12 is the same as the first orbit of 12/29/12. Thus, if we ask for the next orbit,
+Pysat loads the next day of data to see if the last orbit on 12/28/12 extends
+into 12/29/12, which it does. Note that the last orbit of 12/28/12 is the same
+as the first orbit of 12/29/12. Thus, if we ask for the next orbit,
 
 .. code:: ipython
 
    In[] : ivm.orbits.next()
    Loaded Orbit:2
 
-pysat will indicate it is the second orbit of the day. Going back an orbit gives us orbit 16, but referenced to a different day. Earlier, the same orbit was labeled orbit 1.
+pysat will indicate it is the second orbit of the day. Going back an orbit
+gives us orbit 16, but referenced to a different day. Earlier, the same orbit
+was labeled orbit 1.
 
 .. code:: ipython
 
@@ -685,7 +794,8 @@ pysat will indicate it is the second orbit of the day. Going back an orbit gives
    Returning cnofs ivm  data for 12/28/12
    Loaded Orbit:16
 
-Orbit iteration is built into ivm.orbits just like iteration by day is built into ivm.
+Orbit iteration is built into ivm.orbits just like iteration by day is built
+into ivm.
 
 .. code:: python
 
@@ -698,16 +808,22 @@ Orbit iteration is built into ivm.orbits just like iteration by day is built int
 Iteration and Instrument Independent Analysis
 ---------------------------------------------
 
-Now we can generalize daily_mean into two functions, one that averages by day, the other by  orbit. Strictly speaking, the daily_mean above already does this with the right input.
+Now we can generalize daily_mean into two functions, one that averages by day,
+the other by  orbit. Strictly speaking, the daily_mean above already does this
+with the right input.
 
 .. code:: python
 
    mean_daily_val = daily_mean(vefi, 'dB_mer')
    mean_orbit_val = daily_mean(vefi.orbits, 'dB_mer')
 
-However, the output of the by_orbit attempt gets rewritten for most orbits since the output from daily_mean is stored by date. Though this could be fixed, supplying an instrument object/iterator in one case and an orbit iterator in the other might be a bit inconsistent. Even if not, let's try another route.
+However, the output of the by_orbit attempt gets rewritten for most orbits since
+the output from daily_mean is stored by date. Though this could be fixed,
+supplying an instrument object/iterator in one case and an orbit iterator in
+the other might be a bit inconsistent. Even if not, let's try another route.
 
-We also don't want to maintain two code bases that do almost the same thing. So instead, let's create three functions, two of which simply call a hidden third.
+We also don't want to maintain two code bases that do almost the same thing. So
+instead, let's create three functions, two of which simply call a hidden third.
 
 **Iteration Independence**
 
@@ -738,26 +854,43 @@ We also don't want to maintain two code bases that do almost the same thing. So 
        for inst in iterator:
 	      if not inst.data.empty:
                   # compute mean absolute using pandas functions and store
-                  # data could be an image, or lower dimension, account for 2D and lower
+                  # data could be an image, or lower dimension, account for 2D
+		  # and lower
                   data = inst[data_label]
                   data.dropna(inplace=True)
 
                   if by_orbit:
-                      date = inst.data.index[0]
+                      idate = inst.data.index[0]
                   else:
-                      date = inst.date
+                      idate = inst.date
 
                   data = pysat.ssnl.computational_form(data)
-                  mean_val[date] = data.abs().mean(axis=0, skipna=True)
+                  mean_val[idate] = data.abs().mean(axis=0, skipna=True)
 
        del iterator
        return mean_val
 
-The addition of a few more lines to the daily_mean function adds support for averages by orbit, or by day, for any platform with data 3D or less. The date issue and the type of iteration are solved with simple if else checks. From a practical perspective, the code doesn't really deviate from the first solution of simply passing in vefi.orbits, except for the fact that the .orbits switch is 'hidden' in the code. NaN values are also dropped from the data. If the first element is a NaN, it isn't handled by the simple instance check.
+The addition of a few more lines to the daily_mean function adds support for
+averages by orbit, or by day, for any platform with data 3D or less. The date
+issue and the type of iteration are solved with simple if else checks. From a
+practical perspective, the code doesn't really deviate from the first solution
+of simply passing in vefi.orbits, except for the fact that the .orbits switch
+is 'hidden' in the code. NaN values are also dropped from the data. If the first
+element is a NaN, it isn't handled by the simple instance check.
 
-A name change and a couple more dummy functions separates out the orbit vs daily iteration clearly, without having multiple codebases. Iteration by file and by date are handled by the same Instrument iterator, controlled by the settings in Instrument.bounds. A by_file_mean was not created because bounds could be set by date and then by_file_mean applied. Of course this could set up to produce an error. However, the settings on Instrument.bounds controls the iteration type between files and dates, so we maintain this view with the expressed calls. Similarly, the orbit iteration is a separate iterator, with a separate call. This technique above is used by other seasonal analysis routines in pysat.
+A name change and a couple more dummy functions separates out the orbit vs daily
+iteration clearly, without having multiple codebases. Iteration by file and by
+date are handled by the same Instrument iterator, controlled by the settings in
+Instrument.bounds. A by_file_mean was not created because bounds could be set
+by date and then by_file_mean applied. Of course this could set up to produce
+an error. However, the settings on Instrument.bounds controls the iteration
+type between files and dates, so we maintain this view with the expressed
+calls. Similarly, the orbit iteration is a separate iterator, with a separate
+call. This technique above is used by other seasonal analysis routines in pysat.
 
-You may notice that the mean call could also easily be replaced by a median, or even a mode. We might also want to return the standard deviation, or appropriate measure. Perhaps another level of generalization is needed?
+You may notice that the mean call could also easily be replaced by a median, or
+even a mode. We might also want to return the standard deviation, or appropriate
+measure. Perhaps another level of generalization is needed?
 
 Summary Flow Charts
 -------------------
@@ -767,7 +900,10 @@ Summary Flow Charts
 Verbosity
 ---------
 
-Pysat uses Python's standard `logging tools <https://docs.python.org/3/library/logging.html>`_ to control the verbosity of output. By default, only logger.warning messages are shown. For more detailed instrument output, you may change the logging level.
+Pysat uses Python's standard
+`logging tools <https://docs.python.org/3/library/logging.html>`_ to control
+the verbosity of output. By default, only logger.warning messages are shown.
+For more detailed instrument output, you may change the logging level.
 
 .. code:: python
 
