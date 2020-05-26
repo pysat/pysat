@@ -110,7 +110,7 @@ class Custom(object):
         pos_list.append('end')
 
         if at_pos not in pos_list:
-            logger.warning(''.join(['unknown position specified, includuing ',
+            logger.warning(''.join(['unknown position specified, including ',
                                     'function at end of current list']))
             at_pos = 'end'
 
