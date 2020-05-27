@@ -330,7 +330,7 @@ class CDF(object):
 
         # create pysat.Meta object using data above
         # and utilizing the attribute labels provided by the user
-        meta = pysat.Meta(pysat.DataFrame.from_dict(self.meta, orient='index'),
+        meta = pysat.Meta(pds.DataFrame.from_dict(self.meta, orient='index'),
                           units_label=units_label, name_label=name_label,
                           fill_label=fill_label, plot_label=plot_label,
                           min_label=min_label, max_label=max_label,
