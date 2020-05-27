@@ -6,8 +6,12 @@ intervention.
 """
 
 from __future__ import absolute_import, division, print_function
+import datetime as dt
+import numpy as np
+import re
 import sys
 
+import cdflib
 import pandas as pds
 
 import pysat
@@ -16,89 +20,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
-               supported_tags=None, fake_daily_files_from_monthly=False,
-               two_digit_year_break=None):
-    """Return a Pandas Series of every file for chosen satellite data.
-
-    This routine is intended to be used by pysat instrument modules supporting
-    a particular NASA CDAWeb dataset.
-
-    Parameters
-    -----------
-    tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>.
-        (default=None)
-    sat_id : (string or NoneType)
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    data_path : (string or NoneType)
-        Path to data directory.  If None is specified, the value previously
-        set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
-        User specified file format.  If None is specified, the default
-        formats associated with the supplied tags are used. (default=None)
-    supported_tags : (dict or NoneType)
-        keys are sat_id, each containing a dict keyed by tag
-        where the values file format template strings. (default=None)
-    fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month, interfering
-        with pysat's functionality of loading by day. This flag, when true,
-        appends daily dates to monthly files internally. These dates are
-        used by load routine in this module to provide data by day.
-    two_digit_year_break : int
-        If filenames only store two digits for the year, then
-        '1900' will be added for years >= two_digit_year_break
-        and '2000' will be added for years < two_digit_year_break.
-
-    Returns
-    --------
-    pysat.Files.from_os : (pysat._files.Files)
-        A class containing the verified available files
-
-    Examples
-    --------
-    ::
-
-        fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-        supported_tags = {'dc_b': fname}
-        list_files = functools.partial(nasa_cdaweb.list_files,
-                                       supported_tags=supported_tags)
-
-        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        supported_tags = {'': fname}
-        list_files = functools.partial(cdw.list_files,
-                                       supported_tags=supported_tags)
-
-    """
-
-    if data_path is not None:
-        if format_str is None:
-            try:
-                format_str = supported_tags[sat_id][tag]
-            except KeyError as estr:
-                raise ValueError('Unknown sat_id or tag: ' + estr)
-        out = pysat.Files.from_os(data_path=data_path,
-                                  format_str=format_str)
-
-        if (not out.empty) and fake_daily_files_from_monthly:
-            out.loc[out.index[-1] + pds.DateOffset(months=1)
-                    - pds.DateOffset(days=1)] = out.iloc[-1]
-            out = out.asfreq('D', 'pad')
-            out = out + '_' + out.index.strftime('%Y-%m-%d')
-            return out
-
-        return out
-    else:
-        estr = ''.join(('A directory must be passed to the loading routine ',
-                        'for <Instrument Code>'))
-        raise ValueError(estr)
-
-
-import cdflib
-
-import re
-import numpy as np
 
 def convert_ndimensional(data, index = None, columns = None):
     """converts high-dimensional data to a Dataframe"""
@@ -106,7 +27,7 @@ def convert_ndimensional(data, index = None, columns = None):
         columns = [range(i) for i in data.shape[1:]]
         columns = pds.MultiIndex.from_product(columns)
 
-    return pds.DataFrame(data.T.reshape(data.shape[0], -1), 
+    return pds.DataFrame(data.T.reshape(data.shape[0], -1),
         columns = columns, index = index)
 
 class CDF(object):
@@ -115,9 +36,9 @@ class CDF(object):
     Loading routines borrow heavily from pyspedas's cdf_to_tplot function
     """
 
-    def __init__(self, filename, 
+    def __init__(self, filename,
                 varformat = '*', # regular expressions
-                var_types = ['data', 'support_data'], 
+                var_types = ['data', 'support_data'],
                 center_measurement = False,
                 raise_errors = False,
                 regnames = None,
@@ -134,7 +55,7 @@ class CDF(object):
         #registration names map from file parameters to kamodo-compatible names
         if regnames is None:
             regnames = {}
-        self._regnames = regnames 
+        self._regnames = regnames
 
         self._cdf_file = cdflib.CDF(self._filename)
         self._cdf_info = self._cdf_file.cdf_info()
@@ -144,8 +65,8 @@ class CDF(object):
 
         self._variable_names = self._cdf_info['rVariables'] +\
             self._cdf_info['zVariables']
-        
-        
+
+
         self.load_variables()
 
     def __enter__(self):
@@ -153,7 +74,7 @@ class CDF(object):
 
     def __exit__(self, type, value, tb):
         pass
-        
+
     def get_dependency(self, x_axis_var):
         """Retrieves variable dependency unique to filename"""
         return self._dependencies.get(self._filename + x_axis_var)
@@ -161,7 +82,7 @@ class CDF(object):
     def set_dependency(self, x_axis_var, x_axis_data):
         """Sets variable dependency unique to filename"""
         self._dependencies[self._filename + x_axis_var] = x_axis_data
-    
+
     def set_epoch(self, x_axis_var):
         """Stores epoch dependency"""
 
@@ -305,7 +226,7 @@ class CDF(object):
             if ydata is None:
 #                 print('skipping {} (empty)'.format(variable_name))
                 continue
-            
+
 
             if "FILLVAL" in var_atts:
                 if (var_properties['Data_Type_Description'] == 'CDF_FLOAT'
@@ -317,10 +238,10 @@ class CDF(object):
                     == 'CDF_REAL8'):
                     if ydata[ydata == var_atts["FILLVAL"]].size != 0:
                         ydata[ydata == var_atts["FILLVAL"]] = np.nan
-            
+
             index = self.get_index(variable_name)
 
-            
+
             try:
                 if isinstance(index, pds.MultiIndex):
                     self.data[variable_name] = pds.DataFrame(ydata.ravel(), index = index)
@@ -339,34 +260,34 @@ class CDF(object):
                     raise
 
             self.meta[variable_name] = var_atts
-            
+
     def to_pysat(self, flatten_twod=True, units_label='UNITS', name_label='long_name',
-                        fill_label='FILLVAL', plot_label='FieldNam', 
-                        min_label='ValidMin', max_label='ValidMax', 
+                        fill_label='FILLVAL', plot_label='FieldNam',
+                        min_label='ValidMin', max_label='ValidMax',
                         notes_label='Var_Notes', desc_label='CatDesc',
                         axis_label = 'LablAxis'):
         """
         Exports loaded CDF data into data, meta for pysat module
-        
+
         Notes
         -----
         The *_labels should be set to the values in the file, if present.
         Note that once the meta object returned from this function is attached
         to a pysat.Instrument object then the *_labels on the Instrument
         are assigned to the newly attached Meta object.
-        
+
         The pysat Meta object will use data with labels that match the patterns
         in *_labels even if the case does not match.
 
         Parameters
         ----------
         flatten_twod : bool (True)
-            If True, then two dimensional data is flattened across 
+            If True, then two dimensional data is flattened across
             columns. Name mangling is used to group data, first column
-            is 'name', last column is 'name_end'. In between numbers are 
+            is 'name', last column is 'name_end'. In between numbers are
             appended 'name_1', 'name_2', etc. All data for a given 2D array
             may be accessed via, data.ix[:,'item':'item_end']
-            If False, then 2D data is stored as a series of DataFrames, 
+            If False, then 2D data is stored as a series of DataFrames,
             indexed by Epoch. data.ix[0, 'item']
         units_label : str
             Identifier within metadata for units. Defults to CDAWab standard.
@@ -380,7 +301,7 @@ class CDF(object):
             Identifier within metadata for variable name used when plotting.
             Defults to CDAWab standard.
         min_label : str
-            Identifier within metadata for minimim variable value. 
+            Identifier within metadata for minimim variable value.
             Defults to CDAWab standard.
         max_label : str
             Identifier within metadata for maximum variable value.
@@ -391,19 +312,19 @@ class CDF(object):
             Identifier within metadata for a variable description.
             Defults to CDAWab standard.
         axis_label : str
-            Identifier within metadata for axis name used when plotting. 
+            Identifier within metadata for axis name used when plotting.
             Defults to CDAWab standard.
-            
-                             
+
+
         Returns
         -------
         pandas.DataFrame, pysat.Meta
             Data and Metadata suitable for attachment to a pysat.Instrument
             object.
-        
+
         """
 
- 
+
         import pysat
         import pandas as pds
 
@@ -417,7 +338,7 @@ class CDF(object):
                           axis_label=axis_label)
 
         cdata = self.data.copy()
-        lower_names = [name.lower() for name in meta.keys()] 
+        lower_names = [name.lower() for name in meta.keys()]
         for name, true_name in zip(lower_names, meta.keys()):
             if name == 'epoch':
                 meta.data.rename(index={true_name: 'Epoch'}, inplace=True)
@@ -429,9 +350,9 @@ class CDF(object):
             if varname != 'Epoch':
                 if type(df) == pds.Series:
                     data[varname] = df
-                    
-        data = pds.DataFrame(data) 
-        
+
+        data = pds.DataFrame(data)
+
         return data, meta
 
 
@@ -487,7 +408,7 @@ def load(fnames, tag=None, sat_id=None,
     import pysatCDF
 
     if len(fnames) <= 0:
-        return pysat.DataFrame(None), None
+        return pds.DataFrame(None), None
     else:
         # going to use pysatCDF to load the CDF and format
         # data and metadata for pysat using some assumptions.
@@ -499,7 +420,7 @@ def load(fnames, tag=None, sat_id=None,
         if fake_daily_files_from_monthly:
             # parse out date from filename
             fname = fnames[0][0:-11]
-            date = pysat.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
+            date = dt.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
             with pysatCDF.CDF(fname) as cdf:
                 # convert data to pysat format
                 data, meta = cdf.to_pysat(flatten_twod=flatten_twod)

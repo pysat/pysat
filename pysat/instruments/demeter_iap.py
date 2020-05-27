@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Supports the Plasma Analyzer Instrument (Instrument Analyseur de Plasma, or
 IAP) onboard the Detection of Electro-Magnetic Emissions Transmitted from
- Earthquake Regions (DEMETER) Microsatellite.
+Earthquake Regions (DEMETER) Microsatellite.
 
 The IAP consists of a Velocity Analyzer (ADV) and Retarding potential analyzer
 (APR) to provide plasma velocities, ion density and temperature, and
@@ -36,6 +36,7 @@ Example
 
 from __future__ import print_function, absolute_import
 
+import datetime as dt
 import pandas as pds
 import numpy as np
 
@@ -50,7 +51,8 @@ name = 'iap'
 tags = {'survey': 'Survey mode',
         'burst': 'Burst mode'}
 sat_ids = {'': list(tags.keys())}
-_test_dates = {'': {'survey': pysat.datetime(2010, 1, 1)}}
+_test_dates = {'': {'survey': dt.datetime(2010, 1, 1)}}
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 apid = {'survey': 1140, 'burst': 1139}
 
@@ -142,7 +144,7 @@ def load(fnames, tag='survey', sat_id=''):
 
     if len(fnames) == 0:
         logger.info('need list of filenames')
-        return pysat.DataFrame(None), None
+        return pds.DataFrame(None), None
 
     # Load the desired data and cast as a DataFrame
     data = list()
@@ -152,7 +154,7 @@ def load(fnames, tag='survey', sat_id=''):
         data.extend(fdata)
 
     data = np.vstack(data)
-    data = pysat.DataFrame(data, index=data[:, 3], columns=fmeta['data names'])
+    data = pds.DataFrame(data, index=data[:, 3], columns=fmeta['data names'])
 
     # Assign metadata
     if len(data.columns) > 0:

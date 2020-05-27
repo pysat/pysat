@@ -1,12 +1,13 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-import string
-import os
-import weakref
-import re
+import datetime as dt
 import glob
 import numpy as np
+import os
+import re
+import string
+import weakref
 import pandas as pds
 from pysat import data_dir as data_dir
 
@@ -58,8 +59,8 @@ class Files(object):
         inst.files[0]
 
         # files from start up to stop (exclusive on stop)
-        start = pysat.datetime(2009,1,1)
-        stop = pysat.datetime(2009,1,3)
+        start = dt.datetime(2009,1,1)
+        stop = dt.datetime(2009,1,3)
         print(vefi.files[start:stop])
 
         # files for date
@@ -123,7 +124,7 @@ class Files(object):
         self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
         self.start_date = None
         self.stop_date = None
-        self.files = pds.Series(None)
+        self.files = pds.Series(None, dtype='object')
         # location of stored files
         self.stored_file_name = ''.join((self._sat.platform, '_',
                                          self._sat.name, '_', self._sat.tag,
@@ -426,7 +427,7 @@ class Files(object):
                 raise IndexError(''.join((str(err), '\n',
                                           'Date requested outside file ',
                                           'bounds.')))
-            if isinstance(key.start, pds.datetime):
+            if isinstance(key.start, dt.datetime):
                 # enforce exclusive slicing on datetime
                 if len(out) > 1:
                     if out.index[-1] >= key.stop:
@@ -648,7 +649,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
         else:
             return pds.Series(files, index=index)
     else:
-        return pds.Series(None)
+        return pds.Series(None, dtype='object')
 
 
 def parse_fixed_width_filenames(files, format_str):

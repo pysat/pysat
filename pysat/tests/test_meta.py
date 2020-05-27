@@ -1,11 +1,12 @@
 """
 tests the pysat meta object and code
 """
-import pysat
-import pandas as pds
-from nose.tools import raises
-import pysat.instruments.pysat_testing
 import numpy as np
+import pandas as pds
+import pytest
+
+import pysat
+import pysat.instruments.pysat_testing
 
 
 class TestBasics():
@@ -20,9 +21,9 @@ class TestBasics():
         del self.testInst
         del self.meta
 
-    @raises(ValueError)
     def test_setting_nonpandas_metadata(self):
-        self.meta = pysat.Meta(metadata='Not a Panda')
+        with pytest.raises(ValueError):
+            self.meta = pysat.Meta(metadata='Not a Panda')
 
     def test_inst_data_assign_meta_default(self):
         self.testInst.load(2009, 1)
@@ -327,23 +328,22 @@ class TestBasics():
         # make sure both have the same indexes
         assert np.all(m1.index == m2.index)
 
-    @raises(KeyError)
     def test_basic_pops_w_bad_key(self):
-
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew',
                              'value_min': 0, 'value_max': 1}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
                              'description': 'boohoo', 'fill': 1,
                              'value_min': 0, 'value_max': 1}
-        _ = self.meta.pop('new4')
+        with pytest.raises(KeyError):
+            _ = self.meta.pop('new4')
 
-    @raises(KeyError)
     def test_basic_getitem_w_bad_key_string(self):
-        self.meta['new4']
+        with pytest.raises(KeyError):
+            self.meta['new4']
 
-    @raises(NotImplementedError)
     def test_basic_getitem_w_integer(self):
-        self.meta[1]
+        with pytest.raises(NotImplementedError):
+            self.meta[1]
 
     def test_basic_equality(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
@@ -373,7 +373,6 @@ class TestBasics():
 
         assert (self.meta['new3'].units == 'hey3')
 
-    @raises(RuntimeError)
     def test_concat_w_name_collision_strict(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -381,7 +380,8 @@ class TestBasics():
         meta2 = pysat.Meta()
         meta2['new2'] = {'units': 'hey2', 'long_name': 'crew_brew'}
         meta2['new3'] = {'units': 'hey3', 'long_name': 'crew_brew'}
-        self.meta = self.meta.concat(meta2, strict=True)
+        with pytest.raises(RuntimeError):
+            self.meta = self.meta.concat(meta2, strict=True)
 
     def test_basic_concat_w_ho(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
@@ -398,7 +398,6 @@ class TestBasics():
         assert (self.meta['new3'].units == 'hey3')
         assert (self.meta['new4'].children['new41'].units == 'hey4')
 
-    @raises(RuntimeError)
     def test_basic_concat_w_ho_collision_strict(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
         self.meta['new2'] = {'units': 'hey', 'long_name': 'boo',
@@ -410,7 +409,8 @@ class TestBasics():
         meta3['new31'] = {'units': 'hey4', 'long_name': 'crew_brew',
                           'bob_level': 'max'}
         meta2['new3'] = meta3
-        self.meta = self.meta.concat(meta2, strict=True)
+        with pytest.raises(RuntimeError):
+            self.meta = self.meta.concat(meta2, strict=True)
 
     def test_basic_concat_w_ho_collision_not_strict(self):
         self.meta['new1'] = {'units': 'hey1', 'long_name': 'crew'}
@@ -467,9 +467,9 @@ class TestBasics():
         self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
                                       'long_name': ['boo', 'boo2']}
         self.meta[['new', 'new2']]
-        self.meta[['new', 'new2'],:]
+        self.meta[['new', 'new2'], :]
         self.meta[:, 'units']
-        self.meta['new',('units','long_name')]
+        self.meta['new', ('units', 'long_name')]
 
     def test_multiple_meta_ho_data_retrieval(self):
         meta = pysat.Meta()
@@ -481,12 +481,12 @@ class TestBasics():
         assert self.meta['lower'].units == 'boo'
         assert self.meta['lower'].long_name == 'boohoo'
         assert self.meta['higher'].children == meta
-        self.meta['higher',('axis','scale')]
+        self.meta['higher', ('axis', 'scale')]
 
-    @raises(ValueError)
     def test_multiple_meta_assignment_error(self):
-        self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
-                                      'long_name': ['boo']}
+        with pytest.raises(ValueError):
+            self.meta[['new', 'new2']] = {'units': ['hey', 'hey2'],
+                                          'long_name': ['boo']}
 
     def test_replace_meta_units(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -736,27 +736,26 @@ class TestBasics():
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
 
-        assert ((self.meta['new'].Units == 'hey') &
-                (self.meta['new'].Long_Name == 'boo') &
-                (self.meta['new2'].Units == 'hey2') &
-                (self.meta['new2'].Long_Name == 'boo2'))
+        assert (self.meta['new'].Units == 'hey')
+        assert (self.meta['new'].Long_Name == 'boo')
+        assert (self.meta['new2'].Units == 'hey2')
+        assert (self.meta['new2'].Long_Name == 'boo2')
 
-    @raises(AttributeError)
     def test_assign_Units_no_units(self):
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
-        self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
-        self.meta['new'].units
+        with pytest.raises(AttributeError):
+            self.meta['new'].units
 
     def test_get_Units_wrong_case(self):
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
         self.meta['new'] = {'Units': 'hey', 'Long_Name': 'boo'}
         self.meta['new2'] = {'Units': 'hey2', 'Long_Name': 'boo2'}
 
-        assert ((self.meta['new', 'units'] == 'hey') &
-                (self.meta['new', 'long_name'] == 'boo') &
-                (self.meta['new2', 'units'] == 'hey2') &
-                (self.meta['new2', 'long_name'] == 'boo2'))
+        assert (self.meta['new', 'units'] == 'hey')
+        assert (self.meta['new', 'long_name'] == 'boo')
+        assert (self.meta['new2', 'units'] == 'hey2')
+        assert (self.meta['new2', 'long_name'] == 'boo2')
 
     def test_set_Units_wrong_case(self):
         self.meta = pysat.Meta(units_label='Units', name_label='Long_Name')
@@ -794,10 +793,10 @@ class TestBasics():
         self.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        assert ((self.meta['new'].Units == 'hey') &
-                (self.meta['new'].Long_Name == 'boo') &
-                (self.meta['new2'].Units == 'hey2') &
-                (self.meta['new2'].Long_Name == 'boo2'))
+        assert (self.meta['new'].Units == 'hey')
+        assert (self.meta['new'].Long_Name == 'boo')
+        assert (self.meta['new2'].Units == 'hey2')
+        assert (self.meta['new2'].Long_Name == 'boo2')
 
     def test_change_Units_and_Name_case_w_ho(self):
         self.meta = pysat.Meta(units_label='units', name_label='long_Name')
@@ -807,12 +806,11 @@ class TestBasics():
         self.meta['new2'] = meta2
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        assert ((self.meta['new'].Units == 'hey') &
-                (self.meta['new'].Long_Name == 'boo') &
-                (self.meta['new2'].children['new21'].Units == 'hey2') &
-                (self.meta['new2'].children['new21'].Long_Name == 'boo2'))
+        assert (self.meta['new'].Units == 'hey')
+        assert (self.meta['new'].Long_Name == 'boo')
+        assert (self.meta['new2'].children['new21'].Units == 'hey2')
+        assert (self.meta['new2'].children['new21'].Long_Name == 'boo2')
 
-    @raises(AttributeError)
     def test_change_Units_and_Name_case_w_ho_wrong_case(self):
         self.meta = pysat.Meta(units_label='units', name_label='long_Name')
         meta2 = pysat.Meta(units_label='units', name_label='long_Name')
@@ -821,10 +819,14 @@ class TestBasics():
         self.meta['new2'] = meta2
         self.meta.units_label = 'Units'
         self.meta.name_label = 'Long_Name'
-        assert ((self.meta['new'].units == 'hey') &
-                (self.meta['new'].long_name == 'boo') &
-                (self.meta['new2'].children['new21'].units == 'hey2') &
-                (self.meta['new2'].children['new21'].long_name == 'boo2'))
+        with pytest.raises(AttributeError):
+            self.meta['new'].units
+        with pytest.raises(AttributeError):
+            self.meta['new'].long_name
+        with pytest.raises(AttributeError):
+            self.meta['new2'].children['new21'].units
+        with pytest.raises(AttributeError):
+            self.meta['new2'].children['new21'].long_name
 
     def test_contains_case_insensitive(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -839,8 +841,8 @@ class TestBasics():
         self.meta['new2'] = meta2
         assert ('new2' in self.meta)
         assert ('NEW2' in self.meta)
-        assert not ('new21' in self.meta)
-        assert not ('NEW21' in self.meta)
+        assert ('new21' not in self.meta)
+        assert ('NEW21' not in self.meta)
 
     def test_get_variable_name_case_preservation(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -894,7 +896,7 @@ class TestBasics():
         assert (self.meta['new2'].children.attr_case_name('YoYoYo') ==
                 'YoYoYO')
 
-    def test_get_attribute_name_case_preservation_w_higher_order_reverse_order(self):
+    def test_get_attribute_name_case_preservation_w_ho_reverse_order(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -910,7 +912,7 @@ class TestBasics():
         assert (self.meta['new2'].children.attr_case_name('YoYoYo') ==
                 'yoyoyo')
 
-    def test_has_attr_name_case_preservation_w_higher_order_reverse_order(self):
+    def test_has_attr_name_case_preservation_w_ho_reverse_order(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         meta2 = pysat.Meta()
         meta2['NEW21'] = {'units': 'hey2', 'long_name': 'boo2',
@@ -944,34 +946,38 @@ class TestBasics():
         assert (self.meta['new2'].units == 'yeppers')
         assert (self.meta['new2'].long_name == 'boo2')
 
-    # Test the attribute transfer function
     def test_transfer_attributes_to_instrument(self):
         self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
         self.meta.date = None
         self.meta.transfer_attributes_to_instrument(self.testInst)
 
         assert self.testInst.new_attribute == 'hello'
+        assert self.testInst.date is None
 
-    # ensure leading hyphens are dropped
-    @raises(AttributeError)
     def test_transfer_attributes_to_instrument_leading_(self):
         self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
         self.meta.date = None
+        self.meta._yo_yo = 'yo yo'
         self.meta.transfer_attributes_to_instrument(self.testInst)
-        self.testInst._yo_yo == 'yo yo'
+        with pytest.raises(AttributeError):
+            self.testInst._yo_yo
 
-    # ensure leading hyphens are dropped
-    @raises(AttributeError)
+        # Check to make sure other values still transferred
+        assert self.testInst.new_attribute == 'hello'
+        assert self.testInst.date is None
+
     def test_transfer_attributes_to_instrument_leading__(self):
         self.meta.new_attribute = 'hello'
-        self.meta.__yo_yo = 'yo yo'
         self.meta.date = None
+        self.meta.__yo_yo = 'yo yo'
         self.meta.transfer_attributes_to_instrument(self.testInst)
-        self.testInst.__yo_yo == 'yo yo'
+        with pytest.raises(AttributeError):
+            self.testInst.__yo_yo
 
-    @raises(RuntimeError)
+        # Check to make sure other values still transferred
+        assert self.testInst.new_attribute == 'hello'
+        assert self.testInst.date is None
+
     def test_transfer_attributes_to_instrument_strict_names(self):
         self.meta.new_attribute = 'hello'
         self.meta._yo_yo = 'yo yo'
@@ -980,8 +986,9 @@ class TestBasics():
         self.meta.date = 'yo yo2'
         self.testInst.load(2009, 1)
         self.testInst.jojo_beans = 'nope!'
-        self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                    strict_names=True)
+        with pytest.raises(RuntimeError):
+            self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                        strict_names=True)
 
     def test_merge_meta(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -1017,3 +1024,29 @@ class TestBasics():
         assert (self.meta['NEW21'].units == 'hey2')
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+    def test_meta_immutable(self):
+        assert self.meta.mutable
+
+        greeting = '...listen!'
+        self.meta.hey = greeting
+        assert self.meta.hey == greeting
+
+        self.meta.mutable = False
+        with pytest.raises(AttributeError):
+            self.meta.hey = greeting
+
+    def test_meta_mutable_properties(self):
+        """check that @properties are always mutable"""
+        m = pysat.Meta()
+        m.mutable = False
+        m.data = pds.DataFrame()
+        m.ho_data = {}
+        m.units_label = 'nT'
+        m.name_label = 'my name'
+
+    def test_inst_attributes_not_overridden(self):
+        greeting = '... listen!'
+        self.testInst.hey = greeting
+        self.testInst.load(2009, 1)
+        assert self.testInst.hey == greeting
