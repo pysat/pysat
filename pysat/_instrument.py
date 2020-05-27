@@ -1445,7 +1445,7 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def remote_file_list(self, year=None, month=None, day=None):
+    def remote_file_list(self, start=None, stop=None):
         """List remote files for chosen instrument.  Default behaviour is
         to return all files.  User may additionally specify a given year,
         year/month, or year/month/day combination to return a subset of
@@ -1453,19 +1453,13 @@ class Instrument(object):
 
         Keywords
         --------
-        year : int or NoneType
-            Selected year to return remote files.  A None value will return
-            all available files.
+        start : (dt.datetime or NoneType)
+            Starting time for file list. A None value will start with the first
+            file found.
             (default=None)
-        month : int or NoneType
-            Selected month to return remote files.  A year must be specified.
-            A None value will return all available files for the year, if year
-            is specified.
-            (default=None)
-        day : int or NoneType
-            Selected day to return remote files.  A year and month must be
-            specified. A None value will return all available files for the
-            year or month, if keywords are specified.
+        stop : (dt.datetime or NoneType)
+            Ending time for the file list.  A None value will stop with the last
+            file found.
             (default=None)
 
         Returns
@@ -1476,7 +1470,7 @@ class Instrument(object):
         """
 
         return self._list_remote_rtn(self.tag, self.sat_id,
-                                     year=year, month=month, day=day)
+                                     start=start, stop=stop)
 
     def remote_date_range(self, year=None, month=None, day=None):
         """Returns fist and last date for remote data.  Default behaviour is
