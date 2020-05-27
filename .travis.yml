@@ -31,6 +31,7 @@ install:
   - conda activate test-environment
   # Dependencies not available through conda, install through pip
   - pip install pysatCDF >/dev/null
+  - pip install cdflib
   # Get latest coveralls from pip, not conda
   - pip install coveralls
   # set up data directory
