@@ -23,7 +23,7 @@ class TestCDAWeb():
             # Giving a bad remote_site address yields similar ConnectionError
             cdw.list_remote_files(tag='', sat_id='',
                                   supported_tags=self.supported_tags,
-                                  remote_site='http:/')
+                                  remote_site='http:/fake/')
 
         assert excinfo.type is requests.exceptions.ConnectionError
         # Check that pysat appends the message
