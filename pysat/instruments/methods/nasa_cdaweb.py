@@ -253,6 +253,15 @@ def download(supported_tags, date_array, tag, sat_id,
     # if desired
     local_fname = inst_dict['local_fname']
 
+    if not multi_file_day:
+        # Get list of files from server
+        remote_files = list_remote_files(tag=tag, sat_id=sat_id,
+                                         remote_site=remote_site,
+                                         supported_tags=supported_tags)
+        # Find only requested files that exist remotely
+        date_array = pds.DatetimeIndex(list(set(remote_files.index)
+                                            & set(date_array))).sort_values()
+
     for date in date_array:
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year,
@@ -271,6 +280,7 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download
         if not multi_file_day:
+            # standard download
             try:
                 logger.info(' '.join(('Attempting to download file for',
                                       date.strftime('%d %B %Y'))))
@@ -287,7 +297,6 @@ def download(supported_tags, date_array, tag, sat_id,
             except requests.exceptions.RequestException as exception:
                 logger.info(' '.join((exception, '- File not available for',
                                       date.strftime('%d %B %Y'))))
-
         else:
             try:
                 logger.info(' '.join(('Attempting to download files for',
