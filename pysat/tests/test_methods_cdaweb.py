@@ -23,11 +23,11 @@ class TestCDAWeb():
             # Giving a bad remote_site address yields similar ConnectionError
             cdw.list_remote_files(tag='', sat_id='',
                                   supported_tags=self.supported_tags,
-                                  remote_site='http:/fake/')
+                                  remote_site='http:/')
 
         assert excinfo.type is requests.exceptions.ConnectionError
         # Check that pysat appends the message
-        assert str(excinfo.value).find('pysat -> Request potentially')
+        assert str(excinfo.value).find('pysat -> Request potentially') > 0
 
     def test_remote_file_list_deprecation_warning(self):
         """Test generation of deprecation warning for remote_file_list kwargs
