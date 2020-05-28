@@ -176,6 +176,15 @@ def download(supported_tags, date_array, tag, sat_id,
     # if desired
     local_fname = inst_dict['local_fname']
 
+    if not multi_file_day:
+        # Get list of files from server
+        remote_files = list_remote_files(tag=tag, sat_id=sat_id,
+                                         remote_site=remote_site,
+                                         supported_tags=supported_tags)
+        # Find only requested files that exist remotely
+        date_array = pds.DatetimeIndex(list(set(remote_files.index)
+                                            & set(date_array))).sort_values()
+
     for date in date_array:
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year,
@@ -194,6 +203,7 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download
         if not multi_file_day:
+            # standard download
             try:
                 logger.info(' '.join(('Attempting to download file for',
                                       date.strftime('%d %B %Y'))))
@@ -396,10 +406,10 @@ def list_remote_files(tag, sat_id,
                                     add_file = False
                             if add_file:
                                 full_files.append(link['href'])
-    except Exception as merr:
-        raise type(merr)(' '.join((str(merr), 'Request exceeds the server',
-                                   'limit. Please try again using a smaller',
-                                   'data range.')))
+    except requests.exceptions.ConnectionError as merr:
+        raise type(merr)(' '.join((str(merr), 'pysat -> Request potentially',
+                                   'exceeds the server limit. Please try',
+                                   'again using a smaller data range.')))
 
     # parse remote filenames to get date information
     if delimiter is None:
