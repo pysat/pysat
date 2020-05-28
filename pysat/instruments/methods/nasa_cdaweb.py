@@ -8,8 +8,11 @@ intervention.
 from __future__ import absolute_import, division, print_function
 import datetime as dt
 import numpy as np
+import os
+import requests
 import sys
 
+from bs4 import BeautifulSoup
 import pandas as pds
 
 import pysat
@@ -156,9 +159,6 @@ def download(supported_tags, date_array, tag, sat_id,
                                      supported_tags=supported_tags)
 
     """
-
-    import os
-    import requests
 
     try:
         inst_dict = supported_tags[sat_id][tag]
@@ -322,10 +322,6 @@ def list_remote_files(tag, sat_id,
                               supported_tags=supported_tags)
 
     """
-
-    import os
-    import requests
-    from bs4 import BeautifulSoup
 
     if tag is None:
         tag = ''
