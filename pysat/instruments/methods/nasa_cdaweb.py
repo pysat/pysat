@@ -498,23 +498,28 @@ def list_remote_files(tag, sat_id,
         n_loops = n_layers + 1
     full_files = []
 
-    for level in range(n_loops):
-        for directory in remote_dirs[level]:
-            temp_url = '/'.join((remote_url.strip('/'), directory))
-            soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
-            links = soup.find_all('a', href=True)
-            for link in links:
-                # If there is room to go down, look for directories
-                if link['href'].count('/') == 1:
-                    remote_dirs[level+1].append(link['href'])
-                else:
-                    # If at the endpoint, add matching files to list
-                    add_file = True
-                    for target in targets:
-                        if link['href'].count(target) == 0:
-                            add_file = False
-                    if add_file:
-                        full_files.append(link['href'])
+    try:
+        for level in range(n_loops):
+            for directory in remote_dirs[level]:
+                temp_url = '/'.join((remote_url.strip('/'), directory))
+                soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
+                links = soup.find_all('a', href=True)
+                for link in links:
+                    # If there is room to go down, look for directories
+                    if link['href'].count('/') == 1:
+                        remote_dirs[level+1].append(link['href'])
+                    else:
+                        # If at the endpoint, add matching files to list
+                        add_file = True
+                        for target in targets:
+                            if link['href'].count(target) == 0:
+                                add_file = False
+                        if add_file:
+                            full_files.append(link['href'])
+    except Exception as merr:
+        raise type(merr)(' '.join((str(merr), 'Request exceeds the server',
+                                   'limit. Please try again using a smaller',
+                                   'data range.')))
 
     # parse remote filenames to get date information
     if delimiter is None:
