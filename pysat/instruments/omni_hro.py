@@ -96,6 +96,9 @@ supported_tags = {'': {'1min': basic_tag1,
 download = functools.partial(cdw.download,
                              supported_tags,
                              fake_daily_files_from_monthly=True)
+# support listing files currently on CDAWeb
+list_remote_files = functools.partial(cdw.list_remote_files,
+                                      supported_tags=supported_tags)
 
 
 def clean(omni):
