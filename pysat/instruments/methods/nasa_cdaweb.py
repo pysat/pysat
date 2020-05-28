@@ -524,7 +524,7 @@ def list_remote_files(tag, sat_id,
                                 add_file = False
                         if add_file:
                             full_files.append(link['href'])
-    except requests.exceptions.RequestException as merr:
+    except requests.exceptions.ConnectionError as merr:
         raise type(merr)(' '.join((str(merr), 'pysat -> Request potentially',
                                    'exceeds the server limit. Please try again',
                                    'using a smaller data range.')))
