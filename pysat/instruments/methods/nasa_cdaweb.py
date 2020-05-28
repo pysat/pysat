@@ -441,6 +441,14 @@ def list_remote_files(tag, sat_id,
         warnings.warn("Day keyword requires year and month.  Ignoring day.")
         day = None
 
+    # Deprecations warnings for changing syntax
+    if any([year, month, day]):
+        warnings.warn(' '.join(["The year/month/day keywords are deprecated",
+                                "here and will be changed in pysat 3.0.0 to",
+                                "use datetime values consistent with the",
+                                "start/stop syntax in the download methods."]),
+                      DeprecationWarning, stacklevel=2)
+
     # get a listing of all files
     # determine if we need to walk directories
 
