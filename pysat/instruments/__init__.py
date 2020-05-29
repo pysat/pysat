@@ -11,6 +11,8 @@ __all__ = ['champ_star', 'cnofs_ivm', 'cnofs_plp', 'cnofs_vefi', 'cosmic_gps',
            'demeter_iap', 'dmsp_ivm',
            'icon_ivm', 'icon_euv', 'icon_fuv', 'icon_mighti',
            'iss_fpmu',  'jro_isr', 'omni_hro', 'rocsat1_ivm',
+           'pysat_testing', 'pysat_testing_xarray', 'pysat_testing2d',
+           'pysat_testing2d_xarray', 'pysat_testmodel',
            'sport_ivm', 'superdarn_grdex', 'supermag_magnetometer',
            'sw_dst', 'sw_kp', 'sw_f107', 'timed_saber', 'timed_see',
            'ucar_tiegcm', ]
