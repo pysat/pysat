@@ -443,8 +443,8 @@ def list_remote_files(tag, sat_id,
 
     # Deprecations warnings for changing syntax
     if any([year, month, day]):
-        warnings.warn(' '.join(["The year/month/day keywords are deprecated",
-                                "here and will be changed in pysat 3.0.0 to",
+        warnings.warn(' '.join(["The year/month/day keywords have been deprecated",
+                                "and will be removed in pysat 3.0.0.  Instead,",
                                 "use datetime values consistent with the",
                                 "start/stop syntax in the download methods."]),
                       DeprecationWarning, stacklevel=2)
@@ -526,7 +526,7 @@ def list_remote_files(tag, sat_id,
                             full_files.append(link['href'])
     except requests.exceptions.ConnectionError as merr:
         raise type(merr)(' '.join((str(merr), 'pysat -> Request potentially',
-                                   'exceeds the server limit. Please try again',
+                                   'exceeded the server limit. Please try again',
                                    'using a smaller data range.')))
 
     # parse remote filenames to get date information
