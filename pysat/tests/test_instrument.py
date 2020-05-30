@@ -21,7 +21,7 @@ import pysat.instruments.pysat_testing_xarray
 
 class TestBasics():
     def setup(self):
-        re_load(pysat.instruments)
+        re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
                                          sat_id='10',
