@@ -21,6 +21,16 @@ class TestBasics():
         del self.testInst
         del self.meta
 
+    def test_meta_repr(self):
+        output = self.meta.__repr__()
+        assert isinstance(output, str)
+        assert output.find('pysat.MetaData') >= 0
+
+    def test_meta_repr_in_instrument(self):
+        output = self.testInst.meta.__repr__()
+        assert isinstance(output, str)
+        assert output.find('pysat.MetaData') >= 0
+
     def test_setting_nonpandas_metadata(self):
         with pytest.raises(ValueError):
             self.meta = pysat.Meta(metadata='Not a Panda')
