@@ -16,4 +16,5 @@ __all__ = ['champ_star', 'cnofs_ivm', 'cnofs_plp', 'cnofs_vefi', 'cosmic_gps',
            'pysat_testing', 'pysat_testing_xarray', 'pysat_testing2d',
            'pysat_testing2d_xarray', 'pysat_testmodel']
 
-from . import *
+for inst in __all__:
+    exec("from pysat.instruments import {x}".format(x=inst))
