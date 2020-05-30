@@ -176,6 +176,33 @@ class TestBasics():
         assert (test_date == dt.datetime(2009, 1, 3))
         assert (test_date == self.testInst.date)
 
+    def test_directory_format_function(self):
+        """Test that directory_format as function is applied to tag and sat_id
+        """
+        def dir_str(tag, sat_id):
+            return '/'.join(['/dir', sat_id, tag, 'data'])
+
+        module_name = '_'.join([self.testInst.platform, self.testInst.name])
+        inst_module = getattr(pysat.instruments, module_name)
+        inst_module.directory_format = dir_str
+        testInst = pysat.Instrument(inst_module=inst_module,
+                                    tag='LevelA',
+                                    sat_id='Sat42')
+        assert testInst.directory_format == '/dir/Sat42/LevelA/data'
+        del inst_module, testInst
+
+    def test_directory_format_nonfunction(self):
+        """Test that directory_format as string is passed thru unchanged
+        """
+        module_name = '_'.join([self.testInst.platform, self.testInst.name])
+        inst_module = getattr(pysat.instruments, module_name)
+        inst_module.directory_format = 'dir_str'
+        testInst = pysat.Instrument(inst_module=inst_module,
+                                    tag='LevelA',
+                                    sat_id='Sat42')
+        assert testInst.directory_format == 'dir_str'
+        del inst_module, testInst
+
     # --------------------------------------------------------------------------
     #
     # Test date helpers
