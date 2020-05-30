@@ -19,32 +19,21 @@ def create_fake_module(full_module_name,  platform, name):
 
     package_name, module_name = full_module_name.split('.')
 
-    try:
-        # python 3.5+
-        # implementation from https://stackoverflow.com/a/51575963
-        importlib.machinery.SOURCE_SUFFIXES.append('')  # empty string to allow any file
-        spec = importlib.util.spec_from_file_location(module_name, file_path)
-        instrument = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(instrument)
+    # python 3.5+
+    # implementation from https://stackoverflow.com/a/51575963
+    # empty string to allow any file
+    importlib.machinery.SOURCE_SUFFIXES.append('')
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    instrument = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(instrument)
 
-        # update the platform and name
-        instrument.platform = platform
-        instrument.name = name
+    # update the platform and name
+    instrument.platform = platform
+    instrument.name = name
 
-        package_spec = importlib.util.spec_from_loader(package_name, None,
-                                                       is_package=True)
-        package = importlib.util.module_from_spec(package_spec)
-
-    except AttributeError:
-        import imp
-        # python 2.7
-        instrument = imp.load_source(module_name, file_path)
-
-        # update the platform and name
-        instrument.platform = platform
-        instrument.name = name
-
-        package = imp.new_module(package_name)
+    package_spec = importlib.util.spec_from_loader(package_name, None,
+                                                   is_package=True)
+    package = importlib.util.module_from_spec(package_spec)
 
     setattr(package, module_name, instrument)
 

@@ -8,11 +8,7 @@ import tempfile
 
 import pysat
 
-import sys
-if sys.version_info[0] >= 3:
-    from importlib import reload as re_load
-else:
-    re_load = reload
+from importlib import reload as re_load
 
 
 # ----------------------------------

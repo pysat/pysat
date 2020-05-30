@@ -5,7 +5,6 @@ import datetime as dt
 import glob
 import numpy as np
 import os
-import sys
 
 import pandas as pds
 import pytest
@@ -14,10 +13,7 @@ import tempfile
 import pysat
 import pysat.instruments.pysat_testing
 
-if sys.version_info[0] >= 3:
-    from importlib import reload as re_load
-else:
-    re_load = reload
+from importlib import reload as re_load
 
 
 def create_dir(inst=None, temporary_file_list=False):
