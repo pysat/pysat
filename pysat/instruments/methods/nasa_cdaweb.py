@@ -382,17 +382,25 @@ def list_remote_files(tag, sat_id,
     if start is None and stop is None:
         url_list = [remote_url]
     elif start is not None:
-        stop = dt.datetime.now() if stop is None else stop
+        stop = dt.datetime.now() if (stop is None) else stop
 
         if 'year' in search_dir['keys']:
-            search_years = np.arange(start.year, stop.year + 0.1).astype(int)
+            if 'month' in search_dir['keys']:
+                search_times = pds.date_range(start, stop, freq='M')
+            else:
+                search_times = pds.date_range(start, stop, freq='Y')
+            url_list = []
+            for time in search_times:
+                subdir = format_dir.format(year=time.year, month=time.month)
+                url_list.append('/'.join((remote_url, subdir)))
 
     try:
         for top_url in url_list:
             for level in range(n_layers+1):
                 for directory in remote_dirs[level]:
                     temp_url = '/'.join((top_url.strip('/'), directory))
-                    soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
+                    soup = BeautifulSoup(requests.get(temp_url).content,
+                                         "lxml")
                     links = soup.find_all('a', href=True)
                     for link in links:
                         # If there is room to go down, look for directories
