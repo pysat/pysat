@@ -73,6 +73,11 @@ class TestBasics():
 
         assert check1 & check2
 
+    def test_set_data_dir_bad_directory(self):
+        with pytest.raises(ValueError) as excinfo:
+            pysat.utils.set_data_dir('/fake/directory/path', store=False)
+        assert str(excinfo.value).find('does not lead to a valid dir') >= 0
+
     def test_initial_pysat_load(self):
         import shutil
         saved = False
