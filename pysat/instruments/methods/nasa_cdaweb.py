@@ -179,7 +179,9 @@ def download(supported_tags, date_array, tag, sat_id,
         # Get list of files from server
         remote_files = list_remote_files(tag=tag, sat_id=sat_id,
                                          remote_site=remote_site,
-                                         supported_tags=supported_tags)
+                                         supported_tags=supported_tags,
+                                         start=date_array[0],
+                                         stop=date_array[-1])
         # Find only requested files that exist remotely
         date_array = pds.DatetimeIndex(list(set(remote_files.index)
                                             & set(date_array))).sort_values()
@@ -228,9 +230,8 @@ def download(supported_tags, date_array, tag, sat_id,
                 remote_files = list_remote_files(tag=tag, sat_id=sat_id,
                                                  remote_site=remote_site,
                                                  supported_tags=supported_tags,
-                                                 year=date.year,
-                                                 month=date.month,
-                                                 day=date.day)
+                                                 start=date,
+                                                 stop=date)
 
                 # Get the files
                 i = 0
@@ -359,7 +360,7 @@ def list_remote_files(tag, sat_id,
     format_str = dir_split[-1]
     # Generate list of targets to identify files
     search_dict = pysat._files.construct_searchstring_from_format(format_str)
-    targets = [x for x in search_dict['string_blocks'] if len(x) > 0]
+    targets = [x.strip('?') for x in search_dict['string_blocks'] if len(x) > 0]
 
     remote_dirs = []
     for level in range(n_layers + 1):
@@ -376,14 +377,17 @@ def list_remote_files(tag, sat_id,
 
         if 'year' in search_dir['keys']:
             if 'month' in search_dir['keys']:
-                search_times = pds.date_range(start, stop, freq='M')
+                search_times = pds.date_range(start,
+                                              stop + pds.DateOffset(months=1),
+                                              freq='M')
             else:
-                search_times = pds.date_range(start, stop, freq='Y')
+                search_times = pds.date_range(start,
+                                              stop + pds.DateOffset(years=1),
+                                              freq='Y')
             url_list = []
             for time in search_times:
                 subdir = format_dir.format(year=time.year, month=time.month)
                 url_list.append('/'.join((remote_url, subdir)))
-
     try:
         for top_url in url_list:
             for level in range(n_layers+1):
