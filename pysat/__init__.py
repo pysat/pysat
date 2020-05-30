@@ -67,10 +67,9 @@ if not os.path.isdir(pysat_dir):
     os.mkdir(pysat_dir)
     print('Created .pysat directory in user home directory to store settings.')
     # create file with default data directory
+    data_dir = ''
     if (os.environ.get('TRAVIS') == 'true'):
         data_dir = '/home/travis/build/pysatData'
-    else:
-        data_dir = ''
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
