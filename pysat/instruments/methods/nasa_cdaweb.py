@@ -7,7 +7,6 @@ intervention.
 
 from __future__ import absolute_import, division, print_function
 import datetime as dt
-import numpy as np
 import os
 import requests
 import sys
@@ -348,14 +347,6 @@ def list_remote_files(tag, sat_id,
     # naming scheme for files on the CDAWeb server
     format_str = inst_dict['remote_fname']
 
-    # Check for acustom start stop dates.  Set to defaults if NoneType
-    # if start is None:
-    #     start = dt.datetime(1958, 1, 1)
-    # if stop is None:
-    #     stop = dt.datetime.now()
-    # if start == stop:
-    #     stop += dt.timedelta(days=1)
-
     # Break string format into path and filename
     dir_split = os.path.split(format_str)
 
@@ -363,7 +354,6 @@ def list_remote_files(tag, sat_id,
     format_dir = dir_split[0]
     search_dir = pysat._files.construct_searchstring_from_format(format_dir)
     n_layers = len(search_dir['keys'])
-    print(search_dir['keys'])
 
     # only keep file portion of format
     format_str = dir_split[-1]
