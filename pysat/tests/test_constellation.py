@@ -59,16 +59,6 @@ class TestConstellation:
             "\npysat Constellation object:\ntesting\ntesting\n"
 
 
-class TestAdditionIdenticalInstruments:
-    def setup(self):
-        self.const1 = pysat.Constellation(name='testing')
-        self.const2 = pysat.Constellation(name='single_test')
-
-    def teardown(self):
-        del self.const1
-        del self.const2
-
-
 class TestDataMod:
     """Test adapted from test_custom.py."""
     def setup(self):
