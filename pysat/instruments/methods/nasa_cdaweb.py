@@ -162,7 +162,7 @@ def download(supported_tags, date_array, tag, sat_id,
     try:
         inst_dict = supported_tags[sat_id][tag]
     except KeyError:
-        raise ValueError('Tag name unknown.')
+        raise ValueError('sat_id / tag combo unknown.')
 
     # path to relevant file on CDAWeb
     remote_url = remote_site + inst_dict['dir']
@@ -340,7 +340,7 @@ def list_remote_files(tag, sat_id,
     try:
         inst_dict = supported_tags[sat_id][tag]
     except KeyError:
-        raise ValueError('Tag name unknown.')
+        raise ValueError('sat_id / tag combo unknown.')
 
     # path to relevant file on CDAWeb
     remote_url = remote_site + inst_dict['dir']

@@ -12,7 +12,7 @@ class TestCDAWeb():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         self.supported_tags = pysat.instruments.cnofs_plp.supported_tags
-        self.kwargs = {'tag': '', 'sat_id': ''}
+        self.kwargs = {'tag': None, 'sat_id': None}
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -37,9 +37,10 @@ class TestCDAWeb():
         assert meta is None
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
-                             [("tag", "badval", "Tag name unknown"),
-                              ("sat_id", "badval", "Tag name unknown")])
-    def test_bad_tag_download(self, bad_key, bad_val, err_msg):
+                             [("tag", "badval", "sat_id / tag combo unknown."),
+                              ("sat_id", "badval",
+                               "sat_id / tag combo unknown.")])
+    def test_bad_kwarg_download(self, bad_key, bad_val, err_msg):
         date_array = [dt.datetime(2019, 1, 1)]
         self.kwargs[bad_key] = bad_val
         with pytest.raises(ValueError) as excinfo:
@@ -47,4 +48,16 @@ class TestCDAWeb():
                          date_array=date_array,
                          tag=self.kwargs['tag'],
                          sat_id=self.kwargs['sat_id'])
-        assert str(excinfo.value).find('Tag name unknown') >= 0
+        assert str(excinfo.value).find(err_msg) >= 0
+
+    @pytest.mark.parametrize("bad_key,bad_val,err_msg",
+                             [("tag", "badval", "sat_id / tag combo unknown."),
+                              ("sat_id", "badval",
+                               "sat_id / tag combo unknown.")])
+    def test_bad_kwarg_list_remote_files(self, bad_key, bad_val, err_msg):
+        self.kwargs[bad_key] = bad_val
+        with pytest.raises(ValueError) as excinfo:
+            cdw.list_remote_files(supported_tags=self.supported_tags,
+                                  tag=self.kwargs['tag'],
+                                  sat_id=self.kwargs['sat_id'])
+        assert str(excinfo.value).find(err_msg) >= 0
