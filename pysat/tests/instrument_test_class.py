@@ -118,14 +118,6 @@ class InstTestClass():
     """Provides standardized tests for pysat instrument libraries.
     """
 
-    def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        self.package = pysat.instruments
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        del self.package
-
     @pytest.mark.all_inst
     def test_modules_standard(self, name):
         """Checks that modules are importable and have standard properties.
