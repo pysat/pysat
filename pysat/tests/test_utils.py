@@ -240,7 +240,6 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_basic_write_and_read_netcdf4_mixed_case_format(self):
@@ -265,7 +264,6 @@ class TestBasicNetCDF4():
         assert(np.all(original == loaded_inst.columns))
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
 
         # modify metadata names in data
@@ -305,9 +303,7 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
-            # assert(np.all(self.testInst.data == loaded_inst))
 
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
@@ -325,7 +321,6 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):

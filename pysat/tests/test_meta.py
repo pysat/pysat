@@ -150,7 +150,6 @@ class TestBasics():
         meta = pysat.Meta()
         meta['dummy_frame1'] = {'units': 'A'}
         meta['dummy_frame2'] = {'desc': 'nothing'}
-        print('Setting original data')
         self.testInst['help'] = {'data': [frame]*len(self.testInst.data.index),
                                  'units': 'V',
                                  'long_name': 'The Doors',
@@ -270,8 +269,6 @@ class TestBasics():
         self.testInst.meta['help2'] = new_meta
         self.testInst.meta['help2'] = {'label': 'The Doors Return'}
 
-        # print('yoyo: ', self.testInst.meta['help']['children']
-        #       ['dummy_frame1', 'units'])
         assert self.testInst.meta['help']['children']['dummy_frame1',
                                                       'units'] == 'A'
         assert self.testInst.meta['help2', 'name'] == 'The Doors'

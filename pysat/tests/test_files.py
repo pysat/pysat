@@ -553,7 +553,6 @@ class TestInstrumentWithFiles():
                 file_path = os.path.join(self.testInst.files.data_path,
                                          the_file)
                 if os.path.isfile(file_path) & (to_be_removed > 0):
-                    # print(file_path)
                     to_be_removed -= 1
                     os.unlink(file_path)
         # add new files

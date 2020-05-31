@@ -168,7 +168,6 @@ class TestBasics():
     def test_prev_filename_load_default(self):
         """Test prev day is loaded when invoking .prev."""
         self.testInst.load(fname='2009-01-04.nofile')
-        # print(self.testInst.date)
         self.testInst.prev()
         test_date = self.testInst.index[0]
         test_date = dt.datetime(test_date.year, test_date.month,
@@ -1230,7 +1229,6 @@ class TestDataPadding():
     def test_data_padding_prev(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.prev(verifyPad=True)
-        print(self.testInst.index)
         assert (self.testInst.index[0] == self.testInst.date
                 - pds.DateOffset(minutes=5))
         assert (self.testInst.index[-1] == self.testInst.date
@@ -1270,7 +1268,6 @@ class TestDataPadding():
 
     def test_data_padding_removal(self):
         self.testInst.load(2009, 1)
-        # print(self.testInst.index)
         assert (self.testInst.index[0] == self.testInst.date)
         assert (self.testInst.index[-1] == self.testInst.date +
                 pds.DateOffset(hour=23, minutes=59, seconds=59))
