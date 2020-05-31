@@ -2,6 +2,7 @@
 tests the pysat meta object and code
 """
 import numpy as np
+import os
 import pandas as pds
 import pytest
 
@@ -710,27 +711,48 @@ class TestBasics():
         assert True
 
     def test_meta_csv_load(self):
-        import os
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
-        mdata = pysat.Meta.from_csv(name=name,  na_values=[],  # index_col=2,
+        mdata = pysat.Meta.from_csv(name=name,  na_values=[],
                                     keep_default_na=False,
                                     col_names=['name', 'long_name', 'idx',
                                                'units', 'description'])
-        check = []
-        # print(mdata['yrdoy'])
-        check.append(mdata['yrdoy'].long_name == 'Date')
-        check.append(mdata['unit_mer_z'].long_name ==
-                     'Unit Vector - Meridional Dir - S/C z')
-        check.append(mdata['iv_mer'].description ==
-                     'Constructed using IGRF mag field.')
-        assert np.all(check)
+        assert mdata['yrdoy'].long_name == 'Date'
+        assert (mdata['unit_mer_z'].long_name ==
+                'Unit Vector - Meridional Dir - S/C z')
+        assert (mdata['iv_mer'].description ==
+                'Constructed using IGRF mag field.')
+
+    def test_meta_csv_load_w_col_names_as_none(self):
+        name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
+        mdata = pysat.Meta.from_csv(name=name,  na_values=[],
+                                    keep_default_na=False,
+                                    col_names=None)
+        assert mdata['yrdoy'].long_name == 'Date'
+        assert (mdata['unit_mer_z'].long_name ==
+                'Unit Vector - Meridional Dir - S/C z')
+        assert (mdata['iv_mer'].description ==
+                'Constructed using IGRF mag field.')
+
+    @pytest.mark.parametrize("bad_key,bad_val,err_msg",
+                             [("col_names", [], "col_names must include"),
+                              ("name", None, "Must provide an instrument"),
+                              ("name", 5, "keyword name must be related")])
+    def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
+        name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
+        kwargs = {'name': name,  'na_values': [],
+                  'keep_default_na': False, 'col_names': None}
+        kwargs[bad_key] = bad_val
+        with pytest.raises(ValueError) as excinfo:
+            pysat.Meta.from_csv(name=name,  na_values=[],
+                                keep_default_na=False,
+                                col_names=[])
+        assert str(excinfo.value).find('') >= 0
 
     # assign multiple values to default
     def test_multiple_input_names_null_value(self):
         self.meta[['test1', 'test2']] = {}
-        check1 = self.meta['test1', 'units'] == ''
-        check2 = self.meta['test2', 'long_name'] == 'test2'
-        assert check1 & check2
+        assert self.meta['test1', 'units'] == ''
+        assert self.meta['test2', 'long_name'] == 'test2'
 
     def test_multiple_input_names_null_value_preexisting_values(self):
         self.meta[['test1', 'test2']] = {'units': ['degrees', 'hams'],
