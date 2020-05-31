@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # Test some of the basic _core functions
 import datetime as dt
-import imp
 from importlib import reload as re_load
 import numpy as np
 
