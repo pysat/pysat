@@ -306,7 +306,6 @@ class TestBasics():
                                         'CUSTOM4': 143}
         self.testInst.meta['kiwi'] = self.meta
         output = self.testInst.meta.__str__()
-        assert output.find('hi') >= 0
         assert output.find('param0') >= 0
         assert output.find('kiwi') >= 0
         assert output.find('Metadata for kiwi') >= 0
