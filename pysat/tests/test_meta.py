@@ -723,8 +723,6 @@ class TestBasics():
         assert mdata['yrdoy'].long_name == 'Date'
         assert (mdata['unit_mer_z'].long_name ==
                 'Unit Vector - Meridional Dir - S/C z')
-        assert (mdata['iv_mer'].description ==
-                'Constructed using IGRF mag field.')
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
                              [("col_names", [], "col_names must include"),
