@@ -293,8 +293,8 @@ class TestBasics():
 
     def test_repr_call_runs(self):
         self.testInst.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
-        print(self.testInst.meta)
-        assert True
+        output = self.testInst.meta.__str__()
+        assert output.find('hi') >= 0
 
     def test_repr_call_runs_with_higher_order_data(self):
         self.meta['param1'] = {'units': 'blank', 'long_name': u'parameter1',
@@ -305,8 +305,12 @@ class TestBasics():
                                         self.testInst.meta.fill_label: '10',
                                         'CUSTOM4': 143}
         self.testInst.meta['kiwi'] = self.meta
-        print(self.testInst.meta)
-        assert True
+        output = self.testInst.meta.__str__()
+        assert output.find('hi') >= 0
+        assert output.find('param0') >= 0
+        assert output.find('kiwi') >= 0
+        assert output.find('Metadata for kiwi') >= 0
+        assert output.find('Metadata for kiwi') < output.find('param1')
 
     def test_basic_pops(self):
 
@@ -698,14 +702,6 @@ class TestBasics():
         assert self.meta['new'].long_name == 'boo'
         assert self.meta['new2'].units == 'yeppers'
         assert self.meta['new2'].long_name == 'boo2'
-
-    def test_meta_repr_functions(self):
-        self.testInst.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.testInst.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        print(self.testInst.meta)
-        # if it doesn't produce an error, we presume it works
-        # how do you test a print??
-        assert True
 
     def test_meta_csv_load(self):
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
