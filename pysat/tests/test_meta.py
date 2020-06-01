@@ -717,16 +717,16 @@ class TestBasics():
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
                              [("col_names", [], "col_names must include"),
                               ("name", None, "Must provide an instrument"),
-                              ("name", 5, "keyword name must be related")])
+                              ("name", 5, "keyword name must be related"),
+                              ("name", 'fake_inst',
+                               "keyword name must be related")])
     def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
         kwargs = {'name': name,  'na_values': [],
                   'keep_default_na': False, 'col_names': None}
         kwargs[bad_key] = bad_val
         with pytest.raises(ValueError) as excinfo:
-            pysat.Meta.from_csv(name=name,  na_values=[],
-                                keep_default_na=False,
-                                col_names=[])
+            pysat.Meta.from_csv(**kwargs)
         assert str(excinfo.value).find('') >= 0
 
     # assign multiple values to default
@@ -1002,6 +1002,18 @@ class TestBasics():
         with pytest.raises(RuntimeError):
             self.meta.transfer_attributes_to_instrument(self.testInst,
                                                         strict_names=True)
+
+    def test_transfer_attributes_to_instrument_strict_names_false(self):
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.jojo_beans = 'yep!'
+        self.meta.name = 'Failure!'
+        self.meta.date = 'yo yo2'
+        self.testInst.load(2009, 1)
+        self.testInst.jojo_beans = 'nope!'
+        self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                    strict_names=False)
+        assert self.testInst.jojo_beans == 'yep!'
 
     def test_merge_meta(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
