@@ -7,8 +7,11 @@ intervention.
 
 from __future__ import absolute_import, division, print_function
 import datetime as dt
+import os
+import requests
 import sys
 
+from bs4 import BeautifulSoup
 import pandas as pds
 
 import pysat
@@ -156,13 +159,10 @@ def download(supported_tags, date_array, tag, sat_id,
 
     """
 
-    import os
-    import requests
-
     try:
         inst_dict = supported_tags[sat_id][tag]
     except KeyError:
-        raise ValueError('Tag name unknown.')
+        raise ValueError('sat_id / tag combo unknown.')
 
     # path to relevant file on CDAWeb
     remote_url = remote_site + inst_dict['dir']
@@ -174,6 +174,17 @@ def download(supported_tags, date_array, tag, sat_id,
     # to CDAWeb scheme, though directory structures may be reduced
     # if desired
     local_fname = inst_dict['local_fname']
+
+    if not multi_file_day:
+        # Get list of files from server
+        remote_files = list_remote_files(tag=tag, sat_id=sat_id,
+                                         remote_site=remote_site,
+                                         supported_tags=supported_tags,
+                                         start=date_array[0],
+                                         stop=date_array[-1])
+        # Find only requested files that exist remotely
+        date_array = pds.DatetimeIndex(list(set(remote_files.index)
+                                            & set(date_array))).sort_values()
 
     for date in date_array:
         # format files for specific dates and download location
@@ -193,6 +204,7 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download
         if not multi_file_day:
+            # standard download
             try:
                 logger.info(' '.join(('Attempting to download file for',
                                       date.strftime('%d %B %Y'))))
@@ -218,9 +230,8 @@ def download(supported_tags, date_array, tag, sat_id,
                 remote_files = list_remote_files(tag=tag, sat_id=sat_id,
                                                  remote_site=remote_site,
                                                  supported_tags=supported_tags,
-                                                 year=date.year,
-                                                 month=date.month,
-                                                 day=date.day)
+                                                 start=date,
+                                                 stop=date)
 
                 # Get the files
                 i = 0
@@ -250,7 +261,7 @@ def list_remote_files(tag, sat_id,
                       user=None, password=None,
                       fake_daily_files_from_monthly=False,
                       two_digit_year_break=None, delimiter=None,
-                      year=None, month=None, day=None):
+                      start=None, stop=None):
     """Return a Pandas Series of every file for chosen remote data.
 
     This routine is intended to be used by pysat instrument modules supporting
@@ -290,17 +301,13 @@ def list_remote_files(tag, sat_id,
     delimiter : (string or NoneType)
         If filename is delimited, then provide delimiter alone e.g. '_'
         (default=None)
-    year : (int or NoneType)
-        Selects a given year to return remote files for.  None returns all
-        years.
+    start : (dt.datetime or NoneType)
+        Starting time for file list. A None value will start with the first
+        file found.
         (default=None)
-    month : (int or NoneType)
-        Selects a given month to return remote files for.  None returns all
-        months.  Requires year to be defined.
-        (default=None)
-    day : (int or NoneType)
-        Selects a given day to return remote files for.  None returns all
-        days.  Requires year and month to be defined.
+    stop : (dt.datetime or NoneType)
+        Ending time for the file list.  A None value will stop with the last
+        file found.
         (default=None)
 
     Returns
@@ -326,11 +333,6 @@ def list_remote_files(tag, sat_id,
 
     """
 
-    import os
-    import requests
-    import warnings
-    from bs4 import BeautifulSoup
-
     if tag is None:
         tag = ''
     if sat_id is None:
@@ -338,7 +340,7 @@ def list_remote_files(tag, sat_id,
     try:
         inst_dict = supported_tags[sat_id][tag]
     except KeyError:
-        raise ValueError('Tag name unknown.')
+        raise ValueError('sat_id / tag combo unknown.')
 
     # path to relevant file on CDAWeb
     remote_url = remote_site + inst_dict['dir']
@@ -346,55 +348,19 @@ def list_remote_files(tag, sat_id,
     # naming scheme for files on the CDAWeb server
     format_str = inst_dict['remote_fname']
 
-    # Check for appropriate combination of kwargs.  Warn and continue if not.
-    if (year is None) and (month is not None):
-        warnings.warn("Month keyword requires year.  Ignoring month.")
-        month = None
-    if ((year is None) or (month is None)) and (day is not None):
-        warnings.warn("Day keyword requires year and month.  Ignoring day.")
-        day = None
-
-    # get a listing of all files
-    # determine if we need to walk directories
-
-    # Find Subdirectories and modify remote_url if user input is specified
+    # Break string format into path and filename
     dir_split = os.path.split(format_str)
-    if len(dir_split[0]) != 0:
-        # Get all subdirectories
-        subdirs = dir_split[0].split('/')
-        # only keep file portion of format
-        format_str = dir_split[-1]
-        n_layers = len(subdirs)
-        # Check for formatted subdirectories if user input is specified
-        for subdir in subdirs:
-            if (year is not None) and (subdir.find('year') != -1):
-                remote_url = '/'.join((remote_url.strip('/'),
-                                       subdir.format(year=year)))
-                n_layers -= 1
-            if (month is not None) and (subdir.find('month') != -1):
-                remote_url = '/'.join((remote_url.strip('/'),
-                                       subdir.format(month=month)))
-                n_layers -= 1
-            if (day is not None) and (subdir.find('day') != -1):
-                remote_url = '/'.join((remote_url.strip('/'),
-                                       subdir.format(day=day)))
-                n_layers -= 1
 
-    # Start with file extention as prime target
-    targets = ['.' + format_str.split('.')[-1]]
+    # Parse the path to find the number of levels to search
+    format_dir = dir_split[0]
+    search_dir = pysat._files.construct_searchstring_from_format(format_dir)
+    n_layers = len(search_dir['keys'])
 
-    # Extract file preamble as target - those characters left of variables
-    # or wildcards
-    fmt_idx = [format_str.find('{')]
-    fmt_idx.append(format_str.find('?'))
-    fmt_idx.append(format_str.find('*'))
-
-    # Not all characters may exist in a filename.  Remove those that don't.
-    fmt_idx = [elem for elem in fmt_idx if elem != -1]
-
-    # If preamble exists, add to targets
-    if fmt_idx:
-        targets.append(format_str[0:min(fmt_idx)])
+    # only keep file portion of format
+    format_str = dir_split[-1]
+    # Generate list of targets to identify files
+    search_dict = pysat._files.construct_searchstring_from_format(format_str)
+    targets = [x.strip('?') for x in search_dict['string_blocks'] if len(x) > 0]
 
     remote_dirs = []
     for level in range(n_layers + 1):
@@ -402,32 +368,50 @@ def list_remote_files(tag, sat_id,
     remote_dirs[0] = ['']
 
     # Build a list of files using each filename target as a goal
-    if n_layers > 1:
-        n_loops = 2
-        warnings.warn(' '.join(('Current implementation only goes down one',
-                                'level of subdirectories.  Try specifying',
-                                'a year for more accurate results.')))
-    else:
-        n_loops = n_layers + 1
     full_files = []
 
-    for level in range(n_loops):
-        for directory in remote_dirs[level]:
-            temp_url = '/'.join((remote_url.strip('/'), directory))
-            soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
-            links = soup.find_all('a', href=True)
-            for link in links:
-                # If there is room to go down, look for directories
-                if link['href'].count('/') == 1:
-                    remote_dirs[level+1].append(link['href'])
-                else:
-                    # If at the endpoint, add matching files to list
-                    add_file = True
-                    for target in targets:
-                        if link['href'].count(target) == 0:
-                            add_file = False
-                    if add_file:
-                        full_files.append(link['href'])
+    if start is None and stop is None:
+        url_list = [remote_url]
+    elif start is not None:
+        stop = dt.datetime.now() if (stop is None) else stop
+
+        if 'year' in search_dir['keys']:
+            if 'month' in search_dir['keys']:
+                search_times = pds.date_range(start,
+                                              stop + pds.DateOffset(months=1),
+                                              freq='M')
+            else:
+                search_times = pds.date_range(start,
+                                              stop + pds.DateOffset(years=1),
+                                              freq='Y')
+            url_list = []
+            for time in search_times:
+                subdir = format_dir.format(year=time.year, month=time.month)
+                url_list.append('/'.join((remote_url, subdir)))
+    try:
+        for top_url in url_list:
+            for level in range(n_layers+1):
+                for directory in remote_dirs[level]:
+                    temp_url = '/'.join((top_url.strip('/'), directory))
+                    soup = BeautifulSoup(requests.get(temp_url).content,
+                                         "lxml")
+                    links = soup.find_all('a', href=True)
+                    for link in links:
+                        # If there is room to go down, look for directories
+                        if link['href'].count('/') == 1:
+                            remote_dirs[level+1].append(link['href'])
+                        else:
+                            # If at the endpoint, add matching files to list
+                            add_file = True
+                            for target in targets:
+                                if link['href'].count(target) == 0:
+                                    add_file = False
+                            if add_file:
+                                full_files.append(link['href'])
+    except requests.exceptions.ConnectionError as merr:
+        raise type(merr)(' '.join((str(merr), 'pysat -> Request potentially',
+                                   'exceeds the server limit. Please try',
+                                   'again using a smaller data range.')))
 
     # parse remote filenames to get date information
     if delimiter is None:
@@ -441,12 +425,10 @@ def list_remote_files(tag, sat_id,
     stored_list = pysat._files.process_parsed_filenames(stored,
                                                         two_digit_year_break)
     # Downselect to user-specified dates, if needed
-    if year is not None:
-        mask = (stored_list.index.year == year)
-        if month is not None:
-            mask = mask & (stored_list.index.month == month)
-            if day is not None:
-                mask = mask & (stored_list.index.day == day)
+    if start is not None:
+        mask = (stored_list.index >= start)
+        if stop is not None:
+            mask = mask & (stored_list.index <= stop)
         stored_list = stored_list[mask]
 
     return stored_list

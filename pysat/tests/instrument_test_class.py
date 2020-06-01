@@ -243,6 +243,10 @@ class InstTestClass():
             name = '_'.join((inst.platform, inst.name))
             if hasattr(getattr(self.package, name), 'list_remote_files'):
                 assert callable(inst.remote_file_list)
+                date = inst._test_dates[inst.sat_id][inst.tag]
+                files = inst.remote_file_list(start=date, stop=date)
+                # If test date is correctly chosen, files shoudl exist
+                assert len(files) > 0
             else:
                 pytest.skip("remote_file_list not available")
         except Exception as merr:
