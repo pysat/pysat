@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import absolute_import
-# python 2/3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 
 import copy
 import datetime as dt
@@ -601,7 +596,7 @@ class Instrument(object):
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 return
-            elif isinstance(key, basestring):
+            elif isinstance(key, str):
                 # assigning basic variable
 
                 # if xarray input, take as is
@@ -1925,7 +1920,7 @@ class Instrument(object):
                 return 'f8'
             elif coltype is np.float32:
                 return 'f4'
-            elif issubclass(coltype, basestring):
+            elif issubclass(coltype, str):
                 return 'S1'
             else:
                 raise TypeError('Unknown Variable Type' + str(coltype))
@@ -1937,7 +1932,7 @@ class Instrument(object):
         ----------
         data : pandas object
             Data to be written
-        file_format : basestring
+        file_format : str
             String indicating netCDF3 or netCDF4
 
         Returns
