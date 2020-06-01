@@ -2,6 +2,7 @@
 tests the pysat meta object and code
 """
 import numpy as np
+import os
 import pandas as pds
 import pytest
 
@@ -20,6 +21,16 @@ class TestBasics():
         """Runs after every method to clean up previous testing."""
         del self.testInst
         del self.meta
+
+    def test_meta_repr(self):
+        output = self.meta.__repr__()
+        assert isinstance(output, str)
+        assert output.find('pysat.MetaData') >= 0
+
+    def test_meta_repr_in_instrument(self):
+        output = self.testInst.meta.__repr__()
+        assert isinstance(output, str)
+        assert output.find('pysat.MetaData') >= 0
 
     def test_setting_nonpandas_metadata(self):
         with pytest.raises(ValueError):
@@ -139,7 +150,6 @@ class TestBasics():
         meta = pysat.Meta()
         meta['dummy_frame1'] = {'units': 'A'}
         meta['dummy_frame2'] = {'desc': 'nothing'}
-        print('Setting original data')
         self.testInst['help'] = {'data': [frame]*len(self.testInst.data.index),
                                  'units': 'V',
                                  'long_name': 'The Doors',
@@ -259,8 +269,6 @@ class TestBasics():
         self.testInst.meta['help2'] = new_meta
         self.testInst.meta['help2'] = {'label': 'The Doors Return'}
 
-        # print('yoyo: ', self.testInst.meta['help']['children']
-        #       ['dummy_frame1', 'units'])
         assert self.testInst.meta['help']['children']['dummy_frame1',
                                                       'units'] == 'A'
         assert self.testInst.meta['help2', 'name'] == 'The Doors'
@@ -285,8 +293,8 @@ class TestBasics():
 
     def test_repr_call_runs(self):
         self.testInst.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
-        print(self.testInst.meta)
-        assert True
+        output = self.testInst.meta.__str__()
+        assert output.find('hi') >= 0
 
     def test_repr_call_runs_with_higher_order_data(self):
         self.meta['param1'] = {'units': 'blank', 'long_name': u'parameter1',
@@ -297,8 +305,11 @@ class TestBasics():
                                         self.testInst.meta.fill_label: '10',
                                         'CUSTOM4': 143}
         self.testInst.meta['kiwi'] = self.meta
-        print(self.testInst.meta)
-        assert True
+        output = self.testInst.meta.__str__()
+        assert output.find('param0') >= 0
+        assert output.find('kiwi') >= 0
+        assert output.find('Metadata for kiwi') >= 0
+        assert output.find('Metadata for kiwi') < output.find('param1')
 
     def test_basic_pops(self):
 
@@ -691,36 +702,38 @@ class TestBasics():
         assert self.meta['new2'].units == 'yeppers'
         assert self.meta['new2'].long_name == 'boo2'
 
-    def test_meta_repr_functions(self):
-        self.testInst.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
-        self.testInst.meta['new2'] = {'units': 'hey2', 'long_name': 'boo2'}
-        print(self.testInst.meta)
-        # if it doesn't produce an error, we presume it works
-        # how do you test a print??
-        assert True
-
     def test_meta_csv_load(self):
-        import os
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
-        mdata = pysat.Meta.from_csv(name=name,  na_values=[],  # index_col=2,
+        mdata = pysat.Meta.from_csv(name=name,  na_values=[],
                                     keep_default_na=False,
                                     col_names=['name', 'long_name', 'idx',
                                                'units', 'description'])
-        check = []
-        # print(mdata['yrdoy'])
-        check.append(mdata['yrdoy'].long_name == 'Date')
-        check.append(mdata['unit_mer_z'].long_name ==
-                     'Unit Vector - Meridional Dir - S/C z')
-        check.append(mdata['iv_mer'].description ==
-                     'Constructed using IGRF mag field.')
-        assert np.all(check)
+        assert mdata['yrdoy'].long_name == 'Date'
+        assert (mdata['unit_mer_z'].long_name ==
+                'Unit Vector - Meridional Dir - S/C z')
+        assert (mdata['iv_mer'].description ==
+                'Constructed using IGRF mag field.')
+
+    @pytest.mark.parametrize("bad_key,bad_val,err_msg",
+                             [("col_names", [], "col_names must include"),
+                              ("name", None, "Must provide an instrument"),
+                              ("name", 5, "keyword name must be related"),
+                              ("name", 'fake_inst',
+                               "keyword name must be related")])
+    def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
+        name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
+        kwargs = {'name': name,  'na_values': [],
+                  'keep_default_na': False, 'col_names': None}
+        kwargs[bad_key] = bad_val
+        with pytest.raises(ValueError) as excinfo:
+            pysat.Meta.from_csv(**kwargs)
+        assert str(excinfo.value).find('') >= 0
 
     # assign multiple values to default
     def test_multiple_input_names_null_value(self):
         self.meta[['test1', 'test2']] = {}
-        check1 = self.meta['test1', 'units'] == ''
-        check2 = self.meta['test2', 'long_name'] == 'test2'
-        assert check1 & check2
+        assert self.meta['test1', 'units'] == ''
+        assert self.meta['test2', 'long_name'] == 'test2'
 
     def test_multiple_input_names_null_value_preexisting_values(self):
         self.meta[['test1', 'test2']] = {'units': ['degrees', 'hams'],
@@ -989,6 +1002,18 @@ class TestBasics():
         with pytest.raises(RuntimeError):
             self.meta.transfer_attributes_to_instrument(self.testInst,
                                                         strict_names=True)
+
+    def test_transfer_attributes_to_instrument_strict_names_false(self):
+        self.meta.new_attribute = 'hello'
+        self.meta._yo_yo = 'yo yo'
+        self.meta.jojo_beans = 'yep!'
+        self.meta.name = 'Failure!'
+        self.meta.date = 'yo yo2'
+        self.testInst.load(2009, 1)
+        self.testInst.jojo_beans = 'nope!'
+        self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                    strict_names=False)
+        assert self.testInst.jojo_beans == 'yep!'
 
     def test_merge_meta(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}

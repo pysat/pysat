@@ -72,7 +72,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
             try:
                 format_str = supported_tags[sat_id][tag]
             except KeyError as estr:
-                raise ValueError('Unknown sat_id or tag: ' + estr)
+                raise ValueError(' '.join(('Unknown sat_id or tag:',
+                                           str(estr))))
         out = pysat.Files.from_os(data_path=data_path,
                                   format_str=format_str)
 

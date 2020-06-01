@@ -3,13 +3,10 @@ from __future__ import absolute_import
 
 import numpy as np
 import os
-import sys
-if sys.version_info[0] >= 3:
-    from importlib import reload as re_load
-else:
-    re_load = reload
+from importlib import reload as re_load
 
 import pysat
+
 
 def set_data_dir(path=None, store=True):
     """
@@ -185,16 +182,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     import copy
     import netCDF4
     import pandas as pds
-    import string
     import pysat
-    try:
-        basestring
-    except NameError:
-        basestring = str
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
-    if isinstance(fnames, basestring):
+    if isinstance(fnames, str):
         fnames = [fnames]
 
     if file_format is None:

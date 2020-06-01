@@ -5,11 +5,6 @@ import os
 import warnings
 import numpy as np
 import pandas as pds
-# python 2/3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 
 
 class Meta(object):
@@ -396,7 +391,7 @@ class Meta(object):
 
 
     def __setattr__(self, name, value):
-        """Conditionally sets attributes based on self.mutable flag 
+        """Conditionally sets attributes based on self.mutable flag
 
         @properties are assumed to be mutable.
 
@@ -434,14 +429,14 @@ class Meta(object):
                                                     "object's attributes are immutable")))
         else:
             super(Meta, self).__setattr__(name, value)
-        
+
 
     def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
 
         if isinstance(input_data, dict):
             # if not passed an iterable, make it one
-            if isinstance(names, basestring):
+            if isinstance(names, str):
                 names = [names]
                 for key in input_data:
                     input_data[key] = [input_data[key]]
@@ -484,8 +479,8 @@ class Meta(object):
                     for i, name in enumerate(names):
                         to_be_set = input_data[key][i]
                         if hasattr(to_be_set, '__iter__') and \
-                                not isinstance(to_be_set, basestring):
-                            if isinstance(to_be_set[0], basestring):
+                                not isinstance(to_be_set, str):
+                            if isinstance(to_be_set[0], str):
                                 self._data.loc[name, key] = \
                                     '\n\n'.join(to_be_set)
                             else:
@@ -587,7 +582,7 @@ class Meta(object):
 
         def match_name(func, name, names):
             """Applies func on name(s) depending on name type"""
-            if isinstance(name, basestring):
+            if isinstance(name, str):
                 return func(name)
             elif isinstance(name, slice):
                 return [func(nn) for nn in names[name]]
@@ -615,7 +610,7 @@ class Meta(object):
         elif isinstance(key, list):
             return self[key, :]
 
-        elif isinstance(key, basestring):
+        elif isinstance(key, str):
             # ensure variable is present somewhere
             if key in self:
                 # get case preserved string for variable name
@@ -1024,7 +1019,7 @@ class Meta(object):
 
         # instrument attributes stay with instrument
         inst_attr = dir(inst)
-        
+
         for key in transfer_key:
             if key not in banned:
                 if key not in inst_attr:

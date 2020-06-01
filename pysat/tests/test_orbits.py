@@ -171,7 +171,6 @@ class TestSpecificUTOrbits():
             if i > 14:
                 break
             test_vals.append(self.testInst.orbits.current)
-            print('Loaded orbit ', self.testInst.orbits.current)
 
         assert np.all(test_vals == true_vals)
 
@@ -183,7 +182,6 @@ class TestSpecificUTOrbits():
         for i, inst in enumerate(self.testInst.orbits):
             if i > 14:
                 break
-            print('Loaded orbit ', self.testInst.orbits.current)
             ans.append(self.testInst.index[0] ==
                        (dt.datetime(2009, 1, 1) +
                        i*relativedelta(hours=1, minutes=37)))
@@ -306,8 +304,6 @@ class TestGeneralOrbitsMLT():
             # equivalence only when only one orbit
             # some test settings can violate this assumption
             assert all(self.testInst.data == saved_data.data)
-        else:
-            print('Skipping this part of test.')
         self.testInst.load(2009, 4)
         self.testInst.orbits[0]
         assert all(self.testInst.data == saved_data.data)
@@ -316,8 +312,6 @@ class TestGeneralOrbitsMLT():
         self.testInst.orbits.prev()
         if self.testInst.orbits.num == 1:
             assert all(self.testInst.data == saved_data.data)
-        else:
-            print('Skipping this part of test.')
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date

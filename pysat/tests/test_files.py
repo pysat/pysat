@@ -5,7 +5,6 @@ import datetime as dt
 import glob
 import numpy as np
 import os
-import sys
 
 import pandas as pds
 import pytest
@@ -14,10 +13,7 @@ import tempfile
 import pysat
 import pysat.instruments.pysat_testing
 
-if sys.version_info[0] >= 3:
-    from importlib import reload as re_load
-else:
-    re_load = reload
+from importlib import reload as re_load
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -134,10 +130,7 @@ class TestBasics():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
-        try:
-            pysat.utils.set_data_dir(self.data_path, store=False)
-        except:
-            pass
+        pysat.utils.set_data_dir(self.data_path, store=False)
         del self.testInst
 
     def test_parse_delimited_filename(self):
@@ -560,7 +553,6 @@ class TestInstrumentWithFiles():
                 file_path = os.path.join(self.testInst.files.data_path,
                                          the_file)
                 if os.path.isfile(file_path) & (to_be_removed > 0):
-                    # print(file_path)
                     to_be_removed -= 1
                     os.unlink(file_path)
         # add new files

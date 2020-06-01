@@ -8,11 +8,7 @@ import tempfile
 
 import pysat
 
-import sys
-if sys.version_info[0] >= 3:
-    from importlib import reload as re_load
-else:
-    re_load = reload
+from importlib import reload as re_load
 
 
 # ----------------------------------
@@ -76,6 +72,11 @@ class TestBasics():
         check2 = (pysat.data_dir == self.data_path)
 
         assert check1 & check2
+
+    def test_set_data_dir_bad_directory(self):
+        with pytest.raises(ValueError) as excinfo:
+            pysat.utils.set_data_dir('/fake/directory/path', store=False)
+        assert str(excinfo.value).find('does not lead to a valid dir') >= 0
 
     def test_initial_pysat_load(self):
         import shutil
@@ -239,7 +240,6 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_basic_write_and_read_netcdf4_mixed_case_format(self):
@@ -264,7 +264,6 @@ class TestBasicNetCDF4():
         assert(np.all(original == loaded_inst.columns))
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
 
         # modify metadata names in data
@@ -304,9 +303,7 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
-            # assert(np.all(self.testInst.data == loaded_inst))
 
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
@@ -324,7 +321,6 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):

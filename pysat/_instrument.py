@@ -1,24 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import absolute_import
-# python 2/3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 
 import copy
 import datetime as dt
 import functools
 import inspect
+import numpy as np
 import os
-import string
 import sys
-
-import pkgutil
 import warnings
 
-import numpy as np
 import pandas as pds
 import xarray as xr
 
@@ -407,30 +399,15 @@ class Instrument(object):
                 except (KeyError, TypeError):
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
-                    try:
-                        # Assume key[0] is integer (including list or slice)
-                        return self.data.loc[self.data.index[key[0]], key[1]]
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                    # Assume key[0] is integer (including list or slice)
+                    return self.data.loc[self.data.index[key[0]], key[1]]
             else:
                 try:
                     # integer based indexing
                     return self.data.iloc[key]
-                except:
-                    try:
-                        return self.data[key]
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data access.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                except TypeError:
+                    # If it's not an integer, TypeError is thrown
+                    return self.data[key]
         else:
             return self.__getitem_xarray__(key)
 
@@ -513,8 +490,6 @@ class Instrument(object):
 
         """
 
-        import numpy as np
-
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
         if self.pandas_format:
@@ -525,16 +500,8 @@ class Instrument(object):
                 except (KeyError, TypeError):
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
-                    try:
-                        # Assume key[0] is integer (including list or slice)
-                        self.data.loc[self.data.index[key[0]], key[1]] = new
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data access.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                    # Assume key[0] is integer (including list or slice)
+                    self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -601,7 +568,7 @@ class Instrument(object):
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 return
-            elif isinstance(key, basestring):
+            elif isinstance(key, str):
                 # assigning basic variable
 
                 # if xarray input, take as is
@@ -1913,7 +1880,7 @@ class Instrument(object):
                 return 'f8'
             elif coltype is np.float32:
                 return 'f4'
-            elif issubclass(coltype, basestring):
+            elif issubclass(coltype, str):
                 return 'S1'
             else:
                 raise TypeError('Unknown Variable Type' + str(coltype))
@@ -1925,7 +1892,7 @@ class Instrument(object):
         ----------
         data : pandas object
             Data to be written
-        file_format : basestring
+        file_format : str
             String indicating netCDF3 or netCDF4
 
         Returns

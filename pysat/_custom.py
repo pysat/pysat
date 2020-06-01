@@ -1,10 +1,5 @@
 from __future__ import print_function
 from __future__ import absolute_import
-# python 2/3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 
 import numpy as np
 import pandas as pds
@@ -216,7 +211,7 @@ class Custom(object):
                             if len(newData) > 0:
                                 # doesn't really check ensure data, there could
                                 # be multiple empty arrays returned, [[],[]]
-                                if isinstance(newName, basestring):
+                                if isinstance(newName, str):
                                     # one item to add
                                     sat[newName] = newData
                                 else:
