@@ -399,30 +399,15 @@ class Instrument(object):
                 except (KeyError, TypeError):
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
-                    try:
-                        # Assume key[0] is integer (including list or slice)
-                        return self.data.loc[self.data.index[key[0]], key[1]]
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                    # Assume key[0] is integer (including list or slice)
+                    return self.data.loc[self.data.index[key[0]], key[1]]
             else:
                 try:
                     # integer based indexing
                     return self.data.iloc[key]
-                except:
-                    try:
-                        return self.data[key]
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data access.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                except TypeError:
+                    # If it's not an integer, TypeError is thrown
+                    return self.data[key]
         else:
             return self.__getitem_xarray__(key)
 
@@ -515,16 +500,8 @@ class Instrument(object):
                 except (KeyError, TypeError):
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
-                    try:
-                        # Assume key[0] is integer (including list or slice)
-                        self.data.loc[self.data.index[key[0]], key[1]] = new
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data access.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                    # Assume key[0] is integer (including list or slice)
+                    self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
