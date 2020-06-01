@@ -6,14 +6,11 @@ import copy
 import datetime as dt
 import functools
 import inspect
+import numpy as np
 import os
-import string
 import sys
-
-import pkgutil
 import warnings
 
-import numpy as np
 import pandas as pds
 import xarray as xr
 
@@ -507,8 +504,6 @@ class Instrument(object):
         long_name = 'name', and units = ''.
 
         """
-
-        import numpy as np
 
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
