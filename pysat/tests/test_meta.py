@@ -714,14 +714,14 @@ class TestBasics():
         assert (mdata['iv_mer'].description ==
                 'Constructed using IGRF mag field.')
 
-    def test_meta_csv_load_w_col_names_as_none(self):
-        name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
-        mdata = pysat.Meta.from_csv(name=name,  na_values=[],
-                                    keep_default_na=False,
-                                    col_names=None)
-        assert mdata['yrdoy'].long_name == 'Date'
-        assert (mdata['unit_mer_z'].long_name ==
-                'Unit Vector - Meridional Dir - S/C z')
+    # def test_meta_csv_load_w_col_names_as_none(self):
+    #     name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
+    #     mdata = pysat.Meta.from_csv(name=name,  na_values=[],
+    #                                 keep_default_na=False,
+    #                                 col_names=None)
+    #     assert mdata['yrdoy'].long_name == 'Date'
+    #     assert (mdata['unit_mer_z'].long_name ==
+    #             'Unit Vector - Meridional Dir - S/C z')
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
                              [("col_names", [], "col_names must include"),
