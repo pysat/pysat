@@ -391,7 +391,7 @@ class Meta(object):
 
 
     def __setattr__(self, name, value):
-        """Conditionally sets attributes based on self.mutable flag 
+        """Conditionally sets attributes based on self.mutable flag
 
         @properties are assumed to be mutable.
 
