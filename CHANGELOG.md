@@ -25,6 +25,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed description of tag and sat_id behaviour in testing instruments
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
+  - Improved string handling robustness when writing netCDF4 files in Python 3
 - Maintenance
   - Specify dtype for pandas.Series(None) for forward compatibility
 
