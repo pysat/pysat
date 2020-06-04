@@ -1,21 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import absolute_import
-# python 2/3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 
 import copy
 import datetime as dt
 import functools
 import inspect
+import numpy as np
 import os
-import string
 import sys
-
-import pkgutil
 import warnings
 
 import netCDF4
@@ -64,9 +57,9 @@ class Instrument(object):
     temporary_file_list : boolean, optional
         If true, the list of Instrument files will not be written to disk.
         Prevents a race condition when running multiple pysat processes.
-    strict_time_flag : boolean, option (False)
+    strict_time_flag : boolean, option (True)
         If true, pysat will check data to ensure times are unique and
-        monotonic. In future versions, this will be fixed to True.
+        monotonically increasing.
     multi_file_day : boolean, optional
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
@@ -185,7 +178,7 @@ class Instrument(object):
                  clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
-                 temporary_file_list=False, strict_time_flag=False,
+                 temporary_file_list=False, strict_time_flag=True,
                  ignore_empty_files=False,
                  units_label='units', name_label='long_name',
                  notes_label='notes', desc_label='desc',
@@ -350,6 +343,7 @@ class Instrument(object):
                 # default provided by instrument module
                 orbit_info = self.orbit_info
         self.orbits = _orbits.Orbits(self, **orbit_info)
+        self.orbit_info = orbit_info
 
         # Create empty placeholder for meta translation table
         # gives information about how to label metadata for netcdf export
@@ -408,30 +402,15 @@ class Instrument(object):
                 except (KeyError, TypeError):
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
-                    try:
-                        # Assume key[0] is integer (including list or slice)
-                        return self.data.loc[self.data.index[key[0]], key[1]]
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                    # Assume key[0] is integer (including list or slice)
+                    return self.data.loc[self.data.index[key[0]], key[1]]
             else:
                 try:
                     # integer based indexing
                     return self.data.iloc[key]
-                except:
-                    try:
-                        return self.data[key]
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data access.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                except TypeError:
+                    # If it's not an integer, TypeError is thrown
+                    return self.data[key]
         else:
             return self.__getitem_xarray__(key)
 
@@ -514,8 +493,6 @@ class Instrument(object):
 
         """
 
-        import numpy as np
-
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
         if self.pandas_format:
@@ -526,16 +503,8 @@ class Instrument(object):
                 except (KeyError, TypeError):
                     # TypeError for single integer
                     # KeyError for list, array, slice of integers
-                    try:
-                        # Assume key[0] is integer (including list or slice)
-                        self.data.loc[self.data.index[key[0]], key[1]] = new
-                    except ValueError as err:
-                        estring = ' '.join((str(err), "\n",
-                                            "Unable to sort out data access.",
-                                            "Instrument has data : ",
-                                            str(not self.empty), "\n",
-                                            "Requested key : ", str(key)))
-                        raise ValueError(estring)
+                    # Assume key[0] is integer (including list or slice)
+                    self.data.loc[self.data.index[key[0]], key[1]] = new
                 self.meta[key[1]] = {}
                 return
             elif not isinstance(new, dict):
@@ -602,7 +571,7 @@ class Instrument(object):
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 return
-            elif isinstance(key, basestring):
+            elif isinstance(key, str):
                 # assigning basic variable
 
                 # if xarray input, take as is
@@ -911,7 +880,7 @@ class Instrument(object):
 
         output_str += '\nOrbit Settings' + '\n'
         output_str += '--------------' + '\n'
-        if self.orbit_info is None:
+        if self.orbits.orbit_index is None:
             output_str += 'Orbit properties not set.\n'
         else:
             output_str += 'Orbit Kind: ' + self.orbit_info['kind'] + '\n'
@@ -1407,20 +1376,19 @@ class Instrument(object):
         # ensure data is unique and monotonic
         # check occurs after all the data padding loads, or individual load
         # thus it can potentially check issues with padding or with raw data
-        if (not self.index.is_monotonic_increasing) or (not self.index.is_unique):
+        if not (self.index.is_monotonic_increasing and self.index.is_unique):
+            message = ''
+            if not self.index.is_unique:
+                message = ' '.join((message, 'Loaded data is not unique.'))
+            if not self.index.is_monotonic_increasing:
+                message = ' '.join((message, 'Loaded data is not',
+                                   'monotonically increasing. '))
             if self.strict_time_flag:
-                raise ValueError('Loaded data is not unique (',
-                                 not self.index.is_unique,
-                                 ') or not monotonic increasing (',
-                                 not self.index.is_monotonic_increasing,
-                                 ')')
+                raise ValueError(' '.join((message, 'To continue to use data,'
+                                           'set inst.strict_time_flag=False',
+                                           'before loading data')))
             else:
-                # warn about changes coming in the future
-                warnings.warn(' '.join(('Strict times will eventually be',
-                                        'enforced upon all instruments.',
-                                        '(strict_time_flag)')),
-                              DeprecationWarning,
-                              stacklevel=2)
+                warnings.warn(message, stacklevel=2)
 
         # apply default instrument routine, if data present
         if not self.empty:
@@ -1447,7 +1415,7 @@ class Instrument(object):
         sys.stdout.flush()
         return
 
-    def remote_file_list(self, year=None, month=None, day=None):
+    def remote_file_list(self, start=None, stop=None):
         """List remote files for chosen instrument.  Default behaviour is
         to return all files.  User may additionally specify a given year,
         year/month, or year/month/day combination to return a subset of
@@ -1455,19 +1423,13 @@ class Instrument(object):
 
         Keywords
         --------
-        year : int or NoneType
-            Selected year to return remote files.  A None value will return
-            all available files.
+        start : (dt.datetime or NoneType)
+            Starting time for file list. A None value will start with the first
+            file found.
             (default=None)
-        month : int or NoneType
-            Selected month to return remote files.  A year must be specified.
-            A None value will return all available files for the year, if year
-            is specified.
-            (default=None)
-        day : int or NoneType
-            Selected day to return remote files.  A year and month must be
-            specified. A None value will return all available files for the
-            year or month, if keywords are specified.
+        stop : (dt.datetime or NoneType)
+            Ending time for the file list.  A None value will stop with the last
+            file found.
             (default=None)
 
         Returns
@@ -1478,9 +1440,9 @@ class Instrument(object):
         """
 
         return self._list_remote_rtn(self.tag, self.sat_id,
-                                     year=year, month=month, day=day)
+                                     start=start, stop=stop)
 
-    def remote_date_range(self, year=None, month=None, day=None):
+    def remote_date_range(self, start=None, stop=None):
         """Returns fist and last date for remote data.  Default behaviour is
         to search all files.  User may additionally specify a given year,
         year/month, or year/month/day combination to return a subset of
@@ -1488,19 +1450,13 @@ class Instrument(object):
 
         Keywords
         --------
-        year : int or NoneType
-            Selected year to return remote files.  A None value will return
-            all available files.
+        start : (dt.datetime or NoneType)
+            Starting time for file list. A None value will start with the first
+            file found.
             (default=None)
-        month : int or NoneType
-            Selected month to return remote files.  A year must be specified.
-            A None value will return all available files for the year, if year
-            is specified.
-            (default=None)
-        day : int or NoneType
-            Selected day to return remote files.  A year and month must be
-            specified. A None value will return all available files for the
-            year or month, if keywords are specified.
+        stop : (dt.datetime or NoneType)
+            Ending time for the file list.  A None value will stop with the last
+            file found.
             (default=None)
 
         Returns
@@ -1510,7 +1466,7 @@ class Instrument(object):
 
         """
 
-        files = self.remote_file_list(year=year, month=month, day=day)
+        files = self.remote_file_list(start=start, stop=stop)
         return [files.index[0], files.index[-1]]
 
     def download_updated_files(self, user=None, password=None, **kwargs):
@@ -1927,7 +1883,7 @@ class Instrument(object):
                 return 'f8'
             elif coltype is np.float32:
                 return 'f4'
-            elif issubclass(coltype, basestring):
+            elif issubclass(coltype, str):
                 return 'S1'
             else:
                 raise TypeError('Unknown Variable Type' + str(coltype))
@@ -1939,7 +1895,7 @@ class Instrument(object):
         ----------
         data : pandas object
             Data to be written
-        file_format : basestring
+        file_format : str
             String indicating netCDF3 or netCDF4
 
         Returns

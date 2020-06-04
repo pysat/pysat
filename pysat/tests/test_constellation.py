@@ -1,4 +1,4 @@
-from nose.tools import raises
+import pytest
 
 import pysat
 
@@ -28,19 +28,17 @@ class TestConstellation:
         const = pysat.Constellation(name='testing')
         assert len(const.instruments) == 5
 
-    @raises(ValueError)
-    def test_construct_both(self):
+    def test_construct_both_error(self):
         """Attempt to construct a Constellation by name and list.
         Raises an error."""
-        pysat.Constellation(
-            instruments=self.instruments,
-            name='testing')
+        with pytest.raises(ValueError):
+            pysat.Constellation(instruments=self.instruments, name='testing')
 
-    @raises(ValueError)
-    def test_construct_bad_instruments(self):
+    def test_construct_bad_instruments_error(self):
         """Attempt to construct a Constellation with
         a bad instrument 'list.'"""
-        pysat.Constellation(instruments=42)
+        with pytest.raises(ValueError):
+            pysat.Constellation(instruments=42)
 
     def test_construct_null(self):
         """Attempt to construct a Constellation with
@@ -59,16 +57,6 @@ class TestConstellation:
         """Test Constellation:__str__."""
         assert str(self.const) == \
             "\npysat Constellation object:\ntesting\ntesting\n"
-
-
-class TestAdditionIdenticalInstruments:
-    def setup(self):
-        self.const1 = pysat.Constellation(name='testing')
-        self.const2 = pysat.Constellation(name='single_test')
-
-    def teardown(self):
-        del self.const1
-        del self.const2
 
 
 class TestDataMod:

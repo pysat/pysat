@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-04-23
+## [3.0.0] - 2020-05-30
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -10,6 +10,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Unit tests are now pytest compatible
   - Added altitudes to test instruments
   - New flags added to instruments to streamline unit testing: `_test_download`, `_test_download_travis`, `_password_req`
+  - Madrigal instruments migrated to pysatMadrigal
+  - methods.nasa_cdaweb.list_files moved to methods.general
+  - `strict_time_flag` now defaults to True
+  - Use of start / stop notation in remote_file_list
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
@@ -20,27 +24,35 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed coords.scale_units
   - Removed time.season_date_range
   - DeprecationWarning for strict_time_flag only triggered if sloppy data is found
+  - Remove convenience methods imported from pandas
+  - Changed the default `custom.attatch` input to allow keyword arguement use when additional function input is required
+  - Removed python 2.7 syntax
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
+  - Added a tutorial for developers of instrument libraries for pysat
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3
 - Maintenance
-  - Specify dtype for pandas.Series(None) for forward compatibility
+  - nose dependency removed from unit tests
+  - Specify dtype for empty pandas.Series for forward compatibility
+  - Remove wildcard imports, relative imports
 
-## [2.2.0] - 2020-2-29
+## [2.2.0] - 2020-5-28
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
-   - Updates to instrument testing objects for consistency
    - Added check to ensure non-pysat keywords supplied at instantiation
      are supported by underlying data set methods
+   - Updates to instrument testing objects for consistency
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
      calling it externally
    - Added warning when FillValue metadata could lead to unexpected results
      when writing a netCDF4 file
+   - Use conda to manage Travis CI test environment
+   - Test instruments now part of compiled package for development elsewhere
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation
@@ -60,7 +72,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
   - Updates to Travis CI environment
   - Removed `inplace` use in xarray `assign` function, which is no longer allowed
-
+  - Removed old code and incorrect comments from F10.7 support
+  - Updated use of numpy.linspace to be compatible with numpy 1.18.
+  - Fixed output of orbit_info during print(inst)
+  - Fixed a bug when requesting non-existent files from CDAWeb (#426)
 
 ## [2.1.0] - 2019-11-18
 - New Features

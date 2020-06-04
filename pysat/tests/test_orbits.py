@@ -1,40 +1,40 @@
 import datetime as dt
 from dateutil.relativedelta import relativedelta as relativedelta
-from nose.tools import raises
 import numpy as np
 
 import pandas as pds
+import pytest
 
 import pysat
 
 
 class TestOrbitsUserInterface():
 
-    @raises(ValueError)
     def test_orbit_w_bad_kind(self):
         info = {'index': 'mlt', 'kind': 'cats'}
-        self.testInst = pysat.Instrument('pysat', 'testing',
-                                         clean_level='clean',
-                                         orbit_info=info, update_files=True)
+        with pytest.raises(ValueError):
+            self.testInst = pysat.Instrument('pysat', 'testing',
+                                             clean_level='clean',
+                                             orbit_info=info,
+                                             update_files=True)
 
-    @raises(ValueError)
     def test_orbit_long_w_bad_variable(self):
         info = {'index': 'magnetic local time', 'kind': 'longitude'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
-    @raises(ValueError)
     def test_orbit_long_w_missing_orbit_info(self):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          update_files=True)
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
-    @raises(ValueError)
     def test_orbit_long_w_missing_orbit_index(self):
         info = {'index': 'magnetic local time', 'kind': 'longitude'}
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -43,18 +43,18 @@ class TestOrbitsUserInterface():
         # force index to None
         self.testInst.orbits.orbit_index = None
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
-    @raises(ValueError)
     def test_orbit_mlt_w_bad_variable(self):
         info = {'index': 'magnetic local time', 'kind': 'lt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
-    @raises(ValueError)
     def test_orbit_mlt_w_missing_orbit_index(self):
         info = {'index': 'magnetic local time', 'kind': 'lt'}
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -63,18 +63,18 @@ class TestOrbitsUserInterface():
         # force index to None
         self.testInst.orbits.orbit_index = None
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
-    @raises(ValueError)
     def test_orbit_polar_w_bad_variable(self):
         info = {'index': 'magnetic local time', 'kind': 'polar'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
-    @raises(ValueError)
     def test_orbit_polar_w_missing_orbit_index(self):
         info = {'index': 'magnetic local time', 'kind': 'polar'}
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -83,18 +83,18 @@ class TestOrbitsUserInterface():
         # force index to None
         self.testInst.orbits.orbit_index = None
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
-    @raises(ValueError)
     def test_orbit_orbibt_w_bad_variable(self):
         info = {'index': 'magnetic local time', 'kind': 'orbit'}
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info=info, update_files=True)
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
-    @raises(ValueError)
     def test_orbit_orbit_w_missing_orbit_index(self):
         info = {'index': 'magnetic local time', 'kind': 'orbit'}
         self.testInst = pysat.Instrument('pysat', 'testing',
@@ -103,7 +103,8 @@ class TestOrbitsUserInterface():
         # force index to None
         self.testInst.orbits.orbit_index = None
         self.testInst.load(2009, 1)
-        self.testInst.orbits.next()
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
 
 
 class TestSpecificUTOrbits():
@@ -150,15 +151,15 @@ class TestSpecificUTOrbits():
         assert (self.testInst.index[-1] ==
                 (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
 
-    @raises(Exception)
     def test_single_orbit_call_too_many(self):
         self.testInst.load(2008, 366)
-        self.testInst.orbits[17]
+        with pytest.raises(Exception):
+            self.testInst.orbits[17]
 
-    @raises(Exception)
     def test_single_orbit_no_input(self):
         self.testInst.load(2008, 366)
-        self.testInst.orbits[None]
+        with pytest.raises(TypeError):
+            self.testInst.orbits[None]
 
     def test_oribt_number_via_current_multiple_orbit_calls_in_day(self):
         self.testInst.load(2009, 1)
@@ -170,7 +171,6 @@ class TestSpecificUTOrbits():
             if i > 14:
                 break
             test_vals.append(self.testInst.orbits.current)
-            print('Loaded orbit ', self.testInst.orbits.current)
 
         assert np.all(test_vals == true_vals)
 
@@ -182,7 +182,6 @@ class TestSpecificUTOrbits():
         for i, inst in enumerate(self.testInst.orbits):
             if i > 14:
                 break
-            print('Loaded orbit ', self.testInst.orbits.current)
             ans.append(self.testInst.index[0] ==
                        (dt.datetime(2009, 1, 1) +
                        i*relativedelta(hours=1, minutes=37)))
@@ -252,11 +251,11 @@ class TestGeneralOrbitsMLT():
         """Runs after every method to clean up previous testing."""
         del self.testInst
 
-    @raises(StopIteration)
     def test_load_orbits_w_empty_data(self):
         self.testInst.load(1958, 31)
         self.testInst.orbits[0]
-        self.testInst.orbits.next()
+        with pytest.raises(StopIteration):
+            self.testInst.orbits.next()
 
     def test_less_than_one_orbit_of_data(self):
         def filter_data(inst):
@@ -305,8 +304,6 @@ class TestGeneralOrbitsMLT():
             # equivalence only when only one orbit
             # some test settings can violate this assumption
             assert all(self.testInst.data == saved_data.data)
-        else:
-            print('Skipping this part of test.')
         self.testInst.load(2009, 4)
         self.testInst.orbits[0]
         assert all(self.testInst.data == saved_data.data)
@@ -315,8 +312,6 @@ class TestGeneralOrbitsMLT():
         self.testInst.orbits.prev()
         if self.testInst.orbits.num == 1:
             assert all(self.testInst.data == saved_data.data)
-        else:
-            print('Skipping this part of test.')
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
         d1check = self.testInst.date == saved_data.date
@@ -627,7 +622,7 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
                                          seconds=int(seconds)) -
                           pds.DateOffset(seconds=20)])
 
-        self.testInst.custom.attach(filter_data2, 'modify', times=times)
+        self.testInst.custom.attach(filter_data2, kwargs={'times': times})
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -654,7 +649,7 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
                                          seconds=int(seconds)) -
                           pds.DateOffset(seconds=20)])
 
-        self.testInst.custom.attach(filter_data2, 'modify', times=times)
+        self.testInst.custom.attach(filter_data2, kwargs={'times': times})
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""

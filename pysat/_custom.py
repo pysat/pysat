@@ -1,18 +1,15 @@
 from __future__ import print_function
 from __future__ import absolute_import
-# python 2/3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 
+import numpy as np
 import pandas as pds
 import xarray as xr
 
+from pysat import logger
+
 
 class Custom(object):
-    """
-    Applies a queue of functions when instrument.load called.
+    """ Applies a queue of functions when instrument.load called.
 
     Nano-kernel functionality enables instrument objects that are
     'set and forget'. The functions are always run whenever
@@ -42,19 +39,18 @@ class Custom(object):
     ----
     User should interact with Custom through pysat.Instrument instance's
     attribute, instrument.custom
+
     """
 
     def __init__(self):
-        # create a list object to store functions
+        # create hidden lists to store custom functions, their return type,
+        # argument input, and keyword argument input
         self._functions = []
-        # type of function stored (add/modify/pass on data)
         self._kind = []
-        # arguments to functions
         self._args = []
-        # keyword arguments to functions
         self._kwargs = []
 
-    def attach(self, function, kind='add', at_pos='end', *args, **kwargs):
+    def attach(self, function, kind='modify', at_pos='end', args=[], kwargs={}):
         """Attach a function to custom processing queue.
 
         Custom functions are applied automatically to associated
@@ -62,26 +58,30 @@ class Custom(object):
 
         Parameters
         ----------
-            function : string or function object
-                name of function or function object to be added to queue
+        function : string or function object
+            name of function or function object to be added to queue
+        kind : {'add', 'modify', 'pass}
+            add
+                Adds data returned from function to instrument object.
+                A copy of pysat instrument object supplied to routine.
+            modify
+                pysat instrument object supplied to routine. Any and all
+                changes to object are retained.
+            pass
+                A copy of pysat object is passed to function. No
+                data is accepted from return.
+            (default='modify')
 
-            kind : {'add', 'modify', 'pass}
-                add
-                    Adds data returned from function to instrument object.
-                    A copy of pysat instrument object supplied to routine.
-                modify
-                    pysat instrument object supplied to routine. Any and all
-                    changes to object are retained.
-                pass
-                    A copy of pysat object is passed to function. No
-                    data is accepted from return.
-
-            at_pos : string or int
-                insert at position. (default, insert at end).
-            args : extra arguments
-                extra arguments are passed to the custom function (once)
-            kwargs : extra keyword arguments
-                extra keyword args are passed to the custom function (once)
+        at_pos : string or int
+            Accepts string 'end' or a number that will be used to determine
+            the insertion order if multiple custom functions are attached
+            to an Instrument object. (default='end').
+        args : list or tuple
+            Ordered arguments following the instrument object input that are
+            required by the custom function (default=[])
+        kwargs : dict
+            Dictionary of keyword arguements required by the custom function
+            (default={})
 
         Note
         ----
@@ -97,32 +97,47 @@ class Custom(object):
         - pandas Series, .name required
 
         - (string/list of strings, numpy array/list of arrays)
+
         """
 
+        # Test the positioning input
+        pos_list = list(np.arange(0, len(self._functions), 1))
+        pos_list.append('end')
+
+        if at_pos not in pos_list:
+            logger.warning(''.join(['unknown position specified, including ',
+                                    'function at end of current list']))
+            at_pos = 'end'
+
+        # Convert string to function object, if necessary
         if isinstance(function, str):
-            # convert string to function object
             function = eval(function)
 
+        # If the position is 'end' or greater
         if (at_pos == 'end') | (at_pos == len(self._functions)):
             # store function object
             self._functions.append(function)
             self._args.append(args)
             self._kwargs.append(kwargs)
             self._kind.append(kind.lower())
-        elif at_pos < len(self._functions):
+        else:
             # user picked a specific location to insert
             self._functions.insert(at_pos, function)
             self._args.insert(at_pos, args)
             self._kwargs.insert(at_pos, kwargs)
             self._kind.insert(at_pos, kind)
-        else:
-            raise TypeError('Must enter an index between 0 and %i' %
-                            len(self._functions))
 
     def _apply_all(self, sat):
         """
         Apply all of the custom functions to the satellite data object.
+
+        Parameters
+        ----------
+        sat : pysat.Instrument
+            Instrument object
+
         """
+
         if len(self._functions) > 0:
             for func, arg, kwarg, kind in zip(self._functions, self._args,
                                               self._kwargs, self._kind):
@@ -143,19 +158,20 @@ class Custom(object):
                                 sat[newData['data'].columns] = newData
                             # if a series is returned, add it as a column
                             elif isinstance(newData['data'], pds.Series):
-                                # look for name attached to series first
-                                if newData['data'].name is not None:
-                                    sat[newData['data'].name] = newData
-                                # look if name is provided as part of dict
-                                # returned from function
-                                elif 'name' in newData.keys():
+                                # Look if name is provided as part of dict
+                                # returned from function first
+                                if 'name' in newData.keys():
                                     name = newData.pop('name')
                                     sat[name] = newData
+                                # look for name attached to Series second
+                                elif newData['data'].name is not None:
+                                    sat[newData['data'].name] = newData
                                 # couldn't find name information
                                 else:
-                                    raise ValueError('Must assign a name to ' +
-                                                     'Series or return a ' +
-                                                     '"name" in dictionary.')
+                                    raise ValueError(
+                                        ''.join(['Must assign a name to ',
+                                                 'Series or return a ',
+                                                 '"name" in dictionary.']))
                             # xarray returned
                             elif isinstance(newData['data'], xr.DataArray):
                                 sat[newData['data'].name] = newData['data']
@@ -195,7 +211,7 @@ class Custom(object):
                             if len(newData) > 0:
                                 # doesn't really check ensure data, there could
                                 # be multiple empty arrays returned, [[],[]]
-                                if isinstance(newName, basestring):
+                                if isinstance(newName, str):
                                     # one item to add
                                     sat[newName] = newData
                                 else:

@@ -6,21 +6,21 @@ Dynamics (TIMED) satellite.
 SABER "Rules of the Road" for DATA USE
 Users of SABER data are asked to respect the following guidelines
 
-    - Mission scientific and model results are open to all.
-    - Guest investigators, and other members of the scientific community or
+  - Mission scientific and model results are open to all.
+  - Guest investigators, and other members of the scientific community or
     general public should contact the PI or designated team member early in an
     analysis project to discuss the appropriate use of the data.
-    - Users that wish to publish the results derived from SABER data should
+  - Users that wish to publish the results derived from SABER data should
     normally offer co-authorship to the PI, Associate PI or designated team
     members. Co-authorship may be declined. Appropriate acknowledgement of
     institutions, personnel, and funding agencies should be given.
-    - Users should heed the caveats of SABER team members as to the
+  - Users should heed the caveats of SABER team members as to the
     interpretation and limitations of the data. SABER team members may insist
     that such caveats be published, even if co-authorship is declined. Data
     and model version numbers should also be specified.
-    - Pre-prints of publications and conference abstracts should be widely
+  - Pre-prints of publications and conference abstracts should be widely
     distributed to interested parties within the mission and related projects.
-    - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
+  - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
 
 Parameters
 ----------
@@ -46,6 +46,7 @@ Warnings
 Authors
 -------
 J. Klenzing, 4 March 2019
+
 """
 
 from __future__ import print_function
@@ -55,6 +56,7 @@ import datetime as dt
 import functools
 
 # CDAWeb methods prewritten for pysat
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 # the platform and name strings associated with this instrument
@@ -101,7 +103,7 @@ supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
 # the command below presets some of the methods inputs, leaving
 # those provided by pysat available when invoked
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 # let pysat know that data is spread across more than one file

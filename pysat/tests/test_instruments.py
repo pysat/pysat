@@ -1,12 +1,18 @@
 import pytest
 
+# Make sure to import your instrument library here
 import pysat
+# Import the test classes from pysat
 from pysat.tests.instrument_test_class import generate_instrument_list
 from pysat.tests.instrument_test_class import InstTestClass
 
-instruments = generate_instrument_list(pysat.instruments.__all__,
-                                       package='pysat.instruments')
+# Developers for instrument libraries should update the following line to
+# point to their own library package
+# e.g.,
+# instruments = generate_instrument_list(package=mypackage.instruments)
+instruments = generate_instrument_list(package=pysat.instruments)
 
+# The following lines apply the custom instrument lists to each type of test
 method_list = [func for func in dir(InstTestClass)
                if callable(getattr(InstTestClass, func))]
 # Search tests for iteration via pytestmark, update instrument list
@@ -32,7 +38,10 @@ class TestInstruments(InstTestClass):
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        self.package = 'pysat.instruments'
+        # Developers for instrument libraries should update the following line
+        # to point to their own library package, e.g.,
+        # self.package = mypackage.instruments
+        self.package = pysat.instruments
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""

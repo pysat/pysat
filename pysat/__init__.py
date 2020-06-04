@@ -67,10 +67,9 @@ if not os.path.isdir(pysat_dir):
     os.mkdir(pysat_dir)
     print('Created .pysat directory in user home directory to store settings.')
     # create file with default data directory
+    data_dir = ''
     if (os.environ.get('TRAVIS') == 'true'):
         data_dir = '/home/travis/build/pysatData'
-    else:
-        data_dir = ''
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
         f.write(data_dir)
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
@@ -99,15 +98,13 @@ else:
         with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
             f.write('')
 
-from datetime import datetime  # TODO: remove before 3.0 release!
-from pandas import DataFrame  # TODO: remove before 3.0 release!
-from . import utils
-from ._constellation import Constellation
-from ._instrument import Instrument
-from ._meta import Meta
-from ._files import Files
-from ._custom import Custom
-from ._orbits import Orbits
-from . import instruments
+from pysat import utils
+from pysat._constellation import Constellation
+from pysat._instrument import Instrument
+from pysat._meta import Meta
+from pysat._files import Files
+from pysat._custom import Custom
+from pysat._orbits import Orbits
+from pysat import instruments
 
 __all__ = ['instruments', 'utils']

@@ -45,17 +45,14 @@ def remove_files(inst):
                                'ensure temp directory is used')))
 
 
-def generate_instrument_list(instrument_names=[], package=None):
+def generate_instrument_list(package=None):
     """Iterate through and create all of the test Instruments needed.
 
 
     Parameters
     ----------
-    instrument_names : List of strings
-        The instrument names under consideration for testing.  Usually found by
-        invoking instrument_library.__all__
-    package : string
-        The name of the instrument library package, eg, 'pysat.instruments'
+    package : python module
+        The instrument library package to test, eg, 'pysat.instruments'
 
     Notes
     -----
@@ -64,8 +61,9 @@ def generate_instrument_list(instrument_names=[], package=None):
     """
 
     if package is None:
-        package = 'pysat.instruments'
+        package = pysat.instruments
 
+    instrument_names = package.__all__
     instrument_download = []
     instrument_no_download = []
 
@@ -77,7 +75,7 @@ def generate_instrument_list(instrument_names=[], package=None):
     for name in instrument_names:
         try:
             module = import_module(''.join(('.', name)),
-                                   package=package)
+                                   package=package.__name__)
         except ImportError:
             print(' '.join(["Couldn't import", name]))
             pass
@@ -120,21 +118,13 @@ class InstTestClass():
     """Provides standardized tests for pysat instrument libraries.
     """
 
-    def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        self.package = 'pysat.instruments'
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        del self.package
-
     @pytest.mark.all_inst
     def test_modules_standard(self, name):
         """Checks that modules are importable and have standard properties.
         """
         # ensure that each module is at minimum importable
         module = import_module(''.join(('.', name)),
-                               package=self.package)
+                               package=self.package.__name__)
         # Check for presence of basic platform / name / tags / sat_id
         assert isinstance(module.platform, str)
         assert isinstance(module.name, str)
@@ -155,7 +145,7 @@ class InstTestClass():
     def test_required_function_presence(self, name):
         """Check if each required function is present and callable"""
         module = import_module(''.join(('.', name)),
-                               package=self.package)
+                               package=self.package.__name__)
         assert hasattr(module, 'load') & callable(module.load)
         assert hasattr(module, 'list_files') & callable(module.list_files)
         assert hasattr(module, 'download') & callable(module.download)
@@ -164,7 +154,7 @@ class InstTestClass():
     def test_instrument_test_dates(self, name):
         """Check that module has structured test dates correctly."""
         module = import_module(''.join(('.', name)),
-                               package=self.package)
+                               package=self.package.__name__)
         info = module._test_dates
         for sat_id in info.keys():
             for tag in info[sat_id].keys():
@@ -205,7 +195,17 @@ class InstTestClass():
                 target = 'Fake Data to be cleared'
                 inst.data = [target]
                 start = inst._test_dates[inst.sat_id][inst.tag]
-                inst.load(date=start)
+                try:
+                    inst.load(date=start)
+                except ValueError as verr:
+                    # Check if instrument is failing due to strict time flag
+                    if str(verr).find('Loaded data') > 0:
+                        inst.strict_time_flag = False
+                        inst.load(date=start)
+                    else:
+                        # If error message does not match, raise error anyway
+                        raise(verr)
+
                 # Make sure fake data is cleared
                 assert target not in inst.data
                 # If cleaning not used, something should be in the file
@@ -233,8 +233,12 @@ class InstTestClass():
         """
         try:
             name = '_'.join((inst.platform, inst.name))
-            if hasattr(getattr(pysat.instruments, name), 'list_remote_files'):
+            if hasattr(getattr(self.package, name), 'list_remote_files'):
                 assert callable(inst.remote_file_list)
+                date = inst._test_dates[inst.sat_id][inst.tag]
+                files = inst.remote_file_list(start=date, stop=date)
+                # If test date is correctly chosen, files shoudl exist
+                assert len(files) > 0
             else:
                 pytest.skip("remote_file_list not available")
         except Exception as merr:

@@ -87,6 +87,7 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 platform = 'de2'
@@ -100,7 +101,7 @@ fname = 'de2_neutral1s_nacs_{year:04d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}
 
 # use the CDAWeb methods list files routine
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 # use the default CDAWeb method

@@ -1,18 +1,14 @@
 """
 tests the pysat utils area
 """
-from nose.tools import assert_raises, raises
 import numpy as np
 import os
+import pytest
 import tempfile
 
 import pysat
 
-import sys
-if sys.version_info[0] >= 3:
-    from importlib import reload as re_load
-else:
-    re_load = reload
+from importlib import reload as re_load
 
 
 # ----------------------------------
@@ -76,6 +72,11 @@ class TestBasics():
         check2 = (pysat.data_dir == self.data_path)
 
         assert check1 & check2
+
+    def test_set_data_dir_bad_directory(self):
+        with pytest.raises(ValueError) as excinfo:
+            pysat.utils.set_data_dir('/fake/directory/path', store=False)
+        assert str(excinfo.value).find('does not lead to a valid dir') >= 0
 
     def test_initial_pysat_load(self):
         import shutil
@@ -164,46 +165,40 @@ class TestScaleUnits():
     def test_scale_units_bad_output(self):
         """Test scale_units for unknown output unit"""
 
-        assert_raises(ValueError, pysat.utils.scale_units, "happy", "m")
-        try:
+        with pytest.raises(ValueError) as verr:
             pysat.utils.scale_units('happy', 'm')
-        except ValueError as verr:
-            assert str(verr).find('output unit') > 0
+        assert str(verr).find('output unit') > 0
 
     def test_scale_units_bad_input(self):
         """Test scale_units for unknown input unit"""
 
-        assert_raises(ValueError, pysat.utils.scale_units, "m", "happy")
-        try:
+        with pytest.raises(ValueError) as verr:
             pysat.utils.scale_units('m', 'happy')
-        except ValueError as verr:
-            assert str(verr).find('input unit') > 0
+        assert str(verr).find('input unit') > 0
 
-    def test_scale_units_bad_match_pairs(self):
+    @pytest.mark.parametrize("unit1,unit2", [("m", "m/s"),
+                                             ("m", "deg"),
+                                             ("h", "km/s")])
+    def test_scale_units_bad_match_pairs(self, unit1, unit2):
         """Test scale_units for mismatched input for all pairings"""
 
-        assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
-        assert_raises(ValueError, pysat.utils.scale_units, "m", "deg")
-        assert_raises(ValueError, pysat.utils.scale_units, "h", "km/s")
+        with pytest.raises(ValueError):
+            pysat.utils.scale_units(unit1, unit2)
 
     def test_scale_units_bad_match_message(self):
         """Test scale_units error message for mismatched input"""
 
-        assert_raises(ValueError, pysat.utils.scale_units, "m", "m/s")
-        try:
+        with pytest.raises(ValueError) as verr:
             pysat.utils.scale_units('m', 'm/s')
-        except ValueError as verr:
-            assert str(verr).find('Cannot scale') >= 0
-            assert str(verr).find('unknown units') < 0
+        assert str(verr).find('Cannot scale') >= 0
+        assert str(verr).find('unknown units') < 0
 
     def test_scale_units_both_bad(self):
         """Test scale_units for bad input and output"""
 
-        assert_raises(ValueError, pysat.utils.scale_units, "happy", "sad")
-        try:
+        with pytest.raises(ValueError) as verr:
             pysat.utils.scale_units('happy', 'sad')
-        except ValueError as verr:
-            assert str(verr).find('unknown units') > 0
+        assert str(verr).find('unknown units') > 0
 
 
 class TestBasicNetCDF4():
@@ -227,10 +222,7 @@ class TestBasicNetCDF4():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
-        try:
-            pysat.utils.set_data_dir(self.data_path, store=False)
-        except:
-            pass
+        pysat.utils.set_data_dir(self.data_path, store=False)
         del self.testInst
 
     def test_basic_write_and_read_netcdf4_default_format(self):
@@ -248,7 +240,6 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_basic_write_and_read_netcdf4_mixed_case_format(self):
@@ -259,7 +250,8 @@ class TestBasicNetCDF4():
         self.testInst.load(2009, 1)
         # modify data names in data
         original = sorted(self.testInst.data.columns)
-        self.testInst.data = self.testInst.data.rename(str.upper, axis='columns')
+        self.testInst.data = self.testInst.data.rename(str.upper,
+                                                       axis='columns')
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
@@ -272,20 +264,20 @@ class TestBasicNetCDF4():
         assert(np.all(original == loaded_inst.columns))
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
 
         # modify metadata names in data
-        self.testInst.meta.data = self.testInst.meta.data.rename(str.upper, axis='index')
+        self.testInst.meta.data = self.testInst.meta.data.rename(str.upper,
+                                                                 axis='index')
         # write file
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
         # load file
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
 
         # check that names are upper case when written
-        assert(np.all(sorted(self.testInst.data.columns) == sorted(loaded_inst.columns)))
+        assert np.all(sorted(self.testInst.data.columns)
+                      == sorted(loaded_inst.columns))
 
-    @raises(Exception)
     def test_write_netcdf4_duplicate_variable_names(self):
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
@@ -293,8 +285,8 @@ class TestBasicNetCDF4():
                                'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
         self.testInst['MLT'] = 1
-        self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
-
+        with pytest.raises(ValueError):
+            self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
@@ -311,9 +303,7 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
-            # assert(np.all(self.testInst.data == loaded_inst))
 
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
@@ -331,7 +321,6 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):
@@ -416,17 +405,16 @@ class TestBasicNetCDF4():
         self.testInst.load(2009, 1)
 
         try:
-            assert self.testInst.bespoke # should raise
+            assert self.testInst.bespoke  # should raise
         except AttributeError:
             pass
 
         # instrument meta attributes immutable upon load
-        assert self.testInst.meta.mutable == False
+        assert not self.testInst.meta.mutable
         try:
             self.testInst.meta.bespoke = True
         except AttributeError:
             pass
-
 
     def test_netcdf_attribute_override(self):
         """Test that attributes in netcdf file may be overridden"""
