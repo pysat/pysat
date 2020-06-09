@@ -805,7 +805,6 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     # convert to numpy arrays
     for key in stored.keys():
-        stored[key] = np.array(stored[key]).astype(int)
         if len(stored[key]) == 0:
             stored[key] = None
     # include files in output

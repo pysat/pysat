@@ -109,41 +109,29 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # overloading revision keyword below
     if format_str is None:
         # COSMIC file format string
-        if tag == 'scnlv1':
-            format_str = ''.join(('????.???/??????_C{revision:03d}.{year:04d}',
-                                  '.{day:03d}.{hour:02d}.{minute:02d}.',
-                                  '????.?{second:02d}.??_????.????_nc'))
-        else:
-            format_str = ''.join(('????.???/??????_C{revision:03d}.{year:04d}',
-                                  '.{day:03d}.{hour:02d}.{minute:02d}.',
-                                  '?{second:02d}_????.????_nc'))
+        format_str = ''.join(('????.???/*.{year:04d}.{day:03d}',
+                              '.{hour:02d}.{minute:02d}.*_nc'))
 
     # process format string to get string to search for
-    search_dict = pysat._files.construct_searchstring_from_format(format_str,
-                                                                  wildcard=False)
+    search_dict = pysat._files.construct_searchstring_from_format(format_str)
     search_str = search_dict['search_string']
     # perform local file search
     files = pysat._files.search_local_system_formatted_filename(data_path,
                                                                 search_str)
     # we have a list of files, now we need to extract the information
     # pull of data from the areas identified by format_str
-    stored = pysat._files.parse_fixed_width_filenames(files, format_str)
+    stored = pysat._files.parse_delimited_filenames(files, format_str,
+                                                    delimiter='.')
 
     if len(stored['year']) > 0:
-        year = np.array(stored['year'])
-        day = np.array(stored['day'])
-        hour = np.array(stored['hour'])
-        minute = np.array(stored['minute'])
-        # the ground station number in the file encoded as number of seconds
-        second = np.array(stored['second'])
-        # the cosmic satellite number is stored as 0.X, where x is cosmic id
-        uts = hour*3600. + minute*60. + second + np.array(stored['revision'])*1.E-1
-        # do a pre-sort on uts to get files that may conflict with eachother
-        # close together in array order
-        # this ensures that we can make the times all unique
+        year = np.array(stored['year']).astype(int)
+        day = np.array(stored['day']).astype(int)
+        hour = np.array(stored['hour']).astype(int)
+        minute = np.array(stored['minute']).astype(int)
+        uts = hour*3600. + minute*60.
         idx = np.argsort(uts)
         # adding linearly increasing offsets
-        shift_uts = np.mod(np.arange(len(year)).astype(int), 1E3) * 1.E-5 + 1.E-5
+        shift_uts = np.mod(np.arange(len(year)), 1E3) * 1.E-5 + 1.E-5
         uts[idx] += shift_uts
 
         index = pysat.utils.time.create_datetime_index(year=year[idx], day=day[idx],
