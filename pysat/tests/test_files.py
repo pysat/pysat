@@ -151,7 +151,7 @@ class TestBasics():
         hour = np.array([8, 10, 6, 18, 3, 23])
         minute = np.array([8, 10, 6, 18, 3, 59])
         second = np.array([58, 11, 26, 2, 18, 59])
-        version = np.array(['nkj', 'cmv', 'cmm', 'ukl', 'dls', 'rbg'])
+        version = np.array(['ukl', 'vni', 'cjc', 'lmb', 'nkj', 'mrk'])
         file_list = []
         for i in range(6):
             file_list.append(fname.format(year=year[i].astype(int),
