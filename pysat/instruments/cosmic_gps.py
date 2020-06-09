@@ -109,7 +109,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     # overloading revision keyword below
     if format_str is None:
         # COSMIC file format string
-        format_str = ''.join(('????.???/*.{year:04d}.{day:03d}',
+        format_str = ''.join(('*.*/*.{year:04d}.{day:03d}',
                               '.{hour:02d}.{minute:02d}.*_nc'))
 
     # process format string to get string to search for

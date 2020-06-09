@@ -144,14 +144,14 @@ class TestBasics():
         # Note: Can be removed if future instrument that uses delimited
         # filenames is added to routine travis end-to-end testing
         fname = ''.join(('test_{year:4d}_{month:2d}_{day:2d}_{hour:2d}',
-                         '_{minute:2d}_{second:2d}_{version:3s}_r02.cdf'))
+                         '_{minute:2d}_{second:2d}_{version:2s}_r02.cdf'))
         year = np.ones(6)*2009
         month = np.ones(6)*12
         day = np.array([12, 15, 17, 19, 22, 24])
         hour = np.array([8, 10, 6, 18, 3, 23])
         minute = np.array([8, 10, 6, 18, 3, 59])
         second = np.array([58, 11, 26, 2, 18, 59])
-        version = np.array(['ukl', 'vni', 'cjc', 'lmb', 'nkj', 'mrk'])
+        version = np.array(['v1', 'v2', 'r1', 'r3', 'v5', 'a6'])
         file_list = []
         for i in range(6):
             file_list.append(fname.format(year=year[i].astype(int),
