@@ -124,10 +124,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
                                                     delimiter='.')
 
     if len(stored['year']) > 0:
-        year = np.array(stored['year']).astype(int)
-        day = np.array(stored['day']).astype(int)
-        hour = np.array(stored['hour']).astype(int)
-        minute = np.array(stored['minute']).astype(int)
+        year = np.array(stored['year'])
+        day = np.array(stored['day'])
+        hour = np.array(stored['hour'])
+        minute = np.array(stored['minute'])
         uts = hour*3600. + minute*60.
         # do a pre-sort on uts to get files that may conflict with each other
         # due to multiple spacecraft and antennas
