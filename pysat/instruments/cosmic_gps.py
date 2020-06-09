@@ -129,8 +129,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         hour = np.array(stored['hour']).astype(int)
         minute = np.array(stored['minute']).astype(int)
         uts = hour*3600. + minute*60.
+        # do a pre-sort on uts to get files that may conflict with each other
+        # due to multiple spacecraft and antennas
+        # this ensures that we can make the times all unique for the file list
         idx = np.argsort(uts)
-        # adding linearly increasing offsets
+        # adding linearly increasing offsets less than 0.01 s
         shift_uts = np.mod(np.arange(len(year)), 1E3) * 1.E-5 + 1.E-5
         uts[idx] += shift_uts
 
@@ -187,6 +190,7 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
                                             altitude_bin=altitude_bin))
         utsec = output.hour * 3600. + output.minute * 60. + output.second
         # make times unique by adding a unique amount of time less than a second
+        # FIXME: need to switch to xarray so unique time stamps not needed
         if tag != 'scnlv1':
             # add 1E-6 seconds to time based upon occulting_sat_id
             # additional 1E-7 seconds added based upon cosmic ID
