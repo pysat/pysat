@@ -38,12 +38,12 @@ Note
 Warnings
 --------
 - Routine was not produced by COSMIC team
-- More recent versions of netCDF4 and numpy limit the casting of some variable 
+- More recent versions of netCDF4 and numpy limit the casting of some variable
   types into others. This issue could prevent data loading for some variables
-  such as 'MSL_Altitude' in the 'sonprf' and 'wetprf' files. The default UserWarning
-  when this occurs is 
-    'UserWarning: WARNING: missing_value not used since it cannot be safely cast 
-    to variable data type'
+  such as 'MSL_Altitude' in the 'sonprf' and 'wetprf' files. The default
+  UserWarning when this occurs is
+    'UserWarning: WARNING: missing_value not used since it cannot be safely
+    cast to variable data type'
 
 """
 
@@ -137,10 +137,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         shift_uts = np.mod(np.arange(len(year)), 1E3) * 1.E-5 + 1.E-5
         uts[idx] += shift_uts
 
-        index = pysat.utils.time.create_datetime_index(year=year[idx], day=day[idx],
+        index = pysat.utils.time.create_datetime_index(year=year[idx],
+                                                       day=day[idx],
                                                        uts=uts[idx])
         if not index.is_unique:
-            raise ValueError('Generated non-unique datetimes for COSMIC within list_files.')
+            raise ValueError(' '.join(('Generated non-unique datetimes for',
+                                       'COSMIC within list_files.')))
         # store sorted file names with unique times in index
         file_list = np.array(stored['files'])[idx]
         file_list = pysat.Series(file_list, index=index)
@@ -382,9 +384,11 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
         # small sub DataFrames
         for i in np.arange(len(output)):
             output[i]['OL_vecs'] = psub_frame.iloc[plengths[i]:plengths[i+1], :]
-            output[i]['OL_vecs'].index = length_arr[:plengths2[i+1]-plengths2[i]]
+            output[i]['OL_vecs'].index = \
+                length_arr[:plengths2[i+1]-plengths2[i]]
             output[i]['OL_pars'] = qsub_frame.iloc[qlengths[i]:qlengths[i+1], :]
-            output[i]['OL_pars'].index = length_arr[:qlengths2[i+1]-qlengths2[i]]
+            output[i]['OL_pars'].index = \
+                length_arr[:qlengths2[i+1]-qlengths2[i]]
 
     # create a single data frame with all bits, then
     # break into smaller frames using views
