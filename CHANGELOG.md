@@ -39,7 +39,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Updated use of numpy.linspace to be compatible with numpy 1.18.
   - Fixed output of orbit_info during print(inst)
   - Fixed a bug when requesting non-existent files from CDAWeb (#426)
-  - Improved compatibility of parse_delimited_filenames (#337)
+  - Improved compatibility of parse_delimited_filenames (#439)
 
 
 ## [2.1.0] - 2019-11-18
