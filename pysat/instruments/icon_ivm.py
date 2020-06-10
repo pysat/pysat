@@ -22,10 +22,9 @@ Warnings
 Example
 -------
     import pysat
-    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2',
-                           clean_level='clean')
-    ivm.download(dt.datetime(2019, 1, 30), dt.datetime(2019, 12, 31))
-    ivm.load(2017,363)
+    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', clean_level='clean')
+    ivm.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
+    ivm.load(2020, 1)
 
 Author
 ------
@@ -38,11 +37,10 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
-import numpy as np
-import pandas as pds
 import warnings
 
 import pysat
+from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
 import logging
@@ -51,14 +49,23 @@ logger = logging.getLogger(__name__)
 
 platform = 'icon'
 name = 'ivm'
-tags = {'level_2': 'Level 2 public geophysical data'}
+tags = {'': 'Level 2 public geophysical data'}
 # dictionary of sat_ids ad tags supported by each
-sat_ids = {'a': ['level_2'],
-           'b': ['level_2']}
-_test_dates = {'a': {'level_2': dt.datetime(2018, 1, 1)},
-               'b': {'level_2': dt.datetime(2018, 1, 1)}}
+sat_ids = {'a': [''],
+           'b': ['']}
+_test_dates = {'a': {'': dt.datetime(2018, 1, 1)},
+               'b': {'': dt.datetime(2018, 1, 1)}}
 _test_download = {'a': {kk: False for kk in tags.keys()},
                   'b': {kk: False for kk in tags.keys()}}
+
+aname = 'ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_v02r001.NC'
+bname = 'ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_v02r001.NC'
+supported_tags = {'a': {'': aname},
+                  'b': {'': bname}}
+
+# use the CDAWeb methods list files routine
+list_files = functools.partial(mm_gen.list_files,
+                               supported_tags=supported_tags)
 
 
 def init(self):
@@ -78,8 +85,8 @@ def init(self):
 
     """
 
-    logger.info("Mission acknowledgements and data restrictions will be printed " +
-          "here when available.")
+    logger.info(' '.join(("Mission acknowledgements and data restrictions",
+                          "will be printed here when available.")))
 
     pass
 
@@ -153,75 +160,6 @@ def load(fnames, tag=None, sat_id=None):
                                     min_label='ValidMin',
                                     max_label='ValidMax',
                                     fill_label='FillVal')
-
-
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of files corresponding to ICON IVM.
-
-    This routine is invoked by pysat and is not intended for direct use by
-    the end user.
-
-    Multiple data levels may be supported via the 'tag' input string.
-    Currently defaults to level-2 data, or L2 in the filename.
-
-    Parameters
-    ----------
-    tag : string ('')
-        tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
-        Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    data_path : string
-        Full path to directory containing files to be loaded. This
-        is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
-        String template used to parse the datasets filenames. If a user
-        supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
-
-    Returns
-    -------
-    pandas.Series
-        Series of filename strings, including the path, indexed by datetime.
-
-    Examples
-    --------
-    ::
-        If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
-        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
-        'v{version:02d}r{revision:04d}.NC'
-
-    Note
-    ----
-    The returned Series should not have any duplicate datetimes. If there are
-    multiple versions of a file the most recent version should be kept and the
-    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
-    the returned files are up to pysat specifications.
-
-    """
-
-    desc = None
-    tag = 'level_2'
-    if tag == 'level_1':
-        code = 'L1'
-        desc = None
-    elif tag == 'level_2':
-        code = 'L2'
-        desc = None
-    else:
-        raise ValueError('Unsupported tag supplied: ' + tag)
-
-    if format_str is None:
-        format_str = 'ICON_'+code+'_IVM-'+sat_id.upper()
-        if desc is not None:
-            format_str += '_' + desc + '_'
-        format_str += '_{year:4d}-{month:02d}-{day:02d}'
-        format_str += '_v{version:02d}r{revision:03d}.NC'
-
-    return pysat.Files.from_os(data_path=data_path,
-                               format_str=format_str)
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,
@@ -321,29 +259,7 @@ def remove_icon_names(inst, target=None):
     """
 
     if target is None:
-        lev = inst.tag
-        if lev == 'level_2':
-            lev = 'L2'
-        elif lev == 'level_0':
-            lev = 'L0'
-        elif lev == 'level_0p':
-            lev = 'L0P'
-        elif lev == 'level_1.5':
-            lev = 'L1-5'
-        elif lev == 'level_1':
-            lev = 'L1'
-        else:
-            raise ValueError('Uknown ICON data level')
-
-        # get instrument code
-        sid = inst.sat_id.lower()
-        if sid == 'a':
-            sid = 'IVM_A'
-        elif sid == 'b':
-            sid = 'IVM_B'
-        else:
-            raise ValueError('Unknown ICON satellite ID')
-        prepend_str = '_'.join(('ICON', lev, sid)) + '_'
+        prepend_str = 'ICON_L27_'
     else:
         prepend_str = target
 
