@@ -11,9 +11,11 @@ platform : string
 name : string
     'mighti'
 tag : string
-    ''
+    Supports 'los_wind_green', 'los_wind_red', 'vector_wind_green',
+    'vector_wind_red', 'temperature'.  Note that not every data product
+    available for every sat_id
 sat_id : string
-    'red' or 'green'
+    '', 'a', or 'b'
 
 Warnings
 --------
@@ -23,8 +25,9 @@ Warnings
 Example
 -------
     import pysat
-    mighti = pysat.Instrument('icon', 'mighti', clean_level='clean')
-    mighti.download(dt.datetime(2019, 1, 30), dt.datetime(2019, 12, 31))
+    mighti = pysat.Instrument('icon', 'mighti', 'vector_wind_green',
+                              clean_level='clean')
+    mighti.download(dt.datetime(2020, 1, 30), dt.datetime(2020, 12, 31))
     mighti.load(2017,363)
 
 Authors
