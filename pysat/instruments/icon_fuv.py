@@ -38,8 +38,6 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
-import numpy as np
-import pandas as pds
 import warnings
 
 import pysat

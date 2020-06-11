@@ -33,7 +33,6 @@ import warnings
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
-from pysat.instruments.methods import nasa_cdaweb as cdw
 
 import logging
 logger = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ platform = 'icon'
 name = 'euv'
 tags = {'': 'Level 2 public geophysical data'}
 sat_ids = {'': ['']}
-_test_dates = {'': {'': dt.datetime(2017, 5, 27)}}
+_test_dates = {'': {'': dt.datetime(2020, 1, 1)}}
 _test_download = {'': {kk: False for kk in tags.keys()}}
 
 fname = 'ICON_L2-6_EUV_{year:04d}-{month:02d}-{day:02d}_v02r001.NC'
