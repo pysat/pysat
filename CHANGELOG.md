@@ -38,7 +38,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Specify dtype for empty pandas.Series for forward compatibility
   - Remove wildcard imports, relative imports
 
-## [2.2.0] - 2020-5-28
+## [2.2.0] - 2020-06-10
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
@@ -52,6 +52,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
      when writing a netCDF4 file
    - Use conda to manage Travis CI test environment
    - test instruments now part of compiled package for development elsewhere
+   - Update ICON instrument file structure
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation
