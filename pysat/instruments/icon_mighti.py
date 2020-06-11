@@ -69,25 +69,23 @@ _test_download = {jj: {kk: False for kk in sat_ids[jj]}
                   for jj in sat_ids.keys()}
 
 datestr = '{year:04d}-{month:02d}-{day:02d}'
-fname1 = 'ICON_L2-1_MIGHTI-{ch:s}_LOS-Wind-{color:s}_{date:s}_v02r001.NC'
+fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v02r001.NC'
 fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v02r001.NC'
-fname3 = 'ICON_L2-3_MIGHTI-{ch:s}_Temperature_{date:s}_v02r002.NC'
+fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v02r002.NC'
 supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
                                                           date=datestr),
                        'vector_wind_red': fname2.format(color='Red',
                                                         date=datestr)},
-                  'a': {'los_wind_green': fname1.format(ch='A', color='Green',
+                  'a': {'los_wind_green': fname1.format(id='A', color='Green',
                                                         date=datestr),
-                        'los_wind_red': fname1.format(ch='A', color='Red',
+                        'los_wind_red': fname1.format(id='A', color='Red',
                                                       date=datestr),
-                        'temperature': fname3.format(ch='A',
-                                                     date=datestr)},
-                  'b': {'los_wind_green': fname1.format(ch='B', color='Green',
+                        'temperature': fname3.format(id='A', date=datestr)},
+                  'b': {'los_wind_green': fname1.format(id='B', color='Green',
                                                         date=datestr),
-                        'los_wind_red': fname1.format(ch='B', color='Red',
+                        'los_wind_red': fname1.format(id='B', color='Red',
                                                       date=datestr),
-                        'temperature': fname3.format(ch='B',
-                                                     date=datestr)}}
+                        'temperature': fname3.format(id='B', date=datestr)}}
 
 # use the CDAWeb methods list files routine
 list_files = functools.partial(mm_gen.list_files,
