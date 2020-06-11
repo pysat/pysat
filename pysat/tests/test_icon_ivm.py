@@ -15,10 +15,10 @@ class TestICONIVMCustom():
         del self.testInst
 
     def test_remove_names_tag_level(self):
-        self.testInst.tag = 'level_2'
+        self.testInst.tag = ''
         self.testInst.sat_id = 'a'
 
-        self.testInst['ICON_L2_IVM_A_Blurp'] = self.testInst['dummy1']
+        self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
         icivm.remove_icon_names(self.testInst)
         # check prepended text removed
         assert (len(self.testInst['Blurp']) > 0)
@@ -26,12 +26,12 @@ class TestICONIVMCustom():
         assert (len(self.testInst['dummy1']) > 0)
 
     def test_remove_names_target(self):
-        self.testInst.tag = 'level_2'
+        self.testInst.tag = ''
         self.testInst.sat_id = 'a'
 
-        self.testInst['ICON_L2_IVM_A_Blurp'] = self.testInst['dummy1']
-        icivm.remove_icon_names(self.testInst, target='ICON_L2_IVM')
+        self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
+        icivm.remove_icon_names(self.testInst, target='ICON_L27')
         # check prepended text removed
-        assert (len(self.testInst['_A_Blurp']) > 0)
+        assert (len(self.testInst['_Blurp']) > 0)
         # check other names untouched
         assert (len(self.testInst['dummy1']) > 0)
