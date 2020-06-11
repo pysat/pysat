@@ -52,36 +52,39 @@ logger = logging.getLogger(__name__)
 
 platform = 'icon'
 name = 'mighti'
-tags = {'los_wind': 'Line of sight wind data',
-        'vector_wind': 'Vector wind data',
+tags = {'los_wind_green': 'Line of sight wind data -- Green Line',
+        'los_wind_red': 'Line of sight wind data -- Red Line',
+        'vector_wind_green': 'Vector wind data -- Green Line',
+        'vector_wind_red': 'Vector wind data -- Red Line',
         'temperature': 'Neutral temperature data'}
-sat_ids = {'a': ['los_wind', 'temperature'],
-           'b': ['los_wind', 'temperature'],
-           'green': ['vector_wind'],
-           'red': ['vector_wind']}
+sat_ids = {'': ['vector_wind_green', 'vector_wind_red'],
+           'a': ['los_wind_green', 'los_wind_red' 'temperature'],
+           'b': ['los_wind_green', 'los_wind_red', 'temperature']}
 _test_dates = {jj: {kk: dt.datetime(2020, 1, 1) for kk in sat_ids[jj]}
                for jj in sat_ids.keys()}
 _test_download = {jj: {kk: False for kk in sat_ids[jj]}
                   for jj in sat_ids.keys()}
 
-fname1a = ''.join(('ICON_L2-1_MIGHTI-A_LOS-Wind-Red_{year:04d}-{month:02d}',
-                   '-{day:02d}_v02r001.NC'))
-fname1b = ''.join(('ICON_L2-1_MIGHTI-B_LOS-Wind-Red_{year:04d}-{month:02d}',
-                   '-{day:02d}_v02r001.NC'))
-fname2g = ''.join(('ICON_L2-2_MIGHTI_Vector-Wind-Green_{year:04d}-{month:02d}',
-                   '-{day:02d}_v02r001.NC'))
-fname2r = ''.join(('ICON_L2-2_MIGHTI-Vector-Wind-Red_{year:04d}-{month:02d}',
-                   '-{day:02d}_v02r001.NC'))
-fname3a = ''.join(('ICON_L2-3_MIGHTI-A_Temperature_{year:04d}-{month:02d}',
-                   '-{day:02d}_v02r002.NC'))
-fname3b = ''.join(('ICON_L2-3_MIGHTI-B_Temperature_{year:04d}-{month:02d}',
-                   '-{day:02d}_v02r002.NC'))
-supported_tags = {'a': {'los_wind': fname1a,
-                        'temperature': fname3a},
-                  'b': {'los_wind': fname1b,
-                        'temperature': fname3b},
-                  'green': {'vector_wind': fname2g},
-                  'red': {'vector_wind': fname2r}}
+datestr = '{year:04d}-{month:02d}-{day:02d}'
+fname1 = 'ICON_L2-1_MIGHTI-{ch:s}_LOS-Wind-{color:s}_{date:s}_v02r001.NC'
+fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v02r001.NC'
+fname3 = 'ICON_L2-3_MIGHTI-{ch:s}_Temperature_{date:s}_v02r002.NC'
+supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
+                                                          date=datestr),
+                       'vector_wind_red': fname2.format(color='Red',
+                                                        date=datestr)},
+                  'a': {'los_wind_green': fname1.format(ch='A', color='Green',
+                                                        date=datestr),
+                        'los_wind_red': fname1.format(ch='A', color='Red',
+                                                      date=datestr),
+                        'temperature': fname3.format(ch='A',
+                                                     date=datestr)},
+                  'b': {'los_wind_green': fname1.format(ch='B', color='Green',
+                                                        date=datestr),
+                        'los_wind_red': fname1.format(ch='B', color='Red',
+                                                      date=datestr),
+                        'temperature': fname3.format(ch='B',
+                                                     date=datestr)}}
 
 # use the CDAWeb methods list files routine
 list_files = functools.partial(mm_gen.list_files,
@@ -121,8 +124,10 @@ def default(inst):
     """
     import pysat.instruments.icon_ivm as icivm
 
-    target = {'los_wind': 'ICON_L21_',
-              'vector_wind': 'ICON_L22_',
+    target = {'los_wind_green': 'ICON_L21_',
+              'los_wind_red': 'ICON_L21_',
+              'vector_wind_green': 'ICON_L22_',
+              'vector_wind_red': 'ICON_L22_',
               'temperature': 'ICON_L23_'}
     icivm.remove_icon_names(inst, target=target[inst.tag])
 
