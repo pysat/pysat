@@ -53,8 +53,8 @@ tags = {'': 'Level 2 public geophysical data'}
 # dictionary of sat_ids ad tags supported by each
 sat_ids = {'a': [''],
            'b': ['']}
-_test_dates = {'a': {'': dt.datetime(2018, 1, 1)},
-               'b': {'': dt.datetime(2018, 1, 1)}}
+_test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
+               'b': {'': dt.datetime(2020, 1, 1)}}
 _test_download = {'a': {kk: False for kk in tags.keys()},
                   'b': {kk: False for kk in tags.keys()}}
 
