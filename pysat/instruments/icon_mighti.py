@@ -59,10 +59,10 @@ sat_ids = {'a': ['los_wind', 'temperature'],
            'b': ['los_wind', 'temperature'],
            'green': ['vector_wind'],
            'red': ['vector_wind']}
-_test_dates = {'green': {'vector_wind': dt.datetime(2020, 1, 1)},
-               'red': {'vector_wind': dt.datetime(2020, 1, 1)}}
-_test_download = {'green': {kk: False for kk in tags.keys()},
-                  'red': {kk: False for kk in tags.keys()}}
+_test_dates = {jj: {kk: dt.datetime(2020, 1, 1) for kk in sat_ids[jj]}
+               for jj in sat_ids.keys()}
+_test_download = {jj: {kk: False for kk in sat_ids[jj]}
+                  for jj in sat_ids.keys()}
 
 fname1a = ''.join(('ICON_L2-1_MIGHTI-A_LOS-Wind-Red_{year:04d}-{month:02d}',
                    '-{day:02d}_v02r001.NC'))
