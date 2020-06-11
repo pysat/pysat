@@ -61,7 +61,7 @@ tags = {'los_wind_green': 'Line of sight wind data -- Green Line',
         'vector_wind_red': 'Vector wind data -- Red Line',
         'temperature': 'Neutral temperature data'}
 sat_ids = {'': ['vector_wind_green', 'vector_wind_red'],
-           'a': ['los_wind_green', 'los_wind_red' 'temperature'],
+           'a': ['los_wind_green', 'los_wind_red', 'temperature'],
            'b': ['los_wind_green', 'los_wind_red', 'temperature']}
 _test_dates = {jj: {kk: dt.datetime(2020, 1, 1) for kk in sat_ids[jj]}
                for jj in sat_ids.keys()}
