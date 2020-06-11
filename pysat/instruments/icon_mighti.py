@@ -120,15 +120,11 @@ def default(inst):
 
     """
     import pysat.instruments.icon_ivm as icivm
-    if inst.tag == 'los_wind':
-        target = 'ICON_L21_'
-    elif inst.tag == 'vector_wind':
-        target = 'ICON_L22_'
-    elif inst.tag == 'temperature':
-        target = 'ICON_L23_'
-    else:
-        target = None
-    icivm.remove_icon_names(inst, target=target)
+
+    target = {'los_wind': 'ICON_L21_',
+              'vector_wind': 'ICON_L22_',
+              'temperature': 'ICON_L23_'}
+    icivm.remove_icon_names(inst, target=target[inst.tag])
 
 
 def load(fnames, tag=None, sat_id=None):

@@ -106,11 +106,10 @@ def default(inst):
     """
 
     import pysat.instruments.icon_ivm as icivm
-    if inst.tag == 'day':
-        target = 'ICON_L24_'
-    elif inst.tag == 'night':
-        target = 'ICON_L25_'
-    icivm.remove_icon_names(inst, target=target)
+
+    target = {'day': 'ICON_L24_',
+              'night': 'ICON_L25_'}
+    icivm.remove_icon_names(inst, target=target[inst.tag])
 
 
 def load(fnames, tag=None, sat_id=None):
