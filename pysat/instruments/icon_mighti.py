@@ -11,7 +11,7 @@ platform : string
 name : string
     'mighti'
 tag : string
-    'level_2'
+    ''
 sat_id : string
     'red' or 'green'
 
@@ -59,8 +59,8 @@ sat_ids = {'a': ['los_wind', 'temperature'],
            'b': ['los_wind', 'temperature'],
            'green': ['vector_wind'],
            'red': ['vector_wind']}
-_test_dates = {'green': {'level_2': dt.datetime(2017, 5, 27)},
-               'red': {'level_2': dt.datetime(2017, 5, 27)}}
+_test_dates = {'green': {'': dt.datetime(2017, 5, 27)},
+               'red': {'': dt.datetime(2017, 5, 27)}}
 _test_download = {'green': {kk: False for kk in tags.keys()},
                   'red': {kk: False for kk in tags.keys()}}
 
