@@ -129,7 +129,7 @@ def load(fnames, tag=None, sat_id=None):
     Examples
     --------
     ::
-        inst = pysat.Instrument('icon', 'euv', sat_id='a', tag='level_2')
+        inst = pysat.Instrument('icon', 'euv', sat_id='a', tag='')
         inst.load(2019,1)
 
     """
