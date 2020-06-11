@@ -79,7 +79,9 @@ fname3b = ''.join(('ICON_L2-3_MIGHTI-B_Temperature_{year:04d}-{month:02d}',
 supported_tags = {'a': {'los_wind': fname1a,
                         'temperature': fname3a},
                   'b': {'los-wind': fname1b,
-                        'temperature': fname3b}}
+                        'temperature': fname3b},
+                  'green': {'vector_wind': fname2g},
+                  'red': {'vector_wind': fname2r}}
 
 # use the CDAWeb methods list files routine
 list_files = functools.partial(mm_gen.list_files,
