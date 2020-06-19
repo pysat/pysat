@@ -7,7 +7,7 @@ import pandas as pds
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                file_date_range=None, test_dates=None):
-    """Produce a fake list of files spanning two years
+    """Produce a fake list of files spanning three years
 
     Parameters
     ----------
@@ -21,7 +21,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         file format string (default=None)
     file_date_range : (pds.date_range)
         File date range. The default mode generates a list of 3 years of daily
-        files (1 year back, 1 year forward) based on the test_dates passed
+        files (1 year back, 2 years forward) based on the test_dates passed
         through below.  Otherwise, accepts a range of files specified by the
         user.
         (default=None)
@@ -39,7 +39,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     # Determine the appropriate date range for the fake files
     if file_date_range is None:
         start = test_dates[''][''] - pds.DateOffset(years=1)
-        stop = (test_dates[''][''] + pds.DateOffset(years=1)
+        stop = (test_dates[''][''] + pds.DateOffset(years=2)
                 - pds.DateOffset(days=1))
         file_date_range = pds.date_range(start, stop)
 
@@ -54,8 +54,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
 def list_remote_files(tag=None, sat_id=None, data_path=None, format_str=None,
                       start=None, stop=None, test_dates=None):
-    """Produce a fake list of files spanning three years to simulate new data
-    files on a remote server
+    """Produce a fake list of files spanning three years and one month to
+    simulate new data files on a remote server
 
     Parameters
     ----------
@@ -72,8 +72,8 @@ def list_remote_files(tag=None, sat_id=None, data_path=None, format_str=None,
         test_date
         (default=None)
     stop : (dt.datetime or NoneType)
-        Ending time for the file list.  A None value will stop 2 years after
-        test_date
+        Ending time for the file list.  A None value will stop 2 years 1 month
+        after test_date
         (default=None)
     test_dates : (dt.datetime)
         Pass the _test_date object through from the test instrument files
@@ -89,7 +89,7 @@ def list_remote_files(tag=None, sat_id=None, data_path=None, format_str=None,
         start = test_dates[''][''] - pds.DateOffset(years=1)
     if stop is None:
         stop = (test_dates[''][''] + pds.DateOffset(years=2)
-                - pds.DateOffset(days=1))
+                - pds.DateOffset(days=1) + pds.DateOffset(months=1))
     file_date_range = pds.date_range(start, stop)
 
     return list_files(tag=tag, sat_id=sat_id, data_path=data_path,
