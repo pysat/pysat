@@ -175,6 +175,23 @@ class TestBasics():
         assert (test_date == dt.datetime(2009, 1, 3))
         assert (test_date == self.testInst.date)
 
+    def test_list_files(self):
+        files = self.testInst.files.files
+        assert isinstance(files, pds.Series)
+
+    def test_remote_file_list(self):
+        files = self.testInst.remote_file_list(start=dt.datetime(2009, 1, 1),
+                                               stop=dt.datetime(2009, 1, 31))
+        assert files.index[0] == dt.datetime(2009, 1, 1)
+        assert files.index[-1] == dt.datetime(2009, 1, 31)
+
+    def test_remote_date_range(self):
+        files = self.testInst.remote_date_range(start=dt.datetime(2009, 1, 1),
+                                                stop=dt.datetime(2009, 1, 31))
+        assert len(files) == 2
+        assert files[0] == dt.datetime(2009, 1, 1)
+        assert files[-1] == dt.datetime(2009, 1, 31)
+
     # --------------------------------------------------------------------------
     #
     # Test date helpers
