@@ -2,7 +2,6 @@
 # Test some of the basic _core functions
 import datetime as dt
 from importlib import reload as re_load
-import io
 import logging
 import numpy as np
 import re
@@ -194,31 +193,6 @@ class TestBasics():
         assert len(files) == 2
         assert files[0] == dt.datetime(2009, 1, 1)
         assert files[-1] == dt.datetime(2009, 1, 31)
-
-    def test_download_updated_files(self):
-        files = self.testInst.files.files
-        remote_files = self.testInst.remote_file_list()
-        # Capture the log to see if this works
-        fh = logging.FileHandler('test.log')
-        fh.setLevel(logging.DEBUG)
-        pysat.logger.addHandler(fh)
-        # Now that we can capture the log, run the function
-        self.testInst.download_updated_files()
-        # Pull the contents back into a string and close the stream
-        text_log = open('test.log')
-        log_contents = text_log.readlines()
-        text_log.close()
-        # Check the log output for correct operation
-        for message in log_contents:
-            if message.find('files locally') >= 0:
-                Nlocal = [int(s) for s in re.findall(r'\d+', message)]
-            if message.find('that are new or updated') >= 0:
-                Nnew = [int(s) for s in re.findall(r'\d+', message)]
-
-        assert len(Nlocal) == 1
-        assert Nlocal[0] == len(files)
-        assert len(Nnew) == 1
-        assert Nnew[0] == len(remote_files) - len(files)
 
     # --------------------------------------------------------------------------
     #
