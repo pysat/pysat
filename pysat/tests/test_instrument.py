@@ -199,20 +199,17 @@ class TestBasics():
         files = self.testInst.files.files
         remote_files = self.testInst.remote_file_list()
         # Capture the log to see if this works
-        default_level = pysat.logger.getEffectiveLevel()
-        pysat.logger.setLevel(logging.DEBUG)
-        log_capture_string = io.StringIO()
-        ch = logging.StreamHandler(log_capture_string)
-        ch.setLevel(logging.DEBUG)
-        pysat.logger.addHandler(ch)
+        fh = logging.FileHandler('test.log')
+        fh.setLevel(logging.DEBUG)
+        pysat.logger.addHandler(fh)
         # Now that we can capture the log, run the function
         self.testInst.download_updated_files()
         # Pull the contents back into a string and close the stream
-        log_contents = log_capture_string.getvalue()
-        log_capture_string.close()
-        pysat.logger.setLevel(default_level)
+        text_log = open('test.log')
+        log_contents = text_log.readlines()
+        text_log.close()
         # Check the log output for correct operation
-        for message in log_contents.split('\n'):
+        for message in log_contents:
             if message.find('files locally') >= 0:
                 Nlocal = [int(s) for s in re.findall(r'\d+', message)]
             if message.find('that are new or updated') >= 0:
