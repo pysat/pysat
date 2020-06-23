@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.0] - 2020-5-28
+## [2.2.0] - 2020-6-08
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
@@ -39,6 +39,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Updated use of numpy.linspace to be compatible with numpy 1.18.
   - Fixed output of orbit_info during print(inst)
   - Fixed a bug when requesting non-existent files from CDAWeb (#426)
+  - Improved compatibility of parse_delimited_filenames (#439)
 
 
 ## [2.1.0] - 2019-11-18
