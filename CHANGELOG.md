@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.0] - 2020-4-27
+## [2.2.0] - 2020-6-08
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
      when writing a netCDF4 file
    - Use conda to manage Travis CI test environment
    - Added NaN filter for metadata when writing netCDF4 files
+   - Test instruments now part of compiled package for development elsewhere
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation
@@ -38,6 +39,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed old code and incorrect comments from F10.7 support
   - Updated use of numpy.linspace to be compatible with numpy 1.18.
   - Fixed output of orbit_info during print(inst)
+  - Fixed a bug when requesting non-existent files from CDAWeb (#426)
+  - Improved compatibility of parse_delimited_filenames (#439)
 
 
 ## [2.1.0] - 2019-11-18

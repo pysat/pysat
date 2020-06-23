@@ -253,6 +253,15 @@ def download(supported_tags, date_array, tag, sat_id,
     # if desired
     local_fname = inst_dict['local_fname']
 
+    if not multi_file_day:
+        # Get list of files from server
+        remote_files = list_remote_files(tag=tag, sat_id=sat_id,
+                                         remote_site=remote_site,
+                                         supported_tags=supported_tags)
+        # Find only requested files that exist remotely
+        date_array = pds.DatetimeIndex(list(set(remote_files.index)
+                                            & set(date_array))).sort_values()
+
     for date in date_array:
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year,
@@ -271,6 +280,7 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download
         if not multi_file_day:
+            # standard download
             try:
                 logger.info(' '.join(('Attempting to download file for',
                                       date.strftime('%d %B %Y'))))
@@ -287,7 +297,6 @@ def download(supported_tags, date_array, tag, sat_id,
             except requests.exceptions.RequestException as exception:
                 logger.info(' '.join((exception, '- File not available for',
                                       date.strftime('%d %B %Y'))))
-
         else:
             try:
                 logger.info(' '.join(('Attempting to download files for',
@@ -432,6 +441,14 @@ def list_remote_files(tag, sat_id,
         warnings.warn("Day keyword requires year and month.  Ignoring day.")
         day = None
 
+    # Deprecations warnings for changing syntax
+    if any([year, month, day]):
+        warnings.warn(' '.join(["The year/month/day keywords have been deprecated",
+                                "and will be removed in pysat 3.0.0.  Instead,",
+                                "use datetime values consistent with the",
+                                "start/stop syntax in the download methods."]),
+                      DeprecationWarning, stacklevel=2)
+
     # get a listing of all files
     # determine if we need to walk directories
 
@@ -489,23 +506,28 @@ def list_remote_files(tag, sat_id,
         n_loops = n_layers + 1
     full_files = []
 
-    for level in range(n_loops):
-        for directory in remote_dirs[level]:
-            temp_url = '/'.join((remote_url.strip('/'), directory))
-            soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
-            links = soup.find_all('a', href=True)
-            for link in links:
-                # If there is room to go down, look for directories
-                if link['href'].count('/') == 1:
-                    remote_dirs[level+1].append(link['href'])
-                else:
-                    # If at the endpoint, add matching files to list
-                    add_file = True
-                    for target in targets:
-                        if link['href'].count(target) == 0:
-                            add_file = False
-                    if add_file:
-                        full_files.append(link['href'])
+    try:
+        for level in range(n_loops):
+            for directory in remote_dirs[level]:
+                temp_url = '/'.join((remote_url.strip('/'), directory))
+                soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
+                links = soup.find_all('a', href=True)
+                for link in links:
+                    # If there is room to go down, look for directories
+                    if link['href'].count('/') == 1:
+                        remote_dirs[level+1].append(link['href'])
+                    else:
+                        # If at the endpoint, add matching files to list
+                        add_file = True
+                        for target in targets:
+                            if link['href'].count(target) == 0:
+                                add_file = False
+                        if add_file:
+                            full_files.append(link['href'])
+    except requests.exceptions.ConnectionError as merr:
+        raise type(merr)(' '.join((str(merr), 'pysat -> Request potentially',
+                                   'exceeded the server limit. Please try again',
+                                   'using a smaller data range.')))
 
     # parse remote filenames to get date information
     if delimiter is None:
