@@ -2061,7 +2061,8 @@ class Instrument(object):
         return export_dict
 
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
-                   zlib=False, complevel=4, shuffle=True, preserve_meta_case=False):
+                   zlib=False, complevel=4, shuffle=True, preserve_meta_case=False,
+                   export_nan=None):
         """Stores loaded data into a netCDF4 file.
 
         Parameters
@@ -2089,6 +2090,14 @@ class Instrument(object):
             Instrument object are used instead. By default, the variable strings
             on both the data and metadata side are the same, though this relationship
             may be altered by a user.
+        export_nan : list or None
+            By default, the metadata variables where a value of NaN is allowed
+            and written to the netCDF4 file is maintained by the Meta object
+            attached to the pysat.Instrument object. A list supplied here
+            will override the settings provided by Meta, and all parameters
+            included will be written to the file. If not listed
+            and a value is NaN then that attribute simply won't be included in
+            the netCDF4 file.
 
         Note
         ----
@@ -2117,6 +2126,10 @@ class Instrument(object):
 
         import netCDF4
         import pysat
+
+        # check export nans first
+        if export_nan is None:
+            export_nan = self.meta._export_nan
 
         file_format = 'NETCDF4'
         # base_instrument used to define the standard attributes attached
@@ -2256,12 +2269,13 @@ class Instrument(object):
                         new_dict['Var_Type'] = 'data'
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype)
-                        # remove any metadata with a value of nan not present in _export_nan
+                        # remove any metadata with a value of nan not present in
+                        # export_nan
                         filtered_dict = new_dict.copy()
                         for key, value in new_dict.items():
                             try:
                                 if np.isnan(value):
-                                    if key not in self.meta._export_nan:
+                                    if key not in export_nan:
                                         filtered_dict.pop(key)
                             except TypeError:
                                 # if typerror thrown, it's not nan

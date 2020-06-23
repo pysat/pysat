@@ -1079,3 +1079,30 @@ class TestBasics():
         assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
         assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
         assert 'extra_check' in f['test_nan_variable'].ncattrs()
+
+    def test_nan_metadata_filtered_netcdf4(self):
+        """check that metadata set to NaN is excluded from netcdf via nc call"""
+        # create an instrument object that has a meta with some
+        # variables allowed to be nan within metadata when exporting
+        self.testInst.load(2009, 1)
+        # create new variable
+        self.testInst['test_nan_variable'] = 1.
+        # assign additional metadata
+        self.testInst.meta['test_nan_variable'] = {'test_nan_export':np.nan,
+                                                   'no_nan_export':np.nan,
+                                                   'extra_check': 1.}
+        # write the file
+        pysat.tests.test_utils.prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        export_nan = self.testInst.meta._export_nan + ['test_nan_export']
+        self.testInst.to_netcdf4(outfile, export_nan=export_nan)
+
+        # load file back and test metadata is as expected
+        f = netCDF4.Dataset(outfile)
+
+        pysat.tests.test_utils.remove_files(self.testInst)
+
+        assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
+        assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
+        assert 'extra_check' in f['test_nan_variable'].ncattrs()
