@@ -142,14 +142,14 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         shift_uts = np.mod(np.arange(len(year)), 1E3) * 1.E-5 + 1.E-5
         uts[idx] += shift_uts
 
-        index = pysat.utils.time.create_datetime_index(year=year[idx],
-                                                       day=day[idx],
-                                                       uts=uts[idx])
+        index = pysat.utils.time.create_datetime_index(year=year,
+                                                       day=day,
+                                                       uts=uts)
         if not index.is_unique:
             raise ValueError(' '.join(('Generated non-unique datetimes for',
                                        'COSMIC within list_files.')))
         # store sorted file names with unique times in index
-        file_list = np.array(stored['files'])[idx]
+        file_list = np.array(stored['files'])
         file_list = pds.Series(file_list, index=index)
         return file_list
 
@@ -191,7 +191,7 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
     num = len(fnames)
     # make sure there are files to read
     if num != 0:
-        # call separate load_files routine, segemented for possible
+        # call separate load_files routine, segmented for possible
         # multiprocessor load, not included and only benefits about 20%
         output = pds.DataFrame(load_files(fnames, tag=tag, sat_id=sat_id,
                                           altitude_bin=altitude_bin))
@@ -204,7 +204,7 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
             # get cosmic satellite ID
             c_id = np.array([snip[3] for snip in output.fileStamp]).astype(int)
             # time offset
-            utsec += output.occulting_sat_id*1.e-6 + c_id*1.e-7
+            utsec += output.occulting_sat_id*1.e-5 + c_id*1.e-6
         else:
             # construct time out of three different parameters
             # duration must be less than 10,000
