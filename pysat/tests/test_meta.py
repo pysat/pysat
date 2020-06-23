@@ -1050,7 +1050,7 @@ class TestBasics():
         assert self.testInst.hey == greeting
 
     # test for NaN in metadata and writing to file
-    def test_nan_metadata_filtered_netcdf4(self):
+    def test_nan_metadata_filtered_netcdf4_via_meta_attribute(self):
         """check that metadata set to NaN is excluded from netcdf"""
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
@@ -1080,7 +1080,7 @@ class TestBasics():
         assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
         assert 'extra_check' in f['test_nan_variable'].ncattrs()
 
-    def test_nan_metadata_filtered_netcdf4(self):
+    def test_nan_metadata_filtered_netcdf4_via_method(self):
         """check that metadata set to NaN is excluded from netcdf via nc call"""
         # create an instrument object that has a meta with some
         # variables allowed to be nan within metadata when exporting
