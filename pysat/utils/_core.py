@@ -229,7 +229,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # load 1D data variable
                     # assuming basic time dimension
                     loadedVars[key] = data.variables[key][:]
-                    # if key != epoch_name:
                     # load up metadata
                     meta_dict = {}
                     for nc_key in data.variables[key].ncattrs():
