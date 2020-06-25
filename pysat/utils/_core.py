@@ -29,7 +29,8 @@ def set_data_dir(path=None, store=True):
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
     else:
-        raise ValueError('Path {:s} does not lead to a valid directory.'.format(path))
+        raise ValueError(' '.join(('Path {:s} does not lead to a valid',
+                                   'directory.')).format(path))
 
 
 def scale_units(out_unit, in_unit):
@@ -386,8 +387,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                             data.variables[obj_key_name].getncattr(nc_key)
                     mdata[obj_key_name] = meta_dict
 
-                    # iterate over all variables with this dimension and store data
-                    # data storage, whole shebang
+                    # iterate over all variables with this dimension and store
+                    # data
                     loop_dict = {}
                     # list holds a series of slices, parsed from dict above
                     loop_list = []
@@ -428,8 +429,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
                         loop_list[-1].index.name = new_index_name
 
-                    # add 2D object data, all based on a unique dimension within netCDF,
-                    # to loaded data dictionary
+                    # add 2D object data, all based on a unique dimension within
+                    # netCDF, to loaded data dictionary
                     loadedVars[obj_key_name] = loop_list
                     del loop_list
 
@@ -445,7 +446,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             else:
                 loadedVars[epoch_name] = pds.to_datetime((time_var *
                                                           1E6).astype(int))
-            # loadedVars[epoch_name] = pds.to_datetime((time_var*1E6).astype(int))
             running_store.append(loadedVars)
             running_idx += len(loadedVars[epoch_name])
 
