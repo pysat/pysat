@@ -43,6 +43,7 @@ tags = {'': 'Level 2 public geophysical data'}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2020, 1, 1)}}
 _test_download = {'': {kk: False for kk in tags.keys()}}
+pandas_format = False
 
 fname = 'ICON_L2-6_EUV_{year:04d}-{month:02d}-{day:02d}_v02r001.NC'
 supported_tags = {'': {'': fname}}
@@ -143,7 +144,8 @@ def load(fnames, tag=None, sat_id=None):
                                     scale_label='ScaleTyp',
                                     min_label='ValidMin',
                                     max_label='ValidMax',
-                                    fill_label='FillVal')
+                                    fill_label='FillVal',
+                                    pandas_format=pandas_format)
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,

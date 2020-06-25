@@ -67,6 +67,7 @@ _test_dates = {jj: {kk: dt.datetime(2020, 1, 1) for kk in sat_ids[jj]}
                for jj in sat_ids.keys()}
 _test_download = {jj: {kk: False for kk in sat_ids[jj]}
                   for jj in sat_ids.keys()}
+pandas_format = False
 
 datestr = '{year:04d}-{month:02d}-{day:02d}'
 fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v03r001.NC'
@@ -184,7 +185,8 @@ def load(fnames, tag=None, sat_id=None):
                                     scale_label='ScaleTyp',
                                     min_label='ValidMin',
                                     max_label='ValidMax',
-                                    fill_label='FillVal')
+                                    fill_label='FillVal',
+                                    pandas_format=pandas_format)
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,

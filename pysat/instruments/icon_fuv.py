@@ -54,6 +54,7 @@ tags = {'day': 'Level 2 daytime O/N2',
 sat_ids = {'': ['day', 'night']}
 _test_dates = {'': {kk: dt.datetime(2020, 1, 1) for kk in tags.keys()}}
 _test_download = {'': {kk: False for kk in tags.keys()}}
+pandas_format = False
 
 fname24 = 'ICON_L2-4_FUV_Day_{year:04d}-{month:02d}-{day:02d}_v03r000.NC'
 fname25 = 'ICON_L2-5_FUV_Night_{year:04d}-{month:02d}-{day:02d}_v03r000.NC'
@@ -160,7 +161,8 @@ def load(fnames, tag=None, sat_id=None):
                                     scale_label='ScaleTyp',
                                     min_label='ValidMin',
                                     max_label='ValidMax',
-                                    fill_label='FillVal')
+                                    fill_label='FillVal',
+                                    pandas_format=pandas_format)
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None,
