@@ -248,9 +248,14 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             # we now have a list of keys that need to go into a dataframe,
             # could be more than one, collect unique dimensions for 2D keys
             for dim in set(two_d_dims):
-                # first dimension should be epoch
-                # second dimension name used as variable name
-                obj_key_name = dim[1]
+                # first or second dimension could be epoch
+                # Use other dimension name as variable name
+                if dim[0] == 'Epoch':
+                    obj_key_name = dim[1]
+                elif dim[1] == 'Epoch':
+                    obj_key_name = dim[0]
+                else:
+                    raise KeyError('Epoch not found!')
                 # collect variable names associated with dimension
                 idx_bool = [dim == i for i in two_d_dims]
                 idx, = np.where(np.array(idx_bool))
