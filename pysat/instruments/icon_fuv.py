@@ -55,11 +55,10 @@ sat_ids = {'': ['day', 'night']}
 _test_dates = {'': {kk: dt.datetime(2020, 1, 1) for kk in tags.keys()}}
 _test_download = {'': {kk: False for kk in tags.keys()}}
 
-fname1 = 'ICON_L2-4_FUV_Day_{year:04d}-{month:02d}-{day:02d}_v03r000.NC'
-fname2 = ''.join(('ICON_L2_FUV_Oxygen-Profile-Night_{year:04d}-{month:02d}-',
-                  '{day:02d}_v03r000.NC'))
-supported_tags = {'': {'day': fname1,
-                       'night': fname2}}
+fname24 = 'ICON_L2-4_FUV_Day_{year:04d}-{month:02d}-{day:02d}_v03r000.NC'
+fname25 = 'ICON_L2-5_FUV_Night_{year:04d}-{month:02d}-{day:02d}_v03r000.NC'
+supported_tags = {'': {'day': fname24,
+                       'night': fname25}}
 
 # use the CDAWeb methods list files routine
 list_files = functools.partial(mm_gen.list_files,
@@ -200,7 +199,9 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    warnings.warn("Downloads aren't yet available.")
+    warnings.warn(''.join(("Downloads in pysat not yet supported.  Please ",
+                           "download data from ",
+                           "ftp://icon-science.ssl.berkeley.edu/pub/LEVEL.2/")))
 
     return
 

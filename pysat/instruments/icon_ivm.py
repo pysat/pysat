@@ -57,8 +57,8 @@ _test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
 _test_download = {'a': {kk: False for kk in tags.keys()},
                   'b': {kk: False for kk in tags.keys()}}
 
-aname = 'ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_v02r001.NC'
-bname = 'ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_v02r001.NC'
+aname = 'ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_v02r002.NC'
+bname = 'ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_v02r002.NC'
 supported_tags = {'a': {'': aname},
                   'b': {'': bname}}
 
@@ -197,7 +197,9 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    warnings.warn("Downloads aren't yet available.")
+    warnings.warn(''.join(("Downloads in pysat not yet supported.  Please ",
+                           "download data from ",
+                           "ftp://icon-science.ssl.berkeley.edu/pub/LEVEL.2/")))
 
     return
 

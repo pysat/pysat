@@ -69,9 +69,9 @@ _test_download = {jj: {kk: False for kk in sat_ids[jj]}
                   for jj in sat_ids.keys()}
 
 datestr = '{year:04d}-{month:02d}-{day:02d}'
-fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v02r001.NC'
-fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v02r001.NC'
-fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v02r002.NC'
+fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v03r001.NC'
+fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v03r001.NC'
+fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v03r001.NC'
 supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
                                                           date=datestr),
                        'vector_wind_red': fname2.format(color='Red',
@@ -224,7 +224,9 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    warnings.warn("Downloads aren't yet available.")
+    warnings.warn(''.join(("Downloads in pysat not yet supported.  Please ",
+                           "download data from ",
+                           "ftp://icon-science.ssl.berkeley.edu/pub/LEVEL.2/")))
 
     return
 

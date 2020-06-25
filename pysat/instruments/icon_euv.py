@@ -182,7 +182,9 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    warnings.warn("Downloads aren't yet available.")
+    warnings.warn(''.join(("Downloads in pysat not yet supported.  Please ",
+                           "download data from ",
+                           "ftp://icon-science.ssl.berkeley.edu/pub/LEVEL.2/")))
 
     return
 
