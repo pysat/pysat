@@ -124,14 +124,13 @@ def default(inst):
         Removes ICON preamble on variable names.
 
     """
-    import pysat.instruments.icon_ivm as icivm
 
     target = {'los_wind_green': 'ICON_L21_',
               'los_wind_red': 'ICON_L21_',
               'vector_wind_green': 'ICON_L22_',
               'vector_wind_red': 'ICON_L22_',
               'temperature': 'ICON_L23_'}
-    icivm.remove_icon_names(inst, target=target[inst.tag])
+    mm_gen.remove_leading_text(inst, target=target[inst.tag])
 
 
 def load(fnames, tag=None, sat_id=None):

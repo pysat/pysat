@@ -89,8 +89,7 @@ def default(inst):
 
     """
 
-    import pysat.instruments.icon_ivm as icivm
-    icivm.remove_icon_names(inst, target='ICON_L26_')
+    mm_gen.remove_leading_text(inst, target='ICON_L26_')
 
 
 def load(fnames, tag=None, sat_id=None):

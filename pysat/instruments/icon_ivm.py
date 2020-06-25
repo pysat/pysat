@@ -104,7 +104,7 @@ def default(inst):
 
     """
 
-    remove_icon_names(inst)
+    mm_gen.remove_leading_text(inst, target='ICON_L27_')
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -236,43 +236,4 @@ def clean(inst, clean_level=None):
 
     if clean_level != 'none':
         warnings.warn("Cleaning actions for ICON IVM are not yet defined.")
-    return
-
-
-def remove_icon_names(inst, target=None):
-    """Removes leading text on ICON project variable names
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        ICON associated pysat.Instrument object
-    target : str
-        Leading string to remove. If none supplied,
-        ICON project standards are used to identify and remove
-        leading text
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
-
-    """
-
-    if target is None:
-        prepend_str = 'ICON_L27_'
-    else:
-        prepend_str = target
-
-    inst.data.rename(columns=lambda x: x.split(prepend_str)[-1], inplace=True)
-    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                          inplace=True)
-    orig_keys = inst.meta.keys_nD()
-    for keynd in orig_keys:
-        new_key = keynd.split(prepend_str)[-1]
-        new_meta = inst.meta.pop(keynd)
-        new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                             inplace=True)
-        inst.meta[new_key] = new_meta
-
     return
