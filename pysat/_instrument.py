@@ -675,7 +675,8 @@ class Instrument(object):
             if 'time' in data.indexes:
                 return data.indexes['time']
             elif 'Epoch' in data.indexes:
-                return data.indexes['Epoch']
+                return pds.to_datetime([dt.datetime.utcfromtimestamp(x/1000)
+                                        for x in data.indexes['Epoch']])
             else:
                 return pds.Index([])
 
