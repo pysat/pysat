@@ -53,7 +53,8 @@ tags = {'': 'Level 2 public geophysical data'}
 # dictionary of sat_ids ad tags supported by each
 sat_ids = {'a': [''],
            'b': ['']}
-_test_dates = {'a': {'': dt.datetime(2020, 1, 1)}}
+_test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
+               'b': {'': dt.datetime(3000, 1, 1)}}  # IVM-B not yet engaged
 # Note for developers: IVM-A and IVM-B face in opposite directions, and only
 # one is expected to have geophysical data at a given time.  IVM-B data is not
 # available as of Jun 26 2020, as this mode has not yet been engaged.
