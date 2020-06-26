@@ -44,10 +44,12 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
+import os
 import warnings
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
+from pysat.instruments.icon_euv import icon_ssl_download
 
 import logging
 logger = logging.getLogger(__name__)
@@ -70,7 +72,7 @@ _test_download = {jj: {kk: False for kk in sat_ids[jj]}
 pandas_format = False
 
 datestr = '{year:04d}-{month:02d}-{day:02d}'
-fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v03r001.NC'
+fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v03r000.NC'
 fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v03r001.NC'
 fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v03r001.NC'
 supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
@@ -92,6 +94,60 @@ supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
+# support download routine
+tag_vw_green = {'dir': '/pub/LEVEL.2/MIGHTI',
+                'remote_fname': '{year:4d}/{doy:03d}/Vector-Winds/' +
+                                 fname2.format(color='Green', date=datestr),
+                'local_fname': fname2.format(color='Green', date=datestr)}
+tag_vw_red = {'dir': '/pub/LEVEL.2/MIGHTI',
+              'remote_fname': '{year:4d}/{doy:03d}/Vector-Winds/' +
+                              fname2.format(color='Red', date=datestr),
+              'local_fname': fname2.format(color='Red', date=datestr)}
+
+tag_los_green_a = {'dir': '/pub/LEVEL.2/MIGHTI-A',
+                   'remote_fname': '{year:4d}/{doy:03d}/LOS-Winds/' +
+                                   fname1.format(id='A', color='Green',
+                                                 date=datestr),
+                   'local_fname': fname1.format(id='A', color='Green',
+                                                date=datestr)}
+tag_los_red_a = {'dir': '/pub/LEVEL.2/MIGHTI-A',
+                   'remote_fname': '{year:4d}/{doy:03d}/LOS-Winds/' +
+                                   fname1.format(id='A', color='Red',
+                                                 date=datestr),
+                   'local_fname': fname1.format(id='A', color='Red',
+                                                date=datestr)}
+tag_temp_a = {'dir': '/pub/LEVEL.2/MIGHTI-A',
+              'remote_fname': '{year:4d}/{doy:03d}/Temperature/' +
+                              fname3.format(id='A', date=datestr),
+              'local_fname': fname3.format(id='A', date=datestr)}
+
+tag_los_green_b = {'dir': '/pub/LEVEL.2/MIGHTI-B',
+                   'remote_fname': '{year:4d}/{doy:03d}/LOS-Winds/' +
+                                   fname1.format(id='B', color='Green',
+                                                 date=datestr),
+                   'local_fname': fname1.format(id='B', color='Green',
+                                                date=datestr)}
+tag_los_red_b = {'dir': '/pub/LEVEL.2/MIGHTI-B',
+                 'remote_fname': '{year:4d}/{doy:03d}/LOS-Winds/' +
+                                   fname1.format(id='B', color='Red',
+                                                 date=datestr),
+                 'local_fname': fname1.format(id='B', color='Red',
+                                              date=datestr)}
+tag_temp_b = {'dir': '/pub/LEVEL.2/MIGHTI-B',
+              'remote_fname': '{year:4d}/{doy:03d}/Temperature/' +
+                              fname3.format(id='B', date=datestr),
+              'local_fname': fname3.format(id='B', date=datestr)}
+
+download_tags = {'': {'vector_wind_green': tag_vw_green,
+                      'vector_wind_red': tag_vw_red},
+                 'a': {'los_wind_green': tag_los_green_a,
+                       'los_wind_red': tag_los_red_a,
+                       'temperature': tag_temp_a},
+                 'b': {'los_wind_green': tag_los_green_b,
+                       'los_wind_red': tag_los_red_b,
+                       'temperature': tag_temp_b}}
+
+download = functools.partial(icon_ssl_download, supported_tags=download_tags)
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
@@ -129,8 +185,12 @@ def default(inst):
               'los_wind_red': 'ICON_L21_',
               'vector_wind_green': 'ICON_L22_',
               'vector_wind_red': 'ICON_L22_',
-              'temperature': 'ICON_L23_'}
+              'temperature': 'ICON_L23_MIGHTI_' + inst.sat_id.upper() + '_'}
     mm_gen.remove_leading_text(inst, target=target[inst.tag])
+
+    # for temps need
+    mm_gen.remove_leading_text(inst, target='ICON_L23_')
+    mm_gen.remove_leading_text(inst, target='ICON_L1_')
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -186,50 +246,6 @@ def load(fnames, tag=None, sat_id=None):
                                     max_label='ValidMax',
                                     fill_label='FillVal',
                                     pandas_format=pandas_format)
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    """Will download data for ICON MIGHTI, after successful launch and
-    operations.
-
-    Parameters
-    ----------
-    date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not
-        be contiguous.
-    tag : string ('')
-        Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
-        Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
-        User string input used for download. Provided by user and passed via
-        pysat. If an account is required for dowloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
-    **kwargs : dict
-        Additional keywords supplied by user when invoking the download
-        routine attached to a pysat.Instrument object are passed to this
-        routine via kwargs.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
-
-
-    """
-
-    warnings.warn(''.join(("Downloads in pysat not yet supported.  Please ",
-                           "download data from ",
-                           "ftp://icon-science.ssl.berkeley.edu/pub/LEVEL.2/")))
-
-    return
 
 
 def clean(inst, clean_level=None):
