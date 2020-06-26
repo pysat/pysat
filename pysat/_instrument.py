@@ -629,6 +629,8 @@ class Instrument(object):
         else:
             if 'time' in self.data.indexes:
                 return len(self.data.indexes['time']) == 0
+            elif 'Epoch' in self.data.indexes:
+                return len(self.data.indexes['Epoch']) == 0
             else:
                 return True
 
@@ -672,6 +674,8 @@ class Instrument(object):
         else:
             if 'time' in data.indexes:
                 return data.indexes['time']
+            elif 'Epoch' in data.indexes:
+                return data.indexes['Epoch']
             else:
                 return pds.Index([])
 
@@ -2464,7 +2468,6 @@ class Instrument(object):
                         new_dict['Var_Type'] = 'data'
 
                         if datetime_flag:
-                            # print('datetime flag')
                             for export_name_label in export_name_labels:
                                 new_dict[export_name_label] = epoch_name
                             for export_units_label in export_units_labels:
