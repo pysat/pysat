@@ -61,6 +61,7 @@ sat_ids = {'a': [''],
 _test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
                'b': {'': dt.datetime(2020, 1, 1)}}  # IVM-B not yet engaged
 _test_download_travis = {'a': {kk: False for kk in tags.keys()}}
+_test_download = {'b': {kk: False for kk in tags.keys()}}
 _password_req = {'b': {kk: True for kk in tags.keys()}}
 
 aname = 'ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_v02r002.NC'
