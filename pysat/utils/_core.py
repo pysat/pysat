@@ -474,7 +474,10 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             out.append(pds.DataFrame.from_records(item, index=epoch_name))
         out = pds.concat(out, axis=0)
     else:
-        out = xr.open_mfdataset(fnames, combine='by_coords')
+        if len(fnames) == 1:
+            out = xr.open_dataset(fnames[0])
+        else:
+            out = xr.open_mfdataset(fnames, combine='by_coords')
         for key in out.variables.keys():
             meta_dict = {}
             for nc_key in out.variables[key].attrs.keys():
