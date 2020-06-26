@@ -2291,18 +2291,7 @@ class Instrument(object):
                         new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                  coltype,
                                                                  export_nan=export_nan)
-                        # remove any metadata with a value of nan not present in
-                        # export_nan
-                        filtered_dict = new_dict.copy()
-                        for key, value in new_dict.items():
-                            try:
-                                if np.isnan(value):
-                                    if key not in export_nan:
-                                        filtered_dict.pop(key)
-                            except TypeError:
-                                # if typerror thrown, it's not nan
-                                pass
-                        cdfkey.setncatts(filtered_dict)
+                        cdfkey.setncatts(new_dict)
                     except KeyError as err:
                         logger.info(' '.join((str(err), '\n',
                                         ', '.join(('Unable to find MetaData for',
