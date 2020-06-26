@@ -65,7 +65,7 @@ tags = {'los_wind_green': 'Line of sight wind data -- Green Line',
 sat_ids = {'': ['vector_wind_green', 'vector_wind_red'],
            'a': ['los_wind_green', 'los_wind_red', 'temperature'],
            'b': ['los_wind_green', 'los_wind_red', 'temperature']}
-_test_dates = {jj: {kk: dt.datetime(2020, 1, 1) for kk in sat_ids[jj]}
+_test_dates = {jj: {kk: dt.datetime(2020, 1, 2) for kk in sat_ids[jj]}
                for jj in sat_ids.keys()}
 _test_download_travis = {jj: {kk: False for kk in sat_ids[jj]}
                          for jj in sat_ids.keys()}
@@ -73,7 +73,7 @@ pandas_format = False
 
 datestr = '{year:04d}-{month:02d}-{day:02d}'
 fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v03r000.NC'
-fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v03r001.NC'
+fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v03r000.NC'
 fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v03r001.NC'
 supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
                                                           date=datestr),
