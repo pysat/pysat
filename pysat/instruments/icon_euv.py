@@ -17,6 +17,7 @@ Warnings
 - The cleaning parameters for the instrument are still under development.
 - Only supports level-2 data.
 
+
 Authors
 ---------
 Jeff Klenzing, Mar 17, 2018, Goddard Space Flight Center
@@ -28,7 +29,10 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import datetime as dt
+import ftplib
+from ftplib import FTP
 import functools
+import os
 import warnings
 
 import pysat
@@ -51,6 +55,12 @@ supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
+
+# support download routine
+basic_tag = {'dir': '/pub/LEVEL.2/EUV',
+             'remote_fname': '{year:4d}/{doy:03d}/Data/' + fname,
+             'local_fname': fname}
+download_tags = {'': {'': basic_tag}}
 
 
 def init(self):
@@ -147,9 +157,10 @@ def load(fnames, tag=None, sat_id=None):
                                     pandas_format=pandas_format)
 
 
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    """Will download data for ICON EUV, after successful launch and operations.
+def icon_ssl_download(date_array, tag, sat_id, data_path=None,
+                      user=None, password=None, supported_tags=None,
+                      ftp_dir=None):
+    """Download ICON data from public area of SSL ftp server
 
     Parameters
     ----------
@@ -166,7 +177,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
         Path to directory to download data to.
     user : string (None)
         User string input used for download. Provided by user and passed via
-        pysat. If an account is required for dowloads this routine here must
+        pysat. If an account is required for downloads this routine here must
         error if user not supplied.
     password : string (None)
         Password for data download.
@@ -180,14 +191,60 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     Void : (NoneType)
         Downloads data to disk.
 
-
     """
 
-    warnings.warn(''.join(("Downloads in pysat not yet supported.  Please ",
-                           "download data from ",
-                           "ftp://icon-science.ssl.berkeley.edu/pub/LEVEL.2/")))
+    # connect to CDAWeb default port
+    ftp = FTP('icon-science.ssl.berkeley.edu')
 
+    # user anonymous, passwd anonymous@
+    ftp.login()
+
+    try:
+        ftp_dict = supported_tags[sat_id][tag]
+    except KeyError:
+        raise ValueError('sat_id/tag name unknown.')
+
+    # path to relevant file on CDAWeb
+    ftp.cwd(ftp_dict['dir'])
+
+    # naming scheme for files on the CDAWeb server
+    remote_fname = ftp_dict['remote_fname']
+
+    # naming scheme for local files, should be closely related
+    # to CDAWeb scheme, though directory structures may be reduced
+    # if desired
+    local_fname = ftp_dict['local_fname']
+
+    for date in date_array:
+        # format files for specific dates and download location
+        yr, doy = pysat.utils.time.getyrdoy(date)
+        formatted_remote_fname = remote_fname.format(year=yr,
+                                                     doy=doy,
+                                                     month=date.month,
+                                                     day=date.day)
+        formatted_local_fname = local_fname.format(year=yr,
+                                                   doy=doy,
+                                                   month=date.month,
+                                                   day=date.day)
+        saved_local_fname = os.path.join(data_path, formatted_local_fname)
+
+        # perform download
+        try:
+            logger.info('Attempting to download file for ' + date.strftime('%x'))
+            logger.info(formatted_remote_fname)
+            ftp.retrbinary('RETR ' + formatted_remote_fname, open(saved_local_fname, 'wb').write)
+            logger.info('Finished.')
+        except ftplib.error_perm as exception:
+            if str(exception.args[0]).split(" ", 1)[0] != '550':
+                raise
+            else:
+                os.remove(saved_local_fname)
+                logger.info('File not available for ' + date.strftime('%x'))
+    ftp.close()
     return
+
+
+download = functools.partial(icon_ssl_download, supported_tags=download_tags)
 
 
 def clean(inst, clean_level=None):
