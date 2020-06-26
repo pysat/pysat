@@ -44,8 +44,6 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
-import os
-import warnings
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
@@ -95,47 +93,50 @@ list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 # support download routine
-tag_vw_green = {'dir': '/pub/LEVEL.2/MIGHTI',
-                'remote_fname': '{year:4d}/{doy:03d}/Vector-Winds/' +
-                                 fname2.format(color='Green', date=datestr),
+dirstr = '/pub/LEVEL.2/MIGHTI{id:s}'
+tag_vw_green = {'dir': dirstr.format(id=''),
+                'remote_fname': ''.join(('{year:4d}/{doy:03d}/Vector-Winds/',
+                                         fname2.format(color='Green',
+                                                       date=datestr))),
                 'local_fname': fname2.format(color='Green', date=datestr)}
-tag_vw_red = {'dir': '/pub/LEVEL.2/MIGHTI',
-              'remote_fname': '{year:4d}/{doy:03d}/Vector-Winds/' +
-                              fname2.format(color='Red', date=datestr),
+tag_vw_red = {'dir': dirstr.format(id=''),
+              'remote_fname': ''.join(('{year:4d}/{doy:03d}/Vector-Winds/',
+                                       fname2.format(color='Red',
+                                                     date=datestr))),
               'local_fname': fname2.format(color='Red', date=datestr)}
 
-tag_los_green_a = {'dir': '/pub/LEVEL.2/MIGHTI-A',
-                   'remote_fname': '{year:4d}/{doy:03d}/LOS-Winds/' +
-                                   fname1.format(id='A', color='Green',
-                                                 date=datestr),
+tag_los_green_a = {'dir': dirstr.format(id='-A'),
+                   'remote_fname': ''.join(('{year:4d}/{doy:03d}/LOS-Winds/',
+                                            fname1.format(id='A', color='Green',
+                                                          date=datestr))),
                    'local_fname': fname1.format(id='A', color='Green',
                                                 date=datestr)}
-tag_los_red_a = {'dir': '/pub/LEVEL.2/MIGHTI-A',
-                   'remote_fname': '{year:4d}/{doy:03d}/LOS-Winds/' +
-                                   fname1.format(id='A', color='Red',
-                                                 date=datestr),
-                   'local_fname': fname1.format(id='A', color='Red',
-                                                date=datestr)}
-tag_temp_a = {'dir': '/pub/LEVEL.2/MIGHTI-A',
-              'remote_fname': '{year:4d}/{doy:03d}/Temperature/' +
-                              fname3.format(id='A', date=datestr),
+tag_los_red_a = {'dir': dirstr.format(id='-A'),
+                 'remote_fname': ''.join(('{year:4d}/{doy:03d}/LOS-Winds/',
+                                          fname1.format(id='A', color='Red',
+                                                        date=datestr))),
+                 'local_fname': fname1.format(id='A', color='Red',
+                                              date=datestr)}
+tag_temp_a = {'dir': dirstr.format(id='-A'),
+              'remote_fname': ''.join(('{year:4d}/{doy:03d}/Temperature/',
+                                       fname3.format(id='A', date=datestr))),
               'local_fname': fname3.format(id='A', date=datestr)}
 
-tag_los_green_b = {'dir': '/pub/LEVEL.2/MIGHTI-B',
-                   'remote_fname': '{year:4d}/{doy:03d}/LOS-Winds/' +
-                                   fname1.format(id='B', color='Green',
-                                                 date=datestr),
+tag_los_green_b = {'dir': dirstr.format(id='-B'),
+                   'remote_fname': ''.join(('{year:4d}/{doy:03d}/LOS-Winds/',
+                                            fname1.format(id='B', color='Green',
+                                                          date=datestr))),
                    'local_fname': fname1.format(id='B', color='Green',
                                                 date=datestr)}
-tag_los_red_b = {'dir': '/pub/LEVEL.2/MIGHTI-B',
-                 'remote_fname': '{year:4d}/{doy:03d}/LOS-Winds/' +
-                                   fname1.format(id='B', color='Red',
-                                                 date=datestr),
+tag_los_red_b = {'dir': dirstr.format(id='-B'),
+                 'remote_fname': ''.join(('{year:4d}/{doy:03d}/LOS-Winds/',
+                                          fname1.format(id='B', color='Red',
+                                                        date=datestr))),
                  'local_fname': fname1.format(id='B', color='Red',
                                               date=datestr)}
-tag_temp_b = {'dir': '/pub/LEVEL.2/MIGHTI-B',
-              'remote_fname': '{year:4d}/{doy:03d}/Temperature/' +
-                              fname3.format(id='B', date=datestr),
+tag_temp_b = {'dir': dirstr.format(id='-B'),
+              'remote_fname': ''.join(('{year:4d}/{doy:03d}/Temperature/',
+                                       fname3.format(id='B', date=datestr))),
               'local_fname': fname3.format(id='B', date=datestr)}
 
 download_tags = {'': {'vector_wind_green': tag_vw_green,
@@ -148,6 +149,7 @@ download_tags = {'': {'vector_wind_green': tag_vw_green,
                        'temperature': tag_temp_b}}
 
 download = functools.partial(icon_ssl_download, supported_tags=download_tags)
+
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.

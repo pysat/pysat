@@ -177,7 +177,6 @@ def load(fnames, tag=None, sat_id=None):
                                     pandas_format=pandas_format)
 
 
-
 def clean(inst, clean_level=None):
     """Provides data cleaning based upon clean_level.
 

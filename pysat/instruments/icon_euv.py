@@ -230,9 +230,11 @@ def icon_ssl_download(date_array, tag, sat_id, data_path=None,
 
         # perform download
         try:
-            logger.info('Attempting to download file for ' + date.strftime('%x'))
+            logger.info(' '.join(('Attempting to download file for',
+                                  date.strftime('%x'))))
             logger.info(formatted_remote_fname)
-            ftp.retrbinary('RETR ' + formatted_remote_fname, open(saved_local_fname, 'wb').write)
+            ftp.retrbinary('RETR ' + formatted_remote_fname,
+                           open(saved_local_fname, 'wb').write)
             logger.info('Finished.')
         except ftplib.error_perm as exception:
             if str(exception.args[0]).split(" ", 1)[0] != '550':
