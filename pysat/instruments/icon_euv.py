@@ -46,7 +46,7 @@ name = 'euv'
 tags = {'': 'Level 2 public geophysical data'}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2020, 1, 1)}}
-_test_download = {'': {kk: False for kk in tags.keys()}}
+_test_download_travis = {'': {kk: False for kk in tags.keys()}}
 pandas_format = False
 
 fname = 'ICON_L2-6_EUV_{year:04d}-{month:02d}-{day:02d}_v02r001.NC'

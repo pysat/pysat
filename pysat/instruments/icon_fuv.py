@@ -53,7 +53,7 @@ tags = {'day': 'Level 2 daytime O/N2',
         'night': 'Level 2 nighttime O profile'}
 sat_ids = {'': ['day', 'night']}
 _test_dates = {'': {kk: dt.datetime(2020, 1, 1) for kk in tags.keys()}}
-_test_download = {'': {kk: False for kk in tags.keys()}}
+_test_download_travis = {'': {kk: False for kk in tags.keys()}}
 pandas_format = False
 
 fname24 = 'ICON_L2-4_FUV_Day_{year:04d}-{month:02d}-{day:02d}_v03r001.NC'

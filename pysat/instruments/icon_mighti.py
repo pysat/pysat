@@ -67,8 +67,8 @@ sat_ids = {'': ['vector_wind_green', 'vector_wind_red'],
            'b': ['los_wind_green', 'los_wind_red', 'temperature']}
 _test_dates = {jj: {kk: dt.datetime(2020, 1, 1) for kk in sat_ids[jj]}
                for jj in sat_ids.keys()}
-_test_download = {jj: {kk: False for kk in sat_ids[jj]}
-                  for jj in sat_ids.keys()}
+_test_download_travis = {jj: {kk: False for kk in sat_ids[jj]}
+                         for jj in sat_ids.keys()}
 pandas_format = False
 
 datestr = '{year:04d}-{month:02d}-{day:02d}'
