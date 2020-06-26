@@ -41,6 +41,7 @@ import warnings
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
+from pysat.instruments.icon_euv import icon_ssl_download
 
 import logging
 logger = logging.getLogger(__name__)
@@ -62,9 +63,21 @@ bname = 'ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_v02r002.NC'
 supported_tags = {'a': {'': aname},
                   'b': {'': bname}}
 
-# use the CDAWeb methods list files routine
+# use the general methods list files routine
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
+
+# support download routine
+basic_tag_a = {'dir': '/pub/LEVEL.2/IVM-A',
+               'remote_fname': '{year:4d}/{doy:03d}/Data/' + aname,
+               'local_fname': aname}
+basic_tag_b = {'dir': '/pub/LEVEL.2/IVM-B',
+               'remote_fname': '{year:4d}/{doy:03d}/Data/' + aname,
+               'local_fname': aname}
+
+download_tags = {'a': {'': basic_tag_a},
+                 'b': {'': basic_tag_b}}
+download = functools.partial(icon_ssl_download, supported_tags=download_tags)
 
 
 def init(self):
@@ -159,49 +172,6 @@ def load(fnames, tag=None, sat_id=None):
                                     min_label='ValidMin',
                                     max_label='ValidMax',
                                     fill_label='FillVal')
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    """Will download data for ICON IVM, after successful launch and operations.
-
-    Parameters
-    ----------
-    date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not
-        be contiguous.
-    tag : string ('')
-        Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
-        Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
-        User string input used for download. Provided by user and passed via
-        pysat. If an account is required for dowloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
-    **kwargs : dict
-        Additional keywords supplied by user when invoking the download
-        routine attached to a pysat.Instrument object are passed to this
-        routine via kwargs.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
-
-
-    """
-
-    warnings.warn(''.join(("Downloads in pysat not yet supported.  Please ",
-                           "download data from ",
-                           "ftp://icon-science.ssl.berkeley.edu/pub/LEVEL.2/")))
-
-    return
 
 
 def clean(inst, clean_level=None):
