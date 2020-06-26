@@ -60,8 +60,8 @@ _test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
 # available as of Jun 26 2020, as this mode has not yet been engaged.
 # Infrastructure is in place for local tests, but the unit test is expected to
 # fail locally.  This test is skipped on the Travis environment
-_test_download_travis = {'a': {kk: False for kk in tags.keys()},
-                         'b': {kk: False for kk in tags.keys()}}
+_test_download_travis = {'a': {kk: False for kk in tags.keys()}}
+_password_req = {'b': {kk: False for kk in tags.keys()}}
 
 aname = 'ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_v02r002.NC'
 bname = 'ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_v02r002.NC'
