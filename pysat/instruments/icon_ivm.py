@@ -53,13 +53,13 @@ tags = {'': 'Level 2 public geophysical data'}
 # dictionary of sat_ids ad tags supported by each
 sat_ids = {'a': [''],
            'b': ['']}
+# Note for developers: IVM-A and IVM-B face in opposite directions, and only
+# one is expected to have geophysical data at a given time depedning on ram
+# direction.  IVM-B data is not available as of Jun 26 2020, as this mode has
+# not yet been engaged.  Bypassing tests and warning checks via the password_req
+# flag
 _test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
                'b': {'': dt.datetime(3000, 1, 1)}}  # IVM-B not yet engaged
-# Note for developers: IVM-A and IVM-B face in opposite directions, and only
-# one is expected to have geophysical data at a given time.  IVM-B data is not
-# available as of Jun 26 2020, as this mode has not yet been engaged.
-# Infrastructure is in place for local tests, but the unit test is expected to
-# fail locally.  This test is skipped on the Travis environment
 _test_download_travis = {'a': {kk: False for kk in tags.keys()}}
 _password_req = {'b': {kk: False for kk in tags.keys()}}
 
