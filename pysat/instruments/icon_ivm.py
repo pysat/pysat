@@ -59,7 +59,7 @@ sat_ids = {'a': [''],
 # not yet been engaged.  Bypassing tests and warning checks via the password_req
 # flag
 _test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
-               'b': {'': dt.datetime(3000, 1, 1)}}  # IVM-B not yet engaged
+               'b': {'': dt.datetime(2020, 1, 1)}}  # IVM-B not yet engaged
 _test_download_travis = {'a': {kk: False for kk in tags.keys()}}
 _password_req = {'b': {kk: False for kk in tags.keys()}}
 
