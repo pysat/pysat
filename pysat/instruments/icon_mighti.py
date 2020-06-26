@@ -44,6 +44,7 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
+import pandas as pds
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
@@ -183,6 +184,9 @@ def default(inst):
 
     """
 
+    # Use datetime instead of timestamp for Epoch
+    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x/1000)
+                                          for x in inst.data['Epoch']])
     target = {'los_wind_green': 'ICON_L21_',
               'los_wind_red': 'ICON_L21_',
               'vector_wind_green': 'ICON_L22_',

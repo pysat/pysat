@@ -33,6 +33,7 @@ import ftplib
 from ftplib import FTP
 import functools
 import os
+import pandas as pds
 import warnings
 
 import pysat
@@ -99,6 +100,9 @@ def default(inst):
 
     """
 
+    # Use datetime instead of timestamp for Epoch
+    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x/1000)
+                                          for x in inst.data['Epoch']])
     mm_gen.remove_leading_text(inst, target='ICON_L26_')
 
 

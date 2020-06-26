@@ -675,8 +675,7 @@ class Instrument(object):
             if 'time' in data.indexes:
                 return data.indexes['time']
             elif 'Epoch' in data.indexes:
-                return pds.to_datetime([dt.datetime.utcfromtimestamp(x/1000)
-                                        for x in data.indexes['Epoch']])
+                return data.indexes['Epoch']
             else:
                 return pds.Index([])
 
@@ -836,7 +835,8 @@ class Instrument(object):
         # Check for download flags for tests
         try:
             # Used for instruments without download access
-            # Assume we test download routines regardless of env unless specified otherwise
+            # Assume we test download routines regardless of env unless
+            # specified otherwise
             self._test_download = \
                 inst._test_download[self.sat_id][self.tag]
         except (AttributeError, KeyError):
@@ -844,7 +844,8 @@ class Instrument(object):
             self._test_download = True
         try:
             # Used for tests which require FTP access
-            # Assume we test download routines on travis unless specified otherwise
+            # Assume we test download routines on travis unless specified
+            # otherwise
             self._test_download_travis = \
                 inst._test_download_travis[self.sat_id][self.tag]
         except (AttributeError, KeyError):

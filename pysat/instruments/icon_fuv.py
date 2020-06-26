@@ -38,6 +38,7 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
+import pandas as pds
 import warnings
 
 import pysat
@@ -117,6 +118,9 @@ def default(inst):
 
     """
 
+    # Use datetime instead of timestamp for Epoch
+    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x/1000)
+                                          for x in inst.data['Epoch']])
     target = {'day': 'ICON_L24_',
               'night': 'ICON_L25_'}
     mm_gen.remove_leading_text(inst, target=target[inst.tag])
