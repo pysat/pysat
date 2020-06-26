@@ -95,59 +95,25 @@ list_files = functools.partial(mm_gen.list_files,
 
 # support download routine
 dirstr = '/pub/LEVEL.2/MIGHTI{id:s}'
-tag_vw_green = {'dir': dirstr.format(id=''),
-                'remote_fname': ''.join(('{year:4d}/{doy:03d}/Vector-Winds/',
-                                         fname2.format(color='Green',
-                                                       date=datestr))),
-                'local_fname': fname2.format(color='Green', date=datestr)}
-tag_vw_red = {'dir': dirstr.format(id=''),
-              'remote_fname': ''.join(('{year:4d}/{doy:03d}/Vector-Winds/',
-                                       fname2.format(color='Red',
-                                                     date=datestr))),
-              'local_fname': fname2.format(color='Red', date=datestr)}
-
-tag_los_green_a = {'dir': dirstr.format(id='-A'),
-                   'remote_fname': ''.join(('{year:4d}/{doy:03d}/LOS-Winds/',
-                                            fname1.format(id='A', color='Green',
-                                                          date=datestr))),
-                   'local_fname': fname1.format(id='A', color='Green',
-                                                date=datestr)}
-tag_los_red_a = {'dir': dirstr.format(id='-A'),
-                 'remote_fname': ''.join(('{year:4d}/{doy:03d}/LOS-Winds/',
-                                          fname1.format(id='A', color='Red',
-                                                        date=datestr))),
-                 'local_fname': fname1.format(id='A', color='Red',
-                                              date=datestr)}
-tag_temp_a = {'dir': dirstr.format(id='-A'),
-              'remote_fname': ''.join(('{year:4d}/{doy:03d}/Temperature/',
-                                       fname3.format(id='A', date=datestr))),
-              'local_fname': fname3.format(id='A', date=datestr)}
-
-tag_los_green_b = {'dir': dirstr.format(id='-B'),
-                   'remote_fname': ''.join(('{year:4d}/{doy:03d}/LOS-Winds/',
-                                            fname1.format(id='B', color='Green',
-                                                          date=datestr))),
-                   'local_fname': fname1.format(id='B', color='Green',
-                                                date=datestr)}
-tag_los_red_b = {'dir': dirstr.format(id='-B'),
-                 'remote_fname': ''.join(('{year:4d}/{doy:03d}/LOS-Winds/',
-                                          fname1.format(id='B', color='Red',
-                                                        date=datestr))),
-                 'local_fname': fname1.format(id='B', color='Red',
-                                              date=datestr)}
-tag_temp_b = {'dir': dirstr.format(id='-B'),
-              'remote_fname': ''.join(('{year:4d}/{doy:03d}/Temperature/',
-                                       fname3.format(id='B', date=datestr))),
-              'local_fname': fname3.format(id='B', date=datestr)}
-
-download_tags = {'': {'vector_wind_green': tag_vw_green,
-                      'vector_wind_red': tag_vw_red},
-                 'a': {'los_wind_green': tag_los_green_a,
-                       'los_wind_red': tag_los_red_a,
-                       'temperature': tag_temp_a},
-                 'b': {'los_wind_green': tag_los_green_b,
-                       'los_wind_red': tag_los_red_b,
-                       'temperature': tag_temp_b}}
+dirdatestr = '{year:4d}/{doy:03d}/'
+ids = {'': '',
+       'a': '-A',
+       'b': '-B'}
+products = {'vector_wind_green': 'Vector-Winds/',
+            'vector_wind_red': 'Vector-Winds/',
+            'los_wind_green': 'LOS-Winds/',
+            'los_wind_red': 'LOS-Winds/',
+            'temperature': 'Temperature/'}
+download_tags = {}
+for skey in supported_tags.keys():
+    download_tags[skey] = {}
+    for tkey in supported_tags[skey].keys():
+        fname = supported_tags[skey][tkey]
+        download_tags[skey][tkey] = {'dir': dirstr.format(id=ids[skey]),
+                                     'remote_fname': ''.join((dirdatestr,
+                                                              products[tkey],
+                                                              fname)),
+                                     'local_fname': fname}
 
 download = functools.partial(icon_ssl_download, supported_tags=download_tags)
 
