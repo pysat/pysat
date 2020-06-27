@@ -489,5 +489,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 mdata.__setattr__(d+'_', out.attrs[d])
             else:
                 mdata.__setattr__(d, out.attrs[d])
+        # Remove attributes from the data object
+        out.attrs = []
 
     return out, mdata
