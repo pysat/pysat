@@ -15,7 +15,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added warning when FillValue metadata could lead to unexpected results
      when writing a netCDF4 file
    - Use conda to manage Travis CI test environment
-   - test instruments now part of compiled package for development elsewhere
+   - Added NaN filter for metadata when writing netCDF4 files
+   - Test instruments now part of compiled package for development elsewhere
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
 - Documentation

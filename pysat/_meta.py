@@ -81,6 +81,9 @@ class Meta(object):
     fill_label : str
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
+    export_nan: list
+        List of labels that should be exported even if their value is nan.
+        By default, metadata with a value of nan will be exluded from export.
 
 
     Notes
@@ -176,8 +179,9 @@ class Meta(object):
                  name_label='long_name', notes_label='notes',
                  desc_label='desc', plot_label='label', axis_label='axis',
                  scale_label='scale', min_label='value_min',
-                 max_label='value_max', fill_label='fill'):
-        
+                 max_label='value_max', fill_label='fill',
+                 export_nan=[]):
+
         # set mutability of Meta attributes
         self.mutable = True
 
@@ -192,6 +196,11 @@ class Meta(object):
         self._min_label = min_label
         self._max_label = max_label
         self._fill_label = fill_label
+        # by default metadata with a value of nan will not be exported
+        # unless the name is in the _export_nan list. Initialize the list
+        # with the fill label, since it is reasonable to assume that a fill
+        # value of nan would be intended to be exported
+        self._export_nan = [fill_label] + export_nan
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
         # use any user provided data to instantiate object with data
@@ -393,7 +402,7 @@ class Meta(object):
 
 
     def __setattr__(self, name, value):
-        """Conditionally sets attributes based on self.mutable flag 
+        """Conditionally sets attributes based on self.mutable flag
         @properties are assumed to be mutable.
         We avoid recursively setting properties using
         method from https://stackoverflow.com/a/15751135
