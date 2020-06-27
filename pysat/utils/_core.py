@@ -258,9 +258,9 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 for dim in set(two_d_dims):
                     # first or second dimension could be epoch
                     # Use other dimension name as variable name
-                    if dim[0] == 'Epoch':
+                    if dim[0] == epoch_name:
                         obj_key_name = dim[1]
-                    elif dim[1] == 'Epoch':
+                    elif dim[1] == epoch_name:
                         obj_key_name = dim[0]
                     else:
                         raise KeyError('Epoch not found!')
