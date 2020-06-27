@@ -1938,12 +1938,9 @@ class Instrument(object):
 
         return data, data_type, datetime_flag
 
-    def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False):
+    def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False,
+                                 export_nan=None):
         """Filter metadata properties to be consistent with netCDF4.
-
-        Notes
-        -----
-        removed forced to True if coltype consistent with a string type
 
         Parameters
         ----------
@@ -1953,13 +1950,36 @@ class Instrument(object):
             Type provided by _get_data_info
         remove : boolean (False)
             Removes FillValue and associated parameters disallowed for strings
+        export_nan : list or None
+            Metadata parameters allowed to be NaN
 
         Returns
         -------
         dict
             Modified as needed for netCDf4
 
+        Note
+        ----
+        remove forced to True if coltype consistent with a string type
+
+        Metadata values that are NaN and not listed in export_nan are
+         filtered out.
+
         """
+
+        # remove any metadata with a value of nan not present in
+        # export_nan
+        filtered_dict = mdata_dict.copy()
+        for key, value in mdata_dict.items():
+            try:
+                if np.isnan(value):
+                    if key not in export_nan:
+                        filtered_dict.pop(key)
+            except TypeError:
+                # if typerror thrown, it's not nan
+                pass
+        mdata_dict = filtered_dict
+
         # Coerce boolean types to integers
         for key in mdata_dict:
             if type(mdata_dict[key]) == bool:
@@ -2051,7 +2071,8 @@ class Instrument(object):
         return export_dict
 
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
-                   zlib=False, complevel=4, shuffle=True, preserve_meta_case=False):
+                   zlib=False, complevel=4, shuffle=True, preserve_meta_case=False,
+                   export_nan=None):
         """Stores loaded data into a netCDF4 file.
 
         Parameters
@@ -2079,6 +2100,14 @@ class Instrument(object):
             Instrument object are used instead. By default, the variable strings
             on both the data and metadata side are the same, though this relationship
             may be altered by a user.
+        export_nan : list or None
+             By default, the metadata variables where a value of NaN is allowed
+             and written to the netCDF4 file is maintained by the Meta object
+             attached to the pysat.Instrument object. A list supplied here
+             will override the settings provided by Meta, and all parameters
+             included will be written to the file. If not listed
+             and a value is NaN then that attribute simply won't be included in
+             the netCDF4 file.
 
         Note
         ----
@@ -2107,6 +2136,10 @@ class Instrument(object):
 
         import netCDF4
         import pysat
+
+        # check export nans first
+        if export_nan is None:
+            export_nan = self.meta._export_nan
 
         file_format = 'NETCDF4'
         # base_instrument used to define the standard attributes attached
@@ -2201,7 +2234,8 @@ class Instrument(object):
                 new_dict['MonoTon'] = 'decrease'
             new_dict['Time_Base'] = 'Milliseconds since 1970-1-1 00:00:00'
             new_dict['Time_Scale'] = 'UTC'
-            new_dict = self._filter_netcdf4_metadata(new_dict, np.int64)
+            new_dict = self._filter_netcdf4_metadata(new_dict, np.int64,
+                                                     export_nan=export_nan)
             # attach metadata
             cdfkey.setncatts(new_dict)
 
@@ -2245,7 +2279,8 @@ class Instrument(object):
                         new_dict['Format'] = self._get_var_type_code(coltype)
                         new_dict['Var_Type'] = 'data'
                         new_dict = self._filter_netcdf4_metadata(new_dict,
-                                                                 coltype)
+                                                                 coltype,
+                                                                 export_nan=export_nan)
                         cdfkey.setncatts(new_dict)
                     except KeyError as err:
                         logger.info(' '.join((str(err), '\n',
@@ -2289,7 +2324,8 @@ class Instrument(object):
                             # no FillValue or FillVal allowed for strings
                             new_dict = self._filter_netcdf4_metadata(new_dict,
                                                                      coltype,
-                                                                     remove=True)
+                                                                     remove=True,
+                                                                     export_nan=export_nan)
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
@@ -2379,7 +2415,8 @@ class Instrument(object):
                                     new_dict['Var_Type'] = 'data'
                                     new_dict = \
                                         self._filter_netcdf4_metadata(new_dict,
-                                                                      coltype)
+                                                                      coltype,
+                                                                      export_nan=export_nan)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     logger.info(' '.join((str(err), '\n',
@@ -2424,7 +2461,8 @@ class Instrument(object):
                                     new_dict['Var_Type'] = 'data'
                                     new_dict = \
                                         self._filter_netcdf4_metadata(new_dict,
-                                                                      coltype)
+                                                                      coltype,
+                                                                      export_nan=export_nan)
                                     # really attach metadata now
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
@@ -2471,7 +2509,8 @@ class Instrument(object):
                                 new_dict[export_units_label] = \
                                     'Milliseconds since 1970-1-1 00:00:00'
                             new_dict = self._filter_netcdf4_metadata(new_dict,
-                                                                     coltype)
+                                                                     coltype,
+                                                                     export_nan=export_nan)
                             # set metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
@@ -2491,7 +2530,8 @@ class Instrument(object):
                                 for export_name_label in export_name_labels:
                                     new_dict[export_name_label] = key
                             new_dict = self._filter_netcdf4_metadata(new_dict,
-                                                                     coltype)
+                                                                     coltype,
+                                                                     export_nan=export_nan)
                             # assign metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
