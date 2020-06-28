@@ -30,6 +30,7 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
+import numpy as np
 import pandas as pds
 import warnings
 
@@ -185,10 +186,22 @@ def clean(inst, clean_level=None):
 
     Note
     ----
-        Supports 'clean', 'dusty', 'dirty', 'none'
+        Supports 'clean', 'dusty', 'dirty', 'none'. Method is
+        not called by pysat if clean_level is None or 'none'.
 
     """
 
-    if clean_level != 'none':
-        warnings.warn("Cleaning actions for ICON EUV are not yet defined.")
+    L26_Flag = inst['Flags']
+    vars = ['HmF2', 'NmF2', 'Oplus']
+
+    if clean_level == 'clean':
+        idx, = np.where(L26_Flag > 0)
+        inst[idx, vars] = np.nan
+    elif clean_level == 'dusty':
+        idx, = np.where(L26_Flag > 1)
+        inst[idx, vars] = np.nan
+    elif clean_level == 'dirty':
+        idx, = np.where(L26_Flag > 2)
+        inst[idx, vars] = np.nan
+
     return

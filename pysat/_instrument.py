@@ -433,16 +433,16 @@ class Instrument(object):
             inst[datetime1:datetime1, 'name1':'name2']
 
         """
-        if 'time' not in self.data:
+        if 'Epoch' not in self.data:
             return xr.Dataset(None)
         if isinstance(key, tuple):
             if len(key) == 2:
                 # support slicing time, variable name
                 try:
-                    return self.data.isel(time=key[0])[key[1]]
+                    return self.data.isel(Epoch=key[0])[key[1]]
                 except:
                     try:
-                        return self.data.sel(time=key[0])[key[1]]
+                        return self.data.sel(Epoch=key[0])[key[1]]
                     except TypeError:  # construct dataset from names
                         return self.data[self.variables[key[1]]]
             else:
@@ -461,10 +461,10 @@ class Instrument(object):
                 try:
                     # get all data variables but for a subset of time
                     # using integer indexing
-                    return self.data.isel(time=key)
+                    return self.data.isel(Epoch=key)
                 except:
                     # subset of time, using label based indexing
-                    return self.data.sel(time=key)
+                    return self.data.sel(Epoch=key)
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
