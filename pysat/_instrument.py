@@ -433,16 +433,21 @@ class Instrument(object):
             inst[datetime1:datetime1, 'name1':'name2']
 
         """
-        if 'Epoch' not in self.data:
+        if 'Epoch' in self.data.indexes:
+            epoch_name = 'Epoch'
+        elif 'time' in self.data.indexes:
+            epoch_name = 'time'
+        else:
             return xr.Dataset(None)
+
         if isinstance(key, tuple):
             if len(key) == 2:
                 # support slicing time, variable name
                 try:
-                    return self.data.isel(Epoch=key[0])[key[1]]
+                    return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
                 except:
                     try:
-                        return self.data.sel(Epoch=key[0])[key[1]]
+                        return self.data.sel(indexers={epoch_name: key[0]})[key[1]]
                     except TypeError:  # construct dataset from names
                         return self.data[self.variables[key[1]]]
             else:
@@ -461,10 +466,10 @@ class Instrument(object):
                 try:
                     # get all data variables but for a subset of time
                     # using integer indexing
-                    return self.data.isel(Epoch=key)
+                    return self.data.isel(indexers={epoch_name: key})
                 except:
                     # subset of time, using label based indexing
-                    return self.data.sel(Epoch=key)
+                    return self.data.sel(indexers={epoch_name: key})
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
@@ -549,6 +554,13 @@ class Instrument(object):
                 new = {'data': new}
             in_data = new.pop('data')
 
+            if 'Epoch' in self.data.indexes:
+                epoch_name = 'Epoch'
+            elif 'time' in self.data.indexes:
+                epoch_name = 'time'
+            else:
+                raise ValueError('Unsupported time index name, "Epoch" or "time".')
+
             if isinstance(key, tuple):
                 # user provided more than one thing in assignment location
                 # something like, index integers and a variable name
@@ -564,7 +576,7 @@ class Instrument(object):
                 try:
                     self.data[key[-1]].loc[indict] = in_data
                 except:
-                    indict['Epoch'] = self.index[indict['Epoch']]
+                    indict[epoch_name] = self.index[indict[epoch_name]]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 return
@@ -583,20 +595,20 @@ class Instrument(object):
                     if len(in_data) == len(self.index):
                         # 1D input has the correct length for storage along
                         # 'Epoch'
-                        self.data[key] = ('Epoch', in_data)
+                        self.data[key] = (epoch_name, in_data)
                     elif len(in_data) == 1:
                         # only provided a single number in iterable, make that
                         # the input for all times
-                        self.data[key] = ('Epoch', [in_data[0]]*len(self.index))
+                        self.data[key] = (epoch_name, [in_data[0]]*len(self.index))
                     elif len(in_data) == 0:
                         # provided an empty iterable
                         # make everything NaN
-                        self.data[key] = ('Epoch', [np.nan]*len(self.index))
+                        self.data[key] = (epoch_name, [np.nan]*len(self.index))
                 # not an iterable input
                 elif len(np.shape(in_data)) == 0:
                     # not given an iterable at all, single number
                     # make that number the input for all times
-                    self.data[key] = ('Epoch', [in_data]*len(self.index))
+                    self.data[key] = (epoch_name, [in_data]*len(self.index))
 
                 else:
                     # multidimensional input that is not an xarray
