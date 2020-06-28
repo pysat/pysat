@@ -101,7 +101,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]]*3
-    data = xr.Dataset({'uts': (('time'), index)}, coords={'time': index})
+    data = xr.Dataset({'uts': (('Epoch'), index)}, coords={'Epoch': index})
 
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
@@ -114,13 +114,13 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
-    data['mlt'] = (('time'), mlt)
+    data['mlt'] = (('Epoch'), mlt)
 
     # do slt, 20 second offset from mlt
     slt = mm_test.generate_fake_data(time_delta.total_seconds()+20, uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
-    data['slt'] = (('time'), slt)
+    data['slt'] = (('Epoch'), slt)
 
     # create a fake satellite longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
@@ -128,28 +128,28 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                            period=iperiod['lon'],
                                            data_range=drange['lon'])
-    data['longitude'] = (('time'), longitude)
+    data['longitude'] = (('Epoch'), longitude)
 
     # create fake satellite latitude for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
     latitude = 90.0 * np.cos(angle)
-    data['latitude'] = (('time'), latitude)
+    data['latitude'] = (('Epoch'), latitude)
 
     # create constant altitude at 400 km for a satellite that has yet
     # to experience orbital decay
     alt0 = 400.0
     altitude = alt0 * np.ones(data['latitude'].shape)
-    data['altitude'] = (('time'), altitude)
+    data['altitude'] = (('Epoch'), altitude)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.).astype(int)
-    data['dummy1'] = (('time'), mlt_int)
-    data['dummy2'] = (('time'), long_int)
-    data['dummy3'] = (('time'), mlt_int + long_int * 1000.)
-    data['dummy4'] = (('time'), uts)
+    data['dummy1'] = (('Epoch'), mlt_int)
+    data['dummy2'] = (('Epoch'), long_int)
+    data['dummy3'] = (('Epoch'), mlt_int + long_int * 1000.)
+    data['dummy4'] = (('Epoch'), uts)
 
     # Add dummy coords
     data.coords['x'] = (('x'), np.arange(17))
@@ -159,32 +159,32 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # create altitude 'profile' at each location to simulate remote data
     num = len(data['uts'])
     data['profiles'] = \
-        (('time', 'profile_height'),
+        (('Epoch', 'profile_height'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
     data.coords['profile_height'] = ('profile_height', np.arange(15))
 
     # profiles that could have different altitude values
     data['variable_profiles'] = \
-        (('time', 'z'),
+        (('Epoch', 'z'),
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
     data.coords['variable_profile_height'] = \
-        (('time', 'z'),
+        (('Epoch', 'z'),
          np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
 
     # Create fake image type data, projected to lat / lon at some location
     # from satellite
     data['images'] = \
-        (('time', 'x', 'y'),
+        (('Epoch', 'x', 'y'),
          data['dummy3'].values[:,
                                np.newaxis,
                                np.newaxis] * np.ones((num, 17, 17)))
     data.coords['image_lat'] = \
-        (('time', 'x', 'y'),
+        (('Epoch', 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
                        :]*np.ones((num, 17, 17)))
     data.coords['image_lon'] = \
-        (('time', 'x', 'y'),
+        (('Epoch', 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
                        :] * np.ones((num, 17, 17)))

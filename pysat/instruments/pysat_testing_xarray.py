@@ -121,20 +121,20 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         # non unique
         index[6:9] = [index[6]]*3
 
-    data = xarray.Dataset({'uts': (('time'), index)}, coords={'time': index})
+    data = xarray.Dataset({'uts': (('Epoch'), index)}, coords={'Epoch': index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
-    data['mlt'] = (('time'), mlt)
+    data['mlt'] = (('Epoch'), mlt)
 
     # do slt, 20 second offset from mlt
     slt = mm_test.generate_fake_data(time_delta.total_seconds()+20, uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
-    data['slt'] = (('time'), slt)
+    data['slt'] = (('Epoch'), slt)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
@@ -142,19 +142,19 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                            period=iperiod['lon'],
                                            data_range=drange['lon'])
-    data['longitude'] = (('time'), longitude)
+    data['longitude'] = (('Epoch'), longitude)
 
     # create latitude area for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
     latitude = 90.0 * np.cos(angle)
-    data['latitude'] = (('time'), latitude)
+    data['latitude'] = (('Epoch'), latitude)
 
     # create constant altitude at 400 km
     alt0 = 400.0
     altitude = alt0 * np.ones(data['latitude'].shape)
-    data['altitude'] = (('time'), altitude)
+    data['altitude'] = (('Epoch'), altitude)
 
     # fake orbit number
     fake_delta = date - dt.datetime(2008, 1, 1)
@@ -162,24 +162,24 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
                                            uts, period=iperiod['lt'],
                                            cyclic=False)
 
-    data['orbit_num'] = (('time'), orbit_num)
+    data['orbit_num'] = (('Epoch'), orbit_num)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.).astype(int)
-    data['dummy1'] = (('time'), mlt_int)
-    data['dummy2'] = (('time'), long_int)
-    data['dummy3'] = (('time'), mlt_int + long_int * 1000.)
-    data['dummy4'] = (('time'), uts)
-    data['string_dummy'] = (('time'), ['test'] * len(data.indexes['time']))
-    data['unicode_dummy'] = (('time'), [u'test'] * len(data.indexes['time']))
-    data['int8_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
+    data['dummy1'] = (('Epoch'), mlt_int)
+    data['dummy2'] = (('Epoch'), long_int)
+    data['dummy3'] = (('Epoch'), mlt_int + long_int * 1000.)
+    data['dummy4'] = (('Epoch'), uts)
+    data['string_dummy'] = (('Epoch'), ['test'] * len(data.indexes['Epoch']))
+    data['unicode_dummy'] = (('Epoch'), [u'test'] * len(data.indexes['Epoch']))
+    data['int8_dummy'] = (('Epoch'), np.array([1] * len(data.indexes['Epoch']),
                           dtype=np.int8))
-    data['int16_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
+    data['int16_dummy'] = (('Epoch'), np.array([1] * len(data.indexes['Epoch']),
                            dtype=np.int16))
-    data['int32_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
+    data['int32_dummy'] = (('Epoch'), np.array([1] * len(data.indexes['Epoch']),
                            dtype=np.int32))
-    data['int64_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
+    data['int64_dummy'] = (('Epoch'), np.array([1] * len(data.indexes['Epoch']),
                            dtype=np.int64))
 
     return data, meta.copy()
