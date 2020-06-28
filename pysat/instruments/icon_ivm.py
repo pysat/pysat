@@ -38,11 +38,10 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 import numpy as np
-import warnings
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
-from pysat.instruments.icon_euv import icon_ssl_download
+from pysat.instruments.methods import icon as mm_icon
 
 import logging
 logger = logging.getLogger(__name__)
@@ -84,7 +83,7 @@ basic_tag_b = {'dir': '/pub/LEVEL.2/IVM-B',
 
 download_tags = {'a': {'': basic_tag_a},
                  'b': {'': basic_tag_b}}
-download = functools.partial(icon_ssl_download, supported_tags=download_tags)
+download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
 
 
 def init(self):
@@ -104,66 +103,7 @@ def init(self):
 
     """
 
-    logger.info(''.join(( 'This is a data product from the NASA Ionospheric '
-                          'Connection Explorer mission, an Explorer launched '
-                          'at 21:59:45 EDT on October 10, 2019.\n\nGuidelines '
-                          'for the use of this product are described in the '
-                          'ICON Rules of the Road  '
-                          '(https://http://icon.ssl.berkeley.edu/Data).'
-                          '\n\nResponsibility for the mission science '
-                          'falls to the Principal Investigator, Dr. '
-                          'Thomas Immel at UC Berkeley:\nImmel, T.J., '
-                          'England, S.L., Mende, S.B. et al. Space Sci Rev '
-                          '(2018) 214: 13. '
-                          'https://doi.org/10.1007/s11214-017-0449-2\n\n'
-                          'Responsibility for the validation of the L1 data '
-                          'products falls to the instrument lead investigators/'
-                          'scientists.\n* EUV: Dr. Eric Korpela :  '
-                          'https://doi.org/10.1007/s11214-017-0384-2\n * FUV: '
-                          'Dr. Harald Frey : https://doi.org/10.1007/s11214-017-0386-0\n* '
-                          'MIGHTI: Dr. Christoph Englert : https://doi.org/10.10'
-                          '07/s11214-017-0358-4, and https://doi.org/10.1007/s11'
-                          '214-017-0374-4\n* IVM: Dr. Roderick Heelis : '
-                          'https://doi.org/10.1007/s11214-017-0383-3\n\n '
-                          'Responsibility for the validation of the L2 data '
-                          'products falls to those scientists responsible for '
-                          'those products.\n * Daytime O and N2 profiles: Dr. '
-                          'Andrew Stephan : '
-                          'https://doi.org/10.1007/s11214-018-0477-6\n* Daytime '
-                          '(EUV) O+ profiles: Dr. Andrew Stephan : '
-                          'https://doi.org/10.1007/s11214-017-0385-1\n* '
-                          'Nighttime (FUV) O+ profiles: Dr. Farzad Kamalabadi : '
-                          'https://doi.org/10.1007/s11214-018-0502-9\n* Neutral'
-                          ' Wind profiles: Dr. Jonathan Makela :'
-                          ' https://doi.org/10.1007/s11214-017-0359-3\n* '
-                          'Neutral Temperature profiles: Dr. Christoph Englert '
-                          ': https://doi.org/10.1007/s11214-017-0434-9\n* Ion '
-                          'Velocity Measurements : Dr. Russell Stoneback : '
-                          'https://doi.org/10.1007/s11214-017-0383-3\n\n'
-                          'Responsibility for Level 4 products falls to those '
-                          'scientists responsible for those products.\n*'
-                          ' Hough Modes : Dr. Chihoko Yamashita :  '
-                          'https://doi.org/10.1007/s11214-017-0401-5\n* TIEGCM : '
-                          'Dr. Astrid Maute : '
-                          'https://doi.org/10.1007/s11214-017-0330-3\n* '
-                          'SAMI3 : Dr. Joseph Huba : '
-                          'https://doi.org/10.1007/s11214-017-0415-z\n\n'
-                          'Pre-production versions of all above papers are '
-                          'available on the ICON website.\n\nOverall validation '
-                          'of the products is overseen by the ICON Project '
-                          'Scientist, Dr. Scott England.\n\nNASA oversight for '
-                          'all products is provided by the Mission Scientist, '
-                          'Dr. Jeffrey Klenzing.\n\nUsers of these data should '
-                          'contact and acknowledge the Principal Investigator '
-                          'Dr. Immel and the party directly responsible for the '
-                          'data product (noted above) and acknowledge NASA '
-                          'funding for the collection of the data used in the '
-                          'research with the following statement : "ICON is '
-                          'supported by NASA’s Explorers Program through '
-                          'contracts NNG12FA45C and NNG12FA42I".\n\nThese data '
-                          'are openly available as described in the ICON Data '
-                          'Management Plan available on the ICON website '
-                          '(http://icon.ssl.berkeley.edu/Data).')))
+    logger.info(mm_icon.ackn_str)
 
     pass
 
@@ -272,9 +212,11 @@ def clean(inst, clean_level=None):
     if clean_level != 'none':
         # IVM variable groupings
         drift_variables = ['Ion_Velocity_X', 'Ion_Velocity_Zonal',
-                           'Ion_Velocity_Meridional', 'Ion_Velocity_Field_Aligned']
+                           'Ion_Velocity_Meridional',
+                           'Ion_Velocity_Field_Aligned']
         cross_drift_variables = ['Ion_Velocity_Z', 'Ion_Velocity_Y']
-        rpa_variables = ['Ion_Temperature', 'Ion_Density', 'Fractional_Ion_Density_H',
+        rpa_variables = ['Ion_Temperature', 'Ion_Density',
+                         'Fractional_Ion_Density_H',
                          'Fractional_Ion_Density_O']
 
         if clean_level == 'clean' or (clean_level == 'dusty'):
