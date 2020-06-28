@@ -559,12 +559,12 @@ class Instrument(object):
                 indict = {}
                 for i, dim in enumerate(self[key[-1]].dims):
                     indict[dim] = key[i]
-                    # if dim == 'time':
+                    # if dim == 'Epoch':
                     #     indict[dim] = self.index[key[i]]
                 try:
                     self.data[key[-1]].loc[indict] = in_data
                 except:
-                    indict['time'] = self.index[indict['time']]
+                    indict['Epoch'] = self.index[indict['Epoch']]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 return
@@ -582,21 +582,21 @@ class Instrument(object):
                     # looking at a 1D input here
                     if len(in_data) == len(self.index):
                         # 1D input has the correct length for storage along
-                        # 'time'
-                        self.data[key] = ('time', in_data)
+                        # 'Epoch'
+                        self.data[key] = ('Epoch', in_data)
                     elif len(in_data) == 1:
                         # only provided a single number in iterable, make that
                         # the input for all times
-                        self.data[key] = ('time', [in_data[0]]*len(self.index))
+                        self.data[key] = ('Epoch', [in_data[0]]*len(self.index))
                     elif len(in_data) == 0:
                         # provided an empty iterable
                         # make everything NaN
-                        self.data[key] = ('time', [np.nan]*len(self.index))
+                        self.data[key] = ('Epoch', [np.nan]*len(self.index))
                 # not an iterable input
                 elif len(np.shape(in_data)) == 0:
                     # not given an iterable at all, single number
                     # make that number the input for all times
-                    self.data[key] = ('time', [in_data]*len(self.index))
+                    self.data[key] = ('Epoch', [in_data]*len(self.index))
 
                 else:
                     # multidimensional input that is not an xarray
@@ -646,6 +646,8 @@ class Instrument(object):
         else:
             if 'time' in data.indexes:
                 return len(data.indexes['time']) == 0
+            elif 'Epoch' in data.indexes:
+                return len(data.indexes['Epoch']) == 0
             else:
                 return True
 
@@ -712,7 +714,7 @@ class Instrument(object):
         pandas.concat method. If sort is supplied as a keyword, the
         user provided value is used instead.
 
-        For xarray, dim='time' is passed along to xarray.concat
+        For xarray, dim='Epoch' is passed along to xarray.concat
         except if the user includes a value for dim as a
         keyword argument.
 
@@ -730,7 +732,7 @@ class Instrument(object):
                 dim = kwargs['dim']
                 _ = kwargs.pop('dim')
             else:
-                dim = 'time'
+                dim = 'Epoch'
             return xr.concat(data, dim=dim, *args, **kwargs)
 
     def _pass_func(*args, **kwargs):

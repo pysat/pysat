@@ -243,16 +243,16 @@ class TestBasics():
             # dimension
             # xarray specific functionality
             # change name of main dim to support test for dim keyword
-            data1 = data1.rename({'time': 'time2'})
-            data2 = data2.rename({'time': 'time2'})
+            data1 = data1.rename({'Epoch': 'Epoch2'})
+            data2 = data2.rename({'Epoch': 'Epoch2'})
 
             # concat together
             self.testInst.data = \
                 self.testInst.concat_data([data1, data2],
-                                          dim='time2').rename({'time2':
-                                                               'time'})
+                                          dim='Epoch2').rename({'Epoch2':
+                                                               'Epoch'})
             # test for concatenation
-            # Instrument.data must have a 'time' index
+            # Instrument.data must have a 'Epoch' index
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
             assert (self.testInst[0:len1, :]
@@ -292,7 +292,7 @@ class TestBasics():
             assert np.all(self.testInst.index == self.testInst.data.index)
         else:
             assert np.all(self.testInst.index ==
-                          self.testInst.data.indexes['time'])
+                          self.testInst.data.indexes['Epoch'])
 
     # #--------------------------------------------------------------------------
     # #
@@ -586,7 +586,7 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['time'] == 5
+            assert a.sizes['Epoch'] == 5
 
     def test_getting_all_data_by_numpy_array_of_int(self):
         self.testInst.load(2009, 1)
@@ -594,7 +594,7 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['time'] == 5
+            assert a.sizes['Epoch'] == 5
 
     # --------------------------------------------------------------------------
     #
