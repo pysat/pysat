@@ -6,9 +6,9 @@ Installation
 
 ----
 
-Python and associated packages for science are freely available. Convenient science python package setups are available from `Enthought <https://store.enthought.com>`_ and `Continuum Analytics <http://continuum.io/downloads>`_. Enthought also includes an IDE, though there are a number of choices. Core science packages such as numpy, scipy, matplotlib, pandas and many others may also be installed directly via pip or your favorite package manager. 
+Python and associated packages for science are freely available. Convenient science python package setups are available from https://www.python.org/ and `Anaconda <https://www.anaconda.com/distribution/>`_. Anaconda also includes a developer environment. Core science packages such as numpy, scipy, matplotlib, pandas and many others may also be installed directly via pip or your favorite package manager.
 
-For educational users, an IDE from `Jet Brains <https://www.jetbrains.com/student/>`_ is available for free.
+For educational users, developer environments from `Jet Brains <https://www.jetbrains.com/student/>`_ are available for free.
 
 
 **pysat**
@@ -19,7 +19,36 @@ Pysat itself may be installed from a terminal command line via::
 
    pip install pysat
 
-Pysat requires some external non-python libraries for loading science data sets stored in netCDF and CDF formats.
+Or alternatively through github::
+
+   git clone https://github.com/pysat/pysat.git
+   cd pysat
+   python setup.py install
+
+An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the ``develop`` branch::
+
+   git clone https://github.com/pysat/pysat.git
+   cd pysat
+   git checkout develop
+   python setup.py install
+
+
+Note that pysat requires a number of packages for the install.  The upper caps for packages below have been removed for the upcoming pysat 3.0.0 release, which can be accessed in the ``develop-3`` branch, which can be accessed as discussed above.
+
+     * beautifulsoup4
+     * h5py
+     * lxml
+     * madrigalWeb
+     * matplotlib
+     * netCDF4
+     * numpy (>=1.12)
+     * pandas (>=0.23, <0.25)
+     * PyForecastTools
+     * pysatCDF
+     * requests
+     * scipy
+     * xarray (<0.15)
+
 
 **Set Data Directory**
 
