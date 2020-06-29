@@ -49,7 +49,7 @@ _test_dates = {'': {'': dt.datetime(2020, 1, 1)}}
 _test_download_travis = {'': {kk: False for kk in tags.keys()}}
 pandas_format = False
 
-fname = 'ICON_L2-6_EUV_{year:04d}-{month:02d}-{day:02d}_v02r001.NC'
+fname = 'ICON_L2-6_EUV_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
 supported_tags = {'': {'': fname}}
 
 # use the CDAWeb methods list files routine
@@ -58,10 +58,13 @@ list_files = functools.partial(mm_gen.list_files,
 
 # support download routine
 basic_tag = {'dir': '/pub/LEVEL.2/EUV',
-             'remote_fname': '{year:4d}/{doy:03d}/Data/' + fname,
-             'local_fname': fname}
+             'remote_fname': 'Data/' + fname}
 download_tags = {'': {'': basic_tag}}
 download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
+
+# support listing files on SSL
+list_remote_files = functools.partial(mm_icon.list_remote_files,
+                                      supported_tags=download_tags)
 
 
 def init(self):

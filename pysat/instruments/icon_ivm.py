@@ -64,8 +64,8 @@ _test_download_travis = {'a': {kk: False for kk in tags.keys()}}
 _test_download = {'b': {kk: False for kk in tags.keys()}}
 _password_req = {'b': {kk: True for kk in tags.keys()}}
 
-aname = 'ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_v02r002.NC'
-bname = 'ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_v02r002.NC'
+aname = 'ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
+bname = 'ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
 supported_tags = {'a': {'': aname},
                   'b': {'': bname}}
 
@@ -75,15 +75,17 @@ list_files = functools.partial(mm_gen.list_files,
 
 # support download routine
 basic_tag_a = {'dir': '/pub/LEVEL.2/IVM-A',
-               'remote_fname': '{year:4d}/{doy:03d}/Data/' + aname,
-               'local_fname': aname}
+               'remote_fname': 'Data/' + aname}
 basic_tag_b = {'dir': '/pub/LEVEL.2/IVM-B',
-               'remote_fname': '{year:4d}/{doy:03d}/Data/' + aname,
-               'local_fname': aname}
+               'remote_fname': 'Data/' + bname}
 
 download_tags = {'a': {'': basic_tag_a},
                  'b': {'': basic_tag_b}}
 download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
+
+# support listing files on SSL
+list_remote_files = functools.partial(mm_icon.list_remote_files,
+                                      supported_tags=download_tags)
 
 
 def init(self):

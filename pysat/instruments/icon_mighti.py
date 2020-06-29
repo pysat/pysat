@@ -72,9 +72,9 @@ _test_download_travis = {jj: {kk: False for kk in sat_ids[jj]}
 pandas_format = False
 
 datestr = '{year:04d}-{month:02d}-{day:02d}'
-fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v03r{{revision:03d}}.NC'
-fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v03r{{revision:03d}}.NC'
-fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v03r{{revision:03d}}.NC'
+fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v{{version:02d}}r{{revision:03d}}.NC'
+fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v{{version:02d}}r{{revision:03d}}.NC'
+fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v{{version:02d}}r{{revision:03d}}.NC'
 supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
                                                           date=datestr),
                        'vector_wind_red': fname2.format(color='Red',
@@ -106,23 +106,7 @@ products = {'vector_wind_green': 'Vector-Winds/',
             'los_wind_red': 'LOS-Winds/',
             'temperature': 'Temperature/'}
 datestr = '{year:04d}-{month:02d}-{day:02d}'
-fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v03r000.NC'
-fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v03r000.NC'
-fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v03r001.NC'
-supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
-                                                          date=datestr),
-                       'vector_wind_red': fname2.format(color='Red',
-                                                        date=datestr)},
-                  'a': {'los_wind_green': fname1.format(id='A', color='Green',
-                                                        date=datestr),
-                        'los_wind_red': fname1.format(id='A', color='Red',
-                                                      date=datestr),
-                        'temperature': fname3.format(id='A', date=datestr)},
-                  'b': {'los_wind_green': fname1.format(id='B', color='Green',
-                                                        date=datestr),
-                        'los_wind_red': fname1.format(id='B', color='Red',
-                                                      date=datestr),
-                        'temperature': fname3.format(id='B', date=datestr)}}
+
 download_tags = {}
 for skey in supported_tags.keys():
     download_tags[skey] = {}
@@ -130,13 +114,14 @@ for skey in supported_tags.keys():
         fname = supported_tags[skey][tkey]
 
         download_tags[skey][tkey] = {'dir': dirstr.format(id=ids[skey]),
-                                     'remote_fname': ''.join((dirdatestr,
-                                                              products[tkey],
-                                                              fname)),
-                                     'local_fname': fname}
+                                     'remote_fname': ''.join((products[tkey],
+                                                              fname))}
 
 download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
 
+# support listing files on SSL
+list_remote_files = functools.partial(mm_icon.list_remote_files,
+                                      supported_tags=download_tags)
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
