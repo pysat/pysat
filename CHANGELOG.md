@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-05-30
+## [3.0.0] - 2020-06-19
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -37,6 +37,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
   - Remove wildcard imports, relative imports
+  - Improve unit testing coverage of instrument functions
 
 ## [2.2.0] - 2020-06-08
 - New Features
