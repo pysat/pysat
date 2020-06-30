@@ -39,7 +39,7 @@ JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 
 # Installation
 ## Starting from scratch
-* Python and associated packages for science are freely available. Convenient science python package setups are available from https://www.python.org/ and [Anaconda](https://www.anaconda.com/distribution/). Anaconda also includes a developer environment. Core science packages such as numpy, scipy, matplotlib, pandas and many others may also be installed directly via pip or your favorite package manager.
+* Python and associated packages for science are freely available. Convenient science python package setups are available from https://www.python.org/, [Anaconda](https://www.anaconda.com/distribution/), and other locations (some platform specific). Anaconda also includes a developer environment that works well with pysat. Core science packages such as numpy, scipy, matplotlib, pandas and many others may also be installed directly via pip or your favorite package manager.
 
 * Installation through pip
 ```
@@ -51,14 +51,14 @@ git clone https://github.com/pysat/pysat.git
 cd pysat
 python setup.py install
 ```
-An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the `develop` branch.
+An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the ``develop`` branch.   However, this branch is not stable (as the name implies). We recommend using this branch in a virtual environment or using `python setup.py develop`.::
 ```
 git clone https://github.com/pysat/pysat.git
 cd pysat
 git checkout develop
 python setup.py install
 ```
-* Note that pysat requires a number of packages for the install.  The upper caps for packages below have been removed for the upcoming pysat 3.0.0 release, which can be accessed in the `develop-3` branch, which can be accessed as discussed above.
+* Note that pysat requires a number of packages for the install.  The upper caps for packages below have been removed for the upcoming pysat 3.0.0 release. The development version can be found in the ``develop-3`` branch (see above for caveats).
   * beautifulsoup4
   * h5py
   * lxml
