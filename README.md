@@ -51,12 +51,12 @@ git clone https://github.com/pysat/pysat.git
 cd pysat
 python setup.py install
 ```
-An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the `develop` branch.  However, this branch is not stable (as the name implies).
+An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the `develop` branch.  However, this branch is not stable (as the name implies).  We recommend using this branch in a virtual environment or using `python setup.py develop`.
 ```
 git clone https://github.com/pysat/pysat.git
 cd pysat
 git checkout develop
-python setup.py install
+python setup.py develop
 ```
 * Note that pysat requires a number of packages for the install.  
   * beautifulsoup4
