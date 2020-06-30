@@ -17,32 +17,32 @@ Pysat itself may be installed from a terminal command line via::
 
    pip install pysat
 
-   Or alternatively through github::
+Or alternatively through github::
 
-      git clone https://github.com/pysat/pysat.git
-      cd pysat
-      python setup.py install
+   git clone https://github.com/pysat/pysat.git
+   cd pysat
+   python setup.py install
 
-   An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the ``develop`` branch.   However, this branch is not stable (as the name implies). We recommend using this branch in a virtual environment or using `python setup.py develop`.::
+An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the ``develop`` branch.   However, this branch is not stable (as the name implies). We recommend using this branch in a virtual environment or using `python setup.py develop`.::
 
-      git clone https://github.com/pysat/pysat.git
-      cd pysat
-      git checkout develop
-      python setup.py develop
+   git clone https://github.com/pysat/pysat.git
+   cd pysat
+   git checkout develop
+   python setup.py develop
 
 
-   Note that pysat requires a number of packages for the install.
+Note that pysat requires a number of packages for the install.
 
-        * beautifulsoup4
-        * lxml
-        * madrigalWeb
-        * netCDF4
-        * numpy (>=1.12)
-        * pandas (>=0.23)
-        * pysatCDF
-        * requests
-        * scipy
-        * xarray
+    * beautifulsoup4
+    * lxml
+    * madrigalWeb
+    * netCDF4
+    * numpy (>=1.12)
+    * pandas (>=0.23)
+    * pysatCDF
+    * requests
+    * scipy
+    * xarray
 
 
 **Set Data Directory**
