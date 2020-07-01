@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-06-19
+## [3.0.0] - 2020-07-01
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - methods.nasa_cdaweb.list_files moved to methods.general
   - `strict_time_flag` now defaults to True
   - Use of start / stop notation in remote_file_list
+  - files methods are no longer hidden
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
