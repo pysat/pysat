@@ -2,6 +2,7 @@
 tests the pysat coords area
 """
 import numpy as np
+import warnings
 
 import pandas as pds
 
@@ -449,3 +450,59 @@ class TestBasics():
         assert abs(lat - 50.414315865044202) < 1.0e-6
         assert abs(lon + 7.6855551809119502) < 1.0e-6
         assert abs(rad - 7185.6983665760772) < 1.0e-6
+
+
+class TestDeprecation():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
+    def test_deprecation_warning_geodetic_to_geocentric(self):
+        """Test if median1D in stats is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            coords.geodetic_to_geocentric(45.0, lon_in=8.0)
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_geodetic_to_geocentric_horz(self):
+        """Test if median1D in stats is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            coords.geodetic_to_geocentric_horizontal(45.0, 8.0, 52.0, 63.0)
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_spherical_to_cartesian(self):
+        """Test if median1D in stats is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            coords.spherical_to_cartesian(45.0, 30.0, 1.0)
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_global_to_local_cartesian(self):
+        """Test if median1D in stats is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            coords.global_to_local_cartesian(7000.0, 8000.0, 9000.0,
+                                             37.5, 289.0, 6380.0)
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_local_horizontal_to_global_geo(self):
+        """Test if median1D in stats is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            coords.local_horizontal_to_global_geo(30.0, 45.0, 1000.0,
+                                                  45.0, 0.0, 400.0)
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
