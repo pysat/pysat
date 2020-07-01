@@ -2002,20 +2002,22 @@ class Instrument(object):
             else:
                 if not np.can_cast(mdata_dict['_FillValue'], coltype):
                     if 'FieldNam' in mdata_dict:
-                         warnings.warn('FillValue for %s (%s) cannot be safely '
-                                       'casted to %s Casting anyways. '
-                                       'This may result in unexpected behavior'
-                                       % (mdata_dict['FieldNam'],
-                                          str(mdata_dict['_FillValue']),
-                                          coltype))
+                        estr = ''.join(('FillValue for {a:s} ({b:s}) cannot be safely ',
+                                        'casted to {c:s} Casting anyways. ',
+                                        'This may result in unexpected behavior'))
+                        estr.format(a=mdata_dict['FieldNam'],
+                                    b=str(mdata_dict['_FillValue']),
+                                    c=coltype)
+                        warnings.warn(estr)
                     else:
-                        warnings.warn('FillValue %s cannot be safely '
-                                      'casted to %s. Casting anyways. '
-                                      'This may result in unexpected behavior'
-                                      % (str(mdata_dict['_FillValue']),
-                                         coltype))
+                        estr = ''.join(('FillValue {a:s} cannot be safely ',
+                                        'casted to {b:s}. Casting anyways. ',
+                                        'This may result in unexpected behavior'))
+                        estr.format(a=str(mdata_dict['_FillValue']),
+                                    b=coltype)
+
                 mdata_dict['_FillValue'] = \
-                    np.array(mdata_dict['_FillValue']).astype(coltype)
+                np.array(mdata_dict['_FillValue']).astype(coltype)
         if u'FillVal' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
