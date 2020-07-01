@@ -97,7 +97,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Returns
     -------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : (pysat.files.Files)
         A class containing the verified available files
 
     """
@@ -116,14 +116,14 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         format_str = ''.join(('*.*/*.{year:04d}.{day:03d}',
                               '.{hour:02d}.{minute:02d}.*_nc'))
     # process format string to get string to search for
-    search_dict = pysat._files.construct_searchstring_from_format(format_str)
+    search_dict = pysat.files.construct_searchstring_from_format(format_str)
     search_str = search_dict['search_string']
     # perform local file search
-    files = pysat._files.search_local_system_formatted_filename(data_path,
+    files = pysat.files.search_local_system_formatted_filename(data_path,
                                                                 search_str)
     # we have a list of files, now we need to extract the information
     # pull of data from the areas identified by format_str
-    stored = pysat._files.parse_delimited_filenames(files, format_str,
+    stored = pysat.files.parse_delimited_filenames(files, format_str,
                                                     delimiter='.')
     if len(stored['year']) > 0:
         year = np.array(stored['year'])

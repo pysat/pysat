@@ -95,12 +95,12 @@ class TestNoDataDir():
         self.saved_data_path = pysat.data_dir
 
         pysat.data_dir = ''
-        re_load(pysat._files)
+        re_load(pysat.files)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.data_dir = self.saved_data_path
-        re_load(pysat._files)
+        re_load(pysat.files)
 
     def test_no_data_dir(self):
         with pytest.raises(Exception):
@@ -154,7 +154,7 @@ class TestBasics():
                                           minute=minute[i], second=second[i],
                                           version=version[i]))
 
-        file_dict = pysat._files.parse_delimited_filenames(file_list, fname,
+        file_dict = pysat.files.parse_delimited_filenames(file_list, fname,
                                                            '_')
         assert np.all(file_dict['year'] == year)
         assert np.all(file_dict['month'] == month)

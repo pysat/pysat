@@ -53,7 +53,7 @@ class TestBasics():
         check1 = (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers the change
-        pysat._files = re_load(pysat._files)
+        pysat.files = re_load(pysat.files)
         pysat._instrument = re_load(pysat._instrument)
         re_load(pysat)
         check2 = (pysat.data_dir == '.')
@@ -66,7 +66,7 @@ class TestBasics():
         check1 = (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers old settings
-        pysat._files = re_load(pysat._files)
+        pysat.files = re_load(pysat.files)
         pysat._instrument = re_load(pysat._instrument)
         re_load(pysat)
         check2 = (pysat.data_dir == self.data_path)

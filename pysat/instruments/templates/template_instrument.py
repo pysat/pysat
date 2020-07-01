@@ -302,7 +302,7 @@ def list_remote_files(tag, sat_id, user=None, password=None):
     Returns
     --------
     pandas.Series
-        A Series formatted for the Files class (pysat._files.Files)
+        A Series formatted for the Files class (pysat.files.Files)
         containing filenames and indexed by date and time
 
     """

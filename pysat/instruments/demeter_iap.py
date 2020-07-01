@@ -99,7 +99,7 @@ def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
 
     Returns
     -------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : (pysat.files.Files)
         A class containing the verified available files
 
     """

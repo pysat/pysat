@@ -15,7 +15,7 @@ import pandas as pds
 import xarray as xr
 
 from pysat import _custom
-from pysat import _files
+from pysat import files
 from pysat import _orbits
 from pysat import _meta
 from pysat import utils
@@ -315,7 +315,7 @@ class Instrument(object):
         # instantiate Files class
         manual_org = False if manual_org is None else manual_org
         temporary_file_list = not temporary_file_list
-        self.files = _files.Files(self, manual_org=manual_org,
+        self.files = files.Files(self, manual_org=manual_org,
                                   directory_format=self.directory_format,
                                   update_files=update_files,
                                   file_format=self.file_format,
@@ -1490,7 +1490,7 @@ class Instrument(object):
 
         # get list of remote files
         remote_files = self.remote_file_list()
-        if remote_files.empty:
+        if remotefiles.empty:
             logger.warn('No remote files found. Unable to download latest data.')
             return
 

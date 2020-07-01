@@ -194,7 +194,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
 
     Returns
     --------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : (pysat.files.Files)
         A pandas Series containing the verified available files
 
     """
