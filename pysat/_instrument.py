@@ -2015,7 +2015,7 @@ class Instrument(object):
                                     b=coltype)
 
                 mdata_dict['_FillValue'] = \
-                np.array(mdata_dict['_FillValue']).astype(coltype)
+                    np.array(mdata_dict['_FillValue']).astype(coltype)
         if u'FillVal' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
