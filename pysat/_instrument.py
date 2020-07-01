@@ -744,7 +744,7 @@ class Instrument(object):
                 dim = kwargs['dim']
                 _ = kwargs.pop('dim')
             else:
-                dim = 'Epoch'
+                dim = self.index.name
             return xr.concat(data, dim=dim, *args, **kwargs)
 
     def _pass_func(*args, **kwargs):
@@ -1101,7 +1101,7 @@ class Instrument(object):
         ind = data.index if self.pandas_format else data.indexes
         if not self.pandas_format:
             if 'time' in data.indexes:
-                warnings.warn(' '.join(("Support for 'time' as a label",
+                warnings.warn(' '.join(("Support for 'time' as an index label",
                                         "will be removed in a future release.")),
                               DeprecationWarning)
         if len(ind) > 0:

@@ -23,7 +23,7 @@ sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
 
-epoch_name = 'time'
+epoch_name = u'time'
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
