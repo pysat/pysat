@@ -6,7 +6,6 @@ import copy
 import datetime as dt
 import functools
 import inspect
-import numpy as np
 import os
 import sys
 import warnings
@@ -367,7 +366,6 @@ class Instrument(object):
 
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
-
 
     def __getitem__(self, key):
         """
