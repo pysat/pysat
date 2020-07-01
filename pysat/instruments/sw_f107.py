@@ -30,9 +30,9 @@ the data with tomorrow's date.
 
 
 
-The forecast data should not be used with the data padding option available
-from pysat.Instrument objects. The 'all' tag shouldn't be used either, no
-other data available to pad with.
+The forecast or prelim data should not be used with the data padding option
+available from pysat.Instrument objects. The 'all' tag shouldn't be used either,
+no other data available to pad with.
 
 Warnings
 --------
@@ -245,8 +245,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         elif tag == 'prelim':
             # files are by year (and quarter). The load routine will load a
-            # year of data and use the appended date to select out appropriate
-            # data.
+            # year of data
             if format_str is None:
                 format_str = \
                     'f107_prelim_{year:04d}_{month:02d}_v{version:01d}.txt'
@@ -675,10 +674,6 @@ def rewrite_daily_file(year, outfile, lines):
     Void
 
     """
-
-    # Parse text to get the date the prediction was generated
-    date_str = lines.split(':Issued: ')[-1].split('\n')[0]
-    date = dt.datetime.strptime(date_str, '%H%M UT %d %b %Y')
 
     # get to the solar index data
     if year > 2000:
