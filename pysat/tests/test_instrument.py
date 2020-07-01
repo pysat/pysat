@@ -17,6 +17,7 @@ import pysat.instruments.pysat_testing_xarray
 # Test Instrument object basics
 #
 # ------------------------------------------------------------------------------
+xarray_epoch_name = 'time'
 
 class TestBasics():
     def setup(self):
@@ -243,14 +244,14 @@ class TestBasics():
             # dimension
             # xarray specific functionality
             # change name of main dim to support test for dim keyword
-            data1 = data1.rename({'Epoch': 'Epoch2'})
-            data2 = data2.rename({'Epoch': 'Epoch2'})
+            data1 = data1.rename({xarray_epoch_name: 'Epoch2'})
+            data2 = data2.rename({xarray_epoch_name: 'Epoch2'})
 
             # concat together
             self.testInst.data = \
                 self.testInst.concat_data([data1, data2],
                                           dim='Epoch2').rename({'Epoch2':
-                                                               'Epoch'})
+                                                               xarray_epoch_name})
             # test for concatenation
             # Instrument.data must have a 'Epoch' index
             len3 = len(self.testInst.index)
@@ -292,7 +293,7 @@ class TestBasics():
             assert np.all(self.testInst.index == self.testInst.data.index)
         else:
             assert np.all(self.testInst.index ==
-                          self.testInst.data.indexes['Epoch'])
+                          self.testInst.data.indexes[xarray_epoch_name])
 
     # #--------------------------------------------------------------------------
     # #
@@ -586,7 +587,7 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['Epoch'] == 5
+            assert a.sizes[xarray_epoch_name] == 5
 
     def test_getting_all_data_by_numpy_array_of_int(self):
         self.testInst.load(2009, 1)
@@ -594,7 +595,7 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['Epoch'] == 5
+            assert a.sizes[xarray_epoch_name] == 5
 
     # --------------------------------------------------------------------------
     #
