@@ -494,7 +494,8 @@ class Meta(object):
                             if not to_be_set:
                                 to_be_set = ' '
 
-                            if isinstance(to_be_set[0], str) or isinstance(to_be_set, bytes):
+                            if isinstance(to_be_set[0], str) or \
+                                    isinstance(to_be_set, bytes):
                                 if isinstance(to_be_set, bytes):
                                     to_be_set = to_be_set.decode("utf-8")
 
