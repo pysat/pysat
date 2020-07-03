@@ -2,7 +2,9 @@
 # Test some of the basic _core functions
 import datetime as dt
 from importlib import reload as re_load
+import logging
 import numpy as np
+import re
 
 import pandas as pds
 import pytest
@@ -174,6 +176,23 @@ class TestBasics():
                                 test_date.day)
         assert (test_date == dt.datetime(2009, 1, 3))
         assert (test_date == self.testInst.date)
+
+    def test_list_files(self):
+        files = self.testInst.files.files
+        assert isinstance(files, pds.Series)
+
+    def test_remote_file_list(self):
+        files = self.testInst.remote_file_list(start=dt.datetime(2009, 1, 1),
+                                               stop=dt.datetime(2009, 1, 31))
+        assert files.index[0] == dt.datetime(2009, 1, 1)
+        assert files.index[-1] == dt.datetime(2009, 1, 31)
+
+    def test_remote_date_range(self):
+        files = self.testInst.remote_date_range(start=dt.datetime(2009, 1, 1),
+                                                stop=dt.datetime(2009, 1, 31))
+        assert len(files) == 2
+        assert files[0] == dt.datetime(2009, 1, 1)
+        assert files[-1] == dt.datetime(2009, 1, 31)
 
     # --------------------------------------------------------------------------
     #
@@ -416,7 +435,7 @@ class TestBasics():
 
     # --------------------------------------------------------------------------
     #
-    # Test basis data access features, both getting and setting data
+    # Test basic data access features, both getting and setting data
     #
     # --------------------------------------------------------------------------
     def test_basic_data_access_by_name(self):

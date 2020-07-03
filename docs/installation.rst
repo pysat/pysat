@@ -6,9 +6,7 @@ Installation
 
 ----
 
-Python and associated packages for science are freely available. Convenient science python package setups are available from `Enthought <https://store.enthought.com>`_ and `Continuum Analytics <http://continuum.io/downloads>`_. Enthought also includes an IDE, though there are a number of choices. Core science packages such as numpy, scipy, matplotlib, pandas and many others may also be installed directly via pip or your favorite package manager. 
-
-For educational users, an IDE from `Jet Brains <https://www.jetbrains.com/student/>`_ is available for free.
+Python and associated packages for science are freely available. Convenient science python package setups are available from https://www.python.org/, [Anaconda](https://www.anaconda.com/distribution/), and other locations (some platform specific). Anaconda also includes a developer environment that works well with pysat. Core science packages such as numpy, scipy, matplotlib, pandas and many others may also be installed directly via pip or your favorite package manager.
 
 
 **pysat**
@@ -19,7 +17,33 @@ Pysat itself may be installed from a terminal command line via::
 
    pip install pysat
 
-Pysat requires some external non-python libraries for loading science data sets stored in netCDF and CDF formats.
+Or alternatively through github::
+
+   git clone https://github.com/pysat/pysat.git
+   cd pysat
+   python setup.py install
+
+An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the ``develop`` branch.   However, this branch is not stable (as the name implies). We recommend using this branch in a virtual environment or using `python setup.py develop`.::
+
+   git clone https://github.com/pysat/pysat.git
+   cd pysat
+   git checkout develop
+   python setup.py develop
+
+
+Note that pysat requires a number of packages for the install.
+
+    * beautifulsoup4
+    * lxml
+    * madrigalWeb
+    * netCDF4
+    * numpy (>=1.12)
+    * pandas (>=0.23)
+    * pysatCDF
+    * requests
+    * scipy
+    * xarray
+
 
 **Set Data Directory**
 
