@@ -32,7 +32,6 @@ import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
-import warnings
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
@@ -49,7 +48,8 @@ _test_dates = {'': {'': dt.datetime(2020, 1, 1)}}
 _test_download_travis = {'': {kk: False for kk in tags.keys()}}
 pandas_format = False
 
-fname = 'ICON_L2-6_EUV_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
+fname = ''.join(('ICON_L2-6_EUV_{year:04d}-{month:02d}-{day:02d}_',
+                 'v{version:02d}r{revision:03d}.NC'))
 supported_tags = {'': {'': fname}}
 
 # use the CDAWeb methods list files routine
