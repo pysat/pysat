@@ -1,8 +1,8 @@
 """
-pysat.coords - coordinate transformations for pysat
+pysat.utils.coords - coordinate transformations for pysat
 =========================================
 
-pysat.coords contains a number of coordinate-transformation
+pysat.utils.coords contains a number of coordinate-transformation
 functions used throughout the pysat package.
 """
 
