@@ -37,6 +37,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
   - Remove wildcard imports, relative imports
+  - Include flake8 check as part of testing suites
 
 ## [2.2.0] - 2020-06-08
 - New Features
@@ -78,8 +79,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug when requesting non-existent files from CDAWeb (#426)
   - Improved compatibility of parse_delimited_filenames (#439)
   - Fixed bug assigning dates to COSMIC files
-  
-  
+
+
 ## [2.1.0] - 2019-11-18
 - New Features
    - Added new velocity format options to utils.coords.scale_units
