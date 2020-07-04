@@ -100,7 +100,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
-        index[6:9] = [index[6]]*3
+        index[6:9] = [index[6]] * 3
     data = xr.Dataset({'uts': (('time'), index)}, coords={'time': index})
 
     # need to create simple orbits here. Have start of first orbit
@@ -117,7 +117,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     data['mlt'] = (('time'), mlt)
 
     # do slt, 20 second offset from mlt
-    slt = mm_test.generate_fake_data(time_delta.total_seconds()+20, uts,
+    slt = mm_test.generate_fake_data(time_delta.total_seconds() + 20, uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
     data['slt'] = (('time'), slt)
@@ -169,7 +169,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
     data.coords['variable_profile_height'] = \
         (('time', 'z'),
-         np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
+         np.arange(15)[np.newaxis, :] * np.ones((num, 15)))
 
     # Create fake image type data, projected to lat / lon at some location
     # from satellite
@@ -182,7 +182,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         (('time', 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
-                       :]*np.ones((num, 17, 17)))
+                       :] * np.ones((num, 17, 17)))
     data.coords['image_lon'] = \
         (('time', 'x', 'y'),
          np.arange(17)[np.newaxis,

@@ -7,9 +7,7 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 import numpy as np
-import os
 
-import pandas as pds
 import xarray as xr
 
 import pysat
@@ -83,7 +81,7 @@ def load(fnames, tag=None, sat_id=None):
         for j, long in enumerate(longitude):
             slt[i, j] = np.mod(ut / 3600.0 + long / 15.0, 24.0)
     data['slt'] = (('time', 'longitude'), slt)
-    data['mlt'] = (('time', 'longitude'), np.mod(slt+0.2, 24.0))
+    data['mlt'] = (('time', 'longitude'), np.mod(slt + 0.2, 24.0))
 
     # Fake 3D data consisting of values between 0 and 21 everywhere
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)

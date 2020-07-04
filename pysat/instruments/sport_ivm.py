@@ -40,8 +40,8 @@ def init(self):
 
     """
 
-    logger.info("Mission acknowledgements and data restrictions will be printed " +
-          "here when available.")
+    logger.info(' '.join(("Mission acknowledgements and data restrictions",
+                          "will be printed here when available.")))
 
     pass
 

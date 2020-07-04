@@ -50,7 +50,8 @@ class Custom(object):
         self._args = []
         self._kwargs = []
 
-    def attach(self, function, kind='modify', at_pos='end', args=[], kwargs={}):
+    def attach(self, function, kind='modify', at_pos='end', args=[],
+               kwargs={}):
         """Attach a function to custom processing queue.
 
         Custom functions are applied automatically to associated

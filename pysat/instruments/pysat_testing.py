@@ -170,7 +170,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
                                              data_range=drange['lt'])
 
     # do slt, 20 second offset from mlt
-    data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds()+20,
+    data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds() + 20,
                                              uts, period=iperiod['lt'],
                                              data_range=drange['lt'])
 
@@ -227,7 +227,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
-        index[6:9] = [index[6]]*3
+        index[6:9] = [index[6]] * 3
 
     data.index = index
     data.index.name = 'Epoch'
