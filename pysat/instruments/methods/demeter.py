@@ -268,7 +268,7 @@ def load_attitude_parameters(fhandle):
     data_names = list()
     data_units = dict()
     while i < 72:
-        data.append(bytes_to_float(chunk[i:i+4]))  # Matrix element
+        data.append(bytes_to_float(chunk[i:i + 4]))  # Matrix element
 
         # Save data name and units
         data_names.append("{:s}_{:d}{:d}".format("sat2geo" if i <= 32
