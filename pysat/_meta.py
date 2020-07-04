@@ -221,12 +221,9 @@ class Meta(object):
                                                       self._max_label,
                                                       self._fill_label])
 
-
-
         # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
-
 
     @property
     def ho_data(self):
@@ -398,8 +395,6 @@ class Meta(object):
                     default_nan, default_nan]
         self._data.loc[input_name, labels] = defaults
 
-
-
     def __setattr__(self, name, value):
         """Conditionally sets attributes based on self.mutable flag
 
@@ -418,7 +413,7 @@ class Meta(object):
                 # check if the property is settable
                 if propobj.fset is None:
                     raise AttributeError(''.join("can't set attribute - ",
-                                        "property has no fset"))
+                                                 "property has no fset"))
 
                 # make mutable in case fset needs it to be
                 mutable_tmp = self.mutable
@@ -436,10 +431,10 @@ class Meta(object):
                     super(Meta, self).__setattr__(name, value)
                 else:
                     raise AttributeError(''.join(("cannot set attribute - ",
-                                                    "object's attributes are immutable")))
+                                                  "object's attributes are",
+                                                  "immutable")))
         else:
             super(Meta, self).__setattr__(name, value)
-
 
     def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
