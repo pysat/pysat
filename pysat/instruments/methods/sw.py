@@ -369,8 +369,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     fill_val = f107_inst.meta['f107'].fill
 
                 # Determine which times to save
-                good_times = ((forecast_inst.index >= itime) &
-                              (forecast_inst.index < stop))
+                good_times = ((forecast_inst.index >= itime)
+                              & (forecast_inst.index < stop))
                 good_vals = forecast_inst['f107'][good_times] != fill_val
 
                 # Save desired data and cycle time
@@ -425,8 +425,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                                    index=f107_times)
 
     # Resample the output data, filling missing values
-    if(date_range.shape != f107_inst.index.shape or
-       abs(date_range - f107_inst.index).max().total_seconds() > 0.0):
+    if(date_range.shape != f107_inst.index.shape
+       or abs(date_range - f107_inst.index).max().total_seconds() > 0.0):
         f107_inst.data = f107_inst.data.resample(freq).fillna(method=None)
         if np.isfinite(fill_val):
             f107_inst.data[np.isnan(f107_inst.data)] = fill_val
@@ -559,8 +559,8 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
     ap_to_kp = {0: 0, 2: one_third, 3: two_third,
                 4: 1, 5: 1.0 + one_third, 6: 1.0 + two_third,
                 7: 2, 9: 2.0 + one_third, 12: 2.0 + two_third,
-                15: 3, 18: 3.0 + one_third, 22: 3.0+two_third,
-                27: 4, 32: 4.0 + one_third, 39: 4.0+two_third,
+                15: 3, 18: 3.0 + one_third, 22: 3.0 + two_third,
+                27: 4, 32: 4.0 + one_third, 39: 4.0 + two_third,
                 48: 5, 56: 5.0 + one_third, 67: 5.0 + two_third,
                 80: 6, 94: 6.0 + one_third, 111: 6.0 + two_third,
                 132: 7, 154: 7.0 + one_third, 179: 7.0 + two_third,
