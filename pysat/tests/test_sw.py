@@ -19,7 +19,7 @@ class TestSWKp():
                            'ap_nan': np.full(shape=12, fill_value=np.nan),
                            'ap_inf': np.full(shape=12, fill_value=np.inf)},
                           index=[dt.datetime(2009, 1, 1)
-                                 + pds.DateOffset(hours=3*i)
+                                 + pds.DateOffset(hours=3 * i)
                                  for i in range(12)])
         self.testInst.meta = pysat.Meta()
         self.testInst.meta.__setitem__('Kp',
@@ -43,10 +43,10 @@ class TestSWKp():
 
         assert '3hr_ap' in self.testInst.data.columns
         assert '3hr_ap' in self.testInst.meta.keys()
-        assert(self.testInst['3hr_ap'].min() >=
-               self.testInst.meta['3hr_ap'][self.testInst.meta.min_label])
-        assert(self.testInst['3hr_ap'].max() <=
-               self.testInst.meta['3hr_ap'][self.testInst.meta.max_label])
+        assert(self.testInst['3hr_ap'].min()
+               >= self.testInst.meta['3hr_ap'][self.testInst.meta.min_label])
+        assert(self.testInst['3hr_ap'].max()
+               <= self.testInst.meta['3hr_ap'][self.testInst.meta.max_label])
 
     def test_convert_kp_to_ap_fill_val(self):
         """ Test conversion of Kp to ap with fill values"""
@@ -59,10 +59,10 @@ class TestSWKp():
         # Test non-fill ap values
         assert '3hr_ap' in self.testInst.data.columns
         assert '3hr_ap' in self.testInst.meta.keys()
-        assert(self.testInst['3hr_ap'][1:].min() >=
-               self.testInst.meta['3hr_ap'][self.testInst.meta.min_label])
-        assert(self.testInst['3hr_ap'][1:].max() <=
-               self.testInst.meta['3hr_ap'][self.testInst.meta.max_label])
+        assert(self.testInst['3hr_ap'][1:].min()
+               >= self.testInst.meta['3hr_ap'][self.testInst.meta.min_label])
+        assert(self.testInst['3hr_ap'][1:].max()
+               <= self.testInst.meta['3hr_ap'][self.testInst.meta.max_label])
 
         # Test the fill value in the data and metadata
         assert np.isnan(self.testInst['3hr_ap'][0])
@@ -84,12 +84,12 @@ class TestSWKp():
 
         assert self.testInst.meta['Kp'][self.testInst.meta.units_label] == ''
         assert self.testInst.meta['Kp'][self.testInst.meta.name_label] == 'Kp'
-        assert(self.testInst.meta['Kp'][self.testInst.meta.desc_label] ==
-               'Planetary K-index')
+        assert(self.testInst.meta['Kp'][self.testInst.meta.desc_label]
+               == 'Planetary K-index')
         assert self.testInst.meta['Kp'][self.testInst.meta.plot_label] == 'Kp'
         assert self.testInst.meta['Kp'][self.testInst.meta.axis_label] == 'Kp'
-        assert(self.testInst.meta['Kp'][self.testInst.meta.scale_label] ==
-               'linear')
+        assert(self.testInst.meta['Kp'][self.testInst.meta.scale_label]
+               == 'linear')
         assert self.testInst.meta['Kp'][self.testInst.meta.min_label] == 0
         assert self.testInst.meta['Kp'][self.testInst.meta.max_label] == 9
         assert self.testInst.meta['Kp'][self.testInst.meta.fill_label] == -1
@@ -100,8 +100,8 @@ class TestSWKp():
 
         assert self.testMeta['Kp'][self.testMeta.units_label] == ''
         assert self.testMeta['Kp'][self.testMeta.name_label] == 'Kp'
-        assert(self.testMeta['Kp'][self.testMeta.desc_label] ==
-               'Planetary K-index')
+        assert(self.testMeta['Kp'][self.testMeta.desc_label]
+               == 'Planetary K-index')
         assert self.testMeta['Kp'][self.testMeta.plot_label] == 'Kp'
         assert self.testMeta['Kp'][self.testMeta.axis_label] == 'Kp'
         assert self.testMeta['Kp'][self.testMeta.scale_label] == 'linear'
@@ -121,12 +121,12 @@ class TestSWKp():
         sw_kp.initialize_kp_metadata(self.testInst.meta, dkey)
 
         assert self.testInst.meta[dkey][self.testInst.meta.name_label] == dkey
-        assert(self.testInst.meta[dkey][self.testInst.meta.desc_label] ==
-               'Planetary K-index')
-        assert(self.testInst.meta[dkey][self.testInst.meta.plot_label] ==
-               'High lat Kp')
-        assert(self.testInst.meta[dkey][self.testInst.meta.axis_label] ==
-               'High lat Kp')
+        assert(self.testInst.meta[dkey][self.testInst.meta.desc_label]
+               == 'Planetary K-index')
+        assert(self.testInst.meta[dkey][self.testInst.meta.plot_label]
+               == 'High lat Kp')
+        assert(self.testInst.meta[dkey][self.testInst.meta.axis_label]
+               == 'High lat Kp')
         del dkey
 
     def test_convert_ap_to_kp(self):
@@ -195,8 +195,9 @@ class TestSWKp():
         fill_label = self.testInst.meta.fill_label
         self.testInst['Kp'][0] = self.testInst.meta['Kp'][fill_label]
         sw_kp.convert_3hr_kp_to_ap(self.testInst)
-        kp_out, kp_meta = sw_meth.convert_ap_to_kp(self.testInst['3hr_ap'], \
-                            fill_val=self.testInst.meta['Kp'][fill_label])
+        kp_out, kp_meta = sw_meth.convert_ap_to_kp(
+            self.testInst['3hr_ap'],
+            fill_val=self.testInst.meta['Kp'][fill_label])
 
         # Test non-fill ap values
         assert all(abs(kp_out[1:] - self.testInst.data['Kp'][1:]) < 1.0e-4)
@@ -241,9 +242,9 @@ class TestSwKpCombine():
 
         # Load a test instrument
         testInst = pysat.Instrument()
-        testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0)},
+        testInst.data = pds.DataFrame({'Kp': np.arange(0, 4, 1.0 / 3.0)},
                                       index=[dt.datetime(2009, 1, 1)
-                                             + pds.DateOffset(hours=3*i)
+                                             + pds.DateOffset(hours=3 * i)
                                              for i in range(12)])
         testInst.meta = pysat.Meta()
         testInst.meta['Kp'] = {testInst.meta.fill_label: np.nan}
@@ -313,8 +314,8 @@ class TestSwKpCombine():
         assert kp_inst.data.columns[0] == 'Kp'
 
         # Fill value is defined by combine
-        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
-               self.combine['fill_val'])
+        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label]
+               == self.combine['fill_val'])
         assert (kp_inst['Kp'] != self.combine['fill_val']).all()
 
         del kp_inst
@@ -330,8 +331,8 @@ class TestSwKpCombine():
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
-        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
-               self.combine['fill_val'])
+        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label]
+               == self.combine['fill_val'])
         assert len(kp_inst['Kp'][kp_inst['Kp']]
                    == self.combine['fill_val']) > 0
 
@@ -348,8 +349,8 @@ class TestSwKpCombine():
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
-        assert (kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
-                self.combine['fill_val'])
+        assert (kp_inst.meta['Kp'][kp_inst.meta.fill_label]
+                == self.combine['fill_val'])
         assert len(kp_inst['Kp'][kp_inst['Kp']]
                    == self.combine['fill_val']) > 0
 
@@ -366,8 +367,8 @@ class TestSwKpCombine():
         assert kp_inst.index[-1] < self.combine['stop']
         assert len(kp_inst.data.columns) == 1
         assert kp_inst.data.columns[0] == 'Kp'
-        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label] ==
-               self.combine['fill_val'])
+        assert(kp_inst.meta['Kp'][kp_inst.meta.fill_label]
+               == self.combine['fill_val'])
         assert len(kp_inst['Kp'][kp_inst['Kp']]
                    == self.combine['fill_val']) > 0
 
@@ -543,7 +544,7 @@ class TestSWAp():
         self.testInst.data = pds.DataFrame({'3hr_ap': [0, 2, 3, 4, 5, 6, 7, 9,
                                                        12, 15]},
                                            index=[dt.datetime(2009, 1, 1)
-                                                  + pds.DateOffset(hours=3*i)
+                                                  + pds.DateOffset(hours=3 * i)
                                                   for i in range(10)])
         self.testInst.meta = pysat.Meta()
         self.meta_dict = {self.testInst.meta.units_label: '',
