@@ -6,11 +6,12 @@ import copy
 import datetime as dt
 import functools
 import inspect
-import numpy as np
 import os
 import sys
 import warnings
 
+import netCDF4
+import numpy as np
 import pandas as pds
 import xarray as xr
 
@@ -1491,7 +1492,7 @@ class Instrument(object):
         # get list of remote files
         remote_files = self.remote_file_list()
         if remote_files.empty:
-            logger.warn('No remote files found. Unable to download latest data.')
+            logger.warning('No remote files found. Unable to download latest data.')
             return
 
         # get current list of local files
@@ -1988,12 +1989,31 @@ class Instrument(object):
         if (coltype == type(' ')) or (coltype == type(u' ')):
             # if isinstance(coltype, str):
             remove = True
+            warnings.warn('FillValue is not an acceptable '
+                          'parameter for strings - it will be removed')
+        
         # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
                 mdata_dict.pop('_FillValue')
             else:
+                if not np.can_cast(mdata_dict['_FillValue'], coltype):
+                    if 'FieldNam' in mdata_dict:
+                        estr = ''.join(('FillValue for {a:s} ({b:s}) cannot be safely ',
+                                        'casted to {c:s} Casting anyways. ',
+                                        'This may result in unexpected behavior'))
+                        estr.format(a=mdata_dict['FieldNam'],
+                                    b=str(mdata_dict['_FillValue']),
+                                    c=coltype)
+                        warnings.warn(estr)
+                    else:
+                        estr = ''.join(('FillValue {a:s} cannot be safely ',
+                                        'casted to {b:s}. Casting anyways. ',
+                                        'This may result in unexpected behavior'))
+                        estr.format(a=str(mdata_dict['_FillValue']),
+                                    b=coltype)
+
                 mdata_dict['_FillValue'] = \
                     np.array(mdata_dict['_FillValue']).astype(coltype)
         if u'FillVal' in mdata_dict.keys():
@@ -2134,7 +2154,6 @@ class Instrument(object):
 
         """
 
-        import netCDF4
         import pysat
 
         # check export nans first
