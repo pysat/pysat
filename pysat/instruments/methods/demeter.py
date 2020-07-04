@@ -19,7 +19,8 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
     url = 'https://cdpp-archive.cnes.fr/'
-    warnings.warn('Data must be downloaded by registered users at: {:s}'.format(url))
+    warnings.warn(' '.join(('Data must be downloaded by registered users at:',
+                            url)))
     return
 
 
