@@ -186,6 +186,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
+list_remote_files = functools.partial(mm_test.list_remote_files,
+                                      test_dates=_test_dates)
 download = functools.partial(mm_test.download)
 
 
