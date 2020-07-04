@@ -11,7 +11,7 @@ from pysat.instruments import pysat_testing
 import importlib
 
 
-def create_fake_module(full_module_name,  platform, name):
+def create_fake_module(full_module_name, platform, name):
     """Creates fake module and package from test instrument"""
 
     # use pysat_testing as base instrument
