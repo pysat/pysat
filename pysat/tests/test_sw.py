@@ -15,7 +15,7 @@ class TestSWKp():
         # Load a test instrument
         self.testInst = pysat.Instrument()
         self.testInst.data = \
-            pds.DataFrame({'Kp': np.arange(0, 4, 1.0/3.0),
+            pds.DataFrame({'Kp': np.arange(0, 4, 1.0 / 3.0),
                            'ap_nan': np.full(shape=12, fill_value=np.nan),
                            'ap_inf': np.full(shape=12, fill_value=np.inf)},
                           index=[dt.datetime(2009, 1, 1)
@@ -441,7 +441,8 @@ class TestSWF107():
 
         self.testInst.data = pds.DataFrame({'f107': np.linspace(70, 200, 160)},
                                            index=[dt.datetime(2009, 1, 1)
-                                                  + pds.DateOffset(days=2*i+1)
+                                                  + pds.DateOffset(days=(2 * i
+                                                                         + 1))
                                                   for i in range(160)])
         sw_f107.calc_f107a(self.testInst, f107_name='f107', f107a_name='f107a')
 
