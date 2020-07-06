@@ -78,7 +78,7 @@ class TestLonSLT():
     #########################
     # calc_solar_local_time
     @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
-    def test_calc_solar_local_time(self):
+    def test_calc_solar_local_time(self, name):
         """Test calc_solar_local_time with longitudes from 0-360 deg"""
 
         self.test_inst = pysat.Instrument(platform='pysat', name=name)
