@@ -346,7 +346,7 @@ class Files(object):
         if not info.empty:
             if self.ignore_empty_files:
                 self._filter_empty_files()
-            logger.info('Found {ll:d} of them.'.format(ll=len(info)))
+            logger.info('Found {ll:d} files locally.'.format(ll=len(info)))
         else:
             estr = "Unable to find any files that match the supplied template."
             estr += " If you have the necessary files please check pysat "

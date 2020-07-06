@@ -18,7 +18,8 @@ class TestGenMethods():
         del self.kwargs
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
-                             [("data_path", None, "A directory must be passed"),
+                             [("data_path", None,
+                               "A directory must be passed"),
                               ("tag", "badval", "Unknown sat_id or tag"),
                               ("sat_id", "badval", "Unknown sat_id or tag")])
     def test_bad_kwarg_list_files(self, bad_key, bad_val, err_msg):

@@ -50,7 +50,6 @@ import pandas as pds
 import pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
-from pysat.instruments.methods import nasa_cdaweb as mm_nasa
 import logging
 logger = logging.getLogger(__name__)
 
@@ -71,10 +70,10 @@ _test_download_travis = {jj: {kk: False for kk in sat_ids[jj]}
                          for jj in sat_ids.keys()}
 pandas_format = False
 
-datestr = '{year:04d}-{month:02d}-{day:02d}'
-fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}_v{{version:02d}}r{{revision:03d}}.NC'
-fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}_v{{version:02d}}r{{revision:03d}}.NC'
-fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}_v{{version:02d}}r{{revision:03d}}.NC'
+datestr = '{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}'
+fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}.NC'
+fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}.NC'
+fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}.NC'
 supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
                                                           date=datestr),
                        'vector_wind_red': fname2.format(color='Red',
@@ -123,6 +122,7 @@ download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
 list_remote_files = functools.partial(mm_icon.list_remote_files,
                                       supported_tags=download_tags)
 
+
 def init(self):
     """Initializes the Instrument object with instrument specific values.
 
@@ -141,6 +141,9 @@ def init(self):
     """
 
     logger.info(mm_icon.ackn_str)
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
+                                    mm_icon.refs['mighti']))
 
     pass
 

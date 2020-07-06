@@ -132,8 +132,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         minute = np.array(stored['minute'])
         try:
             uts = hour*3600.0 + minute*60.0
-        except (TypeError, UFuncTypeError) as err:
-            raise TypeError('unable to construct time from filename\n{:}'.format(err))
+        except TypeError as err:
+            raise TypeError(' '.join(('unable to construct time from',
+                                      'filename\n{:}'.format(str(err)))))
         # do a pre-sort on uts to get files that may conflict with each other
         # due to multiple spacecraft and antennas
         # this ensures that we can make the times all unique for the file list

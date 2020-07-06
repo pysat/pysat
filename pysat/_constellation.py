@@ -34,7 +34,7 @@ class Constellation(object):
         if instruments:
             self.instruments = instruments
         elif name:
-            const = importlib.import_module('pysat.constellations.'+name)
+            const = importlib.import_module('pysat.constellations.' + name)
             self.instruments = const.instruments
         else:
             self.instruments = []

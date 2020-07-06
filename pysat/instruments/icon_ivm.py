@@ -64,8 +64,10 @@ _test_download_travis = {'a': {kk: False for kk in tags.keys()}}
 _test_download = {'b': {kk: False for kk in tags.keys()}}
 _password_req = {'b': {kk: True for kk in tags.keys()}}
 
-aname = 'ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
-bname = 'ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
+aname = ''.join(('ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_',
+                 'v{version:02d}r{revision:03d}.NC'))
+bname = ''.join(('ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_',
+                 'v{version:02d}r{revision:03d}.NC'))
 supported_tags = {'a': {'': aname},
                   'b': {'': bname}}
 
@@ -106,6 +108,9 @@ def init(self):
     """
 
     logger.info(mm_icon.ackn_str)
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
+                                    mm_icon.refs['ivm']))
 
     pass
 

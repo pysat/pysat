@@ -57,8 +57,10 @@ _test_dates = {'': {kk: dt.datetime(2020, 1, 1) for kk in tags.keys()}}
 _test_download_travis = {'': {kk: False for kk in tags.keys()}}
 pandas_format = False
 
-fname24 = 'ICON_L2-4_FUV_Day_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
-fname25 = 'ICON_L2-5_FUV_Night_{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}.NC'
+fname24 = ''.join(('ICON_L2-4_FUV_Day_{year:04d}-{month:02d}-{day:02d}_',
+                   'v{version:02d}r{revision:03d}.NC'))
+fname25 = ''.join(('ICON_L2-5_FUV_Night_{year:04d}-{month:02d}-{day:02d}_',
+                   'v{version:02d}r{revision:03d}.NC'))
 supported_tags = {'': {'day': fname24,
                        'night': fname25}}
 
@@ -100,6 +102,10 @@ def init(self):
     """
 
     logger.info(mm_icon.ackn_str)
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
+                                    mm_icon.refs['fuv']))
+
     pass
 
 
