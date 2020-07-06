@@ -257,15 +257,41 @@ def clean(inst, clean_level=None):
 
     """
 
-    vars = ['Zonal_Wind', 'Meridional_Wind']
-
-    if clean_level == 'good':
-        idx, = np.where(inst['Wind_Quality'] != 1)
-        inst[idx, vars] = np.nan
-    elif clean_level == 'dusty':
-        idx, = np.where(inst['Wind_Quality'] < 0.5)
-        inst[idx, vars] = np.nan
+    if inst.tag[0:2] == 've':
+        # vector winds area
+        mvars = ['Zonal_Wind', 'Meridional_Wind']
+        if clean_level == 'good':
+            idx, = np.where(inst['Wind_Quality'] != 1)
+            inst[idx, mvars] = np.nan
+        elif clean_level == 'dusty':
+            idx, = np.where(inst['Wind_Quality'] < 0.5)
+            inst[idx, mvars] = np.nan
+        else:
+            # dirty lets everything through
+            pass
+    elif inst.tag[0:2] == 'te':
+        # neutral temperatures
+        mvar = 'Temperature'
+        if (clean_level == 'good') or (clean_level == 'dusty'):
+            # SAA
+            idx, = np.where(inst['MIGHTI_A_Quality_Flag_South_Atlantic_Anomaly'] > 0)
+            inst[:, idx, mvar] = np.nan
+            # Calibration file
+            idx, = np.where(inst['MIGHTI_A_Quality_Flag_Bad_Calibration'] > 0)
+            inst[:, idx, mvar] = np.nan
+        else:
+            # dirty and worse lets everything through
+            pass
+    elif inst.tag[0:2] == 'lo':
+        # dealing with LOS winds
+        if (clean_level == 'good') or (clean_level == 'dusty'):
+            # find location with any of the flags set
+            idx, idy, = np.where(inst['Quality_Flags'].any(axis=2))
+            inst[idx, idy, 'Line_of_Sight_Wind'] = np.nan
+        else:
+            # dirty and worse lets everything through
+            pass
     else:
-        pass
+        raise ValueError('Unknown tag ' + inst.tag)
 
     return
