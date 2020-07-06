@@ -624,10 +624,8 @@ class Instrument(object):
 
         Parameters
         ----------
-        old : string
-            Old variable name
-        new : string
-            New variable name
+        names : dict or other map
+            Existing names are keys, values are new names
 
         Returns
         -------
@@ -660,8 +658,10 @@ class Instrument(object):
             fdict = {}
             # higher order names
             hdict = {}
-            # keys for existing labels
+            # keys for existing higher order data labels
             ho_keys = [a for a in self.meta.keys_nD()]
+            # iterate, collect normal variables
+            # rename higher order variables
             for key in names:
                 oname, nname = key, names[key]
                 if oname not in ho_keys:
@@ -687,6 +687,7 @@ class Instrument(object):
             self.data.rename(columns=fdict, inplace=True)
 
         else:
+            # xarray renaming
             self.data = self.data.rename(names)
 
         # update normal metadata parameters in a single go
