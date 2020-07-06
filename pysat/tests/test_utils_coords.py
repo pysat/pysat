@@ -57,11 +57,11 @@ class TestLonSLT():
         self.test_inst.load(date=self.test_time)
 
         # Test instruments initially define longitude between 0-360 deg
-        assert np.all(self.testInst.data['longitude'] < 360.0)
-        assert np.all(self.testInst.data['longitude'] >= 0.0)
+        assert np.all(self.test_inst.data['longitude'] < 360.0)
+        assert np.all(self.test_inst.data['longitude'] >= 0.0)
 
         # Longitude defaults to updating range from -180 to 180 deg
-        coords.update_longitude(self.testInst, lon_name="longitude")
+        coords.update_longitude(self.test_inst, lon_name="longitude")
 
         assert np.all(self.test_inst.data['longitude'] < 180.0)
         assert np.all(self.test_inst.data['longitude'] >= -180.0)
@@ -73,7 +73,7 @@ class TestLonSLT():
         self.test_inst.load(date=self.test_time)
 
         with pytest.raises(ValueError):
-            coords.update_longitude(self.testInst, lon_name="not longitude")
+            coords.update_longitude(self.test_inst, lon_name="not longitude")
 
     #########################
     # calc_solar_local_time
@@ -99,12 +99,12 @@ class TestLonSLT():
 
         coords.calc_solar_local_time(self.test_inst, lon_name="longitude",
                                      slt_name='slt')
-        coords.update_longitude(self.testInst, lon_name="longitude")
-        coords.calc_solar_local_time(self.testInst, lon_name="longitude",
+        coords.update_longitude(self.test_inst, lon_name="longitude")
+        coords.calc_solar_local_time(self.test_inst, lon_name="longitude",
                                      slt_name='slt2')
 
-        assert (abs(self.testInst['slt']
-                    - self.testInst['slt2'])).max() < 1.0e-6
+        assert (abs(self.test_inst['slt']
+                    - self.test_inst['slt2'])).max() < 1.0e-6
 
     def test_bad_lon_name_calc_solar_local_time(self):
         """Test calc_solar_local_time with a bad longitude name"""
@@ -113,6 +113,6 @@ class TestLonSLT():
         self.test_inst.load(date=self.test_time)
 
         with pytest.raises(ValueError):
-            coords.calc_solar_local_time(self.testInst,
+            coords.calc_solar_local_time(self.test_inst,
                                          lon_name="not longitude",
                                          slt_name='slt')
