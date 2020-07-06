@@ -100,7 +100,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
-        index[6:9] = [index[6]]*3
+        index[6:9] = [index[6]] * 3
     data = xr.Dataset({'uts': (('Epoch'), index)}, coords={'Epoch': index})
 
     # need to create simple orbits here. Have start of first orbit
@@ -169,7 +169,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
          data['dummy3'].values[:, np.newaxis] * np.ones((num, 15)))
     data.coords['variable_profile_height'] = \
         (('Epoch', 'z'),
-         np.arange(15)[np.newaxis, :]*np.ones((num, 15)))
+         np.arange(15)[np.newaxis, :] * np.ones((num, 15)))
 
     # Create fake image type data, projected to lat / lon at some location
     # from satellite
