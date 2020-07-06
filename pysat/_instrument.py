@@ -2011,7 +2011,7 @@ class Instrument(object):
             remove = True
             warnings.warn('FillValue is not an acceptable '
                           'parameter for strings - it will be removed')
-        
+
         # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data

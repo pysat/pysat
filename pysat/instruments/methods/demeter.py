@@ -19,7 +19,8 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
     url = 'https://cdpp-archive.cnes.fr/'
-    warnings.warn('Data must be downloaded by registered users at: {:s}'.format(url))
+    warnings.warn(' '.join(('Data must be downloaded by registered users at:',
+                            url)))
     return
 
 
@@ -267,7 +268,7 @@ def load_attitude_parameters(fhandle):
     data_names = list()
     data_units = dict()
     while i < 72:
-        data.append(bytes_to_float(chunk[i:i+4]))  # Matrix element
+        data.append(bytes_to_float(chunk[i:i + 4]))  # Matrix element
 
         # Save data name and units
         data_names.append("{:s}_{:d}{:d}".format("sat2geo" if i <= 32

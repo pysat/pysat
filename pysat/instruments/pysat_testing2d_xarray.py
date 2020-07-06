@@ -117,7 +117,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     data['mlt'] = (('Epoch'), mlt)
 
     # do slt, 20 second offset from mlt
-    slt = mm_test.generate_fake_data(time_delta.total_seconds()+20, uts,
+    slt = mm_test.generate_fake_data(time_delta.total_seconds() + 20, uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
     data['slt'] = (('Epoch'), slt)
@@ -182,7 +182,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         (('Epoch', 'x', 'y'),
          np.arange(17)[np.newaxis,
                        np.newaxis,
-                       :]*np.ones((num, 17, 17)))
+                       :] * np.ones((num, 17, 17)))
     data.coords['image_lon'] = \
         (('Epoch', 'x', 'y'),
          np.arange(17)[np.newaxis,
