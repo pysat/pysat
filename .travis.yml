@@ -44,4 +44,4 @@ script:
  - pytest -vs --flake8 --cov=pysat/
 
 after_success:
- - coveralls
+ - coveralls --rcfile
