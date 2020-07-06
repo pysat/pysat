@@ -291,11 +291,6 @@ def ssl_download(date_array, tag, sat_id, data_path=None,
 
     """
 
-    try:
-        ftp_dict = supported_tags[sat_id][tag]
-    except KeyError:
-        raise ValueError('sat_id/tag name unknown.')
-
     # get a list of remote files
     remote_files = list_remote_files(tag, sat_id, supported_tags=supported_tags,
                                      start=date_array[0], stop=date_array[-1])
