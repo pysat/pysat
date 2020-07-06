@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.0] - 2020-6-28
+## [2.2.0] - 2020-07-06
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added warning when FillValue metadata could lead to unexpected results
      when writing a netCDF4 file
    - Use conda to manage Travis CI test environment
+   - Update ICON instrument file structure
    - Added NaN filter for metadata when writing netCDF4 files
    - Test instruments now part of compiled package for development elsewhere
 - Deprecation Warning
