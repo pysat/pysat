@@ -619,30 +619,83 @@ class Instrument(object):
             # attach metadata
             self.meta[key] = new
 
-    def rename(self, old, new):
+    def rename(self, names):
         """Renames variable, here and in meta, preserving case when desired.
 
         Parameters
         ----------
         old : string
-            Old variable name, cases insensitive
+            Old variable name
         new : string
-            New variable name, case is preserved.
+            New variable name
 
         Returns
         -------
         Void
             Object modified in place.
 
+        Examples
+        --------
+        ..
+            new_names = {'old_name': 'new_name',
+                         'old_name2':, 'new_name2'}
+            inst.rename(new_names)
+
+        If using a pandas DataFrame as the underlying data object,
+        to rename higher-order variables. Note that this
+        rename will be invoked individually for all times in the
+        dataset.
+        ..
+            new_names = {'old_name': 'new_name',
+                         'old_name2':, 'new_name2',
+                         'col_name': {'old_ho_name': 'new_ho_name'}
+            inst.rename(new_names)
+
         """
 
         if self.pandas_format:
-            self.data.rename(columns={old: new}, inplace=True)
+            # check for standard rename variables as well as
+            # renaming for higher order variables
+            # filtered old names
+            fdict = {}
+            # higher order names
+            hdict = {}
+            # keys for existing labels
+            ho_keys = [a for a in self.meta.keys_nD()]
+            for key in names:
+                oname, nname = key, names[key]
+                if oname not in ho_keys:
+                    fdict[oname] = nname
+                else:
+                    if isinstance(nname, dict):
+                        # changing a variable name within
+                        # higher order object
+                        label = [k for k in nname.keys()][0]
+                        hdict[label] = nname[label]
+                        # change names for frame at each time
+                        for i in np.arange(len(self.index)):
+                            # within data itself
+                            self[i, oname].rename(columns=hdict,
+                                                  inplace=True)
+                        # change metadata
+                        self.meta.ho_data[oname].data.rename(hdict,
+                                                             inplace=True)
+                        hdict.pop(label)
+                    else:
+                        fdict[oname] = nname
+            # rename regular variables, single go
+            self.data.rename(columns=fdict, inplace=True)
+
         else:
             pass
 
-        case_old = self.meta.var_case_name(old)
-        self.meta.data.rename(index={case_old: new}, inplace=True)
+        # update normal metadata parameters in a single go
+        new_fdict = {}
+        for key in fdict:
+            case_old = self.meta.var_case_name(key)
+            new_fdict[case_old] = fdict[key]
+        self.meta.data.rename(index=new_fdict, inplace=True)
+
         return
 
     @property
