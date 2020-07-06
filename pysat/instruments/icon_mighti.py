@@ -11,9 +11,11 @@ platform : string
 name : string
     'mighti'
 tag : string
-    'level_2'
+    Supports 'los_wind_green', 'los_wind_red', 'vector_wind_green',
+    'vector_wind_red', 'temperature'.  Note that not every data product
+    available for every sat_id
 sat_id : string
-    'red' or 'green'
+    '', 'a', or 'b'
 
 Warnings
 --------
@@ -23,8 +25,9 @@ Warnings
 Example
 -------
     import pysat
-    mighti = pysat.Instrument('icon', 'mighti', clean_level='clean')
-    mighti.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
+    mighti = pysat.Instrument('icon', 'mighti', 'vector_wind_green',
+                              clean_level='clean')
+    mighti.download(dt.datetime(2020, 1, 30), dt.datetime(2020, 12, 31))
     mighti.load(2017,363)
 
 Authors
@@ -39,24 +42,85 @@ Conversion to MIGHTI, Oct 8th, 2028, University of Texas at Dallas
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 import numpy as np
 import pandas as pds
-import warnings
 
 import pysat
-
+from pysat.instruments.methods import general as mm_gen
+from pysat.instruments.methods import icon as mm_icon
 import logging
 logger = logging.getLogger(__name__)
 
 
 platform = 'icon'
 name = 'mighti'
-tags = {'level_2': 'Level 2 public geophysical data'}
-sat_ids = {'green': ['level_2 Green Line'],
-           'red': ['Level_2 Red Line']}
-_test_dates = {'green': {'level_2': pysat.datetime(2017, 5, 27)},
-               'red': {'level_2': pysat.datetime(2017, 5, 27)}}
+tags = {'los_wind_green': 'Line of sight wind data -- Green Line',
+        'los_wind_red': 'Line of sight wind data -- Red Line',
+        'vector_wind_green': 'Vector wind data -- Green Line',
+        'vector_wind_red': 'Vector wind data -- Red Line',
+        'temperature': 'Neutral temperature data'}
+sat_ids = {'': ['vector_wind_green', 'vector_wind_red'],
+           'a': ['los_wind_green', 'los_wind_red', 'temperature'],
+           'b': ['los_wind_green', 'los_wind_red', 'temperature']}
+_test_dates = {jj: {kk: dt.datetime(2020, 1, 2) for kk in sat_ids[jj]}
+               for jj in sat_ids.keys()}
+_test_download_travis = {jj: {kk: False for kk in sat_ids[jj]}
+                         for jj in sat_ids.keys()}
+pandas_format = False
+
+datestr = '{year:04d}-{month:02d}-{day:02d}_v{version:02d}r{revision:03d}'
+fname1 = 'ICON_L2-1_MIGHTI-{id:s}_LOS-Wind-{color:s}_{date:s}.NC'
+fname2 = 'ICON_L2-2_MIGHTI_Vector-Wind-{color:s}_{date:s}.NC'
+fname3 = 'ICON_L2-3_MIGHTI-{id:s}_Temperature_{date:s}.NC'
+supported_tags = {'': {'vector_wind_green': fname2.format(color='Green',
+                                                          date=datestr),
+                       'vector_wind_red': fname2.format(color='Red',
+                                                        date=datestr)},
+                  'a': {'los_wind_green': fname1.format(id='A', color='Green',
+                                                        date=datestr),
+                        'los_wind_red': fname1.format(id='A', color='Red',
+                                                      date=datestr),
+                        'temperature': fname3.format(id='A', date=datestr)},
+                  'b': {'los_wind_green': fname1.format(id='B', color='Green',
+                                                        date=datestr),
+                        'los_wind_red': fname1.format(id='B', color='Red',
+                                                      date=datestr),
+                        'temperature': fname3.format(id='B', date=datestr)}}
+
+# use the CDAWeb methods list files routine
+list_files = functools.partial(mm_gen.list_files,
+                               supported_tags=supported_tags)
+
+# support download routine
+dirstr = '/pub/LEVEL.2/MIGHTI{id:s}'
+dirdatestr = '{year:4d}/{doy:03d}/'
+ids = {'': '',
+       'a': '-A',
+       'b': '-B'}
+products = {'vector_wind_green': 'Vector-Winds/',
+            'vector_wind_red': 'Vector-Winds/',
+            'los_wind_green': 'LOS-Winds/',
+            'los_wind_red': 'LOS-Winds/',
+            'temperature': 'Temperature/'}
+datestr = '{year:04d}-{month:02d}-{day:02d}'
+
+download_tags = {}
+for skey in supported_tags.keys():
+    download_tags[skey] = {}
+    for tkey in supported_tags[skey].keys():
+        fname = supported_tags[skey][tkey]
+
+        download_tags[skey][tkey] = {'dir': dirstr.format(id=ids[skey]),
+                                     'remote_fname': ''.join((products[tkey],
+                                                              fname))}
+
+download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
+
+# support listing files on SSL
+list_remote_files = functools.partial(mm_icon.list_remote_files,
+                                      supported_tags=download_tags)
 
 
 def init(self):
@@ -76,46 +140,12 @@ def init(self):
 
     """
 
-    logger.info("Mission acknowledgements and data restrictions will be printed " +
-          "here when available.")
+    logger.info(mm_icon.ackn_str)
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
+                                    mm_icon.refs['mighti']))
 
     pass
-
-
-def clean(inst, clean_level=None):
-    """Provides data cleaning based upon clean_level.
-
-    clean_level is set upon Instrument instantiation to
-    one of the following:
-
-    'Clean'
-    'Dusty'
-    'Dirty'
-    'None'
-
-    Routine is called by pysat, and not by the end user directly.
-
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Note
-    ----
-        Supports 'clean', 'dusty', 'dirty', 'none'
-
-    """
-
-    if clean_level != 'none':
-        logger.info("Cleaning actions for ICON MIGHTI aren't yet defined.")
-
-    return
 
 
 def default(inst):
@@ -126,9 +156,20 @@ def default(inst):
         Removes ICON preamble on variable names.
 
     """
-    import pysat.instruments.icon_ivm as icivm
-    inst.tag = 'level_2'
-    icivm.remove_icon_names(inst, target='ICON_L2_MIGHTI_')
+
+    # Use datetime instead of timestamp for Epoch
+    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000)
+                                          for x in inst.data['Epoch']])
+    target = {'los_wind_green': 'ICON_L21_',
+              'los_wind_red': 'ICON_L21_',
+              'vector_wind_green': 'ICON_L22_',
+              'vector_wind_red': 'ICON_L22_',
+              'temperature': 'ICON_L23_MIGHTI_' + inst.sat_id.upper() + '_'}
+    mm_gen.remove_leading_text(inst, target=target[inst.tag])
+
+    # for temps need
+    mm_gen.remove_leading_text(inst, target='ICON_L23_')
+    mm_gen.remove_leading_text(inst, target='ICON_L1_')
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -168,11 +209,11 @@ def load(fnames, tag=None, sat_id=None):
     --------
     ::
         inst = pysat.Instrument('icon', 'fuv')
-        inst.load(2019,1)
+        inst.load(2020, 1)
 
     """
 
-    return pysat.utils.load_netcdf4(fnames, epoch_name='EPOCH',
+    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
                                     units_label='Units',
                                     name_label='Long_Name',
                                     notes_label='Var_Notes',
@@ -182,118 +223,77 @@ def load(fnames, tag=None, sat_id=None):
                                     scale_label='ScaleTyp',
                                     min_label='ValidMin',
                                     max_label='ValidMax',
-                                    fill_label='FillVal')
+                                    fill_label='FillVal',
+                                    pandas_format=pandas_format)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of files corresponding to ICON MIGHTI.
+def clean(inst, clean_level=None):
+    """Provides data cleaning based upon clean_level.
 
-    This routine is invoked by pysat and is not intended for direct use by
-    the end user.
+    clean_level is set upon Instrument instantiation to
+    one of the following:
 
-    Multiple data levels may be supported via the 'tag' input string.
-    Currently defaults to level-2 data, or L2 in the filename.
+    'Clean'
+    'Dusty'
+    'Dirty'
+    'None'
 
-    Parameters
-    ----------
-    tag : string ('')
-        tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
-        Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    data_path : string
-        Full path to directory containing files to be loaded. This
-        is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
-        String template used to parse the datasets filenames. If a user
-        supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
-
-    Returns
-    -------
-    pandas.Series
-        Series of filename strings, including the path, indexed by datetime.
-
-    Examples
-    --------
-    ::
-        If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
-        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
-        'v{version:02d}r{revision:04d}.NC'
-
-    Note
-    ----
-    The returned Series should not have any duplicate datetimes. If there are
-    multiple versions of a file the most recent version should be kept and the
-    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
-    the returned files are up to pysat specifications.
-
-    """
-
-    desc = None
-    level = tag
-    if level == 'level_1':
-        code = 'L1'
-        desc = None
-    elif level == 'level_2':
-        code = 'L2'
-        desc = None
-    else:
-        raise ValueError('Unsupported level supplied: ' + level)
-
-    # deal with case of sat_id
-    satid = sat_id.capitalize()
-
-    if format_str is None:
-        format_str = 'ICON_'+code+'_MIGHTI_Vector-Wind-'+satid
-        if desc is not None:
-            format_str += '_' + desc + '_'
-        format_str += '_{year:4d}-{month:02d}-{day:02d}'
-        format_str += '_v{version:02d}r{revision:03d}.NC'
-
-    return pysat.Files.from_os(data_path=data_path,
-                               format_str=format_str)
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    """Will download data for ICON MIGHTI, after successful launch and
-    operations.
+    Routine is called by pysat, and not by the end user directly.
 
     Parameters
-    ----------
-    date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not
-        be contiguous.
-    tag : string ('')
-        Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
-        Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
-        User string input used for download. Provided by user and passed via
-        pysat. If an account is required for dowloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
-    **kwargs : dict
-        Additional keywords supplied by user when invoking the download
-        routine attached to a pysat.Instrument object are passed to this
-        routine via kwargs.
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
 
     Returns
     --------
     Void : (NoneType)
-        Downloads data to disk.
+        data in inst is modified in-place.
 
+    Note
+    ----
+        Supports 'clean', 'dusty', 'dirty', 'none'
 
     """
 
-    warnings.warn("Downloads aren't yet available.")
+    if inst.tag[0:2] == 've':
+        # vector winds area
+        mvars = ['Zonal_Wind', 'Meridional_Wind']
+        if clean_level == 'good':
+            idx, = np.where(inst['Wind_Quality'] != 1)
+            inst[idx, mvars] = np.nan
+        elif clean_level == 'dusty':
+            idx, = np.where(inst['Wind_Quality'] < 0.5)
+            inst[idx, mvars] = np.nan
+        else:
+            # dirty lets everything through
+            pass
+    elif inst.tag[0:2] == 'te':
+        # neutral temperatures
+        mvar = 'Temperature'
+        if (clean_level == 'good') or (clean_level == 'dusty'):
+            # SAA
+            saa_flag = 'MIGHTI_{s}_Quality_Flag_South_Atlantic_Anomaly'
+            idx, = np.where(inst[saa_flag.format(inst.sat_id.upper())] > 0)
+            inst[:, idx, mvar] = np.nan
+            # Calibration file
+            cal_flag = 'MIGHTI_{s}_Quality_Flag_Bad_Calibration'
+            idx, = np.where(inst[cal_flag.format(inst.sat_id.upper())] > 0)
+            inst[:, idx, mvar] = np.nan
+        else:
+            # dirty and worse lets everything through
+            pass
+    elif inst.tag[0:2] == 'lo':
+        # dealing with LOS winds
+        if (clean_level == 'good') or (clean_level == 'dusty'):
+            # find location with any of the flags set
+            idx, idy, = np.where(inst['Quality_Flags'].any(axis=2))
+            inst[idx, idy, 'Line_of_Sight_Wind'] = np.nan
+        else:
+            # dirty and worse lets everything through
+            pass
+    else:
+        raise ValueError('Unknown tag ' + inst.tag)
 
     return

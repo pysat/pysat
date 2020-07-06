@@ -21,7 +21,7 @@ Example
 -------
     import pysat
     fuv = pysat.Instrument('icon', 'fuv', clean_level='clean')
-    fuv.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
+    fuv.download(dt.datetime(2019, 1, 30), dt.datetime(2019, 12, 31))
     fuv.load(2017,363)
 
 Authors
@@ -36,22 +36,52 @@ Conversion to FUV, Oct 8th, 2028, University of Texas at Dallas
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
-import numpy as np
 import pandas as pds
 import warnings
 
 import pysat
-
+from pysat.instruments.methods import general as mm_gen
+from pysat.instruments.methods import icon as mm_icon
 import logging
 logger = logging.getLogger(__name__)
 
 
 platform = 'icon'
 name = 'fuv'
-tags = {'level_2': 'Level 2 public geophysical data'}
-sat_ids = {'': ['level_2']}
-_test_dates = {'': {'level_2': pysat.datetime(2017, 5, 27)}}
+tags = {'day': 'Level 2 daytime O/N2',
+        'night': 'Level 2 nighttime O profile'}
+sat_ids = {'': ['day', 'night']}
+_test_dates = {'': {kk: dt.datetime(2020, 1, 1) for kk in tags.keys()}}
+_test_download_travis = {'': {kk: False for kk in tags.keys()}}
+pandas_format = False
+
+fname24 = ''.join(('ICON_L2-4_FUV_Day_{year:04d}-{month:02d}-{day:02d}_',
+                   'v{version:02d}r{revision:03d}.NC'))
+fname25 = ''.join(('ICON_L2-5_FUV_Night_{year:04d}-{month:02d}-{day:02d}_',
+                   'v{version:02d}r{revision:03d}.NC'))
+supported_tags = {'': {'day': fname24,
+                       'night': fname25}}
+
+# use the CDAWeb methods list files routine
+list_files = functools.partial(mm_gen.list_files,
+                               supported_tags=supported_tags)
+
+# support download routine
+basic_tag24 = {'dir': '/pub/LEVEL.2/FUV',
+               'remote_fname': fname24}
+basic_tag25 = {'dir': '/pub/LEVEL.2/FUV',
+               'remote_fname': fname25}
+
+download_tags = {'': {'day': basic_tag24,
+                      'night': basic_tag25}}
+
+download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
+
+# support listing files on SSL
+list_remote_files = functools.partial(mm_icon.list_remote_files,
+                                      supported_tags=download_tags)
 
 
 def init(self):
@@ -71,45 +101,12 @@ def init(self):
 
     """
 
-    logger.info("Mission acknowledgements and data restrictions will be printed " +
-          "here when available.")
+    logger.info(mm_icon.ackn_str)
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
+                                    mm_icon.refs['fuv']))
 
     pass
-
-
-def clean(inst, clean_level=None):
-    """Provides data cleaning based upon clean_level.
-
-    clean_level is set upon Instrument instantiation to
-    one of the following:
-
-    'Clean'
-    'Dusty'
-    'Dirty'
-    'None'
-
-    Routine is called by pysat, and not by the end user directly.
-
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Note
-    ----
-        Supports 'clean', 'dusty', 'dirty', 'none'
-
-    """
-
-    if clean_level != 'none':
-        warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
-    return
 
 
 def default(inst):
@@ -126,9 +123,12 @@ def default(inst):
 
     """
 
-    import pysat.instruments.icon_ivm as icivm
-    inst.tag = 'level_2'
-    icivm.remove_icon_names(inst, target='ICON_L2_FUV_Daytime_ON2_')
+    # Use datetime instead of timestamp for Epoch
+    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000)
+                                          for x in inst.data['Epoch']])
+    target = {'day': 'ICON_L24_',
+              'night': 'ICON_L25_'}
+    mm_gen.remove_leading_text(inst, target=target[inst.tag])
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -172,7 +172,7 @@ def load(fnames, tag=None, sat_id=None):
 
     """
 
-    return pysat.utils.load_netcdf4(fnames, epoch_name='EPOCH',
+    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
                                     units_label='Units',
                                     name_label='Long_Name',
                                     notes_label='Var_Notes',
@@ -182,114 +182,40 @@ def load(fnames, tag=None, sat_id=None):
                                     scale_label='ScaleTyp',
                                     min_label='ValidMin',
                                     max_label='ValidMax',
-                                    fill_label='FillVal')
+                                    fill_label='FillVal',
+                                    pandas_format=pandas_format)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of files corresponding to ICON FUV.
+def clean(inst, clean_level=None):
+    """Provides data cleaning based upon clean_level.
 
-    This routine is invoked by pysat and is not intended for direct use by
-    the end user.
+    clean_level is set upon Instrument instantiation to
+    one of the following:
 
-    Multiple data levels may be supported via the 'tag' input string.
-    Currently defaults to level-2 data, or L2 in the filename.
+    'Clean'
+    'Dusty'
+    'Dirty'
+    'None'
 
-    Parameters
-    ----------
-    tag : string ('')
-        tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
-        Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    data_path : string
-        Full path to directory containing files to be loaded. This
-        is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
-        String template used to parse the datasets filenames. If a user
-        supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
-
-    Returns
-    -------
-    pandas.Series
-        Series of filename strings, including the path, indexed by datetime.
-
-    Examples
-    --------
-    ::
-        If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
-        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
-        'v{version:02d}r{revision:04d}.NC'
-
-    Note
-    ----
-    The returned Series should not have any duplicate datetimes. If there are
-    multiple versions of a file the most recent version should be kept and the
-    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
-    the returned files are up to pysat specifications.
-
-    """
-
-    desc = None
-    level = tag
-    if level == 'level_1':
-        code = 'L1'
-        desc = None
-    elif level == 'level_2':
-        code = 'L2'
-        desc = None
-    else:
-        raise ValueError('Unsupported level supplied: ' + level)
-
-    if format_str is None:
-        format_str = 'ICON_'+code+'_FUV_Daytime-ON2'
-        if desc is not None:
-            format_str += '_' + desc + '_'
-        format_str += '_{year:4d}-{month:02d}-{day:02d}'
-        format_str += '_v{version:02d}r{revision:03d}.NC'
-
-    return pysat.Files.from_os(data_path=data_path,
-                               format_str=format_str)
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    """Will download data for ICON FUV, after successful launch and operations.
+    Routine is called by pysat, and not by the end user directly.
 
     Parameters
-    ----------
-    date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not
-        be contiguous.
-    tag : string ('')
-        Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
-        Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
-        User string input used for download. Provided by user and passed via
-        pysat. If an account is required for dowloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
-    **kwargs : dict
-        Additional keywords supplied by user when invoking the download
-        routine attached to a pysat.Instrument object are passed to this
-        routine via kwargs.
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
 
     Returns
     --------
     Void : (NoneType)
-        Downloads data to disk.
+        data in inst is modified in-place.
 
+    Note
+    ----
+        Supports 'clean', 'dusty', 'dirty', 'none'
 
     """
 
-    warnings.warn("Downloads aren't yet available.")
-
+    if clean_level != 'none':
+        warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
     return
