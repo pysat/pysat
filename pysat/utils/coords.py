@@ -96,7 +96,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     """
 
     if lon_name not in inst.data.keys():
-        raise ValueError('uknown longitude variable name')
+        raise ValueError('unknown longitude variable name')
 
     # Convert from numpy epoch nanoseconds to UT seconds of day
     ut_hr = list()
