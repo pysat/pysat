@@ -707,6 +707,8 @@ class Instrument(object):
         else:
             # xarray renaming
             self.data = self.data.rename(names)
+            # set up dictionary for renaming metadata variables
+            fdict = names
 
         # update normal metadata parameters in a single go
         new_fdict = {}
