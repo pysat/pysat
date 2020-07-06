@@ -1099,11 +1099,6 @@ class Instrument(object):
 
         # let user know if data was returned or not
         ind = data.index if self.pandas_format else data.indexes
-        # if not self.pandas_format:
-        #     if 'time' in data.indexes:
-        #         warnings.warn(' '.join(("Support for 'time' as an index label",
-        #                                 "will be removed in a future release.")),
-        #                       DeprecationWarning)
         if len(ind) > 0:
             if date is not None:
                 output_str = ' '.join(('Returning', output_str, 'data for',
