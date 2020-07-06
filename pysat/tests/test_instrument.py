@@ -13,14 +13,14 @@ import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
 
+xarray_epoch_name = 'time'
+
 
 # ------------------------------------------------------------------------------
 #
 # Test Instrument object basics
 #
 # ------------------------------------------------------------------------------
-xarray_epoch_name = 'time'
-
 class TestBasics():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
@@ -267,10 +267,9 @@ class TestBasics():
             data2 = data2.rename({xarray_epoch_name: 'Epoch2'})
 
             # concat together
-            self.testInst.data = \
-                self.testInst.concat_data([data1, data2],
-                                          dim='Epoch2').rename({'Epoch2':
-                                                               xarray_epoch_name})
+            self.testInst.data = self.testInst.concat_data(
+                [data1, data2], dim='Epoch2').rename({'Epoch2':
+                                                      xarray_epoch_name})
             # test for concatenation
             # Instrument.data must have a 'Epoch' index
             len3 = len(self.testInst.index)

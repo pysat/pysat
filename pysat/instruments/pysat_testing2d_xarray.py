@@ -103,7 +103,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
         index[6:9] = [index[6]] * 3
-    data = xr.Dataset({'uts': ((epoch_name), index)}, coords={epoch_name: index})
+    data = xr.Dataset({'uts': ((epoch_name), index)},
+                      coords={epoch_name: index})
 
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
