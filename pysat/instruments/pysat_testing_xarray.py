@@ -23,6 +23,7 @@ sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
 
+epoch_name = u'time'
 
 def init(self):
     """Initializes the Instrument object with instrument specific values.
@@ -121,20 +122,20 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         # non unique
         index[6:9] = [index[6]] * 3
 
-    data = xarray.Dataset({'uts': (('Epoch'), index)}, coords={'Epoch': index})
+    data = xarray.Dataset({'uts': ((epoch_name), index)}, coords={epoch_name: index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
-    data['mlt'] = (('Epoch'), mlt)
+    data['mlt'] = ((epoch_name), mlt)
 
     # do slt, 20 second offset from mlt
     slt = mm_test.generate_fake_data(time_delta.total_seconds() + 20, uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
-    data['slt'] = (('Epoch'), slt)
+    data['slt'] = ((epoch_name), slt)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
@@ -142,19 +143,19 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                            period=iperiod['lon'],
                                            data_range=drange['lon'])
-    data['longitude'] = (('Epoch'), longitude)
+    data['longitude'] = ((epoch_name), longitude)
 
     # create latitude area for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
     latitude = 90.0 * np.cos(angle)
-    data['latitude'] = (('Epoch'), latitude)
+    data['latitude'] = ((epoch_name), latitude)
 
     # create constant altitude at 400 km
     alt0 = 400.0
     altitude = alt0 * np.ones(data['latitude'].shape)
-    data['altitude'] = (('Epoch'), altitude)
+    data['altitude'] = ((epoch_name), altitude)
 
     # fake orbit number
     fake_delta = date - dt.datetime(2008, 1, 1)
@@ -162,24 +163,24 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
                                            uts, period=iperiod['lt'],
                                            cyclic=False)
 
-    data['orbit_num'] = (('Epoch'), orbit_num)
+    data['orbit_num'] = ((epoch_name), orbit_num)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.).astype(int)
-    data['dummy1'] = (('Epoch'), mlt_int)
-    data['dummy2'] = (('Epoch'), long_int)
-    data['dummy3'] = (('Epoch'), mlt_int + long_int * 1000.)
-    data['dummy4'] = (('Epoch'), uts)
-    data['string_dummy'] = (('Epoch'), ['test'] * len(data.indexes['Epoch']))
-    data['unicode_dummy'] = (('Epoch'), [u'test'] * len(data.indexes['Epoch']))
-    data['int8_dummy'] = (('Epoch'), np.array([1] * len(data.indexes['Epoch']),
+    data['dummy1'] = ((epoch_name), mlt_int)
+    data['dummy2'] = ((epoch_name), long_int)
+    data['dummy3'] = ((epoch_name), mlt_int + long_int * 1000.)
+    data['dummy4'] = ((epoch_name), uts)
+    data['string_dummy'] = ((epoch_name), ['test'] * len(data.indexes[epoch_name]))
+    data['unicode_dummy'] = ((epoch_name), [u'test'] * len(data.indexes[epoch_name]))
+    data['int8_dummy'] = ((epoch_name), np.array([1] * len(data.indexes[epoch_name]),
                           dtype=np.int8))
-    data['int16_dummy'] = (('Epoch'), np.array([1] * len(data.indexes['Epoch']),
+    data['int16_dummy'] = ((epoch_name), np.array([1] * len(data.indexes[epoch_name]),
                            dtype=np.int16))
-    data['int32_dummy'] = (('Epoch'), np.array([1] * len(data.indexes['Epoch']),
+    data['int32_dummy'] = ((epoch_name), np.array([1] * len(data.indexes[epoch_name]),
                            dtype=np.int32))
-    data['int64_dummy'] = (('Epoch'), np.array([1] * len(data.indexes['Epoch']),
+    data['int64_dummy'] = ((epoch_name), np.array([1] * len(data.indexes[epoch_name]),
                            dtype=np.int64))
 
     return data, meta.copy()
@@ -195,7 +196,7 @@ meta = pysat.Meta()
 meta['uts'] = {'units': 's',
                'long_name': 'Universal Time',
                'custom': False}
-meta['Epoch'] = {'units': 'Milliseconds since 1970-1-1',
+meta[epoch_name] = {'units': 'Milliseconds since 1970-1-1',
                  'Bin_Location': 0.5,
                  'notes': 'UTC time at middle of geophysical measurement.',
                  'desc': 'UTC seconds', }

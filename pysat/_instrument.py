@@ -745,7 +745,7 @@ class Instrument(object):
                 dim = kwargs['dim']
                 _ = kwargs.pop('dim')
             else:
-                dim = 'Epoch'
+                dim = self.index.name
             return xr.concat(data, dim=dim, *args, **kwargs)
 
     def _pass_func(*args, **kwargs):
