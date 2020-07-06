@@ -203,7 +203,7 @@ def list_remote_files(tag, sat_id, user=None, password=None,
             # print(parsed[-1])
             remote_days.append(year + '/' + parsed[-1])
             days.append(parsed[-1])
-            yrdoys.append(int(year_int)*1000 + int(parsed[-1]))
+            yrdoys.append(int(year_int) * 1000 + int(parsed[-1]))
 
     # potentially filter here for years and days that are out of bounds
     yrdoys = np.array(yrdoys)
@@ -290,11 +290,6 @@ def ssl_download(date_array, tag, sat_id, data_path=None,
         Downloads data to disk.
 
     """
-
-    try:
-        ftp_dict = supported_tags[sat_id][tag]
-    except KeyError:
-        raise ValueError('sat_id/tag name unknown.')
 
     # get a list of remote files
     remote_files = list_remote_files(tag, sat_id, supported_tags=supported_tags,
