@@ -42,6 +42,7 @@ import numpy as np
 import pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
+from pysat.instruments.methods import nasa_cdaweb as cdw
 
 import logging
 logger = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ supported_tags = {'a': {'': aname},
                   'b': {'': bname}}
 
 # use the general methods list files routine
-list_files = functools.partial(mm_gen.list_files,
+list_files = functools.partial(cdw.list_files,
                                supported_tags=supported_tags)
 
 # support download routine
