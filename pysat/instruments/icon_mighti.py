@@ -274,11 +274,12 @@ def clean(inst, clean_level=None):
         mvar = 'Temperature'
         if (clean_level == 'good') or (clean_level == 'dusty'):
             # SAA
-            saa_flag = 'MIGHTI_A_Quality_Flag_South_Atlantic_Anomaly'
-            idx, = np.where(inst[saa_flag] > 0)
+            saa_flag = 'MIGHTI_{s}_Quality_Flag_South_Atlantic_Anomaly')
+            idx, = np.where(inst[saa_flag.format(sat_id.upper()] > 0)
             inst[:, idx, mvar] = np.nan
             # Calibration file
-            idx, = np.where(inst['MIGHTI_A_Quality_Flag_Bad_Calibration'] > 0)
+            cal_flag = 'MIGHTI_{s}_Quality_Flag_Bad_Calibration'
+            idx, = np.where(inst[cal_flag.format(sat_id.upper()] > 0)
             inst[:, idx, mvar] = np.nan
         else:
             # dirty and worse lets everything through
