@@ -155,8 +155,8 @@ def clean(inst):
         # Low O+ concentrations for RPA Flag of 3 are suspect and high O+
         # fractions create a shallow fit region for the ram velocity
         nO = inst.data.ion1fraction * inst.data.Ni
-        idx = (((inst.data.RPAflag == 3) & (nO <= 3.0e4)) |
-               (inst.data.ion1fraction >= 1.0))
+        idx = (((inst.data.RPAflag == 3) & (nO <= 3.0e4))
+               | (inst.data.ion1fraction >= 1.0))
 
         # Only remove data if RPA component of drift is greater than 1%
         unit_vecs = {'ionVelmeridional': 'meridionalunitvectorX',
