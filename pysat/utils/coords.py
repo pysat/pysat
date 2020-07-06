@@ -8,6 +8,7 @@ functions used throughout the pysat package.
 
 import numpy as np
 import pandas as pds
+import warnings
 
 
 def adjust_cyclic_data(samples, high=2.0*np.pi, low=0.0):
@@ -117,7 +118,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     if inst.pandas_format:
         inst[slt_name] = pds.Series(slt, index=inst.data.index)
     else:
-        inst.data = inst.data.assign({slt_name: (inst.data.coords.keys(),slt)})
+        inst.data = inst.data.assign({slt_name: (inst.data.coords.keys(), slt)})
 
     # Add units to the metadata
     inst.meta[slt_name] = {inst.meta.units_label: 'h',
@@ -179,6 +180,12 @@ def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     Based on J.M. Ruohoniemi's geopack and R.J. Barnes radar.pro
 
     """
+
+    warnings.warn(' '.join(["coords.geodetic_to_geocentric is deprecated and",
+                            "will be removed in pysat 3.0.0. This function will",
+                            "move to the new pysatMadrigal package."]),
+                  DeprecationWarning, stacklevel=2)
+
     rad_eq = 6378.1370  # WGS-84 semi-major axis
     flat = 1.0 / 298.257223563  # WGS-84 flattening
     rad_pol = rad_eq * (1.0 - flat)  # WGS-84 semi-minor axis
@@ -249,6 +256,11 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
 
     """
 
+    warnings.warn(' '.join(["coords.geodetic_to_geocentric_horizontal is deprecated",
+                            "and will be removed in pysat 3.0.0. This function",
+                            "will move to the new pysatMadrigal package."]),
+                  DeprecationWarning, stacklevel=2)
+
     az = np.radians(az_in)
     el = np.radians(el_in)
 
@@ -309,6 +321,11 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     (angle from the z-axis)
 
     """
+
+    warnings.warn(' '.join(["coords.spherical_to_cartesian is deprecated and",
+                            "will be removed in pysat 3.0.0. This function will",
+                            "move to the new pysatMadrigal package."]),
+                  DeprecationWarning, stacklevel=2)
 
     if inverse:
         # Cartesian to Spherical
@@ -372,6 +389,11 @@ def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
     The local system has z pointing up, y pointing North, and x pointing East.
 
     """
+
+    warnings.warn(' '.join(["coords.global_to_local_cartesian is deprecated and",
+                            "will be removed in pysat 3.0.0. This function will",
+                            "move to the new pysatMadrigal package."]),
+                  DeprecationWarning, stacklevel=2)
 
     # Get the global cartesian coordinates of local origin
     x_cent, y_cent, z_cent = spherical_to_cartesian(lon_cent, lat_cent,
@@ -455,6 +477,11 @@ def local_horizontal_to_global_geo(az, el, dist, lat_orig, lon_orig, alt_orig,
     Based on J.M. Ruohoniemi's geopack and R.J. Barnes radar.pro
 
     """
+
+    warnings.warn(' '.join(["coords.local_horizontal_to_global_geo is deprecated",
+                            "and will be removed in pysat 3.0.0. This function",
+                            "will move to the new pysatMadrigal package."]),
+                  DeprecationWarning, stacklevel=2)
 
     # If the data are in geodetic coordiantes, convert to geocentric
     if geodetic:

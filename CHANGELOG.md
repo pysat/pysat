@@ -19,6 +19,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Test instruments now part of compiled package for development elsewhere
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
+  - Several functions in coords will be removed in pysat 3.0.0.  These functions will move to pysatMadrigal
+    - geodetic_to_geocentric
+    - geodetic_to_geocentric_horizontal
+    - spherical_to_cartesian
+    - global_to_local_cartesian
+    - local_horizontal_to_global_geo
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
   - Added discussion of github install, develop branches, and reqs to docs
