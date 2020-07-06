@@ -462,7 +462,7 @@ class TestDeprecation():
         """Runs after every method to clean up previous testing"""
 
     def test_deprecation_warning_geodetic_to_geocentric(self):
-        """Test if median1D in stats is deprecated"""
+        """Test if geodetic_to_geocentric in coords is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             coords.geodetic_to_geocentric(45.0, lon_in=8.0)
@@ -471,7 +471,7 @@ class TestDeprecation():
         assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_geodetic_to_geocentric_horz(self):
-        """Test if median1D in stats is deprecated"""
+        """Test if geodetic_to_geocentric_horizontal in coords is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             coords.geodetic_to_geocentric_horizontal(45.0, 8.0, 52.0, 63.0)
@@ -480,7 +480,7 @@ class TestDeprecation():
         assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_spherical_to_cartesian(self):
-        """Test if median1D in stats is deprecated"""
+        """Test if spherical_to_cartesian in coords is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             coords.spherical_to_cartesian(45.0, 30.0, 1.0)
@@ -489,7 +489,7 @@ class TestDeprecation():
         assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_global_to_local_cartesian(self):
-        """Test if median1D in stats is deprecated"""
+        """Test if global_to_local_cartesian in coords is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             coords.global_to_local_cartesian(7000.0, 8000.0, 9000.0,
@@ -499,7 +499,7 @@ class TestDeprecation():
         assert war[0].category == DeprecationWarning
 
     def test_deprecation_warning_local_horizontal_to_global_geo(self):
-        """Test if median1D in stats is deprecated"""
+        """Test if local_horizontal_to_global_geo in coords is deprecated"""
 
         with warnings.catch_warnings(record=True) as war:
             coords.local_horizontal_to_global_geo(30.0, 45.0, 1000.0,
