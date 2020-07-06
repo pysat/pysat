@@ -203,7 +203,7 @@ def list_remote_files(tag, sat_id, user=None, password=None,
             # print(parsed[-1])
             remote_days.append(year + '/' + parsed[-1])
             days.append(parsed[-1])
-            yrdoys.append(int(year_int)*1000 + int(parsed[-1]))
+            yrdoys.append(int(year_int) * 1000 + int(parsed[-1]))
 
     # potentially filter here for years and days that are out of bounds
     yrdoys = np.array(yrdoys)

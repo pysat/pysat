@@ -158,7 +158,7 @@ def default(inst):
     """
 
     # Use datetime instead of timestamp for Epoch
-    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x/1000)
+    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000)
                                           for x in inst.data['Epoch']])
     target = {'los_wind_green': 'ICON_L21_',
               'los_wind_red': 'ICON_L21_',

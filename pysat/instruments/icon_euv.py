@@ -106,7 +106,7 @@ def default(inst):
     """
 
     # Use datetime instead of timestamp for Epoch
-    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x/1000)
+    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000)
                                           for x in inst.data['Epoch']])
     mm_gen.remove_leading_text(inst, target='ICON_L26_')
 
