@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pds
 
 
-def adjust_cyclic_data(samples, high=2.0*np.pi, low=0.0):
+def adjust_cyclic_data(samples, high=(2.0 * np.pi), low=0.0):
     """Adjust cyclic values such as longitude to a different scale
 
     Parameters
