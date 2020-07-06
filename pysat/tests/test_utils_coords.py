@@ -9,6 +9,7 @@ import pytest
 import pysat
 from pysat.utils import coords
 
+
 class TestCyclicData():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -79,17 +80,18 @@ class TestLonSLT():
     # calc_solar_local_time
     @pytest.mark.parametrize("name", ["testing", "testing_xarray"])
     def test_calc_solar_local_time(self, name):
-        """Test calc_solar_local_time with longitudes from 0-360 deg"""
+        """Test calc_solar_local_time with longitudes from 0-360 deg for 0 UTH
+        """
 
-        self.py_inst = pysat.Instrument(platform='pysat', name=name)
+        self.py_inst = pysat.Instrument(platform='pysat', name=name, sat_id='1')
         self.py_inst.load(date=self.inst_time)
 
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
                                      slt_name='slt')
 
         # This works because test instrument longitude ranges from 0-360 deg
-        assert (abs(self.py_inst['slt']
-                    - self.py_inst['longitude'] / 15.0)).max() < 1.0e-6
+        assert (abs(self.py_inst['slt'].values
+                    - self.py_inst['longitude'].values / 15.0)).max() < 1.0e-6
 
     def test_calc_solar_local_time_w_neg_longitude(self):
         """Test calc_solar_local_time with longitudes from -180 to 180 deg"""
