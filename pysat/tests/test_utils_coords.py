@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 import pysat
-from pysat.utils import ucoords
+from pysat.utils import coords
 
 class TestCyclicData():
     def setup(self):
@@ -22,7 +22,7 @@ class TestCyclicData():
         """ Test adjust_cyclic_data with default range """
 
         test_in = np.radians(self.test_angles) - np.pi
-        test_angles = ucoords.adjust_cyclic_data(test_in)
+        test_angles = coords.adjust_cyclic_data(test_in)
 
         assert test_angles.max() < 2.0 * np.pi
         assert test_angles.min() >= 0.0
@@ -30,7 +30,7 @@ class TestCyclicData():
     def test_adjust_cyclic_data_custom(self):
         """ Test adjust_cyclic_data with a custom range """
 
-        test_angles = ucoords.adjust_cyclic_data(self.test_angles,
+        test_angles = coords.adjust_cyclic_data(self.test_angles,
                                                 high=180.0, low=-180.0)
 
         assert test_angles.max() < 180.0
@@ -61,7 +61,7 @@ class TestLonSLT():
         assert np.all(self.testInst.data['longitude'] >= 0.0)
 
         # Longitude defaults to updating range from -180 to 180 deg
-        ucoords.update_longitude(self.testInst, lon_name="longitude")
+        coords.update_longitude(self.testInst, lon_name="longitude")
 
         assert np.all(self.test_inst.data['longitude'] < 180.0)
         assert np.all(self.test_inst.data['longitude'] >= -180.0)
@@ -73,7 +73,7 @@ class TestLonSLT():
         self.test_inst.load(date=self.test_time)
 
         with pytest.raises(ValueError):
-            ucoords.update_longitude(self.testInst, lon_name="not longitude")
+            coords.update_longitude(self.testInst, lon_name="not longitude")
 
     #########################
     # calc_solar_local_time
@@ -84,7 +84,7 @@ class TestLonSLT():
         self.test_inst = pysat.Instrument(platform='pysat', name=name)
         self.test_inst.load(date=self.test_time)
 
-        ucoords.calc_solar_local_time(self.test_inst, lon_name="longitude",
+        coords.calc_solar_local_time(self.test_inst, lon_name="longitude",
                                      slt_name='slt')
 
         # This works because test instrument longitude ranges from 0-360 deg
@@ -97,10 +97,10 @@ class TestLonSLT():
         self.test_inst = pysat.Instrument(platform='pysat', name="testing")
         self.test_inst.load(date=self.test_time)
 
-        ucoords.calc_solar_local_time(self.test_inst, lon_name="longitude",
+        coords.calc_solar_local_time(self.test_inst, lon_name="longitude",
                                      slt_name='slt')
-        ucoords.update_longitude(self.testInst, lon_name="longitude")
-        ucoords.calc_solar_local_time(self.testInst, lon_name="longitude",
+        coords.update_longitude(self.testInst, lon_name="longitude")
+        coords.calc_solar_local_time(self.testInst, lon_name="longitude",
                                      slt_name='slt2')
 
         assert (abs(self.testInst['slt']
@@ -113,6 +113,6 @@ class TestLonSLT():
         self.test_inst.load(date=self.test_time)
 
         with pytest.raises(ValueError):
-            ucoords.calc_solar_local_time(self.testInst,
+            coords.calc_solar_local_time(self.testInst,
                                          lon_name="not longitude",
                                          slt_name='slt')
