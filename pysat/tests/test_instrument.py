@@ -660,6 +660,10 @@ class TestBasics():
                 assert 'density' not in self.testInst.meta['profiles']['children']
                 assert 'density' not in self.testInst[0, 'profiles']
 
+                # check for error for unknown variable name
+                with pytest.raises(ValueError):
+                    self.testInst.rename({'profiles': {'help': 'I need somebody'}})
+
     # --------------------------------------------------------------------------
     #
     # Test iteration behaviors
