@@ -33,6 +33,7 @@ install:
   - pip install pysatCDF >/dev/null
   # Get latest coveralls from pip, not conda
   - pip install coveralls
+  - pip install pytest-flake8
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
@@ -40,7 +41,7 @@ install:
 
 # command to run tests
 script:
- - pytest -vs --cov=pysat/
+ - pytest -vs --flake8 --cov=pysat/
 
 after_success:
- - coveralls
+ - coveralls --rcfile=setup.cfg

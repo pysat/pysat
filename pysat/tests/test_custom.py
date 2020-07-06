@@ -325,7 +325,7 @@ class TestBasics():
         assert len(self.testInst.custom._kind) == 1
         assert len(self.testInst.custom._args) == 1
         assert len(self.testInst.custom._kwargs) == 1
-        
+
         self.testInst.custom.clear()
         # Test to see that the custom function was cleared
         assert self.testInst.custom._functions == []
@@ -382,7 +382,7 @@ class TestBasics():
 
         # An AttributeError should be thrown, since the data required by the
         # last attached function (inst.data.MLTx2) won't be present yet
-        
+
         with pytest.raises(AttributeError):
             self.testInst.load(2009, 1)
 
