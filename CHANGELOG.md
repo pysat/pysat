@@ -27,6 +27,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Remove convenience methods imported from pandas
   - Changed the default `custom.attatch` input to allow keyword arguement use when additional function input is required
   - Removed python 2.7 syntax
+  - Removed utils.coords.geodetic_to_geocentric
+  - Removed utils.coords.geodetic_to_geocentric_horizontal
+  - Removed utils.coords.spherical_to_cartesian
+  - Removed utils.coords.global_to_local_cartesian
+  - Removed utils.coords.local_horizontal_to_global_geo
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
