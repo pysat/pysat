@@ -619,6 +619,32 @@ class Instrument(object):
             # attach metadata
             self.meta[key] = new
 
+    def rename(self, old, new):
+        """Renames variable, here and in meta, preserving case when desired.
+
+        Parameters
+        ----------
+        old : string
+            Old variable name, cases insensitive
+        new : string
+            New variable name, case is preserved.
+
+        Returns
+        -------
+        Void
+            Object modified in place.
+
+        """
+
+        if self.pandas_format:
+            self.data.rename(columns={old: new}, inplace=True)
+        else:
+            pass
+
+        case_old = self.meta.var_case_name(old)
+        self.meta.data.rename(index={case_old: new}, inplace=True)
+        return
+
     @property
     def empty(self):
         """Boolean flag reflecting lack of data.
