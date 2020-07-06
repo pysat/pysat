@@ -692,9 +692,9 @@ class Instrument(object):
             return data.empty
         else:
             if 'time' in data.indexes:
-                return data.indexes['time']
+                return len(data.indexes['time']) == 0
             elif 'Epoch' in data.indexes:
-                return data.indexes['Epoch']
+                return len(data.indexes['Epoch']) == 0
             else:
                 return True
 
