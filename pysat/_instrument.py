@@ -667,25 +667,36 @@ class Instrument(object):
                 oname, nname = key, names[key]
                 if oname not in ho_keys:
                     if oname in lo_keys:
+                        # within low order (standard) variable keys
+                        # may be renamed directly
                         fdict[oname] = nname
                     else:
+                        # not in standard or higher order keys
                         estr = ' '.join((oname, ' is not',
                                          'a known variable.'))
                         raise ValueError(estr)
                 else:
+                    # variable name is in higher order list
                     if isinstance(nname, dict):
                         # changing a variable name within
                         # higher order object
                         label = [k for k in nname.keys()][0]
                         hdict[label] = nname[label]
+                        # ensure variable is there
+                        if label not in self.meta[oname]['children']:
+                            estr = ''.join((label, ' is not a known ',
+                                            'higher-order variable under ',
+                                            oname, '.'))
+                            raise ValueError(estr)
                         # change names for frame at each time
                         for i in np.arange(len(self.index)):
                             # within data itself
                             self[i, oname].rename(columns=hdict,
                                                   inplace=True)
-                        # change metadata
+                        # change metadata, once per variable only
                         self.meta.ho_data[oname].data.rename(hdict,
                                                              inplace=True)
+                        # clear out dict for next loop
                         hdict.pop(label)
                     else:
                         # changing the outer 'column' label
