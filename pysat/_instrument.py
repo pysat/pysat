@@ -620,7 +620,7 @@ class Instrument(object):
             self.meta[key] = new
 
     def rename(self, names):
-        """Renames variable, here and in meta, preserving case when desired.
+        """Renames variable within both data and metadata.
 
         Parameters
         ----------
@@ -635,19 +635,29 @@ class Instrument(object):
         Examples
         --------
         ..
+            # standard renaming
             new_names = {'old_name': 'new_name',
                          'old_name2':, 'new_name2'}
             inst.rename(new_names)
 
         If using a pandas DataFrame as the underlying data object,
-        to rename higher-order variables. Note that this
-        rename will be invoked individually for all times in the
-        dataset.
+        to rename higher-order variables supply a modified dictionary.
+        Note that this rename will be invoked individually for all
+        times in the dataset.
         ..
+            # applies to higher-order datasets
+            # that are loaded into pandas
+            # general example
             new_names = {'old_name': 'new_name',
                          'old_name2':, 'new_name2',
-                         'col_name': {'old_ho_name': 'new_ho_name'}
+                         'col_name': {'old_ho_name': 'new_ho_name'}}
             inst.rename(new_names)
+
+            # specific example
+            inst = pysat.Instrument('pysat', 'testing2D')
+            inst.load(2009, 1)
+            names = {'uts': 'pysat_uts',
+                     'profiles': {'density': 'pysat_density'}}
 
         """
 
