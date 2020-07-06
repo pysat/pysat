@@ -660,12 +660,18 @@ class Instrument(object):
             hdict = {}
             # keys for existing higher order data labels
             ho_keys = [a for a in self.meta.keys_nD()]
+            lo_keys = [a for a in self.meta.keys()]
             # iterate, collect normal variables
             # rename higher order variables
             for key in names:
                 oname, nname = key, names[key]
                 if oname not in ho_keys:
-                    fdict[oname] = nname
+                    if oname in lo_keys:
+                        fdict[oname] = nname
+                    else:
+                        estr = ' '.join((oname, ' is not',
+                                         'a known variable.'))
+                        raise ValueError(estr)
                 else:
                     if isinstance(nname, dict):
                         # changing a variable name within
@@ -682,6 +688,7 @@ class Instrument(object):
                                                              inplace=True)
                         hdict.pop(label)
                     else:
+                        # changing the outer 'column' label
                         fdict[oname] = nname
             # rename regular variables, single go
             self.data.rename(columns=fdict, inplace=True)
