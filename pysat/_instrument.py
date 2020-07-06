@@ -687,7 +687,7 @@ class Instrument(object):
             self.data.rename(columns=fdict, inplace=True)
 
         else:
-            pass
+            self.data = self.data.rename(names)
 
         # update normal metadata parameters in a single go
         new_fdict = {}
