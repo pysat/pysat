@@ -623,8 +623,7 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [{'uts': 'uts1'},
                                         {'uts': 'uts2',
-                                         'mlt': 'mlt2'},
-                                        {'profiles': 'new_profiles'}])
+                                         'mlt': 'mlt2'}])
     def test_basic_variable_renaming(self, values):
         # test single variable
         self.testInst.load(2009, 1)
@@ -667,19 +666,16 @@ class TestBasics():
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var
 
-    def test_ho_pandas_unknown_variable_error_renaming(self):
+    @pytest.mark.parametrize("values", [{'profiles': {'help': 'I need somebody'}},
+                                        {'fake_profiles': {'help': 'I need somebody'}}])
+    def test_ho_pandas_unknown_variable_error_renaming(self, values):
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2D':
                 self.testInst.load(2009, 1)
-                # check for error for unknown HO variable name
+                # check for error for unknown column or HO variable name
                 with pytest.raises(ValueError):
-                    sub_dict = {'help': 'I need somebody'}
-                    self.testInst.rename({'profiles': sub_dict})
-                # check for bad column name when doing HO renaming
-                with pytest.raises(ValueError):
-                    sub_dict = {'help': 'I need somebody'}
-                    self.testInst.rename({'fake_profiles': sub_dict})
+                    self.testInst.rename(values)
 
     # --------------------------------------------------------------------------
     #
