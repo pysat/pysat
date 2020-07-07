@@ -621,31 +621,21 @@ class TestBasics():
     #
     # --------------------------------------------------------------------------
 
-    def test_basic_variable_renaming(self):
+    @pytest.mark.parametrize("values", [{'uts': 'uts1'},
+                                        {'uts': 'uts2',
+                                         'mlt': 'mlt2'},
+                                        {'profiles': 'new_profiles'}])
+    def test_basic_variable_renaming(self, values):
         # test single variable
         self.testInst.load(2009, 1)
-        self.testInst.rename({'uts': 'uts1'})
-        assert 'uts1' in self.testInst.data
-        assert 'uts1' in self.testInst.meta
-        assert 'uts' not in self.testInst.data
-        assert 'uts' not in self.testInst.meta
-
-    def test_multiple_basic_variable_renaming(self):
-        # test multiple variables
-        self.testInst.load(2009, 1)
-        self.testInst.rename({'uts1': 'uts2',
-                              'mlt': 'mlt2'})
-        assert 'uts2' in self.testInst.data
-        assert 'uts2' in self.testInst.meta
-        assert 'uts' not in self.testInst.data
-        assert 'uts' not in self.testInst.meta
-        assert 'uts1' not in self.testInst.data
-        assert 'uts1' not in self.testInst.meta
-
-        assert 'mlt2' in self.testInst.data
-        assert 'mlt2' in self.testInst.meta
-        assert 'mlt' not in self.testInst.data
-        assert 'mlt' not in self.testInst.meta
+        self.testInst.rename(values)
+        for key in values:
+            # check for new name
+            assert values[key] in self.testInst.data
+            assert values[key] in self.testInst.meta
+            # ensure old name not present
+            assert key not in self.testInst.data
+            assert key not in self.testInst.meta
 
     def test_unknown_variable_error_renaming(self):
         # check for error for unknown variable name
@@ -653,29 +643,43 @@ class TestBasics():
         with pytest.raises(ValueError):
             self.testInst.rename({'help': 'I need somebody'})
 
-    def test_ho_pandas_variable_renaming(self):
+    @pytest.mark.parametrize("values", [{'profiles': {'density': 'ionization'}},
+                                        {'profiles': {'density': 'mass'},
+                                         'alt_profiles': {'density': 'volume'},
+                                         'alt_profiles': {'fraction': 'completion'}}])
+    def test_ho_pandas_variable_renaming(self, values):
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2D':
                 self.testInst.load(2009, 1)
-                self.testInst.rename({'profiles': {'density': 'utd'}})
-                assert 'profiles' in self.testInst.data
-                assert 'profiles' in self.testInst.meta
-                assert 'utd' in self.testInst.meta['profiles']['children']
-                assert 'utd' in self.testInst[0, 'profiles']
-                check_var = self.testInst.meta['profiles']['children']
-                assert 'density' not in check_var
-                assert 'density' not in self.testInst[0, 'profiles']
+                self.testInst.rename(values)
+                for key in values:
+                    for ikey in values[key]:
+                        # check column name unchanged
+                        assert key in self.testInst.data
+                        assert key in self.testInst.meta
+                        # check for new name in HO data
+                        assert values[key][ikey] in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert values[key][ikey] in check_var
+                        # ensure old name not present
+                        assert ikey not in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert ikey not in check_var
 
     def test_ho_pandas_unknown_variable_error_renaming(self):
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2D':
                 self.testInst.load(2009, 1)
-                # check for error for unknown variable name
+                # check for error for unknown HO variable name
                 with pytest.raises(ValueError):
                     sub_dict = {'help': 'I need somebody'}
                     self.testInst.rename({'profiles': sub_dict})
+                # check for bad column name when doing HO renaming
+                with pytest.raises(ValueError):
+                    sub_dict = {'help': 'I need somebody'}
+                    self.testInst.rename({'fake_profiles': sub_dict})
 
     # --------------------------------------------------------------------------
     #
