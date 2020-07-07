@@ -657,12 +657,14 @@ class TestBasics():
                 assert 'profiles' in self.testInst.meta
                 assert 'utd' in self.testInst.meta['profiles']['children']
                 assert 'utd' in self.testInst[0, 'profiles']
-                assert 'density' not in self.testInst.meta['profiles']['children']
+                check_var = self.testInst.meta['profiles']['children']
+                assert 'density' not in check_var
                 assert 'density' not in self.testInst[0, 'profiles']
 
                 # check for error for unknown variable name
                 with pytest.raises(ValueError):
-                    self.testInst.rename({'profiles': {'help': 'I need somebody'}})
+                    sub_dict = {'help': 'I need somebody'}
+                    self.testInst.rename({'profiles': sub_dict})
 
     # --------------------------------------------------------------------------
     #
