@@ -620,6 +620,7 @@ class TestBasics():
     # Test variable renaming
     #
     # --------------------------------------------------------------------------
+
     def test_basic_variable_renaming(self):
         # test single variable
         self.testInst.load(2009, 1)
@@ -629,7 +630,9 @@ class TestBasics():
         assert 'uts' not in self.testInst.data
         assert 'uts' not in self.testInst.meta
 
+    def test_multiple_basic_variable_renaming(self):
         # test multiple variables
+        self.testInst.load(2009, 1)
         self.testInst.rename({'uts1': 'uts2',
                               'mlt': 'mlt2'})
         assert 'uts2' in self.testInst.data
@@ -644,7 +647,9 @@ class TestBasics():
         assert 'mlt' not in self.testInst.data
         assert 'mlt' not in self.testInst.meta
 
+    def test_unknown_variable_error_renaming(self):
         # check for error for unknown variable name
+        self.testInst.load(2009, 1)
         with pytest.raises(ValueError):
             self.testInst.rename({'help': 'I need somebody'})
 
@@ -652,6 +657,7 @@ class TestBasics():
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
             if self.testInst.name == 'testing2D':
+                self.testInst.load(2009, 1)
                 self.testInst.rename({'profiles': {'density': 'utd'}})
                 assert 'profiles' in self.testInst.data
                 assert 'profiles' in self.testInst.meta
@@ -661,6 +667,11 @@ class TestBasics():
                 assert 'density' not in check_var
                 assert 'density' not in self.testInst[0, 'profiles']
 
+    def test_ho_pandas_unknown_variable_error_renaming(self):
+        # check for pysat_testing2D instrument
+        if self.testInst.platform == 'pysat':
+            if self.testInst.name == 'testing2D':
+                self.testInst.load(2009, 1)
                 # check for error for unknown variable name
                 with pytest.raises(ValueError):
                     sub_dict = {'help': 'I need somebody'}
