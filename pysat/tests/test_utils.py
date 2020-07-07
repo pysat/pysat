@@ -472,6 +472,7 @@ class TestBasicNetCDF4xarray():
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
+        self.testInst.data.attrs['new_attr'] = 1
         self.testInst.data.to_netcdf(outfile)
 
         loaded_inst, meta = \
@@ -481,3 +482,4 @@ class TestBasicNetCDF4xarray():
 
         for key in keys:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
+        assert meta.new_attr == 1
