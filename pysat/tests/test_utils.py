@@ -235,6 +235,7 @@ class TestBasicNetCDF4():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
+                                         sat_id='100',
                                          clean_level='clean')
         self.testInst.pandas_format = True
 
@@ -258,14 +259,17 @@ class TestBasicNetCDF4():
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile)
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        loaded_inst, meta = \
+            pysat.utils.load_netcdf4(outfile,
+                                     pandas_format=self.testInst.pandas_format)
         self.testInst.data = \
             self.testInst.data.reindex(sorted(self.testInst.data.columns),
                                        axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
+                                          axis=1)
+        keys = self.testInst.data.columns
 
-        for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
+        for key in keys:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_basic_write_and_read_netcdf4_mixed_case_format(self):
@@ -289,7 +293,6 @@ class TestBasicNetCDF4():
         assert(np.all(original == loaded_inst.columns))
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
 
         # modify metadata names in data
@@ -311,7 +314,6 @@ class TestBasicNetCDF4():
         self.testInst.load(2009, 1)
         self.testInst['MLT'] = 1
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
-
 
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
@@ -466,3 +468,47 @@ class TestBasicNetCDF4():
         # custom attribute correctly read from file
         assert meta.bespoke
 
+
+class TestBasicNetCDF4xarray():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # store current pysat directory
+        self.data_path = pysat.data_dir
+
+        # create temporary directory
+        dir_name = tempfile.mkdtemp()
+        pysat.utils.set_data_dir(dir_name, store=False)
+
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing_xarray',
+                                         sat_id='100',
+                                         clean_level='clean')
+        self.testInst.pandas_format = False
+
+        # create testing directory
+        prep_dir(self.testInst)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        remove_files(self.testInst)
+        try:
+            pysat.utils.set_data_dir(self.data_path, store=False)
+        except:
+            pass
+        del self.testInst
+
+    def test_basic_write_and_read_netcdf4_default_format(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.data.to_netcdf(outfile)
+
+        loaded_inst, meta = \
+            pysat.utils.load_netcdf4(outfile,
+                                     pandas_format=self.testInst.pandas_format)
+        keys = self.testInst.data.data_vars.keys()
+
+        for key in keys:
+            assert(np.all(self.testInst[key] == loaded_inst[key]))
