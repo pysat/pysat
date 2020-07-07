@@ -42,3 +42,19 @@ class TestCDAWeb():
 
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning
+
+    def test_list_files_deprecation_warning(self):
+        """Test generation of deprecation warning for remote_file_list kwargs
+        """
+        warnings.simplefilter("always")
+
+        with warnings.catch_warnings(record=True) as war:
+            # testing with single day since we just need the warning
+            try:
+                pysat.instruments.methods.nasa_cdaweb.list_files()
+            except ValueError:
+                # Using default tags will produce a ValueError
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
