@@ -7,6 +7,7 @@ intervention.
 
 from __future__ import absolute_import, division, print_function
 import sys
+import warnings
 
 import pandas as pds
 
@@ -71,6 +72,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                                        supported_tags=supported_tags)
 
     """
+
+    warnings.warn(' '.join(["methods.nasa_cdaweb.list_files will be",
+                            "moved to methods.general.list_files in pysat",
+                            "3.0.0. This only affects custom instruments",
+                            "not in the standard pysat distribution."]),
+                  DeprecationWarning, stacklevel=2)
 
     if data_path is not None:
         if format_str is None:
