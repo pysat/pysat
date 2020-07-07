@@ -345,10 +345,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         time_var = loop_dict.pop(index_key_name)
                         if time_index_flag:
                             # create datetime index from data
-                            if file_format == 'NETCDF4':
-                                time_var = pds.to_datetime(1E6*time_var)
-                            else:
-                                time_var = pds.to_datetime(1E6*time_var)
+                            time_var = pds.to_datetime(1E6 * time_var)
                         new_index = time_var
                         new_index_name = index_name
                     else:
@@ -421,10 +418,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                             time_var = loop_dict.pop(index_key_name)
                             if time_index_flag:
                                 # create datetime index from data
-                                if file_format == 'NETCDF4':
-                                    time_var = pds.to_datetime(1E6*time_var)
-                                else:
-                                    time_var = pds.to_datetime(1E6*time_var)
+                                time_var = pds.to_datetime(1E6 * time_var)
                             new_index = time_var
                             new_index_name = index_name
                         else:
@@ -452,12 +446,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 # convert from GPS seconds to seconds used in pandas (unix time,
                 # no leap)
                 # time_var = convert_gps_to_unix_seconds(time_var)
-                if file_format == 'NETCDF4':
-                    loadedVars[epoch_name] = \
-                        pds.to_datetime((1E6 * time_var).astype(int))
-                else:
-                    loadedVars[epoch_name] = \
-                        pds.to_datetime((time_var * 1E6).astype(int))
+                loadedVars[epoch_name] = \
+                    pds.to_datetime((1E6 * time_var).astype(int))
                 running_store.append(loadedVars)
                 running_idx += len(loadedVars[epoch_name])
 
