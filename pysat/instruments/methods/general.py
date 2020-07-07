@@ -4,10 +4,34 @@
 
 from __future__ import absolute_import, division, print_function
 
+import datetime as dt
+import logging
 import pandas as pds
 
-import logging
+
 logger = logging.getLogger(__name__)
+
+
+def convert_timestamp_to_datetime(inst):
+    """Use datetime instead of timestamp for Epoch
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        associated pysat.Instrument object
+
+    Returns
+    -------
+    None
+        Modifies Instrument object in place
+
+
+    """
+
+    inst.data['Epoch'] = \
+        pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000.0)
+                         for x in inst.data['Epoch']])
+    return
 
 
 def remove_leading_text(inst, target=None):

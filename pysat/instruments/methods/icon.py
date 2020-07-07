@@ -5,14 +5,14 @@ from __future__ import absolute_import, division, print_function
 
 import fnmatch
 import ftplib
-from ftplib import FTP
+import logging
 import numpy as np
 import os
 
 import pysat
 import pysat._files as pfiles
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 ackn_str = ''.join(('This is a data product from the NASA Ionospheric ',
@@ -155,7 +155,7 @@ def list_remote_files(tag, sat_id, user=None, password=None,
         raise ValueError('User account information must not be provided.')
 
     # connect to CDAWeb default port
-    ftp = FTP('icon-science.ssl.berkeley.edu')
+    ftp = ftplib.FTP('icon-science.ssl.berkeley.edu')
     # user anonymous, passwd anonymous@
     ftp.login()
 
@@ -296,7 +296,7 @@ def ssl_download(date_array, tag, sat_id, data_path=None,
                                      start=date_array[0], stop=date_array[-1])
 
     # connect to CDAWeb default port
-    ftp = FTP('icon-science.ssl.berkeley.edu')
+    ftp = ftplib.FTP('icon-science.ssl.berkeley.edu')
 
     # user anonymous, passwd anonymous@
     ftp.login()

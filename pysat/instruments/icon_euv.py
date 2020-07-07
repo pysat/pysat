@@ -30,15 +30,15 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
+import logging
 import numpy as np
-import pandas as pds
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 platform = 'icon'
@@ -93,7 +93,8 @@ def init(self):
 
 
 def default(inst):
-    """Default routine to be applied when loading data.
+    """Default routine to be applied when loading data. Adjusts epoch timestamps
+    to datetimes and removes variable preambles.
 
     Parameters
     -----------
@@ -106,9 +107,7 @@ def default(inst):
 
     """
 
-    # Use datetime instead of timestamp for Epoch
-    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000)
-                                          for x in inst.data['Epoch']])
+    mm_gen.convert_timestamp_to_datetime(inst)
     mm_gen.remove_leading_text(inst, target='ICON_L26_')
 
 
