@@ -2,6 +2,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import numpy as np
+import warnings
+
 import xarray as xr
 
 import pysat
@@ -266,6 +268,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         two_d_dims.append(data.variables[key].dimensions)
 
                     if len(data.variables[key].dimensions) == 3:
+                        warnings.warn(' '.join(["Support for 3D data in pandas",
+                                                "will be removed in pysat 3.0",
+                                                "Please use xarray for",
+                                                "multi-dimension data."]),
+                                      DeprecationWarning, stacklevel=2)
                         # part of full/dedicated dataframe within dataframe
                         three_d_keys.append(key)
                         three_d_dims.append(data.variables[key].dimensions)
