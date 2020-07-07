@@ -68,6 +68,20 @@ class TestBasics():
         assert self.testInst.meta['help', 'desc'] == ''
         assert self.testInst.meta['help', 'scale'] == 'linear'
 
+    def test_inst_data_assign_meta_empty_list(self):
+        self.testInst.load(2009, 1)
+        self.testInst['help'] = {'data': self.testInst['mlt'],
+                                 'units': [],
+                                 'long_name': 'The Doors'}
+        assert self.testInst.meta['help', 'units'] == ''
+
+    def test_inst_data_assign_meta_string_list(self):
+        self.testInst.load(2009, 1)
+        self.testInst['help'] = {'data': self.testInst['mlt'],
+                                 'units': ['A', 'B'],
+                                 'long_name': 'The Doors'}
+        assert self.testInst.meta['help', 'units'] == 'A\n\nB'
+
     def test_inst_data_assign_meta_then_data(self):
         self.testInst.load(2009, 1)
         self.testInst['help'] = {'data': self.testInst['mlt'],
