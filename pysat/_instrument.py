@@ -627,11 +627,6 @@ class Instrument(object):
         names : dict or other map
             Existing names are keys, values are new names
 
-        Returns
-        -------
-        Void
-            Object modified in place.
-
         Examples
         --------
         ..
