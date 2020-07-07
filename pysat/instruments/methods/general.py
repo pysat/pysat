@@ -94,17 +94,19 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
 
 def convert_timestamp_to_datetime(inst):
-    """Use datetime instead of timestamp for Epoch.  Assumes data stored in
-    milliseconds.
+    """Use datetime instead of timestamp for Epoch
 
     Parameters
     ----------
     inst : pysat.Instrument
         associated pysat.Instrument object
+
     Returns
     -------
     None
         Modifies Instrument object in place
+
+
     """
 
     inst.data['Epoch'] = \
@@ -149,10 +151,11 @@ def remove_leading_text(inst, target=None):
                               inplace=True)
         orig_keys = inst.meta.keys_nD()
         for keynd in orig_keys:
-            new_key = keynd.split(prepend_str)[-1]
-            new_meta = inst.meta.pop(keynd)
-            new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                                 inplace=True)
-            inst.meta[new_key] = new_meta
+            if keynd.find(prepend_str) >= 0:
+                new_key = keynd.split(prepend_str)[-1]
+                new_meta = inst.meta.pop(keynd)
+                new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
+                                     inplace=True)
+                inst.meta[new_key] = new_meta
 
     return
