@@ -37,27 +37,27 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
 
-import logging
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 platform = 'icon'
 name = 'ivm'
 tags = {'': 'Level 2 public geophysical data'}
-# dictionary of sat_ids ad tags supported by each
+# Note for developers: IVM-A and IVM-B face in opposite directions, and only
+# one is expected to have geophysical data at a given time depending on ram
+# direction. In general, IVM-A is operational when the remote instruments face
+# northward, and IVM-B when the remote instruments face southward. IVM-B data
+# is not available as of Jun 26 2020, as this mode has not yet been engaged.
+# Bypassing tests and warning checks via the password_req flag
 sat_ids = {'a': [''],
            'b': ['']}
-# Note for developers: IVM-A and IVM-B face in opposite directions, and only
-# one is expected to have geophysical data at a given time depedning on ram
-# direction.  IVM-B data is not available as of Jun 26 2020, as this mode has
-# not yet been engaged.  Bypassing tests and warning checks via the password_req
-# flag
 _test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
                'b': {'': dt.datetime(2020, 1, 1)}}  # IVM-B not yet engaged
 _test_download_travis = {'a': {kk: False for kk in tags.keys()}}
@@ -116,7 +116,8 @@ def init(self):
 
 
 def default(inst):
-    """Default routine to be applied when loading data.
+    """Default routine to be applied when loading data. Removes variable
+    preambles.
 
     Parameters
     -----------
@@ -169,7 +170,7 @@ def load(fnames, tag=None, sat_id=None):
     --------
     ::
         inst = pysat.Instrument('icon', 'ivm', sat_id='a', tag='')
-        inst.load(2019,1)
+        inst.load(2020,1)
 
     """
 

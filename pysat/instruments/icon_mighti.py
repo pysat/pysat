@@ -44,15 +44,15 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
+import logging
 import numpy as np
-import pandas as pds
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
-import logging
-logger = logging.getLogger(__name__)
 
+
+logger = logging.getLogger(__name__)
 
 platform = 'icon'
 name = 'mighti'
@@ -149,17 +149,18 @@ def init(self):
 
 
 def default(inst):
-    """Default routine to be applied when loading data.
-
-    Note
-    ----
-        Removes ICON preamble on variable names.
+    """Default routine to be applied when loading data.  Adjusts epoch timestamps
+    to datetimes and removes variable preambles.
 
     """
 
-    # Use datetime instead of timestamp for Epoch
-    inst.data['Epoch'] = pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000)
-                                          for x in inst.data['Epoch']])
+    mm_gen.convert_timestamp_to_datetime(inst)
+    remove_preamble(inst)
+
+
+def remove_preamble(inst):
+    """Removes preambles in variable names"""
+
     target = {'los_wind_green': 'ICON_L21_',
               'los_wind_red': 'ICON_L21_',
               'vector_wind_green': 'ICON_L22_',
@@ -170,6 +171,8 @@ def default(inst):
     # for temps need
     mm_gen.remove_leading_text(inst, target='ICON_L23_')
     mm_gen.remove_leading_text(inst, target='ICON_L1_')
+
+    return
 
 
 def load(fnames, tag=None, sat_id=None):

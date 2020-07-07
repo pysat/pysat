@@ -36,10 +36,11 @@ class TestICONIVMCustom():
         self.testInst = pysat.Instrument('pysat', 'testing', tag='12',
                                          clean_level='clean')
         self.testInst.load(2009, 1)
+        self.Npts = len(self.testInst['uts'])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst
+        del self.testInst, self.Npts
 
     def test_remove_names_wo_target(self):
         self.testInst.tag = ''
@@ -48,9 +49,9 @@ class TestICONIVMCustom():
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
         gen.remove_leading_text(self.testInst)
         # check variables unchanged
-        assert (len(self.testInst['ICON_L27_Blurp']) > 0)
+        assert (len(self.testInst['ICON_L27_Blurp']) == self.Npts)
         # check other names untouched
-        assert (len(self.testInst['dummy1']) > 0)
+        assert (len(self.testInst['dummy1']) == self.Npts)
 
     def test_remove_names_target(self):
         self.testInst.tag = ''
@@ -59,9 +60,9 @@ class TestICONIVMCustom():
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
         gen.remove_leading_text(self.testInst, target='ICON_L27')
         # check prepended text removed
-        assert (len(self.testInst['_Blurp']) > 0)
+        assert (len(self.testInst['_Blurp']) == self.Npts)
         # check other names untouched
-        assert (len(self.testInst['dummy1']) > 0)
+        assert (len(self.testInst['dummy1']) == self.Npts)
 
 
 class TestRemoveLeadTextXarray(TestICONIVMCustom):
@@ -71,7 +72,8 @@ class TestRemoveLeadTextXarray(TestICONIVMCustom):
         self.testInst = pysat.Instrument('pysat', 'testing_xarray', tag='12',
                                          clean_level='clean')
         self.testInst.load(2009, 1)
+        self.Npts = len(self.testInst['uts'])
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst
+        del self.testInst, self.Npts
