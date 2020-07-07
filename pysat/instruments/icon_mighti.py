@@ -153,10 +153,6 @@ def default(inst):
     """Default routine to be applied when loading data. Adjusts epoch timestamps
     to datetimes and removes variable preambles.
 
-    Note
-    ----
-        Removes ICON preamble on variable names.
-
     """
 
     mm_gen.convert_timestamp_to_datetime(inst)

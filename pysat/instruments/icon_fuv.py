@@ -119,10 +119,6 @@ def default(inst):
     inst : (pysat.Instrument)
         Instrument class object
 
-    Note
-    ----
-        Removes ICON preamble on variable names.
-
     """
 
     mm_gen.convert_timestamp_to_datetime(inst)

@@ -125,10 +125,6 @@ def default(inst):
     inst : (pysat.Instrument)
         Instrument class object
 
-    Note
-    ----
-        Removes ICON preamble on variable names.
-
     """
 
     mm_gen.remove_leading_text(inst, target='ICON_L27_')
