@@ -1,3 +1,5 @@
+import pytest
+
 import pysat
 from pysat.instruments.methods import general as gen
 
@@ -14,6 +16,17 @@ class TestGenMethods():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.kwargs
+
+    @pytest.mark.parametrize("bad_key,bad_val,err_msg",
+                             [("data_path", None,
+                               "A directory must be passed"),
+                              ("tag", "badval", "Unknown sat_id or tag"),
+                              ("sat_id", "badval", "Unknown sat_id or tag")])
+    def test_bad_kwarg_list_files(self, bad_key, bad_val, err_msg):
+        self.kwargs[bad_key] = bad_val
+        with pytest.raises(ValueError) as excinfo:
+            gen.list_files(**self.kwargs)
+        assert str(excinfo.value).find(err_msg) >= 0
 
 
 class TestICONIVMCustom():
