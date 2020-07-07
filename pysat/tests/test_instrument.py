@@ -623,7 +623,8 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [{'uts': 'uts1'},
                                         {'uts': 'uts2',
-                                         'mlt': 'mlt2'}])
+                                         'mlt': 'mlt2'},
+                                        {'uts': 'long change with spaces'}])
     def test_basic_variable_renaming(self, values):
         # test single variable
         self.testInst.load(2009, 1)
@@ -636,11 +637,15 @@ class TestBasics():
             assert key not in self.testInst.data
             assert key not in self.testInst.meta
 
-    def test_unknown_variable_error_renaming(self):
+    @pytest.mark.parametrize("values", [{'help': 'I need somebody'},
+                                        {'UTS': 'litte_uts'},
+                                        {'utS': 'uts1'},
+                                        {'utS': 'uts'}])
+    def test_unknown_variable_error_renaming(self, values):
         # check for error for unknown variable name
         self.testInst.load(2009, 1)
         with pytest.raises(ValueError):
-            self.testInst.rename({'help': 'I need somebody'})
+            self.testInst.rename(values)
 
     @pytest.mark.parametrize("values", [{'profiles': {'density': 'ionization'}},
                                         {'profiles': {'density': 'mass'},
@@ -667,7 +672,12 @@ class TestBasics():
                         assert ikey not in check_var
 
     @pytest.mark.parametrize("values", [{'profiles': {'help': 'I need somebody'}},
-                                        {'fake_profiles': {'help': 'I need somebody'}}])
+                                        {'fake_profiles': {'help': 'Not just anybody'}},
+                                        {'wrong_profile': {'help': 'You know I need someone'},
+                                         'fake_profiles': {'Beatles': 'help!'},
+                                         'profiles': {'density': 'valid_change'}},
+                                        {'fake_profiles': {'density': 'valid HO change'}},
+                                        {'Nope_profiles': {'density': 'valid_HO_change'}}])
     def test_ho_pandas_unknown_variable_error_renaming(self, values):
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
