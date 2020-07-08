@@ -456,7 +456,7 @@ class TestBasicNetCDF4xarray():
         pysat.utils.set_data_dir(dir_name, store=False)
 
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='testing2d_xarray',
                                          sat_id='100',
                                          clean_level='clean')
         self.testInst.pandas_format = False
@@ -487,3 +487,17 @@ class TestBasicNetCDF4xarray():
         for key in keys:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
         assert meta.new_attr == 1
+
+    def test_load_netcdf4_pandas_3d_error(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.data.attrs['new_attr'] = 1
+        self.testInst.data.to_netcdf(outfile)
+
+        with pytest.raises(ValueError):
+            loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
+                                                         epoch_name='time',
+                                                         pandas_format=True)
