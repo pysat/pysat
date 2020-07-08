@@ -4,6 +4,7 @@ tests the pysat utils area
 import os
 import tempfile
 import warnings
+
 from nose.tools import assert_raises, raises
 import numpy as np
 import pandas as pds
@@ -43,7 +44,6 @@ def remove_files(inst):
 
 def test_deprecation_warning_computational_form():
     """Test if computational form in utils is deprecated"""
-
 
     data = pds.Series([0, 1, 2])
     warnings.simplefilter("always")
@@ -339,9 +339,7 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
-            # assert(np.all(self.testInst.data == loaded_inst))
 
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
@@ -359,7 +357,6 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):
@@ -444,17 +441,16 @@ class TestBasicNetCDF4():
         self.testInst.load(2009, 1)
 
         try:
-            assert self.testInst.bespoke # should raise
+            assert self.testInst.bespoke  # should raise
         except AttributeError:
             pass
 
         # instrument meta attributes immutable upon load
-        assert self.testInst.meta.mutable == False
+        assert not self.testInst.meta.mutable
         try:
             self.testInst.meta.bespoke = True
         except AttributeError:
             pass
-
 
     def test_netcdf_attribute_override(self):
         """Test that attributes in netcdf file may be overridden"""
