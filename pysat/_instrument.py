@@ -619,13 +619,17 @@ class Instrument(object):
             # attach metadata
             self.meta[key] = new
 
-    def rename(self, names):
+    def rename(self, names, lowercase_data_labels=False):
         """Renames variable within both data and metadata.
 
         Parameters
         ----------
         names : dict or other map
             Existing names are keys, values are new names
+        lowercase_data_labels : boolean
+            If True, the labels applied to inst.data
+            are forced to lowercase. The supplied case
+            in names is retained within inst.meta.
 
         Examples
         --------
@@ -653,6 +657,37 @@ class Instrument(object):
             inst.load(2009, 1)
             names = {'uts': 'pysat_uts',
                      'profiles': {'density': 'pysat_density'}}
+            inst.rename(names)
+
+        pysat supports differing case for variable labels across the
+        data and metadata objects attached to an Instrument. Since
+        metadata is case-preserving (on assignment) but case-insensitive,
+        the labels used for data are always valid for metadata. This
+        feature may be used to provide friendlier variable names within
+        pysat while also maintaining external format compatibility
+        when writing files.
+        ..
+            # example with lowercase_data_labels
+            inst = pysat.Instrument('pysat', 'testing2D')
+            inst.load(2009, 1)
+            names = {'uts': 'Pysat_UTS',
+                     'profiles': {'density': 'PYSAT_density'}}
+            inst.rename(names, lowercase_data_labels=True)
+
+            # note that 'Pysat_UTS' was applied to data as 'pysat_uts'
+            print(inst['pysat_uts'])
+
+            # case is retained within inst.meta, though
+            # data access to meta is case insensitive
+            print('True meta variable name is ', inst.meta['pysat_uts'].name)
+
+            # Note that the labels in meta may be used when creating a file
+            # thus 'Pysat_UTS' would be found in the resulting file
+            inst.to_netcdf4(fname, preserve_meta_case=True)
+
+            # load in file and check
+            raw = netCDF4.Dataset('./test.nc')
+            print(raw.variables['Pysat_UTS'])
 
         """
 
@@ -669,6 +704,7 @@ class Instrument(object):
             # iterate, collect normal variables
             # rename higher order variables
             for key in names:
+                # original name, new name
                 oname, nname = key, names[key]
                 if oname not in ho_keys:
                     if oname in lo_keys:
@@ -693,12 +729,19 @@ class Instrument(object):
                                             'higher-order variable under ',
                                             oname, '.'))
                             raise ValueError(estr)
+                        # check for lowercase flag
+                        if lowercase_data_labels:
+                            gdict = {}
+                            gdict[label] = nname[label].lower()
+                        else:
+                            gdict = hdict
                         # change names for frame at each time
                         for i in np.arange(len(self.index)):
                             # within data itself
-                            self[i, oname].rename(columns=hdict,
+                            self[i, oname].rename(columns=gdict,
                                                   inplace=True)
                         # change metadata, once per variable only
+                        # hdict used as it retains user provided case
                         self.meta.ho_data[oname].data.rename(hdict,
                                                              inplace=True)
                         # clear out dict for next loop
@@ -707,15 +750,31 @@ class Instrument(object):
                         # changing the outer 'column' label
                         fdict[oname] = nname
             # rename regular variables, single go
-            self.data.rename(columns=fdict, inplace=True)
+            # check for lower case data labels first
+            if lowercase_data_labels:
+                gdict = {}
+                for key in fdict:
+                    gdict[key] = fdict[key].lower()
+            else:
+                gdict = fdict
+            # change names for attached data object
+            self.data.rename(columns=gdict, inplace=True)
 
         else:
             # xarray renaming
-            self.data = self.data.rename(names)
+            # account for lowercase data labels first
+            if lowercase_data_labels:
+                gdict = {}
+                for key in names:
+                    gdict[key] = names[key].lower()
+            else:
+                gdict = names
+            self.data = self.data.rename(gdict)
             # set up dictionary for renaming metadata variables
             fdict = names
 
         # update normal metadata parameters in a single go
+        # case must always be preserved in Meta object
         new_fdict = {}
         for key in fdict:
             case_old = self.meta.var_case_name(key)
