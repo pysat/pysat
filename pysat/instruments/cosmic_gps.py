@@ -120,11 +120,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     search_str = search_dict['search_string']
     # perform local file search
     files = pysat.files.search_local_system_formatted_filename(data_path,
-                                                                search_str)
+                                                               search_str)
     # we have a list of files, now we need to extract the information
     # pull of data from the areas identified by format_str
     stored = pysat.files.parse_delimited_filenames(files, format_str,
-                                                    delimiter='.')
+                                                   delimiter='.')
     if len(stored['year']) > 0:
         year = np.array(stored['year'])
         day = np.array(stored['day'])

@@ -155,7 +155,7 @@ class TestBasics():
                                           version=version[i]))
 
         file_dict = pysat.files.parse_delimited_filenames(file_list, fname,
-                                                           '_')
+                                                          '_')
         assert np.all(file_dict['year'] == year)
         assert np.all(file_dict['month'] == month)
         assert np.all(file_dict['day'] == day)
