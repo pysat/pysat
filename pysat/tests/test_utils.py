@@ -482,7 +482,7 @@ class TestBasicNetCDF4xarray():
         pysat.utils.set_data_dir(dir_name, store=False)
 
         self.testInst = pysat.Instrument(platform='pysat',
-                                         name='testing_xarray',
+                                         name='testing2d_xarray',
                                          sat_id='100',
                                          clean_level='clean')
         self.testInst.pandas_format = False
