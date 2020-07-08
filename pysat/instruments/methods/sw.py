@@ -425,8 +425,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                                    index=f107_times)
 
     # Resample the output data, filling missing values
-    if(date_range.shape != f107_inst.index.shape
-       or abs(date_range - f107_inst.index).max().total_seconds() > 0.0):
+    if (date_range.shape != f107_inst.index.shape
+            or abs(date_range - f107_inst.index).max().total_seconds() > 0.0):
         f107_inst.data = f107_inst.data.resample(freq).fillna(method=None)
         if np.isfinite(fill_val):
             f107_inst.data[np.isnan(f107_inst.data)] = fill_val
