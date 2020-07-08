@@ -43,6 +43,7 @@ import functools
 
 # CDAWeb methods prewritten for pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
 
 # the platform and name strings associated with this instrument
 # need to be defined at the top level
