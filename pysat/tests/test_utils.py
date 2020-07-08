@@ -63,15 +63,18 @@ class TestBasics():
     def test_set_data_dir_no_store(self):
         """update data_dir without storing"""
         pysat.utils.set_data_dir('.', store=False)
-        check1 = (pysat.data_dir == '.')
+        assert (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers old settings
         pysat._files = re_load(pysat._files)
         pysat._instrument = re_load(pysat._instrument)
         re_load(pysat)
-        check2 = (pysat.data_dir == self.data_path)
+        assert (pysat.data_dir == self.data_path)
 
-        assert check1 & check2
+    def test_set_data_dir_wrong_path(self):
+        """update data_dir with an invalid path"""
+        with pytest.raises(ValueError):
+            pysat.utils.set_data_dir('not_a_directory', store=False)
 
     def test_set_data_dir_bad_directory(self):
         with pytest.raises(ValueError) as excinfo:
@@ -224,6 +227,10 @@ class TestBasicNetCDF4():
         remove_files(self.testInst)
         pysat.utils.set_data_dir(self.data_path, store=False)
         del self.testInst
+
+    def test_load_netcdf4_empty_filenames(self):
+        with pytest.raises(ValueError):
+            pysat.utils.load_netcdf4(fnames=None)
 
     def test_basic_write_and_read_netcdf4_default_format(self):
         # create a bunch of files by year and doy
