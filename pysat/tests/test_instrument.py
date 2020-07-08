@@ -647,6 +647,25 @@ class TestBasics():
         with pytest.raises(ValueError):
             self.testInst.rename(values)
 
+
+    @pytest.mark.parametrize("values", [{'uts': 'UTS1'},
+                                        {'uts': 'UTs2',
+                                         'mlt': 'Mlt2'},
+                                        {'uts': 'Long Change with spaces'}])
+    def test_basic_variable_renaming_lowercase(self, values):
+        # test single variable
+        self.testInst.load(2009, 1)
+        self.testInst.rename(values, lowercase_data_labels=True)
+        for key in values:
+            # check for new name
+            assert values[key].lower() in self.testInst.data
+            assert values[key].lower() in self.testInst.meta
+            # ensure case retained in meta
+            assert values[key] == self.testInst.meta[values[key]].name
+            # ensure old name not present
+            assert key not in self.testInst.data
+            assert key not in self.testInst.meta
+
     @pytest.mark.parametrize("values", [{'profiles': {'density': 'ionization'}},
                                         {'profiles': {'density': 'mass'},
                                          'alt_profiles': {'density': 'volume'},
@@ -686,6 +705,34 @@ class TestBasics():
                 # check for error for unknown column or HO variable name
                 with pytest.raises(ValueError):
                     self.testInst.rename(values)
+
+    @pytest.mark.parametrize("values", [{'profiles': {'density': 'Ionization'}},
+                                        {'profiles': {'density': 'MASa'},
+                                         'alt_profiles': {'density': 'VoLuMe'},
+                                         'alt_profiles': {'fraction': 'compLETION'}}])
+    def test_ho_pandas_variable_renaming_lowercase(self, values):
+        # check for pysat_testing2D instrument
+        if self.testInst.platform == 'pysat':
+            if self.testInst.name == 'testing2D':
+                self.testInst.load(2009, 1)
+                self.testInst.rename(values)
+                for key in values:
+                    for ikey in values[key]:
+                        # check column name unchanged
+                        assert key in self.testInst.data
+                        assert key in self.testInst.meta
+                        # check for new name in HO data
+                        assert values[key][ikey].lower() in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        # case insensitive check
+                        assert values[key][ikey] in check_var
+                        # ensure new case in there
+                        check_var = check_var[ikey].name
+                        assert values[key][ikey] == check_var
+                        # ensure old name not present
+                        assert ikey not in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert ikey not in check_var
 
     # --------------------------------------------------------------------------
     #
