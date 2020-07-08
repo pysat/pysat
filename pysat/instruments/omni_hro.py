@@ -49,6 +49,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
+import logging
 import numpy as np
 import pandas as pds
 
@@ -56,7 +57,6 @@ import pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
 from pysat.instruments.methods import general as mm_gen
 
-import logging
 logger = logging.getLogger(__name__)
 
 platform = 'omni'

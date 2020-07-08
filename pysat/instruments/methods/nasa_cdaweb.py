@@ -6,6 +6,7 @@ intervention.
 """
 
 from __future__ import absolute_import, division, print_function
+import logging
 import sys
 import warnings
 
@@ -14,7 +15,6 @@ import pandas as pds
 import pysat
 from pysat.instruments.methods import general as mm_gen
 
-import logging
 logger = logging.getLogger(__name__)
 
 
