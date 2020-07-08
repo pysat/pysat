@@ -94,6 +94,11 @@ class TestBasics():
 
         assert check1 & check2
 
+    @raises(ValueError)
+    def test_set_data_dir_wrong_path(self):
+        """update data_dir with an invalid path"""
+        pysat.utils.set_data_dir('not_a_directory', store=False)
+
     def test_initial_pysat_load(self):
         import shutil
         saved = False
@@ -250,6 +255,10 @@ class TestBasicNetCDF4():
         except:
             pass
         del self.testInst
+
+    @raises(ValueError)
+    def test_load_netcdf4_empty_filenames(self):
+        pysat.utils.load_netcdf4(fnames=None)
 
     def test_basic_write_and_read_netcdf4_default_format(self):
         # create a bunch of files by year and doy
@@ -514,3 +523,19 @@ class TestBasicNetCDF4xarray():
         for key in keys:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
         assert meta.new_attr == 1
+
+    def test_load_netcdf4_pandas_3d_deprecation_warning(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.data.attrs['new_attr'] = 1
+        self.testInst.data.to_netcdf(outfile)
+
+        with warnings.catch_warnings(record=True) as war:
+            loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
+                                                         epoch_name='time',
+                                                         pandas_format=True)
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
