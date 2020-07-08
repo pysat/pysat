@@ -71,6 +71,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
+    Note
+    ----
+    This function will move to pysat.instruments.methods.general.list_files in
+    pysat 3.0.0.  This will not affect the core instruments, but will need to
+    be updated for custom instruments that use this method.
+
     """
 
     warnings.warn(' '.join(["methods.nasa_cdaweb.list_files will be",
