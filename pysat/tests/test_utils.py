@@ -523,6 +523,7 @@ class TestBasicNetCDF4xarray():
         self.testInst.data.attrs['new_attr'] = 1
         self.testInst.data.to_netcdf(outfile)
 
+        warnings.simplefilter("always")
         with warnings.catch_warnings(record=True) as war:
             loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
                                                          epoch_name='time',
