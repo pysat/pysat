@@ -1137,7 +1137,7 @@ class Meta(object):
                                                                        attr])
                                 nan_other = np.isnan(other[key].children[key2,
                                                                          attr])
-                                if not (nan_self) and nan_other:
+                                if not (nan_self and nan_other):
                                     return False
                             except TypeError:
                                 # comparison above gets unhappy with string
