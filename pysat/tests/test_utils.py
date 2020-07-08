@@ -467,10 +467,7 @@ class TestBasicNetCDF4xarray():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
-        try:
-            pysat.utils.set_data_dir(self.data_path, store=False)
-        except:
-            pass
+        pysat.utils.set_data_dir(self.data_path, store=False)
         del self.testInst
 
     def test_basic_write_and_read_netcdf4_default_format(self):
