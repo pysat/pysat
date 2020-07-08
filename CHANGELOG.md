@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-07-01
+## [3.0.0] - 2020-07-03
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -28,6 +28,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Remove convenience methods imported from pandas
   - Changed the default `custom.attatch` input to allow keyword arguement use when additional function input is required
   - Removed python 2.7 syntax
+  - Removed utils.coords.geodetic_to_geocentric
+  - Removed utils.coords.geodetic_to_geocentric_horizontal
+  - Removed utils.coords.spherical_to_cartesian
+  - Removed utils.coords.global_to_local_cartesian
+  - Removed utils.coords.local_horizontal_to_global_geo
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
@@ -39,6 +44,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
   - Remove wildcard imports, relative imports
+  - Include flake8 check as part of testing suites
   - Improve unit testing coverage of instrument functions
 
 ## [2.2.0] - 2020-06-28

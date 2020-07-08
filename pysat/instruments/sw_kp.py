@@ -53,7 +53,6 @@ of the National Science Foundation.
 """
 
 import datetime as dt
-import functools
 import numpy as np
 import os
 

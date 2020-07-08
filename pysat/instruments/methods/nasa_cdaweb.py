@@ -88,7 +88,7 @@ def load(fnames, tag=None, sat_id=None,
                 # convert data to pysat format
                 data, meta = cdf.to_pysat(flatten_twod=flatten_twod)
                 # select data from monthly
-                data = data.loc[date:date+pds.DateOffset(days=1)
+                data = data.loc[date:date + pds.DateOffset(days=1)
                                 - pds.DateOffset(microseconds=1), :]
                 return data, meta
         else:
@@ -390,7 +390,7 @@ def list_remote_files(tag, sat_id,
                 url_list.append('/'.join((remote_url, subdir)))
     try:
         for top_url in url_list:
-            for level in range(n_layers+1):
+            for level in range(n_layers + 1):
                 for directory in remote_dirs[level]:
                     temp_url = '/'.join((top_url.strip('/'), directory))
                     soup = BeautifulSoup(requests.get(temp_url).content,
@@ -399,7 +399,7 @@ def list_remote_files(tag, sat_id,
                     for link in links:
                         # If there is room to go down, look for directories
                         if link['href'].count('/') == 1:
-                            remote_dirs[level+1].append(link['href'])
+                            remote_dirs[level + 1].append(link['href'])
                         else:
                             # If at the endpoint, add matching files to list
                             add_file = True
