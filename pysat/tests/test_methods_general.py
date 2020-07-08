@@ -33,7 +33,7 @@ class TestICONIVMCustom():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='12',
+        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='12',
                                          clean_level='clean')
         self.testInst.load(2009, 1)
         self.Npts = len(self.testInst['uts'])
@@ -63,7 +63,8 @@ class TestRemoveLeadTextXarray(TestICONIVMCustom):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
-        self.testInst = pysat.Instrument('pysat', 'testing2d_xarray', tag='12',
+        self.testInst = pysat.Instrument('pysat', 'testing2d_xarray',
+                                         sat_id='12',
                                          clean_level='clean')
         self.testInst.load(2009, 1)
         self.Npts = len(self.testInst['profiles'])
