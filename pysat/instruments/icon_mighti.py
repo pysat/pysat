@@ -155,7 +155,7 @@ def default(inst):
 
     """
 
-    mm_gen.convert_timestamp_to_datetime(inst)
+    mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
     remove_preamble(inst)
 
 

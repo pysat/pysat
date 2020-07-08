@@ -206,10 +206,14 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     import netCDF4
     import pandas as pds
     import pysat
+    try:
+        basestring
+    except NameError:
+        basestring = str
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
-    if isinstance(fnames, str):
+    if isinstance(fnames, basestring):
         fnames = [fnames]
 
     if file_format is None:

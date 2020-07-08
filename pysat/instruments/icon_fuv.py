@@ -21,8 +21,8 @@ Example
 -------
     import pysat
     fuv = pysat.Instrument('icon', 'fuv', clean_level='clean')
-    fuv.download(dt.datetime(2019, 1, 30), dt.datetime(2019, 12, 31))
-    fuv.load(2017,363)
+    fuv.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
+    fuv.load(2020, 1)
 
 Authors
 ---------
@@ -121,7 +121,7 @@ def default(inst):
 
     """
 
-    mm_gen.convert_timestamp_to_datetime(inst)
+    mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
     remove_preamble(inst)
 
 

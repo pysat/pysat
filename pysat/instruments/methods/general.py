@@ -12,24 +12,20 @@ import pandas as pds
 logger = logging.getLogger(__name__)
 
 
-def convert_timestamp_to_datetime(inst):
+def convert_timestamp_to_datetime(inst, sec_mult=1.0):
     """Use datetime instead of timestamp for Epoch
 
     Parameters
     ----------
     inst : pysat.Instrument
         associated pysat.Instrument object
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
+    sec_mult : float
+        Multiplier needed to convert epoch time to seconds (default=1.0)
 
     """
 
     inst.data['Epoch'] = \
-        pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000.0)
+        pds.to_datetime([dt.datetime.utcfromtimestamp(x * sec_mult)
                          for x in inst.data['Epoch']])
     return
 
@@ -45,12 +41,6 @@ def remove_leading_text(inst, target=None):
         Leading string to remove. If none supplied,
         ICON project standards are used to identify and remove
         leading text
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
 
     """
 

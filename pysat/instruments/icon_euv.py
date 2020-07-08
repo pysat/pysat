@@ -103,7 +103,7 @@ def default(inst):
 
     """
 
-    mm_gen.convert_timestamp_to_datetime(inst)
+    mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
     mm_gen.remove_leading_text(inst, target='ICON_L26_')
 
 

@@ -214,30 +214,29 @@ def clean(inst, clean_level=None):
 
     """
 
-    if clean_level != 'none':
-        # IVM variable groupings
-        drift_variables = ['Ion_Velocity_X', 'Ion_Velocity_Zonal',
-                           'Ion_Velocity_Meridional',
-                           'Ion_Velocity_Field_Aligned']
-        cross_drift_variables = ['Ion_Velocity_Z', 'Ion_Velocity_Y']
-        rpa_variables = ['Ion_Temperature', 'Ion_Density',
-                         'Fractional_Ion_Density_H',
-                         'Fractional_Ion_Density_O']
+    # IVM variable groupings
+    drift_variables = ['Ion_Velocity_X', 'Ion_Velocity_Zonal',
+                       'Ion_Velocity_Meridional',
+                       'Ion_Velocity_Field_Aligned']
+    cross_drift_variables = ['Ion_Velocity_Z', 'Ion_Velocity_Y']
+    rpa_variables = ['Ion_Temperature', 'Ion_Density',
+                     'Fractional_Ion_Density_H',
+                     'Fractional_Ion_Density_O']
 
-        if clean_level == 'clean' or (clean_level == 'dusty'):
-            # remove drift values impacted by RPA
-            idx, = np.where(inst['RPA_Flag'] >= 1)
-            for var in drift_variables:
-                inst[idx, var] = np.nan
-            # DM values
-            idx, = np.where(inst['DM_Flag'] >= 1)
-            for var in cross_drift_variables:
-                inst[idx, var] = np.nan
+    if clean_level == 'clean' or (clean_level == 'dusty'):
+        # remove drift values impacted by RPA
+        idx, = np.where(inst['RPA_Flag'] >= 1)
+        for var in drift_variables:
+            inst[idx, var] = np.nan
+        # DM values
+        idx, = np.where(inst['DM_Flag'] >= 1)
+        for var in cross_drift_variables:
+            inst[idx, var] = np.nan
 
-        if clean_level == 'clean':
-            # other RPA parameters
-            idx, = np.where(inst['RPA_Flag'] >= 2)
-            for var in rpa_variables:
-                inst[idx, var] = np.nan
+    if clean_level == 'clean':
+        # other RPA parameters
+        idx, = np.where(inst['RPA_Flag'] >= 2)
+        for var in rpa_variables:
+            inst[idx, var] = np.nan
 
     return
