@@ -12,6 +12,7 @@ import warnings
 import pandas as pds
 
 import pysat
+from pysat.instruments.methods import general as mm_gen
 
 import logging
 logger = logging.getLogger(__name__)
@@ -85,27 +86,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                             "not in the standard pysat distribution."]),
                   DeprecationWarning, stacklevel=2)
 
-    if data_path is not None:
-        if format_str is None:
-            try:
-                format_str = supported_tags[sat_id][tag]
-            except KeyError as estr:
-                raise ValueError('Unknown sat_id or tag: ' + estr)
-        out = pysat.Files.from_os(data_path=data_path,
-                                  format_str=format_str)
-
-        if (not out.empty) and fake_daily_files_from_monthly:
-            out.loc[out.index[-1] + pds.DateOffset(months=1)
-                    - pds.DateOffset(days=1)] = out.iloc[-1]
-            out = out.asfreq('D', 'pad')
-            out = out + '_' + out.index.strftime('%Y-%m-%d')
-            return out
-
-        return out
-    else:
-        estr = ''.join(('A directory must be passed to the loading routine ',
-                        'for <Instrument Code>'))
-        raise ValueError(estr)
+    out = mm_gen.list_files(tag=tag, sat_id=sat_id, data_path=data_path,
+                            format_str=format_str,
+                            supported_tags=supported_tags,
+                            fake_daily_files_from_monthly=fake_daily_files_from_monthly,
+                            two_digit_year_break=two_digit_year_break)
+    return out
 
 
 def load(fnames, tag=None, sat_id=None,

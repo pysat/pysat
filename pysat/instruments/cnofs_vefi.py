@@ -59,6 +59,7 @@ import numpy as np
 
 import pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
 
 platform = 'cnofs'
 name = 'vefi'
@@ -70,7 +71,7 @@ _test_dates = {'': {'dc_b': pysat.datetime(2009, 1, 1)}}
 # use the default CDAWeb method
 fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
 supported_tags = {'': {'dc_b': fname}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 # support load routine
 # use the default CDAWeb method
