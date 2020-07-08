@@ -55,12 +55,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     --------
     ::
 
-        fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
+        fname = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf'
         supported_tags = {'dc_b': fname}
         list_files = functools.partial(nasa_cdaweb.list_files,
                                        supported_tags=supported_tags)
 
-        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        fname = 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
         supported_tags = {'': fname}
         list_files = functools.partial(mm_gen.list_files,
                                        supported_tags=supported_tags)

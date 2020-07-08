@@ -43,12 +43,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     supported_tags : (dict or NoneType)
         keys are sat_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
-    fake_daily_files_from_monthly : bool
+    fake_daily_files_from_monthly : (bool)
         Some CDAWeb instrument data files are stored by month, interfering
         with pysat's functionality of loading by day. This flag, when true,
         appends daily dates to monthly files internally. These dates are
         used by load routine in this module to provide data by day.
-    two_digit_year_break : int
+    two_digit_year_break : (int)
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
@@ -74,16 +74,14 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     Note
     ----
-    This function will move to pysat.instruments.methods.general.list_files in
-    pysat 3.0.0.  This will not affect the core instruments, but will need to
-    be updated for custom instruments that use this method.
+    This function has been deprecated and will be removed in pysat 3.0.0.
+    Please use methods.general.list_files instead
 
     """
 
-    warnings.warn(' '.join(["methods.nasa_cdaweb.list_files will be",
-                            "moved to methods.general.list_files in pysat",
-                            "3.0.0. This only affects custom instruments",
-                            "not in the standard pysat distribution."]),
+    warnings.warn(' '.join(["methods.nasa_cdaweb.list_files has been",
+                            "deprecated and will be removed in pysat 3.0.0.",
+                            "Please use methods.general.list_files instead"]),
                   DeprecationWarning, stacklevel=2)
 
     out = mm_gen.list_files(tag=tag, sat_id=sat_id, data_path=data_path,
