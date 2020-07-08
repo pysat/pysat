@@ -668,8 +668,8 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [{'profiles': {'density': 'ionization'}},
                                         {'profiles': {'density': 'mass'},
-                                         'alt_profiles': {'density': 'volume'},
-                                         'alt_profiles': {'fraction': 'completion'}}])
+                                         'alt_profiles':
+                                             {'density': 'volume'}}])
     def test_ho_pandas_variable_renaming(self, values):
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
@@ -690,13 +690,20 @@ class TestBasics():
                         check_var = self.testInst.meta[key]['children']
                         assert ikey not in check_var
 
-    @pytest.mark.parametrize("values", [{'profiles': {'help': 'I need somebody'}},
-                                        {'fake_profiles': {'help': 'Not just anybody'}},
-                                        {'wrong_profile': {'help': 'You know I need someone'},
-                                         'fake_profiles': {'Beatles': 'help!'},
-                                         'profiles': {'density': 'valid_change'}},
-                                        {'fake_profiles': {'density': 'valid HO change'}},
-                                        {'Nope_profiles': {'density': 'valid_HO_change'}}])
+    @pytest.mark.parametrize("values", [{'profiles':
+                                            {'help': 'I need somebody'}},
+                                        {'fake_profi':
+                                            {'help': 'Not just anybody'}},
+                                        {'wrong_profile':
+                                            {'help': 'You know I need someone'},
+                                         'fake_profiles':
+                                            {'Beatles': 'help!'},
+                                         'profiles':
+                                            {'density': 'valid_change'}},
+                                        {'fake_profile':
+                                            {'density': 'valid HO change'}},
+                                        {'Nope_profiles':
+                                            {'density': 'valid_HO_change'}}])
     def test_ho_pandas_unknown_variable_error_renaming(self, values):
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
@@ -708,8 +715,8 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [{'profiles': {'density': 'Ionization'}},
                                         {'profiles': {'density': 'MASa'},
-                                         'alt_profiles': {'density': 'VoLuMe'},
-                                         'alt_profiles': {'fraction': 'compLETION'}}])
+                                         'alt_profiles':
+                                             {'density': 'VoLuMe'}}])
     def test_ho_pandas_variable_renaming_lowercase(self, values):
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
@@ -722,7 +729,8 @@ class TestBasics():
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
                         # check for new name in HO data
-                        assert values[key][ikey].lower() in self.testInst[0, key]
+                        test_val = values[key][ikey].lower()
+                        assert test_val in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         # case insensitive check
                         assert values[key][ikey] in check_var
