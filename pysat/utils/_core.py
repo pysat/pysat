@@ -203,8 +203,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     running_store = []
     two_d_keys = []
     two_d_dims = []
-    three_d_keys = []
-    three_d_dims = []
     mdata = pysat.Meta(units_label=units_label,
                        name_label=name_label,
                        notes_label=notes_label,
@@ -248,10 +246,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         two_d_keys.append(key)
                         two_d_dims.append(data.variables[key].dimensions)
 
-                    if len(data.variables[key].dimensions) == 3:
-                        # part of full/dedicated dataframe within dataframe
-                        three_d_keys.append(key)
-                        three_d_dims.append(data.variables[key].dimensions)
+                    if len(data.variables[key].dimensions) >= 3:
+                        raise ValueError(' '.join(('pysat only supports 1D',
+                                                   'and 2D data in pandas.',
+                                                   'Please use xarray for',
+                                                   'this data product.')))
 
                 # we now have a list of keys that need to go into a dataframe,
                 # could be more than one, collect unique dimensions for 2D keys
@@ -377,68 +376,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                     # netCDF, to loaded data dictionary
                     loadedVars[obj_key_name] = loop_list
                     del loop_list
-
-                # we now have a list of keys that need to go into a dataframe,
-                # could be more than one, collect unique dimensions for 2D keys
-                for dim in set(three_d_dims):
-                    # collect variable names associated with dimension
-                    idx_bool = [dim == i for i in three_d_dims]
-                    idx, = np.where(np.array(idx_bool))
-                    obj_var_keys = []
-                    for i in idx:
-                        obj_var_keys.append(three_d_keys[i])
-
-                    for obj_key_name in obj_var_keys:
-                        # store attributes in metadata
-                        meta_dict = {}
-                        for nc_key in data.variables[obj_key_name].ncattrs():
-                            meta_dict[nc_key] = \
-                                data.variables[obj_key_name].getncattr(nc_key)
-                        mdata[obj_key_name] = meta_dict
-
-                        # iterate over all variables with this dimension and store
-                        # data
-                        loop_dict = {}
-                        # list holds a series of slices, parsed from dict above
-                        loop_list = []
-                        loop_dict[obj_key_name] = \
-                            data.variables[obj_key_name][:, :, :]
-                        # number of values in time
-                        loop_lim = data.variables[obj_key_name].shape[0]
-                        # number of values per time
-                        step_size_x = len(data.variables[obj_key_name][0, :, 0])
-                        step_size_y = len(data.variables[obj_key_name][0, 0, :])
-                        step_size = step_size_x
-                        loop_dict[obj_key_name] = \
-                            loop_dict[obj_key_name].reshape((loop_lim*step_size_x,
-                                                             step_size_y))
-                        # check if there is an index we should use
-                        if not (index_key_name is None):
-                            # an index was found
-                            time_var = loop_dict.pop(index_key_name)
-                            if time_index_flag:
-                                # create datetime index from data
-                                time_var = pds.to_datetime(1E6 * time_var)
-                            new_index = time_var
-                            new_index_name = index_name
-                        else:
-                            # using integer indexing
-                            new_index = np.arange(loop_lim*step_size,
-                                                  dtype=int) % step_size
-                            new_index_name = 'index'
-                        # load all data into frame
-                        loop_frame = pds.DataFrame(loop_dict[obj_key_name])
-                        # del loop_frame['dimension_1']
-                        # break massive frame into bunch of smaller frames
-                        for i in np.arange(loop_lim, dtype=int):
-                            loop_list.append(loop_frame.iloc[step_size*i:step_size*(i+1), :])
-                            loop_list[-1].index = new_index[step_size*i:step_size*(i+1)]
-                            loop_list[-1].index.name = new_index_name
-
-                        # add 2D object data, all based on a unique dimension
-                        # within netCDF, to loaded data dictionary
-                        loadedVars[obj_key_name] = loop_list
-                        del loop_list
 
                 # prepare dataframe index for this netcdf file
                 time_var = loadedVars.pop(epoch_name)
