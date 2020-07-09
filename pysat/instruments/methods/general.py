@@ -36,12 +36,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     supported_tags : (dict or NoneType)
         keys are sat_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
-    fake_daily_files_from_monthly : bool
+    fake_daily_files_from_monthly : (bool)
         Some CDAWeb instrument data files are stored by month, interfering
         with pysat's functionality of loading by day. This flag, when true,
         appends daily dates to monthly files internally. These dates are
         used by load routine in this module to provide data by day.
-    two_digit_year_break : int
+    two_digit_year_break : (int)
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
