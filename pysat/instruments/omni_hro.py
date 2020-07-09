@@ -49,13 +49,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
+import logging
 import numpy as np
 import pandas as pds
 
 import pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
 
-import logging
 logger = logging.getLogger(__name__)
 
 platform = 'omni'
@@ -72,7 +73,7 @@ fname1 = 'omni_hro_1min_{year:4d}{month:02d}{day:02d}_v01.cdf'
 fname5 = 'omni_hro_5min_{year:4d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'1min': fname1,
                        '5min': fname5}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags,
                                fake_daily_files_from_monthly=True)
 
