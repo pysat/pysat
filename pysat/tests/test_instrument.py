@@ -2,9 +2,7 @@
 # Test some of the basic _core functions
 import datetime as dt
 from importlib import reload as re_load
-import logging
 import numpy as np
-import re
 
 import pandas as pds
 import pytest
@@ -12,6 +10,7 @@ import pytest
 import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
+import pysat.instruments.pysat_testing2d
 
 
 # ------------------------------------------------------------------------------
@@ -1027,6 +1026,25 @@ class TestBasicsXarray(TestBasics):
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          sat_id='10',
+                                         clean_level='clean',
+                                         update_files=True)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+
+# ------------------------------------------------------------------------------
+#
+# Repeat tests above with 2d data
+#
+# ------------------------------------------------------------------------------
+class TestBasics2D(TestBasics):
+    def setup(self):
+        re_load(pysat.instruments.pysat_testing2d)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
+                                         sat_id='50',
                                          clean_level='clean',
                                          update_files=True)
 
