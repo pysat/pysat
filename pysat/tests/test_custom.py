@@ -81,7 +81,7 @@ class TestBasics():
             pytest.skip('pandas specific test for time index')
 
         def custom1(inst):
-            new_index = inst.index+pds.DateOffset(milliseconds=500)
+            new_index = inst.index + pds.DateOffset(milliseconds=500)
             d = pds.Series(2.0 * inst['mlt'], index=new_index)
             d.name = 'doubleMLT'
             return d
@@ -257,7 +257,7 @@ class TestBasics():
         """Test add function success with array and MetaData
         """
         def custom1(inst):
-            out = 2.*inst['mlt'].values
+            out = 2. * inst['mlt'].values
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
 

@@ -159,7 +159,7 @@ class TestBasics():
                                  'units': 'V',
                                  'long_name': 'The Doors',
                                  'meta': meta}
-        self.testInst['help'] = [frame]*len(self.testInst.data.index)
+        self.testInst['help'] = [frame] * len(self.testInst.data.index)
 
         assert self.testInst.meta['help', 'long_name'] == 'The Doors'
         assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
@@ -717,10 +717,10 @@ class TestBasics():
                                     col_names=['name', 'long_name', 'idx',
                                                'units', 'description'])
         assert mdata['yrdoy'].long_name == 'Date'
-        assert (mdata['unit_mer_z'].long_name ==
-                'Unit Vector - Meridional Dir - S/C z')
-        assert (mdata['iv_mer'].description ==
-                'Constructed using IGRF mag field.')
+        assert (mdata['unit_mer_z'].long_name
+                == 'Unit Vector - Meridional Dir - S/C z')
+        assert (mdata['iv_mer'].description
+                == 'Constructed using IGRF mag field.')
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
                              [("col_names", [], "col_names must include"),
