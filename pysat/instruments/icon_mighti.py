@@ -180,7 +180,7 @@ def remove_preamble(inst):
     return
 
 
-def load(fnames, tag=None, sat_id=None, keep_original_names=False):
+def load(fnames, tag=None, sat_id=None, keep_original_names=None):
     """Loads ICON FUV data using pysat into pandas.
 
     This routine is called as needed by pysat. It is not intended
@@ -200,7 +200,8 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     **kwargs : extra keywords
         Passthrough for additional keyword arguments specified when
         instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.
+        are passed through to this routine by pysat.  Default values are
+        specified in the init routine.
 
     Returns
     -------

@@ -133,7 +133,7 @@ def default(inst):
         mm_gen.remove_leading_text(inst, target='ICON_L27_')
 
 
-def load(fnames, tag=None, sat_id=None, keep_original_names=False):
+def load(fnames, tag=None, sat_id=None, keep_original_names=None):
     """Loads ICON IVM data using pysat into pandas.
 
     This routine is called as needed by pysat. It is not intended
@@ -150,13 +150,11 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     sat_id : string
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    keep_original_names: bool
-        Specify whether to trim the default variable prefix for ICON variable
-        names.  (default = False)
     **kwargs : extra keywords
         Passthrough for additional keyword arguments specified when
         instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.
+        are passed through to this routine by pysat.  Default values are
+        specified in the init routine.
 
     Returns
     -------
