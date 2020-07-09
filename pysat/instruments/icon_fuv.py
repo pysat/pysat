@@ -44,7 +44,6 @@ import warnings
 import pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import icon as mm_icon
-from pysat.instruments.methods import nasa_cdaweb as cdw
 
 
 logger = logging.getLogger(__name__)
@@ -66,7 +65,7 @@ supported_tags = {'': {'day': fname24,
                        'night': fname25}}
 
 # use the CDAWeb methods list files routine
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 # support download routine
