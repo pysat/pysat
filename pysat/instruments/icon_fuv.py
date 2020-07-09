@@ -17,12 +17,21 @@ Warnings
 - The cleaning parameters for the instrument are still under development.
 - Only supports level-2 data.
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
-    fuv = pysat.Instrument('icon', 'fuv', clean_level='clean')
+    fuv = pysat.Instrument(platform='icon', name='fuv', tag='day')
     fuv.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
     fuv.load(2020, 1)
+
+By default, pysat removes the ICON level tags from variable names, ie,
+ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
+::
+    fuv = pysat.Instrument(platform='icon', name='fuv', tag=day',
+                           keep_original_names=True)
+
 
 Authors
 ---------

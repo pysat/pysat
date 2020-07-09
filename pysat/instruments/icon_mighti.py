@@ -22,13 +22,22 @@ Warnings
 - The cleaning parameters for the instrument are still under development.
 - Only supports level-2 data.
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
-    mighti = pysat.Instrument('icon', 'mighti', 'vector_wind_green',
-                              clean_level='clean')
-    mighti.download(dt.datetime(2020, 1, 30), dt.datetime(2020, 12, 31))
-    mighti.load(2017,363)
+    mighti = pysat.Instrument(platform='icon', name='mighti',
+                              tag='vector_wind_green', clean_level='clean')
+    mighti.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
+    mighti.load(2020, 2)
+
+By default, pysat removes the ICON level tags from variable names, ie,
+ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
+::
+    mighti = pysat.Instrument(platform='icon', name='mighti',
+                              tag='vector_wind_green', clean_level='clean',
+                              keep_original_names=True)
 
 Authors
 ---------

@@ -19,12 +19,20 @@ Warnings
 - No download routine as ICON has not yet been launched
 - Data not yet publicly available
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
-    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', clean_level='clean')
+    ivm = pysat.Instrument(platform='icon', name='ivm', sat_id='a')
     ivm.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
     ivm.load(2020, 1)
+
+By default, pysat removes the ICON level tags from variable names, ie,
+ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
+::
+    ivm = pysat.Instrument(platform='icon', name='ivm', sat_id='a',
+                           keep_original_names=True)
 
 Author
 ------

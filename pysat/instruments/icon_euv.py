@@ -18,10 +18,27 @@ Warnings
 - Only supports level-2 data.
 
 
+Examples
+--------
+::
+
+    import pysat
+    euv = pysat.Instrument(platform='icon', name='euv')
+    euv.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
+    euv.load(2020, 1)
+
+By default, pysat removes the ICON level tags from variable names, ie,
+ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
+::
+    euv = pysat.Instrument(platform='icon', name='euv',
+                           keep_original_names=True)
+
+
 Authors
 ---------
 Jeff Klenzing, Mar 17, 2018, Goddard Space Flight Center
 Russell Stoneback, Mar 23, 2018, University of Texas at Dallas
+
 
 """
 
@@ -77,16 +94,12 @@ def init(inst):
     inst : (pysat.Instrument)
         Instrument class object
 
-    Returns
-    --------
-    Void : (NoneType)
-        modified in-place, as desired.
-
     """
     logger.info(mm_icon.ackn_str)
     inst.meta.acknowledgements = mm_icon.ackn_str
     inst.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['euv']))
+    # set default value for keep_original_names if unspecified
     if 'keep_original_names' in inst.kwargs.keys():
         inst.keep_original_names = inst.kwargs['keep_original_names']
     else:
