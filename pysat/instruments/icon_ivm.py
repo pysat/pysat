@@ -90,7 +90,7 @@ list_remote_files = functools.partial(mm_icon.list_remote_files,
                                       supported_tags=download_tags)
 
 
-def init(self):
+def init(inst):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
@@ -108,8 +108,8 @@ def init(self):
     """
 
     logger.info(mm_icon.ackn_str)
-    self.meta.acknowledgements = mm_icon.ackn_str
-    self.meta.references = ''.join((mm_icon.refs['mission'],
+    inst.meta.acknowledgements = mm_icon.ackn_str
+    inst.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['ivm']))
 
     pass
