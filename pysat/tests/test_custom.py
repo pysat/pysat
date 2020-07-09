@@ -6,11 +6,12 @@ import pytest
 
 import pysat
 
+
 class TestLogging():
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
+        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='10',
                                          clean_level='clean')
         self.out = ''
         self.log_capture = StringIO()
@@ -38,7 +39,7 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing', tag='10',
+        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='10',
                                          clean_level='clean')
         self.testInst.load(2008, 1)
         self.ncols = len(self.testInst.data.columns)
@@ -80,7 +81,7 @@ class TestBasics():
             pytest.skip('pandas specific test for time index')
 
         def custom1(inst):
-            new_index = inst.index+pds.DateOffset(milliseconds=500)
+            new_index = inst.index + pds.DateOffset(milliseconds=500)
             d = pds.Series(2.0 * inst['mlt'], index=new_index)
             d.name = 'doubleMLT'
             return d
@@ -100,8 +101,8 @@ class TestBasics():
 
         self.testInst.custom.attach(custom1, 'add')
         self.testInst.load(2009, 1)
-        assert (self.testInst.data['doubleMLT'] == 2.0 *
-                self.testInst['mlt']).all()
+        assert (self.testInst.data['doubleMLT'] == 2.0
+                * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
 
     def test_add_function_tuple_return_style(self):
@@ -123,10 +124,10 @@ class TestBasics():
                                                  3.0 * inst.data.mlt.values])
         self.testInst.custom.attach(custom1, 'add')
         self.testInst.load(2009, 1)
-        assert (self.testInst.data['doubleMLT'] == 2.0 *
-                self.testInst['mlt']).all()
-        assert (self.testInst.data['tripleMLT'] == 3.0 *
-                self.testInst['mlt']).all()
+        assert (self.testInst.data['doubleMLT'] == 2.0
+                * self.testInst['mlt']).all()
+        assert (self.testInst.data['tripleMLT'] == 3.0
+                * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 2
 
     def test_add_function_tuple_return_style_too_few_elements(self):
@@ -166,10 +167,10 @@ class TestBasics():
 
         self.testInst.custom.attach(custom1, 'add')
         self.testInst.load(2009, 1)
-        assert (self.testInst.data['doubleMLT'] == 2.0 *
-                self.testInst['mlt']).all()
-        assert (self.testInst.data['tripleMLT'] == 3.0 *
-                self.testInst['mlt']).all()
+        assert (self.testInst.data['doubleMLT'] == 2.0
+                * self.testInst['mlt']).all()
+        assert (self.testInst.data['tripleMLT'] == 3.0
+                * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 2
 
     def test_add_dataframe_w_meta(self):
@@ -197,8 +198,7 @@ class TestBasics():
         """Test add function success with pandas Series return
         """
         def custom1(inst):
-            out = pds.Series(inst.data.mlt * 2,
-                               index=inst.index)
+            out = pds.Series(inst.data.mlt * 2, index=inst.index)
             out.name = 'doubleMLT'
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
@@ -214,8 +214,7 @@ class TestBasics():
         """Test add function success with Series and allowable partial MetaData
         """
         def custom1(inst):
-            out = pds.Series(2.0 * inst.data.mlt.values,
-                               index=inst.index)
+            out = pds.Series(2.0 * inst.data.mlt.values, index=inst.index)
             out.name = 'doubleMLT'
             return {'data': out, 'units': 'hours1'}
 
@@ -230,8 +229,7 @@ class TestBasics():
         """Test add function success with pandas Series and MetaData return
         """
         def custom1(inst):
-            out = pds.Series(2.0 * inst.data.mlt.values,
-                               index=inst.index)
+            out = pds.Series(2.0 * inst.data.mlt.values, index=inst.index)
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
 
@@ -246,8 +244,7 @@ class TestBasics():
         """Test add function failure with Series and required MetaData missing
         """
         def custom1(inst):
-            out = pds.Series({'doubleMLT': inst.data.mlt * 2},
-                               index=inst.index)
+            out = pds.Series({'doubleMLT': inst.data.mlt * 2}, index=inst.index)
             # out.name = 'doubleMLT'
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1'}
@@ -260,7 +257,7 @@ class TestBasics():
         """Test add function success with array and MetaData
         """
         def custom1(inst):
-            out = 2.*inst['mlt'].values
+            out = 2. * inst['mlt'].values
             return {'data': out, 'long_name': 'doubleMLTlong',
                     'units': 'hours1', 'name': 'doubleMLT'}
 
@@ -337,7 +334,7 @@ class TestBasics():
         """ Test success of pass function, will not modify or add to instrument
         """
         def custom1(inst):
-            out = (inst.data.mlt * 2).values
+            _ = (inst.data.mlt * 2).values
             return
 
         self.testInst.custom.attach(custom1, 'pass')
@@ -386,12 +383,13 @@ class TestBasics():
         with pytest.raises(AttributeError):
             self.testInst.load(2009, 1)
 
+
 # Repeate the above tests with xarray
 class TestBasicsXarray(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', tag='10',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', sat_id='10',
                                          clean_level='clean')
         self.testInst.load(2008, 1)
         self.ncols = len([kk for kk in self.testInst.data.keys()])
@@ -408,7 +406,8 @@ class ConstellationTestBasics(TestBasics):
         """Runs before every method to create a clean testing setup
         """
         self.testConst = pysat.Constellation([
-            pysat.Instrument('pysat', 'testing', tag='10', clean_level='clean')
+            pysat.Instrument('pysat', 'testing', sat_id='10',
+                             clean_level='clean')
             for i in range(5)])
 
     def teardown(self):
