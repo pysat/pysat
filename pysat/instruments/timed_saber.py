@@ -56,6 +56,7 @@ import functools
 import pysat
 # CDAWeb methods prewritten for pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
 
 # the platform and name strings associated with this instrument
 # need to be defined at the top level
@@ -101,7 +102,7 @@ supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
 # the command below presets some of the methods inputs, leaving
 # those provided by pysat available when invoked
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 # let pysat know that data is spread across more than one file

@@ -26,6 +26,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     - spherical_to_cartesian
     - global_to_local_cartesian
     - local_horizontal_to_global_geo
+  - methods.nasa_cdaweb.list_files will move to methods.general.list_files in pysat 3.0.0.
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
   - Added discussion of github install, develop branches, and reqs to docs
