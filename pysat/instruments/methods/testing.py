@@ -206,8 +206,8 @@ def generate_times(fnames, sat_id, freq='1S'):
     date = dt.datetime(yr, month, day)
 
     # Create one day of data at desired frequency
-    index = pds.date_range(start=date, end=date+pds.DateOffset(seconds=86399),
-                           freq=freq)
+    end_date = date + pds.DateOffset(seconds=86399)
+    index = pds.date_range(start=date, end=end_date, freq=freq)
     # Allow numeric string to select first set of data
     try:
         index = index[0:int(sat_id)]
@@ -215,7 +215,7 @@ def generate_times(fnames, sat_id, freq='1S'):
         # non-integer sat_id produces ValueError
         pass
 
-    uts = index.hour*3600 + index.minute*60 + index.second
+    uts = index.hour * 3600 + index.minute * 60 + index.second
 
     return uts, index, date
 
@@ -261,6 +261,6 @@ def define_range():
 
     range = {'lt': [0.0, 24.0],
              'lon': [0.0, 360.0],
-             'angle': [0.0, 2.0*np.pi]}
+             'angle': [0.0, 2.0 * np.pi]}
 
     return range

@@ -225,7 +225,6 @@ class Meta(object):
         # add any
         self._base_attr = dir(self)
 
-
     @property
     def ho_data(self):
         return self._ho_data
@@ -378,7 +377,7 @@ class Meta(object):
         if recurse:
             for item_name in self.keys_nD():
                 output_str += '\n\n'
-                output_str += 'Metadata for '+item_name+'\n'
+                output_str += 'Metadata for ' + item_name + '\n'
                 output_str += self.ho_data[item_name].__str__(False)
 
         return output_str
@@ -432,7 +431,8 @@ class Meta(object):
                     super(Meta, self).__setattr__(name, value)
                 else:
                     raise AttributeError(''.join(("cannot set attribute - ",
-                                                  "object's attributes are immutable")))
+                                                  "object's attributes are",
+                                                  "immutable")))
         else:
             super(Meta, self).__setattr__(name, value)
 
@@ -1093,8 +1093,8 @@ class Meta(object):
                         # np.nan is not equal to anything
                         # if both values are NaN, ok in my book
                         try:
-                            if not (np.isnan(self[key, attr]) and
-                                    np.isnan(other[key, attr])):
+                            if not (np.isnan(self[key, attr])
+                                    and np.isnan(other[key, attr])):
                                 # one or both are not NaN and they aren't equal
                                 # test failed
                                 return False
@@ -1131,13 +1131,14 @@ class Meta(object):
                 # now time to check if all elements are individually equal
                 for key2 in self[key].children.keys():
                     for attr in self[key].children.attrs():
-                        if not (self[key].children[key2, attr] ==
-                                other[key].children[key2, attr]):
+                        if not (self[key].children[key2, attr]
+                                == other[key].children[key2, attr]):
                             try:
-                                if not (np.isnan(self[key].children[key2,
-                                                                    attr]) and
-                                        np.isnan(other[key].children[key2,
-                                                                     attr])):
+                                nan_self = np.isnan(self[key].children[key2,
+                                                                       attr])
+                                nan_other = np.isnan(other[key].children[key2,
+                                                                         attr])
+                                if not (nan_self and nan_other):
                                     return False
                             except TypeError:
                                 # comparison above gets unhappy with string

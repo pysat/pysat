@@ -11,6 +11,7 @@ import pysat
 import pysat.instruments.pysat_testing
 import pysat.tests.test_utils
 
+
 class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
@@ -104,7 +105,7 @@ class TestBasics():
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
-        self.testInst['help'] = [frame]*len(self.testInst.data.index)
+        self.testInst['help'] = [frame] * len(self.testInst.data.index)
 
         assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
         assert 'dummy_frame2' in self.testInst.meta.ho_data['help']
@@ -118,7 +119,8 @@ class TestBasics():
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
-        self.testInst['help'] = {'data': [frame]*len(self.testInst.data.index),
+        self.testInst['help'] = {'data':
+                                 [frame] * len(self.testInst.data.index),
                                  'units': 'V',
                                  'long_name': 'The Doors'}
 
@@ -138,7 +140,8 @@ class TestBasics():
         meta = pysat.Meta()
         meta['dummy_frame1'] = {'units': 'A'}
         meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data': [frame]*len(self.testInst.data.index),
+        self.testInst['help'] = {'data':
+                                 [frame] * len(self.testInst.data.index),
                                  'units': 'V',
                                  'long_name': 'The Doors',
                                  'meta': meta}
@@ -165,11 +168,12 @@ class TestBasics():
         meta = pysat.Meta()
         meta['dummy_frame1'] = {'units': 'A'}
         meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data': [frame]*len(self.testInst.data.index),
+        self.testInst['help'] = {'data':
+                                 [frame] * len(self.testInst.data.index),
                                  'units': 'V',
                                  'long_name': 'The Doors',
                                  'meta': meta}
-        self.testInst['help'] = [frame]*len(self.testInst.data.index)
+        self.testInst['help'] = [frame] * len(self.testInst.data.index)
 
         assert self.testInst.meta['help', 'long_name'] == 'The Doors'
         assert 'dummy_frame1' in self.testInst.meta.ho_data['help']
@@ -193,7 +197,8 @@ class TestBasics():
         meta = pysat.Meta(units_label='blah', desc_label='whoknew')
         meta['dummy_frame1'] = {'blah': 'A'}
         meta['dummy_frame2'] = {'whoknew': 'nothing'}
-        self.testInst['help'] = {'data': [frame]*len(self.testInst.data.index),
+        self.testInst['help'] = {'data':
+                                 [frame] * len(self.testInst.data.index),
                                  'units': 'V',
                                  'long_name': 'The Doors',
                                  'meta': meta}
@@ -239,7 +244,8 @@ class TestBasics():
         meta = pysat.Meta()
         meta['dummy_frame1'] = {'units': 'A'}
         meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data': [frame]*len(self.testInst.data.index),
+        self.testInst['help'] = {'data':
+                                 [frame] * len(self.testInst.data.index),
                                  'units': 'V',
                                  'long_name': 'The Doors',
                                  'meta': meta}
@@ -269,7 +275,8 @@ class TestBasics():
         meta = pysat.Meta()
         meta['dummy_frame1'] = {'units': 'A'}
         meta['dummy_frame2'] = {'desc': 'nothing'}
-        self.testInst['help'] = {'data': [frame]*len(self.testInst.data.index),
+        self.testInst['help'] = {'data':
+                                 [frame] * len(self.testInst.data.index),
                                  'units': 'V',
                                  'name': 'The Doors',
                                  'meta': meta}
@@ -719,15 +726,15 @@ class TestBasics():
 
     def test_meta_csv_load(self):
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
-        mdata = pysat.Meta.from_csv(name=name,  na_values=[],
+        mdata = pysat.Meta.from_csv(name=name, na_values=[],
                                     keep_default_na=False,
                                     col_names=['name', 'long_name', 'idx',
                                                'units', 'description'])
         assert mdata['yrdoy'].long_name == 'Date'
-        assert (mdata['unit_mer_z'].long_name ==
-                'Unit Vector - Meridional Dir - S/C z')
-        assert (mdata['iv_mer'].description ==
-                'Constructed using IGRF mag field.')
+        assert (mdata['unit_mer_z'].long_name
+                == 'Unit Vector - Meridional Dir - S/C z')
+        assert (mdata['iv_mer'].description
+                == 'Constructed using IGRF mag field.')
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
                              [("col_names", [], "col_names must include"),
@@ -737,7 +744,7 @@ class TestBasics():
                                "keyword name must be related")])
     def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
-        kwargs = {'name': name,  'na_values': [],
+        kwargs = {'name': name, 'na_values': [],
                   'keep_default_na': False, 'col_names': None}
         kwargs[bad_key] = bad_val
         with pytest.raises(ValueError) as excinfo:
@@ -905,8 +912,8 @@ class TestBasics():
         assert (self.meta['new', 'YoYoYO'] == 'YOLO')
         assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
         assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].children.attr_case_name('YoYoYo') ==
-                'YoYoYO')
+        assert (self.meta['new2'].children.attr_case_name('YoYoYo')
+                == 'YoYoYO')
 
     def test_get_attribute_name_case_preservation_w_higher_order_2(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -921,8 +928,8 @@ class TestBasics():
         assert (self.meta['NEW', 'YoYoYO'] == 'YOLO')
         assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
         assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].children.attr_case_name('YoYoYo') ==
-                'YoYoYO')
+        assert (self.meta['new2'].children.attr_case_name('YoYoYo')
+                == 'YoYoYO')
 
     def test_get_attribute_name_case_preservation_w_ho_reverse_order(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -937,8 +944,8 @@ class TestBasics():
         assert (self.meta['new', 'YoYoYO'] == 'YOLO')
         assert (self.meta['new2'].children['new21', 'yoyoyo'] == 'yolo')
         assert (self.meta['new2'].children['new21', 'YoYoYO'] == 'yolo')
-        assert (self.meta['new2'].children.attr_case_name('YoYoYo') ==
-                'yoyoyo')
+        assert (self.meta['new2'].children.attr_case_name('YoYoYo')
+                == 'yoyoyo')
 
     def test_has_attr_name_case_preservation_w_ho_reverse_order(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -1103,13 +1110,13 @@ class TestBasics():
         # create new variable
         self.testInst['test_nan_variable'] = 1.
         # assign additional metadata
-        self.testInst.meta['test_nan_variable'] = {'test_nan_export':np.nan,
-                                                'no_nan_export':np.nan,
-                                                'extra_check': 1.}
+        self.testInst.meta['test_nan_variable'] = {'test_nan_export': np.nan,
+                                                   'no_nan_export': np.nan,
+                                                   'extra_check': 1.}
         # write the file
         pysat.tests.test_utils.prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
-                            'pysat_test_ncdf.nc')
+                               'pysat_test_ncdf.nc')
         self.testInst.to_netcdf4(outfile)
 
         # load file back and test metadata is as expected
@@ -1129,13 +1136,13 @@ class TestBasics():
         # create new variable
         self.testInst['test_nan_variable'] = 1.
         # assign additional metadata
-        self.testInst.meta['test_nan_variable'] = {'test_nan_export':np.nan,
-                                                'no_nan_export':np.nan,
-                                                'extra_check': 1.}
+        self.testInst.meta['test_nan_variable'] = {'test_nan_export': np.nan,
+                                                   'no_nan_export': np.nan,
+                                                   'extra_check': 1.}
         # write the file
         pysat.tests.test_utils.prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
-                            'pysat_test_ncdf.nc')
+                               'pysat_test_ncdf.nc')
         export_nan = self.testInst.meta._export_nan + ['test_nan_export']
         self.testInst.to_netcdf4(outfile, export_nan=export_nan)
 
