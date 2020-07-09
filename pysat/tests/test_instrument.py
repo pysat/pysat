@@ -647,7 +647,6 @@ class TestBasics():
         with pytest.raises(ValueError):
             self.testInst.rename(values)
 
-
     @pytest.mark.parametrize("values", [{'uts': 'UTS1'},
                                         {'uts': 'UTs2',
                                          'mlt': 'Mlt2'},
@@ -691,19 +690,19 @@ class TestBasics():
                         assert ikey not in check_var
 
     @pytest.mark.parametrize("values", [{'profiles':
-                                            {'help': 'I need somebody'}},
+                                        {'help': 'I need somebody'}},
                                         {'fake_profi':
-                                            {'help': 'Not just anybody'}},
+                                        {'help': 'Not just anybody'}},
                                         {'wrong_profile':
-                                            {'help': 'You know I need someone'},
+                                        {'help': 'You know I need someone'},
                                          'fake_profiles':
-                                            {'Beatles': 'help!'},
+                                        {'Beatles': 'help!'},
                                          'profiles':
-                                            {'density': 'valid_change'}},
+                                        {'density': 'valid_change'}},
                                         {'fake_profile':
-                                            {'density': 'valid HO change'}},
+                                        {'density': 'valid HO change'}},
                                         {'Nope_profiles':
-                                            {'density': 'valid_HO_change'}}])
+                                        {'density': 'valid_HO_change'}}])
     def test_ho_pandas_unknown_variable_error_renaming(self, values):
         # check for pysat_testing2D instrument
         if self.testInst.platform == 'pysat':
