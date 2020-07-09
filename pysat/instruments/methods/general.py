@@ -103,12 +103,6 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0):
     sec_mult : float
         Multiplier needed to convert epoch time to seconds (default=1.0)
 
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
-
     """
 
     inst.data['Epoch'] = \
@@ -128,12 +122,6 @@ def remove_leading_text(inst, target=None):
         Leading string to remove. If none supplied,
         ICON project standards are used to identify and remove
         leading text
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
 
     """
 
