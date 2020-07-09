@@ -683,7 +683,7 @@ class Instrument(object):
 
             # Note that the labels in meta may be used when creating a file
             # thus 'Pysat_UTS' would be found in the resulting file
-            inst.to_netcdf4(fname, preserve_meta_case=True)
+            inst.to_netcdf4('./test.nc', preserve_meta_case=True)
 
             # load in file and check
             raw = netCDF4.Dataset('./test.nc')
