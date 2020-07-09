@@ -84,7 +84,7 @@ list_remote_files = functools.partial(mm_icon.list_remote_files,
                                       supported_tags=download_tags)
 
 
-def init(self):
+def init(inst):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
@@ -102,9 +102,13 @@ def init(self):
     """
 
     logger.info(mm_icon.ackn_str)
-    self.meta.acknowledgements = mm_icon.ackn_str
-    self.meta.references = ''.join((mm_icon.refs['mission'],
+    inst.meta.acknowledgements = mm_icon.ackn_str
+    inst.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['fuv']))
+    if 'keep_original_names' in inst.kwargs.keys():
+        inst.keep_original_names = inst.kwargs['keep_original_names']
+    else:
+        inst.keep_original_names = False
 
     pass
 
@@ -121,7 +125,8 @@ def default(inst):
     """
 
     mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
-    remove_preamble(inst)
+    if not inst.keep_original_names:
+        remove_preamble(inst)
 
 
 def remove_preamble(inst):
@@ -132,7 +137,7 @@ def remove_preamble(inst):
     mm_gen.remove_leading_text(inst, target=target[inst.tag])
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     """Loads ICON FUV data using pysat into pandas.
 
     This routine is called as needed by pysat. It is not intended
