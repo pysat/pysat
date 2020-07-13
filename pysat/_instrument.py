@@ -2690,11 +2690,17 @@ def _get_supported_keywords(load_func):
         args = sig.args
         # default values
         defaults = sig.defaults
-    # make defaults a list
-    temp = []
-    for item in defaults:
-        temp.append(item)
-    defaults = temp
+    # deal with special cases for defaults
+    # we get defaults=None when the empty pysat.Instrument() is created
+    if defaults is None:
+        defaults = []
+    else:
+        # standard case
+        # make defaults a list
+        temp = []
+        for item in defaults:
+            temp.append(item)
+        defaults = temp
 
     # raise ValueError
     pop_list = []
