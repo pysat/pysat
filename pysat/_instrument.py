@@ -359,8 +359,14 @@ class Instrument(object):
         # store kwargs, passed to load routine
         # first, check if keywords are  valid
         _check_if_keywords_supported(self._load_rtn, **kwargs)
-        # store
+        # get and apply default values for custom keywords
+        default_keywords = _get_supported_keywords(self._load_rtn)
+        # store user supplied keywords
         self.kwargs = kwargs
+        # add in defaults if not already present
+        for key in default_keywords.keys():
+            if key not in self.kwargs:
+                self.kwargs[key] = default_keywords[key]
 
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
@@ -2639,7 +2645,7 @@ class Instrument(object):
 
 
 def _get_supported_keywords(load_func):
-    """Return a list of supported keywords
+    """Return a dict of supported keywords and defaults
 
     Intended to be used on the supporting instrument
     functions that enable the general Instrument object
@@ -2652,8 +2658,8 @@ def _get_supported_keywords(load_func):
 
     Returns
     -------
-    list
-        list of keyword argument strings
+    dict
+        dict of keywords and values
 
 
     Notes
@@ -2682,13 +2688,22 @@ def _get_supported_keywords(load_func):
         sig = inspect.getfullargspec(load_func)
         # args are first
         args = sig.args
+        # default values
+        defaults = sig.defaults
 
+    # raise ValueError
     pop_list = []
     # account for keywords that exist for every load function
     pre_kws = ['fnames', 'sat_id', 'tag']
+    # account for defaults in every function for 'fnames', 'sat_id', and 'tag'
+    pre_defs = [None, None, None]
     # account for keywords already set since input was a partial function
     if existing_kws is not None:
+        # keywords
         pre_kws.extend(existing_kws.keys())
+        # defaults
+        for key in existing_kws.keys():
+            pre_defs.extend(existing_kws[key])
     # remove pre-existing keywords from output
     # first identify locations
     for i, arg in enumerate(args):
@@ -2700,9 +2715,12 @@ def _get_supported_keywords(load_func):
     if len(pop_list) > 0:
         for pop in pop_list[::-1]:
             args.pop(pop)
+            pre_defs.pop(pop)
 
-    # *args and **kwargs are not required, so ignore them.
-    return args
+    out_dict = {}
+    for arg, defa in zip(args, defaults):
+        out_dict[arg] = defa
+    return out_dict
 
 
 def _check_if_keywords_supported(func, **kwargs):
@@ -2722,7 +2740,7 @@ def _check_if_keywords_supported(func, **kwargs):
 
     """
 
-    # get list of supported keywords
+    # get dict of supported keywords and values
     supp = _get_supported_keywords(func)
     # check if kwargs are in list
     for name in kwargs.keys():
