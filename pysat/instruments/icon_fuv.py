@@ -114,11 +114,6 @@ def init(inst):
     inst.meta.acknowledgements = mm_icon.ackn_str
     inst.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['fuv']))
-    # if 'keep_original_names' in inst.kwargs.keys():
-    #     inst.keep_original_names = inst.kwargs['keep_original_names']
-    # else:
-    #     inst.keep_original_names = False
-
     pass
 
 
@@ -134,9 +129,8 @@ def default(inst):
     """
 
     mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
-    if 'keep_original_names' in inst.kwargs:
-        if not inst.kwargs['keep_original_names']:
-            remove_preamble(inst)
+    if not inst.kwargs['keep_original_names']:
+        remove_preamble(inst)
 
 
 def remove_preamble(inst):

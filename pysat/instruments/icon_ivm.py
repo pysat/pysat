@@ -119,10 +119,6 @@ def init(inst):
     inst.meta.acknowledgements = mm_icon.ackn_str
     inst.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['ivm']))
-    if 'keep_original_names' in inst.kwargs.keys():
-        inst.keep_original_names = inst.kwargs['keep_original_names']
-    else:
-        inst.keep_original_names = False
 
     pass
 
@@ -137,11 +133,11 @@ def default(inst):
         Instrument class object
 
     """
-    if not inst.keep_original_names:
+    if not inst.kwargs['keep_original_names']:
         mm_gen.remove_leading_text(inst, target='ICON_L27_')
 
 
-def load(fnames, tag=None, sat_id=None, keep_original_names=None):
+def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     """Loads ICON IVM data using pysat into pandas.
 
     This routine is called as needed by pysat. It is not intended
