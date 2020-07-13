@@ -2702,7 +2702,6 @@ def _get_supported_keywords(load_func):
             temp.append(item)
         defaults = temp
 
-    # raise ValueError
     pop_list = []
     # account for keywords that exist for every load function
     pre_kws = ['fnames', 'sat_id', 'tag']
