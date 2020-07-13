@@ -99,11 +99,6 @@ def init(inst):
     inst.meta.acknowledgements = mm_icon.ackn_str
     inst.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['euv']))
-    # set default value for keep_original_names if unspecified
-    if 'keep_original_names' in inst.kwargs.keys():
-        inst.keep_original_names = inst.kwargs['keep_original_names']
-    else:
-        inst.keep_original_names = False
 
     pass
 
@@ -120,7 +115,8 @@ def default(inst):
     """
 
     mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
-    if not inst.keep_original_names:
+    if (('keep_original_names' not in inst.kwargs)
+            or (not inst.kwargs['keep_original_names'])):
         mm_gen.remove_leading_text(inst, target='ICON_L26_')
 
 
@@ -211,7 +207,10 @@ def clean(inst, clean_level=None):
 
     """
 
-    L26_Flag = inst['Flags']
+    try:
+        L26_Flag = inst['Flags']
+    except KeyError:
+        L26_Flag = inst['ICON_L26_Flags']
     vars = ['HmF2', 'NmF2', 'Oplus']
 
     if clean_level == 'clean':
