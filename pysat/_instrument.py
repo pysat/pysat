@@ -2690,20 +2690,22 @@ def _get_supported_keywords(load_func):
         args = sig.args
         # default values
         defaults = sig.defaults
+    # make defaults a list
+    temp = []
+    for item in defaults:
+        temp.append(item)
+    defaults = temp
 
     # raise ValueError
     pop_list = []
     # account for keywords that exist for every load function
     pre_kws = ['fnames', 'sat_id', 'tag']
-    # account for defaults in every function for 'fnames', 'sat_id', and 'tag'
-    pre_defs = [None, None, None]
+    # insert 'missing' default for 'fnames'
+    defaults.insert(0, None)
     # account for keywords already set since input was a partial function
     if existing_kws is not None:
         # keywords
         pre_kws.extend(existing_kws.keys())
-        # defaults
-        for key in existing_kws.keys():
-            pre_defs.extend(existing_kws[key])
     # remove pre-existing keywords from output
     # first identify locations
     for i, arg in enumerate(args):
@@ -2715,11 +2717,12 @@ def _get_supported_keywords(load_func):
     if len(pop_list) > 0:
         for pop in pop_list[::-1]:
             args.pop(pop)
-            pre_defs.pop(pop)
+            defaults.pop(pop)
 
     out_dict = {}
     for arg, defa in zip(args, defaults):
         out_dict[arg] = defa
+
     return out_dict
 
 
