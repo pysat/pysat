@@ -206,7 +206,10 @@ def clean(inst, clean_level=None):
 
     """
 
-    L26_Flag = inst['Flags']
+    try:
+        L26_Flag = inst['Flags']
+    except KeyError:
+        L26_Flag = inst['ICON_L26_Flags']
     vars = ['HmF2', 'NmF2', 'Oplus']
 
     if clean_level == 'clean':

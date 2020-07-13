@@ -153,10 +153,6 @@ def init(inst):
     inst.meta.acknowledgements = mm_icon.ackn_str
     inst.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['mighti']))
-    if 'keep_original_names' in inst.kwargs.keys():
-        inst.keep_original_names = inst.kwargs['keep_original_names']
-    else:
-        inst.keep_original_names = False
 
     pass
 
