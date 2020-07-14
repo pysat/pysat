@@ -73,7 +73,7 @@ fname25 = ''.join(('ICON_L2-5_FUV_Night_{year:04d}-{month:02d}-{day:02d}_',
 supported_tags = {'': {'day': fname24,
                        'night': fname25}}
 
-# use the CDAWeb methods list files routine
+# use the standard methods list files routine
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
