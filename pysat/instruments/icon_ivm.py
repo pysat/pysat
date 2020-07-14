@@ -130,10 +130,11 @@ def default(inst):
 
     """
 
-    mm_gen.remove_leading_text(inst, target='ICON_L27_')
+    if not inst.kwargs['keep_original_names']:
+        mm_gen.remove_leading_text(inst, target='ICON_L27_')
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     """Loads ICON IVM data using pysat into pandas.
 
     This routine is called as needed by pysat. It is not intended

@@ -64,7 +64,7 @@ def init(self):
     self.new_thing = True
 
     # work on file index if keyword present
-    if 'file_date_range' in self.kwargs:
+    if self.kwargs['file_date_range'] is not None:
         # set list files routine to desired date range
         # attach to the instrument object
         fdr = self.kwargs['file_date_range']
@@ -72,10 +72,9 @@ def init(self):
         self.files.refresh()
 
     # mess with file dates if kwarg option present
-    if 'mangle_file_dates' in self.kwargs:
-        if self.kwargs['mangle_file_dates']:
-            self.files.files.index = \
-                self.files.files.index + pds.DateOffset(minutes=5)
+    if self.kwargs['mangle_file_dates']:
+        self.files.files.index = \
+            self.files.files.index + pds.DateOffset(minutes=5)
 
 
 def default(self):

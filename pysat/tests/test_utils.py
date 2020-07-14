@@ -216,6 +216,7 @@ class TestBasicNetCDF4():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
+                                         sat_id='100',
                                          clean_level='clean')
         self.testInst.pandas_format = True
 

@@ -102,11 +102,12 @@ def default(inst):
 
     """
 
-    mm_gen.convert_timestamp_to_datetime(inst)
-    mm_gen.remove_leading_text(inst, target='ICON_L26_')
+    mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
+    if not inst.kwargs['keep_original_names']:
+        mm_gen.remove_leading_text(inst, target='ICON_L26_')
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     """Loads ICON EUV data using pysat into pandas.
 
     This routine is called as needed by pysat. It is not intended
@@ -192,7 +193,10 @@ def clean(inst, clean_level=None):
 
     """
 
-    L26_Flag = inst['Flags']
+    try:
+        L26_Flag = inst['Flags']
+    except KeyError:
+        L26_Flag = inst['ICON_L26_Flags']
     vars = ['HmF2', 'NmF2', 'Oplus']
 
     if clean_level == 'clean':

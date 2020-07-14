@@ -93,25 +93,23 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         raise ValueError(estr)
 
 
-def convert_timestamp_to_datetime(inst):
+def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     """Use datetime instead of timestamp for Epoch
 
     Parameters
     ----------
     inst : pysat.Instrument
         associated pysat.Instrument object
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
+    sec_mult : float
+        Multiplier needed to convert epoch time to seconds (default=1.0)
+    epoch_name : str
+        variable name for instrument index (default='Epoch')
 
     """
 
-    inst.data['Epoch'] = \
-        pds.to_datetime([dt.datetime.utcfromtimestamp(x / 1000.0)
-                         for x in inst.data['Epoch']])
+    inst.data[epoch_name] = \
+        pds.to_datetime([dt.datetime.utcfromtimestamp(x * sec_mult)
+                         for x in inst.data[epoch_name]])
     return
 
 
