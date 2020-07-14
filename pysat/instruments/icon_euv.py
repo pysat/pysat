@@ -21,10 +21,12 @@ Warnings
 Examples
 --------
 ::
+
     import pysat
     euv = pysat.Instrument(platform='icon', name='euv')
     euv.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
     euv.load(2020, 1)
+
 By default, pysat removes the ICON level tags from variable names, ie,
 ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
 ::
