@@ -357,8 +357,14 @@ class Instrument(object):
         # store kwargs, passed to load routine
         # first, check if keywords are  valid
         _check_if_keywords_supported(self._load_rtn, **kwargs)
-        # store
+        # get and apply default values for custom keywords
+        default_keywords = _get_supported_keywords(self._load_rtn)
+        # store user supplied keywords
         self.kwargs = kwargs
+        # add in defaults if not already present
+        for key in default_keywords.keys():
+            if key not in self.kwargs:
+                self.kwargs[key] = default_keywords[key]
 
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
@@ -2648,7 +2654,7 @@ class Instrument(object):
 
 
 def _get_supported_keywords(load_func):
-    """Return a list of supported keywords
+    """Return a dict of supported keywords
 
     Intended to be used on the supporting instrument
     functions that enable the general Instrument object
@@ -2661,8 +2667,8 @@ def _get_supported_keywords(load_func):
 
     Returns
     -------
-    list
-        list of keyword argument strings
+    dict
+        dict of keywords and values
 
 
     Notes
@@ -2691,12 +2697,28 @@ def _get_supported_keywords(load_func):
         sig = inspect.getfullargspec(load_func)
         # args are first
         args = sig.args
+        # default values
+        defaults = sig.defaults
+    # deal with special cases for defaults
+    # we get defaults=None when the empty pysat.Instrument() is created
+    if defaults is None:
+        defaults = []
+    else:
+        # standard case
+        # make defaults a list
+        temp = []
+        for item in defaults:
+            temp.append(item)
+        defaults = temp
 
     pop_list = []
     # account for keywords that exist for every load function
     pre_kws = ['fnames', 'sat_id', 'tag']
+    # insert 'missing' default for 'fnames'
+    defaults.insert(0, None)
     # account for keywords already set since input was a partial function
     if existing_kws is not None:
+        # keywords
         pre_kws.extend(existing_kws.keys())
     # remove pre-existing keywords from output
     # first identify locations
@@ -2709,9 +2731,13 @@ def _get_supported_keywords(load_func):
     if len(pop_list) > 0:
         for pop in pop_list[::-1]:
             args.pop(pop)
+            defaults.pop(pop)
 
-    # *args and **kwargs are not required, so ignore them.
-    return args
+    out_dict = {}
+    for arg, defa in zip(args, defaults):
+        out_dict[arg] = defa
+
+    return out_dict
 
 
 def _check_if_keywords_supported(func, **kwargs):
@@ -2731,7 +2757,7 @@ def _check_if_keywords_supported(func, **kwargs):
 
     """
 
-    # get list of supported keywords
+    # get dict of supported keywords and values
     supp = _get_supported_keywords(func)
     # check if kwargs are in list
     for name in kwargs.keys():
