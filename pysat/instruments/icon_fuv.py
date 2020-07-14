@@ -161,7 +161,6 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     keep_original_names : boolean
         if True then the names as given in the netCDF ICON file
         will be used as is. If False, a preamble is removed.
-        This keyword must be set at instantiation.
 
     Returns
     -------

@@ -154,11 +154,9 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     sat_id : string
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    **kwargs : extra keywords
-        Passthrough for additional keyword arguments specified when
-        instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.  Default values are
-        specified in the init routine.
+    keep_original_names : boolean
+        if True then the names as given in the netCDF ICON file
+        will be used as is. If False, a preamble is removed.
 
     Returns
     -------
