@@ -129,8 +129,7 @@ def default(inst):
     """
 
     mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
-    if (('keep_original_names' not in inst.kwargs)
-            or (not inst.kwargs['keep_original_names'])):
+    if not inst.kwargs['keep_original_names']:
         remove_preamble(inst)
 
 

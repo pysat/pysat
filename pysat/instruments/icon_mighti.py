@@ -164,8 +164,7 @@ def default(inst):
     """
 
     mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
-    if (('keep_original_names' not in inst.kwargs)
-            or (not inst.kwargs['keep_original_names'])):
+    if not inst.kwargs['keep_original_names']:
         remove_preamble(inst)
 
 
@@ -186,7 +185,7 @@ def remove_preamble(inst):
     return
 
 
-def load(fnames, tag=None, sat_id=None, keep_original_names=None):
+def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     """Loads ICON FUV data using pysat into pandas.
 
     This routine is called as needed by pysat. It is not intended
