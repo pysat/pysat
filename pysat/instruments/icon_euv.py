@@ -18,6 +18,19 @@ Warnings
 - Only supports level-2 data.
 
 
+Examples
+--------
+::
+    import pysat
+    euv = pysat.Instrument(platform='icon', name='euv')
+    euv.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
+    euv.load(2020, 1)
+By default, pysat removes the ICON level tags from variable names, ie,
+ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
+::
+    euv = pysat.Instrument(platform='icon', name='euv',
+                           keep_original_names=True)
+
 Authors
 ---------
 Jeff Klenzing, Mar 17, 2018, Goddard Space Flight Center
@@ -77,11 +90,6 @@ def init(self):
     inst : (pysat.Instrument)
         Instrument class object
 
-    Returns
-    --------
-    Void : (NoneType)
-        modified in-place, as desired.
-
     """
     logger.info(mm_icon.ackn_str)
     self.meta.acknowledgements = mm_icon.ackn_str
@@ -124,10 +132,9 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     sat_id : string
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    **kwargs : extra keywords
-        Passthrough for additional keyword arguments specified when
-        instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.
+    keep_original_names : boolean
+        if True then the names as given in the netCDF ICON file
+        will be used as is. If False, a preamble is removed.
 
     Returns
     -------
@@ -144,7 +151,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     --------
     ::
         inst = pysat.Instrument('icon', 'euv', sat_id='a', tag='')
-        inst.load(2019,1)
+        inst.load(2020, 1)
 
     """
 

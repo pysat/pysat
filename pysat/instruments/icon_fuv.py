@@ -19,10 +19,17 @@ Warnings
 
 Example
 -------
+::
     import pysat
-    fuv = pysat.Instrument('icon', 'fuv', clean_level='clean')
-    fuv.download(dt.datetime(2019, 1, 30), dt.datetime(2019, 12, 31))
-    fuv.load(2017,363)
+    fuv = pysat.Instrument(platform='icon', name='fuv', tag='day')
+    fuv.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
+    fuv.load(2020, 1)
+
+By default, pysat removes the ICON level tags from variable names, ie,
+ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
+::
+    fuv = pysat.Instrument(platform='icon', name='fuv', tag=day',
+                           keep_original_names=True)
 
 Authors
 ---------
@@ -64,7 +71,7 @@ fname25 = ''.join(('ICON_L2-5_FUV_Night_{year:04d}-{month:02d}-{day:02d}_',
 supported_tags = {'': {'day': fname24,
                        'night': fname25}}
 
-# use the CDAWeb methods list files routine
+# use the standard methods list files routine
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
@@ -93,11 +100,6 @@ def init(self):
     -----------
     inst : (pysat.Instrument)
         Instrument class object
-
-    Returns
-    --------
-    Void : (NoneType)
-        modified in-place, as desired.
 
     """
 
@@ -151,10 +153,9 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     sat_id : string
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    **kwargs : extra keywords
-        Passthrough for additional keyword arguments specified when
-        instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.
+    keep_original_names : boolean
+        if True then the names as given in the netCDF ICON file
+        will be used as is. If False, a preamble is removed.
 
     Returns
     -------
@@ -171,7 +172,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     --------
     ::
         inst = pysat.Instrument('icon', 'fuv')
-        inst.load(2019,1)
+        inst.load(2020, 1)
 
     """
 

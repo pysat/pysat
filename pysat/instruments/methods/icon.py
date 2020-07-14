@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Provides non-instrument routines for DEMETER microsatellite data"""
+"""Provides non-instrument specific routines for ICON data"""
 
 from __future__ import absolute_import, division, print_function
 
@@ -116,10 +116,8 @@ def list_remote_files(tag, sat_id, user=None, password=None,
                       year=None, month=None, day=None,
                       start=None, stop=None):
     """Return a Pandas Series of every file for chosen remote data.
-
     This routine is intended to be used by pysat instrument modules supporting
     a particular UC-Berkeley SSL dataset related to ICON.
-
     Parameters
     -----------
     tag : (string or NoneType)
@@ -142,13 +140,11 @@ def list_remote_files(tag, sat_id, user=None, password=None,
         Ending time for the file list.  A None value will stop with the last
         file found.
         (default=None)
-
     Returns
     --------
     pandas.Series
         A Series formatted for the Files class (pysat._files.Files)
         containing filenames and indexed by date and time
-
     """
 
     if (user is not None) or (password is not None):
@@ -259,7 +255,6 @@ def list_remote_files(tag, sat_id, user=None, password=None,
 def ssl_download(date_array, tag, sat_id, data_path=None,
                  user=None, password=None, supported_tags=None):
     """Download ICON data from public area of SSL ftp server
-
     Parameters
     ----------
     date_array : array-like
@@ -283,12 +278,10 @@ def ssl_download(date_array, tag, sat_id, data_path=None,
         Additional keywords supplied by user when invoking the download
         routine attached to a pysat.Instrument object are passed to this
         routine via kwargs.
-
     Returns
     --------
     Void : (NoneType)
         Downloads data to disk.
-
     """
 
     # get a list of remote files

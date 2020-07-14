@@ -23,19 +23,19 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
-    supported_tags : (dict or NoneType)
+    supported_tags : dict or NoneType
         keys are sat_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
     fake_daily_files_from_monthly : bool
@@ -50,7 +50,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     Returns
     --------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Examples

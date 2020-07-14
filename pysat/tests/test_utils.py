@@ -447,6 +447,8 @@ class TestBasicNetCDF4():
 
 
 class TestBasicNetCDF4xarray():
+    """NOTE: combine with above class as part of #60"""
+
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # store current pysat directory
