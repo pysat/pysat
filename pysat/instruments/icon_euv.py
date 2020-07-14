@@ -155,7 +155,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     --------
     ::
         inst = pysat.Instrument('icon', 'euv', sat_id='a', tag='')
-        inst.load(2019,1)
+        inst.load(2020, 1)
 
     """
 
