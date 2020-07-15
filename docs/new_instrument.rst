@@ -113,9 +113,10 @@ as needed in response to user inputs.
 
 **list_files**
 
-Pysat maintains a list of files to enable data management functionality.
-It needs a pandas Series of filenames indexed by time. Pysat expects the module
-method platform_name.list_files to appear as:
+pysat maintains a list of files to enable data management functionality.
+To get this information, pysat expects a module method platform_name.list_files
+to return a pandas Series of filenames indexed by time with a method
+signature of:
 
 .. code:: python
 
@@ -128,7 +129,7 @@ is passed in data_path. A user is also able to supply a new template string
 suitable for locating files on their system at pysat.Instrument instantiation,
 passed via format_str.
 
-Pysat will by default store data in pysat_data_dir/platform/name/tag,
+pysat will by default store data in pysat_data_dir/platform/name/tag,
 helpfully provided in data_path, where pysat_data_dir is specified by using
 `pysat.utils.set_data_dir(pysat_data_dir)`. Note that an alternative
 directory structure may be specified using the pysat.Instrument keyword
@@ -164,8 +165,7 @@ A complete list_files routine could be as simple as
            # template string below works for CINDI IVM data that looks like
            # 'cindi-2009310-ivm-v02.hdf'
            format_str = 'cindi-{year:4d}{day:03d}-ivm-v{version:02d}.hdf'
-       return pysat.Files.from_os(data_path=data_path,
-                                  format_str=format_str)
+       return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 The constructor presumes the template string is for a fixed width format
 unless a delimiter string is supplied. This constructor supports conversion
@@ -180,9 +180,7 @@ greater visibility.
 See pysat.utils.time.create_datetime_index for creating a datetime index for an
 array of irregularly sampled times.
 
-The output provided by the list_files function that has been pulled into pysat can be
-inspected from within Python by checking `instrument.files.files`.
-pysat will invoke the list_files method the first time that particular instrument
+pysat will invoke the list_files method the first time a particular instrument
 is instantiated. After the first instantiation, by default pysat will not search
 for instrument files as some missions can produce a large number of
 files which may take time to identify. The list of files associated
@@ -191,34 +189,66 @@ with an Instrument may be updated by adding `update_files=True`.
 .. code:: python
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
+The output provided by the list_files function that has been pulled into pysat
+can be inspected from within Python by checking `instrument.files.files`.
 
 **load**
 
-Loading is a fundamental pysat activity, this routine enables the user to
-consider loading a hidden implementation 'detail'.
+Loading data is a fundamental activity for data science and is
+required for all pysat instruments. The work invested by the instrument
+module author makes it possible for users to work with the data easily.
+
+The load module method signature should appear as:
 
 .. code:: python
 
-   def load(fnames, tag=None):
+   def load(fnames, tag=None, sat_id=None):
        return data, meta
+
+- fnames contains a list of filenames with the complete data path that
+  pysat expects the routine to load data for. For most data sets
+  the method should return the exact data that is within the file.
+  However, pysat is also currently optimized for working with
+  data by day. This can present some issues for data sets that are stored
+  by month or by year. See `instruments.methods.nasa_cdaweb.py` for an example
+  of returning daily data when stored by month.
+- tag and sat_id specify the data set to be loaded
 
 - The load routine should return a tuple with (data, pysat metadata object).
 - `data` is a pandas DataFrame, column names are the data labels, rows are
-  indexed by datetime objects.  For multi-dimensional data, an xarray can be
-  used.
+  indexed by datetime objects.
+- For multi-dimensional data, an xarray can be
+  used instead. When returning xarray data, a variable at the instrument module
+  top-level must be set,
+.. code:: python
+
+   pandas_format = False
+
+- The pandas DataFrame or xarray needs to be indexed with datetime objects. For
+  xarray objects this index needs to be named 'Epoch' or 'time'. In a future
+  version the supported names for the time index may be reduced.
 - `pysat.utils.create_datetime_index` provides for quick generation of an
   appropriate datetime index for irregularly sampled data set with gaps
-- pysat meta object obtained from `pysat.Meta()`. Use pandas DataFrame indexed
-  by name with columns for 'units' and 'long_name'. Additional arbitrary
-  columns allowed. See `pysat.Meta` for more information on creating the
-  initial metadata.
+
+- A pysat meta object may be obtained from `pysat.Meta()`. The Meta object
+  uses a pandas DataFrame indexed by variable name with columns for
+  metadata parameters associated with that variable, including items like
+  'units' and 'long_name'. A variety of parameters are included by default.
+  Additional arbitrary columns allowed. See `pysat.Meta` for more information on
+  creating the initial metadata.
+- Note that users may opt for a different
+  naming scheme for metadata parameters thus the most general code for working
+  with metadata uses the attached labels,
+.. code:: python
+
+   # update units to meters, 'm' for variable
+   inst.meta[variable, inst.units_label] = 'm'
+
 - If metadata is already stored with the file, creating the Meta object is
-  trivial. If this isn't the case, it can be tedious to fill out all
-  information if there are many data parameters. In this case it is easier to
-  fill out a text file. A convenience function is provided for this
+  generally trivial. If this isn't the case, it can be tedious to fill out all
+  information if there are many data parameters. In this case it may be easier
+  to fill out a text file. A basic convenience function is provided for this
   situation. See `pysat.Meta.from_csv` for more information.
-
-
 
 **download**
 
