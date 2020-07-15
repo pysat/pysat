@@ -216,6 +216,5 @@ def clean(inst):
 
     """
 
-    if inst.clean_level != 'none':
-        warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
+    warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
     return
