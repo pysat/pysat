@@ -29,7 +29,7 @@ class TestGenMethods():
         assert str(excinfo.value).find(err_msg) >= 0
 
 
-class TestICONIVMCustom():
+class TestRemoveLeadText():
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
@@ -59,7 +59,7 @@ class TestICONIVMCustom():
         assert (len(self.testInst['dummy1']) == self.Npts)
 
 
-class TestRemoveLeadTextXarray(TestICONIVMCustom):
+class TestRemoveLeadTextXarray(TestRemoveLeadText):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Load a test instrument
