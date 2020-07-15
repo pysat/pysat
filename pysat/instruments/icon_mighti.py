@@ -234,7 +234,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
                                     pandas_format=pandas_format)
 
 
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -262,10 +262,10 @@ def clean(inst, clean_level=None):
     if inst.tag[0:2] == 've':
         # vector winds area
         mvars = ['Zonal_Wind', 'Meridional_Wind']
-        if clean_level == 'good':
+        if inst.clean_level == 'good':
             idx, = np.where(inst['Wind_Quality'] != 1)
             inst[idx, mvars] = np.nan
-        elif clean_level == 'dusty':
+        elif inst.clean_level == 'dusty':
             idx, = np.where(inst['Wind_Quality'] < 0.5)
             inst[idx, mvars] = np.nan
         else:
@@ -274,7 +274,7 @@ def clean(inst, clean_level=None):
     elif inst.tag[0:2] == 'te':
         # neutral temperatures
         mvar = 'Temperature'
-        if (clean_level == 'good') or (clean_level == 'dusty'):
+        if inst.clean_level in ['good', 'dusty']:
             # SAA
             saa_flag = 'MIGHTI_{s}_Quality_Flag_South_Atlantic_Anomaly'
             idx, = np.where(inst[saa_flag.format(inst.sat_id.upper())] > 0)
@@ -288,7 +288,7 @@ def clean(inst, clean_level=None):
             pass
     elif inst.tag[0:2] == 'lo':
         # dealing with LOS winds
-        if (clean_level == 'good') or (clean_level == 'dusty'):
+        if inst.clean_level in ['good', 'dusty']:
             # find location with any of the flags set
             idx, idy, = np.where(inst['Quality_Flags'].any(axis=2))
             inst[idx, idy, 'Line_of_Sight_Wind'] = np.nan

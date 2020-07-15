@@ -171,7 +171,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
                                     pandas_format=pandas_format)
 
 
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -190,11 +190,6 @@ def clean(inst, clean_level=None):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Note
     ----
         Supports 'clean', 'dusty', 'dirty', 'none'. Method is
@@ -208,13 +203,13 @@ def clean(inst, clean_level=None):
         L26_Flag = inst['ICON_L26_Flags']
     vars = ['HmF2', 'NmF2', 'Oplus']
 
-    if clean_level == 'clean':
+    if inst.clean_level == 'clean':
         idx, = np.where(L26_Flag > 0)
         inst[idx, vars] = np.nan
-    elif clean_level == 'dusty':
+    elif inst.clean_level == 'dusty':
         idx, = np.where(L26_Flag > 1)
         inst[idx, vars] = np.nan
-    elif clean_level == 'dirty':
+    elif inst.clean_level == 'dirty':
         idx, = np.where(L26_Flag > 2)
         inst[idx, vars] = np.nan
 
