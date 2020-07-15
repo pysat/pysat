@@ -262,7 +262,7 @@ def clean(inst):
     if inst.tag[0:2] == 've':
         # vector winds area
         mvars = ['Zonal_Wind', 'Meridional_Wind']
-        if inst.clean_level == 'good':
+        if inst.clean_level == 'clean':
             idx, = np.where(inst['Wind_Quality'] != 1)
             inst[idx, mvars] = np.nan
         elif inst.clean_level == 'dusty':
@@ -274,7 +274,7 @@ def clean(inst):
     elif inst.tag[0:2] == 'te':
         # neutral temperatures
         mvar = 'Temperature'
-        if inst.clean_level in ['good', 'dusty']:
+        if inst.clean_level in ['clean', 'dusty']:
             # SAA
             saa_flag = 'MIGHTI_{s}_Quality_Flag_South_Atlantic_Anomaly'
             idx, = np.where(inst[saa_flag.format(inst.sat_id.upper())] > 0)
@@ -288,7 +288,7 @@ def clean(inst):
             pass
     elif inst.tag[0:2] == 'lo':
         # dealing with LOS winds
-        if inst.clean_level in ['good', 'dusty']:
+        if inst.clean_level in ['clean', 'dusty']:
             # find location with any of the flags set
             idx, idy, = np.where(inst['Quality_Flags'].any(axis=2))
             inst[idx, idy, 'Line_of_Sight_Wind'] = np.nan
