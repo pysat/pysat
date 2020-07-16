@@ -46,7 +46,6 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 import logging
-import numpy as np
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
@@ -205,16 +204,13 @@ def clean(inst):
         vars = ['ICON_L26_' + x for x in vars]
 
     if inst.clean_level == 'clean':
-        idx, = np.where(inst[icon_flag] > 0)
         for var in vars:
-            inst[idx, :, var] = np.nan
+            inst[var] = inst[var].where(inst[icon_flag] == 0)
     elif inst.clean_level == 'dusty':
-        idx, = np.where(inst[icon_flag] > 1)
         for var in vars:
-            inst[idx, :, var] = np.nan
+                inst[var] = inst[var].where(inst[icon_flag] <= 1)
     elif inst.clean_level == 'dirty':
-        idx, = np.where(inst[icon_flag] > 2)
         for var in vars:
-            inst[idx, :, var] = np.nan
+            inst[var] = inst[var].where(inst[icon_flag] <= 2)
 
     return
