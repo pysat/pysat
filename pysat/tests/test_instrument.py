@@ -479,7 +479,10 @@ class TestBasics():
 
     def test_data_access_by_datetime_slicing_and_name(self):
         if self.testInst.name == 'testing2d':
-            pytest.skip('not supported for 2d')
+            time_step = (self.testInst.index[1] - self.testInst.index[0]).value/1.E9
+            offset = pds.DateOffset(seconds=10*time_step)
+            start = dt.datetime(2009, 1, 1, 0, 0, 0)
+            stop = start + offset
         self.testInst.load(2009, 1)
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
         stop = dt.datetime(2009, 1, 1, 0, 0, 10)
