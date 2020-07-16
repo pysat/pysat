@@ -593,6 +593,10 @@ class TestBasics():
             pytest.skip('not supported for 2d')
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
+        time_step = (self.testInst.index[1] - self.testInst.index[0]).value/1.E9
+        offset = pds.DateOffset(seconds=10*time_step)
+        start = dt.datetime(2009, 1, 1, 0, 0, 0)
+        stop = start + offset
         self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0):
                       dt.datetime(2009, 1, 1, 0, 0, 10),
                       'doubleMLT'] = 0
