@@ -219,20 +219,29 @@ def clean(inst):
     rpa_variables = ['Ion_Temperature', 'Ion_Density',
                      'Fractional_Ion_Density_H',
                      'Fractional_Ion_Density_O']
+    if 'RPA_Flag' in inst.variables:
+        rpa_flag = 'RPA_Flag'
+        dm_flag = 'DM_Flag'
+    else:
+        rpa_flag = 'ICON_L27_RPA_Flag'
+        dm_flag = 'ICON_L27_DM_Flag'
+        drift_variables = ['ICON_L27_' + x for x in drift_variables]
+        cross_drift_variables = ['ICON_L27_' + x for x in cross_drift_variables]
+        rpa_variables = ['ICON_L27_' + x for x in rpa_variables]
 
     if inst.clean_level in ['clean', 'dusty']:
         # remove drift values impacted by RPA
-        idx, = np.where(inst['RPA_Flag'] >= 1)
+        idx, = np.where(inst[rpa_flag] >= 1)
         for var in drift_variables:
             inst[idx, var] = np.nan
         # DM values
-        idx, = np.where(inst['DM_Flag'] >= 1)
+        idx, = np.where(inst[dm_flag] >= 1)
         for var in cross_drift_variables:
             inst[idx, var] = np.nan
 
     if inst.clean_level == 'clean':
         # other RPA parameters
-        idx, = np.where(inst['RPA_Flag'] >= 2)
+        idx, = np.where(inst[rpa_flag] >= 2)
         for var in rpa_variables:
             inst[idx, var] = np.nan
 

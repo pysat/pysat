@@ -197,20 +197,25 @@ def clean(inst):
 
     """
 
-    try:
-        L26_Flag = inst['Flags']
-    except KeyError:
-        L26_Flag = inst['ICON_L26_Flags']
+
     vars = ['HmF2', 'NmF2', 'Oplus']
+    if 'Flags' in inst.variables:
+            icon_flag = 'Flags'
+    else:
+        icon_flag = 'ICON_L26_Flags'
+        vars = ['ICON_L26_' + x for x in vars]
 
     if inst.clean_level == 'clean':
-        idx, = np.where(L26_Flag > 0)
-        inst[idx, vars] = np.nan
+        idx, = np.where(inst[icon_flag] > 0)
+        for var in vars:
+            inst[idx, var] = np.nan
     elif inst.clean_level == 'dusty':
-        idx, = np.where(L26_Flag > 1)
-        inst[idx, vars] = np.nan
+        idx, = np.where(inst[icon_flag] > 1)
+        for var in vars:
+            inst[idx, vars] = np.nan
     elif inst.clean_level == 'dirty':
-        idx, = np.where(L26_Flag > 2)
-        inst[idx, vars] = np.nan
+        idx, = np.where(inst[icon_flag] > 2)
+        for var in vars:
+            inst[idx, vars] = np.nan
 
     return
