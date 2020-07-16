@@ -274,6 +274,7 @@ def clean(inst):
         else:
             # dirty and worse lets everything through
             pass
+
     elif inst.tag.find('vector') >= 0:
         # vector winds area
         vars = ['Zonal_Wind', 'Meridional_Wind']
@@ -289,10 +290,11 @@ def clean(inst):
         elif inst.clean_level == 'dusty':
             idx, idy, = np.where(inst[qual_flag] < 0.5)
             for var in vars:
-                inst[idx, idy, vars] = np.nan
+                inst[idx, idy, var] = np.nan
         else:
             # dirty lets everything through
             pass
+
     elif inst.tag.find('temp') >= 0:
         # neutral temperatures
         var = 'Temperature'
