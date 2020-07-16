@@ -478,16 +478,14 @@ class TestBasics():
                       self.testInst.data['uts'].values[0])
 
     def test_data_access_by_datetime_slicing_and_name(self):
-        if self.testInst.name == 'testing2d':
-            time_step = (self.testInst.index[1] - self.testInst.index[0]).value/1.E9
-            offset = pds.DateOffset(seconds=10*time_step)
-            start = dt.datetime(2009, 1, 1, 0, 0, 0)
-            stop = start + offset
         self.testInst.load(2009, 1)
+        time_step = (self.testInst.index[1]
+                     - self.testInst.index[0]).value / 1.E9
+        offset = pds.DateOffset(seconds=(10 * time_step))
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
-        stop = dt.datetime(2009, 1, 1, 0, 0, 10)
-        assert np.all(self.testInst[start:stop, 'uts'] ==
-                      self.testInst.data['uts'].values[0:11])
+        stop = start + offset
+        assert np.all(self.testInst[start:stop, 'uts']
+                      == self.testInst.data['uts'].values[0:11])
 
     def test_setting_data_by_name(self):
         self.testInst.load(2009, 1)
@@ -589,27 +587,24 @@ class TestBasics():
         assert np.all(self.testInst[0, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_datetime_slicing_and_name(self):
-        if self.testInst.name == 'testing2d':
-            pytest.skip('not supported for 2d')
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        time_step = (self.testInst.index[1] - self.testInst.index[0]).value/1.E9
-        offset = pds.DateOffset(seconds=10*time_step)
+        time_step = (self.testInst.index[1]
+                     - self.testInst.index[0]).value / 1.E9
+        offset = pds.DateOffset(seconds=(10 * time_step))
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
         stop = start + offset
         self.testInst[start:stop, 'doubleMLT'] = 0
-                      dt.datetime(2009, 1, 1, 0, 0, 10),
-                      'doubleMLT'] = 0
-        assert np.all(self.testInst[11:, 'doubleMLT'] ==
-                      2. * self.testInst[11:, 'mlt'])
+        assert np.all(self.testInst[11:, 'doubleMLT']
+                      == 2. * self.testInst[11:, 'mlt'])
         assert np.all(self.testInst[0:11, 'doubleMLT'] == 0)
 
     def test_modifying_data_inplace(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
-        assert np.all(self.testInst['doubleMLT'] ==
-                      2.*self.testInst['mlt'] + 100)
+        assert np.all(self.testInst['doubleMLT']
+                      == 2.*self.testInst['mlt'] + 100)
 
     def test_getting_all_data_by_index(self):
         self.testInst.load(2009, 1)
