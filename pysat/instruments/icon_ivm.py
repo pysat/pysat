@@ -108,11 +108,6 @@ def init(inst):
     inst : (pysat.Instrument)
         Instrument class object
 
-    Returns
-    --------
-    Void : (NoneType)
-        modified in-place, as desired.
-
     """
 
     logger.info(mm_icon.ackn_str)
@@ -208,11 +203,6 @@ def clean(inst, clean_level=None):
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Note
     ----

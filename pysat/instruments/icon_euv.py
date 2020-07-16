@@ -192,11 +192,6 @@ def clean(inst, clean_level=None):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Note
     ----
         Supports 'clean', 'dusty', 'dirty', 'none'. Method is
