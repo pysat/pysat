@@ -301,7 +301,7 @@ def clean(inst):
         if saa_flag.format(s=inst.sat_id.upper()) not in inst.variables:
             saa_flag = 'ICON_L1_' + saa_flag
             cal_flag = 'ICON_L1_' + cal_flag
-            var = 'ICON_L23_' + var
+            var = 'ICON_L23_MIGHTI_' + inst.sat_id.upper() + '_' + var
         if inst.clean_level in ['clean', 'dusty']:
             # SAA
             idx, = np.where(inst[saa_flag.format(s=inst.sat_id.upper())] > 0)
