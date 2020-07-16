@@ -303,12 +303,7 @@ def clean(inst):
                                  cal_flag))
             var = '_'.JOIN(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
         if inst.clean_level in ['clean', 'dusty']:
-            # SAA
-            idx, = np.where(inst[saa_flag] > 0)
-            inst[:, idx, var] = np.nan
-            # Calibration file
-            idx, = np.where(inst[cal_flag] > 0)
-            inst[:, idx, var] = np.nan
+            inst[var] = inst[var].where((saa_flag == 0) & (cal_flag == 0))
         else:
             # dirty and worse lets everything through
             pass
