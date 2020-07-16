@@ -170,12 +170,10 @@ def remove_preamble(inst):
               'los_wind_red': 'ICON_L21_',
               'vector_wind_green': 'ICON_L22_',
               'vector_wind_red': 'ICON_L22_',
-              'temperature': 'ICON_L23_MIGHTI_' + inst.sat_id.upper() + '_'}
+              'temperature': ['ICON_L1_MIGHTI_{}_'.format(inst.sat_id.upper()),
+                              'ICON_L23_MIGHTI_{}_'.format(inst.sat_id.upper()),
+                              'ICON_L23_']}
     mm_gen.remove_leading_text(inst, target=target[inst.tag])
-
-    # for temps need
-    mm_gen.remove_leading_text(inst, target='ICON_L23_')
-    mm_gen.remove_leading_text(inst, target='ICON_L1_')
 
     return
 
@@ -296,12 +294,14 @@ def clean(inst):
     elif inst.tag.find('temp') >= 0:
         # neutral temperatures
         var = 'Temperature'
-        saa_flag = 'MIGHTI_{s}_Quality_Flag_South_Atlantic_Anomaly'
-        cal_flag = 'MIGHTI_{s}_Quality_Flag_Bad_Calibration'
-        if saa_flag.format(s=inst.sat_id.upper()) not in inst.variables:
-            saa_flag = 'ICON_L1_' + saa_flag
-            cal_flag = 'ICON_L1_' + cal_flag
-            var = 'ICON_L23_MIGHTI_' + inst.sat_id.upper() + '_' + var
+        saa_flag = 'Quality_Flag_South_Atlantic_Anomaly'
+        cal_flag = 'Quality_Flag_Bad_Calibration'
+        if saa_flag not in inst.variables:
+            saa_flag = '_'.join(('ICON_L1_MIGHTI', inst.sat_id.upper(),
+                                 saa_flag))
+            cal_flag = '_'.join(('ICON_L1_MIGHTI', inst.sat_id.upper(),
+                                 cal_flag))
+            var = '_'.JOIN(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
         if inst.clean_level in ['clean', 'dusty']:
             # SAA
             idx, = np.where(inst[saa_flag.format(s=inst.sat_id.upper())] > 0)

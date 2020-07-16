@@ -120,7 +120,7 @@ def remove_leading_text(inst, target=None):
     ----------
     inst : pysat.Instrument
         associated pysat.Instrument object
-    target : str
+    target : str or list of strings
         Leading string to remove. If none supplied,
         ICON project standards are used to identify and remove
         leading text
@@ -133,8 +133,12 @@ def remove_leading_text(inst, target=None):
 
     """
 
-    if target is not None:
-        prepend_str = target
+    if isinstance(target, str):
+        target = [target]
+    elif (not isinstance(target, list)) or (not isinstance(target[0], str)):
+        raise ValueError('target must be a string or list of strings')
+
+    for prepend_str in target:
 
         if isinstance(inst.data, pds.DataFrame):
             inst.data.rename(columns=lambda x: x.split(prepend_str)[-1],
