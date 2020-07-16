@@ -197,10 +197,9 @@ def clean(inst):
 
     """
 
-
     vars = ['HmF2', 'NmF2', 'Oplus']
     if 'Flags' in inst.variables:
-            icon_flag = 'Flags'
+        icon_flag = 'Flags'
     else:
         icon_flag = 'ICON_L26_Flags'
         vars = ['ICON_L26_' + x for x in vars]
