@@ -145,7 +145,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
 
     # create a few simulated profiles
     # DataFrame at each time with mixed variables
-    dummy_profiles = []
+    profiles = []
     # DataFrame at each time with numeric variables only
     alt_profiles = []
     # Serie at each time, numeric data only
@@ -169,11 +169,11 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
 
     for time in data.index:
         frame.index = high_rate_template + (time - data.index[0])
-        dummy_profiles.append(frame)
+        profiles.append(frame)
         alt_profiles.append(frame_alt)
         series_profiles.append(series_alt)
     # store multiple data types into main frame
-    data['dummy_profiles'] = pds.Series(dummy_profiles, index=data.index)
+    data['profiles'] = pds.Series(profiles, index=data.index)
     data['alt_profiles'] = pds.Series(alt_profiles, index=data.index)
     data['series_profiles'] = pds.Series(series_profiles, index=data.index)
     return data, meta.copy()
