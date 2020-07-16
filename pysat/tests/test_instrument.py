@@ -50,7 +50,8 @@ class TestBasics():
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
         with pytest.raises(ValueError):
-            pysat.Instrument(platform='pysat', name='testing', sat_id='10',
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name, sat_id='10',
                              clean_level='clean',
                              unsupported_keyword_yeah=True)
 
@@ -63,7 +64,8 @@ class TestBasics():
             self.testInst.load()
 
     def test_basic_instrument_load_by_file_and_multifile(self):
-        testInst = pysat.Instrument(platform='pysat', name='testing',
+        testInst = pysat.Instrument(platform=self.testInst.platform,
+                                    name=self.testInst.name,
                                     sat_id='10',
                                     clean_level='clean',
                                     update_files=True,
@@ -344,7 +346,7 @@ class TestBasics():
         # No loaded data
         assert output.find('No loaded data') > 0
         assert output.find('Number of variables:') < 0
-        assert output.find('dummy') < 0
+        assert output.find('uts') < 0
 
     def test_repr_w_orbit(self):
         re_load(pysat.instruments.pysat_testing)
@@ -386,7 +388,7 @@ class TestBasics():
         output = self.testInst.__str__()
         assert output.find('No loaded data') < 0
         assert output.find('Number of variables:') > 0
-        assert output.find('dummy') > 0
+        assert output.find('uts') > 0
 
     # --------------------------------------------------------------------------
     #
@@ -476,6 +478,8 @@ class TestBasics():
                       self.testInst.data['uts'].values[0])
 
     def test_data_access_by_datetime_slicing_and_name(self):
+        if self.testInst.name == 'testing2d':
+            pytest.skip('not supported for 2d')
         self.testInst.load(2009, 1)
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
         stop = dt.datetime(2009, 1, 1, 0, 0, 10)
@@ -582,6 +586,8 @@ class TestBasics():
         assert np.all(self.testInst[0, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_datetime_slicing_and_name(self):
+        if self.testInst.name == 'testing2d':
+            pytest.skip('not supported for 2d')
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0):
