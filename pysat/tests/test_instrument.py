@@ -597,7 +597,7 @@ class TestBasics():
         offset = pds.DateOffset(seconds=10*time_step)
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
         stop = start + offset
-        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0):
+        self.testInst[start:stop, 'doubleMLT'] = 0
                       dt.datetime(2009, 1, 1, 0, 0, 10),
                       'doubleMLT'] = 0
         assert np.all(self.testInst[11:, 'doubleMLT'] ==
