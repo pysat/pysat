@@ -42,6 +42,11 @@ class TestRemoveLeadText():
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.Npts
 
+    def test_remove_prefix_w_bad_target(self):
+        self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
+        with pytest.raises(ValueError):
+            gen.remove_leading_text(self.testInst, target=17.5)
+
     def test_remove_names_wo_target(self):
         self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
         gen.remove_leading_text(self.testInst)
@@ -55,6 +60,17 @@ class TestRemoveLeadText():
         gen.remove_leading_text(self.testInst, target='ICON_L27')
         # check prepended text removed
         assert (len(self.testInst['_Blurp']) == self.Npts)
+        # check other names untouched
+        assert (len(self.testInst['dummy1']) == self.Npts)
+
+    def test_remove_names_w_target_list(self):
+        self.testInst['ICON_L27_Blurp'] = self.testInst['dummy1']
+        self.testInst['ICON_L23_Bloop'] = self.testInst['dummy1']
+        gen.remove_leading_text(self.testInst,
+                                target=['ICON_L27', 'ICON_L23_B'])
+        # check prepended text removed
+        assert (len(self.testInst['_Blurp']) == self.Npts)
+        assert (len(self.testInst['loop']) == self.Npts)
         # check other names untouched
         assert (len(self.testInst['dummy1']) == self.Npts)
 
@@ -78,5 +94,16 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         gen.remove_leading_text(self.testInst, target='ICON_L27')
         # check prepended text removed
         assert (len(self.testInst['_Blurp']) == self.Npts)
+        # check other names untouched
+        assert (len(self.testInst['profiles']) == self.Npts)
+
+    def test_remove_2D_names_w_target_list(self):
+        self.testInst['ICON_L27_Blurp'] = self.testInst['profiles']
+        self.testInst['ICON_L23_Bloop'] = self.testInst['dummy1']
+        gen.remove_leading_text(self.testInst,
+                                target=['ICON_L27', 'ICON_L23_B'])
+        # check prepended text removed
+        assert (len(self.testInst['_Blurp']) == self.Npts)
+        assert (len(self.testInst['loop']) == self.Npts)
         # check other names untouched
         assert (len(self.testInst['profiles']) == self.Npts)

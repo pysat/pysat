@@ -133,7 +133,9 @@ def remove_leading_text(inst, target=None):
 
     """
 
-    if isinstance(target, str):
+    if target is None:
+        return
+    elif isinstance(target, str):
         target = [target]
     elif (not isinstance(target, list)) or (not isinstance(target[0], str)):
         raise ValueError('target must be a string or list of strings')
