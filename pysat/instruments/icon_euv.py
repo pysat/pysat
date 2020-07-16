@@ -148,6 +148,9 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     Any additional keyword arguments passed to pysat.Instrument
     upon instantiation are passed along to this routine.
 
+    The 'Altitude' dimension is renamed as 'Alt' to avoid confusion with the
+    'Altitude' variable when performing xarray operations
+
     Examples
     --------
     ::
@@ -156,18 +159,20 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
 
     """
 
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                    units_label='Units',
-                                    name_label='Long_Name',
-                                    notes_label='Var_Notes',
-                                    desc_label='CatDesc',
-                                    plot_label='FieldNam',
-                                    axis_label='LablAxis',
-                                    scale_label='ScaleTyp',
-                                    min_label='ValidMin',
-                                    max_label='ValidMax',
-                                    fill_label='FillVal',
-                                    pandas_format=pandas_format)
+    data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
+                                           units_label='Units',
+                                           name_label='Long_Name',
+                                           notes_label='Var_Notes',
+                                           desc_label='CatDesc',
+                                           plot_label='FieldNam',
+                                           axis_label='LablAxis',
+                                           scale_label='ScaleTyp',
+                                           min_label='ValidMin',
+                                           max_label='ValidMax',
+                                           fill_label='FillVal',
+                                           pandas_format=pandas_format)
+    data = data.rename_dims(dims_dict={'Altitude': 'Alt'})
+    return data, mdata
 
 
 def clean(inst):
@@ -208,7 +213,7 @@ def clean(inst):
             inst[var] = inst[var].where(inst[icon_flag] == 0)
     elif inst.clean_level == 'dusty':
         for var in vars:
-                inst[var] = inst[var].where(inst[icon_flag] <= 1)
+            inst[var] = inst[var].where(inst[icon_flag] <= 1)
     elif inst.clean_level == 'dirty':
         for var in vars:
             inst[var] = inst[var].where(inst[icon_flag] <= 2)
