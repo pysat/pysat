@@ -207,14 +207,14 @@ def clean(inst):
     if inst.clean_level == 'clean':
         idx, = np.where(inst[icon_flag] > 0)
         for var in vars:
-            inst[idx, var] = np.nan
+            inst[idx, :, var] = np.nan
     elif inst.clean_level == 'dusty':
         idx, = np.where(inst[icon_flag] > 1)
         for var in vars:
-            inst[idx, vars] = np.nan
+            inst[idx, :, var] = np.nan
     elif inst.clean_level == 'dirty':
         idx, = np.where(inst[icon_flag] > 2)
         for var in vars:
-            inst[idx, vars] = np.nan
+            inst[idx, :, var] = np.nan
 
     return
