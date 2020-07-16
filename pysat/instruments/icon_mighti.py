@@ -284,13 +284,11 @@ def clean(inst):
             qual_flag = 'ICON_L22_Wind_Quality'
             vars = ['ICON_L22_' + x for x in vars]
         if inst.clean_level == 'clean':
-            idx, idy, = np.where(inst[qual_flag] != 1)
             for var in vars:
-                inst[idx, idy, var] = np.nan
+                inst[var] = inst[var].where(inst[qual_flag] == 1.0)
         elif inst.clean_level == 'dusty':
-            idx, idy, = np.where(inst[qual_flag] < 0.5)
             for var in vars:
-                inst[idx, idy, var] = np.nan
+                inst[var] = inst[var].where(inst[qual_flag] >= 0.5)
         else:
             # dirty lets everything through
             pass
