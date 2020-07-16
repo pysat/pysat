@@ -675,9 +675,9 @@ class TestBasics():
                                          'alt_profiles':
                                              {'density': 'volume'}}])
     def test_ho_pandas_variable_renaming(self, values):
-        # check for pysat_testing2D instrument
+        # check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
-            if self.testInst.name == 'testing2D':
+            if self.testInst.name == 'testing2d':
                 self.testInst.load(2009, 1)
                 self.testInst.rename(values)
                 for key in values:
@@ -709,9 +709,9 @@ class TestBasics():
                                         {'Nope_profiles':
                                         {'density': 'valid_HO_change'}}])
     def test_ho_pandas_unknown_variable_error_renaming(self, values):
-        # check for pysat_testing2D instrument
+        # check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
-            if self.testInst.name == 'testing2D':
+            if self.testInst.name == 'testing2d':
                 self.testInst.load(2009, 1)
                 # check for error for unknown column or HO variable name
                 with pytest.raises(ValueError):
@@ -722,9 +722,9 @@ class TestBasics():
                                          'alt_profiles':
                                              {'density': 'VoLuMe'}}])
     def test_ho_pandas_variable_renaming_lowercase(self, values):
-        # check for pysat_testing2D instrument
+        # check for pysat_testing2d instrument
         if self.testInst.platform == 'pysat':
-            if self.testInst.name == 'testing2D':
+            if self.testInst.name == 'testing2d':
                 self.testInst.load(2009, 1)
                 self.testInst.rename(values)
                 for key in values:
