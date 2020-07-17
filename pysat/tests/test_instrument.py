@@ -4,7 +4,6 @@ import datetime as dt
 from importlib import reload as re_load
 import logging
 import numpy as np
-import re
 
 import pandas as pds
 import pytest
