@@ -90,20 +90,13 @@ class TestRemoveLeadTextXarray(TestRemoveLeadText):
         del self.testInst, self.Npts
 
     def test_remove_2D_names_w_target(self):
-        self.testInst['ICON_L27_Blurp'] = self.testInst['profiles']
-        gen.remove_leading_text(self.testInst, target='ICON_L27')
+        gen.remove_leading_text(self.testInst, target='ser')
         # check prepended text removed
-        assert (len(self.testInst['_Blurp']) == self.Npts)
-        # check other names untouched
-        assert (len(self.testInst['profiles']) == self.Npts)
+        assert (len(self.testInst['ies_profiles']) == self.Npts)
 
     def test_remove_2D_names_w_target_list(self):
-        self.testInst['ICON_L27_Blurp'] = self.testInst['profiles']
-        self.testInst['ICON_L23_Bloop'] = self.testInst['dummy1']
         gen.remove_leading_text(self.testInst,
-                                target=['ICON_L27', 'ICON_L23_B'])
+                                target=['ser', 'alt_prof'])
         # check prepended text removed
-        assert (len(self.testInst['_Blurp']) == self.Npts)
-        assert (len(self.testInst['loop']) == self.Npts)
-        # check other names untouched
-        assert (len(self.testInst['profiles']) == self.Npts)
+        assert (len(self.testInst['ies_profiles']) == self.Npts)
+        assert (len(self.testInst['iles']) == self.Npts)
