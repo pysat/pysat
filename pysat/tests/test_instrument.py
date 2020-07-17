@@ -194,14 +194,26 @@ class TestBasics():
         assert files[-1] == dt.datetime(2009, 1, 31)
 
     def test_download_updated_files(self, caplog):
-        with caplog.at_level(logging.DEBUG, logger='pysat'):
+        with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download_updated_files()
+        # Perform a local search
+        assert "files locally" in caplog.text
+        # New files are found
         assert "that are new or updated" in caplog.text
+        # download new files
+        assert "Downloading data to" in caplog.text
+        # Update local file list
+        assert "Updating pysat file list" in caplog.text
 
     def test_download_recent_data(self, caplog):
-        with caplog.at_level(logging.DEBUG, logger='pysat'):
+        with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download()
-        assert "most recent data" in caplog.text
+        # Tells user that recent data will be downloaded
+        assert "most recent data by default" in caplog.text
+        # download new files
+        assert "Downloading data to" in caplog.text
+        # Update local file list
+        assert "Updating pysat file list" in caplog.text
 
     # --------------------------------------------------------------------------
     #
