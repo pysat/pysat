@@ -386,7 +386,7 @@ class Instrument(object):
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
             # Slicing by name and row/date
-            inst[datetime1:datetime1, 'name1':'name2']
+            inst[datetime1:datetime2, 'name1':'name2']
 
         """
 
@@ -431,7 +431,7 @@ class Instrument(object):
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
             # Slicing by name and row/date
-            inst[datetime1:datetime1, 'name1':'name2']
+            inst[datetime1:datetime2, 'name1':'name2']
 
         """
         if 'time' not in self.data:
