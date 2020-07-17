@@ -441,7 +441,7 @@ class Instrument(object):
                 # support slicing time, variable name
                 try:
                     return self.data.isel(time=key[0])[key[1]]
-                except:
+                except (TypeError, KeyError):
                     try:
                         return self.data.sel(time=key[0])[key[1]]
                     except TypeError:  # construct dataset from names
@@ -457,13 +457,13 @@ class Instrument(object):
             try:
                 # grab a particular variable by name
                 return self.data[key]
-            except:
+            except (TypeError, KeyError):
                 # that didn't work
                 try:
                     # get all data variables but for a subset of time
                     # using integer indexing
                     return self.data.isel(time=key)
-                except:
+                except (TypeError, KeyError):
                     # subset of time, using label based indexing
                     return self.data.sel(time=key)
 
@@ -564,7 +564,7 @@ class Instrument(object):
                     #     indict[dim] = self.index[key[i]]
                 try:
                     self.data[key[-1]].loc[indict] = in_data
-                except:
+                except (TypeError, KeyError):
                     indict['time'] = self.index[indict['time']]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
@@ -762,7 +762,7 @@ class Instrument(object):
                                                      self.name)),
                                                      package='pysat.instruments')
                 import_success = True
-            except:
+            except ImportError:
                 # iterate through user set modules
                 for mod in user_modules:
                     # get my.package.name from my.package.name.platform_name
