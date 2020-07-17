@@ -28,10 +28,12 @@ class TestBasics():
                                          sat_id='10',
                                          clean_level='clean',
                                          update_files=True)
+        self.log_level = pysat.logger.level
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst
+        pysat.logger.setLevel(self.log_level)
+        del self.testInst, self.log_level
 
     # --------------------------------------------------------------------------
     #
@@ -193,6 +195,12 @@ class TestBasics():
         assert len(files) == 2
         assert files[0] == dt.datetime(2009, 1, 1)
         assert files[-1] == dt.datetime(2009, 1, 31)
+
+    def test_download_recent_data(self, caplog):
+        pysat.logger.setLevel(logging.INFO)
+        with caplog.at_level(logging.DEBUG):
+            self.testInst.download()
+        assert "most recent data" in caplog.text
 
     # --------------------------------------------------------------------------
     #
