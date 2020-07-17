@@ -760,7 +760,7 @@ class Instrument(object):
                 inst = \
                     importlib.import_module(''.join(('.', self.platform, '_',
                                                      self.name)),
-                                                     package='pysat.instruments')
+                                            package='pysat.instruments')
                 import_success = True
             except ImportError:
                 # iterate through user set modules
@@ -1984,14 +1984,11 @@ class Instrument(object):
         for key in mdata_dict:
             if type(mdata_dict[key]) == bool:
                 mdata_dict[key] = int(mdata_dict[key])
-        # Should use isinstance here
-        if (coltype == type(' ')) or (coltype == type(u' ')):
-            # if isinstance(coltype, str):
+        if (coltype == str):
             remove = True
             warnings.warn('FillValue is not an acceptable '
                           'parameter for strings - it will be removed')
 
-        # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
@@ -2322,8 +2319,7 @@ class Instrument(object):
                     # isinstance isn't working here because of something with
                     # coltype
 
-                    if (coltype == type(' ')) or (coltype == type(u' ')):
-                        # dealing with a string
+                    if (coltype == str):
                         cdfkey = out_data.createVariable(case_key,
                                                          coltype,
                                                          dimensions=(epoch_name),
