@@ -1984,7 +1984,7 @@ class Instrument(object):
         for key in mdata_dict:
             if type(mdata_dict[key]) == bool:
                 mdata_dict[key] = int(mdata_dict[key])
-        if issubclass(coltype, str):
+        if (coltype == str):
             remove = True
             warnings.warn('FillValue is not an acceptable '
                           'parameter for strings - it will be removed')
@@ -2320,7 +2320,7 @@ class Instrument(object):
                     # isinstance isn't working here because of something with
                     # coltype
 
-                    if issubclass(coltype, str):
+                    if (coltype == str):
                         cdfkey = out_data.createVariable(case_key,
                                                          coltype,
                                                          dimensions=(epoch_name),
