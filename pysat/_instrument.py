@@ -2317,13 +2317,11 @@ class Instrument(object):
                     # what the actual objects are, then act as needed
 
                     # use info in coltype to get real datatype of object
-                    # isinstance isn't working here because of something with
-                    # coltype
 
                     if (coltype == str):
                         cdfkey = out_data.createVariable(case_key,
                                                          coltype,
-                                                         dimensions=(epoch_name),
+                                                         dimensions=epoch_name,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
