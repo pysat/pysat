@@ -766,7 +766,6 @@ class Instrument(object):
                 # iterate through user set modules
                 for mod in user_modules:
                     # get my.package.name from my.package.name.platform_name
-                    package_name = '.'.join(mod.split('.')[:-1])
                     try:
                         inst = importlib.import_module(mod)
                         if ((inst.platform == self.platform) & (inst.name == self.name)):
