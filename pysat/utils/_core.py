@@ -406,10 +406,13 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         else:
             out = xr.open_mfdataset(fnames, combine='by_coords')
         for key in out.variables.keys():
+            # Copy the variable attributes from the data object to the metadata
             meta_dict = {}
             for nc_key in out.variables[key].attrs.keys():
                 meta_dict[nc_key] = out.variables[key].attrs[nc_key]
             mdata[key] = meta_dict
+            # Remove variable attributes from the data object
+            out.variables[key].attrs = []
         # Copy the file attributes from the data object to the metadata
         for d in out.attrs.keys():
             if hasattr(mdata, d):
