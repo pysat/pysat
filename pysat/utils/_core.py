@@ -412,7 +412,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 meta_dict[nc_key] = out.variables[key].attrs[nc_key]
             mdata[key] = meta_dict
             # Remove variable attributes from the data object
-            out.variables[key].attrs = []
+            out.variables[key].attrs = {}
         # Copy the file attributes from the data object to the metadata
         for d in out.attrs.keys():
             if hasattr(mdata, d):
@@ -420,6 +420,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
             else:
                 mdata.__setattr__(d, out.attrs[d])
         # Remove attributes from the data object
-        out.attrs = []
+        out.attrs = {}
 
     return out, mdata
