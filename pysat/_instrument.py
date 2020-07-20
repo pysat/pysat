@@ -1564,8 +1564,8 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            logger.info('Downloading the most recent data by default '
-                        + '(yesterday through tomorrow).')
+            logger.info(''.join(['Downloading the most recent data by ',
+                                           'default (yesterday through tomorrow).']))
             start = self.yesterday()
             stop = self.tomorrow()
         logger.info('Downloading data to: {}'.format(self.files.data_path))
