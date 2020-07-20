@@ -408,7 +408,11 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         for key in out.variables.keys():
             meta_dict = {}
             for nc_key in out.variables[key].attrs.keys():
+                # copy attribute into meta object
                 meta_dict[nc_key] = out.variables[key].attrs[nc_key]
+            # remove meta from xarray
+            out.variables[key].attrs = {}
+            # store metadata
             mdata[key] = meta_dict
         # Copy the file attributes from the data object to the metadata
         for d in out.attrs.keys():
