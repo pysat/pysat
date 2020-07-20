@@ -171,7 +171,9 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
                                            max_label='ValidMax',
                                            fill_label='FillVal',
                                            pandas_format=pandas_format)
-    data = data.rename_dims(dims_dict={'Altitude': 'Alt'})
+    # xarray can't merge if variable and dim names are the same
+    if 'Altitude' in data.dims:
+        data = data.rename_dims(dims_dict={'Altitude': 'Alt'})
     return data, mdata
 
 

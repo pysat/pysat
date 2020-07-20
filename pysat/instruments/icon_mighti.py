@@ -217,18 +217,22 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
 
     """
 
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                    units_label='Units',
-                                    name_label='Long_Name',
-                                    notes_label='Var_Notes',
-                                    desc_label='CatDesc',
-                                    plot_label='FieldNam',
-                                    axis_label='LablAxis',
-                                    scale_label='ScaleTyp',
-                                    min_label='ValidMin',
-                                    max_label='ValidMax',
-                                    fill_label='FillVal',
-                                    pandas_format=pandas_format)
+    data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
+                                           units_label='Units',
+                                           name_label='Long_Name',
+                                           notes_label='Var_Notes',
+                                           desc_label='CatDesc',
+                                           plot_label='FieldNam',
+                                           axis_label='LablAxis',
+                                           scale_label='ScaleTyp',
+                                           min_label='ValidMin',
+                                           max_label='ValidMax',
+                                           fill_label='FillVal',
+                                           pandas_format=pandas_format)
+    # xarray can't merge if variable and dim names are the same
+    if 'Altitude' in data.dims:
+        data = data.rename_dims(dims_dict={'Altitude': 'Alt'})
+    return data, mdata
 
 
 def clean(inst):
@@ -291,10 +295,10 @@ def clean(inst):
         ver_vars = ['Fringe_Amplitude', 'Fringe_Amplitude_Error',
                     'Relative_VER', 'Relative_VER_Error']
         if wind_flag not in inst.variables:
-            wind_flag = '_'.join(('ICON_L21', wind_flag))
-            ver_flag = '_'.join(('ICON_L21', ver_flag))
-            wind_vars = ['ICON_L21_' + var for var in wind_vars]
-            ver_vars = ['ICON_L21_' + var for var in ver_vars]
+            wind_flag = '_'.join(('ICON_L22', wind_flag))
+            ver_flag = '_'.join(('ICON_L22', ver_flag))
+            wind_vars = ['ICON_L22_' + var for var in wind_vars]
+            ver_vars = ['ICON_L22_' + var for var in ver_vars]
         min_val = {'clean': 1.0,
                    'dusty': 0.5}
         if inst.clean_level in ['clean', 'dusty']:
