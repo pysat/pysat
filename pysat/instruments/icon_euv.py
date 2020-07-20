@@ -208,14 +208,13 @@ def clean(inst):
         icon_flag = 'ICON_L26_Flags'
         vars = ['ICON_L26_' + x for x in vars]
 
-    if inst.clean_level == 'clean':
+    min_val = {'clean': 1.0,
+               'dusty': 2.0}
+    if inst.clean_level in ['clean', 'dusty']:
         for var in vars:
-            inst[var] = inst[var].where(inst[icon_flag] == 0)
-    elif inst.clean_level == 'dusty':
-        for var in vars:
-            inst[var] = inst[var].where(inst[icon_flag] <= 1)
-    elif inst.clean_level == 'dirty':
-        for var in vars:
-            inst[var] = inst[var].where(inst[icon_flag] <= 2)
-
+            inst[var] = inst[var].where(inst[icon_flag]
+                                        <= min_val[inst.clean_level])
+    else:
+        # dirty and worse lets everything through
+        pass
     return
