@@ -805,7 +805,7 @@ class Instrument(object):
                     raise ImportError(' '.join(('Could not find a registered',
                                                 'module for', self.platform,
                                                 self.name, '\nAvailable',
-                                                'modules:', 
+                                                'modules:',
                                                 ', '.join((user_modules)))))
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
