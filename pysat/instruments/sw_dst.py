@@ -115,8 +115,9 @@ def load(fnames, tag=None, sat_id=None):
             new_data = pds.DataFrame(dst, index=dates, columns=['dst'])
             # pull out specific day
             new_date = dt.datetime.strptime(filename[-10:], '%Y-%m-%d')
-            idx, = np.where((new_data.index >= new_date) &
-                            (new_data.index < new_date+pds.DateOffset(days=1)))
+            idx, = np.where((new_data.index >= new_date)
+                            & (new_data.index < new_date
+                               + pds.DateOffset(days=1)))
             new_data = new_data.iloc[idx, :]
             # add specific day to all data loaded for filenames
             data = pds.concat([data, new_data], sort=True, axis=0)
@@ -215,7 +216,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         local_fname = fname
         saved_fname = os.path.join(data_path, local_fname)
         try:
-            logger.info('Downloading file for '+date.strftime('%D'))
+            logger.info('Downloading file for ' + date.strftime('%D'))
             sys.stdout.flush()
             ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
         except ftplib.error_perm as exception:
