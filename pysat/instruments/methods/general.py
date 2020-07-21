@@ -113,20 +113,26 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0):
 
 def remove_leading_text(inst, target=None):
     """Removes leading text on variable names
-
     Parameters
     ----------
     inst : pysat.Instrument
         associated pysat.Instrument object
-    target : str
-        Leading string to remove. If none supplied,
-        ICON project standards are used to identify and remove
-        leading text
-
+    target : str or list of strings
+        Leading string to remove. If none supplied, returns unmodified
+    Returns
+    -------
+    None
+        Modifies Instrument object in place
     """
 
-    if target is not None:
-        prepend_str = target
+    if target is None:
+        return
+    elif isinstance(target, str):
+        target = [target]
+    elif (not isinstance(target, list)) or (not isinstance(target[0], str)):
+        raise ValueError('target must be a string or list of strings')
+
+    for prepend_str in target:
 
         if isinstance(inst.data, pds.DataFrame):
             inst.data.rename(columns=lambda x: x.split(prepend_str)[-1],
