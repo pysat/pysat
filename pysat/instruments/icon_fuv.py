@@ -191,7 +191,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
                                     pandas_format=pandas_format)
 
 
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -210,17 +210,11 @@ def clean(inst, clean_level=None):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Note
     ----
         Supports 'clean', 'dusty', 'dirty', 'none'
 
     """
 
-    if clean_level != 'none':
-        warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
+    warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
     return

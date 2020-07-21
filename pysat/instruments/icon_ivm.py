@@ -186,7 +186,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
                                     fill_label='FillVal')
 
 
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -205,41 +205,44 @@ def clean(inst, clean_level=None):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Note
     ----
         Supports 'clean', 'dusty', 'dirty', 'none'
 
     """
 
-    if clean_level != 'none':
-        # IVM variable groupings
-        drift_variables = ['Ion_Velocity_X', 'Ion_Velocity_Zonal',
-                           'Ion_Velocity_Meridional',
-                           'Ion_Velocity_Field_Aligned']
-        cross_drift_variables = ['Ion_Velocity_Z', 'Ion_Velocity_Y']
-        rpa_variables = ['Ion_Temperature', 'Ion_Density',
-                         'Fractional_Ion_Density_H',
-                         'Fractional_Ion_Density_O']
+    # IVM variable groupings
+    drift_variables = ['Ion_Velocity_X', 'Ion_Velocity_Zonal',
+                       'Ion_Velocity_Meridional',
+                       'Ion_Velocity_Field_Aligned']
+    cross_drift_variables = ['Ion_Velocity_Z', 'Ion_Velocity_Y']
+    rpa_variables = ['Ion_Temperature', 'Ion_Density',
+                     'Fractional_Ion_Density_H',
+                     'Fractional_Ion_Density_O']
+    if 'RPA_Flag' in inst.variables:
+        rpa_flag = 'RPA_Flag'
+        dm_flag = 'DM_Flag'
+    else:
+        rpa_flag = 'ICON_L27_RPA_Flag'
+        dm_flag = 'ICON_L27_DM_Flag'
+        drift_variables = ['ICON_L27_' + x for x in drift_variables]
+        cross_drift_variables = ['ICON_L27_' + x for x in cross_drift_variables]
+        rpa_variables = ['ICON_L27_' + x for x in rpa_variables]
 
-        if clean_level == 'clean' or (clean_level == 'dusty'):
-            # remove drift values impacted by RPA
-            idx, = np.where(inst['RPA_Flag'] >= 1)
-            for var in drift_variables:
-                inst[idx, var] = np.nan
-            # DM values
-            idx, = np.where(inst['DM_Flag'] >= 1)
-            for var in cross_drift_variables:
-                inst[idx, var] = np.nan
+    if inst.clean_level in ['clean', 'dusty']:
+        # remove drift values impacted by RPA
+        idx, = np.where(inst[rpa_flag] >= 1)
+        for var in drift_variables:
+            inst[idx, var] = np.nan
+        # DM values
+        idx, = np.where(inst[dm_flag] >= 1)
+        for var in cross_drift_variables:
+            inst[idx, var] = np.nan
 
-        if clean_level == 'clean':
-            # other RPA parameters
-            idx, = np.where(inst['RPA_Flag'] >= 2)
-            for var in rpa_variables:
-                inst[idx, var] = np.nan
+    if inst.clean_level == 'clean':
+        # other RPA parameters
+        idx, = np.where(inst[rpa_flag] >= 2)
+        for var in rpa_variables:
+            inst[idx, var] = np.nan
 
     return

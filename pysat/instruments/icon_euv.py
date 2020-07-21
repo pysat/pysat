@@ -46,7 +46,6 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 import logging
-import numpy as np
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
@@ -149,6 +148,9 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     Any additional keyword arguments passed to pysat.Instrument
     upon instantiation are passed along to this routine.
 
+    The 'Altitude' dimension is renamed as 'Alt' to avoid confusion with the
+    'Altitude' variable when performing xarray operations
+
     Examples
     --------
     ::
@@ -157,21 +159,25 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
 
     """
 
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                    units_label='Units',
-                                    name_label='Long_Name',
-                                    notes_label='Var_Notes',
-                                    desc_label='CatDesc',
-                                    plot_label='FieldNam',
-                                    axis_label='LablAxis',
-                                    scale_label='ScaleTyp',
-                                    min_label='ValidMin',
-                                    max_label='ValidMax',
-                                    fill_label='FillVal',
-                                    pandas_format=pandas_format)
+    data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
+                                           units_label='Units',
+                                           name_label='Long_Name',
+                                           notes_label='Var_Notes',
+                                           desc_label='CatDesc',
+                                           plot_label='FieldNam',
+                                           axis_label='LablAxis',
+                                           scale_label='ScaleTyp',
+                                           min_label='ValidMin',
+                                           max_label='ValidMax',
+                                           fill_label='FillVal',
+                                           pandas_format=pandas_format)
+    # xarray can't merge if variable and dim names are the same
+    if 'Altitude' in data.dims:
+        data = data.rename_dims(dims_dict={'Altitude': 'Alt'})
+    return data, mdata
 
 
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -190,11 +196,6 @@ def clean(inst, clean_level=None):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Note
     ----
         Supports 'clean', 'dusty', 'dirty', 'none'. Method is
@@ -202,20 +203,20 @@ def clean(inst, clean_level=None):
 
     """
 
-    try:
-        L26_Flag = inst['Flags']
-    except KeyError:
-        L26_Flag = inst['ICON_L26_Flags']
     vars = ['HmF2', 'NmF2', 'Oplus']
+    if 'Flags' in inst.variables:
+        icon_flag = 'Flags'
+    else:
+        icon_flag = 'ICON_L26_Flags'
+        vars = ['ICON_L26_' + x for x in vars]
 
-    if clean_level == 'clean':
-        idx, = np.where(L26_Flag > 0)
-        inst[idx, vars] = np.nan
-    elif clean_level == 'dusty':
-        idx, = np.where(L26_Flag > 1)
-        inst[idx, vars] = np.nan
-    elif clean_level == 'dirty':
-        idx, = np.where(L26_Flag > 2)
-        inst[idx, vars] = np.nan
-
+    min_val = {'clean': 1.0,
+               'dusty': 2.0}
+    if inst.clean_level in ['clean', 'dusty']:
+        for var in vars:
+            inst[var] = inst[var].where(inst[icon_flag]
+                                        <= min_val[inst.clean_level])
+    else:
+        # dirty and worse lets everything through
+        pass
     return
