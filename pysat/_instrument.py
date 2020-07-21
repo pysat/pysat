@@ -429,7 +429,7 @@ class Instrument(object):
                 try:
                     # integer based indexing
                     return self.data.iloc[key]
-                except:
+                except (TypeError, KeyError):
                     try:
                         return self.data[key]
                     except ValueError as err:
@@ -476,7 +476,7 @@ class Instrument(object):
                 # support slicing time, variable name
                 try:
                     return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
-                except:
+                except (TypeError, KeyError):
                     try:
                         return self.data.sel(indexers={epoch_name: key[0]})[key[1]]
                     except TypeError: # construct dataset from names
@@ -492,13 +492,13 @@ class Instrument(object):
             try:
                 # grab a particular variable by name
                 return self.data[key]
-            except:
+            except (TypeError, KeyError):
                 # that didn't work
                 try:
                     # get all data variables but for a subset of time
                     # using integer indexing
                     return self.data.isel(indexers={epoch_name: key})
-                except:
+                except (TypeError, KeyError):
                     # subset of time, using label based indexing
                     return self.data.sel(indexers={epoch_name: key})
 
@@ -614,7 +614,7 @@ class Instrument(object):
                     indict[dim] = key[i]
                 try:
                     self.data[key[-1]].loc[indict] = in_data
-                except:
+                except (TypeError, KeyError):
                     indict[epoch_name] = self.index[indict[epoch_name]]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
