@@ -1,4 +1,4 @@
-from nose import raises
+from nose.tools import raises
 
 import pysat
 from pysat.instruments.methods import general as gen
