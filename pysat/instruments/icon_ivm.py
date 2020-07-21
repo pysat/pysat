@@ -19,8 +19,8 @@ Warnings
 - No download routine as ICON has not yet been launched
 - Data not yet publicly available
 
-Examples
---------
+Example
+-------
 ::
 
     import pysat
@@ -98,7 +98,7 @@ list_remote_files = functools.partial(mm_icon.list_remote_files,
                                       supported_tags=download_tags)
 
 
-def init(inst):
+def init(self):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
@@ -111,8 +111,8 @@ def init(inst):
     """
 
     logger.info(mm_icon.ackn_str)
-    inst.meta.acknowledgements = mm_icon.ackn_str
-    inst.meta.references = ''.join((mm_icon.refs['mission'],
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['ivm']))
 
     pass
@@ -128,6 +128,7 @@ def default(inst):
         Instrument class object
 
     """
+
     if not inst.kwargs['keep_original_names']:
         mm_gen.remove_leading_text(inst, target='ICON_L27_')
 
@@ -168,7 +169,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     --------
     ::
         inst = pysat.Instrument('icon', 'ivm', sat_id='a', tag='')
-        inst.load(2020,1)
+        inst.load(2020, 1)
 
     """
 
@@ -185,7 +186,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
                                     fill_label='FillVal')
 
 
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -218,20 +219,29 @@ def clean(inst, clean_level=None):
     rpa_variables = ['Ion_Temperature', 'Ion_Density',
                      'Fractional_Ion_Density_H',
                      'Fractional_Ion_Density_O']
+    if 'RPA_Flag' in inst.variables:
+        rpa_flag = 'RPA_Flag'
+        dm_flag = 'DM_Flag'
+    else:
+        rpa_flag = 'ICON_L27_RPA_Flag'
+        dm_flag = 'ICON_L27_DM_Flag'
+        drift_variables = ['ICON_L27_' + x for x in drift_variables]
+        cross_drift_variables = ['ICON_L27_' + x for x in cross_drift_variables]
+        rpa_variables = ['ICON_L27_' + x for x in rpa_variables]
 
-    if clean_level == 'clean' or (clean_level == 'dusty'):
+    if inst.clean_level in ['clean', 'dusty']:
         # remove drift values impacted by RPA
-        idx, = np.where(inst['RPA_Flag'] >= 1)
+        idx, = np.where(inst[rpa_flag] >= 1)
         for var in drift_variables:
             inst[idx, var] = np.nan
         # DM values
-        idx, = np.where(inst['DM_Flag'] >= 1)
+        idx, = np.where(inst[dm_flag] >= 1)
         for var in cross_drift_variables:
             inst[idx, var] = np.nan
 
-    if clean_level == 'clean':
+    if inst.clean_level == 'clean':
         # other RPA parameters
-        idx, = np.where(inst['RPA_Flag'] >= 2)
+        idx, = np.where(inst[rpa_flag] >= 2)
         for var in rpa_variables:
             inst[idx, var] = np.nan
 
