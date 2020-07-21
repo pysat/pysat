@@ -121,9 +121,7 @@ def remove_leading_text(inst, target=None):
     inst : pysat.Instrument
         associated pysat.Instrument object
     target : str or list of strings
-        Leading string to remove. If none supplied,
-        ICON project standards are used to identify and remove
-        leading text
+        Leading string to remove. If none supplied, returns unmodified
 
     Returns
     -------
