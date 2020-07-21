@@ -796,9 +796,9 @@ def append_ascii_data(file_strings, tag):
                 if snum == 0:
                     dtime = dt.datetime.strptime(" ".join(lsplit[0:-1]),
                                                  "%Y %m %d %H %M %S")
-                    try:
+                    if dtime in date_list:
                         idate = date_list.index(dtime)
-                    except:
+                    else:
                         # SuperMAG outputs date lines regardless of the
                         # number of stations.  These files shouldn't be
                         # appended together.
