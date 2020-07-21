@@ -2665,8 +2665,8 @@ def _get_supported_keywords(load_func):
 
     Returns
     -------
-    dict
-        dict of keywords and values
+    out_dict
+        dict of supported keywords and default values
 
 
     Notes
