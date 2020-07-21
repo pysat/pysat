@@ -392,7 +392,7 @@ class Instrument(object):
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
             # Slicing by name and row/date
-            inst[datetime1:datetime1, 'name1':'name2']
+            inst[datetime1:datetime2, 'name1':'name2']
 
         """
 
@@ -437,7 +437,7 @@ class Instrument(object):
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
             # Slicing by name and row/date
-            inst[datetime1:datetime1, 'name1':'name2']
+            inst[datetime1:datetime2, 'name1':'name2']
 
         """
         if 'Epoch' in self.data.indexes:
@@ -452,7 +452,7 @@ class Instrument(object):
                 # support slicing time, variable name
                 try:
                     return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
-                except:
+                except (TypeError, KeyError):
                     try:
                         return self.data.sel(indexers={epoch_name: key[0]})[key[1]]
                     except TypeError:  # construct dataset from names
@@ -468,13 +468,13 @@ class Instrument(object):
             try:
                 # grab a particular variable by name
                 return self.data[key]
-            except:
+            except (TypeError, KeyError):
                 # that didn't work
                 try:
                     # get all data variables but for a subset of time
                     # using integer indexing
                     return self.data.isel(indexers={epoch_name: key})
-                except:
+                except (TypeError, KeyError):
                     # subset of time, using label based indexing
                     return self.data.sel(indexers={epoch_name: key})
 
@@ -580,7 +580,7 @@ class Instrument(object):
                     indict[dim] = key[i]
                 try:
                     self.data[key[-1]].loc[indict] = in_data
-                except:
+                except (TypeError, KeyError):
                     indict[epoch_name] = self.index[indict[epoch_name]]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
@@ -782,13 +782,12 @@ class Instrument(object):
                 inst = \
                     importlib.import_module(''.join(('.', self.platform, '_',
                                                      self.name)),
-                                                     package='pysat.instruments')
+                                            package='pysat.instruments')
                 import_success = True
-            except:
+            except ImportError:
                 # iterate through user set modules
                 for mod in user_modules:
                     # get my.package.name from my.package.name.platform_name
-                    package_name = '.'.join(mod.split('.')[:-1])
                     try:
                         inst = importlib.import_module(mod)
                         if ((inst.platform == self.platform) & (inst.name == self.name)):
@@ -1589,8 +1588,8 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            logger.info('Downloading the most recent data by default ' +
-                  '(yesterday through tomorrow).')
+            logger.info(''.join(['Downloading the most recent data by ',
+                                 'default (yesterday through tomorrow).']))
             start = self.yesterday()
             stop = self.tomorrow()
         logger.info('Downloading data to: {}'.format(self.files.data_path))
@@ -2009,14 +2008,11 @@ class Instrument(object):
         for key in mdata_dict:
             if type(mdata_dict[key]) == bool:
                 mdata_dict[key] = int(mdata_dict[key])
-        # Should use isinstance here
-        if (coltype == type(' ')) or (coltype == type(u' ')):
-            # if isinstance(coltype, str):
+        if (coltype == str):
             remove = True
             warnings.warn('FillValue is not an acceptable '
                           'parameter for strings - it will be removed')
 
-        # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
@@ -2327,8 +2323,9 @@ class Instrument(object):
                         cdfkey.setncatts(new_dict)
                     except KeyError as err:
                         logger.info(' '.join((str(err), '\n',
-                                        ', '.join(('Unable to find MetaData for',
-                                                   key)))))
+                                              ' '.join(('Unable to find'
+                                                        'MetaData for',
+                                                        key)))))
                     # assign data
                     if datetime_flag:
                         # datetime is in nanoseconds, storing milliseconds
@@ -2344,14 +2341,11 @@ class Instrument(object):
                     # what the actual objects are, then act as needed
 
                     # use info in coltype to get real datatype of object
-                    # isinstance isn't working here because of something with
-                    # coltype
 
-                    if (coltype == type(' ')) or (coltype == type(u' ')):
-                        # dealing with a string
+                    if (coltype == str):
                         cdfkey = out_data.createVariable(case_key,
                                                          coltype,
-                                                         dimensions=(epoch_name),
+                                                         dimensions=epoch_name,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
@@ -2372,8 +2366,8 @@ class Instrument(object):
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
-                            logger.info(', '.join(('Unable to find MetaData for',
-                                             key)))
+                            logger.info(' '.join(('Unable to find MetaData for',
+                                                  key)))
 
                         # time to actually write the data now
                         cdfkey[:] = data.values
@@ -2463,9 +2457,10 @@ class Instrument(object):
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     logger.info(' '.join((str(err), '\n',
-                                                    'Unable to find MetaData',
-                                                    'for', ', '.join((key,
-                                                                      col)))))
+                                                          'Unable to find',
+                                                          'MetaData for',
+                                                          ', '.join((key,
+                                                                     col)))))
                                 # attach data
                                 # it may be slow to repeatedly call the store
                                 # method as well astype method below collect
@@ -2510,8 +2505,9 @@ class Instrument(object):
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     logger.info(' '.join((str(err), '\n',
-                                                    'Unable to find MetaData',
-                                                    'for,', key)))
+                                                          'Unable to find ',
+                                                          'MetaData for,',
+                                                          key)))
                                 # attach data
                                 temp_cdf_data = \
                                     np.zeros((num, dims[0])).astype(coltype)
@@ -2618,19 +2614,16 @@ class Instrument(object):
 
             adict['Date_End'] = \
                 dt.datetime.strftime(self.index[-1],
-                                        '%a, %d %b %Y,  ' +
-                                        '%Y-%m-%dT%H:%M:%S.%f')
+                                     '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
             adict['Date_End'] = adict['Date_End'][:-3] + ' UTC'
 
             adict['Date_Start'] = \
                 dt.datetime.strftime(self.index[0],
-                                        '%a, %d %b %Y,  ' +
-                                        '%Y-%m-%dT%H:%M:%S.%f')
+                                     '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
             adict['Date_Start'] = adict['Date_Start'][:-3] + ' UTC'
             adict['File'] = os.path.split(fname)
             adict['File_Date'] = \
-                self.index[-1].strftime('%a, %d %b %Y,  ' +
-                                        '%Y-%m-%dT%H:%M:%S.%f')
+                self.index[-1].strftime('%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
             adict['File_Date'] = adict['File_Date'][:-3] + ' UTC'
             adict['Generation_Date'] = \
                 dt.datetime.utcnow().strftime('%Y%m%d')
