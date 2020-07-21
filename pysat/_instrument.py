@@ -612,8 +612,6 @@ class Instrument(object):
                 indict = {}
                 for i, dim in enumerate(self[key[-1]].dims):
                     indict[dim] = key[i]
-                    # if dim == 'Epoch':
-                    #     indict[dim] = self.index[key[i]]
                 try:
                     self.data[key[-1]].loc[indict] = in_data
                 except:
