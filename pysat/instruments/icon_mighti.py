@@ -22,14 +22,14 @@ Warnings
 - The cleaning parameters for the instrument are still under development.
 - Only supports level-2 data.
 
-Examples
---------
+Example
+-------
 ::
 
     import pysat
-    mighti = pysat.Instrument(platform='icon', name='mighti',
-                              tag='vector_wind_green', clean_level='clean')
-    mighti.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
+    mighti = pysat.Instrument('icon', 'mighti', 'vector_wind_green',
+                              clean_level='clean')
+    mighti.download(dt.datetime(2020, 1, 30), dt.datetime(2020, 1, 31))
     mighti.load(2020, 2)
 
 By default, pysat removes the ICON level tags from variable names, ie,
@@ -54,7 +54,6 @@ from __future__ import absolute_import
 import datetime as dt
 import functools
 import logging
-import numpy as np
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
@@ -132,7 +131,7 @@ list_remote_files = functools.partial(mm_icon.list_remote_files,
                                       supported_tags=download_tags)
 
 
-def init(inst):
+def init(self):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
@@ -145,15 +144,15 @@ def init(inst):
     """
 
     logger.info(mm_icon.ackn_str)
-    inst.meta.acknowledgements = mm_icon.ackn_str
-    inst.meta.references = ''.join((mm_icon.refs['mission'],
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['mighti']))
 
     pass
 
 
 def default(inst):
-    """Default routine to be applied when loading data. Adjusts epoch timestamps
+    """Default routine to be applied when loading data.  Adjusts epoch timestamps
     to datetimes and removes variable preambles.
 
     """
@@ -170,12 +169,10 @@ def remove_preamble(inst):
               'los_wind_red': 'ICON_L21_',
               'vector_wind_green': 'ICON_L22_',
               'vector_wind_red': 'ICON_L22_',
-              'temperature': 'ICON_L23_MIGHTI_' + inst.sat_id.upper() + '_'}
+              'temperature': ['ICON_L1_MIGHTI_{}_'.format(inst.sat_id.upper()),
+                              'ICON_L23_MIGHTI_{}_'.format(inst.sat_id.upper()),
+                              'ICON_L23_']}
     mm_gen.remove_leading_text(inst, target=target[inst.tag])
-
-    # for temps need
-    mm_gen.remove_leading_text(inst, target='ICON_L23_')
-    mm_gen.remove_leading_text(inst, target='ICON_L1_')
 
     return
 
@@ -220,21 +217,25 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
 
     """
 
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                    units_label='Units',
-                                    name_label='Long_Name',
-                                    notes_label='Var_Notes',
-                                    desc_label='CatDesc',
-                                    plot_label='FieldNam',
-                                    axis_label='LablAxis',
-                                    scale_label='ScaleTyp',
-                                    min_label='ValidMin',
-                                    max_label='ValidMax',
-                                    fill_label='FillVal',
-                                    pandas_format=pandas_format)
+    data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
+                                           units_label='Units',
+                                           name_label='Long_Name',
+                                           notes_label='Var_Notes',
+                                           desc_label='CatDesc',
+                                           plot_label='FieldNam',
+                                           axis_label='LablAxis',
+                                           scale_label='ScaleTyp',
+                                           min_label='ValidMin',
+                                           max_label='ValidMax',
+                                           fill_label='FillVal',
+                                           pandas_format=pandas_format)
+    # xarray can't merge if variable and dim names are the same
+    if 'Altitude' in data.dims:
+        data = data.rename_dims(dims_dict={'Altitude': 'Alt'})
+    return data, mdata
 
 
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -259,43 +260,75 @@ def clean(inst, clean_level=None):
 
     """
 
-    if inst.tag[0:2] == 've':
+    if inst.tag.find('los') >= 0:
+        # dealing with LOS winds
+        wind_flag = 'Wind_Quality'
+        ver_flag = 'VER_Quality'
+        wind_vars = ['Line_of_Sight_Wind', 'Line_of_Sight_Wind_Error']
+        ver_vars = ['Fringe_Amplitude', 'Fringe_Amplitude_Error',
+                    'Relative_VER', 'Relative_VER_Error']
+        if wind_flag not in inst.variables:
+            wind_flag = '_'.join(('ICON_L21', wind_flag))
+            ver_flag = '_'.join(('ICON_L21', ver_flag))
+            wind_vars = ['ICON_L21_' + var for var in wind_vars]
+            ver_vars = ['ICON_L21_' + var for var in ver_vars]
+        min_val = {'clean': 1.0,
+                   'dusty': 0.5}
+        if inst.clean_level in ['clean', 'dusty']:
+            # find location with any of the flags set
+            for var in wind_vars:
+                inst[var] = inst[var].where(inst[wind_flag]
+                                            >= min_val[inst.clean_level])
+            for var in ver_vars:
+                inst[var] = inst[var].where(inst[ver_flag]
+                                            >= min_val[inst.clean_level])
+        else:
+            # dirty and worse lets everything through
+            pass
+
+    elif inst.tag.find('vector') >= 0:
         # vector winds area
-        mvars = ['Zonal_Wind', 'Meridional_Wind']
-        if clean_level == 'good':
-            idx, = np.where(inst['Wind_Quality'] != 1)
-            inst[idx, mvars] = np.nan
-        elif clean_level == 'dusty':
-            idx, = np.where(inst['Wind_Quality'] < 0.5)
-            inst[idx, mvars] = np.nan
+        wind_flag = 'Wind_Quality'
+        ver_flag = 'VER_Quality'
+        wind_vars = ['Zonal_Wind', 'Zonal_Wind_Error',
+                     'Meridional_Wind', 'Meridional_Wind_Error']
+        ver_vars = ['Fringe_Amplitude', 'Fringe_Amplitude_Error',
+                    'Relative_VER', 'Relative_VER_Error']
+        if wind_flag not in inst.variables:
+            wind_flag = '_'.join(('ICON_L22', wind_flag))
+            ver_flag = '_'.join(('ICON_L22', ver_flag))
+            wind_vars = ['ICON_L22_' + var for var in wind_vars]
+            ver_vars = ['ICON_L22_' + var for var in ver_vars]
+        min_val = {'clean': 1.0,
+                   'dusty': 0.5}
+        if inst.clean_level in ['clean', 'dusty']:
+            # find location with any of the flags set
+            for var in wind_vars:
+                inst[var] = inst[var].where(inst[wind_flag]
+                                            >= min_val[inst.clean_level])
+            for var in ver_vars:
+                inst[var] = inst[var].where(inst[ver_flag]
+                                            >= min_val[inst.clean_level])
         else:
             # dirty lets everything through
             pass
-    elif inst.tag[0:2] == 'te':
+
+    elif inst.tag.find('temp') >= 0:
         # neutral temperatures
-        mvar = 'Temperature'
-        if (clean_level == 'good') or (clean_level == 'dusty'):
-            # SAA
-            saa_flag = 'MIGHTI_{s}_Quality_Flag_South_Atlantic_Anomaly'
-            idx, = np.where(inst[saa_flag.format(inst.sat_id.upper())] > 0)
-            inst[:, idx, mvar] = np.nan
-            # Calibration file
-            cal_flag = 'MIGHTI_{s}_Quality_Flag_Bad_Calibration'
-            idx, = np.where(inst[cal_flag.format(inst.sat_id.upper())] > 0)
-            inst[:, idx, mvar] = np.nan
+        var = 'Temperature'
+        saa_flag = 'Quality_Flag_South_Atlantic_Anomaly'
+        cal_flag = 'Quality_Flag_Bad_Calibration'
+        if saa_flag not in inst.variables:
+            saa_flag = '_'.join(('ICON_L1_MIGHTI', inst.sat_id.upper(),
+                                 saa_flag))
+            cal_flag = '_'.join(('ICON_L1_MIGHTI', inst.sat_id.upper(),
+                                 cal_flag))
+            var = '_'.JOIN(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
+        if inst.clean_level in ['clean', 'dusty']:
+            inst[var] = inst[var].where((inst[saa_flag] == 0)
+                                        & (inst[cal_flag] == 0))
         else:
             # dirty and worse lets everything through
             pass
-    elif inst.tag[0:2] == 'lo':
-        # dealing with LOS winds
-        if (clean_level == 'good') or (clean_level == 'dusty'):
-            # find location with any of the flags set
-            idx, idy, = np.where(inst['Quality_Flags'].any(axis=2))
-            inst[idx, idy, 'Line_of_Sight_Wind'] = np.nan
-        else:
-            # dirty and worse lets everything through
-            pass
-    else:
-        raise ValueError('Unknown tag ' + inst.tag)
 
     return
