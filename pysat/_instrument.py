@@ -476,7 +476,7 @@ class Instrument(object):
                 # support slicing time, variable name
                 try:
                     return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
-                except (TypeError, KeyError):
+                except (TypeError, KeyError, IndexError):
                     try:
                         return self.data.sel(indexers={epoch_name: key[0]})[key[1]]
                     except TypeError: # construct dataset from names
