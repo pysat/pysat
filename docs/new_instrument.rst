@@ -11,7 +11,7 @@ that load and process the data consistent with the pysat standard. The name
 of the python file corresponds to the combination 'platform_name' provided when
 initializing a pysat.Instrument object. The module should be placed in the
 pysat instruments directory for native support. A compatible module may also be
-supplied directly to pysat.Instrument(inst_module=python_module_object).
+supplied directly using pysat.Instrument(inst_module=python_module_object).
 
 Some data repositories have pysat templates prepared to assist in integrating
 a new instrument. See the Supported Data Templates section or the
@@ -55,11 +55,13 @@ identical or similar satellites, or multiple instruments on the same satellite
 with different look directions.  For example, the DMSP satellites carry similar
 instrument suites across multiple spacecraft.  These are labeled as f11-f18.
 
+Note that sat_id will be updated to inst_id in pysat v3.0.
+
 **tag**
 
 In general, the tag points to a specific data product.  This could be a
 specific processing level (such as L1, L2), or a product file (such as the
-different profile products for cosmic_gps data).
+different profile products for cosmic_gps data, 'ionprf', 'atmprf', ...).
 
 **Naming Requirements in Instrument Module**
 
@@ -71,8 +73,11 @@ the module must be stored as dictionaries.
 
   platform = 'your_platform_name'
   name = 'name_of_instrument'
+  # dictionary keyed by tag with a string description of that dataset
   tags = {'': 'The standard processing for the data.  Loaded by default',
           'fancy': 'A higher-level processing of the data.'}
+  # dictionary keyed by sat_id with a list of supported tags
+  # for each key
   sat_ids = {'A': ['', 'fancy'], 'B': ['', 'fancy'], 'C': ['']}
 
 Note that the possible tags that can be invoked are '' and 'fancy'.  The tags
@@ -125,9 +130,14 @@ signature of:
 
 sat_id and tag are passed in by pysat to select a specific subset of the
 available data. The location on the local filesystem to search for the files
-is passed in data_path. A user is also able to supply a new template string
+is passed in data_path. The list_files method must return
+a pandas Series of filenames indexed by datetime objects.
+
+A user is also able to supply a file template string
 suitable for locating files on their system at pysat.Instrument instantiation,
-passed via format_str.
+passed via format_str, that must be supported. Sometimes users obtain files
+from non-traditional sources and format_str makes it easier for those users
+to use an existing instrument module to work with those files.
 
 pysat will by default store data in pysat_data_dir/platform/name/tag,
 helpfully provided in data_path, where pysat_data_dir is specified by using
@@ -139,6 +149,11 @@ directory_format at instantiation. The default is recreated using
 
     dformat = '{platform}/{name}/{tag}'
     inst=pysat.Instrument(platform, name, directory_format=dformat)
+
+Note that pysat handles the path information thus instrument module developers
+do not need to do anything to support the directory_format keyword.
+
+**Pre-Built list_files Methods and Support**
 
 Finding local files is generally similar across data sets thus pysat
 includes a variety of methods to make support this functionality easier.
@@ -164,13 +179,15 @@ A complete list_files routine could be as simple as
            # module download method
            # template string below works for CINDI IVM data that looks like
            # 'cindi-2009310-ivm-v02.hdf'
+           # format_str supported keywords: year, month, day,
+           # hour, minute, second, version, and revision
            format_str = 'cindi-{year:4d}{day:03d}-ivm-v{version:02d}.hdf'
        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 The constructor presumes the template string is for a fixed width format
 unless a delimiter string is supplied. This constructor supports conversion
 of years with only 2 digits and expands them to 4 using the
-two_digit_year_break keyword.
+two_digit_year_break keyword. Note the support for format_str.
 
 If the constructor is not appropriate, then lower level methods
 within pysat._files may also be used to reduce the workload in adding a new
@@ -190,7 +207,8 @@ with an Instrument may be updated by adding `update_files=True`.
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
 The output provided by the list_files function that has been pulled into pysat
-can be inspected from within Python by checking `instrument.files.files`.
+the Instrument object above can be inspected from within Python by
+checking `inst.files.files`.
 
 **load**
 
@@ -226,7 +244,8 @@ The load module method signature should appear as:
 
 - The pandas DataFrame or xarray needs to be indexed with datetime objects. For
   xarray objects this index needs to be named 'Epoch' or 'time'. In a future
-  version the supported names for the time index may be reduced.
+  version the supported names for the time index may be reduced. 'Epoch'
+  should be used for pandas though wider compatibility is expected.
 - `pysat.utils.create_datetime_index` provides for quick generation of an
   appropriate datetime index for irregularly sampled data set with gaps
 
@@ -268,20 +287,51 @@ Fetch data from the internet.
 Routine should download data and write it to disk.
 
 
-Optional Routines
------------------
+Optional Routines and Support
+-----------------------------
 
-**initialize**
+**Custom Keywords in load Method**
+
+pysat supports the definition and use of keywords for an instrument module
+so that users may trigger optional features, if provided. All custom keywords
+for an instrument module must be defined in the `load` method.
+
+.. code:: python
+
+   def load(fnames, tag=None, sat_id=None, custom1=default1, custom2=default2):
+       return data, meta
+
+pysat passes any supported custom keywords and values to `load` with every call.
+All custom keywords along with the assigned defaults are copied into the
+Instrument object itself under inst.kwargs for use in other areas.
+
+.. code:: python
+
+   inst = pysat.Instrument(platform, name, custom1=new_value)
+   # show user supplied value for custom1 keyword
+   print(inst.kwargs['custom1'])
+   # show default value applied for custom2 keyword
+   print(inst.kwargs['custom2'])
+
+If a user supplies a keyword that is not supported by pysat or by the
+specific instrument module then an error is raised.
 
 
-Initialize any specific instrument info. Runs once.
+**init**
+
+Initialize any specific instrument info. Runs once at instrument
+instantiation.
 
 .. code:: python
 
    def init(inst):
        return None
 
-inst is a pysat.Instrument() instance. init should modify inst in-place as needed; equivalent to a 'modify' custom routine.
+inst is a pysat.Instrument() instance. init should modify inst
+in-place as needed; equivalent to a 'modify' custom routine.
+
+keywords are not supported within the init module method signature, though
+custom keyword support for instruments is available.
 
 **default**
 
