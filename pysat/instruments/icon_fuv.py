@@ -17,8 +17,8 @@ Warnings
 - The cleaning parameters for the instrument are still under development.
 - Only supports level-2 data.
 
-Examples
---------
+Example
+-------
 ::
 
     import pysat
@@ -31,7 +31,6 @@ ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
 ::
     fuv = pysat.Instrument(platform='icon', name='fuv', tag=day',
                            keep_original_names=True)
-
 
 Authors
 ---------
@@ -93,7 +92,7 @@ list_remote_files = functools.partial(mm_icon.list_remote_files,
                                       supported_tags=download_tags)
 
 
-def init(inst):
+def init(self):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
@@ -106,9 +105,10 @@ def init(inst):
     """
 
     logger.info(mm_icon.ackn_str)
-    inst.meta.acknowledgements = mm_icon.ackn_str
-    inst.meta.references = ''.join((mm_icon.refs['mission'],
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['fuv']))
+
     pass
 
 
@@ -120,6 +120,7 @@ def default(inst):
     -----------
     inst : (pysat.Instrument)
         Instrument class object
+
 
     """
 
@@ -172,7 +173,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     --------
     ::
         inst = pysat.Instrument('icon', 'fuv')
-        inst.load(2019,1)
+        inst.load(2020, 1)
 
     """
 
@@ -190,7 +191,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
                                     pandas_format=pandas_format)
 
 
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -215,6 +216,5 @@ def clean(inst, clean_level=None):
 
     """
 
-    if clean_level != 'none':
-        warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
+    warnings.warn("Cleaning actions for ICON FUV are not yet defined.")
     return
