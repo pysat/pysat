@@ -2748,10 +2748,10 @@ def _check_if_keywords_supported(func, **kwargs):
     **kwargs : keyword args
         keyword arguments dictionary
 
-    Returns
+    Raises
     -------
-    bool
-        If true, all keywords supported
+    ValueError
+        Error raised if keyword is not supported
 
     """
 
@@ -2764,4 +2764,4 @@ def _check_if_keywords_supported(func, **kwargs):
                              'by the underlying supporting load routine.',
                              'Please double check the keyword inputs.'))
             raise ValueError(estr)
-    return True
+    return
