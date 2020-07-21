@@ -735,13 +735,13 @@ class TestBasics():
                         assert key in self.testInst.data
                         assert key in self.testInst.meta
                         # check for new name in HO data
-                        test_val = values[key][ikey].lower()
+                        test_val = values[key][ikey]
                         assert test_val in self.testInst[0, key]
                         check_var = self.testInst.meta[key]['children']
                         # case insensitive check
                         assert values[key][ikey] in check_var
                         # ensure new case in there
-                        check_var = check_var[ikey].name
+                        check_var = check_var[values[key][ikey]].name
                         assert values[key][ikey] == check_var
                         # ensure old name not present
                         assert ikey not in self.testInst[0, key]
