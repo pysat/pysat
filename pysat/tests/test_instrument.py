@@ -2,6 +2,7 @@
 # Test some of the basic _core functions
 import datetime as dt
 from importlib import reload as re_load
+import logging
 import numpy as np
 
 import pandas as pds
