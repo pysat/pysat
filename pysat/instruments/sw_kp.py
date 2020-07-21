@@ -128,8 +128,8 @@ def load(fnames, tag=None, sat_id=None):
             temp = pds.read_fwf(fname, colspecs=colspec, skipfooter=4,
                                 header=None, parse_dates=[[0, 1, 2]],
                                 date_parser=parse_date, index_col='0_1_2')
-            idx, = np.where((temp.index >= date) &
-                            (temp.index < date + pds.DateOffset(days=1)))
+            idx, = np.where((temp.index >= date)
+                            & (temp.index < date + pds.DateOffset(days=1)))
             temp = temp.iloc[idx, :]
             data = pds.concat([data, temp], axis=0)
 
@@ -141,8 +141,8 @@ def load(fnames, tag=None, sat_id=None):
         # increasing in time with appropriate datetime indices
         s = pds.Series(dtype='float64')
         for i in np.arange(8):
-            temp = pds.Series(data.iloc[:, i].values,
-                              index=data.index+pds.DateOffset(hours=int(3*i)))
+            tind = data.index + pds.DateOffset(hours=int(3 * i))
+            temp = pds.Series(data.iloc[:, i].values, index=tind)
             s = s.append(temp)
         s = s.sort_index()
         s.index.name = 'time'
@@ -244,11 +244,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             return files
 
         else:
-            raise ValueError('Unrecognized tag name for Space Weather Index ' +
-                             'Kp')
+            raise ValueError(' '.join(('Unrecognized tag name for Space',
+                                       'Weather Index Kp')))
     else:
-        raise ValueError('A data_path must be passed to the loading routine ' +
-                         'for Kp')
+        raise ValueError(' '.join(('A data_path must be passed to the loading',
+                                   'routine for Kp')))
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
@@ -293,15 +293,17 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
         for date in date_array:
             fname = 'kp{year:02d}{month:02d}.tab'
-            fname = fname.format(year=(date.year - date.year//100*100),
+            fname = fname.format(year=(date.year - date.year // 100 * 100),
                                  month=date.month)
             local_fname = fname
             saved_fname = os.path.join(data_path, local_fname)
-            if not fname in dnames:
+            if fname not in dnames:
                 try:
-                    logger.info('Downloading file for '+date.strftime('%b %Y'))
+                    logger.info(' '.join(('Downloading file for',
+                                          date.strftime('%b %Y'))))
                     sys.stdout.flush()
-                    ftp.retrbinary('RETR '+fname, open(saved_fname, 'wb').write)
+                    ftp.retrbinary('RETR ' + fname,
+                                   open(saved_fname, 'wb').write)
                     dnames.append(fname)
                 except ftplib.error_perm as exception:
 
@@ -317,14 +319,15 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                         # file isn't actually there, just let people know
                         # then continue on
                         os.remove(saved_fname)
-                        logger.info('File not available for '+date.strftime('%x'))
+                        logger.info(' '.join(('File not available for',
+                                              date.strftime('%x'))))
 
         ftp.close()
 
     elif tag == 'forecast':
         import requests
-        logger.info('This routine can only download the current forecast, ' +
-              'not archived forecasts')
+        logger.info(' '.join(('This routine can only download the current',
+                              'forecast, not archived forecasts')))
         # download webpage
         furl = 'https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt'
         r = requests.get(furl)
@@ -356,17 +359,18 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # put data into nicer DataFrame
         data = pds.DataFrame(day, index=times, columns=['Kp'])
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'kp_forecast_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'),
+        data.to_csv(os.path.join(data_path, ''.join(('kp_forecast_',
+                                                     date.strftime('%Y-%m-%d'),
+                                                     '.txt'))),
                     header=True)
 
     elif tag == 'recent':
         import requests
-        logger.info('This routine can only download the current webpage, not ' +
-              'archived forecasts')
+        logger.info(' '.join(('This routine can only download the current',
+                              'webpage, not archived forecasts')))
         # download webpage
-        rurl = 'https://services.swpc.noaa.gov/text/' + \
-            'daily-geomagnetic-indices.txt'
+        rurl = ''.join(('https://services.swpc.noaa.gov/text/',
+                        'daily-geomagnetic-indices.txt'))
         r = requests.get(rurl)
         # parse text to get the date the prediction was generated
         date_str = r.text.split(':Issued: ')[-1].split('\n')[0]
@@ -387,16 +391,17 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
             sub_lines = [line[17:33], line[40:56], line[63:]]
             for sub_line, sub_kp in zip(sub_lines, sub_kps):
                 for i in np.arange(8):
-                    sub_kp.append(int(sub_line[i*2:(i+1)*2]))
+                    sub_kp.append(int(sub_line[(i * 2):((i + 1) * 2)]))
         # create times on 3 hour cadence
-        times = pds.date_range(kp_time[0], periods=8*30, freq='3H')
+        times = pds.date_range(kp_time[0], periods=(8 * 30), freq='3H')
         # put into DataFrame
         data = pds.DataFrame({'mid_lat_Kp': sub_kps[0],
                               'high_lat_Kp': sub_kps[1],
                               'Kp': sub_kps[2]}, index=times)
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'kp_recent_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'),
+        data.to_csv(os.path.join(data_path, ''.join(('kp_recent_',
+                                                     date.strftime('%Y-%m-%d'),
+                                                     '.txt'))),
                     header=True)
 
     return
@@ -444,7 +449,7 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
         kpData = kp
 
     if maxKp is None:
-        maxKp = 3 + 1./3.
+        maxKp = 3 + 1. / 3.
 
     if filterTime is None:
         filterTime = 24
@@ -452,7 +457,8 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     # now the defaults are ensured, let's do some filtering
     # date of satellite data
     date = sat.date
-    selData = kpData[date-pds.DateOffset(days=1):date+pds.DateOffset(days=1)]
+    selData = kpData[(date - pds.DateOffset(days=1)):
+                     (date + pds.DateOffset(days=1))]
     ind, = np.where(selData['Kp'] >= maxKp)
     for lind in ind:
         sind = selData.index[lind]
@@ -521,8 +527,11 @@ def convert_3hr_kp_to_ap(kp_inst):
                 5: 48, 5.3: 56, 5.6: 67, 6: 80, 6.3: 94, 6.6: 111, 7: 132,
                 7.3: 154, 7.6: 179, 8: 207, 8.3: 236, 8.6: 300, 9: 400}
 
-    def ap(kk): return kp_to_ap[np.floor(kk*10.0) / 10.0] \
-        if np.isfinite(kk) else np.nan
+    def ap(kk):
+        if np.isfinite(kk):
+            return kp_to_ap[np.floor(kk * 10.0) / 10.0]
+        else:
+            return np.nan
 
     # Test the input
     if 'Kp' not in kp_inst.data.columns:
