@@ -428,7 +428,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         idx, = np.where(data['f107'] == -99999.0)
         data.iloc[idx, :] = np.nan
         # create file
-        data_file = 'f107_1947_to_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data_file = 'f107_1947_to_{:s}.txt'.format(now.strftime('%Y-%m-%d'))
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'prelim':
@@ -550,7 +550,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         r = requests.get(furl)
 
         # Save the output
-        data_file = 'f107_daily_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data_file = 'f107_daily_{:s}.txt'.format(today.strftime('%Y-%m-%d'))
         outfile = os.path.join(data_path, data_file)
         rewrite_daily_file(today.year, outfile, r.text)
 
@@ -580,7 +580,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # put data into nicer DataFrame
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])
         # write out as a file
-        data_file = 'f107_45day_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data_file = 'f107_forecast_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == '45day':
