@@ -160,6 +160,20 @@ class InstTestClass():
             for tag in info[sat_id].keys():
                 assert isinstance(info[sat_id][tag], dt.datetime)
 
+    @pytest.mark.all_inst
+    def test_instrument_acknowledge_and_refs(self, name):
+        """Check that module has a string for references and acknowledgements.
+        """
+        module = import_module(''.join(('.', name)),
+                               package=self.package.__name__)
+        for sat_id in module.sat_ids.keys():
+            for tag in module.sat_ids[sat_id]:
+                inst = pysat.Instrument(inst_module=module, tag=tag,
+                                        sat_id=sat_id)
+                assert isinstance(inst.meta.acknowledgements, str)
+                assert isinstance(inst.meta.references, str)
+
+
     @pytest.mark.first
     @pytest.mark.download
     def test_download(self, inst):
