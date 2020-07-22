@@ -216,7 +216,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         local_fname = fname
         saved_fname = os.path.join(data_path, local_fname)
         try:
-            logger.info('Downloading file for ' + date.strftime('%D'))
+            logger.info(''.join(['Downloading file for ', date.strftime('%D')]))
             sys.stdout.flush()
             ftp.retrbinary('RETR ' + fname, open(saved_fname, 'wb').write)
         except ftplib.error_perm as exception:
