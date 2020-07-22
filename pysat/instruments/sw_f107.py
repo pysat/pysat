@@ -621,8 +621,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
         data['ap'] = ap
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'f107_45day_'
-                                 + date.strftime('%Y-%m-%d') + '.txt'),
+        data_file = 'f107_45day_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file),
                     header=True)
 
     return
