@@ -199,6 +199,7 @@ class Orbits(object):
         lt_diff = lt_diff.diff()
         # get typical difference
         typical_lt_diff = np.nanmedian(lt_diff)
+        logger.info('typical lt diff ', typical_lt_diff)
 
         # universal time values, from datetime index
         ut_vals = Series(self.sat.index)
@@ -207,7 +208,7 @@ class Orbits(object):
 
         # get locations where orbit index derivative is less than 0
         # then do some basic checks on these locations
-        ind, = np.where((lt_diff < -0.1))
+        ind, = np.where((lt_diff < -0.2*typical_lt_diff))
         if len(ind) > 0:
             ind = np.hstack((ind, np.array([len(self.sat[self.orbit_index])])))
             # look at distance between breaks
@@ -223,7 +224,7 @@ class Orbits(object):
             # suggest not a true orbit break, but rather bad orbit_index values
             new_ind = []
             for idx in ind:
-                tidx, = np.where(lt_diff[idx - 5:idx + 6] > 4*typical_lt_diff)
+                tidx, = np.where(lt_diff[idx - 5:idx + 6] > 10*typical_lt_diff)
 
                 if len(tidx) != 0:
                     # there are large changes, suggests a false alarm
@@ -236,6 +237,8 @@ class Orbits(object):
                             # change in ut is small compared to the change in
                             # the orbit index this is flagged as a false alarm,
                             # or dropped from consideration
+                            logger.info(''.join(('Dropping found break ',
+                                                 'as false positive.')))
                             pass
                         else:
                             # change in UT is significant, keep orbit break
