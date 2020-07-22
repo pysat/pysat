@@ -293,7 +293,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
         for date in date_array:
             fname = 'kp{year:02d}{month:02d}.tab'
-            fname = fname.format(year=(date.year - date.year // 100 * 100),
+            fname = fname.format(year=(date.year - (date.year // 100) * 100),
                                  month=date.month)
             local_fname = fname
             saved_fname = os.path.join(data_path, local_fname)
