@@ -394,7 +394,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 idx, = np.where(data['f107'] == -99999.0)
                 data.iloc[idx, :] = np.nan
                 # create file
-                data_file = 'f107_monthly_{:s}.txt'.format(date.strftime('%Y-%m'))
+                str_date = date.strftime('%Y-%m')
+                data_file = 'f107_monthly_{:s}.txt'.format(str_date)
                 data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'all':
