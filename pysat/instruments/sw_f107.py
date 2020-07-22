@@ -394,11 +394,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 idx, = np.where(data['f107'] == -99999.0)
                 data.iloc[idx, :] = np.nan
                 # create file
-                data.to_csv(os.path.join(data_path,
-                                         ''.join(('f107_monthly_',
-                                                  date.strftime('%Y-%m'),
-                                                  '.txt'))),
-                            header=True)
+                data_file = 'f107_monthly_{:s}.txt'.format(date.strftime('%Y-%m'))
+                data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'all':
         # download from LASP, by year
@@ -430,10 +427,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         idx, = np.where(data['f107'] == -99999.0)
         data.iloc[idx, :] = np.nan
         # create file
-        data.to_csv(os.path.join(data_path, ''.join(('f107_1947_to_',
-                                                     now.strftime('%Y-%m-%d'),
-                                                     '.txt'))),
-                    header=True)
+        data_file = 'f107_1947_to_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'prelim':
         import ftplib
@@ -554,9 +549,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         r = requests.get(furl)
 
         # Save the output
-        outfile = os.path.join(data_path, ''.join(('f107_daily_',
-                                                   today.strftime('%Y-%m-%d'),
-                                                   '.txt')))
+        data_file = 'f107_daily_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        outfile = os.path.join(data_path, data_file)
         rewrite_daily_file(today.year, outfile, r.text)
 
     elif tag == 'forecast':
@@ -585,10 +579,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # put data into nicer DataFrame
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])
         # write out as a file
-        data.to_csv(os.path.join(data_path, ''.join(('f107_forecast_',
-                                                     date.strftime('%Y-%m-%d'),
-                                                     '.txt'))),
-                    header=True)
+        data_file = 'f107_45day_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == '45day':
         import requests
@@ -622,8 +614,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data['ap'] = ap
         # write out as a file
         data_file = 'f107_45day_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
-        data.to_csv(os.path.join(data_path, data_file),
-                    header=True)
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return
 
