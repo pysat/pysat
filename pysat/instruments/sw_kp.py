@@ -397,10 +397,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                               'high_lat_Kp': sub_kps[1],
                               'Kp': sub_kps[2]}, index=times)
         # write out as a file
-        data.to_csv(os.path.join(data_path, ''.join(('kp_recent_',
-                                                     date.strftime('%Y-%m-%d'),
-                                                     '.txt'))),
-                    header=True)
+        data_file = 'kp_recent_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return
 
