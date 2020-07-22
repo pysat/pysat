@@ -61,9 +61,13 @@ from __future__ import absolute_import
 
 import datetime as dt
 import functools
+import logging
 
+from pysat.instruments.methods import de2 as mm_de2
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
+
+logger = logging.getLogger(__name__)
 
 platform = 'de2'
 name = 'lang'
@@ -93,6 +97,22 @@ download = functools.partial(cdw.download, supported_tags)
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    Parameters
+    -----------
+    inst : (pysat.Instrument)
+        Instrument class object
+
+    """
+
+    logger.info(mm_de2.ackn_str)
+    self.meta.acknowledgements = mm_de2.ackn_str
+    self.meta.references = mm_de2.refs['lang']
+
 
 # code should be defined below as needed
 def default(self):
@@ -105,12 +125,6 @@ def default(self):
     ----------
     self : pysat.Instrument
         This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
 
     """
 
@@ -139,11 +153,6 @@ def clean(inst):
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     -----
