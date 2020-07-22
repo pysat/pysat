@@ -67,12 +67,13 @@ list_remote_files = demeter.list_remote_files
 
 
 def init(self):
-    logger.info(' '.join(("When using this data please include a version of the,"
-                    "acknowledgement outlined in the metadata attribute",
-                    "'info.acknowledgements'.  We recommend that data users",
-                    "contact the experiment PI early in their study. ",
-                    "Experiment reference information is available in the",
-                    "metadata attribute 'info.reference'")))
+    logger.info(' '.join(("When using this data please include a version of,"
+                          "the acknowledgement outlined in the metadata",
+                          "attribute 'info.acknowledgements'.  We recommend",
+                          "that data users contact the experiment PI early in",
+                          "their study. Experiment reference information is",
+                          "available in the metadata attribute",
+                          "'info.reference'")))
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
@@ -195,7 +196,7 @@ def load_experiment_data(fhandle):
     data_units = dict()
     # Load the house-keeping and status flags
     for i in range(32):
-        data.append(int(codecs.encode(chunk[10+i:11+i], 'hex'), 16))
+        data.append(int(codecs.encode(chunk[(10 + i):(11 + i)], 'hex'), 16))
         data_names.append('status_flag_{:02d}'.format(i))
         data_units[data_names[-1]] = "N/A"
 
@@ -209,7 +210,7 @@ def load_experiment_data(fhandle):
                 'iv_Oz', 'iv_negOz_angle', 'iv_xOy_Ox_angle',
                 'satellite_potential']
     while i < 108:
-        data.append(demeter.bytes_to_float(chunk[i:i+4]))
+        data.append(demeter.bytes_to_float(chunk[i:(i + 4)]))
         i += 4
     data_names.extend(exp_data)
 
@@ -253,8 +254,8 @@ def clean(inst):
     """
 
     if inst.clean_level in ['dusty', 'dirty']:
-        logger.info(''.join("'dusty' and 'dirty' levels not supported, ",
-                      "defaulting to 'clean'"))
+        logger.info(' '.join("'dusty' and 'dirty' levels not supported,",
+                             "defaulting to 'clean'"))
         inst.clean_level = 'clean'
 
     if inst.clean_level == 'clean':
@@ -312,8 +313,9 @@ def add_drift_sat_coord(inst):
     # Because the ADV instrument is not fully aligned with the axis of the
     # satellite, reposition into satellite coordinates
     # (IS THIS ALREADY CORRECTED IN FILES?)
-    logger.warning("the ADV instrument is not fully aligned with the axis of "
-          + "the satellite and this may not have been corrected")
+    logger.warning(' '.join(("the ADV instrument is not fully aligned with",
+                             "the axis of the satellite and this may not have",
+                             "been corrected")))
 
     return
 
@@ -349,9 +351,9 @@ def add_drift_lgm_coord(inst):
     # velocity in local geomagnetic coordinates
     lgm_vel = list()
     for i, ind in enumerate(inst.data.index):
-        sat2geo = np.matrix([[inst['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
+        sat2geo = np.matrix([[inst['sat2geo_{:d}{:d}'.format(j + 1, k + 1)][ind]
                               for k in range(3)] for j in range(3)])
-        geo2lgm = np.matrix([[inst['geo2lgm_{:d}{:d}'.format(j+1, k+1)][ind]
+        geo2lgm = np.matrix([[inst['geo2lgm_{:d}{:d}'.format(j + 1, k + 1)][ind]
                               for k in range(3)] for j in range(3)])
         sat2lgm = np.matmul(geo2lgm, sat2geo)
 
@@ -398,7 +400,7 @@ def add_drift_geo_coord(inst):
     # velocity in local geomagnetic coordinates
     geo_vel = list()
     for i, ind in enumerate(inst.data.index):
-        sat2geo = np.matrix([[inst['sat2geo_{:d}{:d}'.format(j+1, k+1)][ind]
+        sat2geo = np.matrix([[inst['sat2geo_{:d}{:d}'.format(j + 1, k + 1)][ind]
                               for k in range(3)] for j in range(3)])
 
         geo_vel.append(np.matmul(sat2geo, np.array(sc_vel[i], dtype=float)))
