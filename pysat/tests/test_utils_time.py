@@ -59,7 +59,7 @@ class TestParseDate():
             _ = pytime.parse_date('194', '15', '31')
 
 
-def TestCalcFreq():
+class TestCalcFreq():
 
     def setup(self):
         self.year = np.ones(4) * 2001
@@ -101,9 +101,9 @@ def TestCalcFreq():
             pytime.calc_freq([1, 2, 3, 4])
 
 
-def TestCreateDateRange():
+class TestCreateDateRange():
 
-    def test_create_date_range():
+    def test_create_date_range(self):
         """Test ability to generate season list"""
 
         start = dt.datetime(2012, 2, 28)
@@ -114,7 +114,7 @@ def TestCreateDateRange():
         assert season[-1] == stop
         assert len(season) == 3
 
-    def test_create_date_range_w_gaps():
+    def test_create_date_range_w_gaps(self):
         """Test ability to generate season list"""
 
         start = [dt.datetime(2012, 2, 28), dt.datetime(2013, 2, 28)]
@@ -126,7 +126,7 @@ def TestCreateDateRange():
         assert len(season) == 5
 
 
-def TestCreateDatetimeIndex():
+class TestCreateDatetimeIndex():
 
     def setup(self):
         self.year = 2012 * np.ones(4)
