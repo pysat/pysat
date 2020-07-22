@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - methods.nasa_cdaweb.list_files moved to methods.general
   - `strict_time_flag` now defaults to True
   - Use of start / stop notation in remote_file_list
+  - Added variable rename method to Instrument object (#91)
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
