@@ -198,8 +198,7 @@ class InstTestClass():
 
     @pytest.mark.second
     @pytest.mark.download
-    @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty',
-                                             'clean'])
+    @pytest.mark.parametrize("clean_level", ['none', 'dirty', 'dusty', 'clean'])
     def test_load(self, clean_level, inst):
         """Check that instruments load at each cleaning level."""
         # make sure download was successful
