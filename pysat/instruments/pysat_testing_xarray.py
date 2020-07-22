@@ -6,12 +6,15 @@ from __future__ import print_function
 from __future__ import absolute_import
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 import xarray
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
+
+logger = logging.getLogger(__name__)
 
 # pysat required parameters
 platform = 'pysat'
@@ -36,15 +39,12 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
+    logger.info(mm_test.ackn_str)
+    self.meta.acknowledgements = mm_test.ackn_str
+    self.meta.references = mm_test.refs
 
 
 def default(inst):

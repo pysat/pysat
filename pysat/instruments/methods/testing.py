@@ -5,6 +5,13 @@ import os
 import pandas as pds
 
 
+ackn_str = ' '.join(("Test instruments provided through the pysat project.",
+                     "https://www.github.com/pysat/pysat"))
+refs = ' '.join(("Russell Stoneback, Jeff Klenzing, Angeline Burrell, Carey",
+                 "Spence, Asher Pembroke, Matthew Depew, … Asher Pembroke.",
+                 "(2019, November 18). pysat/pysat v2.1 (Version v2.1).",
+                 "Zenodo. http://doi.org/10.5281/zenodo.3546270"))
+
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                file_date_range=None, test_dates=None):
     """Produce a fake list of files spanning three years
