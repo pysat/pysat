@@ -531,7 +531,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
             if not downloaded:
                 logger.info(' '.join(('File not available for',
-                                      '{:}'.format(date.strftime('%x')))))
+                                      date.strftime('%x'))))
             elif rewritten:
                 with open(saved_fname, 'r') as fprelim:
                     lines = fprelim.read()
