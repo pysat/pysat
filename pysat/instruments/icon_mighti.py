@@ -323,7 +323,7 @@ def clean(inst):
                                  saa_flag))
             cal_flag = '_'.join(('ICON_L1_MIGHTI', inst.sat_id.upper(),
                                  cal_flag))
-            var = '_'.JOIN(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
+            var = '_'.join(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
         if inst.clean_level in ['clean', 'dusty']:
             # filter out areas with bad calibration data
             # as well as data marked in the SAA
