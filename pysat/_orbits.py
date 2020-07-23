@@ -208,7 +208,7 @@ class Orbits(object):
 
         # get locations where orbit index derivative is less than 0
         # then do some basic checks on these locations
-        ind, = np.where((lt_diff < -0.2*typical_lt_diff))
+        ind, = np.where((lt_diff < -0.2 * typical_lt_diff))
         if len(ind) > 0:
             ind = np.hstack((ind, np.array([len(self.sat[self.orbit_index])])))
             # look at distance between breaks
@@ -224,7 +224,7 @@ class Orbits(object):
             # suggest not a true orbit break, but rather bad orbit_index values
             new_ind = []
             for idx in ind:
-                tidx, = np.where(lt_diff[idx - 5:idx + 6] > 10*typical_lt_diff)
+                tidx, = np.where(lt_diff[(idx - 5):(idx + 6)] > 10 * typical_lt_diff)
 
                 if len(tidx) != 0:
                     # there are large changes, suggests a false alarm
@@ -276,7 +276,7 @@ class Orbits(object):
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            logger.info('Time Gap at locations ', ut_ind)
+            logger.info(' '.join(('Time Gap at locations', ut_ind)))
 
         # now that most problems in orbits should have been caught, look at
         # the time difference between orbits (not individual orbits)
