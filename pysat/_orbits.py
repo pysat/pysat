@@ -199,7 +199,7 @@ class Orbits(object):
         lt_diff = lt_diff.diff()
         # get typical difference
         typical_lt_diff = np.nanmedian(lt_diff)
-        logger.info('typical lt diff ', typical_lt_diff)
+        logger.info(''.join(('typical lt diff ', str(typical_lt_diff))))
 
         # universal time values, from datetime index
         ut_vals = Series(self.sat.index)
