@@ -103,26 +103,8 @@ class Custom(object):
         warnings.warn(' '.join(["custom.add is deprecated and will be",
                                 "renamed in pysat 3.0.0 as custom.attach"]),
                       DeprecationWarning, stacklevel=2)
-
-        if isinstance(function, str):
-            # convert string to function object
-            function = eval(function)
-
-        if (at_pos == 'end') | (at_pos == len(self._functions)):
-            # store function object
-            self._functions.append(function)
-            self._args.append(args)
-            self._kwargs.append(kwargs)
-            self._kind.append(kind.lower())
-        elif at_pos < len(self._functions):
-            # user picked a specific location to insert
-            self._functions.insert(at_pos, function)
-            self._args.insert(at_pos, args)
-            self._kwargs.insert(at_pos, kwargs)
-            self._kind.insert(at_pos, kind)
-        else:
-            raise TypeError('Must enter an index between 0 and %i' %
-                            len(self._functions))
+        self.attach(function, kind=kind, at_pos=at_pos, *args, **kwargs)
+        return
 
     def attach(self, function, kind='add', at_pos='end', *args, **kwargs):
         """Attach a function to custom processing queue.
