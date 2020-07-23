@@ -238,7 +238,7 @@ class Orbits(object):
                             # change in ut is small compared to the change in
                             # the orbit index this is flagged as a false alarm,
                             # or dropped from consideration
-                             logger.info(''.join(('Dropping found break ',
+                            logger.info(''.join(('Dropping found break ',
                                                  'as false positive.')))
                             pass
                         else:
