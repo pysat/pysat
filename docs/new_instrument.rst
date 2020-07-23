@@ -20,6 +20,8 @@ supplied directly using
 Some data repositories have pysat templates prepared to assist in integrating
 a new instrument. See the Supported Data Templates section or the
 template instrument module code under `pysat/instruments/templates/` for more.
+A general template has also been included to make starting any Instrument
+module easier.
 
 Naming Conventions
 ------------------
@@ -482,6 +484,14 @@ generally be put in the `init` function of each instrument.
 
 Supported Data Templates
 ========================
+
+General
+-------
+
+A general instrument template is included with pysat that has the full set
+of required and optional methods, and docstrings, that may be used as a
+starting point for adding a new instrument to pysat.
+
 
 
 NASA CDAWeb
