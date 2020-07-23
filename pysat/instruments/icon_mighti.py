@@ -325,8 +325,12 @@ def clean(inst):
                                  cal_flag))
             var = '_'.JOIN(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
         if inst.clean_level in ['clean', 'dusty']:
+            # filter out areas with bad calibration data
+            # as well as data marked in the SAA
             inst[var] = inst[var].where((inst[saa_flag] == 0)
                                         & (inst[cal_flag] == 0))
+            # filter out negative temperatures
+            inst[var] = inst[var].where(inst[var] > 0)
         else:
             # dirty and worse lets everything through
             pass
