@@ -62,10 +62,12 @@ class TestParseDate():
 class TestCalcFreq():
 
     def setup(self):
+        """Runs before every method to create a clean testing setup."""
         self.year = np.ones(4) * 2001
         self.month = np.ones(4) * 1
 
     def teardown(self):
+        """Runs after every method to clean up previous testing."""
         del self.year, self.month
 
     def test_calc_freq(self):
@@ -129,12 +131,14 @@ class TestCreateDateRange():
 class TestCreateDatetimeIndex():
 
     def setup(self):
+        """Runs before every method to create a clean testing setup."""
         self.year = 2012 * np.ones(4)
         self.month = 2 * np.ones(4)
         self.day = 28 * np.ones(4)
         self.uts = np.arange(0, 4)
 
     def teardown(self):
+        """Runs after every method to clean up previous testing."""
         del self.year, self.month, self.day, self.uts
 
     def test_create_datetime_index(self):
