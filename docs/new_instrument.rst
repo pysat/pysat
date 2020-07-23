@@ -11,7 +11,11 @@ that load and process the data consistent with the pysat standard. The name
 of the python file corresponds to the combination 'platform_name' provided when
 initializing a pysat.Instrument object. The module should be placed in the
 pysat instruments directory for native support. A compatible module may also be
-supplied directly using pysat.Instrument(inst_module=python_module_object).
+supplied directly using
+
+.. code:: Python
+
+    pysat.Instrument(inst_module=python_module_object).
 
 Some data repositories have pysat templates prepared to assist in integrating
 a new instrument. See the Supported Data Templates section or the
@@ -156,7 +160,7 @@ do not need to do anything to support the directory_format keyword.
 **Pre-Built list_files Methods and Support**
 
 Finding local files is generally similar across data sets thus pysat
-includes a variety of methods to make support this functionality easier.
+includes a variety of methods to make supporting this functionality easier.
 The simplest way to construct a valid list_files method is to use one of these
 included pysat methods.
 
@@ -187,7 +191,7 @@ A complete list_files routine could be as simple as
 The constructor presumes the template string is for a fixed width format
 unless a delimiter string is supplied. This constructor supports conversion
 of years with only 2 digits and expands them to 4 using the
-two_digit_year_break keyword. Note the support for format_str.
+two_digit_year_break keyword. Note the support for format_str above.
 
 If the constructor is not appropriate, then lower level methods
 within pysat._files may also be used to reduce the workload in adding a new
@@ -201,7 +205,8 @@ pysat will invoke the list_files method the first time a particular instrument
 is instantiated. After the first instantiation, by default pysat will not search
 for instrument files as some missions can produce a large number of
 files which may take time to identify. The list of files associated
-with an Instrument may be updated by adding `update_files=True`.
+with an Instrument may be updated by adding `update_files=True` at
+instantiation.
 
 .. code:: python
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
@@ -230,7 +235,10 @@ The load module method signature should appear as:
   data by day. This can present some issues for data sets that are stored
   by month or by year. See `instruments.methods.nasa_cdaweb.py` for an example
   of returning daily data when stored by month.
-- tag and sat_id specify the data set to be loaded
+- Some instruments, notably space weather indices, return more than a day of
+  data. More robust support for time spans that exceed a day is under
+  evaluation.
+- tag and sat_id specify the data set to be loaded.
 
 - The load routine should return a tuple with (data, pysat metadata object).
 - `data` is a pandas DataFrame, column names are the data labels, rows are
@@ -384,6 +392,30 @@ search for subsets of files through optional keywords, such as
     inst.remote_file_list(year=2019, month=1, day=1)
 
 
+Logging
+-------
+
+pysat is connected to the Python logging module. This allows users to set
+the desired level of direct feedback, as well as where feedback statements
+are delivered. The following line in each module is encouraged at the top-level
+so that the instrument module can provide feedback using the same mechanism
+
+.. code:: Python
+
+    logger = logging.getLogger(__name__)
+
+
+Within any instrument module,
+
+.. code:: Python
+
+    logger.info(information_string)
+    logger.warning(warning_string)
+    logger.debug(debug_string)
+
+will direct information, warnings, and debug statements appropriately.
+
+
 Testing Support
 ---------------
 All modules defined in the __init__.py for pysat/instruments are automatically
@@ -426,8 +458,26 @@ Data Acknowledgements
 =====================
 
 Acknowledging the source of data is key for scientific collaboration.  This can
-generally be put in the `init` function of each instrument.  Relevant
-citations should be included in the instrument docstring.
+generally be put in the `init` function of each instrument.
+
+.. code:: Python
+
+    def init(self):
+        """Initializes the Instrument object with instrument specific values.
+
+        Runs once upon instantiation.
+
+        Parameters
+        ----------
+        inst : (pysat.Instrument)
+            Instrument class object
+
+        """
+
+        self.meta.acknowledgements = acknowledgements_string
+        self.meta.references = references_string
+
+        return
 
 
 Supported Data Templates
@@ -440,7 +490,7 @@ NASA CDAWeb
 A template for NASA CDAWeb pysat support is provided. Several of the routines
 within are intended to be used with functools.partial in the new instrument
 support code. When writing custom routines with a new instrument file
-download support would be added via
+download support would normally be added via
 
 .. code:: python
 
@@ -467,7 +517,7 @@ Madrigal
 A template for Madrigal pysat support is provided. Several of the routines
 within are intended to be used with functools.partial in the new instrument
 support code. When writing custom routines with a new instrument file download
-support would be added via
+support would normally be added via
 
 .. code:: python
 
