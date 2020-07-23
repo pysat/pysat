@@ -319,8 +319,7 @@ specific instrument module then an error is raised.
 
 **init**
 
-Initialize any specific instrument info. Runs once at instrument
-instantiation.
+If present, the instrument init method runs once at instrument instantiation.
 
 .. code:: python
 
@@ -331,7 +330,7 @@ inst is a pysat.Instrument() instance. init should modify inst
 in-place as needed; equivalent to a 'modify' custom routine.
 
 keywords are not supported within the init module method signature, though
-custom keyword support for instruments is available.
+custom keyword support for instruments is available via inst.kwargs.
 
 **default**
 
@@ -343,7 +342,8 @@ First custom function applied, once per instrument load.
    def default(inst):
        return None
 
-inst is a pysat.Instrument() instance. default should modify inst in-place as needed; equivalent to a 'modify' custom routine.
+inst is a pysat.Instrument() instance. default should modify inst in-place as
+needed; equivalent to a 'modify' custom routine.
 
 **clean**
 
@@ -359,18 +359,24 @@ Cleans instrument for levels supplied in inst.clean_level.
    def clean(inst):
        return None
 
-inst is a pysat.Instrument() instance. clean should modify inst in-place as needed; equivalent to a 'modify' custom routine.
+inst is a pysat.Instrument() instance. clean should modify inst in-place as
+needed; equivalent to a 'modify' custom routine.
 
 **list_remote_files**
 
-Returns a list of available files on the remote server.
+Returns a list of available files on the remote server. This method is required
+for the Instrument module to support the `download_updated_files` method, which
+makes it trivial for users to ensure they always have the most up to date data.
+pysat developers highly encourage the development of this method, when possible.
 
 .. code:: python
 
     def list_remote_files(inst):
         return list_like
 
-This method is called by several internal `pysat` functions, and can be directly called by the user through the `inst.remote_file_list` command.  The user can search for subsets of files through optional keywords, such as
+This method is called by several internal `pysat` functions, and can be directly
+called by the user through the `inst.remote_file_list` command.  The user can
+search for subsets of files through optional keywords, such as
 
 .. code:: python
 
@@ -412,9 +418,9 @@ The rationale behind the variable names is explained above under Naming
 Conventions.  What is important here are the _test_dates.  Each of these points
 to a specific date for which the unit tests will attempt to download and load
 data as part of end-to-end testing.  Make sure that the data exists for the
-given date. The tags without test dates will not be tested. The leading underscore
-in _test_dates ensures that this information is not added to the instrument's meta
-attributes, so it will not be present in IO operations.
+given date. The tags without test dates will not be tested. The leading
+underscore in _test_dates ensures that this information is not added to the
+instrument's meta attributes, so it will not be present in IO operations.
 
 Data Acknowledgements
 =====================
@@ -431,7 +437,10 @@ Supported Data Templates
 NASA CDAWeb
 -----------
 
-A template for NASA CDAWeb pysat support is provided. Several of the routines within are intended to be used with functools.partial in the new instrument support code. When writing custom routines with a new instrument file download support would be added via
+A template for NASA CDAWeb pysat support is provided. Several of the routines
+within are intended to be used with functools.partial in the new instrument
+support code. When writing custom routines with a new instrument file
+download support would be added via
 
 .. code:: python
 
@@ -444,16 +453,21 @@ Using the CDAWeb template the equivalent action is
    download = functools.partial(methods.nasa_cdaweb.download,
                                 supported_tags)
 
-where supported_tags is defined as dictated by the download function. See the routines for cnofs_vefi and cnofs_ivm for practical uses of the NASA CDAWeb support code.
+where supported_tags is defined as dictated by the download function. See the
+routines for cnofs_vefi and cnofs_ivm for practical uses of the NASA CDAWeb
+support code.
 |br|
 
 .. automodule:: pysat.instruments.methods.nasa_cdaweb
    :members:
 
 Madrigal
------------
+--------
 
-A template for Madrigal pysat support is provided. Several of the routines within are intended to be used with functools.partial in the new instrument support code. When writing custom routines with a new instrument file download support would be added via
+A template for Madrigal pysat support is provided. Several of the routines
+within are intended to be used with functools.partial in the new instrument
+support code. When writing custom routines with a new instrument file download
+support would be added via
 
 .. code:: python
 
@@ -470,9 +484,11 @@ Using the Madrigal template the equivalent action is
                                    data_path=data_path, user=user,
                                    password=password)
 
-See the routines for `dmsp_ivm` and `jro_isr` for practical uses of the Madrigal support code.
+See the routines for `dmsp_ivm` and `jro_isr` for practical uses of the Madrigal
+support code.
 
-Additionally, use of the methods.madrigal class should acknowledge the CEDAR rules of the road.  This can be done by Adding
+Additionally, use of the methods.madrigal class should acknowledge the CEDAR
+rules of the road.  This can be done by Adding
 
 .. code:: python
 
