@@ -4,7 +4,7 @@ This is a template for a pysat.Instrument support file.
 Modify this file as needed when adding a new Instrument to pysat.
 
 This is a good area to introduce the instrument, provide background
-on the mission, operations, instrumenation, and measurements.
+on the mission, operations, instrumentation, and measurements.
 
 Also a good place to provide contact information. This text will
 be included in the pysat API documentation.
@@ -81,52 +81,202 @@ _test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 pandas_format = False
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
+# not required but recommended
+def clean(inst):
+    """Routine to return PLATFORM/NAME data cleaned to the specified level
 
-    Runs once upon instantiation.
+    Cleaning level is specified in inst.clean_level and pysat
+    will accept user input for several strings. The clean_level is
+    specified at instantiation of the Instrument object.
+
+    'clean' All parameters should be good, suitable for statistical and
+            case studies
+    'dusty' All paramers should generally be good though same may
+            not be great
+    'dirty' There are data areas that have issues, data should be used
+            with caution
+    'none'  No cleaning applied, routine not called in this case.
+
 
     Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
+    -----------
+    inst : pysat.Instrument
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
 
     """
 
-    logger.info("Mission acknowledgements and data restrictions will be printed " +
-          "here when available.")
     return
 
 
+# not required
 def default(self):
     """Default customization function.
 
     This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
+    on every load by the pysat nanokernel (first in queue). Object
+    modified in place.
 
     Parameters
     ----------
     self : pysat.Instrument
         This object
 
+    """
+
+    return
+
+
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
+             custom_keywords=None):
+    """Placeholder for PLATFORM/NAME downloads.
+
+    This routine is invoked by pysat and is not intended for direct use by the
+    end user.
+
+    Parameters
+    ----------
+    date_array : array-like
+        list of datetimes to download data for. The sequence of dates need not
+        be contiguous.
+    tag : string ('')
+        Tag identifier used for particular dataset. This input is provided by
+        pysat.
+    sat_id : string  ('')
+        Satellite ID string identifier used for particular dataset. This input
+        is provided by pysat.
+    data_path : string (None)
+        Path to directory to download data to.
+    user : string (None)
+        User string input used for download. Provided by user and passed via
+        pysat. If an account
+        is required for dowloads this routine here must error if user not
+        supplied.
+    password : string (None)
+        Password for data download.
+    custom_keywords : placeholder
+        Additional keywords supplied by user when invoking the download
+        routine attached to a pysat.Instrument object are passed to this
+        routine. Use of custom keywords here is discouraged.
+
+    """
+
+    return
+
+# not required
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation. Object modified in place.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    """
+    # direct feedback to logging info
+    logger.info("Mission acknowledgements and data restrictions will be" +
+                "here when available.")
+    # acknowledgements
+    self.meta.acknowledgements = ''
+    # references
+    self.meta.references = ''
+
+    return
+
+
+def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+    """Produce a list of files corresponding to PLATFORM/NAME.
+
+    This routine is invoked by pysat and is not intended for direct
+    use by the end user. Arguments are provided by pysat.
+
+    Parameters
+    ----------
+    tag : string ('')
+        tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself.
+    sat_id : string ('')
+        Satellite ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself.
+    data_path : string (None)
+        Full path to directory containing files to be loaded. This
+        is provided by pysat. The user may specify their own data path
+        at Instrument instantiation and it will appear here.
+    format_str : string (None)
+        String template used to parse the datasets filenames. If a user
+        supplies a template string at Instrument instantiation
+        then it will appear here, otherwise defaults to None.
+
+    Returns
+    -------
+    pandas.Series
+        Series of filename strings, including the path, indexed by datetime.
+
+    Examples
+    --------
+    ::
+        If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
+        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
+        'v{version:02d}r{revision:04d}.NC'
+
+    Note
+    ----
+    The returned Series should not have any duplicate datetimes. If there are
+    multiple versions of a file the most recent version should be kept and the
+    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
+    the returned files are up to pysat specifications.
+
+    Multiple data levels may be supported via the 'tag' input string.
+    Multiple instruments via the sat_id string.
+
+    """
+
+    if format_str is None:
+        # user did not supply an alternative format template string
+        format_str = 'example_name_{year:04d}_{month:02d}_{day:02d}.nc'
+    # we use a pysat provided function to grab list of files from the
+    # local file system that match the format defined above
+    file_list = pysat.Files.from_os(data_path=data_path, format_str=format_str)
+
+    return file_list
+
+
+# not required but recommended
+def list_remote_files(tag, sat_id, user=None, password=None):
+    """Return a Pandas Series of every file for chosen remote data.
+
+    This routine is intended to be used by pysat instrument modules supporting
+    a particular NASA CDAWeb dataset.
+
+    Parameters
+    -----------
+    tag : (string or NoneType)
+        Denotes type of file to load.  Accepted types are <tag strings>.
+        (default=None)
+    sat_id : (string or NoneType)
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    user : (string or NoneType)
+        Username to be passed along to resource with relevant data.
+        (default=None)
+    password : (string or NoneType)
+        User password to be passed along to resource with relevant data.
+        (default=None)
+
     Returns
     --------
-    Void : (NoneType)
-        Object modified in place.
-
+    pandas.Series
+        A Series formatted for the Files class (pysat._files.Files)
+        containing filenames and indexed by date and time
 
     """
 
     return
 
 
-def load(fnames, tag=None, sat_id=None, **kwargs):
+def load(fnames, tag=None, sat_id=None, custom_keyword=None):
     """Loads PLATFORM data into (PANDAS/XARRAY).
 
     This routine is called as needed by pysat. It is not intended
@@ -145,16 +295,17 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     sat_id : string ('')
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    **kwargs : extra keywords
-        Passthrough for additional keyword arguments specified when
-        instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.
+    custom_keyword : type to be set
+        Developers may include any custom keywords, with default values
+        defined in the method signature. This is included here as a
+        place holder and should be removed.
 
     Returns
     -------
     data, metadata
-        Data and Metadata are formatted for pysat. Data is an xarray
-        DataSet while metadata is a pysat.Meta instance.
+        Data and Metadata are formatted for pysat. Data is a
+        pandas DataFrame or xarray DataSet while metadata is a pysat.Meta
+        instance.
 
     Note
     ----
@@ -204,186 +355,13 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     meta = pysat.Meta()
     for attr in data.attrs:
         setattr(meta, attr[0], attr[1])
-    data.attrs = []
+    data.attrs = {}
 
     # fill Meta object with variable information
     for key in data.variables.keys():
         attrs = data.variables[key].attrs
         meta[key] = attrs
-
-    # move misc parameters from xarray to the Instrument object via Meta
-    # doing this after the meta ensures all metadata is still kept
-    # even for moved variables
-    meta.p0 = data['p0']
-    meta.p0_model = data['p0_model']
-    meta.grav = data['grav']
-    meta.mag = data['mag']
-    meta.timestep = data['timestep']
-    # remove these variables from xarray
-    data = data.drop(['p0', 'p0_model', 'grav', 'mag', 'timestep'])
+        # remove attributes from xarray
+        data.variables[key].attrs = {}
 
     return data, meta
-
-
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of files corresponding to PLATFORM/NAME.
-
-    This routine is invoked by pysat and is not intended for direct
-    use by the end user. Arguments are provided by pysat.
-
-    Parameters
-    ----------
-    tag : string ('')
-        tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
-        Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    data_path : string (None)
-        Full path to directory containing files to be loaded. This
-        is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
-        String template used to parse the datasets filenames. If a user
-        supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
-
-    Returns
-    -------
-    pandas.Series
-        Series of filename strings, including the path, indexed by datetime.
-
-    Examples
-    --------
-    ::
-        If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
-        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
-        'v{version:02d}r{revision:04d}.NC'
-
-    Note
-    ----
-    The returned Series should not have any duplicate datetimes. If there are
-    multiple versions of a file the most recent version should be kept and the
-    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
-    the returned files are up to pysat specifications.
-
-    Multiple data levels may be supported via the 'tag' input string.
-    Multiple instruments via the sat_id string.
-
-
-    """
-
-    format_str = 'example_name_{year:04d}_{month:02d}_{day:02d}.nc'
-    # we use a pysat provided function to grab list of files from the
-    # local file system that match the format defined above
-    return pysat.Files.from_os(data_path=data_path, format_str=format_str)
-
-
-def list_remote_files(tag, sat_id, user=None, password=None):
-    """Return a Pandas Series of every file for chosen remote data.
-
-    This routine is intended to be used by pysat instrument modules supporting
-    a particular NASA CDAWeb dataset.
-
-    Parameters
-    -----------
-    tag : (string or NoneType)
-        Denotes type of file to load.  Accepted types are <tag strings>.
-        (default=None)
-    sat_id : (string or NoneType)
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    user : (string or NoneType)
-        Username to be passed along to resource with relevant data.
-        (default=None)
-    password : (string or NoneType)
-        User password to be passed along to resource with relevant data.
-        (default=None)
-
-    Returns
-    --------
-    pandas.Series
-        A Series formatted for the Files class (pysat._files.Files)
-        containing filenames and indexed by date and time
-
-    """
-
-    pass
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
-             **kwargs):
-    """Placeholder for PLATFORM/NAME downloads.
-
-    This routine is invoked by pysat and is not intended for direct use by the
-    end user.
-
-    Parameters
-    ----------
-    date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not
-        be contiguous.
-    tag : string ('')
-        Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
-        Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
-        User string input used for download. Provided by user and passed via
-        pysat. If an account
-        is required for dowloads this routine here must error if user not
-        supplied.
-    password : string (None)
-        Password for data download.
-    **kwargs : dict
-        Additional keywords supplied by user when invoking the download
-        routine attached to a pysat.Instrument object are passed to this
-        routine via kwargs.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
-
-    """
-
-    return
-
-
-# code should be defined below as needed
-def clean(inst):
-    """Routine to return PLATFORM/NAME data cleaned to the specified level
-
-    Cleaning level is specified in inst.clean_level and pysat
-    will accept user input for several strings. The clean_level is
-    specified at instantiation of the Instrument object.
-
-    'clean' All parameters should be good, suitable for statistical and
-            case studies
-    'dusty' All paramers should generally be good though same may
-            not be great
-    'dirty' There are data areas that have issues, data should be used
-            with caution
-    'none'  No cleaning applied, routine not called in this case.
-
-
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
-
-    """
-
-    return
