@@ -200,7 +200,7 @@ SW Kp
    :members: __doc__, filter_geoquiet
 
 TIMED/SABER
----------
+-----------
 
 .. automodule:: pysat.instruments.timed_saber
    :members: __doc__

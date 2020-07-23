@@ -43,6 +43,6 @@ Citing the publication:
     year      = {2018}
   }
 
-To aid in scientific reproducibility, please include the version number in publications that use this code.  This can be found by invoking `pysat.__version__ `.
+To aid in scientific reproducibility, please include the version number in publications that use this code.  This can be found by invoking ``pysat.__version__ ``.
 
-Information for appropriately acknowledging and citing the different instruments accessed through pysat is sometimes available in the metadata through `inst.meta.info['acknowledgements']` and `inst.meta.info['reference']`.  If this information is missing, please consider improving pysat by either submitting an issue or adding the information yourself.
+Information for appropriately acknowledging and citing the different instruments accessed through pysat is sometimes available in the metadata through ``inst.meta.info['acknowledgements']``` and ``inst.meta.info['reference']``.  If this information is missing, please consider improving pysat by either submitting an issue or adding the information yourself.

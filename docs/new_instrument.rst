@@ -211,6 +211,7 @@ with an Instrument may be updated by adding `update_files=True` at
 instantiation.
 
 .. code:: python
+
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
 The output provided by the list_files function that has been pulled into pysat
@@ -518,8 +519,8 @@ routines for cnofs_vefi and cnofs_ivm for practical uses of the NASA CDAWeb
 support code.
 |br|
 
-.. automodule:: pysat.instruments.methods.nasa_cdaweb
-   :members:
+**Add link here**
+
 
 Madrigal
 --------
@@ -560,5 +561,4 @@ rules of the road.  This can be done by Adding
 to each routine that uses Madrigal data access.
 |br|
 
-.. automodule:: pysat.instruments.methods.madrigal
-  :members:
+**Add link here**
