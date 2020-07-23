@@ -20,6 +20,8 @@ discovery. A compatible module may also be supplied directly using
 Some data repositories have pysat templates prepared to assist
 in integrating a new instrument. See :ref:`supported-data-templates` or the
 template instrument module code under `pysat/instruments/templates/` for more.
+A general template has also been included to make starting any Instrument
+module easier.
 
 A compatible module may be supplied directly to :python:`pysat.Instrument(inst_module = myInstrument)`
 if it also contains attributes platform and name. Such modules may be registered as
@@ -457,6 +459,14 @@ citations should be included in the instrument docstring.
 
 Supported Data Templates
 ========================
+
+General
+-------
+
+A general instrument template is included with pysat that has the full set
+of required and optional methods, and docstrings, that may be used as a
+starting point for adding a new instrument to pysat.
+
 
 
 NASA CDAWeb
