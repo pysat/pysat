@@ -19,7 +19,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added NaN filter for metadata when writing netCDF4 files
    - Test instruments now part of compiled package for development elsewhere
    - Custom instrument keywords and defaults are now always found in inst.kwargs
-   - Added Jupyter notebook in pysat/demo highlighting ICON data
+   - Added support for ~ and $ variables when setting pysat data dir
+   - Added custom.attach to make transitions to v3.0 easier
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
   - Several functions in coords will be removed in pysat 3.0.0.  These functions will move to pysatMadrigal
@@ -53,6 +54,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug when requesting non-existent files from CDAWeb (#426)
   - Improved compatibility of parse_delimited_filenames (#439)
   - Fixed bug assigning dates to COSMIC files
+  - Fixed bug limiting local time orbit breakdowns for instruments much slower 
+    than 1 Hz
 
 
 ## [2.1.0] - 2019-11-18
