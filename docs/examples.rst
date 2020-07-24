@@ -1,12 +1,20 @@
-Code Examples
-=============
+Sample Scientific Analysis
+==========================
 
-Pysat tends to reduce certain science data investigations to the construction of a routine(s) that makes that investigation unique, a call to a seasonal analysis routine, and some plotting commands. Several demonstrations are offered in this section. The full code for each example is available in the repository in the demo folder.
+Pysat tends to reduce certain science data investigations to the construction
+of a routine(s) that makes that investigation unique, a call to a seasonal
+analysis routine, and some plotting commands. Several demonstrations are
+offered in this section. The full code for each example is available in the
+repository in the demo folder.
 
 Orbit-by-Orbit Plots
 --------------------
 
-Plotting a series of orbit-by-orbit plots is a great way to become familiar with a data set. If the data set doesn't come with orbit information, this can be a challenge. Orbits also go past day breaks, so if data comes in daily files this requires loading multiple files at once, joining the data together, etc. pysat goes through that trouble for you.
+Plotting a series of orbit-by-orbit plots is a great way to become familiar
+with a data set. If the data set doesn't come with orbit information, this can
+be a challenge. Orbits also go past day breaks, so if data comes in daily files
+this requires loading multiple files at once, joining the data together, etc.
+pysat goes through that trouble for you.
 
 .. code:: python
 
@@ -14,6 +22,7 @@ Plotting a series of orbit-by-orbit plots is a great way to become familiar with
    import os
    import matplotlib.pyplot as plt
    import pysat
+   import matplotlib.pyplot as plt
 
    # set the directory to save plots to
    results_dir = ''
