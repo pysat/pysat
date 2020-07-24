@@ -81,8 +81,9 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     Examples
     --------
     ::
+
         inst = pysat.Instrument('sport', 'ivm')
-        inst.load(2019,1)
+        inst.load(2019, 1)
 
     """
 
@@ -170,12 +171,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
         error if user not supplied.
     password : string (None)
         Password for data download.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
-
 
     """
 
