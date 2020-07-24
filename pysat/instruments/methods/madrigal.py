@@ -17,7 +17,7 @@ import sys
 
 import h5py
 from madrigalWeb import madrigalWeb
-    
+
 import pysat
 
 logger = logging.getLogger(__name__)
@@ -519,8 +519,11 @@ def filter_data_single_date(self):
 
     This routine is intended to be added to the Instrument
     nanokernel processing queue via
+    ::
+
         inst = pysat.Instrument()
         inst.custom.add(filter_data_single_date, 'modify')
+
     This function will then be automatically applied to the
     Instrument object data on every load by the pysat nanokernel.
 
@@ -531,7 +534,10 @@ def filter_data_single_date(self):
     pysat instrument file to this one.
 
     within platform_name.py set
+    ::
+
         default = pysat.instruments.methods.madrigal.filter_data_single_date
+
     at the top level
 
     """
