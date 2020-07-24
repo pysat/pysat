@@ -57,7 +57,7 @@ def init(self):
     self.new_thing = True
 
     # work on file index if keyword present
-    if 'file_date_range' in self.kwargs:
+    if self.kwargs['file_date_range'] is not None:
         # set list files routine to desired date range
         # attach to the instrument object
         fdr = self.kwargs['file_date_range']
@@ -65,10 +65,9 @@ def init(self):
         self.files.refresh()
 
     # mess with file dates if kwarg option present
-    if 'mangle_file_dates' in self.kwargs:
-        if self.kwargs['mangle_file_dates']:
-            self.files.files.index = \
-                self.files.files.index + pds.DateOffset(minutes=5)
+    if self.kwargs['mangle_file_dates']:
+        self.files.files.index = \
+            self.files.files.index + pds.DateOffset(minutes=5)
 
 
 def default(self):
@@ -89,7 +88,7 @@ def default(self):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False, **kwargs):
+         malformed_index=False, mangle_file_dates=False):
     """ Loads the test files
 
     Parameters
@@ -119,9 +118,6 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.
-    **kwargs : Additional keywords
-        Additional keyword arguments supplied at pyast.Instrument instantiation
-        are passed here
 
     Returns
     -------

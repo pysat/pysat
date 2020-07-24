@@ -489,13 +489,18 @@ class Meta(object):
                         to_be_set = input_data[key][i]
                         if hasattr(to_be_set, '__iter__') and \
                                 not isinstance(to_be_set, basestring):
+                            # we have some list-like object
+                            # can only store a single element
+                            if len(to_be_set) == 0:
+                                # empty list, ensure there is something
+                                to_be_set = ['']
                             if isinstance(to_be_set[0], basestring):
                                 self._data.loc[name, key] = \
                                     '\n\n'.join(to_be_set)
                             else:
                                 warnings.warn(' '.join(('Array elements are',
-                                                        ' disallowed in meta.',
-                                                        ' Dropping input :',
+                                                        'not allowed in meta.',
+                                                        'Dropping input :',
                                                         key)))
                         else:
                             self._data.loc[name, key] = to_be_set
