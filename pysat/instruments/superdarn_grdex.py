@@ -34,8 +34,6 @@ are constituted from what it is thought to be good data.
 
 from __future__ import print_function
 from __future__ import absolute_import
-import sys
-import os
 import functools
 
 import pandas as pds
@@ -153,16 +151,16 @@ def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string)
+    tag : string
         Denotes type of file to load.  Accepted types are 'north' and 'south'.
         (default='north')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 

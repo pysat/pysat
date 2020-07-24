@@ -70,11 +70,6 @@ def clean(inst):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    -------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     """
 
     inst.data.replace(-999., np.nan, inplace=True)  # Te

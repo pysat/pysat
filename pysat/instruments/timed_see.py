@@ -17,7 +17,7 @@ tag
     None
 sat_id
     None supported
-flatten_twod 
+flatten_twod
     If True, then two dimensional data is flattened across
     columns. Name mangling is used to group data, first column
     is 'name', last column is 'name_end'. In between numbers are
@@ -83,19 +83,15 @@ def clean(inst):
     """Routine to return TIMED SEE data cleaned to the specified level
 
     Parameters
-    -----------
-    inst : (pysat.Instrument)
+    ----------
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    --------
+    Note
+    ----
     No cleaning currently available.
+
     """
 
     return None

@@ -84,30 +84,6 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
-# code should be defined below as needed
-def default(self):
-    """Default customization function.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
-    """
-
-    return
-
-
-# code should be defined below as needed
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
@@ -126,17 +102,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 
