@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Supports the Plasma Analyzer Instrument (Instrument Analyseur de Plasma, or
 IAP) onboard the Detection of Electro-Magnetic Emissions Transmitted from
- Earthquake Regions (DEMETER) Microsatellite.
+Earthquake Regions (DEMETER) Microsatellite.
 
 The IAP consists of a Velocity Analyzer (ADV) and Retarding potential analyzer
 (APR) to provide plasma velocities, ion density and temperature, and

@@ -37,13 +37,13 @@ Note
 
 Warnings
 --------
-- Routine was not produced by COSMIC team
-- More recent versions of netCDF4 and numpy limit the casting of some variable
-  types into others. This issue could prevent data loading for some variables
-  such as 'MSL_Altitude' in the 'sonprf' and 'wetprf' files. The default
-  UserWarning when this occurs is
-    'UserWarning: WARNING: missing_value not used since it cannot be safely
-    cast to variable data type'
+    - Routine was not produced by COSMIC team
+    - More recent versions of netCDF4 and numpy limit the casting of some
+      variable types into others. This issue could prevent data loading for some
+      variables such as 'MSL_Altitude' in the 'sonprf' and 'wetprf' files. The
+      default UserWarning when this occurs is
+        'UserWarning: WARNING: missing_value not used since it cannot be safely
+        cast to variable data type'
 
 """
 

@@ -19,15 +19,18 @@ tag : string
 
 Example
 -------
+::
+
     import pysat
-    dmsp = pysat.Instrument('jro', 'isr', 'drifts', clean_level='clean')
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
-                  user='Firstname+Lastname', password='email@address.com')
-    dmsp.load(2017,363)
+    jro = pysat.Instrument('jro', 'isr', 'drifts', clean_level='clean')
+    jro.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
+                 user='Firstname+Lastname', password='email@address.com')
+    jro.load(2017,363)
 
 Note
 ----
-    Please provide name and email when downloading data with this routine.
+    Please provide name and email for user and password when downloading data
+    with this routine.
 
 """
 

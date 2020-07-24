@@ -89,13 +89,13 @@ def clean(inst):
     will accept user input for several strings. The clean_level is
     specified at instantiation of the Instrument object.
 
-    'clean' All parameters should be good, suitable for statistical and
-            case studies
-    'dusty' All paramers should generally be good though same may
-            not be great
-    'dirty' There are data areas that have issues, data should be used
-            with caution
-    'none'  No cleaning applied, routine not called in this case.
+    - 'clean' All parameters should be good, suitable for statistical and
+      case studies
+    - 'dusty' All paramers should generally be good though same may
+      not be great
+    - 'dirty' There are data areas that have issues, data should be used
+      with caution
+    - 'none'  No cleaning applied, routine not called in this case.
 
 
     Parameters
@@ -162,6 +162,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
     """
 
     return
+
 
 # not required
 def init(self):

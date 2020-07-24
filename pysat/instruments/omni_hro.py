@@ -31,9 +31,9 @@ of the National Science Foundation.
 
 Warnings
 --------
-- Currently no cleaning routine. Though the CDAWEB description indicates that
-  these level-2 products are expected to be ok.
-- Module not written by OMNI team.
+    - Currently no cleaning routine. Though the CDAWEB description indicates
+      that these level-2 products are expected to be ok.
+    - Module not written by OMNI team.
 
 Custom Functions
 -----------------

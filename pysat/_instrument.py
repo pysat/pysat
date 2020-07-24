@@ -2121,26 +2121,26 @@ class Instrument(object):
 
         Notes
         -----
+            Stores 1-D data along dimension 'epoch' - the date time index.
 
-        Stores 1-D data along dimension 'epoch' - the date time index.
+            Stores higher order data (e.g. dataframes within series) separately
 
-        Stores higher order data (e.g. dataframes within series) separately
-
-         - The name of the main variable column is used to prepend subvariable
-           names within netCDF, var_subvar_sub
-         - A netCDF4 dimension is created for each main variable column
-           with higher order data; first dimension Epoch
-         - The index organizing the data stored as a dimension variable
-         - from_netcdf4 uses the variable dimensions to reconstruct data
-           structure
+             - The name of the main variable column is used to prepend
+               subvariable names within netCDF, var_subvar_sub
+             - A netCDF4 dimension is created for each main variable column
+               with higher order data; first dimension Epoch
+             - The index organizing the data stored as a dimension variable
+             - from_netcdf4 uses the variable dimensions to reconstruct data
+               structure
 
 
-        All attributes attached to instrument meta are written to netCDF attrs
-        with the exception of 'Date_End', 'Date_Start', 'File', 'File_Date',
-        'Generation_Date', and 'Logical_File_ID'. These are defined within to_netCDF
-        at the time the file is written, as per the adopted standard,
-        SPDF ISTP/IACG Modified for NetCDF. Atrributes 'Conventions' and
-        'Text_Supplement' are given default values if not present.
+            All attributes attached to instrument meta are written to netCDF
+            attrs with the exception of 'Date_End', 'Date_Start', 'File',
+            'File_Date', 'Generation_Date', and 'Logical_File_ID'. These are
+            defined within to_netCDF at the time the file is written, as per
+            the adopted standard, SPDF ISTP/IACG Modified for NetCDF. Atrributes
+            'Conventions' and 'Text_Supplement' are given default values if not
+            present.
 
         """
 
@@ -2628,7 +2628,7 @@ def _get_supported_keywords(load_func):
 
     Parameters
     ----------
-    load_func: Python method or functools.partial
+    load_func : Python method or functools.partial
         Method used to load data within pysat
 
     Returns

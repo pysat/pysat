@@ -41,19 +41,6 @@ sat_id : string
 tag : string
     None Supported
 
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
-
-Authors
--------
-
 """
 
 from __future__ import print_function
@@ -94,7 +81,6 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
-# code should be defined below as needed
 def default(self):
     """Default customization function.
 
@@ -106,18 +92,11 @@ def default(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     return
 
 
-# code should be defined below as needed
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
@@ -139,14 +118,6 @@ def clean(inst):
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 

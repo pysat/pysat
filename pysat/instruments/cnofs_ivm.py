@@ -43,12 +43,13 @@ sat_id : string
 
 Warnings
 --------
-- The sampling rate of the instrument changes on July 29th, 2010.
-  The rate is attached to the instrument object as .sample_rate.
+    - The sampling rate of the instrument changes on July 29th, 2010.
+      The rate is attached to the instrument object as .sample_rate.
 
-- The cleaning parameters for the instrument are still under development.
+    - The cleaning parameters for the instrument are still under development.
 
 """
+
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -103,11 +104,6 @@ def clean(inst):
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     --------

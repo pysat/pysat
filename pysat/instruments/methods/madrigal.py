@@ -17,10 +17,11 @@ import sys
 
 import h5py
 from madrigalWeb import madrigalWeb
-    
+
 import pysat
 
 logger = logging.getLogger(__name__)
+
 
 def cedar_rules():
     """ General acknowledgement statement for Madrigal data.
@@ -31,6 +32,7 @@ def cedar_rules():
         String with general acknowledgement for all CEDAR Madrigal data
 
     """
+
     ackn = "Contact the PI when using this data, in accordance with the CEDAR"
     ackn += " 'Rules of the Road'"
     return ackn
@@ -191,11 +193,6 @@ def download(date_array, inst_code=None, kindat=None, data_path=None,
     file_format : string ('hdf5')
         File format for Madrigal data.  Load routines currently only accept
         'hdf5', but any of the Madrigal options may be used here.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
 
     Notes
     -----
@@ -519,8 +516,11 @@ def filter_data_single_date(self):
 
     This routine is intended to be added to the Instrument
     nanokernel processing queue via
+    ::
+
         inst = pysat.Instrument()
         inst.custom.add(filter_data_single_date, 'modify')
+
     This function will then be automatically applied to the
     Instrument object data on every load by the pysat nanokernel.
 
@@ -530,9 +530,10 @@ def filter_data_single_date(self):
     This may be ensured by setting the default function in a
     pysat instrument file to this one.
 
-    within platform_name.py set
+    At the top level of platform_name.py, set
+    ::
+
         default = pysat.instruments.methods.madrigal.filter_data_single_date
-    at the top level
 
     """
 

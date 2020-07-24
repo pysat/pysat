@@ -32,6 +32,7 @@ tag : string
 Examples
 --------
 ::
+
     # for isolated use of a madrigal data set
     import pysat
     # download DMSP data from Madrigal

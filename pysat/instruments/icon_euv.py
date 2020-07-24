@@ -14,8 +14,8 @@ tag : string
 
 Warnings
 --------
-- The cleaning parameters for the instrument are still under development.
-- Only supports level-2 data.
+    - The cleaning parameters for the instrument are still under development.
+    - Only supports level-2 data.
 
 Authors
 ---------

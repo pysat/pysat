@@ -16,17 +16,20 @@ sat_id : string
 
 Warnings
 --------
-- The cleaning parameters for the instrument are still under development.
+    - The cleaning parameters for the instrument are still under development.
 
 Authors
 ---------
-Angeline G. Burrell, Feb 22, 2016, University of Leicester
+    Angeline G. Burrell, Feb 22, 2016, University of Leicester
+
 """
+
 from __future__ import print_function
 from __future__ import absolute_import
 
 import numpy as np
 import pandas as pds
+import re
 import warnings
 
 import pysat
@@ -61,6 +64,7 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     --------
     pysat.Files.from_os : (pysat._files.Files)
         A class containing the verified available files
+
     """
 
     if format_str is None and tag is not None:
@@ -95,8 +99,9 @@ def load(fnames, tag=None, sat_id=None):
         Object containing satellite data
     meta : (pysat.Meta)
         Object containing metadata such as column names and units
+
     """
-    import re
+
     if len(fnames) <= 0:
         return pysat.DataFrame(None), pysat.Meta(None)
 
@@ -203,14 +208,10 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Notes
     --------
     No data download currently available for CHAMP
+
     """
 
     warnings.warn("No data download currently available for CHAMP")
@@ -227,14 +228,10 @@ def clean(inst):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Notes
     --------
     No cleaning currently available for CHAMP
+
     """
 
     warnings.warn("No cleaning currently available for CHAMP")

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Supports SuperMAG ground magnetometer measurements and SML/SMU indices.
 Downloading is supported; please follow their rules of the road:
-    http://supermag.jhuapl.edu/info/?page=rulesoftheroad
+http://supermag.jhuapl.edu/info/?page=rulesoftheroad
 
 Parameters
 ----------
@@ -14,26 +14,23 @@ tag : string
 
 Note
 ----
-Files must be downloaded from the website, and is freely available after
-registration.
+    Files must be downloaded from the website, and is freely available after
+    registration.
 
-This material is based upon work supported by the
-National Science Foundation under Grant Number 1259508.
+    This material is based upon work supported by the
+    National Science Foundation under Grant Number 1259508.
 
-Any opinions, findings, and conclusions or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views
-of the National Science Foundation.
+    Any opinions, findings, and conclusions or recommendations expressed in this
+    material are those of the author(s) and do not necessarily reflect the views
+    of the National Science Foundation.
 
 
 Warnings
 --------
-- Currently no cleaning routine, though the SuperMAG description indicates
-  that these products are expected to be good.  More information about the
-  processing is available
-- Module not written by the SuperMAG team.
-
-Custom Functions
------------------
+    - Currently no cleaning routine, though the SuperMAG description indicates
+      that these products are expected to be good.  More information about the
+      processing is available
+    - Module not written by the SuperMAG team.
 
 """
 
@@ -691,12 +688,9 @@ def download(date_array):
     date_array : np.array
         Array of datetime objects
 
-    Returns
-    -------
-
     """
     warnings.warn(' '.join(("Downloads not currently supported in pysat.",
-                           "Please visit http://supermag.jhuapl.edu/")))
+                            "Please visit http://supermag.jhuapl.edu/")))
     return None
 
 

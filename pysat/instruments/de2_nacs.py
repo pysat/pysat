@@ -66,19 +66,6 @@ sat_id : string
 tag : string
     None Supported
 
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
-
-Authors
--------
-
 """
 
 from __future__ import print_function
@@ -130,12 +117,6 @@ def default(self):
     ----------
     self : pysat.Instrument
         This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
 
     """
 

@@ -11,6 +11,7 @@ try:
 except NameError:
     basestring = str
 
+import pysat
 from pysat import DataFrame, Series
 
 
@@ -113,6 +114,7 @@ class Meta(object):
     Examples
     --------
     ::
+
         # instantiate Meta object, default values for attribute labels are used
         meta = pysat.Meta()
         # set a couple base units
@@ -1162,8 +1164,9 @@ class Meta(object):
         -----
         column names must include at least ['name', 'long_name', 'units'],
         assumed if col_names is None.
+
         """
-        import pysat
+
         req_names = ['name', 'long_name', 'units']
         if col_names is None:
             col_names = req_names

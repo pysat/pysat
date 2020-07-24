@@ -29,6 +29,8 @@ sat_id : string
 
 Example
 -------
+::
+
     import pysat
     dmsp = pysat.Instrument('dmsp', 'ivm', 'utd', 'f15', clean_level='clean')
     dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),

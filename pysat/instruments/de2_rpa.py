@@ -51,19 +51,6 @@ sat_id : string
 tag : string
     None Supported
 
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
-
-Authors
--------
-
 """
 
 from __future__ import print_function
@@ -116,12 +103,6 @@ def default(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     return
@@ -149,14 +130,6 @@ def clean(inst):
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 
