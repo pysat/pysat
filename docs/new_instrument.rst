@@ -3,6 +3,7 @@
 
     <br>
 
+=======================
 Adding a New Instrument
 =======================
 
@@ -450,90 +451,26 @@ underscore in _test_dates ensures that this information is not added to the
 instrument's meta attributes, so it will not be present in IO operations.
 
 Data Acknowledgements
-=====================
+---------------------
 
 Acknowledging the source of data is key for scientific collaboration.  This can
-generally be put in the `init` function of each instrument.  Relevant
-citations should be included in the instrument docstring.
+generally be put in the `init` function of each instrument.
 
+.. code:: Python
 
-Supported Data Templates
-========================
+    def init(self):
+        """Initializes the Instrument object with instrument specific values.
 
-General
--------
+        Runs once upon instantiation.
 
-A general instrument template is included with pysat that has the full set
-of required and optional methods, and docstrings, that may be used as a
-starting point for adding a new instrument to pysat.
+        Parameters
+        ----------
+        inst : (pysat.Instrument)
+            Instrument class object
 
+        """
 
+        self.acknowledgements = acknowledgements_string
+        self.references = references_string
 
-NASA CDAWeb
------------
-
-A template for NASA CDAWeb pysat support is provided. Several of the routines
-within are intended to be used with functools.partial in the new instrument
-support code. When writing custom routines with a new instrument file
-download support would be added via
-
-.. code:: python
-
-   def download(.....)
-
-Using the CDAWeb template the equivalent action is
-
-.. code:: python
-
-   download = functools.partial(methods.nasa_cdaweb.download,
-                                supported_tags)
-
-where supported_tags is defined as dictated by the download function. See the
-routines for cnofs_vefi and cnofs_ivm for practical uses of the NASA CDAWeb
-support code.
-|br|
-
-.. automodule:: pysat.instruments.methods.nasa_cdaweb
-   :members:
-
-Madrigal
---------
-
-A template for Madrigal pysat support is provided. Several of the routines
-within are intended to be used with functools.partial in the new instrument
-support code. When writing custom routines with a new instrument file download
-support would be added via
-
-.. code:: python
-
-    def download(.....)
-
-Using the Madrigal template the equivalent action is
-
-.. code:: python
-
-     def download(date_array, tag='', sat_id='', data_path=None, user=None,
-                  password=None):
-         methods.madrigal.download(date_array, inst_code=str(madrigal_inst_code),
-                                   kindat=str(madrigal_tag[sat_id][tag]),
-                                   data_path=data_path, user=user,
-                                   password=password)
-
-See the routines for `dmsp_ivm` and `jro_isr` for practical uses of the Madrigal
-support code.
-
-Additionally, use of the methods.madrigal class should acknowledge the CEDAR
-rules of the road.  This can be done by Adding
-
-.. code:: python
-
-     def init(self):
-
-         print(methods.madrigal.cedar_rules())
-         return
-
-to each routine that uses Madrigal data access.
-|br|
-
-.. automodule:: pysat.instruments.methods.madrigal
-  :members:
+        return
