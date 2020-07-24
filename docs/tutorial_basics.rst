@@ -255,7 +255,7 @@ is equivalent to
 
 Before data is available in .data it passes through an instrument specific
 cleaning routine. The amount of cleaning is set by the clean_level keyword,
-provided at instantiation.
+provided at instantiation. The level defaults to ``clean``.
 
 .. code:: python
 
@@ -283,70 +283,81 @@ between instruments.
 
 ----
 
-Metadata is also stored along with the main science data.
+Metadata is also stored along with the main science data. pysat presumes
+a minimum default set of metadata that may be arbitrarily expanded.
+The default parameters are driven by the attributes required by public science
+data files, like those produced by the
+` Ionospheric Connections Explorer (ICON) <http://icon.ssl.berkeley.edu>`_.
+
+===============     ===================================
+**Metadata** 	        **Description**
+---------------     -----------------------------------
+  axis          Label for plot axes
+  desc          Description of variable
+  fill          Fill value for bad data points
+  label         Label used for plots
+  name          Name of variable, or long_name
+  notes         Notes about variable
+  min           Maximum valid value
+  max           Minimum valid value
+  scale         Axis scale, linear or log
+  units         Variable units
+===============     ===================================
 
 .. code:: python
 
    # all metadata
-   vefi.meta.data
-
-   # dB_mer metadata
-   vefi.meta['dB_mer']
-
-   # units
-   vefi.meta['dB_mer'].units
-
-   # update units for dB_mer
-   vefi.meta['dB_mer'] = {'units':'new_units'}
-
+   dmsp.meta.data
+   # variable metadata
+   dmsp.meta['ti']
+   # units using standard labels
+   dmsp.meta['ti'].units
+   # units using general labels
+   dmsp.meta['ti', dmsp.units_label]
+   # update units for ti
+   dmsp.meta['ti'] = {'units':'new_units'}
    # update display name, long_name
-   vefi.meta['dB_mer'] = {'long_name':'Fancy Name'}
-
+   dmsp.meta['ti'] = {'long_name':'Fancy Name'}
    # add new meta data
-   vefi.meta['new'] = {'units':'fake', 'long_name':'Display'}
+   dmsp.meta['new'] = {dmsp.units_label:'fake',
+                       dmsp.name_label:'Display'}
 
 Data may be assigned to the instrument, with or without metadata.
 
 .. code:: python
 
-   vefi['new_data'] = new_data
+   # assign data alone
+   dmsp['new_data'] = new_data
+   # assign data with metadata
+   # the data must be keyed under 'data'
+   # all other dictionary inputs are presumed to be metadata
+   dmsp['new_data'] = {'data': new_data,
+                       dmsp.units_label: new_unit,
+                       'new_meta_data': new_value}
+   # alter assigned metadata
+   dmsp.meta['new_data', 'new_meta_data'] = even_newer_value
 
-The same activities may be performed for other instruments in the same manner. In particular, for measurements from the Ion Velocity Meter and profiles of electron density from COSMIC, use
 
-.. code:: python
+The labels used for identifying metadata may be provided by the user at
+Instrument instantiation and do not need to conform with what is in the file::
 
-   # assignment with metadata
-   ivm = pysat.Instrument(platform='cnofs', name='ivm', tag='')
-   ivm.load(date=date)
-   ivm['double_mlt'] = {'data': 2.*inst['mlt'], 'long_name': 'Double MLT',
-                        'units': 'hours'}
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12',
+                           clean_level='dirty', units_label='new_units')
+   dmsp.load(2001, 1)
+   dmsp.meta['ti', 'new_units']
+   dmsp.meta['ti', dmsp.units_label]
 
-.. code:: python
+While this feature doesn't require explicit support on the part of an instrument
+module developer, code that does not use the metadata labels may not always
+work when a user invokes this functionality.
 
-   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf',  clean_level='clean')
-   start = pysat.datetime(2009, 1, 2)
-   stop = pysat.datetime(2009, 1, 3)
+pysat's metadata object is case insensitive but case preserving. Thus, if
+a particular Instrument uses 'units' for units metadata, but a separate
+package that operates via pysat but uses 'Units' or even 'UNITS', the code
+will still function::
 
-   # requires CDAAC account
-   cosmic.download(start, stop, user='', password='')
-   cosmic.load(date=start)
+   # the following are all equivalent
+   dmsp.meta['TI', 'Long_Name']
+   dmsp.meta['Ti', 'long_Name']
+   dmsp.meta['ti', 'Long_NAME']
 
-   # the profiles column has a DataFrame in each element which stores
-   # all relevant profile information indexed by altitude
-   # print part of the first profile, selection by integer location
-   print(cosmic[0,'profiles'].iloc[55:60, 0:3])
-
-   # print part of profile, selection by altitude value
-   print(cosmic[0,'profiles'].iloc[196:207, 0:3])
-
-Output for both print statements:
-
-.. code:: python
-
-                  ELEC_dens    GEO_lat    GEO_lon
-   MSL_alt
-   196.465454  81807.843750 -15.595786 -73.431015
-   198.882019  83305.007812 -15.585764 -73.430191
-   201.294342  84696.546875 -15.575747 -73.429382
-   203.702469  86303.039062 -15.565735 -73.428589
-   206.106354  87460.015625 -15.555729 -73.427803
