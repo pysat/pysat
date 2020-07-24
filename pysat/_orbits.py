@@ -196,7 +196,7 @@ class Orbits(object):
         if not self.sat.pandas_format:
             lt_diff = lt_diff.to_pandas()
         lt_diff = lt_diff.diff()
-         # get typical difference
+        # get typical difference
         typical_lt_diff = np.nanmedian(lt_diff)
         logger.info(''.join(('typical lt diff ', str(typical_lt_diff))))
 
