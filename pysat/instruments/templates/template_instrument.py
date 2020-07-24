@@ -341,40 +341,20 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
     # we can adapt pysat to the standard by specifying
     # the string labels used in the file
     # function below returns both data and metadata
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                    units_label='Units',
-                                    name_label='Long_Name',
-                                    notes_label='Var_Notes',
-                                    desc_label='CatDesc',
-                                    plot_label='FieldNam',
-                                    axis_label='LablAxis',
-                                    scale_label='ScaleTyp',
-                                    min_label='ValidMin',
-                                    max_label='ValidMax',
-                                    fill_label='FillVal')
+    data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
+                                           units_label='Units',
+                                           name_label='Long_Name',
+                                           notes_label='Var_Notes',
+                                           desc_label='CatDesc',
+                                           plot_label='FieldNam',
+                                           axis_label='LablAxis',
+                                           scale_label='ScaleTyp',
+                                           min_label='ValidMin',
+                                           max_label='ValidMax',
+                                           fill_label='FillVal'
+                                           pandas_format=pandas_format)
+    # Some variables may need modification.  For example, pysat requires a
+    # variable in the index named 'time' for xarray objects.  These can be set
+    # here
 
-    # This code below demonstrates the use of xarray
-    # functions to load TIEGCM data
-    # Metadata is transferred from xarray to the Instrument object
-    # Data is transferred as well
-    # data not indexed by time are transferred to the Instrument object as an
-    # attribute
-
-    # load data
-    data = xr.open_dataset(fnames[0])
-    # move attributes to the Meta object
-    # these attributes will be trasnferred to the Instrument object
-    # automatically by pysat
-    meta = pysat.Meta()
-    for attr in data.attrs:
-        setattr(meta, attr[0], attr[1])
-    data.attrs = {}
-
-    # fill Meta object with variable information
-    for key in data.variables.keys():
-        attrs = data.variables[key].attrs
-        meta[key] = attrs
-        # remove attributes from xarray
-        data.variables[key].attrs = {}
-
-    return data, meta
+    return data, mdata
