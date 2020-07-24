@@ -15,11 +15,6 @@ tag
 sat_id
     None supported
 
-
-Note
-----
-    Loads into xarray format.
-
 """
 
 # python 2/3 comptability
