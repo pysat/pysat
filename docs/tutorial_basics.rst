@@ -1,7 +1,12 @@
 Basics
 ------
 
-The core functionality of pysat is exposed through the pysat.Instrument object. The intent of the Instrument object is to offer a single interface for interacting with science data that is independent of measurement platform. The layer of abstraction presented by the Instrument object allows for things to occur in the background that can make science data analysis simpler and more rigorous.
+The core functionality of pysat is exposed through the pysat.Instrument object.
+The intent of the Instrument object is to offer a single interface for
+interacting with science data that is independent of measurement platform.
+The layer of abstraction presented by the Instrument object allows for things
+to occur in the background that can make science data analysis simpler and more
+rigorous.
 
 To begin,
 
@@ -9,33 +14,100 @@ To begin,
 
    import pysat
 
-The data directory pysat looks in for data (pysat_data_dir) needs to be set upon the first import,
+The data directory pysat looks in for data (pysat_data_dir) needs to be set
+upon the first import,
 
 .. code:: python
 
    pysat.utils.set_data_dir(path=path_to_existing_directory)
 
+.. note:: A data directory must be set before any pysat.Instruments may be used
+   or an error will be raised.
+
+**Basic Instrument Discovery**
+
+----
+
+Support for each instrument in pysat is enabled by a suite of methods that
+interact with the particular files for that dataset and supply the data within
+in a pysat compatible format. A particular data set is identified using
+up to four parameters
+
+===============     ===================================
+**Identifier** 	        **Description**
+---------------     -----------------------------------
+  platform		    General platform instrument is on
+  name		        Name of the instrument
+  tag		        Label for a subset of total data
+  sat_id		    Label for instrument sub-group
+===============     ===================================
+
+
+All supported pysat Instruments for v2.x are stored in the pysat.instruments
+submodule. A listing of all currently supported instruments
+is available via help,
+
+.. code:: python
+
+    help(pysat.instruments)
+
+Each instrument listed will support one or more data sets for analysis. The
+submodules are named with the convention platform_name. To get
+a description of an instrument, along with the supported datasets, use help
+again,
+
+.. code:: python
+
+   help(pysat.instruments.dmsp_ivm)
+
+Further, the data structure::
+
+    pysat.instruments.dmsp_ivm.tags
+
+is a dictionary keyed by ``tag`` with a description of what each type of data
+the ``tag`` parameter selects. The dictionary::
+
+    pysat.instruments.dmsp_ivm.sat_ids
+
+indicates which instrument or satellite ids (``sat_id``) support which tag.
+The combination of ``tag`` and ``sat_id`` select the particular dataset
+a pysat.Instrument object will provide and interact with.
+
+
 **Instantiation**
 
 ----
 
-To create a pysat.Instrument object, select a platform, instrument name, and measurement type to be analyzed from the list of :doc:`supported_instruments`. To work with Magnetometer data from the Vector Electric Field Instrument onboard the Communications/Navigation Outage Forecasting System (C/NOFS), use:
+To create a pysat.Instrument object, select a platform, instrument name,
+and measurement type to be analyzed from the list of
+:doc:`supported_instruments`. To work with Magnetometer data from the
+Vector Electric Field Instrument onboard the Communications/Navigation Outage
+Forecasting System (C/NOFS), use:
 
 .. code:: python
 
    vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
 
-Behind the scenes pysat uses a python module named cnofs_vefi that understands how to interact with 'dc_b' data. VEFI also measures electric fields in several modes that offer different data products. Though these measurements are not currently supported by the cnofs_vefi module, when they are, they can be selected via the tag string.
+Behind the scenes pysat uses a python module named cnofs_vefi that understands
+how to interact with 'dc_b' data. VEFI also measures electric fields in several
+modes that offer different data products. Though these measurements are not
+currently supported by the cnofs_vefi module, when they are, they can be
+selected via the tag string.
 
-To load measurements from a different instrument on C/NOFS, the Ion Velocity Meter, which measures thermal plasma parameters, use:
+To load measurements from a different instrument on C/NOFS, the Ion Velocity
+Meter, which measures thermal plasma parameters, use:
 
 .. code:: python
 
    ivm = pysat.Instrument(platform='cnofs', name='ivm')
 
-In the background pysat uses the module cnofs_ivm to handle this data. There is only one measurement option from IVM, so no tag string is required.
+In the background pysat uses the module cnofs_ivm to handle this data. There is
+only one measurement option from IVM, so no tag string is required.
 
-Measurements from a constellation of COSMIC satellites are also available. These satellites measure GPS signals as they travel through the atmosphere. A number of different data sets are available from COSMIC, and are also supported by the relevant module.
+Measurements from a constellation of COSMIC satellites are also available.
+These satellites measure GPS signals as they travel through the atmosphere.
+A number of different data sets are available from COSMIC, and are also
+supported by the relevant module.
 
 .. code:: python
 
