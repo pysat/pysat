@@ -22,12 +22,13 @@ tag
 
 Note
 ----
-- Add any notes here
+- Optional section, remove if no notes
 
 
 Warnings
 --------
-- Add any warnings here
+- Optional section, remove if no warnings
+- Two blank lines needed afterward for proper formatting
 
 
 Examples
