@@ -88,7 +88,7 @@ Satellite Program (DMSP) constellation, use:
 
 .. code:: python
 
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f11')
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12')
 
 Behind the scenes pysat uses a python module named dmsp_ivm that understands
 how to interact with 'utd' data for 'f11'.
