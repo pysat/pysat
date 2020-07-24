@@ -197,6 +197,10 @@ class Orbits(object):
         if not self.sat.pandas_format:
             lt_diff = lt_diff.to_pandas()
         lt_diff = lt_diff.diff()
+        # get typical difference
+        typical_lt_diff = np.nanmedian(lt_diff)
+        logger.info(''.join(('typical lt diff ', str(typical_lt_diff))))
+
         # universal time values, from datetime index
         ut_vals = Series(self.sat.index)
         # UT difference
@@ -204,7 +208,7 @@ class Orbits(object):
 
         # get locations where orbit index derivative is less than 0
         # then do some basic checks on these locations
-        ind, = np.where((lt_diff < -0.1))
+        ind, = np.where((lt_diff < -0.2 * typical_lt_diff))
         if len(ind) > 0:
             ind = np.hstack((ind, np.array([len(self.sat[self.orbit_index])])))
             # look at distance between breaks
@@ -220,19 +224,21 @@ class Orbits(object):
             # suggest not a true orbit break, but rather bad orbit_index values
             new_ind = []
             for idx in ind:
-                tidx, = np.where(lt_diff[idx - 5:idx + 6] > 0.1)
+                tidx, = np.where(lt_diff[(idx - 5):(idx + 6)] > 10 * typical_lt_diff)
 
                 if len(tidx) != 0:
                     # there are large changes, suggests a false alarm
                     # iterate over samples and check
-                    for tidx in tidx:
+                    for sub_tidx in tidx:
                         # look at time change vs local time change
-                        if(ut_diff[idx - 5:idx + 6].iloc[tidx] <
-                           lt_diff[idx - 5:idx + 6].iloc[tidx] /
+                        if(ut_diff[idx - 5:idx + 6].iloc[sub_tidx] <
+                           lt_diff[idx - 5:idx + 6].iloc[sub_tidx] /
                            orbit_index_period * self.orbit_period):
                             # change in ut is small compared to the change in
                             # the orbit index this is flagged as a false alarm,
                             # or dropped from consideration
+                            logger.info(''.join(('Dropping found break ',
+                                                 'as false positive.')))
                             pass
                         else:
                             # change in UT is significant, keep orbit break
@@ -270,7 +276,7 @@ class Orbits(object):
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            logger.info('Time Gap')
+            logger.info('Time Gap at locations', ut_ind)
 
         # now that most problems in orbits should have been caught, look at
         # the time difference between orbits (not individual orbits)

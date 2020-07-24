@@ -29,6 +29,11 @@ def set_data_dir(path=None, store=True):
     else:
         re_load = reload
 
+    # account for a user prefix in the path, such as ~
+    path = os.path.expanduser(path)
+    # account for the presence of $HOME or similar
+    path = os.path.expandvars(path)
+
     if os.path.isdir(path):
         if store:
             with open(os.path.join(os.path.expanduser('~'), '.pysat',
