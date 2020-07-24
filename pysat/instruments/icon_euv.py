@@ -3,13 +3,13 @@
 CONnection Explorer (ICON) satellite.  Accesses local data in
 netCDF format.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'icon'
-name : string
+name
     'euv'
-tag : string
+tag
     None supported
 
 Warnings
@@ -30,6 +30,7 @@ Examples
 By default, pysat removes the ICON level tags from variable names, ie,
 ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
 ::
+
     euv = pysat.Instrument(platform='icon', name='euv',
                            keep_original_names=True)
 
@@ -88,10 +89,11 @@ def init(self):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object
 
     """
+
     logger.info(mm_icon.ackn_str)
     self.meta.acknowledgements = mm_icon.ackn_str
     self.meta.references = ''.join((mm_icon.refs['mission'],
@@ -106,7 +108,7 @@ def default(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object
 
     """
@@ -154,6 +156,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     Examples
     --------
     ::
+
         inst = pysat.Instrument('icon', 'euv', sat_id='a', tag='')
         inst.load(2020, 1)
 
@@ -179,14 +182,6 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
 
 def clean(inst):
     """Provides data cleaning based upon clean_level.
-
-    clean_level is set upon Instrument instantiation to
-    one of the following:
-
-    'Clean'
-    'Dusty'
-    'Dirty'
-    'None'
 
     Routine is called by pysat, and not by the end user directly.
 
