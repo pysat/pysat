@@ -29,12 +29,6 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
@@ -50,12 +44,6 @@ def default(inst):
     ----------
     self : pysat.Instrument
         This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
 
     """
 
@@ -79,9 +67,9 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
 
     Returns
     -------
-    data : (pds.DataFrame)
+    data : pds.DataFrame
         Testing data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Metadataxs
 
     """

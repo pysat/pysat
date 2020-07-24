@@ -119,12 +119,6 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     logger.info(mad_meth.cedar_rules())
@@ -140,26 +134,20 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
-        pysat. If an account
-        is required for dowloads this routine here must error if user not
-        supplied.
-    password : string (None)
-        Password for data download.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default = None)
+    password : string
+        Password for data download. (default = None)
 
     Notes
     -----
@@ -173,6 +161,7 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     downloads.
 
     """
+
     mad_meth.download(date_array, inst_code=str(madrigal_inst_code),
                       kindat=str(madrigal_tag[sat_id][tag]),
                       data_path=data_path, user=user, password=password)
@@ -194,14 +183,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     --------

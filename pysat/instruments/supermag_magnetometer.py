@@ -63,12 +63,6 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     # if the tag is 'indices', update data_path to reflect this
@@ -100,28 +94,28 @@ def list_remote_files(tag='', sat_id=None, data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : (string)
+    tag : string
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements).
         (default='')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
-    year : (int or NoneType)
+    year : int or NoneType
         Selects a given year to return remote files for.  None returns all
         years.
         (default=None)
-    month : (int or NoneType)
+    month : int or NoneType
         Selects a given month to return remote files for.  None returns all
         months.  Requires year to be defined.
         (default=None)
-    day : (int or NoneType)
+    day : int or NoneType
         Selects a given day to return remote files for.  None returns all
         days.  Requires year and month to be defined.
         (default=None)
@@ -174,16 +168,16 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string)
+    tag : string
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements). (default='')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
@@ -246,19 +240,19 @@ def load(fnames, tag='', sat_id=None):
 
     Parameters
     -----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str)
+    tag : str
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements). (default='')
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Satellite ID for constellations, not used. (default=None)
 
     Returns
     --------
-    data : (pandas.DataFrame)
+    data : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
     """
@@ -313,15 +307,15 @@ def load_csv_data(fname, tag):
 
     Parameters
     ------------
-    fname : (str)
+    fname : str
         CSV SuperMAG file name
-    tag : (str)
+    tag : str
         Denotes type of file to load.  Accepted types are 'indices', 'all',
         'stations', and '' (for just magnetometer measurements).
 
     Returns
     --------
-    data : (pandas.DataFrame)
+    data : pandas.DataFrame
         Pandas DataFrame
 
     """
@@ -536,12 +530,12 @@ def update_smag_metadata(col_name):
 
     Parameters
     -----------
-    col_name : (str)
+    col_name : str
         Data column name
 
     Returns
     --------
-    col_dict : (dict)
+    col_dict : dict
        Dictionary of strings detailing the units and long-form name of the data
 
     """
@@ -618,13 +612,13 @@ def format_baseline_list(baseline_list):
 
     Parameters
     ------------
-    baseline_list : (list)
+    baseline_list : list
         List of strings specifying the baseline information for each
         SuperMAG file
 
     Returns
     ---------
-    base_string : (str)
+    base_string : str
         Single string containing the relevent data
 
     """

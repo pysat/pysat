@@ -65,12 +65,6 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     # reset the list_remote_files routine to include the data path
@@ -103,10 +97,10 @@ def list_remote_files(tag, sat_id, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
 
@@ -152,23 +146,24 @@ def list_files(tag='north', sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string)
+    tag : string
         Denotes type of file to load.  Accepted types are 'north' and 'south'.
         (default='north')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
     Returns
     --------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
+
     """
 
     if format_str is None and tag is not None:

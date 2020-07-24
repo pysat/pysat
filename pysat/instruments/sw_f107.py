@@ -30,8 +30,8 @@ the data with tomorrow's date.
 
 
 
-The forecast or prelim data should not be used with the data padding option 
-available from pysat.Instrument objects. The 'all' tag shouldn't be used either, 
+The forecast or prelim data should not be used with the data padding option
+available from pysat.Instrument objects. The 'all' tag shouldn't be used either,
 no other data available to pad with.
 
 Warnings
@@ -82,18 +82,18 @@ def load(fnames, tag=None, sat_id=None):
 
     Parameters
     ------------
-    fnames : (pandas.Series)
+    fnames : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
     ---------
-    data : (pandas.DataFrame)
+    data : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
     Notes
@@ -176,22 +176,22 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
     Returns
     --------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Notes
@@ -199,7 +199,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     Called by pysat. Not intended for direct use by user.
 
     """
-    import time
 
     if data_path is not None:
         if tag == '':
@@ -243,7 +242,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         elif tag == 'prelim':
             # files are by year (and quarter). The load routine will load a
-            # year of data 
+            # year of data
             if format_str is None:
                 format_str = \
                     'f107_prelim_{year:04d}_{month:02d}_v{version:01d}.txt'
@@ -332,23 +331,18 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are '' and 'forecast'.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
 
-    Returns
-    --------
-    Void : (NoneType)
-        data downloaded to disk, if available.
-
-    Note
-    ----
+    Notes
+    -----
     Called by pysat. Not intended for direct use by user.
 
     Warnings
@@ -660,16 +654,12 @@ def rewrite_daily_file(year, outfile, lines):
 
     Parameters
     ----------
-    year : (int)
+    year : int
         Year of data file (format changes based on date)
-    outfile : (str)
+    outfile : str
         Output filename
-    lines : (str)
+    lines : str
         String containing all output data (result of 'read')
-
-    Returns
-    -------
-    Void
 
     """
 
@@ -704,18 +694,18 @@ def parse_daily_solar_data(data_lines, year, optical):
 
     Parameters
     ----------
-    data_lines : (list)
+    data_lines : list
         List of lines containing data
-    year : (list)
+    year : list
         Year of file
-    optical : (boolean)
+    optical : boolean
         Flag denoting whether or not optical data is available
 
     Returns
     -------
-    dates : (list)
+    dates : list
         List of dates for each date/data pair in this block
-    values : (dict)
+    values : dict
         Dict of lists of values, where each key is the value name
 
     """
@@ -767,18 +757,14 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
 
     Parameters
     ----------
-    f107_inst : (pysat.Instrument)
+    f107_inst : pysat.Instrument
         pysat Instrument holding the F10.7 data
-    f107_name : (str)
+    f107_name : str
         Data column name for the F10.7 data (default='f107')
-    f107a_name : (str)
+    f107a_name : str
         Data column name for the F10.7a data (default='f107a')
-    min_pnts : (int)
+    min_pnts : int
         Minimum number of points required to calculate an average (default=41)
-
-    Returns
-    -------
-    Void : Updates f107_inst with F10.7a data
 
     Notes
     -----

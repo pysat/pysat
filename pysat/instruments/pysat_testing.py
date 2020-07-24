@@ -88,12 +88,6 @@ def default(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     pass
@@ -106,29 +100,30 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '' or a string to change the behaviour of
         dummy1 for constellation testing)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    sim_multi_file_right : (boolean)
+    sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
-    sim_multi_file_left : (boolean)
+    sim_multi_file_left : boolean
         Adjusts date range to be 12 hours in the past or twelve hours before
         root_date (default=False)
-    root_date : (NoneType)
+    root_date : NoneType
         Optional central date, uses _test_dates if not specified.
         (default=None)
-    file_date_range : (pds.date_range or NoneType)
+    file_date_range : pds.date_range or NoneType
         Range of dates for files or None, if this optional arguement is not
         used. Shift actually performed by the init function.
         (default=None)
-    malformed_index : bool (default=False)
+    malformed_index : bool
         If True, time index for simulation will be non-unique and non-monotonic
+        (default=False)
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.

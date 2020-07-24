@@ -79,24 +79,25 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (NoneType)
+    format_str : NoneType
         User specified file format not supported here. (default=None)
 
     Returns
     -------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     """
+
     estr = 'Building a list of COSMIC files, which can possibly take time. '
     logger.info('{:s}~1s per 100K files'.format(estr))
     sys.stdout.flush()
@@ -158,11 +159,11 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
 
     Parameters
     ----------
-    fnames : (pandas.Series)
+    fnames : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
     altitude_bin : integer
         Number of kilometers to bin altitude profiles by when loading.
@@ -170,9 +171,9 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
 
     Returns
     -------
-    output : (pandas.DataFrame)
+    output : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
     """
@@ -273,11 +274,11 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
     Parameters
     ----------
-    files : (pandas.Series)
+    files : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
     altitude_bin : integer
         Number of kilometers to bin altitude profiles by when loading.
@@ -285,8 +286,8 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
     Returns
     -------
-    output : (list of dicts, one per file)
-        Object containing satellite data
+    output : list of dicts
+        Object containing satellite data, one dict per file
 
     """
     output = [None] * len(files)
@@ -426,13 +427,13 @@ def download(date_array, tag, sat_id, data_path=None,
 
     Parameters
     ----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
     Returns
     -------
-    Void : (NoneType)
+    Void : NoneType
         data in inst is modified in-place.
 
     """
@@ -519,13 +520,13 @@ def clean(inst):
 
     Parameters
     ----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
     Returns
     -------
-    Void : (NoneType)
+    Void : NoneType
         data in inst is modified in-place.
 
     Notes
@@ -533,6 +534,7 @@ def clean(inst):
     Supports 'clean', 'dusty', 'dirty'
 
     """
+
     if inst.tag == 'ionprf':
         # ionosphere density profiles
         if inst.clean_level == 'clean':

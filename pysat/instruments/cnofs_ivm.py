@@ -100,13 +100,13 @@ def clean(inst):
     """Routine to return C/NOFS IVM data cleaned to the specified level
 
     Parameters
-    -----------
-    inst : (pysat.Instrument)
+    ----------
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
     Notes
-    --------
+    -----
     Supports 'clean', 'dusty', 'dirty'
 
     """

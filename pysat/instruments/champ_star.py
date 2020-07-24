@@ -46,23 +46,23 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are '' and 'ascii'.
         If '' is specified, the primary data type (ascii) is loaded.
         (default='')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
     Returns
     --------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     """
@@ -85,19 +85,19 @@ def load(fnames, tag=None, sat_id=None):
     """Load CHAMP STAR files
 
     Parameters
-    ------------
-    fnames : (pandas.Series)
+    ----------
+    fnames : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
-    ---------
-    data : (pandas.DataFrame)
+    -------
+    data : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
     """
@@ -203,13 +203,13 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     """Routine to download CHAMP STAR data
 
     Parameters
-    -----------
-    inst : (pysat.Instrument)
+    ----------
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
     Notes
-    --------
+    -----
     No data download currently available for CHAMP
 
     """
@@ -223,13 +223,13 @@ def clean(inst):
     """Routine to return CHAMP STAR data cleaned to the specified level
 
     Parameters
-    -----------
-    inst : (pysat.Instrument)
+    ----------
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
     Notes
-    --------
+    -----
     No cleaning currently available for CHAMP
 
     """

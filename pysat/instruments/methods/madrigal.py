@@ -50,14 +50,15 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     fnames : array-like
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
-    tag : string ('')
+    tag : string
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. While
         tag defaults to None here, pysat provides '' as the default
         tag unless specified by user at Instrument instantiation.
-    sat_id : string ('')
+        (feault = '')
+    sat_id : string
         Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
+        This input is nominally provided by pysat itself. (default = '')
     xarray_coords : list
         List of keywords to use as coordinates if xarray output is desired
         instead of a Pandas DataFrame (default=[])
