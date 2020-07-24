@@ -128,7 +128,7 @@ def season_date_range(start, stop, freq='D'):
     """
     Deprecated Function, will be removed in future version.
 
-    .. deprecated:: 2.2.0
+    .. deprecated:: 2.1.0
       `season_date_range` will be removed in pysat 3.0.0, this will be
       replaced by create_date_range
 
