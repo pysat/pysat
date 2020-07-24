@@ -1,5 +1,5 @@
 Orbit Support
--------------
+=============
 
 Pysat has functionality to determine orbits on the fly from loaded data.
 These orbits will span day breaks as needed (generally). To use any of
@@ -16,13 +16,12 @@ There are several orbits to choose from,
 local time     Uses negative gradients to delineate orbits
 longitude      Uses negative gradients to delineate orbits
 polar	       Uses sign changes to delineate orbits
+orbit          Uses any change in value to delineate orbits
 ===========   ================
 
 Changes in universal time are also used to delineate orbits. Pysat compares any
 gaps to the supplied orbital period, nominally assumed to be 97 minutes. As
 orbit periods aren't constant, a 100% success rate is not be guaranteed.
-
-This section of pysat is still under development.
 
 .. code:: python
 
@@ -37,8 +36,8 @@ must load some data.
 
    ivm.load(date=start)
 
-Orbits may be selected directly from the attached .orbit class. The data for
-the orbit is stored in .data.
+Orbits may be selected directly from the attached ``ivm.orbit`` class. The data
+for the orbit is stored in ``ivm.data``.
 
 .. code:: ipython
 
@@ -46,11 +45,11 @@ the orbit is stored in .data.
    Out[50]:
    Returning cnofs ivm  data for 12/27/12
    Returning cnofs ivm  data for 12/28/12
-   Loaded Orbit:1
+   Loaded Orbit:0
 
 Note that getting the first orbit caused pysat to load the day previous, and
-then back to the current day. Orbits are one indexed though this will change.
-Pysat is checking here if the first orbit for 12/28/2012 actually started on
+then back to the current day. Orbits are zero indexed.
+pysat is checking here if the first orbit for 12/28/2012 actually started on
 12/27/2012. In this case it does.
 
 .. code:: ipython
@@ -159,3 +158,19 @@ into ivm.
    ivm.bounds = (start, stop)
    for ivm in ivm.orbits:
        print 'next available orbit ', ivm.data
+
+Ground Based Instruments
+------------------------
+
+The nominal breakdown of satellite data into discrete orbits isn't typically
+as applicable for ground based instruments, each of which makes exactly one
+orbit per day. However, as the orbit iterator triggers off of
+negative gradients in a variable, a change in sign, or any change
+in a value, this functionality may be used to break a ground based data set
+into alternative groupings, as appropriate and desired.
+
+As the orbit iterator defaults to an orbit period consistent with Low
+Earth Orbit, the expected period of the 'orbits' must be provided at
+Instrument instantiation. Given the orbit heritage, it is assumed that
+there is a small amount of variation in the orbit period. pysat will actively
+filter 'orbits' that are inconsistent with the prescribed orbit period.
