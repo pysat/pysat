@@ -83,13 +83,13 @@ def clean(inst):
     """Routine to return TIMED SEE data cleaned to the specified level
 
     Parameters
-    -----------
+    ----------
     inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Notes
-    --------
+    Note
+    ----
     No cleaning currently available.
 
     """

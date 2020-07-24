@@ -20,11 +20,12 @@ sat_id
 # python 2/3 comptability
 from __future__ import print_function
 from __future__ import absolute_import
+import logging
+import warnings
 
 import xarray as xr
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 # the platform and name strings associated with this instrument
@@ -224,8 +225,6 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
         routine via kwargs.
 
     """
-
-    import warnings
 
     warnings.warn('Not implemented in this version.')
     return

@@ -20,19 +20,18 @@ Warnings
     Files can be safely downloaded without knowing the file_format keyword,
     or equivalently, how Madrigal names the files. See `Examples` for more.
 
-Properties
+Parameters
 ----------
-platform
+platform : string
     'madrigal'
-name
+name : string
     'pandas'
-tag
+tag : string
     ''
 
 Examples
 --------
 ::
-
     # for isolated use of a madrigal data set
     import pysat
     # download DMSP data from Madrigal
@@ -179,8 +178,8 @@ def _general_download(date_array, tag='', sat_id='', data_path=None, user=None,
     kindat : int
         Madrigal integer code used to identify data set (default=None)
 
-    Notes
-    -----
+    Note
+    ----
     The user's names should be provided in field user. Ruby Payne-Scott should
     be entered as Ruby+Payne-Scott
 
