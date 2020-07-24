@@ -195,20 +195,20 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : string ('')
+    tag : string
         tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
+        This input is nominally provided by pysat itself. (default='')
+    sat_id : string
         Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    data_path : string (None)
+        This input is nominally provided by pysat itself. (default='')
+    data_path : string
         Full path to directory containing files to be loaded. This
         is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
+        at Instrument instantiation and it will appear here. (default=None)
+    format_str : string
         String template used to parse the datasets filenames. If a user
         supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
+        then it will appear here, otherwise defaults to None. (default=None)
 
     Returns
     -------
@@ -218,6 +218,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     Examples
     --------
     ::
+
         If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
         is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
         'v{version:02d}r{revision:04d}.NC'
@@ -253,21 +254,21 @@ def list_remote_files(tag, sat_id, user=None, password=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    user : (string or NoneType)
+    user : string or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
-    password : (string or NoneType)
+    password : string or NoneType
         User password to be passed along to resource with relevant data.
         (default=None)
 
     Returns
-    --------
+    -------
     pandas.Series
         A Series formatted for the Files class (pysat._files.Files)
         containing filenames and indexed by date and time
@@ -288,14 +289,15 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
     fnames : array-like
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
-    tag : string ('')
+    tag : string
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. While
         tag defaults to None here, pysat provides '' as the default
         tag unless specified by user at Instrument instantiation.
-    sat_id : string ('')
+        (default='')
+    sat_id : string
         Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
+        This input is nominally provided by pysat itself. (default='')
     custom_keyword : type to be set
         Developers may include any custom keywords, with default values
         defined in the method signature. This is included here as a
@@ -316,6 +318,7 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
     Examples
     --------
     ::
+
         inst = pysat.Instrument('ucar', 'tiegcm')
         inst.load(2019,1)
 

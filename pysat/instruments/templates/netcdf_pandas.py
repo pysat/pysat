@@ -187,20 +187,20 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for dowloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
 
     Returns
     --------
