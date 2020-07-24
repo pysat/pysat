@@ -11,6 +11,7 @@ Welcome to pysat's documentation!
 
    introduction.rst
    installation.rst
+   quickstart.rst
    tutorial.rst
    examples.rst
    supported_instruments.rst
