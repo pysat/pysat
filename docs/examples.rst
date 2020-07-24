@@ -1,12 +1,18 @@
-Code Examples
-=============
+Sample Scientific Analysis
+==========================
 
-Pysat tends to reduce certain science data investigations to the construction of a routine(s) that makes that investigation unique, a call to a seasonal analysis routine, and some plotting commands. Several demonstrations are offered in this section. The full code for each example is available in the repository in the demo folder.
+Pysat tends to reduce certain science data investigations to the construction
+of a routine(s) that makes that investigation unique, a call to a seasonal
+analysis routine, and some plotting commands. Several demonstrations are
+offered in this section. The full code for each example is available in the
+repository in the demo folder.
 
 Seasonal Occurrence by Orbit
 ----------------------------
 
-How often does a particular thing occur on a orbit-by-orbit basis? Let's find out. For VEFI, let us calculate the occurrence of a positive perturbation in the meridional component of the geomagnetic field.
+How often does a particular thing occur on a orbit-by-orbit basis? Let's find
+out. For VEFI, let us calculate the occurrence of a positive perturbation in
+the meridional component of the geomagnetic field.
 
 .. code:: python
 
@@ -89,14 +95,31 @@ Result
 .. image:: ./images/ssnl_occurrence_by_orbit_demo.png
    :align: center
 
-The top plot shows the occurrence probability of a positive magnetic field perturbation as a function of geographic longitude and latitude. The bottom plot shows the number of times  the satellite was in each bin with data (on per orbit basis). Individual orbit tracks may be seen. The hatched pattern is formed from the satellite traveling North to South and vice-versa. At the latitudinal extremes of the orbit the latitudinal velocity goes through zero providing a greater coverage density. The satellite doesn't return to the same locations on each pass so there is a reduction in counts between orbit tracks. All local times are covered by this plot, over-representing the coverage of a single satellite.
+The top plot shows the occurrence probability of a positive magnetic field
+perturbation as a function of geographic longitude and latitude. The bottom
+plot shows the number of times  the satellite was in each bin with data
+(on per orbit basis). Individual orbit tracks may be seen. The hatched pattern
+is formed from the satellite traveling North to South and vice-versa. At the
+latitudinal extremes of the orbit the latitudinal velocity goes through zero
+providing a greater coverage density. The satellite doesn't return to the same
+locations on each pass so there is a reduction in counts between orbit tracks.
+All local times are covered by this plot, over-representing the coverage of a
+single satellite.
 
-The horizontal blue band that varies in latitude as a function of longitude is the location of the magnetic equator. Torque rod firings that help C/NOFS maintain proper attitude are performed at the magnetic equator. Data during these firings is excluded by the custom function attached to the vefi instrument object.
+The horizontal blue band that varies in latitude as a function of longitude is
+the location of the magnetic equator. Torque rod firings that help C/NOFS
+maintain proper attitude are performed at the magnetic equator. Data during
+these firings is excluded by the custom function attached to the vefi
+instrument object.
 
 Orbit-by-Orbit Plots
 --------------------
 
-Plotting a series of orbit-by-orbit plots is a great way to become familiar with a data set. If the data set doesn't come with orbit information, this can be a challenge. Orbits also go past day breaks, so if data comes in daily files this requires loading multiple files at once, joining the data together, etc. pysat goes through that trouble for you.
+Plotting a series of orbit-by-orbit plots is a great way to become familiar
+with a data set. If the data set doesn't come with orbit information, this can
+be a challenge. Orbits also go past day breaks, so if data comes in daily files
+this requires loading multiple files at once, joining the data together, etc.
+pysat goes through that trouble for you.
 
 .. code:: python
 
@@ -174,9 +197,25 @@ Sample Output (first orbit only)
 Seasonal Averaging of Ion Drifts and Density Profiles
 -----------------------------------------------------
 
-In-situ measurements of the ionosphere by the Ion Velocity Meter onboard C/NOFS provides information on plasma density, composition, ion temperature, and ion drifts. This provides a great deal of information on the ionosphere though this information is limited to the immediate vicinity of the satellite. COSMIC GPS measurements, with some processing, provide information on the vertical electron density distribution in the ionosphere. The vertical motion of ions measured by IVM should be reflected in the vertical plasma densities measured by COSMIC. To look at this relationship over all longitudes and local times, for magnetic latitudes near the geomagnetic equator, the code excerpts below provides a framework for the user.  The full code can be found at https://github.com/rstoneback/pysat/blob/master/demo/cosmic_and_ivm_demo.py
+In-situ measurements of the ionosphere by the Ion Velocity Meter onboard C/NOFS
+provides information on plasma density, composition, ion temperature, and ion
+drifts. This provides a great deal of information on the ionosphere though this
+information is limited to the immediate vicinity of the satellite. COSMIC GPS
+measurements, with some processing, provide information on the vertical
+electron density distribution in the ionosphere. The vertical motion of ions
+measured by IVM should be reflected in the vertical plasma densities measured
+by COSMIC. To look at this relationship over all longitudes and local times,
+for magnetic latitudes near the geomagnetic equator, the code excerpts below
+provides a framework for the user.  The full code can be found at
+`<https://github.com/pysat/pysat/blob/master/demo/cosmic_and_ivm_demo.py`>_
 
-Note the same averaging routine is used for both COSMIC and IVM, and that both 1D and 2D data are handled correctly.
+Note the same averaging routine is used for both COSMIC and IVM, and that both
+1D and 2D data are handled correctly.
+
+.. note::
+
+   Downloading data for COSMIC requires an account at the Cosmic Data Analysis
+   and Archive Center `(CDAAC) <https://cdaac-www.cosmic.ucar.edu>`_.
 
 .. code:: python
 
@@ -225,22 +264,46 @@ Note the same averaging routine is used for both COSMIC and IVM, and that both 1
 .. image:: ./images/ssnl_median_ivm_cosmic_1d.png
    :align: center
 
-The top image is the median ion drift from the IVM, while the remaining plots are derived from the COSMIC density profiles. COSMIC data does not come with the location of the profiles in magnetic coordinates, so this information is added using the nano-kernel.
+The top image is the median ion drift from the IVM, while the remaining plots
+are derived from the COSMIC density profiles. COSMIC data does not come with
+the location of the profiles in magnetic coordinates, so this information is
+added using the nano-kernel.
 
 .. code:: python
 
    cosmic.custom.add(addApexLong, 'add')
 
-call runs a routine that adds the needed information. This routine is currently only using a simple titled dipole model.
-Similarly, using custom functions, locations away from the magnetic equator are filtered out and a couple new quantities are added.
+call runs a routine that adds the needed information. This routine is currently
+only using a simple titled dipole model.
+Similarly, using custom functions, locations away from the magnetic equator are
+filtered out and a couple new quantities are added.
 
-There is a strong correspondence between the distribution of downward drifts between noon and midnight and a reduction in the height of the peak ionospheric density around local sunset. There isn't the same strong correspondence with the other parameters but ion density profiles are also affected by production and loss processes, not measured by IVM.
+There is a strong correspondence between the distribution of downward drifts
+between noon and midnight and a reduction in the height of the peak ionospheric
+density around local sunset. There isn't the same strong correspondence with the
+other parameters but ion density profiles are also affected by production and
+loss processes, not measured by IVM.
 
-The median averaging routine also produced a series a median altitude profiles as a function of longitude and local time. A selection are shown below.
+The median averaging routine also produced a series a median altitude profiles
+as a function of longitude and local time. A selection are shown below.
 
 .. image:: ./images/ssnl_median_ivm_cosmic_2d.png
    :align: center
 
-There is a gradient in the altitude distribution over longitude near sunset. Between 0-15 longitude an upward slope is seen in bottom-side density levels with local time though higher altitudes have a flatter gradient. This is consistent with the upward ion drifts reported by IVM. Between 45-60 the bottom-side ionosphere is flat with local time, while densities at higher altitudes drop steadily. Ion drifts in this sector become downward at night. Downward drifts lower plasma into exponentially higher neutral densities, rapidly neutralizing plasma and producing an effective flat bottom. Thus, the COSMIC profile in this sector is also consistent with the IVM drifts.
+There is a gradient in the altitude distribution over longitude near sunset.
+Between 0-15 longitude an upward slope is seen in bottom-side density levels
+with local time though higher altitudes have a flatter gradient. This is
+consistent with the upward ion drifts reported by IVM. Between 45-60 the
+bottom-side ionosphere is flat with local time, while densities at higher
+altitudes drop steadily. Ion drifts in this sector become downward at night.
+Downward drifts lower plasma into exponentially higher neutral densities,
+rapidly neutralizing plasma and producing an effective flat bottom. Thus, the
+COSMIC profile in this sector is also consistent with the IVM drifts.
 
-Between 15-30 degrees longitude, ion drifts are upward, but less than the 0-15 sector. Similarly, the density profile in the same sector has a weaker upward gradient with local time than the 0-15 sector.  Between 30-45 longitude, drifts are mixed, then transition into weaker downward drifts than between 45-60 longitude. The corresponding profiles have a flatter bottom-side gradient than sectors with upward drift (0-30), and a flatter top-side gradient than when drifts are more downward (45-60), consistent with the ion drifts.
+Between 15-30 degrees longitude, ion drifts are upward, but less than the
+0-15 sector. Similarly, the density profile in the same sector has a weaker
+upward gradient with local time than the 0-15 sector.  Between 30-45 longitude,
+drifts are mixed, then transition into weaker downward drifts than between
+45-60 longitude. The corresponding profiles have a flatter bottom-side gradient
+than sectors with upward drift (0-30), and a flatter top-side gradient than
+when drifts are more downward (45-60), consistent with the ion drifts.
