@@ -35,8 +35,7 @@ routines for cnofs_vefi and cnofs_ivm for practical uses of the NASA CDAWeb
 support code.
 
 
-.. automodule:: pysat.instruments.methods.nasa_cdaweb
-   :members:
+See :ref:`rst_general_data_cdaweb` for more.
 
 Madrigal
 --------
@@ -77,5 +76,4 @@ rules of the road.  This can be done by Adding
 to each routine that uses Madrigal data access.
 
 
-.. automodule:: pysat.instruments.methods.madrigal
-  :members:
+See :ref:`rst_general_data_madrigal` for more.

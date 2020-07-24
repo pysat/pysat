@@ -17,6 +17,7 @@ NASA CDAWeb Instrument
 
 General Data Source Methods
 ===========================
+.. _rst_general_data_cdaweb:
 
 NASA CDAWeb
 -----------
@@ -24,6 +25,7 @@ NASA CDAWeb
 .. automodule:: pysat.instruments.methods.nasa_cdaweb
    :members: __doc__, init, load, list_files, list_remote_files, download
 
+.. _rst_general_data_madrigal:
 
 Madrigal
 --------
