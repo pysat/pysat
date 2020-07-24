@@ -3,14 +3,15 @@
 CONnection Explorer (ICON) satellite.  Accesses local data in
 netCDF format.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'icon'
-name : string
+name
     'euv'
-tag : string
+tag
     None supported
+
 
 Warnings
 --------
@@ -30,8 +31,10 @@ Examples
 By default, pysat removes the ICON level tags from variable names, ie,
 ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
 ::
+
     euv = pysat.Instrument(platform='icon', name='euv',
                            keep_original_names=True)
+
 
 Authors
 ---------

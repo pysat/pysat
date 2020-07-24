@@ -4,23 +4,25 @@ Thermospheric Imaging (MIGHTI) instrument onboard the Ionospheric
 CONnection Explorer (ICON) satellite.  Accesses local data in
 netCDF format.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'icon'
-name : string
+name
     'mighti'
-tag : string
+tag
     Supports 'los_wind_green', 'los_wind_red', 'vector_wind_green',
     'vector_wind_red', 'temperature'.  Note that not every data product
     available for every sat_id
-sat_id : string
+sat_id
     '', 'a', or 'b'
+
 
 Warnings
 --------
 - The cleaning parameters for the instrument are still under development.
 - Only supports level-2 data.
+
 
 Example
 -------
@@ -35,9 +37,11 @@ Example
 By default, pysat removes the ICON level tags from variable names, ie,
 ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
 ::
+
     mighti = pysat.Instrument(platform='icon', name='mighti',
                               tag='vector_wind_green', clean_level='clean',
                               keep_original_names=True)
+
 
 Authors
 ---------

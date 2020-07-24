@@ -3,21 +3,23 @@
 """Supports the Ion Velocity Meter (IVM)
 onboard the Ionospheric Connections (ICON) Explorer.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'icon'
-name : string
+name
     'ivm'
-tag : string
+tag
     None supported
-sat_id : string
+sat_id
     'a' or 'b'
+
 
 Warnings
 --------
 - No download routine as ICON has not yet been launched
 - Data not yet publicly available
+
 
 Example
 -------
@@ -31,8 +33,10 @@ Example
 By default, pysat removes the ICON level tags from variable names, ie,
 ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
 ::
+
     ivm = pysat.Instrument(platform='icon', name='ivm', sat_id='a',
                            keep_original_names=True)
+
 
 Author
 ------
