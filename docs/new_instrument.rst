@@ -1,7 +1,4 @@
 
-.. |br| raw:: html
-
-    <br>
 
 =======================
 Adding a New Instrument
@@ -188,7 +185,10 @@ includes a variety of methods to make support this functionality easier.
 The simplest way to construct a valid list_files method is to use one of these
 included pysat methods.
 
-`pysat.Files.from_os` is a convenience constructor provided for filenames that
+A complete method is available
+in ``pysat.instruments.methods.general.list_files`` that may find broad use.
+
+``pysat.Files.from_os`` is a convenience constructor provided for filenames that
 include time information in the filename and utilize a constant field width
 or a consistent delimiter. The location and format of the time information is
 specified using standard python formatting and keywords year, month, day, hour,
