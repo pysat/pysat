@@ -20,8 +20,8 @@ sat_id : string
 tag : string
     *List supported tag strings here*
 
-Note
-----
+Notes
+-----
 ::
 
     Notes
@@ -221,8 +221,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
         'v{version:02d}r{revision:04d}.NC'
 
-    Note
-    ----
+    Notes
+    -----
     The returned Series should not have any duplicate datetimes. If there are
     multiple versions of a file the most recent version should be kept and the
     rest discarded. This routine uses the pysat.Files.from_os constructor, thus
@@ -307,8 +307,8 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
         pandas DataFrame or xarray DataSet while metadata is a pysat.Meta
         instance.
 
-    Note
-    ----
+    Notes
+    -----
     Any additional keyword arguments passed to pysat.Instrument
     upon instantiation are passed along to this routine.
 

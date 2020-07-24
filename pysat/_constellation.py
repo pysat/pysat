@@ -25,10 +25,11 @@ class Constellation(object):
             Name of a file in pysat/constellations containing a list of
             instruments.
 
-        Note
-        ----
+        Notes
+        -----
         The name and instruments parameters should not both be set.
         If neither is given, an empty constellation will be created.
+
         """
 
         if instruments and name:
@@ -101,8 +102,8 @@ class Constellation(object):
                 insert at position. (default, insert at end).
             args : extra arguments
 
-        Note
-        ----
+        Notes
+        -----
         Allowed `add` function returns:
 
         - {'data' : pandas Series/DataFrame/array_like,

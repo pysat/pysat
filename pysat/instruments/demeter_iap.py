@@ -291,8 +291,8 @@ def add_drift_sat_coord(inst):
     inst : pysat.Instrument
         DEMETER IAP instrument class object
 
-    Return
-    ------
+    Returns
+    -------
     Adds data values iv_Ox, iv_Oy
 
     """
@@ -324,8 +324,8 @@ def add_drift_lgm_coord(inst):
     inst : pysat.Instrument
         DEMETER IAP instrument class object
 
-    Return
-    ------
+    Returns
+    -------
     Adds data values iv_par (parallel to B vector at satellite),
     iv_pos (perpendictular to B, in the plane of the satellite),
     iv_perp (completes the coordinate system).  If iv_Ox and iv_Oy
@@ -373,8 +373,8 @@ def add_drift_geo_coord(inst):
     inst : pysat.Instrument
         DEMETER IAP instrument class object
 
-    Return
-    ------
+    Returns
+    -------
     Adds data values iv_geo_x (towards the intersection of equator and
     Grennwich meridian), iv_geo_y (completes coordinate system),
     iv_geo_z (follows Earth's rotational axis, positive Northward).

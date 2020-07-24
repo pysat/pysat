@@ -72,8 +72,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
 
-    Note
-    ----
+    Notes
+    -----
     This function has been deprecated and will be removed in pysat 3.0.0.
     Please use methods.general.list_files instead
 

@@ -10,8 +10,8 @@ of times in the bin).The data used to determine the occurrence must be 1D.
 If a property of a 2D or higher dataset is needed attach a custom function
 that performs the check and returns a 1D Series.
 
-Note
-----
+Notes
+-----
 The included routines use the bounds attached to the supplied instrument
 object as the season of interest.
 
@@ -55,8 +55,8 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate,
         arrays are organized for direct plotting, y values along rows, x along
         columns.
 
-    Note
-    ----
+    Notes
+    -----
     Season delineated by the bounds attached to Instrument object.
 
     """
@@ -104,8 +104,8 @@ def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate,
         arrays are organized for direct plotting, y values along rows, x along
         columns.
 
-    Note
-    ----
+    Notes
+    -----
     Season delineated by the bounds attached to Instrument object.
 
     """
@@ -218,8 +218,8 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
         data; 'bin_x', 'bin_y', and 'bin_z' are also returned if requested.
         Note that arrays are organized for direct plotting, z,y,x.
 
-    Note
-    ----
+    Notes
+    -----
     Season delineated by the bounds attached to Instrument object.
 
     """
@@ -267,8 +267,8 @@ def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
         any data; 'bin_x', 'bin_y', and 'bin_z' are also returned if requested.
         Note that arrays are organized for direct plotting, z,y,x.
 
-    Note
-    ----
+    Notes
+    -----
     Season delineated by the bounds attached to Instrument object.
 
     """

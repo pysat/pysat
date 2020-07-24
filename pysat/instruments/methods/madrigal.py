@@ -507,8 +507,8 @@ def filter_data_single_date(self):
     self : pysat.Instrument
         This object
 
-    Note
-    ----
+    Notes
+    -----
     Madrigal serves multiple days within a single JRO file
     to counter this, we will filter each loaded day so that it only
     contains the relevant day of data. This is only applied if loading

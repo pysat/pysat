@@ -41,8 +41,8 @@ class Files(object):
     update_files : bool
         updates files on instantiation if True
 
-    Note
-    ----
+    Notes
+    -----
     User should generally use the interface provided by a pysat.Instrument
     instance. Exceptions are the classmethod from_os, provided to assist
     in generating the appropriate output for an instrument routine.
@@ -388,8 +388,8 @@ class Files(object):
         fname : string
             filename
 
-        Note
-        ----
+        Notes
+        -----
         If fname not found in the file information already attached
         to the instrument.files instance, then a files.refresh() call
         is made.
@@ -514,8 +514,8 @@ class Files(object):
             If set, then filename will be processed using delimiter rather
             than assuming a fixed width
 
-        Note
-        ----
+        Notes
+        -----
         Does not produce a Files instance, but the proper output
         from instrument_module.list_files method.
 
@@ -570,8 +570,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     pandas.Series
         Series, indexed by datetime, with file strings
 
-    Note
-    ----
+    Notes
+    -----
         If two files have the same date and time information in the
         filename then the file with the higher version/revision is used.
         Series returned only has one file der datetime. Version is required
@@ -850,8 +850,8 @@ def construct_searchstring_from_format(format_str, wildcard=False):
             string_blocks, adding keys in order, and replacing the '' locations
             with data of length length.
 
-    Note
-    ----
+    Notes
+    -----
         The '?' may be used to indicate a set number of spaces for a variable
         part of the name that need not be extracted.
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
@@ -923,8 +923,8 @@ def search_local_system_formatted_filename(data_path, search_str):
     list
         list of files matching the format_str
 
-    Note
-    ----
+    Notes
+    -----
     The use of ?s (1 ? per character) rather than the full wildcard *
     provides a more specific filename search string that limits the
     false positive rate.

@@ -39,10 +39,11 @@ class Custom(object):
     --------
     Custom.add
 
-    Note
-    ----
+    Notes
+    -----
     User should interact with Custom through pysat.Instrument instance's
     attribute, instrument.custom
+
     """
 
     def __init__(self):
@@ -84,8 +85,8 @@ class Custom(object):
             kwargs : extra keyword arguments
                 extra keyword args are passed to the custom function (once)
 
-        Note
-        ----
+        Notes
+        -----
         Allowed `add` function returns:
 
         - {'data' : pandas Series/DataFrame/array_like,

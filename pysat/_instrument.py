@@ -133,8 +133,8 @@ class Instrument(object):
     kwargs : dictionary
         keyword arguments passed to instrument loading routine
 
-    Note
-    ----
+    Notes
+    -----
     Pysat attempts to load the module platform_name.py located in
     the pysat/instruments directory. This module provides the underlying
     functionality to download, load, and clean instrument data.
@@ -507,8 +507,8 @@ class Instrument(object):
                             'long_name':long_name,
                             'units':units}
 
-        Note
-        ----
+        Notes
+        -----
         If no metadata provided and if metadata for 'name' not already stored
         then default meta information is also added,
         long_name = 'name', and units = ''.
@@ -1176,8 +1176,8 @@ class Instrument(object):
         --------
         Void.  Data is added to self.data
 
-        Note
-        ----
+        Notes
+        -----
         Loads data for a chosen instrument into .data. Any functions chosen
         by the user and added to the custom processing queue (.custom.add)
         are automatically applied to the data before it is available to
@@ -1400,8 +1400,8 @@ class Instrument(object):
         year/month, or year/month/day combination to return a subset of
         available files.
 
-        Keywords
-        --------
+        Parameters
+        ----------
         year : int or NoneType
             Selected year to return remote files.  A None value will return
             all available files.
@@ -1433,8 +1433,8 @@ class Instrument(object):
         year/month, or year/month/day combination to return a subset of
         available files.
 
-        Keywords
-        --------
+        Parameters
+        ----------
         year : int or NoneType
             Selected year to return remote files.  A None value will return
             all available files.
@@ -1473,8 +1473,8 @@ class Instrument(object):
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments
 
-        Note
-        ----
+        Notes
+        -----
         Data will be downloaded to pysat_data_dir/patform/name/tag
 
         If Instrument bounds are set to defaults they are updated
@@ -1535,8 +1535,8 @@ class Instrument(object):
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments
 
-        Note
-        ----
+        Notes
+        -----
         Data will be downloaded to pysat_data_dir/patform/name/tag
 
         If Instrument bounds are set to defaults they are updated
@@ -1611,8 +1611,8 @@ class Instrument(object):
             end of iteration, inclusive. If None uses last data date.
             list-like collection also accepted
 
-        Note
-        ----
+        Notes
+        -----
         Both start and stop must be the same type (date, or filename) or None.
         Only the year, month, and day are used for date inputs.
 
@@ -1724,8 +1724,8 @@ class Instrument(object):
     def __iter__(self):
         """Iterates instrument object by loading subsequent days or files.
 
-        Note
-        ----
+        Notes
+        -----
         Limits of iteration, and iteration type (date/file)
         set by `bounds` attribute.
 
@@ -1762,8 +1762,8 @@ class Instrument(object):
         Bounds of iteration and iteration type (day/file) are set by
         `bounds` attribute.
 
-        Note
-        ----
+        Notes
+        -----
         If there were no previous calls to load then the
         first day(default)/file will be loaded.
 
@@ -1802,8 +1802,8 @@ class Instrument(object):
         Bounds of iteration and iteration type (day/file)
         are set by `bounds` attribute.
 
-        Note
-        ----
+        Notes
+        -----
         If there were no previous calls to load then the
         first day(default)/file will be loaded.
 
@@ -2119,8 +2119,8 @@ class Instrument(object):
             and a value is NaN then that attribute simply won't be included in
             the netCDF4 file.
 
-        Note
-        ----
+        Notes
+        -----
 
         Stores 1-D data along dimension 'epoch' - the date time index.
 

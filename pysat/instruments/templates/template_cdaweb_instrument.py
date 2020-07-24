@@ -20,8 +20,8 @@ sat_id : string
 tag : string
     *List supported tag strings here*
 
-Note
-----
+Notes
+-----
 ::
 
     Notes

@@ -1158,8 +1158,8 @@ class Meta(object):
         sep : string
             column seperator for supplied csv filename
 
-        Note
-        ----
+        Notes
+        -----
         column names must include at least ['name', 'long_name', 'units'],
         assumed if col_names is None.
         """

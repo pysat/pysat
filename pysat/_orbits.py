@@ -34,13 +34,13 @@ class Orbits(object):
         in the datetime index (inst.data.index) is large enough to
         consider it a new orbit
 
-    Note
-    ----
+    Notes
+    -----
     class should not be called directly by the user, use the interface provided
     by inst.orbits where inst = pysat.Instrument()
 
-    Warning
-    -------
+    Warnings
+    --------
     This class is still under development.
 
     Examples
@@ -139,10 +139,12 @@ class Orbits(object):
             inst.orbits[4]
             print('Orbit data ', inst.data)
 
-        Note
-        ----
+        Notes
+        -----
         A day of data must already be loaded.
+
         """
+
         # hack included so that orbits appear to be zero indexed
         if key < 0:
             self.load(key)
@@ -406,12 +408,14 @@ class Orbits(object):
         orbit : int
             orbit number, 1 indexed, negative indexes allowed, -1 last orbit
 
-        Note
-        ----
+        Notes
+        -----
         A day of data must be loaded before this routine functions properly.
         If the last orbit of the day is requested, it will NOT automatically be
         padded with data from the next day.
+
         """
+
         # ensure data exists
         if not self.sat.empty:
             # ensure proper orbit metadata present
@@ -464,13 +468,15 @@ class Orbits(object):
         orbit : int
             orbit number, 1 indexed
 
-        Note
-        ----
+        Notes
+        -----
         A day of data must be loaded before this routine functions properly.
         If the last orbit of the day is requested, it will automatically be
         padded with data from the next day. The orbit counter will be
         reset to 1.
+
         """
+
         if not self.sat.empty:  # ensure data exists
             # set up orbit metadata
             self._calcOrbits()
@@ -584,10 +590,11 @@ class Orbits(object):
     def next(self, *arg, **kwarg):
         """Load the next orbit into .data.
 
-        Note
-        ----
+        Notes
+        -----
         Forms complete orbits across day boundaries. If no data loaded
         then the first orbit from the first date of data is returned.
+
         """
 
         # first, check if data exists
@@ -729,10 +736,11 @@ class Orbits(object):
     def prev(self, *arg, **kwarg):
         """Load the previous orbit into .data.
 
-        Note
-        ----
+        Notes
+        -----
         Forms complete orbits across day boundaries. If no data loaded
         then the last orbit of data from the last day is loaded into .data.
+
         """
 
         # first, check if data exists
@@ -860,10 +868,12 @@ class Orbits(object):
             for inst in inst.orbits:
                 print('next available orbit ', inst.data)
 
-        Note
-        ----
+        Notes
+        -----
         Limits of iteration set by setting inst.bounds.
+
         """
+
         # load up the first increment of data
         # coupling with Instrument frame is high, but it is already
         # high in a number of areas
