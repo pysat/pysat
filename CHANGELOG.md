@@ -17,6 +17,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Use conda to manage Travis CI test environment
    - Added NaN filter for metadata when writing netCDF4 files
    - Test instruments now part of compiled package for development elsewhere
+   - Reviewed and improved documentation
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
   - Several functions in coords will be removed in pysat 3.0.0.  These functions will move to pysatMadrigal
