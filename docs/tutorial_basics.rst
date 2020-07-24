@@ -113,9 +113,9 @@ and email address as their username and password.
    # set user and password for Madrigal
    user = 'Firstname+Lastname'
    password = 'email@address.com'
-   # define date range to download data and download
-   start = pysat.datetime(2009,5,6)
-   stop = pysat.datetime(2009,5,9)
+   # define date range to download data
+   start = pysat.datetime(2001, 1, 1)
+   stop = pysat.datetime(2001, 1, 2)
    # download data to local system
    dmsp.download(start, stop, user=user, password=password)
 
@@ -135,84 +135,118 @@ version and revision numbers for the server files with those on the local system
 Any files missing or out of date on the local system are downloaded from the
 server. This command downloads, as needed, the entire dataset.
 
+.. note:: Science data servers may not have the same reliability and
+   bandwidth as commercial providers
 
 **Load Data**
 
 ----
 
-Data is loaded into dmsp using the .load method using year, day of year; date;
-or filename.
+Data is loaded into a pysat.Instrument object, in this case dmsp, using the
+``.load`` method using year, day of year; date; or filename.
 
 .. code:: python
 
-   dmsp.load(2009, 126)
-   dmsp.load(date=start)
-   dmsp.load(fname='cnofs_vefi_bfield_1sec_20090506_v05.cdf')
+   # load by year, day of year
+   dmsp.load(2001, 1)
+   # load by datetime
+   dmsp.load(date=datetime.datetime(2001, 1, 1))
+   # load by filename
+   dmsp.load(fname='dms_ut_20010101_12.002.hdf5')
+   # load by filename
+   dmsp.load(fname=dmsp.files[0])
+   # load by filename
+   dmsp.load(fname=dmsp.files[datetime.datetime(2001, 1, 1)])
 
-When the pysat load routine runs it stores the instrument data into vefi.data.
-The data structure is a pandas DataFrame_, a highly capable structure with
-labeled rows and columns. Convenience access to the data is also available at
+When the pysat load routine runs it stores the instrument data into dmsp.data.
+pysat supports the use of two different data structures,
+either a pandas DataFrame_, a highly capable structure with
+labeled rows and columns, or an xarray DataSet_ for data sets with
+more dimensions. Either way, the full data structure is available at::
+
+   # all data
+   dmsp.data
+
+providing full access to the underlying data library functionality. The
+type of data structure is flagged at the instrument level with the attribute
+``inst.pandas_format``, True if a DataFrame is returned by the corresponding
+instrument module load method.
+
+In addition, convenience access to the data is also available at
 the instrument level.
 
 .. _DataFrame: http://pandas.pydata.org/pandas-docs/stable/dsintro.html#dataframe
 
+.. _DataSet: http://xarray.pydata.org/en/v0.11.3/generated/xarray.Dataset.html
+
 .. code:: python
 
-    # all data
-    vefi.data
-    # particular magnetic component
-    vefi.data.dB_mer
-
     # Convenience access
-    vefi['dB_mer']
+    dmsp['ti']
     # slicing
-    vefi[0:10, 'dB_mer']
+    dmsp[0:10, 'ti']
     # slicing by date time
-    vefi[start:stop, 'dB_mer']
+    dmsp[start:stop, 'ti']
+
+    # Convenience assignment
+    dmsp['ti'] = new_array
+    # exploit broadcasting, single value assigned to all times
+    dmsp['ti'] = single_value
+    # slicing
+    dmsp[0:10, 'ti'] = sub_array
+    # slicing by date time
+    dmsp[start:stop, 'ti'] = sub_array
 
 See :any:`Instrument` for more.
 
-To load data over a season, pysat provides a convenience function that returns an array of dates over a season. The season need not be continuous.
+To load data over a season, pysat provides a convenience function that returns
+an array of dates over a season. The season need not be continuous.
 
 .. code:: python
 
-   import matplotlib.pyplot as plt
-   import numpy as np
-   import pandas
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas
 
-   # create empty series to hold result
-   mean_dB = pandas.Series()
+    # create empty series to hold result
+    mean_ti = pandas.Series()
 
-   # get list of dates between start and stop
-   date_array = pysat.utils.time.create_date_range(start, stop)
+    # get list of dates between start and stop
+    start = dt.datetime(2001, 1, 1)
+    stop = dt.datetime(2001, 1, 10)
+    date_array = pysat.utils.time.create_date_range(start, stop)
 
-   # iterate over season, calculate the mean absolute perturbation in
-   # meridional magnetic field
-   for date in date_array:
-	vefi.load(date=date)
-	if not vefi.data.empty:
-	    # isolate data to locations near geographic equator
-	    idx, = np.where((vefi['latitude'] < 5) & (vefi['latitude'] > -5))
-	    vefi.data = vefi.data.iloc[idx]
-            # compute mean absolute db_Mer using pandas functions and store
-            mean_dB[vefi.date] = vefi['dB_mer'].abs().mean(skipna=True)
+    # iterate over season, calculate the mean Ion Temperature
+    for date in date_array:
+       # load data into dmsp.data
+       dmsp.load(date=date)
+       # check if data present
+       if not dmsp.empty:
+           # isolate data to locations near geomagnetic equator
+           idx, = np.where((dmsp['mlat'] < 5) & (dmsp['mlat'] > -5))
+           # downselect data
+           dmsp.data = dmsp[idx]
+           # compute mean ion temperature using pandas functions and store
+           mean_ti[dmsp.date] = dmsp['ti'].abs().mean(skipna=True)
 
-   # plot the result using pandas functionality
-   mean_dB.plot(title='Mean Absolute Perturbation in Meridional Magnetic Field')
-   plt.ylabel('Mean Absolute Perturbation ('+vefi.meta['dB_mer'].units+')')
+    # plot the result using pandas functionality
+    mean_ti.plot(title='Mean Ion Temperature near Magnetic Equator')
+    plt.ylabel(dmsp.meta['ti', dmsp.desc_label] + ' (' +
+               dmsp.meta['ti', dmsp.units_label] + ')')
 
-Note, the numpy.where may be removed using the convenience access to the attached pandas data object.
+Note, the numpy.where may be removed using the convenience access to the
+attached pandas data object.
 
 .. code:: python
 
-   idx, = np.where((vefi['latitude'] < 5) & (vefi['latitude'] > -5))
-   vefi.data = vefi.data.iloc[idx]
+   idx, = np.where((dmsp['mlat'] < 5) & (dmsp['mlat'] > -5))
+   dmsp.data = dmsp[idx] = dmsp.data.iloc[idx
 
 is equivalent to
 
 .. code:: python
 
-   vefi.data = vefi[(vefi['latitude'] < 5) & (vefi['latitude'] > -5)]
+   dmsp.data = vefi[(dmsp['mlat'] < 5) & (dmsp['mlat'] > -5)]
 
 
 **Clean Data**
