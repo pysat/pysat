@@ -1,3 +1,6 @@
+Initial Instrument Independence
+-------------------------------
+
 **Adding Instrument Independence**
 
 .. code:: python

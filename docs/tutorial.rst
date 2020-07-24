@@ -11,15 +11,5 @@ Tutorial
    tutorial_independence.rst
    tutorial_iteration.rst
    tutorial_orbit.rst
-   tutorial_independence_full.rst
+   tutorial_full_independence.rst
    tutorial_flow.rst
-
-Time Series Analysis
---------------------
-
-Pending
-
-
-
-
-
