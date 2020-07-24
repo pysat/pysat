@@ -3,6 +3,12 @@ Initial Instrument Independence
 
 **Adding Instrument Independence**
 
+pysat features enable the development of instrument independent methods, code
+that can work on many if not all pysat supported datasets. This section
+continues the evolution of the simple DMSP temperature averaging method
+presented earlier towards greater instrument independence as well as
+application of non-DMSP data sets.
+
 .. code:: python
 
    import matplotlib.pyplot as plt
@@ -10,33 +16,49 @@ Initial Instrument Independence
    import pandas
 
    def daily_mean(inst, start, stop, data_label):
+       """Perform daily mean of data_label over season
 
-      # create empty series to hold result
-      mean_val = pandas.Series()
+       Parameters
+       ----------
+       inst : pysat.Instrument
+           Instrument object
+       start : datetime.datetime
+           Start date
+       stop : datetime.datetime
+           Stop date
+       data_label : string
+           Identifier for variable to be averaged
+       """
 
-      # get list of dates between start and stop
-      date_array = pysat.utils.time.create_date_range(start, stop)
+       # create empty series to hold result
+       mean_val = pandas.Series()
 
-      # iterate over season, calculate the mean
-      for date in date_array:
-	   inst.load(date=date)
-	   if not inst.data.empty:
-               # compute mean absolute db_Mer using pandas functions and store
+       # get list of dates between start and stop
+       date_array = pysat.utils.time.create_date_range(start, stop)
+
+       # iterate over season, calculate the mean
+       for date in date_array:
+	       inst.load(date=date)
+	       if not inst.data.empty:
+               # compute absolute mean using pandas functions and store
                mean_val[inst.date] = inst[data_label].abs().mean(skipna=True)
-      return mean_val
+       return mean_val
 
    vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
 
-   def filter_vefi(inst):
-       # select data near geographic equator
-       idx, = np.where((inst['latitude'] < 5) & (inst['latitude'] > -5))
-       inst.data = inst.data.iloc[idx]
+   def filter_inst(inst, data_label, data_gate):
+       # select data within +/- data gate
+       min_gate = -np.abs(data_gate)
+       max_gate = np.abs(data_gate)
+       idx, = np.where((inst[data_label] < max_gate) &
+                       (inst[data_label] > min_gate))
+       inst.data = inst[idx]
        return
 
    # attach filter to vefi object, function is run upon every load
-   vefi.custom.add(filter_vefi, 'modify')
+   vefi.custom.add(filter_inst, 'modify', 'latitude', 5.)
 
-   # make a plot of daily dB_mer
+   # make a plot of daily mean of 'db_mer'
    mean_dB = daily_mean(vefi, start, stop, 'dB_mer')
 
    # plot the result using pandas functionality
@@ -45,29 +67,36 @@ Initial Instrument Independence
    plt.ylabel('Absolute Daily Mean (' + vefi.meta['dB_mer'].units + ')')
 
 
-The pysat nano-kernel lets you modify any data set as needed so that you can get the daily mean you desire, without having to modify the daily_mean function.
+The pysat nano-kernel lets you modify any data set as needed so that you can
+get the daily mean you desire, without having to modify the daily_mean function.
 
-Check the instrument independence using a different instrument. Whatever instrument is supplied may be modified in arbitrary ways by the nano-kernel.
+Check the instrument independence using a different instrument. Whatever
+instrument is supplied may be modified in arbitrary ways by the nano-kernel.
 
 .. code:: python
 
-   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf', clean_level='clean', altitude_bin=3)
-
-   def filter_cosmic(inst):
-       inst.data = inst[(inst['edmaxlat'] > -15) & (inst['edmaxlat'] < 15)]
-       return
-
-   cosmic.custom.add(filter_cosmic, 'modify')
-   data_label = 'edmax'
-   mean_max_dens = daily_mean(cosmic, start, stop, data_label)
+   cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf', clean_level='clean',
+                             altitude_bin=3)
+   # attach filter method
+   cosmic.custom.add(filter_inst, 'modify', 'edmaxlat', 15.)
+   # perform average
+   mean_max_dens = daily_mean(cosmic, start, stop, 'edmax')
 
    # plot the result using pandas functionality
-   mean_max_dens.plot(title='Absolute Daily Mean of ' + cosmic.meta[data_label].long_name)
-   plt.ylabel('Absolute Daily Mean (' + cosmic.meta[data_label].units + ')')
+   long_name = cosmic.meta[data_label, cosmic.name_label]
+   units = cosmic.meta[data_label, cosmic.units_label]
+   mean_max_dens.plot(title='Absolute Daily Mean of ' + long_name)
+   plt.ylabel('Absolute Daily Mean (' + units + ')')
 
-daily_mean now works for any instrument, as long as the data to be averaged is 1D. This can be fixed.
+daily_mean now works for any instrument, as long as the data to be averaged is
+1D. This can be fixed.
+
 
 **Partial Independence from Dimensionality**
+
+This section continues the evolution of the daily_mean method
+presented earlier towards greater instrument independence by supporting
+more than 1D datasets.
 
 .. code:: python
 
@@ -102,7 +131,15 @@ daily_mean now works for any instrument, as long as the data to be averaged is 1
 
    return mean_val
 
-This code works for 1D, 2D, and 3D datasets, regardless of instrument platform, with only some minor changes from the initial VEFI specific code. In-situ measurements, remote profiles, and remote images. It is true the nested if statements aren't the most elegant. Particularly the 3D case. However this code puts the data into an appropriate structure for pandas to align each of the profiles/images by their respective indices before performing the average. Note that the line to obtain the arithmetic mean is the same in all cases, .mean(axis=0, skipna=True). There is an opportunity here for pysat to clean up the little mess caused by dimensionality.
+This code works for 1D, 2D, and 3D datasets, regardless of instrument platform,
+with only some minor changes from the initial VEFI specific code.
+In-situ measurements, remote profiles, and remote images. It is true the nested
+if statements aren't the most elegant. Particularly the 3D case. However this
+code puts the data into an appropriate structure for pandas to align each of
+the profiles/images by their respective indices before performing the average.
+Note that the line to obtain the arithmetic mean is the same in all cases,
+.mean(axis=0, skipna=True). There is an opportunity here for pysat to clean up
+the little mess caused by dimensionality.
 
 .. code:: python
 
