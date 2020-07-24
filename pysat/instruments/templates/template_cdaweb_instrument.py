@@ -9,29 +9,38 @@ on the mission, operations, instrumenation, and measurements.
 Also a good place to provide contact information. This text will
 be included in the pysat API documentation.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     *List platform string here*
-name : string
+name
     *List name string here*
-sat_id : string
+sat_id
     *List supported sat_ids here*
-tag : string
+tag
     *List supported tag strings here*
 
 Note
 ----
-::
+- Optional section, remove if no notes
 
-    Notes
 
 Warnings
 --------
+- Optional section, remove if no warnings
+- Two blank lines needed afterward for proper formatting
+
+
+Examples
+--------
+::
+
+    Example code can go here
 
 
 Authors
 -------
+Author name and institution
 
 """
 
@@ -136,12 +145,6 @@ def default(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     return
@@ -166,17 +169,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 

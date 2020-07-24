@@ -16,30 +16,43 @@ The routine is configured to utilize data files with instrument
 performance flags generated at the Center for Space Sciences at the
 University of Texas at Dallas.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'dmsp'
-name : string
+name
     'ivm'
-tag : string
+tag
     'utd', None
-sat_id : string
+sat_id
     ['f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18']
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
     dmsp = pysat.Instrument('dmsp', 'ivm', 'utd', 'f15', clean_level='clean')
     dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
                   user='Firstname+Lastname', password='email@address.com')
-    dmsp.load(2017,363)
+    dmsp.load(2017, 363)
 
 Note
 ----
     Please provide name and email when downloading data with this routine.
 
 Code development supported by NSF grant 1259508
+
+Custom Functions
+----------------
+add_drift_unit_vectors
+    Add unit vectors for the satellite velocity
+add_drifts_polar_cap_x_y
+    Add polar cap drifts in cartesian coordinates
+smooth_ram_drifts
+    Smooth the ram drifts using a rolling mean
+update_DMSP_ephemeris
+    Updates DMSP instrument data with DMSP ephemeris
 
 """
 
@@ -117,12 +130,6 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     logger.info(mad_meth.cedar_rules())
@@ -138,26 +145,20 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
-        pysat. If an account
-        is required for dowloads this routine here must error if user not
-        supplied.
-    password : string (None)
-        Password for data download.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
 
     Notes
     -----
@@ -176,10 +177,6 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
                       data_path=data_path, user=user, password=password)
 
 
-def default(inst):
-    pass
-
-
 def clean(inst):
     """Routine to return DMSP IVM data cleaned to the specified level
 
@@ -192,14 +189,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     --------

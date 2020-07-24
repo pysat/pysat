@@ -10,12 +10,14 @@ Welcome to pysat's documentation!
    :maxdepth: 2
 
    introduction.rst
+   citing.rst
    installation.rst
+   quickstart.rst
    tutorial.rst
    examples.rst
    supported_instruments.rst
    new_instrument.rst
+   data_templates.rst
    api.rst
    contributing.rst
    faq.rst
-   citing.rst

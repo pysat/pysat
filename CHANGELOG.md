@@ -18,6 +18,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Update ICON instrument file structure
    - Added NaN filter for metadata when writing netCDF4 files
    - Test instruments now part of compiled package for development elsewhere
+   - Reviewed and improved documentation
    - Custom instrument keywords and defaults are now always found in inst.kwargs
    - Added support for ~ and $ variables when setting pysat data dir
    - Added custom.attach to make transitions to v3.0 easier

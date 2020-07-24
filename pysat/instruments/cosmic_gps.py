@@ -12,20 +12,20 @@ Default behavior is to search for the 2013 re-processed data first, then the
 post-processed data as recommended on
 https://cdaac-www.cosmic.ucar.edu/cdaac/products.html
 
-Parameters
+Properties
 ----------
-altitude_bin : integer
-    Number of kilometers to bin altitude profiles by when loading.
-    Currently only supported for tag='ionprf'.
-platform : string
+platform
     'cosmic'
-name : string
+name
     'gps' for Radio Occultation profiles
-tag : string
+tag
     Select profile type, or scintillation, one of:
     {'ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1'}
-sat_id : string
+sat_id
     None supported
+altitude_bin
+    Number of kilometers to bin altitude profiles by when loading.
+    Currently only supported for tag='ionprf'.
 
 Note
 ----
@@ -49,14 +49,18 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
+import logging
 import numpy as np
 import os
+import requests
+from requests.auth import HTTPBasicAuth
+import shutil
 import sys
+import tarfile
 
 import netCDF4
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 platform = 'cosmic'
@@ -79,16 +83,16 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (NoneType)
+    format_str : NoneType
         User specified file format not supported here. (default=None)
 
     Returns
@@ -158,21 +162,21 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
 
     Parameters
     ----------
-    fnames : (pandas.Series)
+    fnames : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
     altitude_bin : integer
         Number of kilometers to bin altitude profiles by when loading.
-        Currently only supported for tag='ionprf'.
+        Currently only supported for tag='ionprf'. (default=None)
 
     Returns
     -------
-    output : (pandas.DataFrame)
+    output : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
     """
@@ -273,22 +277,23 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
     Parameters
     ----------
-    files : (pandas.Series)
+    files : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
     altitude_bin : integer
         Number of kilometers to bin altitude profiles by when loading.
-        Currently only supported for tag='ionprf'.
+        Currently only supported for tag='ionprf'. (default=None)
 
     Returns
     -------
-    output : (list of dicts, one per file)
-        Object containing satellite data
+    output : list of dicts
+        Object containing satellite data, one dict per file
 
     """
+
     output = [None] * len(files)
     drop_idx = []
     main_dict = {}
@@ -426,20 +431,11 @@ def download(date_array, tag, sat_id, data_path=None,
 
     Parameters
     ----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    -------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     """
-    import requests
-    from requests.auth import HTTPBasicAuth
-    import tarfile
-    import shutil
 
     if tag == 'ionprf':
         sub_dir = 'ionPrf'
@@ -519,20 +515,16 @@ def clean(inst):
 
     Parameters
     ----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    -------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     -----
     Supports 'clean', 'dusty', 'dirty'
 
     """
+
     if inst.tag == 'ionprf':
         # ionosphere density profiles
         if inst.clean_level == 'clean':

@@ -3,15 +3,15 @@
 onboard the Republic of China Satellite (ROCSAT-1). Downloads data from the
 NASA Coordinated Data Analysis Web (CDAWeb).
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'rocsat1'
-name : string
+name
     'ivm'
-tag : string
+tag
     None
-sat_id : string
+sat_id
     None supported
 
 Note
@@ -68,14 +68,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     --------

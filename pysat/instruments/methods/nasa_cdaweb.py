@@ -187,8 +187,8 @@ def download(supported_tags, date_array, tag, sat_id,
         pre-set with functools.partial then assigned to new instrument code.
     date_array : array_like
         Array of datetimes to download data for. Provided by pysat.
-    tag : (str or NoneType)
-        tag or None (default=None)
+    tag : str or NoneType (None)
+        tag or None
     sat_id : (str or NoneType)
         satellite id or None (default=None)
     remote_site : (string or NoneType)

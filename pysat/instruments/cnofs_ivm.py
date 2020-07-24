@@ -14,6 +14,8 @@ The DM directly measures the arrival angle of plasma. Using the reported
 motion of the satellite the angle is converted into ion motion along
 two orthogonal directions, perpendicular to the satellite track.
 
+References
+----------
 A brief discussion of the C/NOFS mission and instruments can be found at
 de La Beaujardière, O., et al. (2004), C/NOFS: A mission to forecast
 scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
@@ -30,16 +32,17 @@ duskside topside ionosphere with CINDI and DMSP, J. Geophys. Res.,115,
 A08324, doi:10.1029/2009JA015051.
 
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'cnofs'
-name : string
+name
     'ivm'
-tag : string
+tag
     None supported
-sat_id : string
+sat_id
     None supported
+
 
 Warnings
 --------
@@ -100,14 +103,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     --------

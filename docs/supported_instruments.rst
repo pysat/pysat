@@ -5,25 +5,39 @@ Instrument Templates
 General Instrument
 ------------------
 
-.. automodule:: pysat.instruments.template_instrument
+.. automodule:: pysat.instruments.templates.template_instrument
    :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
+
+Madrigal Pandas
+---------------
+
+.. automodule:: pysat.instruments.templates.netcdf_pandas
+  :members: __doc__, init, load, list_files, download
 
 NASA CDAWeb Instrument
 ----------------------
 
-.. automodule:: pysat.instruments.template_cdaweb_instrument
+.. automodule:: pysat.instruments.templates.template_cdaweb_instrument
    :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
+
+netCDF Pandas
+-------------
+
+.. automodule:: pysat.instruments.templates.netcdf_pandas
+  :members: __doc__, init, load, list_files, download
 
 
 General Data Source Methods
 ===========================
+.. _rst_general_data_cdaweb:
 
 NASA CDAWeb
 -----------
 
 .. automodule:: pysat.instruments.methods.nasa_cdaweb
-   :members: __doc__, init, load, list_files, list_remote_files, download
+   :members: __doc__, load, list_files, list_remote_files, download
 
+.. _rst_general_data_madrigal:
 
 Madrigal
 --------
@@ -144,14 +158,8 @@ JRO ISR
 .. automodule:: pysat.instruments.jro_isr
    :members: __doc__
 
-netCDF Pandas
--------------
-
-.. automodule:: pysat.instruments.netcdf_pandas
-   :members: __doc__, init, load, list_files, download
-
-OMNI
-----
+OMNI_HRO
+--------
 
 .. automodule:: pysat.instruments.omni_hro
    :members: __doc__, calculate_clock_angle, calculate_imf_steadiness, time_shift_to_magnetic_poles
@@ -200,7 +208,7 @@ SW Kp
    :members: __doc__, filter_geoquiet
 
 TIMED/SABER
----------
+-----------
 
 .. automodule:: pysat.instruments.timed_saber
    :members: __doc__
