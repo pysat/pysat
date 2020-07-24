@@ -269,10 +269,10 @@ Four levels of cleaning may be specified,
 ===============     ===================================
 **clean_level** 	        **Result**
 ---------------     -----------------------------------
-  clean		    Generally good data
-  dusty		    Light cleaning, use with care
-  dirty		    Minimal cleaning, use with caution
-  none		    No cleaning, use at your own risk
+  clean		        Generally good data
+  dusty		        Light cleaning, use with care
+  dirty		        Minimal cleaning, use with caution
+  none		        No cleaning, use at your own risk
 ===============     ===================================
 
 The user provided cleaning level is stored on the Instrument object at
@@ -286,22 +286,22 @@ between instruments.
 Metadata is also stored along with the main science data. pysat presumes
 a minimum default set of metadata that may be arbitrarily expanded.
 The default parameters are driven by the attributes required by public science
-data files, like those produced by the
-` Ionospheric Connections Explorer (ICON) <http://icon.ssl.berkeley.edu>`_.
+data files, like those produced by the Ionospheric Connections Explorer
+`(ICON) <http://icon.ssl.berkeley.edu>`_.
 
 ===============     ===================================
 **Metadata** 	        **Description**
 ---------------     -----------------------------------
-  axis          Label for plot axes
-  desc          Description of variable
-  fill          Fill value for bad data points
-  label         Label used for plots
-  name          Name of variable, or long_name
-  notes         Notes about variable
-  min           Maximum valid value
-  max           Minimum valid value
-  scale         Axis scale, linear or log
-  units         Variable units
+  axis              Label for plot axes
+  desc              Description of variable
+  fill              Fill value for bad data points
+  label             Label used for plots
+  name              Name of variable, or long_name
+  notes             Notes about variable
+  min               Maximum valid value
+  max               Minimum valid value
+  scale             Axis scale, linear or log
+  units             Variable units
 ===============     ===================================
 
 .. code:: python
@@ -365,3 +365,4 @@ will still function::
    dmsp.meta['Ti', 'long_Name']
    dmsp.meta['ti', 'Long_NAME']
 
+.. note:: While metadata access is case-insensitive, data access is case-sensitive.
