@@ -20,18 +20,19 @@ Warnings
     Files can be safely downloaded without knowing the file_format keyword,
     or equivalently, how Madrigal names the files. See `Examples` for more.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'madrigal'
-name : string
+name
     'pandas'
-tag : string
+tag
     ''
 
 Examples
 --------
 ::
+
     # for isolated use of a madrigal data set
     import pysat
     # download DMSP data from Madrigal

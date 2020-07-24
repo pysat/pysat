@@ -9,29 +9,37 @@ on the mission, operations, instrumenation, and measurements.
 Also a good place to provide contact information. This text will
 be included in the pysat API documentation.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     *List platform string here*
-name : string
+name
     *List name string here*
-sat_id : string
+sat_id
     *List supported sat_ids here*
-tag : string
+tag
     *List supported tag strings here*
 
 Note
 ----
-::
+- Add any notes here
 
-    Notes
 
 Warnings
 --------
+- Add any warnings here
+
+
+Examples
+--------
+::
+
+    Example code can go here
 
 
 Authors
 -------
+Author name and institution
 
 """
 
