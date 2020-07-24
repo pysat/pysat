@@ -78,71 +78,71 @@ a pysat.Instrument object will provide and interact with.
 
 ----
 
-To create a pysat.Instrument object, select a platform, instrument name,
+To create a pysat.Instrument object, select a ``platform``, instrument ``name``,
 and potentially a ``tag`` and ``sat_id``, consistent with
-the desired data to be analyzed, from the list of
-:doc:`supported_instruments`.
+the desired data to be analyzed, from one the supported instruments.
 
-To work with Magnetometer data from the
-Vector Electric Field Instrument onboard the Communications/Navigation Outage
-Forecasting System (C/NOFS), use:
+..
+   _the list of
+   _ :doc:`supported_instruments`.
 
-.. code:: python
-
-   vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
-
-Behind the scenes pysat uses a python module named cnofs_vefi that understands
-how to interact with 'dc_b' data. VEFI also measures electric fields in several
-modes that offer different data products. Though these measurements are not
-currently supported by the cnofs_vefi module, when they are, they can be
-selected via the tag string.
-
-To load measurements from a different instrument on C/NOFS, the Ion Velocity
-Meter, which measures thermal plasma parameters, use:
+To work with plasma data from the
+Ion Velocity Meter (IVM) onboard the Defense Meteorological
+Satellite Program (DMSP) constellation, use:
 
 .. code:: python
 
-   ivm = pysat.Instrument(platform='cnofs', name='ivm')
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f11')
 
-In the background pysat uses the module cnofs_ivm to handle this data. There is
-only one measurement option from IVM, so no tag string is required.
+Behind the scenes pysat uses a python module named dmsp_ivm that understands
+how to interact with 'utd' data for 'f11'.
 
-Measurements from a constellation of COSMIC satellites are also available.
-These satellites measure GPS signals as they travel through the atmosphere.
-A number of different data sets are available from COSMIC, and are also
-supported by the relevant module.
-
-.. code:: python
-
-   # electron density profiles
-   cosmic = pysat.Instrument(platform='cosmic', name='gps', tag='ionprf')
-   # atmosphere profiles
-   cosmic = pysat.Instrument(platform='cosmic', name='gps', tag='atmprf')
-
-
-
-Though the particulars of VEFI magnetometer data, IVM plasma parameters, and COSMIC atmospheric measurements are going to be quite different, the processes demonstrated below with VEFI also apply equally to IVM and COSMIC.
 
 **Download**
 
 ----
 
-Let's download some data. VEFI data is hosted by the NASA Coordinated Data Analysis Web (CDAWeb) at http://cdaweb.gsfc.nasa.gov. The proper process for downloading VEFI data is built into the cnofs_vefi module, which is handled by pysat. All we have to do is invoke the .download method attached to the VEFI object, or any other pysat Instrument.
+Let's download some data. DMSP data is hosted by the `Madrigal database
+<http://cedar.openmadrigal.org/openmadrigal/>`_, a community resource for
+geospace data. The proper process for downloading DMSP and other Madrigal data
+is built into the open source tool
+`madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_, which
+is invoked appropriately by pysat within the dmsp_ivm module. To get DMSP
+data specifically all we have to do is invoke the ``.download()`` method
+attached to the DMSP object.
 
 .. code:: python
 
    # define date range to download data and download
    start = pysat.datetime(2009,5,6)
    stop = pysat.datetime(2009,5,9)
-   vefi.download(start, stop)
+   # download data to local system
+   dmsp.download(start, stop)
 
-The data is downloaded to pysat_data_dir/platform/name/tag/, in this case pysat_data_dir/cnofs/vefi/dc_b/. At the end of the download, pysat will update the list of files associated with VEFI.
+The data is downloaded to pysat_data_dir/platform/name/tag/, in this case
+pysat_data_dir/dmsp/ivm/utd/. At the end of the download, pysat
+will update the list of files associated with DMSP.
 
-Note that some datasets, like COSMIC, require registration with a username and password.  Pysat supports this as well.
+Note that some datasets, like COSMIC, require registration with a username and
+password.  Pysat supports this as well. A user account may be obtained at
+the `Cosmic Data Analysis Archival Center <https://cdaac-www.cosmic.ucar.edu>`_.
+
 .. code:: python
 
   # download COSMIC data, which requires username and password
   cosmic.download(start, stop, user=user, password=password)
+
+Some instruments support an improved download experience that ensures
+the local system is fully up to date compared to the data source. The command,
+
+.. code:: python
+
+    dmsp.download_updated_files()
+
+will obtain the full set of files present on the server and compare the
+version and revision numbers for the server files with those on the local system.
+Any files missing or out of date on the local system are downloaded from the
+server. This command downloads, as needed, the entire dataset.
 
 
 **Load Data**
