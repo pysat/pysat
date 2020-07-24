@@ -1,4 +1,5 @@
 
+============
 Introduction
 ============
 
@@ -16,7 +17,8 @@ This document covers installation, a tutorial on pysat including demonstration
 code, coverage of supported instruments, an overview of adding new instruments
 to pysat, and an API reference.
 
-Logos
+**Logos**
+
 -----
 
 Does your project use pysat?  If so, grab a "powered by pysat" logo!
