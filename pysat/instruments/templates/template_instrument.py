@@ -41,7 +41,6 @@ Authors
 -------
 Author name and institution
 
-
 """
 
 # python 2/3 comptability
@@ -88,34 +87,41 @@ _test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
 pandas_format = False
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
+# not required but recommended
+def clean(inst):
+    """Routine to return PLATFORM/NAME data cleaned to the specified level
 
-    Runs once upon instantiation.
+    Cleaning level is specified in inst.clean_level and pysat
+    will accept user input for several strings. The clean_level is
+    specified at instantiation of the Instrument object.
+
+    'clean' All parameters should be good, suitable for statistical and
+            case studies
+    'dusty' All paramers should generally be good though same may
+            not be great
+    'dirty' There are data areas that have issues, data should be used
+            with caution
+    'none'  No cleaning applied, routine not called in this case.
+
 
     Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
+    -----------
+    inst : pysat.Instrument
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
 
     """
 
-    logger.info(' '.join(("Mission acknowledgements and data restrictions will",
-                          "be printed here when available.")))
     return
 
 
+# not required
 def default(self):
     """Default customization function.
 
     This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
+    on every load by the pysat nanokernel (first in queue). Object
+    modified in place.
 
     Parameters
     ----------
@@ -163,35 +169,24 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
     return
 
 
-# code should be defined below as needed
-def clean(self):
-    """Routine to return PLATFORM/NAME data cleaned to the specified level
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
 
-    Cleaning level is specified in inst.clean_level and pysat
-    will accept user input for several strings. The clean_level is
-    specified at instantiation of the Instrument object.
+    Runs once upon instantiation. Object modified in place. Optional.
 
     Parameters
-    -----------
-    inst : pysat.Instrument
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
-
-    Note
-    ----
-    In general, pysat uses the following nomenclature for cleaning levels
-
-    - 'clean'
-        All parameters should be good, suitable for statistical and case studies
-    - 'dusty'
-        All paramers should generally be good though same may not be great
-    - 'dirty'
-        There are data areas that have issues, data should be used with caution
-    - 'none'
-        No cleaning applied, routine not called in this case.
-
+    ----------
+    self : pysat.Instrument
+        This object
 
     """
+    # direct feedback to logging info
+    logger.info("Mission acknowledgements and data restrictions will be" +
+                "here when available.")
+    # acknowledgements
+    self.meta.acknowledgements = ''
+    # references
+    self.meta.references = ''
 
     return
 
@@ -241,7 +236,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Multiple data levels may be supported via the 'tag' input string.
     Multiple instruments via the sat_id string.
-
 
     """
 
@@ -318,12 +312,10 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
         pandas DataFrame or xarray DataSet while metadata is a pysat.Meta
         instance.
 
-
     Note
     ----
     Any additional keyword arguments passed to pysat.Instrument
     upon instantiation are passed along to this routine.
-
 
     Examples
     --------
@@ -360,4 +352,3 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
     # variable in the index named 'time' for xarray objects.  These can be set
     # here
 
-    return data, mdata
