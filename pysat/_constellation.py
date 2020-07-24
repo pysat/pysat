@@ -150,6 +150,9 @@ class Constellation(object):
         Combines signals from multiple instruments within
         given bounds.
 
+        .. deprecated:: 2.2.0
+          `add` will be removed in pysat 3.0.0, it will be added to pysatSeasons
+
         Parameters
         ----------
         bounds1 : (min, max)
@@ -266,6 +269,10 @@ class Constellation(object):
         """
         Calculates the difference in signals from multiple
         instruments within the given bounds.
+
+        .. deprecated:: 2.2.0
+          `difference` will be removed in pysat 3.0.0, it will be added to
+          pysatSeasons
 
         Parameters
         ----------

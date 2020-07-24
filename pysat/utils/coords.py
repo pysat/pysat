@@ -151,6 +151,10 @@ def scale_units(out_unit, in_unit):
 def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     """Converts position from geodetic to geocentric or vice-versa.
 
+    .. deprecated:: 2.2.0
+      `geodetic_to_geocentric` will be removed in pysat 3.0.0, it will
+      be added to pysatMadrigal
+
     Parameters
     ----------
     lat_in : float
@@ -222,6 +226,10 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
     """Converts from local horizontal coordinates in a geodetic system to local
     horizontal coordinates in a geocentric system
 
+    .. deprecated:: 2.2.0
+      `geodetic_to_geocentric_horizontal` will be removed in pysat 3.0.0, it
+      will be added to pysatMadrigal
+
     Parameters
     ----------
     lat_in : float
@@ -292,6 +300,10 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
 def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     """Convert a position from spherical to cartesian, or vice-versa
 
+    .. deprecated:: 2.2.0
+      `spherical_to_cartesian` will be removed in pysat 3.0.0, it will
+      be added to pysatMadrigal
+
     Parameters
     ----------
     az_in : float
@@ -350,6 +362,10 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
 def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
                               inverse=False):
     """Converts a position from global to local cartesian or vice-versa
+
+    .. deprecated:: 2.2.0
+      `global_to_local_cartesian` will be removed in pysat 3.0.0, it will
+      be added to pysatMadrigal
 
     Parameters
     ----------
@@ -443,6 +459,10 @@ def local_horizontal_to_global_geo(az, el, dist, lat_orig, lon_orig, alt_orig,
                                    geodetic=True):
     """ Convert from local horizontal coordinates to geodetic or geocentric
     coordinates
+
+    .. deprecated:: 2.2.0
+      `local_horizontal_to_global_geo` will be removed in pysat 3.0.0, it will
+      be added to pysatMadrigal
 
     Parameters
     ----------

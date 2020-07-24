@@ -23,6 +23,10 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                two_digit_year_break=None):
     """Return a Pandas Series of every file for chosen satellite data.
 
+    .. deprecated:: 2.2.0
+      `list_files` will be removed in pysat 3.0.0, it will be replaced by the
+      copy in instruments.methods.general
+
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
 
@@ -71,11 +75,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         supported_tags = {'': fname}
         list_files = functools.partial(cdw.list_files,
                                        supported_tags=supported_tags)
-
-    Note
-    ----
-    This function has been deprecated and will be removed in pysat 3.0.0.
-    Please use methods.general.list_files instead
 
     """
 
@@ -336,6 +335,10 @@ def list_remote_files(tag, sat_id,
                       two_digit_year_break=None, delimiter=None,
                       year=None, month=None, day=None):
     """Return a Pandas Series of every file for chosen remote data.
+
+    .. deprecated:: 2.2.0
+      `year/month/day` keywords will be removed in pysat 3.0.0, they will be
+      replaced with a start/stop syntax consistent with the download routine
 
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.

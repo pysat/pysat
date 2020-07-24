@@ -13,8 +13,9 @@ import warnings
 def median1D(self, bin_params, bin_label, data_label):
     """Calculates the median for a series of binned data.
 
-    ** Will be remvoed in a future version now that ssnl.avgs has a
-    similar function
+    .. deprecated:: 2.2.0
+      `median1D` will be removed in pysat 3.0.0, a
+      similar function will be added to pysatSeasons
 
     Parameters
     ----------
@@ -53,6 +54,10 @@ def median1D(self, bin_params, bin_label, data_label):
 
 def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
     """NaN insensitive version of scipy's circular mean routine
+
+    .. deprecated:: 2.2.0
+      `nan_circmean` will be removed in pysat 3.0.0, this functionality has
+      been added to scipy 1.4
 
     Parameters
     -----------
@@ -108,6 +113,10 @@ def nan_circmean(samples, high=2.0*np.pi, low=0.0, axis=None):
 
 def nan_circstd(samples, high=2.0*np.pi, low=0.0, axis=None):
     """NaN insensitive version of scipy's circular standard deviation routine
+
+    .. deprecated:: 2.2.0
+      `nan_circstd` will be removed in pysat 3.0.0, this functionality has
+      been added to scipy 1.4
 
     Parameters
     -----------

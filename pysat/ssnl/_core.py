@@ -2,6 +2,10 @@ def computational_form(data):
     """
     Repackages numbers, Series, or DataFrames
 
+    .. deprecated:: 2.2.0
+      `computational_form` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
+
     Regardless of input format, mathematical operations may be performed on the
     output via the same pandas mechanisms.
 
