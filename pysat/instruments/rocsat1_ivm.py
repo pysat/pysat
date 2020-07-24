@@ -3,15 +3,15 @@
 onboard the Republic of China Satellite (ROCSAT-1). Downloads data from the
 NASA Coordinated Data Analysis Web (CDAWeb).
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'rocsat1'
-name : string
+name
     'ivm'
-tag : string
+tag
     None
-sat_id : string
+sat_id 
     None supported
 
 Note

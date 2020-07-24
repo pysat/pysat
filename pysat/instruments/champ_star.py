@@ -3,25 +3,28 @@
 onboard the Challenging Minipayload (CHAMP) satellite.  Accesses local data in
 ASCII format.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'champ'
-name : string
+name
     'star'
-tag : string
+tag
     None supported
-sat_id : string
+sat_id
     None supported
 
 Warnings
 --------
 - The cleaning parameters for the instrument are still under development.
 
+
 Authors
 ---------
 Angeline G. Burrell, Feb 22, 2016, University of Leicester
+
 """
+
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -43,11 +46,11 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are '' and 'ascii'.
         If '' is specified, the primary data type (ascii) is loaded.
         (default='')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : (string or NoneType)

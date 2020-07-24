@@ -55,29 +55,20 @@ N. W. Spencer
 The neutral mass spectrometer on Dynamics Explorer B
 Space Sci. Instrum., v. 5, n. 4, p. 429, 1981.
 
-Parameters
+Properties
 ----------
-platform : string
-    Supports 'de2'
-name : string
-    Supports 'nacs'
-sat_id : string
+platform
+    'de2'
+name
+    'nacs'
+sat_id
     None Supported
-tag : string
+tag
     None Supported
-
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
 
 Authors
 -------
+J. Klenzing
 
 """
 

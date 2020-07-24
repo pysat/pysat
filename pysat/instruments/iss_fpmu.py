@@ -4,15 +4,15 @@
 Station (ISS). Downloads data from the NASA
 Coordinated Data Analysis Web (CDAWeb).
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'iss'
-name : string
+name
     'fpmu'
-tag : string
+tag
     None Supported
-sat_id : string
+sat_id 
     None supported
 
 Warnings

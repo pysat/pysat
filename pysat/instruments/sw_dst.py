@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Supports Dst values. Downloads data from NGDC.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'sw'
-name : string
+name
     'dst'
-tag : string
+tag 
     None supported
 
 Note

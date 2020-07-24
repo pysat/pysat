@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Supports the Langmuir Probe (LANG) instrument on
-Dynamics Explorer 2 (DE2).
+"""Supports the Langmuir Probe (LANG) instrument on Dynamics Explorer 2 (DE2).
 
 From CDAWeb:
 
@@ -30,29 +29,20 @@ J. P. Krehbiel, L. H. Brace, R. F. Theis, W. H. Pinkus, and R. B. Kaplan,
 The Dynamics Explorer 2 Langmuir Probe (LANG), Space Sci. Instrum., v. 5, n. 4,
 p. 493, 1981.
 
-Parameters
+Properties
 ----------
-platform : string
-    Supports 'de2'
-name : string
-    Supports 'lang'
-sat_id : string
+platform
+    'de2'
+name
+    'lang'
+sat_id
     None Supported
-tag : string
+tag
     None Supported
-
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
 
 Authors
 -------
+J. Klenzing
 
 """
 

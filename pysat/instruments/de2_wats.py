@@ -52,29 +52,20 @@ J. C. Maurer
 The Dynamics Explorer Wind and Temperature Spectrometer
 Space Sci. Instrum., v. 5, n. 4, p. 417, 1981.
 
-Parameters
+Properties
 ----------
-platform : string
-    Supports 'de2'
-name : string
-    Supports 'wats'
-sat_id : string
+platform
+    'de2'
+name
+    'wats'
+sat_id
     None Supported
-tag : string
+tag
     None Supported
-
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
 
 Authors
 -------
+J. Klenzing
 
 """
 

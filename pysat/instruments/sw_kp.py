@@ -3,14 +3,14 @@
 
 Parameters
 ----------
-platform : string
+platform
     'sw'
-name : string
+name
     'kp'
-tag : string
-    '' Standard Kp data
-    'forecast' Grab forecast data from SWPC (next 3 days)
-    'recent' Grab last 30 days of Kp data from SWPC
+tag
+    - '' : Standard Kp data
+    - 'forecast' : Grab forecast data from SWPC (next 3 days)
+    - 'recent' : Grab last 30 days of Kp data from SWPC
 
 Note
 ----
@@ -24,6 +24,7 @@ for the current day. When loading forecast data, the date specified with the
 load command is the date the forecast was generated. The data loaded will span
 three days. To always ensure you are loading the most recent data, load
 the data with tomorrow's date.
+::
 
     kp = pysat.Instrument('sw', 'kp', tag='recent')
     kp.download()
@@ -35,6 +36,7 @@ to the generation date.
 
 The recent and forecast data should not be used with the data padding option
 available from pysat.Instrument objects.
+
 
 Warnings
 --------
@@ -49,6 +51,11 @@ National Science Foundation under Grant Number 1259508.
 Any opinions, findings, and conclusions or recommendations expressed in this
 material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
+
+Custom Functions
+----------------
+filter_geoquiet
+    Filters pysat.Instrument data for given time after Kp drops below gate.
 
 """
 

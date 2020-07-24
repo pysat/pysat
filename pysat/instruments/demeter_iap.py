@@ -15,22 +15,33 @@ physique des plasmas, CDPP), the French national data center for natural
 plasmas of the solar system.  This data product requires registration and user
 initiated downloading after ordering a data product.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'demeter'
-name : string
+name
     'iap'
-tag : string
+tag
     'survey' or 'burst'
-sat_id : string
+sat_id
     None supported
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
     demeter = pysat.Instrument('demeter', 'iap', 'survey', clean_level='none')
-    demeter.load(2009,363)
+    demeter.load(2009, 363)
+
+Custom Functions
+----------------
+add_drift_geo_coord
+    Calcuate the ion velocity in geographic coordinates
+add_drift_lgm_coord
+    Calcuate the ion velocity in local geomagneic coordinates
+add_drift_sat_coord
+    Calculate the ion velocity in satellite x, y, z coordinates
 
 """
 

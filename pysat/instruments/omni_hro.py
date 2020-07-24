@@ -4,15 +4,15 @@ Proton Fluxes, Time-Shifted to the Nose of the Earth's Bow Shock, plus Solar
 and Magnetic Indices. Downloads data from the NASA Coordinated Data Analysis
 Web (CDAWeb). Supports both 5 and 1 minute files.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'omni'
-name : string
+name
     'hro'
-tag : string
+tag
     Select time between samples, one of {'1min', '5min'}
-sat_id : string
+sat_id
     None supported
 
 Note
@@ -35,14 +35,18 @@ Warnings
   these level-2 products are expected to be ok.
 - Module not written by OMNI team.
 
+
 Custom Functions
 -----------------
-time_shift_to_magnetic_poles : Shift time from bowshock to intersection with
-                               one of the magnetic poles
-calculate_clock_angle : Calculate the clock angle and IMF mag in the YZ plane
-calculate_imf_steadiness : Calculate the IMF steadiness using clock angle and
-                           magnitude in the YZ plane
-calculate_dayside_reconnection : Calculate the dayside reconnection rate
+time_shift_to_magnetic_poles
+    Shift time from bowshock to intersection with one of the magnetic poles
+calculate_clock_angle
+    Calculate the clock angle and IMF mag in the YZ plane
+calculate_imf_steadiness
+    Calculate the IMF steadiness using clock angle and magnitude in the YZ plane
+calculate_dayside_reconnection
+    Calculate the dayside reconnection rate
+
 """
 
 from __future__ import print_function

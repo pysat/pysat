@@ -8,44 +8,42 @@ Users of SABER data are asked to respect the following guidelines
 
     - Mission scientific and model results are open to all.
     - Guest investigators, and other members of the scientific community or
-    general public should contact the PI or designated team member early in an
-    analysis project to discuss the appropriate use of the data.
+      general public should contact the PI or designated team member early in an
+      analysis project to discuss the appropriate use of the data.
     - Users that wish to publish the results derived from SABER data should
-    normally offer co-authorship to the PI, Associate PI or designated team
-    members. Co-authorship may be declined. Appropriate acknowledgement of
-    institutions, personnel, and funding agencies should be given.
+      normally offer co-authorship to the PI, Associate PI or designated team
+      members. Co-authorship may be declined. Appropriate acknowledgement of
+      institutions, personnel, and funding agencies should be given.
     - Users should heed the caveats of SABER team members as to the
-    interpretation and limitations of the data. SABER team members may insist
-    that such caveats be published, even if co-authorship is declined. Data
-    and model version numbers should also be specified.
+      interpretation and limitations of the data. SABER team members may insist
+      that such caveats be published, even if co-authorship is declined. Data
+      and model version numbers should also be specified.
     - Pre-prints of publications and conference abstracts should be widely
-    distributed to interested parties within the mission and related projects.
+      distributed to interested parties within the mission and related projects.
     - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
 
-Parameters
+
+Properties
 ----------
-platform : string
+platform
     'timed'
-name : string
+name
     'saber'
-tag : string
+tag
     None supported
-sat_id : string
+sat_id
     None supported
 
-Note
-----
-::
-
-    Notes
 
 Warnings
 --------
 - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
 
+
 Authors
 -------
 J. Klenzing, 4 March 2019
+
 """
 
 from __future__ import print_function

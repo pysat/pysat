@@ -3,14 +3,15 @@
 Downloading is supported; please follow their rules of the road:
     http://supermag.jhuapl.edu/info/?page=rulesoftheroad
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'supermag'
-name : string
+name
     'magnetometer'
-tag : string
+tag
     Select  {'indices', '', 'all', 'stations'}
+
 
 Note
 ----
@@ -31,9 +32,6 @@ Warnings
   that these products are expected to be good.  More information about the
   processing is available
 - Module not written by the SuperMAG team.
-
-Custom Functions
------------------
 
 """
 

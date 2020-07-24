@@ -12,20 +12,20 @@ Default behavior is to search for the 2013 re-processed data first, then the
 post-processed data as recommended on
 https://cdaac-www.cosmic.ucar.edu/cdaac/products.html
 
-Parameters
+Properties
 ----------
-altitude_bin : integer
-    Number of kilometers to bin altitude profiles by when loading.
-    Currently only supported for tag='ionprf'.
-platform : string
+platform
     'cosmic'
-name : string
+name
     'gps' for Radio Occultation profiles
-tag : string
+tag
     Select profile type, or scintillation, one of:
     {'ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1'}
-sat_id : string
+sat_id
     None supported
+altitude_bin
+    Number of kilometers to bin altitude profiles by when loading.
+    Currently only supported for tag='ionprf'.
 
 Note
 ----

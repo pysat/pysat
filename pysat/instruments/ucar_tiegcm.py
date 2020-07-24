@@ -4,21 +4,20 @@ Supports loading data from files generated using TIEGCM
 (Thermosphere Ionosphere Electrodynamics General Circulation Model) model.
 TIEGCM file is a netCDF file with multiple dimensions for some variables.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'ucar'
-name : string
+name
     'tiegcm'
-tag : string
+tag
     None supported
-sat_id : string
+sat_id
     None supported
+
 
 Note
 ----
-::
-
     Loads into xarray format.
 
 """
@@ -194,11 +193,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     the returned files are up to pysat specifications.
 
     """
-    
+
     if format_str is None:
         # default file naming
         format_str = 'tiegcm_icon_merg2.0_totTgcm.s_{day:03d}_{year:4d}.nc'
-        
+
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 

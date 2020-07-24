@@ -8,22 +8,24 @@ experiments.
 
 Downloads data from the JRO Madrigal Database.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'jro'
-name : string
+name
     'isr'
-tag : string
+tag
     'drifts', 'drifts_ave', 'oblique_stan', 'oblique_rand', 'oblique_long'
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
-    dmsp = pysat.Instrument('jro', 'isr', 'drifts', clean_level='clean')
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
-                  user='Firstname+Lastname', password='email@address.com')
-    dmsp.load(2017,363)
+    jro = pysat.Instrument('jro', 'isr', 'drifts', clean_level='clean')
+    jro.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
+                 user='Firstname+Lastname', password='email@address.com')
+    jro.load(2017, 363)
 
 Note
 ----

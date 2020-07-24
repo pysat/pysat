@@ -16,30 +16,43 @@ The routine is configured to utilize data files with instrument
 performance flags generated at the Center for Space Sciences at the
 University of Texas at Dallas.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'dmsp'
-name : string
+name
     'ivm'
-tag : string
+tag
     'utd', None
-sat_id : string
+sat_id
     ['f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18']
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
     dmsp = pysat.Instrument('dmsp', 'ivm', 'utd', 'f15', clean_level='clean')
     dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
                   user='Firstname+Lastname', password='email@address.com')
-    dmsp.load(2017,363)
+    dmsp.load(2017, 363)
 
 Note
 ----
     Please provide name and email when downloading data with this routine.
 
 Code development supported by NSF grant 1259508
+
+Custom Functions
+----------------
+add_drift_unit_vectors
+    Add unit vectors for the satellite velocity
+add_drifts_polar_cap_x_y
+    Add polar cap drifts in cartesian coordinates
+smooth_ram_drifts
+    Smooth the ram drifts using a rolling mean
+update_DMSP_ephemeris
+    Updates DMSP instrument data with DMSP ephemeris
 
 """
 

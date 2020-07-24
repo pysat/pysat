@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """SuperDARN data support for grdex files(Alpha Level!)
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'superdarn'
-name : string
+name
     'grdex'
-tag : string
+tag
     'north' or 'south' for Northern/Southern hemisphere data
 
 Note
@@ -23,6 +23,7 @@ National Science Foundation under Grant Number 1259508.
 Any opinions, findings, and conclusions or recommendations expressed in this
 material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
+
 
 Warnings
 --------

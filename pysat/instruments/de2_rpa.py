@@ -40,29 +40,20 @@ W. B. Hanson, R. A. Heelis, R. A. Power, C. R. Lippincott, D. R. Zuccaro,
 B. J. Holt, L. H. Harmon, and S. Sanatani, “The retarding potential analyzer
 for dynamics explorer-B,” Space Sci. Instrum. 5, 503–510 (1981).
 
-Parameters
+Properties
 ----------
-platform : string
-    Supports 'de2'
-name : string
-    Supports 'rpa'
-sat_id : string
-    Supports ''
-tag : string
+platform
+    'de2'
+name
+    'rpa'
+sat_id
+    ''
+tag
     None Supported
-
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
 
 Authors
 -------
+J. Klenzing
 
 """
 

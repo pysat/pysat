@@ -27,20 +27,22 @@ Probe.
 
 The data is PRELIMINARY, and as such, is intended for BROWSE PURPOSES ONLY.
 
+References
+----------
 A brief discussion of the C/NOFS mission and instruments can be found at
 de La Beaujardière, O., et al. (2004), C/NOFS: A mission to forecast
 scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
 doi:10.1016/j.jastp.2004.07.030.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'cnofs'
-name : string
+name
     'plp'
-tag : string
+tag
     None supported
-sat_id : string
+sat_id
     None supported
 
 Warnings

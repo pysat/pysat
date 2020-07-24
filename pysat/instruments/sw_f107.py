@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 """Supports F10.7 index values. Downloads data from LASP and the SWPC.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'sw'
-name : string
+name
     'f107'
-tag : string
-    '' LASP F10.7 data (downloads by month, loads by day)
-    'all' All LASP standard F10.7
-    'prelim' Preliminary SWPC daily solar indices
-    'daily' Daily SWPC solar indices (contains last 30 days)
-    'forecast' Grab forecast data from SWPC (next 3 days)
-    '45day' 45-Day Forecast data from the Air Force
+tag
+    - '' : LASP F10.7 data (downloads by month, loads by day)
+    - 'all' : All LASP standard F10.7
+    - 'prelim' : Preliminary SWPC daily solar indices
+    - 'daily' : Daily SWPC solar indices (contains last 30 days)
+    - 'forecast' : Grab forecast data from SWPC (next 3 days)
+    - '45day' : 45-Day Forecast data from the Air Force
 
 Note
 ----
@@ -23,6 +23,7 @@ for the current day. When loading forecast data, the date specified with the
 load command is the date the forecast was generated. The data loaded will span
 three days. To always ensure you are loading the most recent data, load
 the data with tomorrow's date.
+::
 
     f107 = pysat.Instrument('sw', 'f107', tag='forecast')
     f107.download()
@@ -30,9 +31,10 @@ the data with tomorrow's date.
 
 
 
-The forecast or prelim data should not be used with the data padding option 
-available from pysat.Instrument objects. The 'all' tag shouldn't be used either, 
+The forecast or prelim data should not be used with the data padding option
+available from pysat.Instrument objects. The 'all' tag shouldn't be used either,
 no other data available to pad with.
+
 
 Warnings
 --------
@@ -243,7 +245,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
         elif tag == 'prelim':
             # files are by year (and quarter). The load routine will load a
-            # year of data 
+            # year of data
             if format_str is None:
                 format_str = \
                     'f107_prelim_{year:04d}_{month:02d}_v{version:01d}.txt'
