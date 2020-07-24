@@ -277,7 +277,7 @@ class Orbits(object):
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            logger.info(' '.join(('Time Gap at locations', ut_ind)))
+            logger.info(Time Gap at locations', ut_ind)
 
         # now that most problems in orbits should have been caught, look at
         # the time difference between orbits (not individual orbits)
