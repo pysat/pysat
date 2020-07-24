@@ -322,6 +322,10 @@ data files, like those produced by the
    dmsp.meta['new'] = {dmsp.units_label:'fake',
                        dmsp.name_label:'Display'}
 
+The string values used within metadata to identify the parameters above
+are all attached to the instrument object as dmsp.*_label, or
+``dmsp.units_label``, ``dmsp.min_label``, and ``dmsp.notes_label``.
+
 Data may be assigned to the instrument, with or without metadata.
 
 .. code:: python
