@@ -201,7 +201,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     Called by pysat. Not intended for direct use by user.
 
     """
-    import time
 
     if data_path is not None:
         if tag == '':

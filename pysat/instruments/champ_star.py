@@ -30,6 +30,7 @@ from __future__ import absolute_import
 
 import numpy as np
 import pandas as pds
+import re
 import warnings
 
 import pysat
@@ -101,7 +102,7 @@ def load(fnames, tag=None, sat_id=None):
         Object containing metadata such as column names and units
 
     """
-    import re
+
     if len(fnames) <= 0:
         return pysat.DataFrame(None), pysat.Meta(None)
 
