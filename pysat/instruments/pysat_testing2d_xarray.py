@@ -190,17 +190,19 @@ meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
 meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
 meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
 meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-series_profile_meta = pysat.Meta()
-series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
-meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
-                           'long_name': 'series'}
+meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+variable_profile_meta = pysat.Meta()
+variable_profile_meta['variable_profiles'] = {'units': '',
+                                              'long_name': 'series'}
+meta['variable_profiles'] = {'meta': variable_profile_meta, 'units': '',
+                             'long_name': 'series'}
 profile_meta = pysat.Meta()
 profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
 profile_meta['dummy_str'] = {'units': '', 'long_name': 'profiles'}
 profile_meta['dummy_ustr'] = {'units': '', 'long_name': 'profiles'}
 meta['profiles'] = {'meta': profile_meta, 'units': '', 'long_name': 'profiles'}
-alt_profile_meta = pysat.Meta()
-alt_profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-alt_profile_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
-meta['alt_profiles'] = {'meta': alt_profile_meta, 'units': '',
-                        'long_name': 'profiles'}
+image_meta = pysat.Meta()
+image_meta['density'] = {'units': '', 'long_name': 'profiles'}
+image_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
+meta['images'] = {'meta': image_meta, 'units': '',
+                  'long_name': 'profiles'}

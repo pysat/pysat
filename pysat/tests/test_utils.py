@@ -4,6 +4,7 @@ tests the pysat utils area
 import os
 import tempfile
 import warnings
+
 from nose.tools import assert_raises, raises
 import numpy as np
 import pandas as pds
@@ -43,7 +44,6 @@ def remove_files(inst):
 
 def test_deprecation_warning_computational_form():
     """Test if computational form in utils is deprecated"""
-
 
     data = pds.Series([0, 1, 2])
     warnings.simplefilter("always")
@@ -93,6 +93,11 @@ class TestBasics():
         check2 = (pysat.data_dir == self.data_path)
 
         assert check1 & check2
+
+    @raises(ValueError)
+    def test_set_data_dir_wrong_path(self):
+        """update data_dir with an invalid path"""
+        pysat.utils.set_data_dir('not_a_directory', store=False)
 
     def test_initial_pysat_load(self):
         import shutil
@@ -235,6 +240,7 @@ class TestBasicNetCDF4():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
+                                         sat_id='100',
                                          clean_level='clean')
         self.testInst.pandas_format = True
 
@@ -244,11 +250,12 @@ class TestBasicNetCDF4():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
-        try:
-            pysat.utils.set_data_dir(self.data_path, store=False)
-        except:
-            pass
+        pysat.utils.set_data_dir(self.data_path, store=False)
         del self.testInst
+
+    @raises(ValueError)
+    def test_load_netcdf4_empty_filenames(self):
+        pysat.utils.load_netcdf4(fnames=None)
 
     def test_basic_write_and_read_netcdf4_default_format(self):
         # create a bunch of files by year and doy
@@ -258,14 +265,17 @@ class TestBasicNetCDF4():
         self.testInst.load(2009, 1)
         self.testInst.to_netcdf4(outfile)
 
-        loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
+        loaded_inst, meta = \
+            pysat.utils.load_netcdf4(outfile,
+                                     pandas_format=self.testInst.pandas_format)
         self.testInst.data = \
             self.testInst.data.reindex(sorted(self.testInst.data.columns),
                                        axis=1)
-        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
+        loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns),
+                                          axis=1)
+        keys = self.testInst.data.columns
 
-        for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
+        for key in keys:
             assert(np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_basic_write_and_read_netcdf4_mixed_case_format(self):
@@ -289,7 +299,6 @@ class TestBasicNetCDF4():
         assert(np.all(original == loaded_inst.columns))
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert(np.all(self.testInst[key] == loaded_inst[key.lower()]))
 
         # modify metadata names in data
@@ -312,7 +321,6 @@ class TestBasicNetCDF4():
         self.testInst['MLT'] = 1
         self.testInst.to_netcdf4(outfile, preserve_meta_case=True)
 
-
     def test_write_and_read_netcdf4_default_format_w_compression(self):
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
@@ -328,9 +336,7 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
-            # assert(np.all(self.testInst.data == loaded_inst))
 
     def test_write_and_read_netcdf4_default_format_w_weird_epoch_name(self):
         # create a bunch of files by year and doy
@@ -348,7 +354,6 @@ class TestBasicNetCDF4():
         loaded_inst = loaded_inst.reindex(sorted(loaded_inst.columns), axis=1)
 
         for key in self.testInst.data.columns:
-            print('Testing Data Equality to filesystem and back ', key)
             assert (np.all(self.testInst[key] == loaded_inst[key]))
 
     def test_write_and_read_netcdf4_default_format_higher_order(self):
@@ -433,17 +438,16 @@ class TestBasicNetCDF4():
         self.testInst.load(2009, 1)
 
         try:
-            assert self.testInst.bespoke # should raise
+            assert self.testInst.bespoke  # should raise
         except AttributeError:
             pass
 
         # instrument meta attributes immutable upon load
-        assert self.testInst.meta.mutable == False
+        assert not self.testInst.meta.mutable
         try:
             self.testInst.meta.bespoke = True
         except AttributeError:
             pass
-
 
     def test_netcdf_attribute_override(self):
         """Test that attributes in netcdf file may be overridden"""
@@ -466,3 +470,63 @@ class TestBasicNetCDF4():
         # custom attribute correctly read from file
         assert meta.bespoke
 
+
+class TestBasicNetCDF4xarray():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # store current pysat directory
+        self.data_path = pysat.data_dir
+
+        # create temporary directory
+        dir_name = tempfile.mkdtemp()
+        pysat.utils.set_data_dir(dir_name, store=False)
+
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing2d_xarray',
+                                         sat_id='100',
+                                         clean_level='clean')
+        self.testInst.pandas_format = False
+
+        # create testing directory
+        prep_dir(self.testInst)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        remove_files(self.testInst)
+        pysat.utils.set_data_dir(self.data_path, store=False)
+        del self.testInst
+
+    def test_basic_write_and_read_netcdf4_default_format(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.data.attrs['new_attr'] = 1
+        self.testInst.data.to_netcdf(outfile)
+
+        loaded_inst, meta = \
+            pysat.utils.load_netcdf4(outfile,
+                                     pandas_format=self.testInst.pandas_format)
+        keys = self.testInst.data.data_vars.keys()
+
+        for key in keys:
+            assert(np.all(self.testInst[key] == loaded_inst[key]))
+        assert meta.new_attr == 1
+
+    def test_load_netcdf4_pandas_3d_deprecation_warning(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.data.attrs['new_attr'] = 1
+        self.testInst.data.to_netcdf(outfile)
+
+        warnings.simplefilter("always")
+        with warnings.catch_warnings(record=True) as war:
+            loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
+                                                         epoch_name='time',
+                                                         pandas_format=True)
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning

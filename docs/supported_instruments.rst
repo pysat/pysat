@@ -112,25 +112,25 @@ ICON EUV
 --------
 
 .. automodule:: pysat.instruments.icon_euv
-   :members: __doc__, remove_icon_names
+   :members: __doc__
 
 ICON FUV
 --------
 
 .. automodule:: pysat.instruments.icon_fuv
-   :members: __doc__, remove_icon_names
+   :members: __doc__
 
 ICON IVM
 --------
 
 .. automodule:: pysat.instruments.icon_ivm
-   :members: __doc__, remove_icon_names
+   :members: __doc__
 
 ICON MIGHTI
 -----------
 
 .. automodule:: pysat.instruments.icon_mighti
-   :members: __doc__, remove_icon_names
+   :members: __doc__
 
 ISS-FPMU
 --------

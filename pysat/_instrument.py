@@ -359,8 +359,14 @@ class Instrument(object):
         # store kwargs, passed to load routine
         # first, check if keywords are  valid
         _check_if_keywords_supported(self._load_rtn, **kwargs)
-        # store
+        # get and apply default values for custom keywords
+        default_keywords = _get_supported_keywords(self._load_rtn)
+        # store user supplied keywords
         self.kwargs = kwargs
+        # add in defaults if not already present
+        for key in default_keywords.keys():
+            if key not in self.kwargs:
+                self.kwargs[key] = default_keywords[key]
 
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
@@ -423,7 +429,7 @@ class Instrument(object):
                 try:
                     # integer based indexing
                     return self.data.iloc[key]
-                except:
+                except (TypeError, KeyError):
                     try:
                         return self.data[key]
                     except ValueError as err:
@@ -458,16 +464,21 @@ class Instrument(object):
             inst[datetime1:datetime1, 'name1':'name2']
 
         """
-        if 'time' not in self.data:
+        if 'Epoch' in self.data.indexes:
+            epoch_name = 'Epoch'
+        elif 'time' in self.data.indexes:
+            epoch_name = 'time'
+        else:
             return xr.Dataset(None)
+
         if isinstance(key, tuple):
             if len(key) == 2:
                 # support slicing time, variable name
                 try:
-                    return self.data.isel(time=key[0])[key[1]]
-                except:
+                    return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
+                except (TypeError, KeyError, IndexError):
                     try:
-                        return self.data.sel(time=key[0])[key[1]]
+                        return self.data.sel(indexers={epoch_name: key[0]})[key[1]]
                     except TypeError: # construct dataset from names
                         return self.data[self.variables[key[1]]]
             else:
@@ -481,15 +492,15 @@ class Instrument(object):
             try:
                 # grab a particular variable by name
                 return self.data[key]
-            except:
+            except (TypeError, KeyError):
                 # that didn't work
                 try:
                     # get all data variables but for a subset of time
                     # using integer indexing
-                    return self.data.isel(time=key)
-                except:
+                    return self.data.isel(indexers={epoch_name: key})
+                except (TypeError, KeyError):
                     # subset of time, using label based indexing
-                    return self.data.sel(time=key)
+                    return self.data.sel(indexers={epoch_name: key})
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
@@ -584,6 +595,13 @@ class Instrument(object):
                 new = {'data': new}
             in_data = new.pop('data')
 
+            if 'Epoch' in self.data.indexes:
+                epoch_name = 'Epoch'
+            elif 'time' in self.data.indexes:
+                epoch_name = 'time'
+            else:
+                raise ValueError('Unsupported time index name, "Epoch" or "time".')
+
             if isinstance(key, tuple):
                 # user provided more than one thing in assignment location
                 # something like, index integers and a variable name
@@ -594,12 +612,10 @@ class Instrument(object):
                 indict = {}
                 for i, dim in enumerate(self[key[-1]].dims):
                     indict[dim] = key[i]
-                    # if dim == 'time':
-                    #     indict[dim] = self.index[key[i]]
                 try:
                     self.data[key[-1]].loc[indict] = in_data
-                except:
-                    indict['time'] = self.index[indict['time']]
+                except (TypeError, KeyError):
+                    indict[epoch_name] = self.index[indict[epoch_name]]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 return
@@ -618,20 +634,20 @@ class Instrument(object):
                     if len(in_data) == len(self.index):
                         # 1D input has the correct length for storage along
                         # 'time'
-                        self.data[key] = ('time', in_data)
+                        self.data[key] = (epoch_name, in_data)
                     elif len(in_data) == 1:
                         # only provided a single number in iterable, make that
                         # the input for all times
-                        self.data[key] = ('time', [in_data[0]]*len(self.index))
+                        self.data[key] = (epoch_name, [in_data[0]]*len(self.index))
                     elif len(in_data) == 0:
                         # provided an empty iterable
                         # make everything NaN
-                        self.data[key] = ('time', [np.nan]*len(self.index))
+                        self.data[key] = (epoch_name, [np.nan]*len(self.index))
                 # not an iterable input
                 elif len(np.shape(in_data)) == 0:
                     # not given an iterable at all, single number
                     # make that number the input for all times
-                    self.data[key] = ('time', [in_data]*len(self.index))
+                    self.data[key] = (epoch_name, [in_data]*len(self.index))
 
                 else:
                     # multidimensional input that is not an xarray
@@ -664,6 +680,8 @@ class Instrument(object):
         else:
             if 'time' in self.data.indexes:
                 return len(self.data.indexes['time']) == 0
+            elif 'Epoch' in self.data.indexes:
+                return len(self.data.indexes['Epoch']) == 0
             else:
                 return True
 
@@ -679,8 +697,11 @@ class Instrument(object):
         else:
             if 'time' in data.indexes:
                 return len(data.indexes['time']) == 0
+            elif 'Epoch' in data.indexes:
+                return len(data.indexes['Epoch']) == 0
             else:
                 return True
+
     @property
     def date(self):
         """Date for loaded data."""
@@ -706,6 +727,8 @@ class Instrument(object):
         else:
             if 'time' in data.indexes:
                 return data.indexes['time']
+            elif 'Epoch' in data.indexes:
+                return data.indexes['Epoch']
             else:
                 return pds.Index([])
 
@@ -742,7 +765,7 @@ class Instrument(object):
         pandas.concat method. If sort is supplied as a keyword, the
         user provided value is used instead.
 
-        For xarray, dim='time' is passed along to xarray.concat
+        For xarray, dim='Epoch' is passed along to xarray.concat
         except if the user includes a value for dim as a
         keyword argument.
 
@@ -760,7 +783,7 @@ class Instrument(object):
                 dim = kwargs['dim']
                 _ = kwargs.pop('dim')
             else:
-                dim = 'time'
+                dim = self.index.name
             return xr.concat(data, dim=dim, *args, **kwargs)
 
     def _pass_func(*args, **kwargs):
@@ -2620,7 +2643,7 @@ class Instrument(object):
 
 
 def _get_supported_keywords(load_func):
-    """Return a list of supported keywords
+    """Return a dict of supported keywords and defaults
 
     Intended to be used on the supporting instrument
     functions that enable the general Instrument object
@@ -2633,8 +2656,8 @@ def _get_supported_keywords(load_func):
 
     Returns
     -------
-    list
-        list of keyword argument strings
+    out_dict
+        dict of supported keywords and default values
 
 
     Notes
@@ -2663,12 +2686,28 @@ def _get_supported_keywords(load_func):
         sig = inspect.getfullargspec(load_func)
         # args are first
         args = sig.args
+        # default values
+        defaults = sig.defaults
+    # deal with special cases for defaults
+    # we get defaults=None when the empty pysat.Instrument() is created
+    if defaults is None:
+        defaults = []
+    else:
+        # standard case
+        # make defaults a list
+        temp = []
+        for item in defaults:
+            temp.append(item)
+        defaults = temp
 
     pop_list = []
     # account for keywords that exist for every load function
     pre_kws = ['fnames', 'sat_id', 'tag']
+    # insert 'missing' default for 'fnames'
+    defaults.insert(0, None)
     # account for keywords already set since input was a partial function
     if existing_kws is not None:
+        # keywords
         pre_kws.extend(existing_kws.keys())
     # remove pre-existing keywords from output
     # first identify locations
@@ -2681,9 +2720,13 @@ def _get_supported_keywords(load_func):
     if len(pop_list) > 0:
         for pop in pop_list[::-1]:
             args.pop(pop)
+            defaults.pop(pop)
 
-    # *args and **kwargs are not required, so ignore them.
-    return args
+    out_dict = {}
+    for arg, defa in zip(args, defaults):
+        out_dict[arg] = defa
+
+    return out_dict
 
 
 def _check_if_keywords_supported(func, **kwargs):
@@ -2696,14 +2739,14 @@ def _check_if_keywords_supported(func, **kwargs):
     **kwargs : keyword args
         keyword arguments dictionary
 
-    Returns
+    Raises
     -------
-    bool
-        If true, all keywords supported
+    ValueError
+        Error raised if keyword is not supported
 
     """
 
-    # get list of supported keywords
+    # get dict of supported keywords and values
     supp = _get_supported_keywords(func)
     # check if kwargs are in list
     for name in kwargs.keys():
@@ -2712,4 +2755,4 @@ def _check_if_keywords_supported(func, **kwargs):
                              'by the underlying supporting load routine.',
                              'Please double check the keyword inputs.'))
             raise ValueError(estr)
-    return True
+    return
