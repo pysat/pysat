@@ -3,6 +3,20 @@
 (SABER) instrument on the Thermosphere Ionosphere Mesosphere Energetics
 Dynamics (TIMED) satellite.
 
+Properties
+----------
+platform
+    'timed'
+name
+    'saber'
+tag
+    None supported
+sat_id
+    None supported
+
+
+Note
+----
 SABER "Rules of the Road" for DATA USE
 Users of SABER data are asked to respect the following guidelines
 
@@ -20,19 +34,6 @@ Users of SABER data are asked to respect the following guidelines
       and model version numbers should also be specified.
     - Pre-prints of publications and conference abstracts should be widely
       distributed to interested parties within the mission and related projects.
-    - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
-
-
-Properties
-----------
-platform
-    'timed'
-name
-    'saber'
-tag
-    None supported
-sat_id
-    None supported
 
 
 Warnings
