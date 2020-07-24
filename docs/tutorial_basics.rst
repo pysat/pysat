@@ -253,12 +253,16 @@ is equivalent to
 
 -----
 
-Before data is available in .data it passes through an instrument specific cleaning routine. The amount of cleaning is set by the clean_level keyword,
+Before data is available in .data it passes through an instrument specific
+cleaning routine. The amount of cleaning is set by the clean_level keyword,
+provided at instantiation.
 
 .. code:: python
 
-   vefi = pysat.Instrument(platform='cnofs', name='vefi',
-			   tag='dc_b', clean_level='none')
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12',
+                           clean_level=None)
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12',
+                           clean_level='clean')
 
 Four levels of cleaning may be specified,
 
@@ -270,6 +274,10 @@ Four levels of cleaning may be specified,
   dirty		    Minimal cleaning, use with caution
   none		    No cleaning, use at your own risk
 ===============     ===================================
+
+The user provided cleaning level is stored on the Instrument object at
+``dmsp.clean_level``. The details of the cleaning will generally vary greatly
+between instruments.
 
 **Metadata**
 
