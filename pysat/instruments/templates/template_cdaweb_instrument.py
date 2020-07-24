@@ -125,6 +125,18 @@ list_remote_files = functools.partial(cdw.list_remote_files,
 
 
 # code should be defined below as needed
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation. This routine provides a convenient
+    location to print Acknowledgements or restrictions from the mission.
+
+    """
+
+    pass
+
+
+# code should be defined below as needed
 def default(self):
     """Default customization function.
 
@@ -135,12 +147,6 @@ def default(self):
     ----------
     self : pysat.Instrument
         This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
 
     """
 
@@ -155,28 +161,20 @@ def clean(inst):
     will accept user input for several strings. The clean_level is
     specified at instantiation of the Instrument object.
 
-    'clean' All parameters should be good, suitable for statistical and
-            case studies
-    'dusty' All paramers should generally be good though same may
-            not be great
-    'dirty' There are data areas that have issues, data should be used
-            with caution
-    'none'  No cleaning applied, routine not called in this case.
+    - 'clean' All parameters should be good, suitable for statistical and
+      case studies
+    - 'dusty' All paramers should generally be good though same may
+      not be great
+    - 'dirty' There are data areas that have issues, data should be used
+      with caution
+    - 'none'  No cleaning applied, routine not called in this case.
 
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 
