@@ -50,7 +50,7 @@ from __future__ import absolute_import
 
 import datetime as dt
 import logging
-import xarray as xr
+
 import pysat
 
 logger = logging.getLogger(__name__)
@@ -122,115 +122,9 @@ def default(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     return
-
-
-def load(fnames, tag=None, sat_id=None, **kwargs):
-    """Loads PLATFORM data into (PANDAS/XARRAY).
-
-    This routine is called as needed by pysat. It is not intended
-    for direct user interaction.
-
-    Parameters
-    ----------
-    fnames : array-like
-        iterable of filename strings, full path, to data files to be loaded.
-        This input is nominally provided by pysat itself.
-    tag : string
-        tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself. While
-        tag defaults to None here, pysat provides '' as the default
-        tag unless specified by user at Instrument instantiation. (default='')
-    sat_id : string
-        Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself. (default='')
-    custom_keyword : type to be set
-        Developers may include any custom keywords, with default values
-        defined in the method signature. This is included here as a
-        place holder and should be removed.
-
-    Returns
-    -------
-    data, metadata
-        Data and Metadata are formatted for pysat. Data is an xarray
-        DataSet while metadata is a pysat.Meta instance.
-
-    Note
-    ----
-    Any additional keyword arguments passed to pysat.Instrument
-    upon instantiation are passed along to this routine.
-
-    Examples
-    --------
-    ::
-
-        inst = pysat.Instrument('ucar', 'tiegcm')
-        inst.load(2019,1)
-
-    """
-
-    # netCDF4 files, particularly those produced
-    # by pysat can be loaded using a pysat provided
-    # function
-    # Metadata in our notional example file is
-    # labeled by strings determined by a standard
-    # we can adapt pysat to the standard by specifying
-    # the string labels used in the file
-    # function below returns both data and metadata
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                    units_label='Units',
-                                    name_label='Long_Name',
-                                    notes_label='Var_Notes',
-                                    desc_label='CatDesc',
-                                    plot_label='FieldNam',
-                                    axis_label='LablAxis',
-                                    scale_label='ScaleTyp',
-                                    min_label='ValidMin',
-                                    max_label='ValidMax',
-                                    fill_label='FillVal')
-
-    # This code below demonstrates the use of xarray
-    # functions to load TIEGCM data
-    # Metadata is transferred from xarray to the Instrument object
-    # Data is transferred as well
-    # data not indexed by time are transferred to the Instrument object as an
-    # attribute
-
-    # load data
-    data = xr.open_dataset(fnames[0])
-    # move attributes to the Meta object
-    # these attributes will be trasnferred to the Instrument object
-    # automatically by pysat
-    meta = pysat.Meta()
-    for attr in data.attrs:
-        setattr(meta, attr[0], attr[1])
-    data.attrs = []
-
-    # fill Meta object with variable information
-    for key in data.variables.keys():
-        attrs = data.variables[key].attrs
-        meta[key] = attrs
-
-    # move misc parameters from xarray to the Instrument object via Meta
-    # doing this after the meta ensures all metadata is still kept
-    # even for moved variables
-    meta.p0 = data['p0']
-    meta.p0_model = data['p0_model']
-    meta.grav = data['grav']
-    meta.mag = data['mag']
-    meta.timestep = data['timestep']
-    # remove these variables from xarray
-    data = data.drop(['p0', 'p0_model', 'grav', 'mag', 'timestep'])
-
-    return data, meta
 
 
 def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
@@ -270,7 +164,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
 
 
 # code should be defined below as needed
-def clean(inst):
+def clean(self):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
     Cleaning level is specified in inst.clean_level and pysat
@@ -351,17 +245,22 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     """
 
-    format_str = 'example_name_{year:04d}_{month:02d}_{day:02d}.nc'
+    if format_str is None:
+        # user did not supply an alternative format template string
+        format_str = 'example_name_{year:04d}_{month:02d}_{day:02d}.nc'
     # we use a pysat provided function to grab list of files from the
     # local file system that match the format defined above
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 
+
+# not required but recommended
 def list_remote_files(tag, sat_id, user=None, password=None):
     """Return a Pandas Series of every file for chosen remote data.
 
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
+
     Parameters
     -----------
     tag : string or NoneType
@@ -386,3 +285,79 @@ def list_remote_files(tag, sat_id, user=None, password=None):
     """
 
     return
+
+
+def load(fnames, tag=None, sat_id=None, custom_keyword=None):
+    """Loads PLATFORM data into (PANDAS/XARRAY).
+
+    This routine is called as needed by pysat. It is not intended
+    for direct user interaction.
+
+    Parameters
+    ----------
+    fnames : array-like
+        iterable of filename strings, full path, to data files to be loaded.
+        This input is nominally provided by pysat itself.
+    tag : string
+        tag name used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. While
+        tag defaults to None here, pysat provides '' as the default
+        tag unless specified by user at Instrument instantiation. (default='')
+    sat_id : string
+        Satellite ID used to identify particular data set to be loaded.
+        This input is nominally provided by pysat itself. (default='')
+    custom_keyword : type to be set
+        Developers may include any custom keywords, with default values
+        defined in the method signature. This is included here as a
+        place holder and should be removed.
+
+    Returns
+    -------
+    data, metadata
+        Data and Metadata are formatted for pysat. Data is a
+        pandas DataFrame or xarray DataSet while metadata is a pysat.Meta
+        instance.
+
+
+    Note
+    ----
+    Any additional keyword arguments passed to pysat.Instrument
+    upon instantiation are passed along to this routine.
+
+
+    Examples
+    --------
+    ::
+
+        inst = pysat.Instrument('ucar', 'tiegcm')
+        inst.load(2019, 1)
+
+    """
+
+    global pandas_format
+
+    # netCDF4 files, particularly those produced
+    # by pysat can be loaded using a pysat provided
+    # function
+    # Metadata in our notional example file is
+    # labeled by strings determined by a standard
+    # we can adapt pysat to the standard by specifying
+    # the string labels used in the file
+    # function below returns both data and metadata
+    data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
+                                           units_label='Units',
+                                           name_label='Long_Name',
+                                           notes_label='Var_Notes',
+                                           desc_label='CatDesc',
+                                           plot_label='FieldNam',
+                                           axis_label='LablAxis',
+                                           scale_label='ScaleTyp',
+                                           min_label='ValidMin',
+                                           max_label='ValidMax',
+                                           fill_label='FillVal',
+                                           pandas_format=pandas_format)
+    # Some variables may need modification.  For example, pysat requires a
+    # variable in the index named 'time' for xarray objects.  These can be set
+    # here
+
+    return data, mdata
