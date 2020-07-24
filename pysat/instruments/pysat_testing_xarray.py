@@ -33,12 +33,6 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
@@ -55,12 +49,6 @@ def default(inst):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     pass
@@ -73,20 +61,20 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    sim_multi_file_right : (boolean)
+    sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
-    sim_multi_file_left : (boolean)
+    sim_multi_file_left : boolean
         Adjusts date range to be 12 hours in the past or twelve hours before
         root_date (default=False)
-    malformed_index : (boolean)
+    malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
     kwargs : dict
         Additional unspecified keywords supplied to pysat.Instrument upon

@@ -9,29 +9,38 @@ on the mission, operations, instrumentation, and measurements.
 Also a good place to provide contact information. This text will
 be included in the pysat API documentation.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     *List platform string here*
-name : string
+name
     *List name string here*
-sat_id : string
+sat_id
     *List supported sat_ids here*
-tag : string
+tag
     *List supported tag strings here*
 
 Note
 ----
-::
+- Optional section, remove if no notes
 
-    Notes
 
 Warnings
 --------
+- Optional section, remove if no warnings
+- Two blank lines needed afterward for proper formatting
+
+
+Examples
+--------
+::
+
+    Example code can go here
 
 
 Authors
 -------
+Author name and institution
 
 """
 
@@ -139,21 +148,20 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
-        pysat. If an account
-        is required for dowloads this routine here must error if user not
-        supplied.
-    password : string (None)
-        Password for data download.
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
     custom_keywords : placeholder
         Additional keywords supplied by user when invoking the download
         routine attached to a pysat.Instrument object are passed to this
@@ -163,11 +171,11 @@ def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
 
     return
 
-# not required
+
 def init(self):
     """Initializes the Instrument object with instrument specific values.
 
-    Runs once upon instantiation. Object modified in place.
+    Runs once upon instantiation. Object modified in place. Optional.
 
     Parameters
     ----------
@@ -194,20 +202,20 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : string ('')
+    tag : string
         tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
+        This input is nominally provided by pysat itself. (default='')
+    sat_id : string
         Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    data_path : string (None)
+        This input is nominally provided by pysat itself. (default='')
+    data_path : string
         Full path to directory containing files to be loaded. This
         is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
+        at Instrument instantiation and it will appear here. (default=None)
+    format_str : string
         String template used to parse the datasets filenames. If a user
         supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
+        then it will appear here, otherwise defaults to None. (default=None)
 
     Returns
     -------
@@ -217,9 +225,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     Examples
     --------
     ::
+
         If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
         is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
         'v{version:02d}r{revision:04d}.NC'
+
 
     Note
     ----
@@ -252,16 +262,16 @@ def list_remote_files(tag, sat_id, user=None, password=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    user : (string or NoneType)
+    user : string or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
-    password : (string or NoneType)
+    password : string or NoneType
         User password to be passed along to resource with relevant data.
         (default=None)
 
@@ -287,14 +297,14 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
     fnames : array-like
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
-    tag : string ('')
+    tag : string
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. While
         tag defaults to None here, pysat provides '' as the default
-        tag unless specified by user at Instrument instantiation.
-    sat_id : string ('')
+        tag unless specified by user at Instrument instantiation. (default='')
+    sat_id : string
         Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
+        This input is nominally provided by pysat itself. (default='')
     custom_keyword : type to be set
         Developers may include any custom keywords, with default values
         defined in the method signature. This is included here as a
@@ -307,16 +317,19 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
         pandas DataFrame or xarray DataSet while metadata is a pysat.Meta
         instance.
 
+
     Note
     ----
     Any additional keyword arguments passed to pysat.Instrument
     upon instantiation are passed along to this routine.
 
+
     Examples
     --------
     ::
+
         inst = pysat.Instrument('ucar', 'tiegcm')
-        inst.load(2019,1)
+        inst.load(2019, 1)
 
     """
 
@@ -328,40 +341,20 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
     # we can adapt pysat to the standard by specifying
     # the string labels used in the file
     # function below returns both data and metadata
-    return pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
-                                    units_label='Units',
-                                    name_label='Long_Name',
-                                    notes_label='Var_Notes',
-                                    desc_label='CatDesc',
-                                    plot_label='FieldNam',
-                                    axis_label='LablAxis',
-                                    scale_label='ScaleTyp',
-                                    min_label='ValidMin',
-                                    max_label='ValidMax',
-                                    fill_label='FillVal')
+    data, mdata = pysat.utils.load_netcdf4(fnames, epoch_name='Epoch',
+                                           units_label='Units',
+                                           name_label='Long_Name',
+                                           notes_label='Var_Notes',
+                                           desc_label='CatDesc',
+                                           plot_label='FieldNam',
+                                           axis_label='LablAxis',
+                                           scale_label='ScaleTyp',
+                                           min_label='ValidMin',
+                                           max_label='ValidMax',
+                                           fill_label='FillVal'
+                                           pandas_format=pandas_format)
+    # Some variables may need modification.  For example, pysat requires a
+    # variable in the index named 'time' for xarray objects.  These can be set
+    # here
 
-    # This code below demonstrates the use of xarray
-    # functions to load TIEGCM data
-    # Metadata is transferred from xarray to the Instrument object
-    # Data is transferred as well
-    # data not indexed by time are transferred to the Instrument object as an
-    # attribute
-
-    # load data
-    data = xr.open_dataset(fnames[0])
-    # move attributes to the Meta object
-    # these attributes will be trasnferred to the Instrument object
-    # automatically by pysat
-    meta = pysat.Meta()
-    for attr in data.attrs:
-        setattr(meta, attr[0], attr[1])
-    data.attrs = {}
-
-    # fill Meta object with variable information
-    for key in data.variables.keys():
-        attrs = data.variables[key].attrs
-        meta[key] = attrs
-        # remove attributes from xarray
-        data.variables[key].attrs = {}
-
-    return data, meta
+    return data, mdata

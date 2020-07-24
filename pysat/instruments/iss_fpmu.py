@@ -4,16 +4,17 @@
 Station (ISS). Downloads data from the NASA
 Coordinated Data Analysis Web (CDAWeb).
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'iss'
-name : string
+name
     'fpmu'
-tag : string
+tag
     None Supported
-sat_id : string
+sat_id
     None supported
+
 
 Warnings
 --------
@@ -68,11 +69,6 @@ def clean(inst):
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    -------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     """
 
