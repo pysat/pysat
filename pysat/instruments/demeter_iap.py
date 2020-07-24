@@ -90,19 +90,19 @@ def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : (string)
+    tag : string
         Denotes type of file to load.  Accepted types are 'survey'; 'burst'
         will be added in the future.  (default='survey')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default='')
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
-    index_start_time : (bool)
+    index_start_time : bool
         Determine time index using file start time (True) or end time (False)
         (default=True)
 
@@ -133,18 +133,18 @@ def load(fnames, tag='survey', sat_id=''):
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of file names
-    tag : (string)
+    tag : string
         Denotes type of file to load.  Accepted types are 'survey'; 'burst'
         will be added in the future.  (default='survey')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default='')
 
     Returns
     -------
-    data : (pds.DataFrame)
+    data : pds.DataFrame
         DataFrame of DEMETER satellite data
     meta :
         Metadata object
@@ -179,7 +179,7 @@ def load_experiment_data(fhandle):
 
     Parameters
     ----------
-    fhandle : (file)
+    fhandle : file
         file handle
 
     Returns
@@ -195,6 +195,7 @@ def load_experiment_data(fhandle):
         'data names'
 
     """
+
     import codecs  # ensures encode is python 2/3 compliant
 
     chunk = fhandle.read(108)
@@ -249,11 +250,6 @@ def clean(inst):
     inst : pysat.Instrument
         DEMETER IAP instrument class object
 
-    Return
-    ------
-    Updates data by removing times where data quality fails the conditions
-    for the specified cleaning level
-
     Notes
     -----
     clean : only data when at least two ions are considered and currents >= 1nA
@@ -263,7 +259,7 @@ def clean(inst):
 
     if inst.clean_level in ['dusty', 'dirty']:
         logger.info(''.join("'dusty' and 'dirty' levels not supported, ",
-                      "defaulting to 'clean'"))
+                            "defaulting to 'clean'"))
         inst.clean_level = 'clean'
 
     if inst.clean_level == 'clean':

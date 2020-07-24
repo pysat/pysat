@@ -171,6 +171,7 @@ def calculate_clock_angle(inst):
     -----------
     inst : pysat.Instrument
         Instrument with OMNI HRO data
+
     """
 
     # Calculate clock angle in degrees
@@ -205,6 +206,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     max_bmag_cv : float
         Maximum coefficient of variation of the IMF magnitude in the GSM
         Y-Z plane (default=0.5)
+
     """
 
     from pysat.utils import stats as pystats
@@ -273,7 +275,9 @@ def calculate_dayside_reconnection(inst):
     Notes
     --------
     recon_day = 3.8 Re (Vx / 4e5 m/s)^1/3 Vx B_yz (sin(theta/2))^9/2
+
     """
+
     rearth = 6371008.8
     sin_htheta = np.power(np.sin(np.radians(0.5 * inst['clock_angle'])), 4.5)
     byz = inst['BYZ_GSM'] * 1.0e-9
