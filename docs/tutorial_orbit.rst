@@ -1,7 +1,12 @@
 Orbit Support
 -------------
 
-Pysat has functionality to determine orbits on the fly from loaded data. These orbits will span day breaks as needed (generally). Information about the orbit needs to be provided at initialization. The 'index' is the name of the data to be used for determining orbits, and 'kind' indicates type of orbit. See :any:`pysat.Orbits` for latest inputs.
+Pysat has functionality to determine orbits on the fly from loaded data.
+These orbits will span day breaks as needed (generally). To use any of
+these orbit features, information about
+the orbit needs to be provided at initialization. The 'index' is the name of
+the data to be used for determining orbits, and 'kind' indicates type of orbit.
+See :any:`pysat.Orbits` for latest inputs.
 
 There are several orbits to choose from,
 
@@ -13,22 +18,27 @@ longitude      Uses negative gradients to delineate orbits
 polar	       Uses sign changes to delineate orbits
 ===========   ================
 
-Changes in universal time are also used to delineate orbits. Pysat compares any gaps to the supplied orbital period, nominally assumed to be 97 minutes. As orbit periods aren't constant, a 100% success rate is not be guaranteed.
+Changes in universal time are also used to delineate orbits. Pysat compares any
+gaps to the supplied orbital period, nominally assumed to be 97 minutes. As
+orbit periods aren't constant, a 100% success rate is not be guaranteed.
 
 This section of pysat is still under development.
 
 .. code:: python
 
    info = {'index': 'mlt', 'kind': 'local time'}
-   ivm = pysat.Instrument(platform='cnofs', name='ivm', orbit_info=info, clean_level='None')
+   ivm = pysat.Instrument(platform='cnofs', name='ivm', orbit_info=info,
+                          clean_level='None')
 
-Orbit determination acts upon data loaded in the ivm object, so to begin we must load some data.
+Orbit determination acts upon data loaded in the ivm object, so to begin we
+must load some data.
 
 .. code:: python
 
    ivm.load(date=start)
 
-Orbits may be selected directly from the attached .orbit class. The data for the orbit is stored in .data.
+Orbits may be selected directly from the attached .orbit class. The data for
+the orbit is stored in .data.
 
 .. code:: ipython
 
@@ -38,7 +48,10 @@ Orbits may be selected directly from the attached .orbit class. The data for the
    Returning cnofs ivm  data for 12/28/12
    Loaded Orbit:1
 
-Note that getting the first orbit caused pysat to load the day previous, and then back to the current day. Orbits are one indexed though this will change. Pysat is checking here if the first orbit for 12/28/2012 actually started on 12/27/2012. In this case it does.
+Note that getting the first orbit caused pysat to load the day previous, and
+then back to the current day. Orbits are one indexed though this will change.
+Pysat is checking here if the first orbit for 12/28/2012 actually started on
+12/27/2012. In this case it does.
 
 .. code:: ipython
 
@@ -78,7 +91,8 @@ Let's go back an orbit.
    2012-12-27 23:05:13.584000    23.998516
    Name: mlt, dtype: float32
 
-pysat loads the previous day, as needed, and returns the last orbit for 12/27/2012 that does not (or should not) extend into 12/28.
+pysat loads the previous day, as needed, and returns the last orbit for
+12/27/2012 that does not (or should not) extend into 12/28.
 
 If we continue to iterate orbits using
 
@@ -86,7 +100,8 @@ If we continue to iterate orbits using
 
    ivm.orbits.next()
 
-eventually the next day will be loaded to try and form a complete orbit. You can skip the iteration and just go for the last orbit of a day,
+eventually the next day will be loaded to try and form a complete orbit. You
+can skip the iteration and just go for the last orbit of a day,
 
 .. code:: ipython
 
@@ -115,14 +130,18 @@ eventually the next day will be loaded to try and form a complete orbit. You can
    2012-12-29 00:40:17.119000    23.997608
    Name: mlt, dtype: float32
 
-Pysat loads the next day of data to see if the last orbit on 12/28/12 extends into 12/29/12, which it does. Note that the last orbit of 12/28/12 is the same as the first orbit of 12/29/12. Thus, if we ask for the next orbit,
+Pysat loads the next day of data to see if the last orbit on 12/28/12 extends
+into 12/29/12, which it does. Note that the last orbit of 12/28/12 is the same
+as the first orbit of 12/29/12. Thus, if we ask for the next orbit,
 
 .. code:: ipython
 
    In[] : ivm.orbits.next()
    Loaded Orbit:2
 
-pysat will indicate it is the second orbit of the day. Going back an orbit gives us orbit 16, but referenced to a different day. Earlier, the same orbit was labeled orbit 1.
+pysat will indicate it is the second orbit of the day. Going back an orbit
+gives us orbit 16, but referenced to a different day. Earlier, the same orbit
+was labeled orbit 1.
 
 .. code:: ipython
 
@@ -130,7 +149,8 @@ pysat will indicate it is the second orbit of the day. Going back an orbit gives
    Returning cnofs ivm  data for 12/28/12
    Loaded Orbit:16
 
-Orbit iteration is built into ivm.orbits just like iteration by day is built into ivm.
+Orbit iteration is built into ivm.orbits just like iteration by day is built
+into ivm.
 
 .. code:: python
 
