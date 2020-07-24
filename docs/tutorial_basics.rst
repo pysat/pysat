@@ -82,10 +82,6 @@ To create a pysat.Instrument object, select a ``platform``, instrument ``name``,
 and potentially a ``tag`` and ``sat_id``, consistent with
 the desired data to be analyzed, from one the supported instruments.
 
-..
-   _the list of
-   _ :doc:`supported_instruments`.
-
 To work with plasma data from the
 Ion Velocity Meter (IVM) onboard the Defense Meteorological
 Satellite Program (DMSP) constellation, use:
@@ -105,8 +101,8 @@ how to interact with 'utd' data for 'f11'.
 Let's download some data. DMSP data is hosted by the `Madrigal database
 <http://cedar.openmadrigal.org/openmadrigal/>`_, a community resource for
 geospace data. The proper process for downloading DMSP and other Madrigal data
-is built into the open source tool
-`madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_, which
+is built into the open source
+tool `madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_, which
 is invoked appropriately by pysat within the dmsp_ivm module. To get DMSP
 data specifically all we have to do is invoke the ``.download()`` method
 attached to the DMSP object.
