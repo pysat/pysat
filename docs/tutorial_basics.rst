@@ -105,28 +105,23 @@ is built into the open source
 tool `madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_, which
 is invoked appropriately by pysat within the dmsp_ivm module. To get DMSP
 data specifically all we have to do is invoke the ``.download()`` method
-attached to the DMSP object.
+attached to the DMSP object. Madrigal requires that users provide their name
+and email address as their username and password.
 
 .. code:: python
 
+   # set user and password for Madrigal
+   user = 'Firstname+Lastname'
+   password = 'email@address.com'
    # define date range to download data and download
    start = pysat.datetime(2009,5,6)
    stop = pysat.datetime(2009,5,9)
    # download data to local system
-   dmsp.download(start, stop)
+   dmsp.download(start, stop, user=user, password=password)
 
 The data is downloaded to pysat_data_dir/platform/name/tag/, in this case
 pysat_data_dir/dmsp/ivm/utd/. At the end of the download, pysat
 will update the list of files associated with DMSP.
-
-Note that some datasets, like COSMIC, require registration with a username and
-password.  Pysat supports this as well. A user account may be obtained at
-the `Cosmic Data Analysis Archival Center <https://cdaac-www.cosmic.ucar.edu>`_.
-
-.. code:: python
-
-  # download COSMIC data, which requires username and password
-  cosmic.download(start, stop, user=user, password=password)
 
 Some instruments support an improved download experience that ensures
 the local system is fully up to date compared to the data source. The command,
@@ -145,15 +140,19 @@ server. This command downloads, as needed, the entire dataset.
 
 ----
 
-Data is loaded into vefi using the .load method using year, day of year; date; or filename.
+Data is loaded into dmsp using the .load method using year, day of year; date;
+or filename.
 
 .. code:: python
 
-   vefi.load(2009, 126)
-   vefi.load(date=start)
-   vefi.load(fname='cnofs_vefi_bfield_1sec_20090506_v05.cdf')
+   dmsp.load(2009, 126)
+   dmsp.load(date=start)
+   dmsp.load(fname='cnofs_vefi_bfield_1sec_20090506_v05.cdf')
 
-When the pysat load routine runs it stores the instrument data into vefi.data. The data structure is a pandas DataFrame_, a highly capable structure with labeled rows and columns. Convenience access to the data is also available at the instrument level.
+When the pysat load routine runs it stores the instrument data into vefi.data.
+The data structure is a pandas DataFrame_, a highly capable structure with
+labeled rows and columns. Convenience access to the data is also available at
+the instrument level.
 
 .. _DataFrame: http://pandas.pydata.org/pandas-docs/stable/dsintro.html#dataframe
 
