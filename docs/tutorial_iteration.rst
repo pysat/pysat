@@ -1,23 +1,28 @@
 Iteration
 ---------
 
-The seasonal analysis loop is repeated commonly:
+The seasonal analysis loop is commonly repeated in data analysis:
 
 .. code:: python
 
-   date_array = pysat.utils.time.create_date_range(start,stop)
+   vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
+   date_array = pysat.utils.time.create_date_range(start, stop)
    for date in date_array:
        vefi.load(date=date)
        print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
-Iteration support is built into the Instrument object to support this and similar cases. The whole VEFI data set may be iterated over on a daily basis using
+Iteration support is built into the Instrument object to support this and
+similar cases. The whole of a data set may be iterated over on a daily basis
+using
 
 .. code:: python
 
     for vefi in vefi:
-	print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
+	    print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
-Each loop of the python for iteration initiates a vefi.load() for the next date, starting with the first available date. By default the instrument instance will iterate over all available data. To control the range, set the instrument bounds,
+Each loop of the python for iteration initiates a vefi.load() for the next date,
+starting with the first available date. By default the instrument instance will
+iterate over all available data. To control the range, set the instrument bounds,
 
 .. code:: python
 
@@ -42,15 +47,21 @@ The output is,
    Returning cnofs vefi dc_b data for 05/12/10
    Maximum meridional magnetic perturbation  26.583
 
-So far, the iteration support has only saved a single line of code, the .load line. However, this line in the examples above is tied to loading by date. What if we wanted to load by file instead? This would require changing the code. However, with the abstraction provided by the Instrument iteration, that is no longer the case.
+So far, the iteration support has only saved a single line of code, the
+.load line. However, this line in the examples above is tied to loading by date.
+What if we wanted to load by file instead? This would require changing the code.
+However, with the abstraction provided by the Instrument iteration, that is no
+longer the case.
 
 .. code:: python
 
-   vefi.bounds( 'filename1', 'filename2')
+   vefi.bounds('filename1', 'filename2')
    for vefi in vefi:
        print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
 
-For VEFI there is only one file per day so there is no practical difference between the previous example. However, for instruments that have more than one file a day, there is a difference.
+For VEFI there is only one file per day so there is no practical difference
+between the previous example. However, for instruments that have more than one
+file a day, there is a difference.
 
 Building support for this iteration into the mean_day example is easy.
 
@@ -74,7 +85,9 @@ Building support for this iteration into the mean_day example is easy.
 
        return mean_val
 
-Since bounds are attached to the Instrument object, the start and stop dates for the season are no longer required as inputs. If a user forgets to specify the bounds, the loop will start on the first day of data and end on the last day.
+Since bounds are attached to the Instrument object, the start and stop dates
+for the season are no longer required as inputs. If a user forgets to specify
+the bounds, the loop will start on the first day of data and end on the last day.
 
 .. code:: python
 
@@ -83,8 +96,10 @@ Since bounds are attached to the Instrument object, the start and stop dates for
    mean_dB = daily_mean(vefi, 'dB_mer')
 
    # plot the result using pandas functionality
-   mean_dB.plot(title='Absolute Daily Mean of '
-   	        + vefi.meta['dB_mer'].long_name)
-   plt.ylabel('Absolute Daily Mean ('+vefi.meta['dB_mer'].units+')')
+   variable_str = vefi.meta['dB_mer', vefi.name_label]
+   units_str = vefi.meta['dB_mer', vefi.units_label]
+   mean_dB.plot(title='Absolute Daily Mean of ' + variable_str)
+   plt.ylabel('Absolute Daily Mean ('+ units_str +')')
 
-The abstraction provided by the iteration support is also used for the next section on orbit data.
+The abstraction provided by the iteration support is also used for the next
+section on orbit data.
