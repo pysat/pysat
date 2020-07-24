@@ -36,11 +36,13 @@ Warnings
 """
 
 from __future__ import print_function, absolute_import
-import pandas as pds
+import functools
 import numpy as np
 from os import path
-import functools
+import re
 import warnings
+
+import pandas as pds
 
 import pysat
 
@@ -320,7 +322,6 @@ def load_csv_data(fname, tag):
         Pandas DataFrame
 
     """
-    import re
 
     if tag == "stations":
         # Because there may be multiple operators, the default pandas reader
@@ -389,7 +390,7 @@ def load_ascii_data(fname, tag):
         baselines for each file.  None of not present or not applicable.
 
     """
-    import re
+
     ndata = {"indices": 2, "": 4, "all": 4, "stations": 8}
     dkeys = {'stations': list(), '': ['IAGA', 'N', 'E', 'Z']}
     data = pds.DataFrame(None)
@@ -735,7 +736,6 @@ def append_ascii_data(file_strings, tag):
         String with all data, ready for output to a file
 
     """
-    import re
 
     # Start with data from the first list element
     out_lines = file_strings[0].split('\n')

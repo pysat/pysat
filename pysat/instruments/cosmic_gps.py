@@ -49,14 +49,18 @@ Warnings
 
 from __future__ import print_function
 from __future__ import absolute_import
+import logging
 import numpy as np
 import os
+import requests
+from requests.auth import HTTPBasicAuth
+import shutil
 import sys
+import tarfile
 
 import netCDF4
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 platform = 'cosmic'
@@ -432,10 +436,6 @@ def download(date_array, tag, sat_id, data_path=None,
         the desired level of data selectivity.
 
     """
-    import requests
-    from requests.auth import HTTPBasicAuth
-    import tarfile
-    import shutil
 
     if tag == 'ionprf':
         sub_dir = 'ionPrf'
