@@ -60,11 +60,11 @@ again,
 
    help(pysat.instruments.dmsp_ivm)
 
-Further, the data structure::
+Further, the dictionary::
 
     pysat.instruments.dmsp_ivm.tags
 
-is a dictionary keyed by ``tag`` with a description of what each type of data
+is keyed by ``tag`` with a description of each type of data
 the ``tag`` parameter selects. The dictionary::
 
     pysat.instruments.dmsp_ivm.sat_ids
@@ -79,8 +79,11 @@ a pysat.Instrument object will provide and interact with.
 ----
 
 To create a pysat.Instrument object, select a platform, instrument name,
-and measurement type to be analyzed from the list of
-:doc:`supported_instruments`. To work with Magnetometer data from the
+and potentially a ``tag`` and ``sat_id``, consistent with
+the desired data to be analyzed, from the list of
+:doc:`supported_instruments`.
+
+To work with Magnetometer data from the
 Vector Electric Field Instrument onboard the Communications/Navigation Outage
 Forecasting System (C/NOFS), use:
 
