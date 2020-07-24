@@ -26,10 +26,8 @@ To check the currently set data directory,
     print(pysat.data_dir)
 
 To check if pysat and required packages are working, instantiate one of the
-test instruments, and load a day of simulated data. pysat will not allow an
-Instrument to be instantiated without a data directory being specified.
-Loading a day of data will ensure there is no problem with the underlying
-pandas installation.
+test instruments, and load a day of simulated data. Loading a day of data will
+ensure there is no problem with the underlying pandas installation.
 
 .. code:: python
 
@@ -45,3 +43,5 @@ To verify xarray is working
     inst.load(2009, 1)
     print(inst.data)
 
+.. note:: pysat will not allow an Instrument to be instantiated without a
+   data directory being specified.

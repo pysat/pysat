@@ -87,7 +87,7 @@ pysat may also be installed directly from the source repository on github::
 An advantage to installing through github is access to the development branches.
 The latest bugfixes can be found in the ``develop`` branch. However, this
 branch is not stable (as the name implies). We recommend using this branch in a
-virtual environment or using `python setup.py develop`.::
+virtual environment and using::
 
    git clone https://github.com/pysat/pysat.git
    cd pysat
@@ -152,9 +152,11 @@ Python environment: Python 2.7.x
     which python
 
    and confirm that it points to the correct python version you want to be using.
-#. Microsoft Visual C++ 9.0 is required to compile C sources. Download and install the right version of Microsoft Visual C++ for Python 2.7 from -
-		`<http://aka.ms/vcpython27>`_
-#. We are now getting close to installing pysatCDF. Do the following in the shell environment that is already opened.::
+#. Microsoft Visual C++ 9.0 is required to compile C sources. Download and
+   install the right version of Microsoft Visual C++ for Python 2.7
+   from `<http://aka.ms/vcpython27>`_
+#. We are now getting close to installing pysatCDF. Do the following in the
+   shell environment that is already opened.::
 
 		mkdir src
 		cd src

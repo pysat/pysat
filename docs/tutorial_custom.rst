@@ -14,9 +14,9 @@ modification of a dataset in between its state at rest on disk and when the data
 becomes available for use at ``inst.data``.
 
 .. warning:: Custom arguments and keywords are supported for these methods.
-However, these arguments and keywords are only evaluated initially when the
-method is attached to an Instrument object. Thus the objects passed in must be
-static or capable of updating themselves from within the custom method itself.
+   However, these arguments and keywords are only evaluated initially when the
+   method is attached to an Instrument object. Thus the objects passed in must be
+   static or capable of updating themselves from within the custom method itself.
 
 
 **Modify Functions**
@@ -36,7 +36,7 @@ any information via the method itself.
        inst : pysat.Instrument
            Object to be modified
        optional_param : stand-in
-           Placeholder indicated support for custom keywords
+           Placeholder to indicate support for custom keywords
            and arguments
        """
 
@@ -94,6 +94,9 @@ only when using the DataFrame.
                'long_name': 'doubledouble', 'units': 'hours'}
 
 **Attaching Custom Function**
+
+Custom methods must be attached to an Instrument object for pysat
+to automatically apply the method upon ever load.
 
 .. code:: python
 

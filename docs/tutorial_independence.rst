@@ -7,7 +7,7 @@ pysat features enable the development of instrument independent methods, code
 that can work on many if not all pysat supported datasets. This section
 continues the evolution of the simple DMSP temperature averaging method
 presented earlier towards greater instrument independence as well as
-application of non-DMSP data sets.
+application to non-DMSP data sets.
 
 .. code:: python
 
@@ -39,13 +39,15 @@ application of non-DMSP data sets.
        # iterate over season, calculate the mean
        for date in date_array:
 	       inst.load(date=date)
-	       if not inst.data.empty:
-               # compute absolute mean using pandas functions and store
-               mean_val[inst.date] = inst[data_label].abs().mean(skipna=True)
+	           if not inst.data.empty:
+                   # compute absolute mean using pandas functions and store
+                   mean_val[inst.date] = inst[data_label].abs().mean(skipna=True)
        return mean_val
 
+   # instantiate pysat.Instrument object to get access to data
    vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b')
 
+   # define custom filtering method
    def filter_inst(inst, data_label, data_gate):
        # select data within +/- data gate
        min_gate = -np.abs(data_gate)
@@ -73,6 +75,11 @@ get the daily mean you desire, without having to modify the daily_mean function.
 Check the instrument independence using a different instrument. Whatever
 instrument is supplied may be modified in arbitrary ways by the nano-kernel.
 
+.. note::
+
+   Downloading data for COSMIC requires an account at the Cosmic Data Analysis
+   and Archive Center `(CDAAC) <https://cdaac-www.cosmic.ucar.edu>`_.
+
 .. code:: python
 
    cosmic = pysat.Instrument('cosmic', 'gps', tag='ionprf', clean_level='clean',
@@ -88,7 +95,7 @@ instrument is supplied may be modified in arbitrary ways by the nano-kernel.
    mean_max_dens.plot(title='Absolute Daily Mean of ' + long_name)
    plt.ylabel('Absolute Daily Mean (' + units + ')')
 
-daily_mean now works for any instrument, as long as the data to be averaged is
+``daily_mean`` now works for any instrument, as long as the data to be averaged is
 1D. This can be fixed.
 
 

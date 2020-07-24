@@ -91,7 +91,7 @@ Satellite Program (DMSP) constellation, use:
    dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12')
 
 Behind the scenes pysat uses a python module named dmsp_ivm that understands
-how to interact with 'utd' data for 'f11'.
+how to interact with 'utd' data for 'f12'.
 
 
 **Download**
@@ -255,7 +255,7 @@ is equivalent to
 
 Before data is available in .data it passes through an instrument specific
 cleaning routine. The amount of cleaning is set by the clean_level keyword,
-provided at instantiation. The level defaults to ``clean``.
+provided at instantiation. The level defaults to 'clean'.
 
 .. code:: python
 
@@ -324,7 +324,11 @@ data files, like those produced by the Ionospheric Connections Explorer
 
 The string values used within metadata to identify the parameters above
 are all attached to the instrument object as dmsp.*_label, or
-``dmsp.units_label``, ``dmsp.min_label``, and ``dmsp.notes_label``.
+``dmsp.units_label``, ``dmsp.min_label``, and ``dmsp.notes_label``, etc.
+
+All variables must have the same metadata parameters. If a new parameter
+is added for only one data variable, then the remaining data variables will get
+a null value for that metadata parameter.
 
 Data may be assigned to the instrument, with or without metadata.
 
