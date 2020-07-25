@@ -25,7 +25,7 @@ class TestCDAWeb():
         except Exception as excinfo:
             assert isinstance(excinfo, requests.exceptions.ConnectionError)
             # Check that pysat appends the message
-            assert str(excinfo.message).find('pysat -> Request potentially') > 0
+            assert str(excinfo).find('pysat -> Request potentially') > 0
         else:
             raise(ValueError, 'Test was expected to raise an Exception.')
 
