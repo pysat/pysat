@@ -36,16 +36,14 @@ Example
 
 """
 
-from __future__ import print_function, absolute_import
-
 import datetime as dt
-import pandas as pds
+import logging
 import numpy as np
+import pandas as pds
 
 import pysat
 from pysat.instruments.methods import demeter
 
-import logging
 logger = logging.getLogger(__name__)
 
 platform = 'demeter'
