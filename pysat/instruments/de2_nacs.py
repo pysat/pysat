@@ -55,29 +55,20 @@ N. W. Spencer
 The neutral mass spectrometer on Dynamics Explorer B
 Space Sci. Instrum., v. 5, n. 4, p. 429, 1981.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     Supports 'de2'
-name : string
+name
     Supports 'nacs'
-sat_id : string
+sat_id
     None Supported
-tag : string
+tag
     None Supported
-
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
 
 Authors
 -------
+J. Klenzing
 
 """
 
@@ -161,17 +152,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 

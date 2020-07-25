@@ -24,25 +24,29 @@ B_west    Magnetic field in the west direction
 
 The data is PRELIMINARY, and as such, is intended for BROWSE PURPOSES ONLY.
 
+References
+----------
 A brief discussion of the C/NOFS mission and instruments can be found at
 de La Beaujardière, O., et al. (2004), C/NOFS: A mission to forecast
 scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
 doi:10.1016/j.jastp.2004.07.030.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'cnofs'
-name : string
+name
     'vefi'
-tag : string
+tag
     Select measurement type, one of {'dc_b'}
-sat_id : string
+sat_id
     None supported
+
 
 Note
 ----
 - tag = 'dc_b': 1 second DC magnetometer data
+
 
 Warnings
 --------
@@ -94,18 +98,14 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    --------
+    Note
+    ----
     'dusty' or 'clean' removes data when interpolation flag is set to 1
+
     """
 
     if (inst.clean_level == 'dusty') | (inst.clean_level == 'clean'):
