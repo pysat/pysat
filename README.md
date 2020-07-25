@@ -38,16 +38,41 @@ JGR-Space Physics [Publication](https://doi.org/10.1029/2018JA025297)
 
 # Installation
 ## Starting from scratch
-* One simple way to get a complete science python package is from [enthought](https://store.enthought.com)
-* at command line type
+* Python and associated packages for science are freely available. Convenient science python package setups are available from https://www.python.org/, [Anaconda](https://www.anaconda.com/distribution/), and other locations (some platform specific). Anaconda also includes a developer environment that works well with pysat. Core science packages such as numpy, scipy, matplotlib, pandas and many others may also be installed directly via pip or your favorite package manager.
+
+* Installation through pip
 ```
 pip install pysat
 ```
-* in python, run pysat.utils.set_data_dir('path to top level data dir')
+* Installation through github
+```
+git clone https://github.com/pysat/pysat.git
+cd pysat
+python setup.py install
+```
+An advantage to installing through github is access to the development branches.  The latest bugfixes can be found in the ``develop`` branch.   However, this branch is not stable (as the name implies). We recommend using this branch in a virtual environment or using `python setup.py develop`.::
+```
+git clone https://github.com/pysat/pysat.git
+cd pysat
+git checkout develop
+python setup.py install
+```
+* Note that pysat requires a number of packages for the install.  The upper caps for packages below have been removed for the upcoming pysat 3.0.0 release. The development version can be found in the ``develop-3`` branch (see above for caveats).
+  * beautifulsoup4
+  * h5py
+  * lxml
+  * madrigalWeb
+  * matplotlib
+  * netCDF4
+  * numpy (>=1.12)
+  * pandas (>=0.23, <0.25)
+  * PyForecastTools
+  * pysatCDF
+  * requests
+  * scipy
+  * xarray (<0.15)
+* The first time the package is run, you will need to specify a directory to store data. In python, run
+```
+pysat.utils.set_data_dir('path to top level data dir')
+```
   * Nominal organization of data is top_dir/platform/name/tag/*/files
-* netCDF support
-  * netCDF3 is supported by SciPy, no other libraries needed
-  * Download and install python interface to netCDF using
-  ```
-  pip install netCDF4
-  ```

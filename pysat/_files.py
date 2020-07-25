@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pds
 from pysat import data_dir as data_dir
 
+from pysat import logger
+
 
 class Files(object):
     """Maintains collection of files for instrument object.
@@ -150,8 +152,9 @@ class Files(object):
                                                  sat_id=self._sat.sat_id)
         # ensure we have a path for pysat data directory
         if data_dir == '':
-            raise RuntimeError(" ".join(("pysat's data_dir is None. Set a directory",
-                                         "using pysat.utils.set_data_dir.")))
+            raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",
+                                         "directory using",
+                                         "pysat.utils.set_data_dir.")))
         # make sure path always ends with directory seperator
         self.data_path = os.path.join(data_dir, self.sub_dir_path)
         if self.data_path[-2] == os.path.sep:
@@ -200,7 +203,6 @@ class Files(object):
                   'empty files from Instrument list.')))
             self.files = self.files.iloc[keep_index]
 
-
     def _attach_files(self, files_info):
         """Attach results of instrument list_files routine to Instrument object
 
@@ -218,11 +220,12 @@ class Files(object):
         if not files_info.empty:
             unique_files = len(files_info.index.unique()) != len(files_info)
             if (not self._sat.multi_file_day and unique_files):
-                estr = 'WARNING! Duplicate datetimes in provided file '
+                estr = 'Duplicate datetimes in provided file '
                 estr = '{:s}information.\nKeeping one of each '.format(estr)
                 estr = '{:s}of the duplicates, dropping the rest.'.format(estr)
-                print(estr)
-                print(files_info.index[files_info.index.duplicated()].unique())
+                logger.warning(estr)
+                ind = files_info.index.duplicated()
+                logger.warning(files_info.index[ind].unique())
 
                 idx = np.unique(files_info.index, return_index=True)
                 files_info = files_info.iloc[idx[1]]
@@ -233,8 +236,14 @@ class Files(object):
             if self.ignore_empty_files:
                 self._filter_empty_files()
             # extract date information
-            self.start_date = self._sat._filter_datetime_input(files_info.index[0])
-            self.stop_date = self._sat._filter_datetime_input(files_info.index[-1])
+            if not self.files.empty:
+                self.start_date = \
+                    self._sat._filter_datetime_input(self.files.index[0])
+                self.stop_date = \
+                    self._sat._filter_datetime_input(self.files.index[-1])
+            else:
+                self.start_date = None
+                self.stop_date = None
         else:
             self.start_date = None
             self.stop_date = None
@@ -327,7 +336,7 @@ class Files(object):
                                        sat_id=self._sat.sat_id)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
         output_str = " ".join(output_str.split())
-        print(output_str)
+        logger.info(output_str)
 
         info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id,
                                    data_path=self.data_path,
@@ -336,12 +345,12 @@ class Files(object):
         if not info.empty:
             if self.ignore_empty_files:
                 self._filter_empty_files()
-            print('Found {ll:d} of them.'.format(ll=len(info)))
+            logger.info('Found {ll:d} of them.'.format(ll=len(info)))
         else:
             estr = "Unable to find any files that match the supplied template."
             estr += " If you have the necessary files please check pysat "
             estr += "settings and file locations (e.g. pysat.pysat_dir)."
-            print(estr)
+            logger.warning(estr)
         # attach to object
         self._attach_files(info)
         # store - to disk, if enabled
@@ -410,7 +419,7 @@ class Files(object):
                 try:
                     # Assume key is integer (including list or slice)
                     out = self.files.iloc[key]
-                except:
+                except TypeError:
                     # Assume key is something else
                     out = self.files.loc[key]
             except IndexError as err:
@@ -437,7 +446,7 @@ class Files(object):
         else:
             try:
                 return self.files.iloc[key]
-            except:
+            except TypeError:
                 return self.files.loc[key]
 
     def get_file_array(self, start, end):
@@ -796,7 +805,12 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     # convert to numpy arrays
     for key in stored.keys():
-        stored[key] = np.array(stored[key]).astype(int)
+        try:
+            # Assume key value is numeric integer
+            stored[key] = np.array(stored[key]).astype(int)
+        except ValueError:
+            # Store key value as string
+            stored[key] = np.array(stored[key])
         if len(stored[key]) == 0:
             stored[key] = None
     # include files in output

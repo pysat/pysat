@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Supports the Plasma Analyzer Instrument (Instrument Analyseur de Plasma, or
 IAP) onboard the Detection of Electro-Magnetic Emissions Transmitted from
- Earthquake Regions (DEMETER) Microsatellite.
+Earthquake Regions (DEMETER) Microsatellite.
 
 The IAP consists of a Velocity Analyzer (ADV) and Retarding potential analyzer
 (APR) to provide plasma velocities, ion density and temperature, and
@@ -15,22 +15,33 @@ physique des plasmas, CDPP), the French national data center for natural
 plasmas of the solar system.  This data product requires registration and user
 initiated downloading after ordering a data product.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'demeter'
-name : string
+name
     'iap'
-tag : string
+tag
     'survey' or 'burst'
-sat_id : string
+sat_id
     None supported
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
     demeter = pysat.Instrument('demeter', 'iap', 'survey', clean_level='none')
-    demeter.load(2009,363)
+    demeter.load(2009, 363)
+
+Custom Functions
+----------------
+add_drift_geo_coord
+    Calcuate the ion velocity in geographic coordinates
+add_drift_lgm_coord
+    Calcuate the ion velocity in local geomagneic coordinates
+add_drift_sat_coord
+    Calculate the ion velocity in satellite x, y, z coordinates
 
 """
 
@@ -40,7 +51,10 @@ import pandas as pds
 import numpy as np
 
 import pysat
-from .methods import demeter
+from pysat.instruments.methods import demeter
+
+import logging
+logger = logging.getLogger(__name__)
 
 platform = 'demeter'
 name = 'iap'
@@ -62,12 +76,12 @@ list_remote_files = demeter.list_remote_files
 
 
 def init(self):
-    print(' '.join(["When using this data please include a version of the,"
+    logger.info(' '.join(("When using this data please include a version of the,"
                     "acknowledgement outlined in the metadata attribute",
                     "'info.acknowledgements'.  We recommend that data users",
                     "contact the experiment PI early in their study. ",
                     "Experiment reference information is available in the",
-                    "metadata attribute 'info.reference'"]))
+                    "metadata attribute 'info.reference'")))
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
@@ -76,19 +90,19 @@ def list_files(tag="survey", sat_id='', data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : (string)
+    tag : string
         Denotes type of file to load.  Accepted types are 'survey'; 'burst'
         will be added in the future.  (default='survey')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default='')
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
-    index_start_time : (bool)
+    index_start_time : bool
         Determine time index using file start time (True) or end time (False)
         (default=True)
 
@@ -119,18 +133,18 @@ def load(fnames, tag='survey', sat_id=''):
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of file names
-    tag : (string)
+    tag : string
         Denotes type of file to load.  Accepted types are 'survey'; 'burst'
         will be added in the future.  (default='survey')
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default='')
 
     Returns
     -------
-    data : (pds.DataFrame)
+    data : pds.DataFrame
         DataFrame of DEMETER satellite data
     meta :
         Metadata object
@@ -138,7 +152,7 @@ def load(fnames, tag='survey', sat_id=''):
     """
 
     if len(fnames) == 0:
-        print('need list of filenames')
+        logger.info('need list of filenames')
         return pysat.DataFrame(None), None
 
     # Load the desired data and cast as a DataFrame
@@ -165,7 +179,7 @@ def load_experiment_data(fhandle):
 
     Parameters
     ----------
-    fhandle : (file)
+    fhandle : file
         file handle
 
     Returns
@@ -181,6 +195,7 @@ def load_experiment_data(fhandle):
         'data names'
 
     """
+
     import codecs  # ensures encode is python 2/3 compliant
 
     chunk = fhandle.read(108)
@@ -235,11 +250,6 @@ def clean(inst):
     inst : pysat.Instrument
         DEMETER IAP instrument class object
 
-    Return
-    ------
-    Updates data by removing times where data quality fails the conditions
-    for the specified cleaning level
-
     Notes
     -----
     clean : only data when at least two ions are considered and currents >= 1nA
@@ -248,8 +258,8 @@ def clean(inst):
     """
 
     if inst.clean_level in ['dusty', 'dirty']:
-        print(''.join(["'dusty' and 'dirty' levels not supported, ",
-                       "defaulting to 'clean'"]))
+        logger.info(''.join("'dusty' and 'dirty' levels not supported, ",
+                            "defaulting to 'clean'"))
         inst.clean_level = 'clean'
 
     if inst.clean_level == 'clean':
@@ -268,7 +278,7 @@ def clean(inst):
                     nions[i] += 1
 
                 # Need Level 0 files to select data with J >= 1 nA
-                print("WARNING: Level 0 files needed to finish cleaning data")
+                logger.warning("Level 0 files needed to finish cleaning data")
 
         # Select times with at least two ion species
         idx, = np.where(nions > 1)
@@ -307,7 +317,7 @@ def add_drift_sat_coord(inst):
     # Because the ADV instrument is not fully aligned with the axis of the
     # satellite, reposition into satellite coordinates
     # (IS THIS ALREADY CORRECTED IN FILES?)
-    print("WARNING the ADV instrument is not fully aligned with the axis of "
+    logger.warning("the ADV instrument is not fully aligned with the axis of "
           + "the satellite and this may not have been corrected")
 
     return

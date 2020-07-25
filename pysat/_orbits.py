@@ -6,6 +6,7 @@ import functools
 import numpy as np
 import pandas as pds
 from pysat import Series
+from pysat import logger
 
 
 class Orbits(object):
@@ -196,6 +197,10 @@ class Orbits(object):
         if not self.sat.pandas_format:
             lt_diff = lt_diff.to_pandas()
         lt_diff = lt_diff.diff()
+        # get typical difference
+        typical_lt_diff = np.nanmedian(lt_diff)
+        logger.info(''.join(('typical lt diff ', str(typical_lt_diff))))
+
         # universal time values, from datetime index
         ut_vals = Series(self.sat.index)
         # UT difference
@@ -203,7 +208,7 @@ class Orbits(object):
 
         # get locations where orbit index derivative is less than 0
         # then do some basic checks on these locations
-        ind, = np.where((lt_diff < -0.1))
+        ind, = np.where((lt_diff < -0.2 * typical_lt_diff))
         if len(ind) > 0:
             ind = np.hstack((ind, np.array([len(self.sat[self.orbit_index])])))
             # look at distance between breaks
@@ -212,26 +217,28 @@ class Orbits(object):
             # done for robustness
             if len(ind) > 1:
                 if min(dist) == 1:
-                    print('There are orbit breaks right next to each other')
+                    logger.info('There are orbit breaks right next to each other')
                 ind = ind[:-1][dist > 1]
 
             # check for large positive gradients around the break that would
             # suggest not a true orbit break, but rather bad orbit_index values
             new_ind = []
             for idx in ind:
-                tidx, = np.where(lt_diff[idx - 5:idx + 6] > 0.1)
+                tidx, = np.where(lt_diff[(idx - 5):(idx + 6)] > 10 * typical_lt_diff)
 
                 if len(tidx) != 0:
                     # there are large changes, suggests a false alarm
                     # iterate over samples and check
-                    for tidx in tidx:
+                    for sub_tidx in tidx:
                         # look at time change vs local time change
-                        if(ut_diff[idx - 5:idx + 6].iloc[tidx] <
-                           lt_diff[idx - 5:idx + 6].iloc[tidx] /
+                        if(ut_diff[idx - 5:idx + 6].iloc[sub_tidx] <
+                           lt_diff[idx - 5:idx + 6].iloc[sub_tidx] /
                            orbit_index_period * self.orbit_period):
                             # change in ut is small compared to the change in
                             # the orbit index this is flagged as a false alarm,
                             # or dropped from consideration
+                            logger.info(''.join(('Dropping found break ',
+                                                 'as false positive.')))
                             pass
                         else:
                             # change in UT is significant, keep orbit break
@@ -269,7 +276,7 @@ class Orbits(object):
             ind = np.hstack((ind, ut_ind))
             ind = np.sort(ind)
             ind = np.unique(ind)
-            print('Time Gap')
+            logger.info('Time Gap at locations', ut_ind)
 
         # now that most problems in orbits should have been caught, look at
         # the time difference between orbits (not individual orbits)
@@ -561,14 +568,14 @@ class Orbits(object):
                     except StopIteration:
                         self._getBasicOrbit(orbit=1)
                         # includes hack to appear to be zero indexed
-                        print('Loaded Orbit:%i' % (self._current - 1))
+                        logger.info('Loaded Orbit:%i' % (self._current - 1))
                         # check if the first orbit is also the last orbit
 
                 elif orbit < self.num:
                     # load orbit data into data
                     self._getBasicOrbit(orbit)
                     # includes hack to appear to be zero indexed
-                    print('Loaded Orbit:%i' % (self._current - 1))
+                    logger.info('Loaded Orbit:%i' % (self._current - 1))
 
                 else:
                     # gone too far
@@ -578,7 +585,7 @@ class Orbits(object):
             else:
                 raise Exception('Must set an orbit')
         else:
-            print('No data loaded in instrument object to determine orbits.')
+            logger.info('No data loaded in instrument object to determine orbits.')
 
     def next(self, *arg, **kwarg):
         """Load the next orbit into .data.
@@ -634,7 +641,7 @@ class Orbits(object):
                         pass
                     del temp_orbit_data
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             elif self._current == (self.num):
                 # at the last orbit, need to be careful about getting the next
@@ -694,7 +701,7 @@ class Orbits(object):
 
                 del temp_orbit_data
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             elif self._current == 0:
                 # no current orbit set, grab the first one
@@ -707,7 +714,7 @@ class Orbits(object):
                 # orbit
                 self._getBasicOrbit(orbit=self._current + 1)
                 # includes hack to appear to be zero indexed
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             else:
                 raise Exception(' '.join(('You ended up where nobody should',
@@ -743,7 +750,7 @@ class Orbits(object):
             if (self._current > 2) & (self._current <= self.num):
                 # load orbit and put it into self.sat.data
                 self._getBasicOrbit(orbit=self._current - 1)
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             # if current orbit near the first, must be careful
             elif self._current == 2:
@@ -785,7 +792,7 @@ class Orbits(object):
 
                     del temp_orbit_data
 
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             elif self._current == 0:
                 self.load(orbit=-1)
@@ -831,7 +838,7 @@ class Orbits(object):
                     self._getBasicOrbit(orbit=-1)
 
                 del temp_orbit_data
-                print('Loaded Orbit:%i' % (self._current - 1))
+                logger.info('Loaded Orbit:%i' % (self._current - 1))
 
             else:
                 raise Exception(' '.join(('You ended up where nobody should',

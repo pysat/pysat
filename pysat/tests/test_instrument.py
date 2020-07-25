@@ -51,6 +51,14 @@ class TestBasics():
             (test_date == self.testInst.date)
 
     @raises(Exception)
+    def test_basic_instrument_bad_keyword(self):
+        """Checks for error when instantiating with bad load_rtn keywords"""
+        testInst = pysat.Instrument(platform='pysat', name='testing',
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    unsupported_keyword_yeah=True)
+
+    @raises(Exception)
     def test_basic_instrument_load_yr_no_doy(self):
         self.testInst.load(2009)
 
@@ -295,28 +303,6 @@ class TestBasics():
     #
     #--------------------------------------------------------------------------
 
-    def test_create_custom_attribute(self):
-        # check attribute attached to meta
-        self.testInst.my_attr = 'my value'
-        assert self.testInst.my_attr is self.testInst.meta.my_attr
-        assert 'my_attr' not in dir(self.testInst)
-
-        # check underscores attached to instrument
-        self.testInst._nometa = 'non meta value'
-        assert self.testInst._nometa == 'non meta value'
-        assert '_nometa' in dir(self.testInst)
-        assert '_nometa' not in dir(self.testInst.meta)
-
-        # check if underscore stays attached to meta
-        self.testInst.meta._mine = 'stay here'
-        assert self.testInst._mine is self.testInst.meta._mine
-        assert '_mine' not in dir(self.testInst)
-
-        # see if a base attr attached to instrument
-        self.testInst.pad = 1
-        assert self.testInst.pad == 1
-        assert 'pad' in dir(self.testInst)
-        assert 'pad' not in dir(self.testInst.meta)
 
 
     @raises(AttributeError)
@@ -327,16 +313,26 @@ class TestBasics():
         self.testInst._base_attr
         assert '_base_attr' in dir(self.testInst)
 
-
-
     # --------------------------------------------------------------------------
     #
     # test textual representations
     #
     # --------------------------------------------------------------------------
     def test_basic_repr(self):
-        print(self.testInst)
-        assert True
+        """Check for lines from each decision point in repr"""
+        output = self.testInst.__str__()
+        assert isinstance(output, str)
+        assert output.find('pysat Instrument object') > 0
+        # No custom functions
+        assert output.find('No functions applied') > 0
+        # No orbital info
+        assert output.find('Orbit properties not set') > 0
+        # Files exist for test inst
+        assert output.find('Date Range:') > 0
+        # No loaded data
+        assert output.find('No loaded data') > 0
+        assert output.find('Number of variables:') < 0
+        assert output.find('dummy') < 0
 
     def test_repr_w_orbit(self):
         re_load(pysat.instruments.pysat_testing)
@@ -349,27 +345,36 @@ class TestBasics():
                                     update_files=True,
                                     orbit_info=orbit_info)
 
+        output = testInst.__str__()
+        # Check that orbit info is passed through
+        assert output.find('Orbit properties not set') < 0
+        assert output.find('Orbit Kind:') > 0
+        assert output.find('Loaded Orbit Number: None') > 0
+        # Activate orbits, check that message has changed
         testInst.load(2009, 1)
         testInst.orbits.next()
-        print(testInst)
-        assert True
+        output = testInst.__str__()
+        assert output.find('Loaded Orbit Number: None') < 0
+        assert output.find('Loaded Orbit Number: ') > 0
 
     def test_repr_w_padding(self):
         self.testInst.pad = pds.DateOffset(minutes=5)
-        print(self.testInst)
-        assert True
+        output = self.testInst.__str__()
+        assert output.find('DateOffset: minutes=5') > 0
 
     def test_repr_w_custom_func(self):
         def testfunc(self):
             pass
         self.testInst.custom.add(testfunc, 'modify')
-        print(self.testInst)
-        assert True
+        output = self.testInst.__str__()
+        assert output.find('testfunc') > 0
 
     def test_repr_w_load_data(self):
         self.testInst.load(2009, 1)
-        print(self.testInst)
-        assert True
+        output = self.testInst.__str__()
+        assert output.find('No loaded data') < 0
+        assert output.find('Number of variables:') > 0
+        assert output.find('dummy') > 0
 
     # --------------------------------------------------------------------------
     #

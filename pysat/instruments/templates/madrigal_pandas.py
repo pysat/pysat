@@ -80,8 +80,11 @@ from __future__ import absolute_import
 
 import functools
 import pysat
-from .methods import madrigal as mad_meth
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import madrigal as mad_meth
+from pysat.instruments.methods import nasa_cdaweb as cdw
+
+import logging
+logger = logging.getLogger(__name__)
 
 platform = 'madrigal'
 name = 'pandas'
@@ -129,15 +132,9 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
-    print(mad_meth.cedar_rules())
+    logger.info(mad_meth.cedar_rules())
 
     code = self.kwargs['madrigal_code']
     tag = self.kwargs['madrigal_tag']
@@ -162,33 +159,27 @@ def _general_download(date_array, tag='', sat_id='', data_path=None, user=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
-        pysat. If an account
-        is required for dowloads this routine here must error if user not
-        supplied.
-    password : string (None)
-        Password for data download.
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
     inst_code : int
-        Madrigal integer code used to identify platform
+        Madrigal integer code used to identify platform (default=None)
     kindat : int
-        Madrigal integer code used to identify data set
+        Madrigal integer code used to identify data set (default=None)
 
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
-
-    Notes
-    -----
+    Note
+    ----
     The user's names should be provided in field user. Ruby Payne-Scott should
     be entered as Ruby+Payne-Scott
 
@@ -206,11 +197,6 @@ def _general_download(date_array, tag='', sat_id='', data_path=None, user=None,
 def clean(self):
     """Placeholder routine that would normally return cleaned data
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Notes
     --------
     Supports 'clean', 'dusty', 'dirty' in the sense that it prints
@@ -220,7 +206,8 @@ def clean(self):
     Routine is called by pysat, and not by the end user directly.
 
     """
+
     if self.clean_level in ['clean', 'dusty', 'dirty']:
-        print('WARNING: Generalized Madrigal data support has no cleaning.')
+        logger.warning('Generalized Madrigal data support has no cleaning.')
 
     return

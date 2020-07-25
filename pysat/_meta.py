@@ -81,6 +81,9 @@ class Meta(object):
     fill_label : str
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
+    export_nan: list
+        List of labels that should be exported even if their value is nan.
+        By default, metadata with a value of nan will be exluded from export.
 
 
     Notes
@@ -110,6 +113,7 @@ class Meta(object):
     Examples
     --------
     ::
+
         # instantiate Meta object, default values for attribute labels are used
         meta = pysat.Meta()
         # set a couple base units
@@ -176,7 +180,12 @@ class Meta(object):
                  name_label='long_name', notes_label='notes',
                  desc_label='desc', plot_label='label', axis_label='axis',
                  scale_label='scale', min_label='value_min',
-                 max_label='value_max', fill_label='fill'):
+                 max_label='value_max', fill_label='fill',
+                 export_nan=[]):
+
+        # set mutability of Meta attributes
+        self.mutable = True
+
         # set units and name labels directly
         self._units_label = units_label
         self._name_label = name_label
@@ -188,6 +197,11 @@ class Meta(object):
         self._min_label = min_label
         self._max_label = max_label
         self._fill_label = fill_label
+        # by default metadata with a value of nan will not be exported
+        # unless the name is in the _export_nan list. Initialize the list
+        # with the fill label, since it is reasonable to assume that a fill
+        # value of nan would be intended to be exported
+        self._export_nan = [fill_label] + export_nan
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
         # use any user provided data to instantiate object with data
@@ -387,6 +401,46 @@ class Meta(object):
                     default_nan, default_nan]
         self._data.loc[input_name, labels] = defaults
 
+
+    def __setattr__(self, name, value):
+        """Conditionally sets attributes based on self.mutable flag
+        @properties are assumed to be mutable.
+        We avoid recursively setting properties using
+        method from https://stackoverflow.com/a/15751135
+        """
+
+        # mutable handled explicitly to avoid recursion
+        if name != 'mutable':
+
+            # check if this attribute is a property
+            propobj = getattr(self.__class__, name, None)
+            if isinstance(propobj, property):
+                # check if the property is settable
+                if propobj.fset is None:
+                    raise AttributeError(''.join("can't set attribute - ",
+                                        "property has no fset"))
+
+                # make mutable in case fset needs it to be
+                mutable_tmp = self.mutable
+                self.mutable = True
+
+                # set the property
+                propobj.fset(self, value)
+
+                # restore mutability flag
+                self.mutable = mutable_tmp
+            else:
+                # a normal attribute
+                if self.mutable:
+                    # use Object to avoid recursion
+                    super(Meta, self).__setattr__(name, value)
+                else:
+                    raise AttributeError(''.join(("cannot set attribute - ",
+                                                    "object's attributes are immutable")))
+        else:
+            super(Meta, self).__setattr__(name, value)
+
+
     def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
 
@@ -436,13 +490,18 @@ class Meta(object):
                         to_be_set = input_data[key][i]
                         if hasattr(to_be_set, '__iter__') and \
                                 not isinstance(to_be_set, basestring):
+                            # we have some list-like object
+                            # can only store a single element
+                            if len(to_be_set) == 0:
+                                # empty list, ensure there is something
+                                to_be_set = ['']
                             if isinstance(to_be_set[0], basestring):
                                 self._data.loc[name, key] = \
                                     '\n\n'.join(to_be_set)
                             else:
                                 warnings.warn(' '.join(('Array elements are',
-                                                        ' disallowed in meta.',
-                                                        ' Dropping input :',
+                                                        'not allowed in meta.',
+                                                        'Dropping input :',
                                                         key)))
                         else:
                             self._data.loc[name, key] = to_be_set
@@ -974,7 +1033,8 @@ class Meta(object):
         # to check if a duplicate
 
         # instrument attributes are now inst.meta attributes
-        inst_attr = dir(inst.meta)
+        inst_attr = dir(inst)
+
         for key in transfer_key:
             if key not in banned:
                 if key not in inst_attr:

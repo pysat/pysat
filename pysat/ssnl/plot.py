@@ -7,11 +7,16 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import warnings
 
+from pysat import logger
 
 def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
                 ylim=None):
     """Return scatterplot of data_label(s) as functions of labelx,y over a
     season.
+
+    .. deprecated:: 2.2.0
+      `scatterplot` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
 
     Parameters
     ----------
@@ -90,7 +95,7 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
         try:
             plt.colorbar(p[j], ax=ax[0], label='Amplitude (m/s)')
         except:
-            print('Tried colorbar but failed, thus no colorbar.')
+            logger.info('Tried colorbar but failed, thus no colorbar.')
         ax[0].elev = 30.
 
     if interactive_mode:

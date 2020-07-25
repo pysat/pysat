@@ -4,16 +4,17 @@
 Station (ISS). Downloads data from the NASA
 Coordinated Data Analysis Web (CDAWeb).
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'iss'
-name : string
+name
     'fpmu'
-tag : string
+tag
     None Supported
-sat_id : string
+sat_id
     None supported
+
 
 Warnings
 --------
@@ -28,7 +29,8 @@ import numpy as np
 
 import pysat
 
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
 
 platform = 'iss'
 name = 'fpmu'
@@ -40,7 +42,7 @@ _test_dates = {'': {'': pysat.datetime(2017, 10, 1)}}
 # use the default CDAWeb method
 fname = 'iss_sp_fpmu_{year:04d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 # support load routine
 # use the default CDAWeb method
@@ -67,11 +69,6 @@ def clean(inst):
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    -------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     """
 

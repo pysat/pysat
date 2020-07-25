@@ -1,12 +1,15 @@
 """
 tests the pysat meta object and code
 """
-import pysat
-import pandas as pds
+import os
+import netCDF4
 from nose.tools import raises
-import pysat.instruments.pysat_testing
 import numpy as np
+import pandas as pds
 
+import pysat
+import pysat.instruments.pysat_testing
+import pysat.tests.test_utils
 
 class TestBasics():
     def setup(self):
@@ -54,6 +57,20 @@ class TestBasics():
         assert self.testInst.meta['help', 'units'] == 'V'
         assert self.testInst.meta['help', 'desc'] == ''
         assert self.testInst.meta['help', 'scale'] == 'linear'
+
+    def test_inst_data_assign_meta_empty_list(self):
+        self.testInst.load(2009, 1)
+        self.testInst['help'] = {'data': self.testInst['mlt'],
+                                 'units': [],
+                                 'long_name': 'The Doors'}
+        assert self.testInst.meta['help', 'units'] == ''
+
+    def test_inst_data_assign_meta_string_list(self):
+        self.testInst.load(2009, 1)
+        self.testInst['help'] = {'data': self.testInst['mlt'],
+                                 'units': ['A', 'B'],
+                                 'long_name': 'The Doors'}
+        assert self.testInst.meta['help', 'units'] == 'A\n\nB'
 
     def test_inst_data_assign_meta_then_data(self):
         self.testInst.load(2009, 1)
@@ -1017,3 +1034,89 @@ class TestBasics():
         assert (self.meta['NEW21'].units == 'hey2')
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
+
+
+    @raises(AttributeError)
+    def test_meta_immutable(self):
+        assert self.meta.mutable
+
+        greeting = '...listen!'
+        self.meta.hey = greeting
+        assert self.meta.hey == greeting
+
+        self.meta.mutable = False
+        self.meta.hey = greeting
+
+
+    def test_meta_mutable_properties(self):
+        """check that @properties are always mutable"""
+        m = pysat.Meta()
+        m.mutable = False
+        m.data = pds.DataFrame()
+        m.ho_data = {}
+        m.units_label = 'nT'
+        m.name_label = 'my name'
+
+    def test_inst_attributes_not_overridden(self):
+        greeting = '... listen!'
+        self.testInst.hey = greeting
+        self.testInst.load(2009, 1)
+        assert self.testInst.hey == greeting
+
+    # test for NaN in metadata and writing to file
+    def test_nan_metadata_filtered_netcdf4_via_meta_attribute(self):
+        """check that metadata set to NaN is excluded from netcdf"""
+        # create an instrument object that has a meta with some
+        # variables allowed to be nan within metadata when exporting
+        self.testInst.load(2009, 1)
+        # normally this parameter would be set at instrument code level
+        self.testInst.meta.mutable = True
+        self.testInst.meta._export_nan += ['test_nan_export']
+        self.testInst.meta.mutable = False
+        # create new variable
+        self.testInst['test_nan_variable'] = 1.
+        # assign additional metadata
+        self.testInst.meta['test_nan_variable'] = {'test_nan_export':np.nan,
+                                                   'no_nan_export':np.nan,
+                                                   'extra_check': 1.}
+        # write the file
+        pysat.tests.test_utils.prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.to_netcdf4(outfile)
+
+        # load file back and test metadata is as expected
+        f = netCDF4.Dataset(outfile)
+
+        pysat.tests.test_utils.remove_files(self.testInst)
+
+        assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
+        assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
+        assert 'extra_check' in f['test_nan_variable'].ncattrs()
+
+    def test_nan_metadata_filtered_netcdf4_via_method(self):
+        """check that metadata set to NaN is excluded from netcdf via nc call"""
+        # create an instrument object that has a meta with some
+        # variables allowed to be nan within metadata when exporting
+        self.testInst.load(2009, 1)
+        # create new variable
+        self.testInst['test_nan_variable'] = 1.
+        # assign additional metadata
+        self.testInst.meta['test_nan_variable'] = {'test_nan_export':np.nan,
+                                                   'no_nan_export':np.nan,
+                                                   'extra_check': 1.}
+        # write the file
+        pysat.tests.test_utils.prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        export_nan = self.testInst.meta._export_nan + ['test_nan_export']
+        self.testInst.to_netcdf4(outfile, export_nan=export_nan)
+
+        # load file back and test metadata is as expected
+        f = netCDF4.Dataset(outfile)
+
+        pysat.tests.test_utils.remove_files(self.testInst)
+
+        assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
+        assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
+        assert 'extra_check' in f['test_nan_variable'].ncattrs()

@@ -6,17 +6,26 @@ intervention.
 """
 
 from __future__ import absolute_import, division, print_function
+import logging
 import sys
+import warnings
 
 import pandas as pds
 
 import pysat
+from pysat.instruments.methods import general as mm_gen
+
+logger = logging.getLogger(__name__)
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
                two_digit_year_break=None):
     """Return a Pandas Series of every file for chosen satellite data.
+
+    .. deprecated:: 2.2.0
+      `list_files` will be removed in pysat 3.0.0, it will be replaced by the
+      copy in instruments.methods.general
 
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
@@ -38,12 +47,12 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     supported_tags : (dict or NoneType)
         keys are sat_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
-    fake_daily_files_from_monthly : bool
+    fake_daily_files_from_monthly : (bool)
         Some CDAWeb instrument data files are stored by month, interfering
         with pysat's functionality of loading by day. This flag, when true,
         appends daily dates to monthly files internally. These dates are
         used by load routine in this module to provide data by day.
-    two_digit_year_break : int
+    two_digit_year_break : (int)
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
@@ -69,27 +78,17 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     """
 
-    if data_path is not None:
-        if format_str is None:
-            try:
-                format_str = supported_tags[sat_id][tag]
-            except KeyError as estr:
-                raise ValueError('Unknown sat_id or tag: ' + estr)
-        out = pysat.Files.from_os(data_path=data_path,
-                                  format_str=format_str)
+    warnings.warn(' '.join(["methods.nasa_cdaweb.list_files has been",
+                            "deprecated and will be removed in pysat 3.0.0.",
+                            "Please use methods.general.list_files instead"]),
+                  DeprecationWarning, stacklevel=2)
 
-        if (not out.empty) and fake_daily_files_from_monthly:
-            out.loc[out.index[-1] + pds.DateOffset(months=1)
-                    - pds.DateOffset(days=1)] = out.iloc[-1]
-            out = out.asfreq('D', 'pad')
-            out = out + '_' + out.index.strftime('%Y-%m-%d')
-            return out
-
-        return out
-    else:
-        estr = ''.join(('A directory must be passed to the loading routine ',
-                        'for <Instrument Code>'))
-        raise ValueError(estr)
+    out = mm_gen.list_files(tag=tag, sat_id=sat_id, data_path=data_path,
+                            format_str=format_str,
+                            supported_tags=supported_tags,
+                            fake_daily_files_from_monthly=fake_daily_files_from_monthly,
+                            two_digit_year_break=two_digit_year_break)
+    return out
 
 
 def load(fnames, tag=None, sat_id=None,
@@ -187,8 +186,8 @@ def download(supported_tags, date_array, tag, sat_id,
         pre-set with functools.partial then assigned to new instrument code.
     date_array : array_like
         Array of datetimes to download data for. Provided by pysat.
-    tag : (str or NoneType)
-        tag or None (default=None)
+    tag : str or NoneType (None)
+        tag or None
     sat_id : (str or NoneType)
         satellite id or None (default=None)
     remote_site : (string or NoneType)
@@ -250,6 +249,15 @@ def download(supported_tags, date_array, tag, sat_id,
     # if desired
     local_fname = inst_dict['local_fname']
 
+    if not multi_file_day:
+        # Get list of files from server
+        remote_files = list_remote_files(tag=tag, sat_id=sat_id,
+                                         remote_site=remote_site,
+                                         supported_tags=supported_tags)
+        # Find only requested files that exist remotely
+        date_array = pds.DatetimeIndex(list(set(remote_files.index)
+                                            & set(date_array))).sort_values()
+
     for date in date_array:
         # format files for specific dates and download location
         formatted_remote_fname = remote_fname.format(year=date.year,
@@ -268,27 +276,27 @@ def download(supported_tags, date_array, tag, sat_id,
 
         # perform download
         if not multi_file_day:
+            # standard download
             try:
-                print(' '.join(('Attempting to download file for',
-                                date.strftime('%d %B %Y'))))
+                logger.info(' '.join(('Attempting to download file for',
+                                      date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_path = '/'.join((remote_url.strip('/'),
                                         formatted_remote_fname))
                 req = requests.get(remote_path)
                 if req.status_code != 404:
                     open(saved_local_fname, 'wb').write(req.content)
-                    print('Finished.')
+                    logger.info('Finished.')
                 else:
-                    print(' '.join(('File not available for',
-                                    date.strftime('%d %B %Y'))))
+                    logger.info(' '.join(('File not available for',
+                                          date.strftime('%d %B %Y'))))
             except requests.exceptions.RequestException as exception:
-                print(' '.join((exception, '- File not available for',
-                                date.strftime('%d %B %Y'))))
-
+                logger.info(' '.join((exception, '- File not available for',
+                                      date.strftime('%d %B %Y'))))
         else:
             try:
-                print(' '.join(('Attempting to download files for',
-                                date.strftime('%d %B %Y'))))
+                logger.info(' '.join(('Attempting to download files for',
+                                      date.strftime('%d %B %Y'))))
                 sys.stdout.flush()
                 remote_files = list_remote_files(tag=tag, sat_id=sat_id,
                                                  remote_site=remote_site,
@@ -311,12 +319,12 @@ def download(supported_tags, date_array, tag, sat_id,
                         open(saved_local_fname, 'wb').write(req.content)
                         i += 1
                     else:
-                        print(' '.join(('File not available for',
-                                        date.strftime('%d %B %Y'))))
-                print('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
+                        logger.info(' '.join(('File not available for',
+                                              date.strftime('%d %B %Y'))))
+                logger.info('Downloaded {i:} of {n:} files.'.format(i=i, n=n))
             except requests.exceptions.RequestException as exception:
-                print(' '.join((exception, '- Files not available for',
-                                date.strftime('%d %B %Y'))))
+                logger.info(' '.join((exception, '- Files not available for',
+                                      date.strftime('%d %B %Y'))))
 
 
 def list_remote_files(tag, sat_id,
@@ -328,6 +336,10 @@ def list_remote_files(tag, sat_id,
                       year=None, month=None, day=None):
     """Return a Pandas Series of every file for chosen remote data.
 
+    .. deprecated:: 2.2.0
+      `year/month/day` keywords will be removed in pysat 3.0.0, they will be
+      replaced with a start/stop syntax consistent with the download routine
+
     This routine is intended to be used by pysat instrument modules supporting
     a particular NASA CDAWeb dataset.
 
@@ -337,7 +349,7 @@ def list_remote_files(tag, sat_id,
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
     sat_id : (string or NoneType)
-        Specifies the satellite ID for a constellation.  Not used.
+        Specifies the satellite ID for a constellation.
         (default=None)
     remote_site : (string or NoneType)
         Remote site to download data from
@@ -429,6 +441,14 @@ def list_remote_files(tag, sat_id,
         warnings.warn("Day keyword requires year and month.  Ignoring day.")
         day = None
 
+    # Deprecations warnings for changing syntax
+    if any([year, month, day]):
+        warnings.warn(' '.join(["The year/month/day keywords have been deprecated",
+                                "and will be removed in pysat 3.0.0.  Instead,",
+                                "use datetime values consistent with the",
+                                "start/stop syntax in the download methods."]),
+                      DeprecationWarning, stacklevel=2)
+
     # get a listing of all files
     # determine if we need to walk directories
 
@@ -465,7 +485,7 @@ def list_remote_files(tag, sat_id,
     fmt_idx.append(format_str.find('*'))
 
     # Not all characters may exist in a filename.  Remove those that don't.
-    fmt_idx.remove(-1)
+    fmt_idx = [elem for elem in fmt_idx if elem != -1]
 
     # If preamble exists, add to targets
     if fmt_idx:
@@ -485,24 +505,29 @@ def list_remote_files(tag, sat_id,
     else:
         n_loops = n_layers + 1
     full_files = []
-    for level in range(n_loops):
-        for directory in remote_dirs[level]:
-            temp_url = '/'.join((remote_url.strip('/'), directory))
-            soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
-            links = soup.find_all('a', href=True)
-            for link in links:
-                if level < n_layers:
+
+    try:
+        for level in range(n_loops):
+            for directory in remote_dirs[level]:
+                temp_url = '/'.join((remote_url.strip('/'), directory))
+                soup = BeautifulSoup(requests.get(temp_url).content, "lxml")
+                links = soup.find_all('a', href=True)
+                for link in links:
                     # If there is room to go down, look for directories
                     if link['href'].count('/') == 1:
                         remote_dirs[level+1].append(link['href'])
-                else:
-                    # If at the endpoint, add matching files to list
-                    add_file = True
-                    for target in targets:
-                        if link['href'].count(target) == 0:
-                            add_file = False
-                    if add_file:
-                        full_files.append(link['href'])
+                    else:
+                        # If at the endpoint, add matching files to list
+                        add_file = True
+                        for target in targets:
+                            if link['href'].count(target) == 0:
+                                add_file = False
+                        if add_file:
+                            full_files.append(link['href'])
+    except requests.exceptions.ConnectionError as merr:
+        raise type(merr)(' '.join((str(merr), 'pysat -> Request potentially',
+                                   'exceeded the server limit. Please try again',
+                                   'using a smaller data range.')))
 
     # parse remote filenames to get date information
     if delimiter is None:
@@ -522,5 +547,6 @@ def list_remote_files(tag, sat_id,
             mask = mask & (stored_list.index.month == month)
             if day is not None:
                 mask = mask & (stored_list.index.day == day)
+        stored_list = stored_list[mask]
 
-    return stored_list[mask]
+    return stored_list

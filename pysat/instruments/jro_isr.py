@@ -8,22 +8,24 @@ experiments.
 
 Downloads data from the JRO Madrigal Database.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'jro'
-name : string
+name
     'isr'
-tag : string
+tag
     'drifts', 'drifts_ave', 'oblique_stan', 'oblique_rand', 'oblique_long'
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
-    dmsp = pysat.Instrument('jro', 'isr', 'drifts', clean_level='clean')
-    dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
-                  user='Firstname+Lastname', password='email@address.com')
-    dmsp.load(2017,363)
+    jro = pysat.Instrument('jro', 'isr', 'drifts', clean_level='clean')
+    jro.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
+                 user='Firstname+Lastname', password='email@address.com')
+    jro.load(2017, 363)
 
 Note
 ----
@@ -37,8 +39,11 @@ import functools
 import numpy as np
 
 import pysat
-from .methods import madrigal as mad_meth
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import madrigal as mad_meth
+from pysat.instruments.methods import general as mm_gen
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 platform = 'jro'
@@ -49,10 +54,10 @@ tags = {'drifts': 'Drifts and wind', 'drifts_ave': 'Averaged drifts',
         'oblique_long': 'Long pulse Faraday rotation'}
 sat_ids = {'': list(tags.keys())}
 _test_dates = {'': {'drifts': pysat.datetime(2010, 1, 19),
-                   'drifts_ave': pysat.datetime(2010, 1, 19),
-                   'oblique_stan': pysat.datetime(2010, 4, 19),
-                   'oblique_rand': pysat.datetime(2000, 11, 9),
-                   'oblique_long': pysat.datetime(2010, 4, 12)}}
+                    'drifts_ave': pysat.datetime(2010, 1, 19),
+                    'oblique_stan': pysat.datetime(2010, 4, 19),
+                    'oblique_rand': pysat.datetime(2000, 11, 9),
+                    'oblique_long': pysat.datetime(2010, 4, 12)}}
 
 # support list files routine
 # use the default CDAWeb method
@@ -64,7 +69,7 @@ supported_tags = {ss: {'drifts': jro_fname1 + "drifts" + jro_fname2,
                        'oblique_rand': jro_fname1 + "?" + jro_fname2,
                        'oblique_long': jro_fname1 + "?" + jro_fname2}
                   for ss in sat_ids.keys()}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 # madrigal tags
@@ -106,15 +111,9 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
-    print("The Jicamarca Radio Observatory is operated by the Instituto " +
+    logger.info("The Jicamarca Radio Observatory is operated by the Instituto " +
           "Geofisico del Peru, Ministry of Education, with support from the" +
           " National Science Foundation as contracted through Cornell" +
           " University.  " + mad_meth.cedar_rules())
@@ -130,26 +129,20 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
-        pysat. If an account
-        is required for dowloads this routine here must error if user not
-        supplied.
-    password : string (None)
-        Password for data download.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
 
     Notes
     -----
@@ -171,11 +164,6 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
 def clean(self):
     """Routine to return JRO ISR data cleaned to the specified level
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Notes
     --------
     Supports 'clean', 'dusty', 'dirty'
@@ -193,24 +181,24 @@ def clean(self):
 
     if self.tag.find('oblique') == 0:
         # Oblique profile cleaning
-        print('The double pulse, coded pulse, and long pulse modes ' +
+        logger.info('The double pulse, coded pulse, and long pulse modes ' +
               'implemented at Jicamarca have different limitations arising ' +
               'from different degrees of precision and accuracy. Users ' +
               'should consult with the staff to determine which mode is ' +
               'right for their application.')
 
         if self.clean_level in ['clean', 'dusty', 'dirty']:
-            print('WARNING: this level 2 data has no quality flags')
+            logger.warning('this level 2 data has no quality flags')
     else:
         # Ion drift cleaning
         if self.clean_level in ['clean', 'dusty', 'dirty']:
             if self.clean_level in ['clean', 'dusty']:
-                print('WARNING: this level 2 data has no quality flags')
+                logger.warning('this level 2 data has no quality flags')
 
             ida, = np.where((self.data.indexes['gdalt'] > 200.0))
             idx['gdalt'] = np.unique(ida)
         else:
-            print("WARNING: interpretation of drifts below 200 km should " +
+            logger.warning("interpretation of drifts below 200 km should " +
                   "always be done in partnership with the contact people")
 
     # downselect data based upon cleaning conditions above
@@ -241,8 +229,8 @@ def calc_measurement_loc(self):
         if kk in el_keys:
             try:
                 good_dir.append(int(kk))
-            except:
-                print("WARNING: unknown direction number [{:}]".format(kk))
+            except ValueError:
+                logger.warning("unknown direction number [{:}]".format(kk))
 
     # Calculate the geodetic latitude and longitude for each direction
     if len(good_dir) == 0:
@@ -267,9 +255,7 @@ def calc_measurement_loc(self):
 
         # Assigning as data, to ensure that the number of coordinates match
         # the number of data dimensions
-        self.data = self.data.assign(lat_key=gdlat, lon_key=gdlon)
-        self.data.rename({"lat_key": lat_key, "lon_key": lon_key},
-                         inplace=True)
+        self.data = self.data.assign({lat_key: gdlat, lon_key: gdlon})
 
         # Add metadata for the new data values
         bm_label = "Beam {:d} ".format(dd)

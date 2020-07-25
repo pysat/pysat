@@ -9,29 +9,38 @@ on the mission, operations, instrumenation, and measurements.
 Also a good place to provide contact information. This text will
 be included in the pysat API documentation.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     *List platform string here*
-name : string
+name
     *List name string here*
-sat_id : string
+sat_id
     *List supported sat_ids here*
-tag : string
+tag
     *List supported tag strings here*
 
 Note
 ----
-::
+- Optional section, remove if no notes
 
-    Notes
 
 Warnings
 --------
+- Optional section, remove if no warnings
+- Two blank lines needed afterward for proper formatting
+
+
+Examples
+--------
+::
+
+    Example code can go here
 
 
 Authors
 -------
+Author name and institution
 
 """
 
@@ -45,7 +54,7 @@ import pandas as pds
 import pysat
 
 # CDAWeb methods prewritten for pysat
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import nasa_cdaweb as cdw
 
 # the platform and name strings associated with this instrument
 # need to be defined at the top level
@@ -70,9 +79,9 @@ sat_ids = {'': ['']}
 # format is outer dictionary has sat_id as the key
 # each sat_id has a dictionary of test dates keyed by tag string
 # _test_dates = {'a':{'L0':pysat.datetime(2019,1,1),
-#                    'L1':pysat.datetime(2019,1,2)},
-#               'b':{'L1':pysat.datetime(2019,3,1),
-#                    'L2':pysat.datetime(2019,11,23),}}
+#                     'L1':pysat.datetime(2019,1,2)},
+#                'b':{'L1':pysat.datetime(2019,3,1),
+#                     'L2':pysat.datetime(2019,11,23),}}
 _test_dates = {'': {'': pysat.datetime(2019, 1, 1)}}
 
 # Additional information needs to be defined
@@ -136,12 +145,6 @@ def default(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     return
@@ -166,17 +169,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 

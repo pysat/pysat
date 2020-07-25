@@ -4,15 +4,15 @@ Proton Fluxes, Time-Shifted to the Nose of the Earth's Bow Shock, plus Solar
 and Magnetic Indices. Downloads data from the NASA Coordinated Data Analysis
 Web (CDAWeb). Supports both 5 and 1 minute files.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'omni'
-name : string
+name
     'hro'
-tag : string
+tag
     Select time between samples, one of {'1min', '5min'}
-sat_id : string
+sat_id
     None supported
 
 Note
@@ -35,25 +35,33 @@ Warnings
   these level-2 products are expected to be ok.
 - Module not written by OMNI team.
 
+
 Custom Functions
 -----------------
-time_shift_to_magnetic_poles : Shift time from bowshock to intersection with
-                               one of the magnetic poles
-calculate_clock_angle : Calculate the clock angle and IMF mag in the YZ plane
-calculate_imf_steadiness : Calculate the IMF steadiness using clock angle and
-                           magnitude in the YZ plane
-calculate_dayside_reconnection : Calculate the dayside reconnection rate
+time_shift_to_magnetic_poles
+    Shift time from bowshock to intersection with one of the magnetic poles
+calculate_clock_angle
+    Calculate the clock angle and IMF mag in the YZ plane
+calculate_imf_steadiness
+    Calculate the IMF steadiness using clock angle and magnitude in the YZ plane
+calculate_dayside_reconnection
+    Calculate the dayside reconnection rate
+
 """
 
 from __future__ import print_function
 from __future__ import absolute_import
 
 import functools
+import logging
 import numpy as np
 import pandas as pds
 
 import pysat
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
+
+logger = logging.getLogger(__name__)
 
 platform = 'omni'
 name = 'hro'
@@ -61,7 +69,7 @@ tags = {'1min': '1-minute time averaged data',
         '5min': '5-minute time averaged data'}
 sat_ids = {'': ['5min']}
 _test_dates = {'': {'1min': pysat.datetime(2009, 1, 1),
-                   '5min': pysat.datetime(2009, 1, 1)}}
+                    '5min': pysat.datetime(2009, 1, 1)}}
 
 # support list files routine
 # use the default CDAWeb method
@@ -69,7 +77,7 @@ fname1 = 'omni_hro_1min_{year:4d}{month:02d}{day:02d}_v01.cdf'
 fname5 = 'omni_hro_5min_{year:4d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'1min': fname1,
                        '5min': fname5}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags,
                                fake_daily_files_from_monthly=True)
 
@@ -90,6 +98,9 @@ supported_tags = {'': {'1min': basic_tag1,
 download = functools.partial(cdw.download,
                              supported_tags,
                              fake_daily_files_from_monthly=True)
+# support listing files currently on CDAWeb
+list_remote_files = functools.partial(cdw.list_remote_files,
+                                      supported_tags=supported_tags)
 
 
 def clean(omni):
@@ -140,8 +151,8 @@ def time_shift_to_magnetic_poles(inst):
     time_x = inst['BSN_x']*6371.2/-inst['Vx']
     idx, = np.where(np.isnan(time_x))
     if len(idx) > 0:
-        print(time_x[idx])
-        print(time_x)
+        logger.info(time_x[idx])
+        logger.info(time_x)
     time_x_offset = [pds.DateOffset(seconds=time)
                      for time in time_x.astype(int)]
     new_index = []
@@ -160,6 +171,7 @@ def calculate_clock_angle(inst):
     -----------
     inst : pysat.Instrument
         Instrument with OMNI HRO data
+
     """
 
     # Calculate clock angle in degrees
@@ -194,6 +206,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     max_bmag_cv : float
         Maximum coefficient of variation of the IMF magnitude in the GSM
         Y-Z plane (default=0.5)
+
     """
 
     from pysat.utils import stats as pystats
@@ -203,8 +216,8 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     max_wnum = np.floor(steady_window / sample_rate)
     if max_wnum != steady_window / sample_rate:
         steady_window = max_wnum * sample_rate
-        print("WARNING: sample rate is not a factor of the statistical window")
-        print("new statistical window is {:.1f}".format(steady_window))
+        logger.warning("sample rate is not a factor of the statistical window")
+        logger.warning("new statistical window is {:.1f}".format(steady_window))
 
     min_wnum = int(np.ceil(max_wnum * min_window_frac))
 
@@ -262,7 +275,9 @@ def calculate_dayside_reconnection(inst):
     Notes
     --------
     recon_day = 3.8 Re (Vx / 4e5 m/s)^1/3 Vx B_yz (sin(theta/2))^9/2
+
     """
+
     rearth = 6371008.8
     sin_htheta = np.power(np.sin(np.radians(0.5 * inst['clock_angle'])), 4.5)
     byz = inst['BYZ_GSM'] * 1.0e-9

@@ -1,7 +1,12 @@
 Citations in the pysat ecosystem
 ================================
 
-When referring to this software package, please cite the original paper by Stoneback et al [2018] https://doi.org/10.1029/2018JA025297 as well as the package https://doi.org/10.5281/zenodo.1199703. Note that this doi will always point to the latest version of the code.  A list of dois for all versions can be found at the [zenodo page](https://zenodo.org/record/1199703).
+When referring to this software package, please cite the original paper by
+Stoneback et al [2018] `<https://doi.org/10.1029/2018JA025297>`_ as well as the
+package `<https://doi.org/10.5281/zenodo.1199703>`_. Note that this doi will
+always point to the latest version of the code.  A list of dois for all
+versions can be found at the
+`Zenodo page <https://zenodo.org/record/1199703)>`_.
 
 Example for citation in BibTex for a generalized version:
 
@@ -43,6 +48,12 @@ Citing the publication:
     year      = {2018}
   }
 
-To aid in scientific reproducibility, please include the version number in publications that use this code.  This can be found by invoking `pysat.__version__ `.
+To aid in scientific reproducibility, please include the version number in
+publications that use this code.  This can be found by invoking
+`pysat.__version__ `.
 
-Information for appropriately acknowledging and citing the different instruments accessed through pysat is sometimes available in the metadata through `inst.meta.info['acknowledgements']` and `inst.meta.info['reference']`.  If this information is missing, please consider improving pysat by either submitting an issue or adding the information yourself.
+Information for appropriately acknowledging and citing the different instruments
+accessed through pysat is sometimes available in the metadata through
+``inst.meta.acknowledgements`` and ``inst.meta.references``.
+If this information is missing, please consider improving pysat by either
+submitting an issue or adding the information yourself.

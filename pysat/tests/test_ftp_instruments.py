@@ -11,7 +11,7 @@ import pysat
 import pysat.instruments.pysat_testing
 import pysat.tests.test_instruments as test_inst
 
-include_list = ['sw_dst']
+include_list = ['icon_euv', 'icon_fuv', 'icon_ivm', 'icon_might', 'sw_dst']
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {}
 

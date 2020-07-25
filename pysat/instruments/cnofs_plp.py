@@ -27,20 +27,22 @@ Probe.
 
 The data is PRELIMINARY, and as such, is intended for BROWSE PURPOSES ONLY.
 
+References
+----------
 A brief discussion of the C/NOFS mission and instruments can be found at
 de La Beaujardière, O., et al. (2004), C/NOFS: A mission to forecast
 scintillations, J. Atmos. Sol. Terr. Phys., 66, 1573–1591,
 doi:10.1016/j.jastp.2004.07.030.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'cnofs'
-name : string
+name
     'plp'
-tag : string
+tag
     None supported
-sat_id : string
+sat_id
     None supported
 
 Warnings
@@ -57,7 +59,8 @@ import functools
 import numpy as np
 
 import pysat
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
 
 platform = 'cnofs'
 name = 'plp'
@@ -70,7 +73,7 @@ _test_dates = {'': {'': pysat.datetime(2009, 1, 1)}}
 # use the default CDAWeb method
 fname = 'cnofs_plp_plasma_1sec_{year:04d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 # support load routine
 # use the default CDAWeb method
@@ -96,11 +99,6 @@ def clean(inst):
     inst : (pysat.Instrument)
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     --------

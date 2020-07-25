@@ -3,29 +3,40 @@
 """Supports the Ion Velocity Meter (IVM)
 onboard the Ionospheric Connections (ICON) Explorer.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'icon'
-name : string
+name
     'ivm'
-tag : string
+tag
     None supported
-sat_id : string
+sat_id
     'a' or 'b'
+
 
 Warnings
 --------
 - No download routine as ICON has not yet been launched
 - Data not yet publicly available
 
+
 Example
 -------
+::
+
     import pysat
-    ivm = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2',
-                           clean_level='clean')
-    ivm.download(pysat.datetime(2019, 1, 30), pysat.datetime(2019, 12, 31))
-    ivm.load(2017,363)
+    ivm = pysat.Instrument(platform='icon', name='ivm', sat_id='a')
+    ivm.download(dt.datetime(2020, 1, 1), dt.datetime(2020, 1, 31))
+    ivm.load(2020, 1)
+
+By default, pysat removes the ICON level tags from variable names, ie,
+ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
+::
+
+    ivm = pysat.Instrument(platform='icon', name='ivm', sat_id='a',
+                           keep_original_names=True)
+
 
 Author
 ------
@@ -36,23 +47,59 @@ R. A. Stoneback
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
+import logging
 import numpy as np
-import pandas as pds
-import warnings
 
 import pysat
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
+from pysat.instruments.methods import icon as mm_icon
 
+
+logger = logging.getLogger(__name__)
 
 platform = 'icon'
 name = 'ivm'
-tags = {'level_2': 'Level 2 public geophysical data'}
-# dictionary of sat_ids ad tags supported by each
-sat_ids = {'a': ['level_2'],
-           'b': ['level_2']}
-_test_dates = {'a': {'level_2': pysat.datetime(2018, 1, 1)},
-              'b': {'level_2': pysat.datetime(2018, 1, 1)}}
+tags = {'': 'Level 2 public geophysical data'}
+# Note for developers: IVM-A and IVM-B face in opposite directions, and only
+# one is expected to have geophysical data at a given time depending on ram
+# direction. In general, IVM-A is operational when the remote instruments face
+# northward, and IVM-B when the remote instruments face southward. IVM-B data
+# is not available as of Jun 26 2020, as this mode has not yet been engaged.
+# Bypassing tests and warning checks via the password_req flag
+sat_ids = {'a': [''],
+           'b': ['']}
+_test_dates = {'a': {'': dt.datetime(2020, 1, 1)},
+               'b': {'': dt.datetime(2020, 1, 1)}}  # IVM-B not yet engaged
+_test_download_travis = {'a': {kk: False for kk in tags.keys()}}
+_test_download = {'b': {kk: False for kk in tags.keys()}}
+_password_req = {'b': {kk: True for kk in tags.keys()}}
+
+aname = ''.join(('ICON_L2-7_IVM-A_{year:04d}-{month:02d}-{day:02d}_',
+                 'v{version:02d}r{revision:03d}.NC'))
+bname = ''.join(('ICON_L2-7_IVM-B_{year:04d}-{month:02d}-{day:02d}_',
+                 'v{version:02d}r{revision:03d}.NC'))
+supported_tags = {'a': {'': aname},
+                  'b': {'': bname}}
+
+# use the general methods list files routine
+list_files = functools.partial(mm_gen.list_files,
+                               supported_tags=supported_tags)
+
+# support download routine
+basic_tag_a = {'dir': '/pub/LEVEL.2/IVM-A',
+               'remote_fname': 'Data/' + aname}
+basic_tag_b = {'dir': '/pub/LEVEL.2/IVM-B',
+               'remote_fname': 'Data/' + bname}
+
+download_tags = {'a': {'': basic_tag_a},
+                 'b': {'': basic_tag_b}}
+download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
+
+# support listing files on SSL
+list_remote_files = functools.partial(mm_icon.list_remote_files,
+                                      supported_tags=download_tags)
 
 
 def init(self):
@@ -65,37 +112,32 @@ def init(self):
     inst : (pysat.Instrument)
         Instrument class object
 
-    Returns
-    --------
-    Void : (NoneType)
-        modified in-place, as desired.
-
     """
 
-    print("Mission acknowledgements and data restrictions will be printed " +
-          "here when available.")
+    logger.info(mm_icon.ackn_str)
+    self.meta.acknowledgements = mm_icon.ackn_str
+    self.meta.references = ''.join((mm_icon.refs['mission'],
+                                    mm_icon.refs['ivm']))
 
     pass
 
 
 def default(inst):
-    """Default routine to be applied when loading data.
+    """Default routine to be applied when loading data. Removes variable
+    preambles.
 
     Parameters
     -----------
     inst : (pysat.Instrument)
         Instrument class object
 
-    Note
-    ----
-        Removes ICON preamble on variable names.
-
     """
 
-    remove_icon_names(inst)
+    if not inst.kwargs['keep_original_names']:
+        mm_gen.remove_leading_text(inst, target='ICON_L27_')
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     """Loads ICON IVM data using pysat into pandas.
 
     This routine is called as needed by pysat. It is not intended
@@ -112,10 +154,9 @@ def load(fnames, tag=None, sat_id=None):
     sat_id : string
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    **kwargs : extra keywords
-        Passthrough for additional keyword arguments specified when
-        instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.
+    keep_original_names : boolean
+        if True then the names as given in the netCDF ICON file
+        will be used as is. If False, a preamble is removed.
 
     Returns
     -------
@@ -131,8 +172,8 @@ def load(fnames, tag=None, sat_id=None):
     Examples
     --------
     ::
-        inst = pysat.Instrument('icon', 'ivm', sat_id='a', tag='level_2')
-        inst.load(2019,1)
+        inst = pysat.Instrument('icon', 'ivm', sat_id='a', tag='')
+        inst.load(2020, 1)
 
     """
 
@@ -149,117 +190,7 @@ def load(fnames, tag=None, sat_id=None):
                                     fill_label='FillVal')
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
-    """Produce a list of files corresponding to ICON IVM.
-
-    This routine is invoked by pysat and is not intended for direct use by
-    the end user.
-
-    Multiple data levels may be supported via the 'tag' input string.
-    Currently defaults to level-2 data, or L2 in the filename.
-
-    Parameters
-    ----------
-    tag : string ('')
-        tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
-        Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    data_path : string
-        Full path to directory containing files to be loaded. This
-        is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
-        String template used to parse the datasets filenames. If a user
-        supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
-
-    Returns
-    -------
-    pandas.Series
-        Series of filename strings, including the path, indexed by datetime.
-
-    Examples
-    --------
-    ::
-        If a filename is SPORT_L2_IVM_2019-01-01_v01r0000.NC then the template
-        is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
-        'v{version:02d}r{revision:04d}.NC'
-
-    Note
-    ----
-    The returned Series should not have any duplicate datetimes. If there are
-    multiple versions of a file the most recent version should be kept and the
-    rest discarded. This routine uses the pysat.Files.from_os constructor, thus
-    the returned files are up to pysat specifications.
-
-    """
-
-    desc = None
-    tag = 'level_2'
-    if tag == 'level_1':
-        code = 'L1'
-        desc = None
-    elif tag == 'level_2':
-        code = 'L2'
-        desc = None
-    else:
-        raise ValueError('Unsupported tag supplied: ' + tag)
-
-    if format_str is None:
-        format_str = 'ICON_'+code+'_IVM-'+sat_id.upper()
-        if desc is not None:
-            format_str += '_' + desc + '_'
-        format_str += '_{year:4d}-{month:02d}-{day:02d}'
-        format_str += '_v{version:02d}r{revision:03d}.NC'
-
-    return pysat.Files.from_os(data_path=data_path,
-                               format_str=format_str)
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None,
-             password=None):
-    """Will download data for ICON IVM, after successful launch and operations.
-
-    Parameters
-    ----------
-    date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not
-        be contiguous.
-    tag : string ('')
-        Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
-        Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
-        User string input used for download. Provided by user and passed via
-        pysat. If an account is required for dowloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
-    **kwargs : dict
-        Additional keywords supplied by user when invoking the download
-        routine attached to a pysat.Instrument object are passed to this
-        routine via kwargs.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
-
-
-    """
-
-    warnings.warn("Downloads aren't yet available.")
-
-    return
-
-
-def clean(inst, clean_level=None):
+def clean(inst):
     """Provides data cleaning based upon clean_level.
 
     clean_level is set upon Instrument instantiation to
@@ -278,78 +209,44 @@ def clean(inst, clean_level=None):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     Note
     ----
         Supports 'clean', 'dusty', 'dirty', 'none'
 
     """
 
-    if clean_level != 'none':
-        warnings.warn("Cleaning actions for ICON IVM are not yet defined.")
-    return
-
-
-def remove_icon_names(inst, target=None):
-    """Removes leading text on ICON project variable names
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        ICON associated pysat.Instrument object
-    target : str
-        Leading string to remove. If none supplied,
-        ICON project standards are used to identify and remove
-        leading text
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
-
-    """
-
-    if target is None:
-        lev = inst.tag
-        if lev == 'level_2':
-            lev = 'L2'
-        elif lev == 'level_0':
-            lev = 'L0'
-        elif lev == 'level_0p':
-            lev = 'L0P'
-        elif lev == 'level_1.5':
-            lev = 'L1-5'
-        elif lev == 'level_1':
-            lev = 'L1'
-        else:
-            raise ValueError('Uknown ICON data level')
-
-        # get instrument code
-        sid = inst.sat_id.lower()
-        if sid == 'a':
-            sid = 'IVM_A'
-        elif sid == 'b':
-            sid = 'IVM_B'
-        else:
-            raise ValueError('Unknown ICON satellite ID')
-        prepend_str = '_'.join(('ICON', lev, sid)) + '_'
+    # IVM variable groupings
+    drift_variables = ['Ion_Velocity_X', 'Ion_Velocity_Zonal',
+                       'Ion_Velocity_Meridional',
+                       'Ion_Velocity_Field_Aligned']
+    cross_drift_variables = ['Ion_Velocity_Z', 'Ion_Velocity_Y']
+    rpa_variables = ['Ion_Temperature', 'Ion_Density',
+                     'Fractional_Ion_Density_H',
+                     'Fractional_Ion_Density_O']
+    if 'RPA_Flag' in inst.variables:
+        rpa_flag = 'RPA_Flag'
+        dm_flag = 'DM_Flag'
     else:
-        prepend_str = target
+        rpa_flag = 'ICON_L27_RPA_Flag'
+        dm_flag = 'ICON_L27_DM_Flag'
+        drift_variables = ['ICON_L27_' + x for x in drift_variables]
+        cross_drift_variables = ['ICON_L27_' + x for x in cross_drift_variables]
+        rpa_variables = ['ICON_L27_' + x for x in rpa_variables]
 
-    inst.data.rename(columns=lambda x: x.split(prepend_str)[-1], inplace=True)
-    inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                          inplace=True)
-    orig_keys = inst.meta.keys_nD()
-    for keynd in orig_keys:
-        new_key = keynd.split(prepend_str)[-1]
-        new_meta = inst.meta.pop(keynd)
-        new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                             inplace=True)
-        inst.meta[new_key] = new_meta
+    if inst.clean_level in ['clean', 'dusty']:
+        # remove drift values impacted by RPA
+        idx, = np.where(inst[rpa_flag] >= 1)
+        for var in drift_variables:
+            inst[idx, var] = np.nan
+        # DM values
+        idx, = np.where(inst[dm_flag] >= 1)
+        for var in cross_drift_variables:
+            inst[idx, var] = np.nan
+
+    if inst.clean_level == 'clean':
+        # other RPA parameters
+        idx, = np.where(inst[rpa_flag] >= 2)
+        for var in rpa_variables:
+            inst[idx, var] = np.nan
 
     return

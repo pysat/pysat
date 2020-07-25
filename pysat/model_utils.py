@@ -17,9 +17,15 @@ import numpy as np
 import pandas as pds
 import warnings
 
+from pysat import logger
+
 
 def satellite_view_through_model(sat, tie, scoords, tlabels):
     """Interpolate model values onto satellite orbital path.
+
+    .. deprecated:: 2.2.0
+      `satellite_view_through_model` will be removed in pysat 3.0.0, it will
+      be added to pysatModels
 
     Parameters
     ----------
@@ -67,6 +73,10 @@ def satellite_view_through_model(sat, tie, scoords, tlabels):
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                            methods=['all']):
     """Compare modelled and measured data
+
+    .. deprecated:: 2.2.0
+      `satellite_view_through_model` will be removed in pysat 3.0.0, it will
+      be added to pysatModels
 
     Parameters
     ------------
@@ -205,11 +215,12 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
         # Ensure no NaN are used in statistics
         inum = np.where(np.isfinite(mod_scaled) & np.isfinite(inst_dat))[0]
 
+
         if inum.shape[0] < 2:
             # Not all data types can use all statistics.  Print warnings
             # instead of stopping processing.  Only valid statistics
             # will be included in output
-            print("{:s} can't calculate stats for {:d} finite samples".format( \
+            logger.info("{:s} can't calculate stats for {:d} finite samples".format( \
                                                         iname, inum.shape[0]))
             stat_dict
         else:
@@ -231,12 +242,12 @@ def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                     # Not all data types can use all statistics.  Print warnings
                     # instead of stopping processing.  Only valid statistics
                     # will be included in output
-                    print("{:s} can't use {:s}: {:}".format(iname, mm, verr))
+                    logger.warning("{:s} can't use {:s}: {:}".format(iname, mm, verr))
                 except NotImplementedError:
                     # Not all data types can use all statistics.  Print warnings
                     # instead of stopping processing.  Only valid statistics
                     # will be included in output
-                    print("{:s} can't implement {:s}".format(iname, mm))
+                    logger.warning("{:s} can't implement {:s}".format(iname, mm))
 
     return stat_dict, data_units
 
@@ -251,6 +262,10 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                              comp_clean='clean'):
     """Pair instrument and model data, applying data cleaning after finding the
     times and locations where the instrument and model align
+
+    .. deprecated:: 2.2.0
+      `collect_inst_model_pairs` will be removed in pysat 3.0.0, it will
+      be added to pysatModels
 
     Parameters
     ----------
@@ -468,6 +483,10 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                                   model_label='model'):
     """Extracts instrument-aligned data from a modelled data set
 
+    .. deprecated:: 2.2.0
+      `extract_modelled_observations` will be removed in pysat 3.0.0, it will
+      be added to pysatModels
+
     Parameters
     ----------
     inst : pysat.Instrument instance
@@ -677,7 +696,7 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                     if str(verr).find("requested xi is out of bounds") > 0:
                         # This is acceptable, pad the interpolated data with
                         # NaN
-                        print("Warning: {:} for ".format(verr) +
+                        logger.warning("{:} for ".format(verr) +
                               "{:s} data at {:}".format(mdat, xi))
                         yi = [np.nan]
                     else:

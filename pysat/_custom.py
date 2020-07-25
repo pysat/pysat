@@ -5,6 +5,7 @@ try:
     basestring
 except NameError:
     basestring = str
+import warnings
 
 import pandas as pds
 import xarray as xr
@@ -57,6 +58,10 @@ class Custom(object):
     def add(self, function, kind='add', at_pos='end', *args, **kwargs):
         """Add a function to custom processing queue.
 
+        .. deprecated:: 2.2.0
+          `add` will be removed in pysat 3.0.0, it is replaced by
+          `attach` to clarify the syntax
+
         Custom functions are applied automatically to associated
         pysat instrument whenever instrument.load command called.
 
@@ -82,6 +87,57 @@ class Custom(object):
                 extra arguments are passed to the custom function (once)
             kwargs : extra keyword arguments
                 extra keyword args are passed to the custom function (once)
+
+        Note
+        ----
+        Allowed `add` function returns:
+
+        - {'data' : pandas Series/DataFrame/array_like,
+          'units' : string/array_like of strings,
+          'long_name' : string/array_like of strings,
+          'name' : string/array_like of strings (iff data array_like)}
+
+        - pandas DataFrame, names of columns are used
+
+        - pandas Series, .name required
+
+        - (string/list of strings, numpy array/list of arrays)
+        """
+
+        warnings.warn(' '.join(["custom.add is deprecated and will be",
+                                "renamed in pysat 3.0.0 as custom.attach"]),
+                      DeprecationWarning, stacklevel=2)
+        self.attach(function, kind=kind, at_pos=at_pos, *args, **kwargs)
+        return
+
+    def attach(self, function, kind='add', at_pos='end', *args, **kwargs):
+        """Attach a function to custom processing queue.
+
+        Custom functions are applied automatically to associated
+        pysat instrument whenever instrument.load command called.
+
+        Parameters
+        ----------
+        function : string or function object
+            name of function or function object to be added to queue
+
+        kind : {'add', 'modify', 'pass}
+            add
+                Adds data returned from function to instrument object.
+                A copy of pysat instrument object supplied to routine.
+            modify
+                pysat instrument object supplied to routine. Any and all
+                changes to object are retained.
+            pass
+                A copy of pysat object is passed to function. No
+                data is accepted from return.
+
+        at_pos : string or int
+            insert at position. (default, insert at end).
+        args : extra arguments
+            extra arguments are passed to the custom function (once)
+        kwargs : extra keyword arguments
+            extra keyword args are passed to the custom function (once)
 
         Note
         ----

@@ -3,15 +3,15 @@
 onboard the Republic of China Satellite (ROCSAT-1). Downloads data from the
 NASA Coordinated Data Analysis Web (CDAWeb).
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'rocsat1'
-name : string
+name
     'ivm'
-tag : string
+tag
     None
-sat_id : string
+sat_id
     None supported
 
 Note
@@ -31,7 +31,8 @@ import warnings
 
 import pysat
 
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import general as mm_gen
 
 platform = 'rocsat1'
 name = 'ivm'
@@ -44,7 +45,7 @@ _test_dates = {'': {'': pysat.datetime(2002, 1, 1)}}
 # use the default CDAWeb method
 fname = 'rs_k0_ipei_{year:04d}{month:02d}{day:02d}_v01.cdf'
 supported_tags = {'': {'': fname}}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 # support load routine
 # use the default CDAWeb method
@@ -67,14 +68,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     --------

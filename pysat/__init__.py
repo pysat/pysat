@@ -41,6 +41,13 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.WARNING)
 
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
@@ -75,6 +82,7 @@ else:
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
         data_dir = f.readline()
 
+import netCDF4
 from pandas import Panel, DataFrame, Series, datetime
 from . import utils, model_utils
 from ._constellation import Constellation

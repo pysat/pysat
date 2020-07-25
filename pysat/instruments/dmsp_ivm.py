@@ -16,30 +16,43 @@ The routine is configured to utilize data files with instrument
 performance flags generated at the Center for Space Sciences at the
 University of Texas at Dallas.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'dmsp'
-name : string
+name
     'ivm'
-tag : string
+tag
     'utd', None
-sat_id : string
+sat_id
     ['f11', 'f12', 'f13', 'f14', 'f15', 'f16', 'f17', 'f18']
 
-Example
--------
+Examples
+--------
+::
+
     import pysat
     dmsp = pysat.Instrument('dmsp', 'ivm', 'utd', 'f15', clean_level='clean')
     dmsp.download(pysat.datetime(2017, 12, 30), pysat.datetime(2017, 12, 31),
                   user='Firstname+Lastname', password='email@address.com')
-    dmsp.load(2017,363)
+    dmsp.load(2017, 363)
 
 Note
 ----
     Please provide name and email when downloading data with this routine.
 
 Code development supported by NSF grant 1259508
+
+Custom Functions
+----------------
+add_drift_unit_vectors
+    Add unit vectors for the satellite velocity
+add_drifts_polar_cap_x_y
+    Add polar cap drifts in cartesian coordinates
+smooth_ram_drifts
+    Smooth the ram drifts using a rolling mean
+update_DMSP_ephemeris
+    Updates DMSP instrument data with DMSP ephemeris
 
 """
 
@@ -51,8 +64,11 @@ import numpy as np
 import pandas as pds
 
 import pysat
-from .methods import madrigal as mad_meth
-from .methods import nasa_cdaweb as cdw
+from pysat.instruments.methods import madrigal as mad_meth
+from pysat.instruments.methods import general as mm_gen
+
+import logging
+logger = logging.getLogger(__name__)
 
 platform = 'dmsp'
 name = 'ivm'
@@ -61,10 +77,10 @@ sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
            'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
            'f18': ['']}
 _test_dates = {'f11': {'utd': pysat.datetime(1998, 1, 2)},
-              'f12': {'utd': pysat.datetime(1998, 1, 2)},
-              'f13': {'utd': pysat.datetime(1998, 1, 2)},
-              'f14': {'utd': pysat.datetime(1998, 1, 2)},
-              'f15': {'utd': pysat.datetime(2017, 12, 30)}}
+               'f12': {'utd': pysat.datetime(1998, 1, 2)},
+               'f13': {'utd': pysat.datetime(1998, 1, 2)},
+               'f14': {'utd': pysat.datetime(1998, 1, 2)},
+               'f15': {'utd': pysat.datetime(2017, 12, 30)}}
 
 
 # support list files routine
@@ -74,7 +90,7 @@ dmsp_fname1 = {'utd': 'dms_ut_{year:4d}{month:02d}{day:02d}_',
 dmsp_fname2 = {'utd': '.{version:03d}.hdf5', '': 's?.{version:03d}.hdf5'}
 supported_tags = {ss: {kk: dmsp_fname1[kk] + ss[1:] + dmsp_fname2[kk]
                        for kk in sat_ids[ss]} for ss in sat_ids.keys()}
-list_files = functools.partial(cdw.list_files,
+list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
 # madrigal tags
@@ -114,15 +130,9 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
-    print(mad_meth.cedar_rules())
+    logger.info(mad_meth.cedar_rules())
     return
 
 
@@ -135,26 +145,20 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
-        pysat. If an account
-        is required for dowloads this routine here must error if user not
-        supplied.
-    password : string (None)
-        Password for data download.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
 
     Notes
     -----
@@ -173,10 +177,6 @@ def download(date_array, tag='', sat_id='', data_path=None, user=None,
                       data_path=data_path, user=user, password=password)
 
 
-def default(inst):
-    pass
-
-
 def clean(inst):
     """Routine to return DMSP IVM data cleaned to the specified level
 
@@ -189,14 +189,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     --------
@@ -218,7 +213,7 @@ def clean(inst):
             idx = slice(0, inst.index.shape[0])
     else:
         if inst.clean_level in ['clean', 'dusty', 'dirty']:
-            print('WARNING: this level 1 data has no quality flags')
+            logger.warning('this level 1 data has no quality flags')
         idx = slice(0, inst.index.shape[0])
 
     # downselect data based upon cleaning conditions above
@@ -270,7 +265,7 @@ def update_DMSP_ephemeris(inst, ephem=None):
 
     # Ensure the right ephemera is loaded
     if ephem is None:
-        print('No ephemera provided for {:}'.format(inst.date))
+        logger.info('No ephemera provided for {:}'.format(inst.date))
         inst.data = pds.DataFrame(None)
         return
 
@@ -281,7 +276,7 @@ def update_DMSP_ephemeris(inst, ephem=None):
         ephem.load(date=inst.date, verifyPad=True)
 
         if ephem.data.empty:
-            print('unable to load ephemera for {:}'.format(inst.date))
+            logger.info('unable to load ephemera for {:}'.format(inst.date))
             inst.data = pds.DataFrame(None)
             return
 
