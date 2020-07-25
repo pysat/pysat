@@ -16,6 +16,10 @@ import warnings
 def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
     """Return a 1D median of data_label over a season and label1
 
+    .. deprecated:: 2.2.0
+      `median1D` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
+
     Parameters
     ----------
     const: Constellation or Instrument
@@ -109,6 +113,10 @@ def median1D(const, bin1, label1, data_label, auto_bin=True, returnData=False):
 def median2D(const, bin1, label1, bin2, label2, data_label,
              returnData=False, auto_bin=True):
     """Return a 2D average of data_label over a season and label1, label2.
+
+    .. deprecated:: 2.2.0
+      `median2D` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
 
     Parameters
     ----------
@@ -328,6 +336,10 @@ def _calc_2d_median(ans, data_label, binx, biny, xarr, yarr, zarr, numx,
 def mean_by_day(inst, data_label):
     """Mean of data_label by day over Instrument.bounds
 
+    .. deprecated:: 2.2.0
+      `mean_by_day` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
+
     Parameters
     ----------
     data_label : string
@@ -352,6 +364,10 @@ def mean_by_day(inst, data_label):
 def mean_by_orbit(inst, data_label):
     """Mean of data_label by orbit over Instrument.bounds
 
+    .. deprecated:: 2.2.0
+      `mean_by_orbit` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
+
     Parameters
     ----------
     data_label : string
@@ -375,6 +391,10 @@ def mean_by_orbit(inst, data_label):
 
 def mean_by_file(inst, data_label):
     """Mean of data_label by orbit over Instrument.bounds
+
+    .. deprecated:: 2.2.0
+      `mean_by_file` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
 
     Parameters
     ----------

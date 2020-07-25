@@ -25,6 +25,10 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate,
             returnBins=False):
     """2D Daily Occurrence Probability of data_label > gate over a season.
 
+    .. deprecated:: 2.2.0
+      `daily2D` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
+
     If data_label is greater than gate at least once per day,
     then a 100% occurrence probability results.Season delineated by the bounds
     attached to Instrument object.
@@ -74,6 +78,10 @@ def daily2D(inst, bin1, label1, bin2, label2, data_label, gate,
 def by_orbit2D(inst, bin1, label1, bin2, label2, data_label, gate,
                returnBins=False):
     """2D Occurrence Probability of data_label orbit-by-orbit over a season.
+
+    .. deprecated:: 2.2.0
+      `by_orbit2D` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
 
     If data_label is greater than gate atleast once per orbit, then a
     100% occurrence probability results. Season delineated by the bounds
@@ -190,6 +198,10 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
             data_label, gate, returnBins=False):
     """3D Daily Occurrence Probability of data_label > gate over a season.
 
+    .. deprecated:: 2.2.0
+      `daily3D` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
+
     If data_label is greater than gate atleast once per day,
     then a 100% occurrence probability results. Season delineated by
     the bounds attached to Instrument object.
@@ -238,6 +250,10 @@ def daily3D(inst, bin1, label1, bin2, label2, bin3, label3,
 def by_orbit3D(inst, bin1, label1, bin2, label2, bin3, label3,
                data_label, gate, returnBins=False):
     """3D Occurrence Probability of data_label orbit-by-orbit over a season.
+
+    .. deprecated:: 2.2.0
+      `by_orbit3D` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
 
     If data_label is greater than gate atleast once per orbit, then a
     100% occurrence probability results. Season delineated by the bounds

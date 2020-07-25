@@ -113,6 +113,7 @@ class Meta(object):
     Examples
     --------
     ::
+
         # instantiate Meta object, default values for attribute labels are used
         meta = pysat.Meta()
         # set a couple base units

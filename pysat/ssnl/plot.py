@@ -14,6 +14,10 @@ def scatterplot(inst, labelx, labely, data_label, datalim, xlim=None,
     """Return scatterplot of data_label(s) as functions of labelx,y over a
     season.
 
+    .. deprecated:: 2.2.0
+      `scatterplot` will be removed in pysat 3.0.0, it will
+      be added to pysatSeasons
+
     Parameters
     ----------
     labelx : string
