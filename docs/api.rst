@@ -61,4 +61,17 @@ Utilities
 .. automodule:: pysat.utils
    :members:
 
+Coordinates
+^^^^^^^^^^^
+.. automodule:: pysat.utils.coords
+   :members:
 
+Statistics
+^^^^^^^^^^
+.. automodule:: pysat.utils.stats
+   :members:
+
+Time
+^^^^^^^^^^^
+.. automodule:: pysat.utils.time
+   :members:
