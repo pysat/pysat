@@ -17,7 +17,6 @@ Welcome to pysat's documentation!
    examples.rst
    supported_instruments.rst
    new_instrument.rst
-   data_templates.rst
    api.rst
    contributing.rst
    faq.rst
