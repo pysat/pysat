@@ -1,2 +1,4 @@
 numpydoc
 ipython
+h5py
+
