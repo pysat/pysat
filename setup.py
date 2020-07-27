@@ -37,11 +37,10 @@ else:
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 
 # include Fortran for normal install
-install_requires.extend(fortran_install)
-# # read the docs doesn't do Fortran
-# if not on_rtd:
-#     # not on ReadTheDocs, add Fortran
-#     install_requires.extend(fortran_install)
+# read the docs doesn't do Fortran
+if not on_rtd:
+    # not on ReadTheDocs, add Fortran
+    install_requires.extend(fortran_install)
 
 setup(
     name='pysat',
