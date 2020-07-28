@@ -2,9 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.1] - 2020-07-27
+## [2.2.1] - 2020-07-29
 - Bug Fix
    - Adopted .readthedocs.yml to restore online documentation on ReadTheDocs
+   - Updated manifest.in to retain the pysat testing instruments
 
 ## [2.2.0] - 2020-07-24
 - New Features
