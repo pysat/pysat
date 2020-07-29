@@ -940,18 +940,11 @@ class Meta(object):
         other_updated = self.apply_default_labels(other)
         # concat 1D metadata in data frames to copy of
         # current metadata
-# <<<<<<< ho_meta_fix
         for key in other_updated.keys():
             mdata.data.loc[key] = other.data.loc[key]
         # add together higher order data
         for key in other_updated.keys_nD():
             mdata.ho_data[key] = other.ho_data[key]
-# =======
-#         for key in other_updated.keys():
-#             mdata[key] = other_updated[key]
-#         # add together higher order data
-#         for key in other_updated.keys_nD():
-#             mdata[key] = other_updated[key]
 
         return mdata
 
