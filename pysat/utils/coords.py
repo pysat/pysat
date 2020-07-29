@@ -1,8 +1,8 @@
 """
-pysat.coords - coordinate transformations for pysat
+pysat.utils.coords - coordinate transformations for pysat
 =========================================
 
-pysat.coords contains a number of coordinate-transformation
+pysat.utils.coords contains a number of coordinate-transformation
 functions used throughout the pysat package.
 """
 
@@ -151,6 +151,10 @@ def scale_units(out_unit, in_unit):
 def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     """Converts position from geodetic to geocentric or vice-versa.
 
+    .. deprecated:: 2.2.0
+      `geodetic_to_geocentric` will be removed in pysat 3.0.0, it will
+      be added to pysatMadrigal
+
     Parameters
     ----------
     lat_in : float
@@ -182,8 +186,8 @@ def geodetic_to_geocentric(lat_in, lon_in=None, inverse=False):
     """
 
     warnings.warn(' '.join(["coords.geodetic_to_geocentric is deprecated and",
-                            "will be removed in pysat 3.0.0. This function will",
-                            "move to the new pysatMadrigal package."]),
+                            "will be removed in pysat 3.0.0. This function ",
+                            "will move to the new pysatMadrigal package."]),
                   DeprecationWarning, stacklevel=2)
 
     rad_eq = 6378.1370  # WGS-84 semi-major axis
@@ -222,6 +226,10 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
     """Converts from local horizontal coordinates in a geodetic system to local
     horizontal coordinates in a geocentric system
 
+    .. deprecated:: 2.2.0
+      `geodetic_to_geocentric_horizontal` will be removed in pysat 3.0.0, it
+      will be added to pysatMadrigal
+
     Parameters
     ----------
     lat_in : float
@@ -256,9 +264,10 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
 
     """
 
-    warnings.warn(' '.join(["coords.geodetic_to_geocentric_horizontal is deprecated",
-                            "and will be removed in pysat 3.0.0. This function",
-                            "will move to the new pysatMadrigal package."]),
+    warnings.warn(' '.join(["coords.geodetic_to_geocentric_horizontal is",
+                            "deprecated and will be removed in pysat 3.0.0.",
+                            "This function will move to the new pysatMadrigal",
+                            "package."]),
                   DeprecationWarning, stacklevel=2)
 
     az = np.radians(az_in)
@@ -292,6 +301,10 @@ def geodetic_to_geocentric_horizontal(lat_in, lon_in, az_in, el_in,
 def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     """Convert a position from spherical to cartesian, or vice-versa
 
+    .. deprecated:: 2.2.0
+      `spherical_to_cartesian` will be removed in pysat 3.0.0, it will
+      be added to pysatMadrigal
+
     Parameters
     ----------
     az_in : float
@@ -323,8 +336,8 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
     """
 
     warnings.warn(' '.join(["coords.spherical_to_cartesian is deprecated and",
-                            "will be removed in pysat 3.0.0. This function will",
-                            "move to the new pysatMadrigal package."]),
+                            "will be removed in pysat 3.0.0. This function ",
+                            "will move to the new pysatMadrigal package."]),
                   DeprecationWarning, stacklevel=2)
 
     if inverse:
@@ -350,6 +363,10 @@ def spherical_to_cartesian(az_in, el_in, r_in, inverse=False):
 def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
                               inverse=False):
     """Converts a position from global to local cartesian or vice-versa
+
+    .. deprecated:: 2.2.0
+      `global_to_local_cartesian` will be removed in pysat 3.0.0, it will
+      be added to pysatMadrigal
 
     Parameters
     ----------
@@ -390,9 +407,9 @@ def global_to_local_cartesian(x_in, y_in, z_in, lat_cent, lon_cent, rad_cent,
 
     """
 
-    warnings.warn(' '.join(["coords.global_to_local_cartesian is deprecated and",
-                            "will be removed in pysat 3.0.0. This function will",
-                            "move to the new pysatMadrigal package."]),
+    warnings.warn(' '.join(["coords.global_to_local_cartesian is deprecated",
+                            "and will be removed in pysat 3.0.0. This function",
+                            "will move to the new pysatMadrigal package."]),
                   DeprecationWarning, stacklevel=2)
 
     # Get the global cartesian coordinates of local origin
@@ -444,6 +461,10 @@ def local_horizontal_to_global_geo(az, el, dist, lat_orig, lon_orig, alt_orig,
     """ Convert from local horizontal coordinates to geodetic or geocentric
     coordinates
 
+    .. deprecated:: 2.2.0
+      `local_horizontal_to_global_geo` will be removed in pysat 3.0.0, it will
+      be added to pysatMadrigal
+
     Parameters
     ----------
     az : float
@@ -478,9 +499,10 @@ def local_horizontal_to_global_geo(az, el, dist, lat_orig, lon_orig, alt_orig,
 
     """
 
-    warnings.warn(' '.join(["coords.local_horizontal_to_global_geo is deprecated",
-                            "and will be removed in pysat 3.0.0. This function",
-                            "will move to the new pysatMadrigal package."]),
+    warnings.warn(' '.join(["coords.local_horizontal_to_global_geo is ",
+                            "deprecated and will be removed in pysat 3.0.0.",
+                            "This function will move to the new pysatMadrigal",
+                            "package."]),
                   DeprecationWarning, stacklevel=2)
 
     # If the data are in geodetic coordiantes, convert to geocentric

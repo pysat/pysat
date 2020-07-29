@@ -1,8 +1,6 @@
 import requests
 import warnings
 
-import pytest
-
 import pysat
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
@@ -19,15 +17,17 @@ class TestCDAWeb():
 
     def test_remote_file_list_connection_error_append(self):
         """Test that pysat appends suggested help to ConnectionError"""
-        with pytest.raises(Exception) as excinfo:
-            # Giving a bad remote_site address yields similar ConnectionError
+        # Giving a bad remote_site address yields similar ConnectionError
+        try:
             cdw.list_remote_files(tag='', sat_id='',
                                   supported_tags=self.supported_tags,
                                   remote_site='http:/')
-
-        assert excinfo.type is requests.exceptions.ConnectionError
-        # Check that pysat appends the message
-        assert str(excinfo.value).find('pysat -> Request potentially') > 0
+        except Exception as excinfo:
+            assert isinstance(excinfo, requests.exceptions.ConnectionError)
+            # Check that pysat appends the message
+            assert str(excinfo).find('pysat -> Request potentially') > 0
+        else:
+            raise(ValueError, 'Test was expected to raise an Exception.')
 
     def test_remote_file_list_deprecation_warning(self):
         """Test generation of deprecation warning for remote_file_list kwargs

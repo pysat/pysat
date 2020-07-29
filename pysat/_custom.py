@@ -58,6 +58,10 @@ class Custom(object):
     def add(self, function, kind='add', at_pos='end', *args, **kwargs):
         """Add a function to custom processing queue.
 
+        .. deprecated:: 2.2.0
+          `add` will be removed in pysat 3.0.0, it is replaced by
+          `attach` to clarify the syntax
+
         Custom functions are applied automatically to associated
         pysat instrument whenever instrument.load command called.
 
@@ -137,7 +141,7 @@ class Custom(object):
 
         Note
         ----
-        Allowed `add` function returns:
+        Allowed `attach` function returns:
 
         - {'data' : pandas Series/DataFrame/array_like,
           'units' : string/array_like of strings,

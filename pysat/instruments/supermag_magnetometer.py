@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Supports SuperMAG ground magnetometer measurements and SML/SMU indices.
 Downloading is supported; please follow their rules of the road:
-    http://supermag.jhuapl.edu/info/?page=rulesoftheroad
+http://supermag.jhuapl.edu/info/?page=rulesoftheroad
 
 Properties
 ----------

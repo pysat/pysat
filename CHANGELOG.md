@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.2] - 2020-07-29
+- Bug Fix
+  - Modified MANIFEST.in to include pysat_testing instruments
+
+## [2.2.1] - 2020-07-28
+- Documentation
+   - Improved organization of documentation on ReadTheDocs
+- Bug Fix
+   - Adopted .readthedocs.yml to restore online documentation on ReadTheDocs
+
 ## [2.2.0] - 2020-07-24
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%

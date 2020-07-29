@@ -23,6 +23,10 @@ from pysat import logger
 def satellite_view_through_model(sat, tie, scoords, tlabels):
     """Interpolate model values onto satellite orbital path.
 
+    .. deprecated:: 2.2.0
+      `satellite_view_through_model` will be removed in pysat 3.0.0, it will
+      be added to pysatModels
+
     Parameters
     ----------
     sat : pysat.Instrument object
@@ -69,6 +73,10 @@ def satellite_view_through_model(sat, tie, scoords, tlabels):
 def compare_model_and_inst(pairs=None, inst_name=[], mod_name=[],
                            methods=['all']):
     """Compare modelled and measured data
+
+    .. deprecated:: 2.2.0
+      `satellite_view_through_model` will be removed in pysat 3.0.0, it will
+      be added to pysatModels
 
     Parameters
     ------------
@@ -254,6 +262,10 @@ def collect_inst_model_pairs(start=None, stop=None, tinc=None, inst=None,
                              comp_clean='clean'):
     """Pair instrument and model data, applying data cleaning after finding the
     times and locations where the instrument and model align
+
+    .. deprecated:: 2.2.0
+      `collect_inst_model_pairs` will be removed in pysat 3.0.0, it will
+      be added to pysatModels
 
     Parameters
     ----------
@@ -470,6 +482,10 @@ def extract_modelled_observations(inst=None, model=None, inst_name=[],
                                   sel_name=None, method='linear',
                                   model_label='model'):
     """Extracts instrument-aligned data from a modelled data set
+
+    .. deprecated:: 2.2.0
+      `extract_modelled_observations` will be removed in pysat 3.0.0, it will
+      be added to pysatModels
 
     Parameters
     ----------
