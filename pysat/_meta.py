@@ -323,7 +323,7 @@ class Meta(object):
         other_updated.min_label = self.min_label
         other_updated.max_label = self.max_label
         other_updated.fill_label = self.fill_label
-        return other
+        return other_updated
 
     def accept_default_labels(self, other):
         """Applies labels for default meta labels from other onto self.
