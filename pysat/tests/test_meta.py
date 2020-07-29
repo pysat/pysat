@@ -988,8 +988,8 @@ class TestBasics():
             self.meta.date = None
             self.meta.transfer_attributes_to_instrument(self.testInst)
 
-        assert self.testInst.new_attribute == 'hello'
-        assert self.testInst.date is None
+            assert self.testInst.new_attribute == 'hello'
+            assert self.testInst.date is None
 
     def test_transfer_attributes_to_instrument_leading_(self):
         if self.meta.mutable:
@@ -999,12 +999,9 @@ class TestBasics():
             self.meta.transfer_attributes_to_instrument(self.testInst)
             with pytest.raises(AttributeError):
                 self.testInst._yo_yo
-        else:
-            raise(AttributeError)
-
-        # Check to make sure other values still transferred
-        assert self.testInst.new_attribute == 'hello'
-        assert self.testInst.date is None
+            # Check to make sure other values still transferred
+            assert self.testInst.new_attribute == 'hello'
+            assert self.testInst.date is None
 
     def test_transfer_attributes_to_instrument_leading__(self):
         if self.meta.mutable:
@@ -1014,12 +1011,10 @@ class TestBasics():
             self.meta.transfer_attributes_to_instrument(self.testInst)
             with pytest.raises(AttributeError):
                 self.testInst.__yo_yo
-        else:
-            raise(AttributeError)
 
-        # Check to make sure other values still transferred
-        assert self.testInst.new_attribute == 'hello'
-        assert self.testInst.date is None
+            # Check to make sure other values still transferred
+            assert self.testInst.new_attribute == 'hello'
+            assert self.testInst.date is None
 
     def test_transfer_attributes_to_instrument_strict_names(self):
         if self.meta.mutable:
@@ -1033,8 +1028,6 @@ class TestBasics():
             with pytest.raises(RuntimeError):
                 self.meta.transfer_attributes_to_instrument(self.testInst,
                                                             strict_names=True)
-        else:
-            raise(RuntimeError)
 
     def test_transfer_attributes_to_instrument_strict_names_false(self):
         self.meta.new_attribute = 'hello'
