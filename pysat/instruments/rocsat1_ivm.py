@@ -97,8 +97,11 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     location of data is sorted out.
 
     """
+
     logger.warning("Data removed from server July 23, 2020. Attempting anyway")
-    return functools.partial(cdw.download, supported_tags)
+    functools.partial(cdw.download, supported_tags)
+
+    return
 
 
 def clean(inst):
