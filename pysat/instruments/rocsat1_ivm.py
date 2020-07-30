@@ -28,10 +28,13 @@ from __future__ import print_function
 from __future__ import absolute_import
 import datetime as dt
 import functools
+import logging
 import warnings
 
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
+
+logger = logging.getLogger(__name__)
 
 platform = 'rocsat1'
 name = 'ivm'
@@ -56,10 +59,45 @@ basic_tag = {'dir': '/pub/data/rocsat/ipei',
              'remote_fname': '{year:4d}/' + fname,
              'local_fname': fname}
 supported_tags = {'': {'': basic_tag}}
-download = functools.partial(cdw.download, supported_tags)
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
+
+
+def download(date_array, tag, sat_id, data_path=None, user=None,
+             password=None):
+    """Routine to download data.
+
+    This routine is invoked by pysat and is not intended for direct use by
+    the end user.
+
+    Parameters
+    ----------
+    date_array : array-like
+        list of datetimes to download data for. The sequence of dates need
+        not be contiguous.
+    tag : string
+        Tag identifier used for particular dataset. This input is provided by
+        pysat.  (default='')
+    sat_id : string
+        Satellite ID string identifier used for particular dataset. This input
+        is provided by pysat.  (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
+        User string input used for download. Provided by user and passed via
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
+
+    Warnings
+    --------
+    Data removed from server July 23, 2020
+
+    """
+    logger.warning("Data removed from server July 23, 2020. Attempting anyway")
+    return functools.partial(cdw.download, supported_tags)
 
 
 def clean(inst):
