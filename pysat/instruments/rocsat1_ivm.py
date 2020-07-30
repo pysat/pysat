@@ -28,13 +28,10 @@ from __future__ import print_function
 from __future__ import absolute_import
 import datetime as dt
 import functools
-import logging
 import warnings
 
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
-
-logger = logging.getLogger(__name__)
 
 platform = 'rocsat1'
 name = 'ivm'
@@ -98,7 +95,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    logger.warning("Data removed from server July 23, 2020. Attempting anyway")
+    warnings.warn("Data removed from server July 23, 2020. Attempting anyway")
     functools.partial(cdw.download, supported_tags)
 
     return
