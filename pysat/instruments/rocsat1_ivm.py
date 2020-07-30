@@ -93,7 +93,8 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     Warnings
     --------
-    Data removed from server July 23, 2020
+    Data removed from server July 23, 2020.  Adding a warning until the new
+    location of data is sorted out.
 
     """
     logger.warning("Data removed from server July 23, 2020. Attempting anyway")
