@@ -41,7 +41,7 @@ name = 'ivm'
 tags = {'': ''}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2002, 1, 1)}}
-
+_test_download = {'': {kk: False for kk in tags.keys()}}
 
 # support list files routine
 # use the default CDAWeb method
