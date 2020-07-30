@@ -156,6 +156,11 @@ def default(inst):
     """Default routine to be applied when loading data.  Adjusts epoch
     timestamps to datetimes and removes variable preambles.
 
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument class object
+
     """
 
     mm_gen.convert_timestamp_to_datetime(inst, sec_mult=1.0e-3)
