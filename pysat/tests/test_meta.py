@@ -963,42 +963,52 @@ class TestBasics():
 
     # Test the attribute transfer function
     def test_transfer_attributes_to_instrument(self):
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.date = None
-        self.meta.transfer_attributes_to_instrument(self.testInst)
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta._yo_yo = 'yo yo'
+            self.meta.date = None
+            self.meta.transfer_attributes_to_instrument(self.testInst)
 
-        assert self.testInst.new_attribute == 'hello'
+            assert self.testInst.new_attribute == 'hello'
 
     # ensure leading hyphens are dropped
     @raises(AttributeError)
     def test_transfer_attributes_to_instrument_leading_(self):
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.date = None
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-        self.testInst._yo_yo == 'yo yo'
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta._yo_yo = 'yo yo'
+            self.meta.date = None
+            self.meta.transfer_attributes_to_instrument(self.testInst)
+            self.testInst._yo_yo == 'yo yo'
+        else:
+            raise(AttributeError)
 
     # ensure leading hyphens are dropped
     @raises(AttributeError)
     def test_transfer_attributes_to_instrument_leading__(self):
-        self.meta.new_attribute = 'hello'
-        self.meta.__yo_yo = 'yo yo'
-        self.meta.date = None
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-        self.testInst.__yo_yo == 'yo yo'
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta.__yo_yo = 'yo yo'
+            self.meta.date = None
+            self.meta.transfer_attributes_to_instrument(self.testInst)
+            self.testInst.__yo_yo == 'yo yo'
+        else:
+            raise(AttributeError)
 
     @raises(RuntimeError)
     def test_transfer_attributes_to_instrument_strict_names(self):
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.jojo_beans = 'yep!'
-        self.meta.name = 'Failure!'
-        self.meta.date = 'yo yo2'
-        self.testInst.load(2009, 1)
-        self.testInst.jojo_beans = 'nope!'
-        self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                    strict_names=True)
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta._yo_yo = 'yo yo'
+            self.meta.jojo_beans = 'yep!'
+            self.meta.name = 'Failure!'
+            self.meta.date = 'yo yo2'
+            self.testInst.load(2009, 1)
+            self.testInst.jojo_beans = 'nope!'
+            self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                        strict_names=True)
+        else:
+            raise(RuntimeError)
 
     def test_merge_meta(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -1035,18 +1045,16 @@ class TestBasics():
         assert (self.meta['NEW21'].long_name == 'boo2')
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
-
     @raises(AttributeError)
     def test_meta_immutable(self):
-        assert self.meta.mutable
 
+        self.meta.mutable = True
         greeting = '...listen!'
         self.meta.hey = greeting
         assert self.meta.hey == greeting
 
         self.meta.mutable = False
         self.meta.hey = greeting
-
 
     def test_meta_mutable_properties(self):
         """check that @properties are always mutable"""
@@ -1120,3 +1128,22 @@ class TestBasics():
         assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
         assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
         assert 'extra_check' in f['test_nan_variable'].ncattrs()
+
+
+class TestBasicsImmuatble(TestBasics):
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.meta = pysat.Meta()
+        # disable mutability
+        self.meta.mutable = False
+
+        # Instrument object
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean')
+        # pre-load data to ensure mutable set to false
+        self.testInst.load(2009, 1)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+        del self.meta

@@ -44,7 +44,7 @@ class TestCDAWeb():
         assert war[0].category == DeprecationWarning
 
     def test_list_files_deprecation_warning(self):
-        """Test generation of deprecation warning for remote_file_list kwargs
+        """Test generation of deprecation warning for list_files kwargs
         """
         warnings.simplefilter("always")
 
