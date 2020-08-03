@@ -39,7 +39,6 @@ tags = {'': ''}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2002, 1, 1)}}
 
-
 # support list files routine
 # use the default CDAWeb method
 fname = 'rs_k0_ipei_{year:04d}{month:02d}{day:02d}_v01.cdf'
@@ -52,7 +51,7 @@ load = cdw.load
 
 # support download routine
 # use the default CDAWeb method
-basic_tag = {'dir': '/pub/data/rocsat/ipei',
+basic_tag = {'dir': '/pub/data/formosat-rocsat/formosat-1/ipei',
              'remote_fname': '{year:4d}/' + fname,
              'local_fname': fname}
 supported_tags = {'': {'': basic_tag}}

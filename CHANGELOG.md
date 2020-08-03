@@ -46,6 +46,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Remove wildcard imports, relative imports
   - Include flake8 check as part of testing suites
   - Improve unit testing coverage of instrument functions and instrument object
+  - Updated path to rocsat data
 
 ## [2.2.0] - 2020-06-28
 - New Features
