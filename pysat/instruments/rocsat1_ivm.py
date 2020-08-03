@@ -51,7 +51,7 @@ load = cdw.load
 
 # support download routine
 # use the default CDAWeb method
-basic_tag = {'dir': '/pub/data//formosat-rocsat/formosat-1/ipei',
+basic_tag = {'dir': '/pub/data/formosat-rocsat/formosat-1/ipei',
              'remote_fname': '{year:4d}/' + fname,
              'local_fname': fname}
 supported_tags = {'': {'': basic_tag}}
