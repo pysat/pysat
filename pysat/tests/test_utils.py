@@ -84,24 +84,18 @@ class TestBasics():
     def test_initial_pysat_load(self):
         import shutil
         saved = False
-        try:
-            root = os.path.join(os.getenv('HOME'), '.pysat')
-            new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
-            shutil.move(root, new_root)
-            saved = True
-        except:
-            pass
+        root = os.path.join(os.getenv('HOME'), '.pysat')
+        new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+        shutil.move(root, new_root)
+        saved = True
 
         re_load(pysat)
 
-        try:
-            if saved:
-                # remove directory, trying to be careful
-                os.remove(os.path.join(root, 'data_path.txt'))
-                os.rmdir(root)
-                shutil.move(new_root, root)
-        except:
-            pass
+        if saved:
+            # remove directory, trying to be careful
+            os.remove(os.path.join(root, 'data_path.txt'))
+            os.rmdir(root)
+            shutil.move(new_root, root)
 
         assert True
 
