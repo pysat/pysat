@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - methods.nasa_cdaweb.list_files moved to methods.general
   - `strict_time_flag` now defaults to True
   - Use of start / stop notation in remote_file_list
+  - Added variable rename method to Instrument object (#91)
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
@@ -45,6 +46,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Remove wildcard imports, relative imports
   - Include flake8 check as part of testing suites
   - Improve unit testing coverage of instrument functions and instrument object
+  - Updated path to rocsat data
 
 ## [2.2.0] - 2020-07-06
 - New Features
