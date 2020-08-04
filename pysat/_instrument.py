@@ -2220,13 +2220,13 @@ class Instrument(object):
                     np.array(mdata_dict['FillVal']).astype(coltype)
         return mdata_dict
 
-    def generic_meta_translator(self, meta_to_translate):
+    def generic_meta_translator(self, input_meta):
         '''Translates the metadate contained in an object into a dictionary
         suitable for export.
 
         Parameters
         ----------
-        meta_to_translate : Meta
+        input_meta : Meta
             The metadata object to translate
 
         Returns
@@ -2246,13 +2246,13 @@ class Instrument(object):
         else:
             translation_table = None
         # First Order Data
-        for key in meta_to_translate.data.index:
+        for key in input_meta.data.index:
             if translation_table is None:
-                export_dict[key] = meta_to_translate.data.loc[key].to_dict()
+                export_dict[key] = input_meta.data.loc[key].to_dict()
             else:
                 # Translate each key if a translation is provided
                 export_dict[key] = {}
-                meta_dict = meta_to_translate.data.loc[key].to_dict()
+                meta_dict = input_meta.data.loc[key].to_dict()
                 for orig_key in meta_dict:
                     if orig_key in translation_table:
                         for translated_key in translation_table[orig_key]:
@@ -2262,19 +2262,19 @@ class Instrument(object):
                         export_dict[key][orig_key] = meta_dict[orig_key]
 
         # Higher Order Data
-        for key in meta_to_translate.ho_data:
+        for key in input_meta.ho_data:
             if key not in export_dict:
                 export_dict[key] = {}
-            for ho_key in meta_to_translate.ho_data[key].data.index:
+            for ho_key in input_meta.ho_data[key].data.index:
                 new_key = '_'.join((key, ho_key))
                 if translation_table is None:
                     export_dict[new_key] = \
-                        meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
+                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
                 else:
                     # Translate each key if a translation is provided
                     export_dict[new_key] = {}
                     meta_dict = \
-                        meta_to_translate.ho_data[key].data.loc[ho_key].to_dict()
+                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
                     for orig_key in meta_dict:
                         if orig_key in translation_table:
                             for translated_key in translation_table[orig_key]:
@@ -2537,11 +2537,9 @@ class Instrument(object):
                                 self._get_var_type_code(coltype)
                             new_dict['Var_Type'] = 'data'
                             # no FillValue or FillVal allowed for strings
-                            new_dict = \
-                                self._filter_netcdf4_metadata(new_dict,
-                                                              coltype,
-                                                              remove=True,
-                                                              export_nan=export_nan)
+                            new_dict = self._filter_netcdf4_metadata(
+                                new_dict, coltype, remove=True,
+                                export_nan=export_nan)
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
@@ -2631,10 +2629,9 @@ class Instrument(object):
                                     new_dict['Format'] = \
                                         self._get_var_type_code(coltype)
                                     new_dict['Var_Type'] = 'data'
-                                    new_dict = \
-                                        self._filter_netcdf4_metadata(new_dict,
-                                                                      coltype,
-                                                                      export_nan=export_nan)
+                                    new_dict = self._filter_netcdf4_metadata(
+                                        new_dict, coltype,
+                                        export_nan=export_nan)
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     logger.info(' '.join((str(err), '\n',
@@ -2678,10 +2675,9 @@ class Instrument(object):
                                     new_dict['Format'] = \
                                         self._get_var_type_code(coltype)
                                     new_dict['Var_Type'] = 'data'
-                                    new_dict = \
-                                        self._filter_netcdf4_metadata(new_dict,
-                                                                      coltype,
-                                                                      export_nan=export_nan)
+                                    new_dict = self._filter_netcdf4_metadata(
+                                        new_dict, coltype,
+                                        export_nan=export_nan)
                                     # really attach metadata now
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
@@ -2727,9 +2723,8 @@ class Instrument(object):
                             for export_units_label in export_units_labels:
                                 new_dict[export_units_label] = \
                                     'Milliseconds since 1970-1-1 00:00:00'
-                            new_dict = self._filter_netcdf4_metadata(new_dict,
-                                                                     coltype,
-                                                                     export_nan=export_nan)
+                            new_dict = self._filter_netcdf4_metadata(
+                                new_dict, coltype, export_nan=export_nan)
                             # set metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
@@ -2748,10 +2743,8 @@ class Instrument(object):
                             else:
                                 for export_name_label in export_name_labels:
                                     new_dict[export_name_label] = key
-                            new_dict = \
-                                self._filter_netcdf4_metadata(new_dict,
-                                                              coltype,
-                                                              export_nan=export_nan)
+                            new_dict = self._filter_netcdf4_metadata(
+                                new_dict, coltype, export_nan=export_nan)
                             # assign metadata dict
                             cdfkey.setncatts(new_dict)
                             # set data
