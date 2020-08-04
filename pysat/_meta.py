@@ -199,7 +199,7 @@ class Meta(object):
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
         # use any user provided data to instantiate object with data
-        # attirube unit and name labels are called within
+        # attribute unit and name labels are called within
         if metadata is not None:
             if isinstance(metadata, pds.DataFrame):
                 self._data = metadata
@@ -485,10 +485,11 @@ class Meta(object):
                         to_be_set = input_data[key][i]
                         if hasattr(to_be_set, '__iter__') and \
                                 not isinstance(to_be_set, str):
-
-                            if not to_be_set:
-                                to_be_set = ' '
-
+                            # we have some list-like object
+                            # can only store a single element
+                            if len(to_be_set) == 0:
+                                # empty list, ensure there is something
+                                to_be_set = ['']
                             if isinstance(to_be_set[0], str) or \
                                     isinstance(to_be_set, bytes):
                                 if isinstance(to_be_set, bytes):
@@ -498,8 +499,8 @@ class Meta(object):
                                     '\n\n'.join(to_be_set)
                             else:
                                 warnings.warn(' '.join(('Array elements are',
-                                                        ' disallowed in meta.',
-                                                        ' Dropping input :',
+                                                        'not allowed in meta.',
+                                                        'Dropping input :',
                                                         key)))
                         else:
                             self._data.loc[name, key] = to_be_set

@@ -48,7 +48,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improve unit testing coverage of instrument functions and instrument object
   - Updated path to rocsat data
 
-## [2.2.0] - 2020-06-28
+## [2.2.0] - 2020-07-06
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
@@ -61,10 +61,19 @@ This project adheres to [Semantic Versioning](http://semver.org/).
    - Added warning when FillValue metadata could lead to unexpected results
      when writing a netCDF4 file
    - Use conda to manage Travis CI test environment
-   - Test instruments now part of compiled package for development elsewhere
+   - Update ICON instrument file structure
    - Added NaN filter for metadata when writing netCDF4 files
+   - Test instruments now part of compiled package for development elsewhere
+   - Custom instrument keywords and defaults are now always found in inst.kwargs
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
+  - Several functions in coords will be removed in pysat 3.0.0.  These functions will move to pysatMadrigal
+    - geodetic_to_geocentric
+    - geodetic_to_geocentric_horizontal
+    - spherical_to_cartesian
+    - global_to_local_cartesian
+    - local_horizontal_to_global_geo
+  - methods.nasa_cdaweb.list_files will move to methods.general.list_files in pysat 3.0.0.
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
   - Added discussion of github install, develop branches, and reqs to docs
