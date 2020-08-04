@@ -277,7 +277,7 @@ class Meta(object):
         """Drops variables (names) from metadata."""
 
         # drop lower dimension data
-        self._data = self._data.drop(names, axis=0)
+        self.data = self._data.drop(names, axis=0)
         # drop higher dimension data
         for name in names:
             if name in self._ho_data:
@@ -323,7 +323,7 @@ class Meta(object):
         other_updated.min_label = self.min_label
         other_updated.max_label = self.max_label
         other_updated.fill_label = self.fill_label
-        return other
+        return other_updated
 
     def accept_default_labels(self, other):
         """Applies labels for default meta labels from other onto self.
@@ -940,18 +940,11 @@ class Meta(object):
         other_updated = self.apply_default_labels(other)
         # concat 1D metadata in data frames to copy of
         # current metadata
-# <<<<<<< ho_meta_fix
         for key in other_updated.keys():
             mdata.data.loc[key] = other.data.loc[key]
         # add together higher order data
         for key in other_updated.keys_nD():
             mdata.ho_data[key] = other.ho_data[key]
-# =======
-#         for key in other_updated.keys():
-#             mdata[key] = other_updated[key]
-#         # add together higher order data
-#         for key in other_updated.keys_nD():
-#             mdata[key] = other_updated[key]
 
         return mdata
 

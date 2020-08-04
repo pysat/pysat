@@ -2,9 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.1] - 2020-07-27
+## [2.2.1] - 2020-07-29
+- Documentation
+   - Improved organization of documentation on ReadTheDocs
 - Bug Fix
    - Adopted .readthedocs.yml to restore online documentation on ReadTheDocs
+   - Modified MANIFEST.in to include pysat_testing instruments
+   - Rename default branch as `main`
 
 ## [2.2.0] - 2020-07-24
 - New Features
@@ -59,7 +63,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed a bug when requesting non-existent files from CDAWeb (#426)
   - Improved compatibility of parse_delimited_filenames (#439)
   - Fixed bug assigning dates to COSMIC files
-  - Fixed bug limiting local time orbit breakdowns for instruments much slower 
+  - Fixed bug limiting local time orbit breakdowns for instruments much slower
     than 1 Hz
 
 ## [2.1.0] - 2019-11-18

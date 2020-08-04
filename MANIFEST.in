@@ -6,9 +6,7 @@ include *.md
 include description.txt
 include LICENSE
 include pysat/version.txt
-prune pysat/tests
 prune docs
 prune demo
-recursive-exclude pysat/instruments pysat_testing*.py
 exclude *.pdf
 exclude *.png
