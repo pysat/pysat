@@ -199,7 +199,7 @@ class Meta(object):
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
         # use any user provided data to instantiate object with data
-        # attirube unit and name labels are called within
+        # attribute unit and name labels are called within
         if metadata is not None:
             if isinstance(metadata, pds.DataFrame):
                 self._data = metadata
@@ -221,12 +221,9 @@ class Meta(object):
                                                       self._max_label,
                                                       self._fill_label])
 
-
-
         # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
-
 
     @property
     def ho_data(self):
@@ -380,7 +377,7 @@ class Meta(object):
         if recurse:
             for item_name in self.keys_nD():
                 output_str += '\n\n'
-                output_str += 'Metadata for '+item_name+'\n'
+                output_str += 'Metadata for ' + item_name + '\n'
                 output_str += self.ho_data[item_name].__str__(False)
 
         return output_str
@@ -397,8 +394,6 @@ class Meta(object):
                     input_name, input_name, 'linear', default_nan,
                     default_nan, default_nan]
         self._data.loc[input_name, labels] = defaults
-
-
 
     def __setattr__(self, name, value):
         """Conditionally sets attributes based on self.mutable flag
@@ -418,7 +413,7 @@ class Meta(object):
                 # check if the property is settable
                 if propobj.fset is None:
                     raise AttributeError(''.join("can't set attribute - ",
-                                        "property has no fset"))
+                                                 "property has no fset"))
 
                 # make mutable in case fset needs it to be
                 mutable_tmp = self.mutable
@@ -436,10 +431,10 @@ class Meta(object):
                     super(Meta, self).__setattr__(name, value)
                 else:
                     raise AttributeError(''.join(("cannot set attribute - ",
-                                                    "object's attributes are immutable")))
+                                                  "object's attributes are",
+                                                  "immutable")))
         else:
             super(Meta, self).__setattr__(name, value)
-
 
     def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
@@ -490,10 +485,11 @@ class Meta(object):
                         to_be_set = input_data[key][i]
                         if hasattr(to_be_set, '__iter__') and \
                                 not isinstance(to_be_set, str):
-
-                            if not to_be_set:
-                                to_be_set = ' '
-
+                            # we have some list-like object
+                            # can only store a single element
+                            if len(to_be_set) == 0:
+                                # empty list, ensure there is something
+                                to_be_set = ['']
                             if isinstance(to_be_set[0], str) or \
                                     isinstance(to_be_set, bytes):
                                 if isinstance(to_be_set, bytes):
@@ -503,8 +499,8 @@ class Meta(object):
                                     '\n\n'.join(to_be_set)
                             else:
                                 warnings.warn(' '.join(('Array elements are',
-                                                        ' disallowed in meta.',
-                                                        ' Dropping input :',
+                                                        'not allowed in meta.',
+                                                        'Dropping input :',
                                                         key)))
                         else:
                             self._data.loc[name, key] = to_be_set
@@ -1097,8 +1093,8 @@ class Meta(object):
                         # np.nan is not equal to anything
                         # if both values are NaN, ok in my book
                         try:
-                            if not (np.isnan(self[key, attr]) and
-                                    np.isnan(other[key, attr])):
+                            if not (np.isnan(self[key, attr])
+                                    and np.isnan(other[key, attr])):
                                 # one or both are not NaN and they aren't equal
                                 # test failed
                                 return False
@@ -1135,13 +1131,14 @@ class Meta(object):
                 # now time to check if all elements are individually equal
                 for key2 in self[key].children.keys():
                     for attr in self[key].children.attrs():
-                        if not (self[key].children[key2, attr] ==
-                                other[key].children[key2, attr]):
+                        if not (self[key].children[key2, attr]
+                                == other[key].children[key2, attr]):
                             try:
-                                if not (np.isnan(self[key].children[key2,
-                                                                    attr]) and
-                                        np.isnan(other[key].children[key2,
-                                                                     attr])):
+                                nan_self = np.isnan(self[key].children[key2,
+                                                                       attr])
+                                nan_other = np.isnan(other[key].children[key2,
+                                                                         attr])
+                                if not (nan_self and nan_other):
                                     return False
                             except TypeError:
                                 # comparison above gets unhappy with string

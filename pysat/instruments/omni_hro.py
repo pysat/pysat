@@ -146,7 +146,7 @@ def time_shift_to_magnetic_poles(inst):
     # make sure there are no gaps larger than a minute
     inst.data = inst.data.resample('1T').interpolate('time')
 
-    time_x = inst['BSN_x']*6371.2/-inst['Vx']
+    time_x = inst['BSN_x'] * 6371.2 / -inst['Vx']
     idx, = np.where(np.isnan(time_x))
     if len(idx) > 0:
         logger.info(time_x[idx])
@@ -177,15 +177,16 @@ def calculate_clock_angle(inst):
     inst['clock_angle'] = pds.Series(clock_angle, index=inst.data.index)
 
     # Calculate magnitude of IMF in Y-Z plane
-    inst['BYZ_GSM'] = pds.Series(np.sqrt(inst['BY_GSM']**2 +
-                                         inst['BZ_GSM']**2),
+    inst['BYZ_GSM'] = pds.Series(np.sqrt(inst['BY_GSM']**2
+                                         + inst['BZ_GSM']**2),
                                  index=inst.data.index)
 
     return
 
 
 def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
-                             max_clock_angle_std=90.0/np.pi, max_bmag_cv=0.5):
+                             max_clock_angle_std=(90.0 / np.pi),
+                             max_bmag_cv=0.5):
     """ Calculate IMF steadiness using clock angle standard deviation and
     the coefficient of variation of the IMF magnitude in the GSM Y-Z plane
 
@@ -250,8 +251,8 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     steady = False
     for i, cv in enumerate(inst.data['BYZ_CV']):
         if steady:
-            del_min = int((inst.data.index[i] -
-                           inst.data.index[i-1]).total_seconds() / 60.0)
+            del_min = int((inst.data.index[i]
+                           - inst.data.index[i - 1]).total_seconds() / 60.0)
             if np.isnan(cv) or np.isnan(ca_std[i]) or del_min > sample_rate:
                 # Reset the steadiness flag if fill values are encountered, or
                 # if an entry is missing
@@ -260,7 +261,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
         if cv <= max_bmag_cv and ca_std[i] <= max_clock_angle_std:
             # Steadiness conditions have been met
             if steady:
-                imf_steady[i] = imf_steady[i-1]
+                imf_steady[i] = imf_steady[i - 1]
 
             imf_steady[i] += sample_rate
             steady = True
@@ -287,6 +288,6 @@ def calculate_dayside_reconnection(inst):
     vx = inst['flow_speed'] * 1000.0
 
     recon_day = 3.8 * rearth * vx * byz * sin_htheta * np.power((vx / 4.0e5),
-                                                                1.0/3.0)
+                                                                1.0 / 3.0)
     inst['recon_day'] = pds.Series(recon_day, index=inst.data.index)
     return

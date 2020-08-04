@@ -137,19 +137,23 @@ class TestSpecificUTOrbits():
     def test_single_orbit_call_by_negative_1_index(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits[-1]
-        ans = (self.testInst.index[0] ==
-               (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
-        ans2 = (self.testInst.index[-1] ==
-                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+        ans = (self.testInst.index[0]
+               == (dt.datetime(2009, 1, 1)
+                   - relativedelta(hours=1, minutes=37)))
+        ans2 = (self.testInst.index[-1]
+                == (dt.datetime(2009, 1, 1)
+                    - relativedelta(seconds=1)))
         assert ans & ans2
 
     def test_single_orbit_call_by_last_index(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits[14]
-        assert (self.testInst.index[0] ==
-                (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
-        assert (self.testInst.index[-1] ==
-                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+        assert (self.testInst.index[0]
+                == (dt.datetime(2009, 1, 1)
+                    - relativedelta(hours=1, minutes=37)))
+        assert (self.testInst.index[-1]
+                == (dt.datetime(2009, 1, 1)
+                    - relativedelta(seconds=1)))
 
     def test_single_orbit_call_too_many(self):
         self.testInst.load(2008, 366)
@@ -182,13 +186,13 @@ class TestSpecificUTOrbits():
         for i, inst in enumerate(self.testInst.orbits):
             if i > 14:
                 break
-            ans.append(self.testInst.index[0] ==
-                       (dt.datetime(2009, 1, 1) +
-                       i*relativedelta(hours=1, minutes=37)))
-            ans2.append(self.testInst.index[-1] ==
-                        (dt.datetime(2009, 1, 1) +
-                        (i + 1) * relativedelta(hours=1, minutes=37) -
-                        relativedelta(seconds=1)))
+            ans.append(self.testInst.index[0]
+                       == (dt.datetime(2009, 1, 1)
+                           + i * relativedelta(hours=1, minutes=37)))
+            ans2.append(self.testInst.index[-1]
+                        == (dt.datetime(2009, 1, 1)
+                            + (i + 1) * relativedelta(hours=1, minutes=37)
+                            - relativedelta(seconds=1)))
 
         assert np.all(ans) & np.all(ans2)
 
@@ -200,8 +204,8 @@ class TestSpecificUTOrbits():
     def test_orbit_prev_call_no_loaded_data(self):
         self.testInst.orbits.prev()
         # this isn't a full orbit
-        assert (self.testInst.index[-1] ==
-                dt.datetime(2010, 12, 31, 23, 59, 59))
+        assert (self.testInst.index[-1]
+                == dt.datetime(2010, 12, 31, 23, 59, 59))
         assert (self.testInst.index[0] == dt.datetime(2010, 12, 31, 23, 49))
 
     def test_single_orbit_call_orbit_starts_0_UT_using_next(self):
@@ -213,30 +217,31 @@ class TestSpecificUTOrbits():
     def test_single_orbit_call_orbit_starts_0_UT_using_prev(self):
         self.testInst.load(2009, 1)
         self.testInst.orbits.prev()
-        assert (self.testInst.index[0] ==
-                (dt.datetime(2009, 1, 1) +
-                14 * relativedelta(hours=1, minutes=37)))
-        assert (self.testInst.index[-1] ==
-                (dt.datetime(2009, 1, 1) +
-                15 * relativedelta(hours=1, minutes=37) -
-                relativedelta(seconds=1)))
+        assert (self.testInst.index[0]
+                == (dt.datetime(2009, 1, 1)
+                    + 14 * relativedelta(hours=1, minutes=37)))
+        assert (self.testInst.index[-1]
+                == (dt.datetime(2009, 1, 1)
+                    + 15 * relativedelta(hours=1, minutes=37)
+                    - relativedelta(seconds=1)))
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_next(self):
         from dateutil.relativedelta import relativedelta as relativedelta
         self.testInst.load(2008, 366)
         self.testInst.orbits.next()
         assert (self.testInst.index[0] == dt.datetime(2008, 12, 30, 23, 45))
-        assert (self.testInst.index[-1] ==
-                (dt.datetime(2008, 12, 30, 23, 45) +
-                relativedelta(hours=1, minutes=36, seconds=59)))
+        assert (self.testInst.index[-1]
+                == (dt.datetime(2008, 12, 30, 23, 45)
+                    + relativedelta(hours=1, minutes=36, seconds=59)))
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_prev(self):
         self.testInst.load(2008, 366)
         self.testInst.orbits.prev()
-        assert (self.testInst.index[0] ==
-                (dt.datetime(2009, 1, 1)-relativedelta(hours=1, minutes=37)))
-        assert (self.testInst.index[-1] ==
-                (dt.datetime(2009, 1, 1)-relativedelta(seconds=1)))
+        assert (self.testInst.index[0]
+                == (dt.datetime(2009, 1, 1)
+                    - relativedelta(hours=1, minutes=37)))
+        assert (self.testInst.index[-1]
+                == (dt.datetime(2009, 1, 1) - relativedelta(seconds=1)))
 
 
 class TestGeneralOrbitsMLT():
@@ -615,12 +620,12 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
                   dt.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = dt.datetime(2009, 1, 2) + \
-                pds.DateOffset(days=int(seconds))
-            times.append([day, day +
-                          pds.DateOffset(hours=1, minutes=37,
-                                         seconds=int(seconds)) -
-                          pds.DateOffset(seconds=20)])
+            day = (dt.datetime(2009, 1, 2)
+                   + pds.DateOffset(days=int(seconds)))
+            times.append([day, day
+                          + pds.DateOffset(hours=1, minutes=37,
+                                           seconds=int(seconds))
+                          - pds.DateOffset(seconds=20)])
 
         self.testInst.custom.attach(filter_data2, kwargs={'times': times})
 
@@ -642,12 +647,12 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
                   dt.datetime(2009, 1, 1, 1, 37)]
                  ]
         for seconds in np.arange(38):
-            day = dt.datetime(2009, 1, 2) + \
-                pds.DateOffset(days=int(seconds))
-            times.append([day, day +
-                          pds.DateOffset(hours=1, minutes=37,
-                                         seconds=int(seconds)) -
-                          pds.DateOffset(seconds=20)])
+            day = (dt.datetime(2009, 1, 2)
+                   + pds.DateOffset(days=int(seconds)))
+            times.append([day, day
+                          + pds.DateOffset(hours=1, minutes=37,
+                                           seconds=int(seconds))
+                          - pds.DateOffset(seconds=20)])
 
         self.testInst.custom.attach(filter_data2, kwargs={'times': times})
 

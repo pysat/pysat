@@ -89,8 +89,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
         stop += pds.DateOffset(days=1)
 
     if start is None or stop is None:
-        raise ValueError("must either load in Instrument objects or provide" +
-                         " starting and ending times")
+        raise ValueError(' '.join(("must either load in Instrument objects or",
+                                   "provide starting and ending times")))
 
     # Initialize the output instrument
     kp_inst = pysat.Instrument()
@@ -145,8 +145,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
                 # Determine which times to save
                 local_fill_val = recent_inst.meta['Kp'].fill
-                good_times = ((recent_inst.index >= itime) &
-                              (recent_inst.index < stop))
+                good_times = ((recent_inst.index >= itime)
+                              & (recent_inst.index < stop))
                 good_vals = recent_inst['Kp'][good_times] != local_fill_val
 
                 # Save output data and cycle time
@@ -177,13 +177,15 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
                 # Determine which times to save
                 local_fill_val = forecast_inst.meta['Kp'].fill
-                good_times = ((forecast_inst.index >= itime) &
-                              (forecast_inst.index < stop))
+                good_times = ((forecast_inst.index >= itime)
+                              & (forecast_inst.index < stop))
                 good_vals = forecast_inst['Kp'][good_times] != local_fill_val
 
                 # Save desired data and cycle time
-                kp_times.extend(list(forecast_inst.index[good_times][good_vals]))
-                kp_values.extend(list(forecast_inst['Kp'][good_times][good_vals]))
+                new_times = list(forecast_inst.index[good_times][good_vals])
+                kp_times.extend(new_times)
+                new_vals = list(forecast_inst['Kp'][good_times][good_vals])
+                kp_values.extend(new_vals)
                 itime = kp_times[-1] + pds.DateOffset(hours=3)
             notes += "{:})".format(itime.date())
 
@@ -195,8 +197,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     # Determine if the beginning or end of the time series needs to be padded
 
     freq = None if len(kp_times) < 2 else pysat.utils.time.calc_freq(kp_times)
-    date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
-                                freq=freq)
+    end_date = stop - pds.DateOffset(days=1)
+    date_range = pds.date_range(start=start, end=end_date, freq=freq)
 
     if len(kp_times) == 0:
         kp_times = date_range
@@ -225,8 +227,8 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     kp_inst.data = pds.DataFrame(kp_values, columns=['Kp'], index=kp_times)
 
     # Resample the output data, filling missing values
-    if(date_range.shape != kp_inst.index.shape or
-       abs(date_range - kp_inst.index).max().total_seconds() > 0.0):
+    if (date_range.shape != kp_inst.index.shape
+            or abs(date_range - kp_inst.index).max().total_seconds() > 0.0):
         kp_inst.data = kp_inst.data.resample(freq).fillna(method=None)
         if np.isfinite(fill_val):
             kp_inst.data[np.isnan(kp_inst.data)] = fill_val
@@ -289,8 +291,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         stop = max(stimes) + pds.DateOffset(days=1) if len(stimes) > 0 else None
 
     if start is None or stop is None:
-        raise ValueError("must either load in Instrument objects or provide" +
-                         " starting and ending times")
+        raise ValueError(' '.join(("must either load in Instrument objects or",
+                                   "provide starting and ending times")))
 
     if start >= stop:
         raise ValueError("date range is zero or negative")
@@ -317,12 +319,12 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
             if not np.any(standard_inst.index == itime):
                 if standard_inst.tag == 'daily':
                     # Add 30 days
-                    standard_inst.load(date=itime+pds.DateOffset(days=30))
+                    standard_inst.load(date=itime + pds.DateOffset(days=30))
                 else:
                     standard_inst.load(date=itime)
 
-            good_times = ((standard_inst.index >= itime) &
-                          (standard_inst.index < stop))
+            good_times = ((standard_inst.index >= itime)
+                          & (standard_inst.index < stop))
 
             if notes.find("standard") < 0:
                 notes += " the {:} source ({:} to ".format(inst_flag,
@@ -334,8 +336,10 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     fill_val = f107_inst.meta['f107'].fill
 
                 good_vals = standard_inst['f107'][good_times] != fill_val
-                f107_times.extend(list(standard_inst.index[good_times][good_vals]))
-                f107_values.extend(list(standard_inst['f107'][good_times][good_vals]))
+                new_times = list(standard_inst.index[good_times][good_vals])
+                f107_times.extend(new_times)
+                new_vals = list(standard_inst['f107'][good_times][good_vals])
+                f107_values.extend(new_vals)
                 itime = f107_times[-1] + pds.DateOffset(days=1)
             else:
                 inst_flag = 'forecast'
@@ -365,13 +369,15 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                     fill_val = f107_inst.meta['f107'].fill
 
                 # Determine which times to save
-                good_times = ((forecast_inst.index >= itime) &
-                              (forecast_inst.index < stop))
+                good_times = ((forecast_inst.index >= itime)
+                              & (forecast_inst.index < stop))
                 good_vals = forecast_inst['f107'][good_times] != fill_val
 
                 # Save desired data and cycle time
-                f107_times.extend(list(forecast_inst.index[good_times][good_vals]))
-                f107_values.extend(list(forecast_inst['f107'][good_times][good_vals]))
+                new_times = list(forecast_inst.index[good_times][good_vals])
+                f107_times.extend(new_times)
+                new_vals = list(forecast_inst['f107'][good_times][good_vals])
+                f107_values.extend(new_vals)
                 itime = f107_times[-1] + pds.DateOffset(days=1)
 
             notes += "{:})".format(itime.date())
@@ -386,14 +392,13 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
         freq = pysat.utils.time.calc_freq(f107_times)
     else:
         freq = None
-    date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
-                                freq=freq)
+    end_date = stop - pds.DateOffset(days=1)
+    date_range = pds.date_range(start=start, end=end_date, freq=freq)
 
     if len(f107_times) == 0:
         f107_times = date_range
 
-    date_range = pds.date_range(start=start, end=stop-pds.DateOffset(days=1),
-                                freq=freq)
+    date_range = pds.date_range(start=start, end=end_date, freq=freq)
 
     if date_range[0] < f107_times[0]:
         # Extend the time and value arrays from their beginning with fill
@@ -420,8 +425,8 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
                                    index=f107_times)
 
     # Resample the output data, filling missing values
-    if(date_range.shape != f107_inst.index.shape or
-       abs(date_range - f107_inst.index).max().total_seconds() > 0.0):
+    if (date_range.shape != f107_inst.index.shape
+            or abs(date_range - f107_inst.index).max().total_seconds() > 0.0):
         f107_inst.data = f107_inst.data.resample(freq).fillna(method=None)
         if np.isfinite(fill_val):
             f107_inst.data[np.isnan(f107_inst.data)] = fill_val
@@ -486,8 +491,9 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
                      ap_inst.meta.max_label: 400,
                      ap_inst.meta.fill_label:
                      ap_inst.meta[ap_name][ap_inst.meta.fill_label],
-                     ap_inst.meta.notes_label: '24-h running average of '
-                     + '3-hourly ap indices'}
+                     ap_inst.meta.notes_label: ' '.join(('24-h running average',
+                                                         'of 3-hourly ap',
+                                                         'indices'))}
 
         ap_inst.meta.__setitem__(running_name, meta_dict)
 
@@ -525,6 +531,7 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
 
     return
 
+
 def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
     """ Convert Ap into Kp
 
@@ -549,13 +556,16 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
     # Ap are keys, Kp returned as double (N- = N.6667, N+=N.3333333)
     one_third = 1.0 / 3.0
     two_third = 2.0 / 3.0
-    ap_to_kp = {0: 0, 2: one_third, 3: two_third, 4: 1, 5: 1.0+one_third,
-                6: 1.0+two_third, 7: 2, 9: 2.0+one_third, 12: 2.0+two_third,
-                15: 3, 18: 3.0+one_third, 22: 3.0+two_third, 27: 4,
-                32: 4.0+one_third, 39: 4.0+two_third, 48: 5, 56: 5.0+one_third,
-                67: 5.0+two_third, 80: 6, 94: 6.0+one_third, 111: 6.0+two_third,
-                132: 7, 154: 7.0+one_third, 179: 7.0+two_third, 207: 8,
-                236: 8.0+one_third, 300: 8.0+two_third, 400: 9}
+    ap_to_kp = {0: 0, 2: one_third, 3: two_third,
+                4: 1, 5: 1.0 + one_third, 6: 1.0 + two_third,
+                7: 2, 9: 2.0 + one_third, 12: 2.0 + two_third,
+                15: 3, 18: 3.0 + one_third, 22: 3.0 + two_third,
+                27: 4, 32: 4.0 + one_third, 39: 4.0 + two_third,
+                48: 5, 56: 5.0 + one_third, 67: 5.0 + two_third,
+                80: 6, 94: 6.0 + one_third, 111: 6.0 + two_third,
+                132: 7, 154: 7.0 + one_third, 179: 7.0 + two_third,
+                207: 8, 236: 8.0 + one_third, 300: 8.0 + two_third,
+                400: 9}
     ap_keys = sorted(list(ap_to_kp.keys()))
 
     # If the ap falls between two Kp indices, assign it to the lower Kp value
@@ -581,7 +591,7 @@ def convert_ap_to_kp(ap_data, fill_val=-1, ap_name='ap'):
 
     # Set the metadata
     meta = pysat.Meta()
-    meta['Kp'] = {meta.units_label : '',
+    meta['Kp'] = {meta.units_label: '',
                   meta.name_label: 'Kp',
                   meta.desc_label: 'Kp converted from {:}'.format(ap_name),
                   meta.plot_label: 'Kp',

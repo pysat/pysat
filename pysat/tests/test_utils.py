@@ -63,15 +63,18 @@ class TestBasics():
     def test_set_data_dir_no_store(self):
         """update data_dir without storing"""
         pysat.utils.set_data_dir('.', store=False)
-        check1 = (pysat.data_dir == '.')
+        assert (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers old settings
         pysat.files = re_load(pysat.files)
         pysat._instrument = re_load(pysat._instrument)
         re_load(pysat)
-        check2 = (pysat.data_dir == self.data_path)
+        assert (pysat.data_dir == self.data_path)
 
-        assert check1 & check2
+    def test_set_data_dir_wrong_path(self):
+        """update data_dir with an invalid path"""
+        with pytest.raises(ValueError):
+            pysat.utils.set_data_dir('not_a_directory', store=False)
 
     def test_set_data_dir_bad_directory(self):
         with pytest.raises(ValueError) as excinfo:
@@ -213,6 +216,7 @@ class TestBasicNetCDF4():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
+                                         sat_id='100',
                                          clean_level='clean')
         self.testInst.pandas_format = True
 
@@ -224,6 +228,10 @@ class TestBasicNetCDF4():
         remove_files(self.testInst)
         pysat.utils.set_data_dir(self.data_path, store=False)
         del self.testInst
+
+    def test_load_netcdf4_empty_filenames(self):
+        with pytest.raises(ValueError):
+            pysat.utils.load_netcdf4(fnames=None)
 
     def test_basic_write_and_read_netcdf4_default_format(self):
         # create a bunch of files by year and doy
@@ -436,3 +444,63 @@ class TestBasicNetCDF4():
 
         # custom attribute correctly read from file
         assert meta.bespoke
+
+
+class TestBasicNetCDF4xarray():
+    """NOTE: combine with above class as part of #60"""
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # store current pysat directory
+        self.data_path = pysat.data_dir
+
+        # create temporary directory
+        dir_name = tempfile.mkdtemp()
+        pysat.utils.set_data_dir(dir_name, store=False)
+
+        self.testInst = pysat.Instrument(platform='pysat',
+                                         name='testing2d_xarray',
+                                         sat_id='100',
+                                         clean_level='clean')
+        self.testInst.pandas_format = False
+
+        # create testing directory
+        prep_dir(self.testInst)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        remove_files(self.testInst)
+        pysat.utils.set_data_dir(self.data_path, store=False)
+        del self.testInst
+
+    def test_basic_write_and_read_netcdf4_default_format(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.data.attrs['new_attr'] = 1
+        self.testInst.data.to_netcdf(outfile)
+
+        loaded_inst, meta = \
+            pysat.utils.load_netcdf4(outfile,
+                                     pandas_format=self.testInst.pandas_format)
+        keys = self.testInst.data.data_vars.keys()
+
+        for key in keys:
+            assert(np.all(self.testInst[key] == loaded_inst[key]))
+        assert meta.new_attr == 1
+
+    def test_load_netcdf4_pandas_3d_error(self):
+        # create a bunch of files by year and doy
+        prep_dir(self.testInst)
+        outfile = os.path.join(self.testInst.files.data_path,
+                               'pysat_test_ncdf.nc')
+        self.testInst.load(2009, 1)
+        self.testInst.data.attrs['new_attr'] = 1
+        self.testInst.data.to_netcdf(outfile)
+
+        with pytest.raises(ValueError):
+            loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
+                                                         epoch_name='time',
+                                                         pandas_format=True)

@@ -17,8 +17,8 @@ class TestOMNICustom():
 
         # Recast time in minutes rather than seconds
         self.testInst.data.index = \
-            pds.Series([t + dt.timedelta(seconds=60-i) +
-                        dt.timedelta(minutes=i)
+            pds.Series([t + dt.timedelta(seconds=(60 - i))
+                        + dt.timedelta(minutes=i)
                         for i, t in enumerate(self.testInst.data.index)])
 
         # Add IMF data
@@ -71,7 +71,7 @@ class TestOMNICustom():
         # Set test clock angle
         test_angle = np.array([44.93710732, 24.04132437, 13.90673288,
                                11.08167359, 43.65882745, 84.71666707,
-                               21.96325222, 32.29174675,  2.15855047,
+                               21.96325222, 32.29174675, 2.15855047,
                                40.43151704, 59.17741091, 80.80882619])
 
         # Test the difference.  There may be a 2 pi integer ambiguity
@@ -131,8 +131,8 @@ class TestOMNICustom():
 
         assert test_diff[np.isnan(test_diff)].shape[0] == 2
         assert np.all(test_diff[~np.isnan(test_diff)] < 1.0e-6)
-        assert np.all(np.isnan(self.testInst['clock_angle_std']) ==
-                      np.isnan(ca_std))
+        assert np.all(np.isnan(self.testInst['clock_angle_std'])
+                      == np.isnan(ca_std))
 
     def test_dayside_recon(self):
         """ Test the IMF steadiness standard deviation calculation."""

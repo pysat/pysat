@@ -4,7 +4,6 @@ import datetime as dt
 from importlib import reload as re_load
 import logging
 import numpy as np
-import re
 
 import pandas as pds
 import pytest
@@ -12,6 +11,9 @@ import pytest
 import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
+import pysat.instruments.pysat_testing2d
+
+xarray_epoch_name = 'time'
 
 
 # ------------------------------------------------------------------------------
@@ -19,7 +21,6 @@ import pysat.instruments.pysat_testing_xarray
 # Test Instrument object basics
 #
 # ------------------------------------------------------------------------------
-
 class TestBasics():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
@@ -51,7 +52,8 @@ class TestBasics():
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
         with pytest.raises(ValueError):
-            pysat.Instrument(platform='pysat', name='testing', sat_id='10',
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name, sat_id='10',
                              clean_level='clean',
                              unsupported_keyword_yeah=True)
 
@@ -64,7 +66,8 @@ class TestBasics():
             self.testInst.load()
 
     def test_basic_instrument_load_by_file_and_multifile(self):
-        testInst = pysat.Instrument(platform='pysat', name='testing',
+        testInst = pysat.Instrument(platform=self.testInst.platform,
+                                    name=self.testInst.name,
                                     sat_id='10',
                                     clean_level='clean',
                                     update_files=True,
@@ -194,6 +197,28 @@ class TestBasics():
         assert files[0] == dt.datetime(2009, 1, 1)
         assert files[-1] == dt.datetime(2009, 1, 31)
 
+    def test_download_updated_files(self, caplog):
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.testInst.download_updated_files()
+        # Perform a local search
+        assert "files locally" in caplog.text
+        # New files are found
+        assert "that are new or updated" in caplog.text
+        # download new files
+        assert "Downloading data to" in caplog.text
+        # Update local file list
+        assert "Updating pysat file list" in caplog.text
+
+    def test_download_recent_data(self, caplog):
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.testInst.download()
+        # Tells user that recent data will be downloaded
+        assert "most recent data by default" in caplog.text
+        # download new files
+        assert "Downloading data to" in caplog.text
+        # Update local file list
+        assert "Updating pysat file list" in caplog.text
+
     # --------------------------------------------------------------------------
     #
     # Test date helpers
@@ -262,16 +287,15 @@ class TestBasics():
             # dimension
             # xarray specific functionality
             # change name of main dim to support test for dim keyword
-            data1 = data1.rename({'time': 'time2'})
-            data2 = data2.rename({'time': 'time2'})
+            data1 = data1.rename({xarray_epoch_name: 'Epoch2'})
+            data2 = data2.rename({xarray_epoch_name: 'Epoch2'})
 
             # concat together
-            self.testInst.data = \
-                self.testInst.concat_data([data1, data2],
-                                          dim='time2').rename({'time2':
-                                                               'time'})
+            self.testInst.data = self.testInst.concat_data(
+                [data1, data2], dim='Epoch2').rename({'Epoch2':
+                                                      xarray_epoch_name})
             # test for concatenation
-            # Instrument.data must have a 'time' index
+            # Instrument.data must have a 'Epoch' index
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
             assert (self.testInst[0:len1, :]
@@ -311,7 +335,7 @@ class TestBasics():
             assert np.all(self.testInst.index == self.testInst.data.index)
         else:
             assert np.all(self.testInst.index ==
-                          self.testInst.data.indexes['time'])
+                          self.testInst.data.indexes[xarray_epoch_name])
 
     # #--------------------------------------------------------------------------
     # #
@@ -345,7 +369,7 @@ class TestBasics():
         # No loaded data
         assert output.find('No loaded data') > 0
         assert output.find('Number of variables:') < 0
-        assert output.find('dummy') < 0
+        assert output.find('uts') < 0
 
     def test_repr_w_orbit(self):
         re_load(pysat.instruments.pysat_testing)
@@ -387,7 +411,7 @@ class TestBasics():
         output = self.testInst.__str__()
         assert output.find('No loaded data') < 0
         assert output.find('Number of variables:') > 0
-        assert output.find('dummy') > 0
+        assert output.find('uts') > 0
 
     # --------------------------------------------------------------------------
     #
@@ -478,10 +502,13 @@ class TestBasics():
 
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
+        time_step = (self.testInst.index[1]
+                     - self.testInst.index[0]).value / 1.E9
+        offset = pds.DateOffset(seconds=(10 * time_step))
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
-        stop = dt.datetime(2009, 1, 1, 0, 0, 10)
-        assert np.all(self.testInst[start:stop, 'uts'] ==
-                      self.testInst.data['uts'].values[0:11])
+        stop = start + offset
+        assert np.all(self.testInst[start:stop, 'uts']
+                      == self.testInst.data['uts'].values[0:11])
 
     def test_setting_data_by_name(self):
         self.testInst.load(2009, 1)
@@ -585,19 +612,22 @@ class TestBasics():
     def test_setting_partial_data_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0):
-                      dt.datetime(2009, 1, 1, 0, 0, 10),
-                      'doubleMLT'] = 0
-        assert np.all(self.testInst[11:, 'doubleMLT'] ==
-                      2. * self.testInst[11:, 'mlt'])
+        time_step = (self.testInst.index[1]
+                     - self.testInst.index[0]).value / 1.E9
+        offset = pds.DateOffset(seconds=(10 * time_step))
+        start = dt.datetime(2009, 1, 1, 0, 0, 0)
+        stop = start + offset
+        self.testInst[start:stop, 'doubleMLT'] = 0
+        assert np.all(self.testInst[11:, 'doubleMLT']
+                      == 2. * self.testInst[11:, 'mlt'])
         assert np.all(self.testInst[0:11, 'doubleMLT'] == 0)
 
     def test_modifying_data_inplace(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
-        assert np.all(self.testInst['doubleMLT'] ==
-                      2.*self.testInst['mlt'] + 100)
+        assert np.all(self.testInst['doubleMLT']
+                      == 2.*self.testInst['mlt'] + 100)
 
     def test_getting_all_data_by_index(self):
         self.testInst.load(2009, 1)
@@ -605,7 +635,7 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['time'] == 5
+            assert a.sizes[xarray_epoch_name] == 5
 
     def test_getting_all_data_by_numpy_array_of_int(self):
         self.testInst.load(2009, 1)
@@ -613,7 +643,133 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['time'] == 5
+            assert a.sizes[xarray_epoch_name] == 5
+
+    # --------------------------------------------------------------------------
+    #
+    # Test variable renaming
+    #
+    # --------------------------------------------------------------------------
+
+    @pytest.mark.parametrize("values", [{'uts': 'uts1'},
+                                        {'uts': 'uts2',
+                                         'mlt': 'mlt2'},
+                                        {'uts': 'long change with spaces'}])
+    def test_basic_variable_renaming(self, values):
+        # test single variable
+        self.testInst.load(2009, 1)
+        self.testInst.rename(values)
+        for key in values:
+            # check for new name
+            assert values[key] in self.testInst.data
+            assert values[key] in self.testInst.meta
+            # ensure old name not present
+            assert key not in self.testInst.data
+            assert key not in self.testInst.meta
+
+    @pytest.mark.parametrize("values", [{'help': 'I need somebody'},
+                                        {'UTS': 'litte_uts'},
+                                        {'utS': 'uts1'},
+                                        {'utS': 'uts'}])
+    def test_unknown_variable_error_renaming(self, values):
+        # check for error for unknown variable name
+        self.testInst.load(2009, 1)
+        with pytest.raises(ValueError):
+            self.testInst.rename(values)
+
+    @pytest.mark.parametrize("values", [{'uts': 'UTS1'},
+                                        {'uts': 'UTs2',
+                                         'mlt': 'Mlt2'},
+                                        {'uts': 'Long Change with spaces'}])
+    def test_basic_variable_renaming_lowercase(self, values):
+        # test single variable
+        self.testInst.load(2009, 1)
+        self.testInst.rename(values, lowercase_data_labels=True)
+        for key in values:
+            # check for new name
+            assert values[key].lower() in self.testInst.data
+            assert values[key].lower() in self.testInst.meta
+            # ensure case retained in meta
+            assert values[key] == self.testInst.meta[values[key]].name
+            # ensure old name not present
+            assert key not in self.testInst.data
+            assert key not in self.testInst.meta
+
+    @pytest.mark.parametrize("values", [{'profiles': {'density': 'ionization'}},
+                                        {'profiles': {'density': 'mass'},
+                                         'alt_profiles':
+                                             {'density': 'volume'}}])
+    def test_ho_pandas_variable_renaming(self, values):
+        # check for pysat_testing2d instrument
+        if self.testInst.platform == 'pysat':
+            if self.testInst.name == 'testing2d':
+                self.testInst.load(2009, 1)
+                self.testInst.rename(values)
+                for key in values:
+                    for ikey in values[key]:
+                        # check column name unchanged
+                        assert key in self.testInst.data
+                        assert key in self.testInst.meta
+                        # check for new name in HO data
+                        assert values[key][ikey] in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert values[key][ikey] in check_var
+                        # ensure old name not present
+                        assert ikey not in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert ikey not in check_var
+
+    @pytest.mark.parametrize("values", [{'profiles':
+                                        {'help': 'I need somebody'}},
+                                        {'fake_profi':
+                                        {'help': 'Not just anybody'}},
+                                        {'wrong_profile':
+                                        {'help': 'You know I need someone'},
+                                         'fake_profiles':
+                                        {'Beatles': 'help!'},
+                                         'profiles':
+                                        {'density': 'valid_change'}},
+                                        {'fake_profile':
+                                        {'density': 'valid HO change'}},
+                                        {'Nope_profiles':
+                                        {'density': 'valid_HO_change'}}])
+    def test_ho_pandas_unknown_variable_error_renaming(self, values):
+        # check for pysat_testing2d instrument
+        if self.testInst.platform == 'pysat':
+            if self.testInst.name == 'testing2d':
+                self.testInst.load(2009, 1)
+                # check for error for unknown column or HO variable name
+                with pytest.raises(ValueError):
+                    self.testInst.rename(values)
+
+    @pytest.mark.parametrize("values", [{'profiles': {'density': 'Ionization'}},
+                                        {'profiles': {'density': 'MASa'},
+                                         'alt_profiles':
+                                             {'density': 'VoLuMe'}}])
+    def test_ho_pandas_variable_renaming_lowercase(self, values):
+        # check for pysat_testing2d instrument
+        if self.testInst.platform == 'pysat':
+            if self.testInst.name == 'testing2d':
+                self.testInst.load(2009, 1)
+                self.testInst.rename(values)
+                for key in values:
+                    for ikey in values[key]:
+                        # check column name unchanged
+                        assert key in self.testInst.data
+                        assert key in self.testInst.meta
+                        # check for new name in HO data
+                        test_val = values[key][ikey]
+                        assert test_val in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        # case insensitive check
+                        assert values[key][ikey] in check_var
+                        # ensure new case in there
+                        check_var = check_var[values[key][ikey]].name
+                        assert values[key][ikey] == check_var
+                        # ensure old name not present
+                        assert ikey not in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert ikey not in check_var
 
     # --------------------------------------------------------------------------
     #
@@ -901,6 +1057,25 @@ class TestBasicsXarray(TestBasics):
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          sat_id='10',
+                                         clean_level='clean',
+                                         update_files=True)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+
+# ------------------------------------------------------------------------------
+#
+# Repeat tests above with 2d data
+#
+# ------------------------------------------------------------------------------
+class TestBasics2D(TestBasics):
+    def setup(self):
+        re_load(pysat.instruments.pysat_testing2d)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
+                                         sat_id='50',
                                          clean_level='clean',
                                          update_files=True)
 

@@ -357,8 +357,14 @@ class Instrument(object):
         # store kwargs, passed to load routine
         # first, check if keywords are  valid
         _check_if_keywords_supported(self._load_rtn, **kwargs)
-        # store
+        # get and apply default values for custom keywords
+        default_keywords = _get_supported_keywords(self._load_rtn)
+        # store user supplied keywords
         self.kwargs = kwargs
+        # add in defaults if not already present
+        for key in default_keywords.keys():
+            if key not in self.kwargs:
+                self.kwargs[key] = default_keywords[key]
 
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
@@ -386,7 +392,7 @@ class Instrument(object):
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
             # Slicing by name and row/date
-            inst[datetime1:datetime1, 'name1':'name2']
+            inst[datetime1:datetime2, 'name1':'name2']
 
         """
 
@@ -431,19 +437,24 @@ class Instrument(object):
             # Slicing by date, inclusive
             inst[datetime1:datetime2, 'name']
             # Slicing by name and row/date
-            inst[datetime1:datetime1, 'name1':'name2']
+            inst[datetime1:datetime2, 'name1':'name2']
 
         """
-        if 'time' not in self.data:
+        if 'Epoch' in self.data.indexes:
+            epoch_name = 'Epoch'
+        elif 'time' in self.data.indexes:
+            epoch_name = 'time'
+        else:
             return xr.Dataset(None)
+
         if isinstance(key, tuple):
             if len(key) == 2:
                 # support slicing time, variable name
                 try:
-                    return self.data.isel(time=key[0])[key[1]]
-                except:
+                    return self.data.isel(indexers={epoch_name: key[0]})[key[1]]
+                except (TypeError, KeyError):
                     try:
-                        return self.data.sel(time=key[0])[key[1]]
+                        return self.data.sel(indexers={epoch_name: key[0]})[key[1]]
                     except TypeError:  # construct dataset from names
                         return self.data[self.variables[key[1]]]
             else:
@@ -457,15 +468,15 @@ class Instrument(object):
             try:
                 # grab a particular variable by name
                 return self.data[key]
-            except:
+            except (TypeError, KeyError):
                 # that didn't work
                 try:
                     # get all data variables but for a subset of time
                     # using integer indexing
-                    return self.data.isel(time=key)
-                except:
+                    return self.data.isel(indexers={epoch_name: key})
+                except (TypeError, KeyError):
                     # subset of time, using label based indexing
-                    return self.data.sel(time=key)
+                    return self.data.sel(indexers={epoch_name: key})
 
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
@@ -550,6 +561,13 @@ class Instrument(object):
                 new = {'data': new}
             in_data = new.pop('data')
 
+            if 'Epoch' in self.data.indexes:
+                epoch_name = 'Epoch'
+            elif 'time' in self.data.indexes:
+                epoch_name = 'time'
+            else:
+                raise ValueError('Unsupported time index name, "Epoch" or "time".')
+
             if isinstance(key, tuple):
                 # user provided more than one thing in assignment location
                 # something like, index integers and a variable name
@@ -560,12 +578,10 @@ class Instrument(object):
                 indict = {}
                 for i, dim in enumerate(self[key[-1]].dims):
                     indict[dim] = key[i]
-                    # if dim == 'time':
-                    #     indict[dim] = self.index[key[i]]
                 try:
                     self.data[key[-1]].loc[indict] = in_data
-                except:
-                    indict['time'] = self.index[indict['time']]
+                except (TypeError, KeyError):
+                    indict[epoch_name] = self.index[indict[epoch_name]]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 return
@@ -583,21 +599,21 @@ class Instrument(object):
                     # looking at a 1D input here
                     if len(in_data) == len(self.index):
                         # 1D input has the correct length for storage along
-                        # 'time'
-                        self.data[key] = ('time', in_data)
+                        # 'Epoch'
+                        self.data[key] = (epoch_name, in_data)
                     elif len(in_data) == 1:
                         # only provided a single number in iterable, make that
                         # the input for all times
-                        self.data[key] = ('time', [in_data[0]]*len(self.index))
+                        self.data[key] = (epoch_name, [in_data[0]]*len(self.index))
                     elif len(in_data) == 0:
                         # provided an empty iterable
                         # make everything NaN
-                        self.data[key] = ('time', [np.nan]*len(self.index))
+                        self.data[key] = (epoch_name, [np.nan]*len(self.index))
                 # not an iterable input
                 elif len(np.shape(in_data)) == 0:
                     # not given an iterable at all, single number
                     # make that number the input for all times
-                    self.data[key] = ('time', [in_data]*len(self.index))
+                    self.data[key] = (epoch_name, [in_data]*len(self.index))
 
                 else:
                     # multidimensional input that is not an xarray
@@ -619,6 +635,170 @@ class Instrument(object):
             # attach metadata
             self.meta[key] = new
 
+    def rename(self, names, lowercase_data_labels=False):
+        """Renames variable within both data and metadata.
+
+        Parameters
+        ----------
+        names : dict or other map
+            Existing names are keys, values are new names
+        lowercase_data_labels : boolean
+            If True, the labels applied to inst.data
+            are forced to lowercase. The supplied case
+            in names is retained within inst.meta.
+
+        Examples
+        --------
+        ..
+            # standard renaming
+            new_names = {'old_name': 'new_name',
+                         'old_name2':, 'new_name2'}
+            inst.rename(new_names)
+
+        If using a pandas DataFrame as the underlying data object,
+        to rename higher-order variables supply a modified dictionary.
+        Note that this rename will be invoked individually for all
+        times in the dataset.
+        ..
+            # applies to higher-order datasets
+            # that are loaded into pandas
+            # general example
+            new_names = {'old_name': 'new_name',
+                         'old_name2':, 'new_name2',
+                         'col_name': {'old_ho_name': 'new_ho_name'}}
+            inst.rename(new_names)
+
+            # specific example
+            inst = pysat.Instrument('pysat', 'testing2D')
+            inst.load(2009, 1)
+            names = {'uts': 'pysat_uts',
+                     'profiles': {'density': 'pysat_density'}}
+            inst.rename(names)
+
+        pysat supports differing case for variable labels across the
+        data and metadata objects attached to an Instrument. Since
+        metadata is case-preserving (on assignment) but case-insensitive,
+        the labels used for data are always valid for metadata. This
+        feature may be used to provide friendlier variable names within
+        pysat while also maintaining external format compatibility
+        when writing files.
+        ..
+            # example with lowercase_data_labels
+            inst = pysat.Instrument('pysat', 'testing2D')
+            inst.load(2009, 1)
+            names = {'uts': 'Pysat_UTS',
+                     'profiles': {'density': 'PYSAT_density'}}
+            inst.rename(names, lowercase_data_labels=True)
+
+            # note that 'Pysat_UTS' was applied to data as 'pysat_uts'
+            print(inst['pysat_uts'])
+
+            # case is retained within inst.meta, though
+            # data access to meta is case insensitive
+            print('True meta variable name is ', inst.meta['pysat_uts'].name)
+
+            # Note that the labels in meta may be used when creating a file
+            # thus 'Pysat_UTS' would be found in the resulting file
+            inst.to_netcdf4('./test.nc', preserve_meta_case=True)
+
+            # load in file and check
+            raw = netCDF4.Dataset('./test.nc')
+            print(raw.variables['Pysat_UTS'])
+
+        """
+
+        if self.pandas_format:
+            # check for standard rename variables as well as
+            # renaming for higher order variables
+            # filtered old names
+            fdict = {}
+            # higher order names
+            hdict = {}
+            # keys for existing higher order data labels
+            ho_keys = [a for a in self.meta.keys_nD()]
+            lo_keys = [a for a in self.meta.keys()]
+            # iterate, collect normal variables
+            # rename higher order variables
+            for key in names:
+                # original name, new name
+                oname, nname = key, names[key]
+                if oname not in ho_keys:
+                    if oname in lo_keys:
+                        # within low order (standard) variable keys
+                        # may be renamed directly
+                        fdict[oname] = nname
+                    else:
+                        # not in standard or higher order keys
+                        estr = ' '.join((oname, ' is not',
+                                         'a known variable.'))
+                        raise ValueError(estr)
+                else:
+                    # variable name is in higher order list
+                    if isinstance(nname, dict):
+                        # changing a variable name within
+                        # higher order object
+                        label = [k for k in nname.keys()][0]
+                        hdict[label] = nname[label]
+                        # ensure variable is there
+                        if label not in self.meta[oname]['children']:
+                            estr = ''.join((label, ' is not a known ',
+                                            'higher-order variable under ',
+                                            oname, '.'))
+                            raise ValueError(estr)
+                        # check for lowercase flag
+                        if lowercase_data_labels:
+                            gdict = {}
+                            gdict[label] = nname[label].lower()
+                        else:
+                            gdict = hdict
+                        # change names for frame at each time
+                        for i in np.arange(len(self.index)):
+                            # within data itself
+                            self[i, oname].rename(columns=gdict,
+                                                  inplace=True)
+                        # change metadata, once per variable only
+                        # hdict used as it retains user provided case
+                        self.meta.ho_data[oname].data.rename(hdict,
+                                                             inplace=True)
+                        # clear out dict for next loop
+                        hdict.pop(label)
+                    else:
+                        # changing the outer 'column' label
+                        fdict[oname] = nname
+            # rename regular variables, single go
+            # check for lower case data labels first
+            if lowercase_data_labels:
+                gdict = {}
+                for key in fdict:
+                    gdict[key] = fdict[key].lower()
+            else:
+                gdict = fdict
+            # change names for attached data object
+            self.data.rename(columns=gdict, inplace=True)
+
+        else:
+            # xarray renaming
+            # account for lowercase data labels first
+            if lowercase_data_labels:
+                gdict = {}
+                for key in names:
+                    gdict[key] = names[key].lower()
+            else:
+                gdict = names
+            self.data = self.data.rename(gdict)
+            # set up dictionary for renaming metadata variables
+            fdict = names
+
+        # update normal metadata parameters in a single go
+        # case must always be preserved in Meta object
+        new_fdict = {}
+        for key in fdict:
+            case_old = self.meta.var_case_name(key)
+            new_fdict[case_old] = fdict[key]
+        self.meta.data.rename(index=new_fdict, inplace=True)
+
+        return
+
     @property
     def empty(self):
         """Boolean flag reflecting lack of data.
@@ -630,6 +810,8 @@ class Instrument(object):
         else:
             if 'time' in self.data.indexes:
                 return len(self.data.indexes['time']) == 0
+            elif 'Epoch' in self.data.indexes:
+                return len(self.data.indexes['Epoch']) == 0
             else:
                 return True
 
@@ -645,6 +827,8 @@ class Instrument(object):
         else:
             if 'time' in data.indexes:
                 return len(data.indexes['time']) == 0
+            elif 'Epoch' in data.indexes:
+                return len(data.indexes['Epoch']) == 0
             else:
                 return True
 
@@ -673,6 +857,8 @@ class Instrument(object):
         else:
             if 'time' in data.indexes:
                 return data.indexes['time']
+            elif 'Epoch' in data.indexes:
+                return data.indexes['Epoch']
             else:
                 return pds.Index([])
 
@@ -709,7 +895,7 @@ class Instrument(object):
         pandas.concat method. If sort is supplied as a keyword, the
         user provided value is used instead.
 
-        For xarray, dim='time' is passed along to xarray.concat
+        For xarray, dim='Epoch' is passed along to xarray.concat
         except if the user includes a value for dim as a
         keyword argument.
 
@@ -727,7 +913,7 @@ class Instrument(object):
                 dim = kwargs['dim']
                 _ = kwargs.pop('dim')
             else:
-                dim = 'time'
+                dim = self.index.name
             return xr.concat(data, dim=dim, *args, **kwargs)
 
     def _pass_func(*args, **kwargs):
@@ -760,13 +946,12 @@ class Instrument(object):
                 inst = \
                     importlib.import_module(''.join(('.', self.platform, '_',
                                                      self.name)),
-                                                     package='pysat.instruments')
+                                            package='pysat.instruments')
                 import_success = True
-            except:
+            except ImportError:
                 # iterate through user set modules
                 for mod in user_modules:
                     # get my.package.name from my.package.name.platform_name
-                    package_name = '.'.join(mod.split('.')[:-1])
                     try:
                         inst = importlib.import_module(mod)
                         if ((inst.platform == self.platform) & (inst.name == self.name)):
@@ -832,7 +1017,8 @@ class Instrument(object):
         # Check for download flags for tests
         try:
             # Used for instruments without download access
-            # Assume we test download routines regardless of env unless specified otherwise
+            # Assume we test download routines regardless of env unless
+            # specified otherwise
             self._test_download = \
                 inst._test_download[self.sat_id][self.tag]
         except (AttributeError, KeyError):
@@ -840,7 +1026,8 @@ class Instrument(object):
             self._test_download = True
         try:
             # Used for tests which require FTP access
-            # Assume we test download routines on travis unless specified otherwise
+            # Assume we test download routines on travis unless specified
+            # otherwise
             self._test_download_travis = \
                 inst._test_download_travis[self.sat_id][self.tag]
         except (AttributeError, KeyError):
@@ -1565,8 +1752,8 @@ class Instrument(object):
             # longer than a day then the download defaults would
             # no longer be correct. Dates are always correct in this
             # setup.
-            logger.info('Downloading the most recent data by default ' +
-                  '(yesterday through tomorrow).')
+            logger.info(''.join(['Downloading the most recent data by ',
+                                 'default (yesterday through tomorrow).']))
             start = self.yesterday()
             stop = self.tomorrow()
         logger.info('Downloading data to: {}'.format(self.files.data_path))
@@ -1985,14 +2172,11 @@ class Instrument(object):
         for key in mdata_dict:
             if type(mdata_dict[key]) == bool:
                 mdata_dict[key] = int(mdata_dict[key])
-        # Should use isinstance here
-        if (coltype == type(' ')) or (coltype == type(u' ')):
-            # if isinstance(coltype, str):
+        if (coltype == str):
             remove = True
             warnings.warn('FillValue is not an acceptable '
                           'parameter for strings - it will be removed')
 
-        # print('coltype', coltype, remove, type(coltype), )
         if u'_FillValue' in mdata_dict.keys():
             # make sure _FillValue is the same type as the data
             if remove:
@@ -2303,8 +2487,9 @@ class Instrument(object):
                         cdfkey.setncatts(new_dict)
                     except KeyError as err:
                         logger.info(' '.join((str(err), '\n',
-                                        ', '.join(('Unable to find MetaData for',
-                                                   key)))))
+                                              ' '.join(('Unable to find'
+                                                        'MetaData for',
+                                                        key)))))
                     # assign data
                     if datetime_flag:
                         # datetime is in nanoseconds, storing milliseconds
@@ -2320,14 +2505,11 @@ class Instrument(object):
                     # what the actual objects are, then act as needed
 
                     # use info in coltype to get real datatype of object
-                    # isinstance isn't working here because of something with
-                    # coltype
 
-                    if (coltype == type(' ')) or (coltype == type(u' ')):
-                        # dealing with a string
+                    if (coltype == str):
                         cdfkey = out_data.createVariable(case_key,
                                                          coltype,
-                                                         dimensions=(epoch_name),
+                                                         dimensions=epoch_name,
                                                          zlib=zlib,
                                                          complevel=complevel,
                                                          shuffle=shuffle)
@@ -2348,8 +2530,8 @@ class Instrument(object):
                             # really attach metadata now
                             cdfkey.setncatts(new_dict)
                         except KeyError:
-                            logger.info(', '.join(('Unable to find MetaData for',
-                                             key)))
+                            logger.info(' '.join(('Unable to find MetaData for',
+                                                  key)))
 
                         # time to actually write the data now
                         cdfkey[:] = data.values
@@ -2439,9 +2621,10 @@ class Instrument(object):
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     logger.info(' '.join((str(err), '\n',
-                                                    'Unable to find MetaData',
-                                                    'for', ', '.join((key,
-                                                                      col)))))
+                                                          'Unable to find',
+                                                          'MetaData for',
+                                                          ', '.join((key,
+                                                                     col)))))
                                 # attach data
                                 # it may be slow to repeatedly call the store
                                 # method as well astype method below collect
@@ -2486,8 +2669,9 @@ class Instrument(object):
                                     cdfkey.setncatts(new_dict)
                                 except KeyError as err:
                                     logger.info(' '.join((str(err), '\n',
-                                                    'Unable to find MetaData',
-                                                    'for,', key)))
+                                                          'Unable to find ',
+                                                          'MetaData for,',
+                                                          key)))
                                 # attach data
                                 temp_cdf_data = \
                                     np.zeros((num, dims[0])).astype(coltype)
@@ -2521,7 +2705,6 @@ class Instrument(object):
                         new_dict['Var_Type'] = 'data'
 
                         if datetime_flag:
-                            # print('datetime flag')
                             for export_name_label in export_name_labels:
                                 new_dict[export_name_label] = epoch_name
                             for export_units_label in export_units_labels:
@@ -2595,19 +2778,16 @@ class Instrument(object):
 
             adict['Date_End'] = \
                 dt.datetime.strftime(self.index[-1],
-                                        '%a, %d %b %Y,  ' +
-                                        '%Y-%m-%dT%H:%M:%S.%f')
+                                     '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
             adict['Date_End'] = adict['Date_End'][:-3] + ' UTC'
 
             adict['Date_Start'] = \
                 dt.datetime.strftime(self.index[0],
-                                        '%a, %d %b %Y,  ' +
-                                        '%Y-%m-%dT%H:%M:%S.%f')
+                                     '%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
             adict['Date_Start'] = adict['Date_Start'][:-3] + ' UTC'
             adict['File'] = os.path.split(fname)
             adict['File_Date'] = \
-                self.index[-1].strftime('%a, %d %b %Y,  ' +
-                                        '%Y-%m-%dT%H:%M:%S.%f')
+                self.index[-1].strftime('%a, %d %b %Y,  %Y-%m-%dT%H:%M:%S.%f')
             adict['File_Date'] = adict['File_Date'][:-3] + ' UTC'
             adict['Generation_Date'] = \
                 dt.datetime.utcnow().strftime('%Y%m%d')
@@ -2629,7 +2809,7 @@ class Instrument(object):
 
 
 def _get_supported_keywords(load_func):
-    """Return a list of supported keywords
+    """Return a dict of supported keywords
 
     Intended to be used on the supporting instrument
     functions that enable the general Instrument object
@@ -2642,8 +2822,8 @@ def _get_supported_keywords(load_func):
 
     Returns
     -------
-    list
-        list of keyword argument strings
+    out_dict
+        dict of supported keywords and default values
 
 
     Notes
@@ -2672,12 +2852,28 @@ def _get_supported_keywords(load_func):
         sig = inspect.getfullargspec(load_func)
         # args are first
         args = sig.args
+        # default values
+        defaults = sig.defaults
+    # deal with special cases for defaults
+    # we get defaults=None when the empty pysat.Instrument() is created
+    if defaults is None:
+        defaults = []
+    else:
+        # standard case
+        # make defaults a list
+        temp = []
+        for item in defaults:
+            temp.append(item)
+        defaults = temp
 
     pop_list = []
     # account for keywords that exist for every load function
     pre_kws = ['fnames', 'sat_id', 'tag']
+    # insert 'missing' default for 'fnames'
+    defaults.insert(0, None)
     # account for keywords already set since input was a partial function
     if existing_kws is not None:
+        # keywords
         pre_kws.extend(existing_kws.keys())
     # remove pre-existing keywords from output
     # first identify locations
@@ -2690,9 +2886,13 @@ def _get_supported_keywords(load_func):
     if len(pop_list) > 0:
         for pop in pop_list[::-1]:
             args.pop(pop)
+            defaults.pop(pop)
 
-    # *args and **kwargs are not required, so ignore them.
-    return args
+    out_dict = {}
+    for arg, defa in zip(args, defaults):
+        out_dict[arg] = defa
+
+    return out_dict
 
 
 def _check_if_keywords_supported(func, **kwargs):
@@ -2705,14 +2905,14 @@ def _check_if_keywords_supported(func, **kwargs):
     **kwargs : keyword args
         keyword arguments dictionary
 
-    Returns
+    Raises
     -------
-    bool
-        If true, all keywords supported
+    ValueError
+        Error raised if keyword is not supported
 
     """
 
-    # get list of supported keywords
+    # get dict of supported keywords and values
     supp = _get_supported_keywords(func)
     # check if kwargs are in list
     for name in kwargs.keys():
@@ -2721,4 +2921,4 @@ def _check_if_keywords_supported(func, **kwargs):
                              'by the underlying supporting load routine.',
                              'Please double check the keyword inputs.'))
             raise ValueError(estr)
-    return True
+    return

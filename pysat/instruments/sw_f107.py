@@ -79,6 +79,7 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1),
 # Other tags assumed to be True
 _test_download_travis = {'': {'prelim': False}}
 
+
 def load(fnames, tag=None, sat_id=None):
     """Load F10.7 index files
 
@@ -111,8 +112,8 @@ def load(fnames, tag=None, sat_id=None):
         # day
         date = dt.datetime.strptime(fnames[0][-10:], '%Y-%m-%d')
         data = pds.read_csv(fnames[0][0:-11], index_col=0, parse_dates=True)
-        idx, = np.where((data.index >= date) &
-                        (data.index < date + pds.DateOffset(days=1)))
+        idx, = np.where((data.index >= date)
+                        & (data.index < date + pds.DateOffset(days=1)))
         result = data.iloc[idx, :]
     elif tag == 'all':
         result = pds.read_csv(fnames[0], index_col=0, parse_dates=True)
@@ -201,7 +202,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     Called by pysat. Not intended for direct use by user.
 
     """
-    import time
 
     if data_path is not None:
         if tag == '':
@@ -322,11 +322,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
             return files
 
         else:
-            raise ValueError('Unrecognized tag name for Space Weather Index ' +
-                             'F107')
+            raise ValueError(' '.join(('Unrecognized tag name for Space',
+                                       'Weather Index F107')))
     else:
-        raise ValueError('A data_path must be passed to the loading routine ' +
-                         'for F107')
+        raise ValueError(' '.join(('A data_path must be passed to the loading',
+                                   'routine for F107')))
 
 
 def download(date_array, tag, sat_id, data_path, user=None, password=None):
@@ -368,15 +368,16 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         for date in date_array:
             # modify date to be the start of the month
             if date.day != 1:
-                raise ValueError('The Download routine must be invoked with ' +
-                                 'a freq="MS" option.')
+                raise ValueError(' '.join(('The Download routine must be',
+                                           'invoked with a freq="MS"',
+                                           'option.')))
             # download webpage
             dstr = 'http://lasp.colorado.edu/lisird/latis/dap/'
             dstr += 'noaa_radio_flux.json?time%3E='
             dstr += date.strftime('%Y-%m-%d')
             dstr += 'T00:00:00.000Z&time%3C='
-            dstr += (date + pds.DateOffset(months=1) -
-                     pds.DateOffset(days=1)).strftime('%Y-%m-%d')
+            dstr += (date + pds.DateOffset(months=1)
+                     - pds.DateOffset(days=1)).strftime('%Y-%m-%d')
             dstr += 'T00:00:00.000Z'
             # data returned as json
             r = requests.get(dstr)
@@ -393,9 +394,9 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                 idx, = np.where(data['f107'] == -99999.0)
                 data.iloc[idx, :] = np.nan
                 # create file
-                data.to_csv(os.path.join(data_path, 'f107_monthly_' +
-                                         date.strftime('%Y-%m') + '.txt'),
-                            header=True)
+                str_date = date.strftime('%Y-%m')
+                data_file = 'f107_monthly_{:s}.txt'.format(str_date)
+                data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'all':
         # download from LASP, by year
@@ -427,9 +428,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         idx, = np.where(data['f107'] == -99999.0)
         data.iloc[idx, :] = np.nan
         # create file
-        data.to_csv(os.path.join(data_path, 'f107_1947_to_' +
-                                 now.strftime('%Y-%m-%d') + '.txt'),
-                    header=True)
+        data_file = 'f107_1947_to_{:s}.txt'.format(now.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'prelim':
         import ftplib
@@ -450,8 +450,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         while date <= date_array[-1]:
             # The file name changes, depending on how recent the requested
             # data is
-            qnum = (date.month-1) // 3 + 1  # Integer floor division
-            qmonth = (qnum-1) * 3 + 1
+            qnum = (date.month - 1) // 3 + 1  # Integer floor division
+            qmonth = (qnum - 1) * 3 + 1
             quar = 'Q{:d}_'.format(qnum)
             fnames = ['{:04d}{:s}DSD.txt'.format(date.year, ss)
                       for ss in ['_', quar]]
@@ -501,7 +501,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                         ftp.retrbinary('RETR ' + fname,
                                        open(saved_fname, 'wb').write)
                         downloaded = True
-                        logger.info('Downloaded file for ' + date.strftime('%x'))
+                        logger.info(' '.join(('Downloaded file for ',
+                                              date.strftime('%x'))))
 
                     except ftplib.error_perm as exception:
                         # Could not fetch, so cannot rewrite
@@ -525,7 +526,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
                     break
 
             if not downloaded:
-                logger.info('File not available for {:}'.format(date.strftime('%x')))
+                logger.info(' '.join(('File not available for',
+                                      date.strftime('%x'))))
             elif rewritten:
                 with open(saved_fname, 'r') as fprelim:
                     lines = fprelim.read()
@@ -548,17 +550,17 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         r = requests.get(furl)
 
         # Save the output
-        outfile = os.path.join(data_path, 'f107_daily_' +
-                               today.strftime('%Y-%m-%d') + '.txt')
+        data_file = 'f107_daily_{:s}.txt'.format(today.strftime('%Y-%m-%d'))
+        outfile = os.path.join(data_path, data_file)
         rewrite_daily_file(today.year, outfile, r.text)
 
     elif tag == 'forecast':
         import requests
-        logger.info('This routine can only download the current forecast, not ' +
-              'archived forecasts')
+        logger.info(' '.join(('This routine can only download the current',
+                              'forecast, not archived forecasts')))
         # download webpage
-        furl = 'https://services.swpc.noaa.gov/text/' + \
-            '3-day-solar-geomag-predictions.txt'
+        furl = ''.join(('https://services.swpc.noaa.gov/text/',
+                        '3-day-solar-geomag-predictions.txt'))
         r = requests.get(furl)
         # parse text to get the date the prediction was generated
         date_str = r.text.split(':Issued: ')[-1].split(' UTC')[0]
@@ -578,14 +580,13 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         # put data into nicer DataFrame
         data = pds.DataFrame([val1, val2, val3], index=times, columns=['f107'])
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'f107_forecast_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'),
-                    header=True)
+        data_file = 'f107_forecast_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == '45day':
         import requests
-        logger.info('This routine can only download the current forecast, not ' +
-              'archived forecasts')
+        logger.info(' '.join(('This routine can only download the current',
+                              'forecast, not archived forecasts')))
         # download webpage
         furl = 'https://services.swpc.noaa.gov/text/45-day-ap-forecast.txt'
         r = requests.get(furl)
@@ -613,9 +614,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data = pds.DataFrame(f107, index=f107_times, columns=['f107'])
         data['ap'] = ap
         # write out as a file
-        data.to_csv(os.path.join(data_path, 'f107_45day_' +
-                                 date.strftime('%Y-%m-%d') + '.txt'),
-                    header=True)
+        data_file = 'f107_45day_{:s}.txt'.format(date.strftime('%Y-%m-%d'))
+        data.to_csv(os.path.join(data_path, data_file), header=True)
 
     return
 
@@ -746,8 +746,8 @@ def parse_daily_solar_data(data_lines, year, optical):
             if year == 1994 and kk == 'new_reg':
                 # New regions only in files after 1994
                 val = -999
-            elif((year == 1994 and kk in xray_keys) or
-                 (not optical and kk in optical_keys)):
+            elif((year == 1994 and kk in xray_keys)
+                 or (not optical and kk in optical_keys)):
                 # X-ray flares in files after 1994, optical flares come later
                 val = -1
             else:
@@ -862,8 +862,10 @@ def calc_f107a(f107_inst, f107_name='f107', f107a_name='f107a', min_pnts=41):
                  f107_inst.min_label: 0.0,
                  f107_inst.max_label: np.nan,
                  f107_inst.fill_label: fill_val,
-                 f107_inst.notes_label: 'Calculated using data between ' +
-                 '{:} and {:}'.format(f107_inst.index[0], f107_inst.index[-1])}
+                 f107_inst.notes_label:
+                 ' '.join(('Calculated using data between',
+                           '{:} and {:}'.format(f107_inst.index[0],
+                                                f107_inst.index[-1])))}
 
     f107_inst.meta[f107a_name] = meta_dict
 

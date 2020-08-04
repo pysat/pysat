@@ -41,7 +41,6 @@ from __future__ import absolute_import
 
 import datetime as dt
 import logging
-import pandas as pds
 import xarray as xr
 import pysat
 
@@ -98,8 +97,8 @@ def init(self):
 
     """
 
-    logger.info("Mission acknowledgements and data restrictions will be printed " +
-          "here when available.")
+    logger.info(' '.join(("Mission acknowledgements and data restrictions will",
+                          "be printed here when available.")))
     return
 
 
