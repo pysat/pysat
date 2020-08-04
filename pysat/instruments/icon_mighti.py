@@ -281,9 +281,6 @@ def clean(inst):
             for var in ver_vars:
                 inst[var] = inst[var].where(inst[ver_flag]
                                             >= min_val[inst.clean_level])
-        else:
-            # dirty and worse lets everything through
-            pass
 
     elif inst.tag.find('vector') >= 0:
         # vector winds area
@@ -308,9 +305,6 @@ def clean(inst):
             for var in ver_vars:
                 inst[var] = inst[var].where(inst[ver_flag]
                                             >= min_val[inst.clean_level])
-        else:
-            # dirty lets everything through
-            pass
 
     elif inst.tag.find('temp') >= 0:
         # neutral temperatures
@@ -330,8 +324,5 @@ def clean(inst):
                                         & (inst[cal_flag] == 0))
             # filter out negative temperatures
             inst[var] = inst[var].where(inst[var] > 0)
-        else:
-            # dirty and worse lets everything through
-            pass
 
     return

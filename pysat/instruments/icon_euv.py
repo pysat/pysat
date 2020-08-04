@@ -211,7 +211,4 @@ def clean(inst):
         for var in vars:
             inst[var] = inst[var].where(inst[icon_flag]
                                         <= min_val[inst.clean_level])
-    else:
-        # dirty and worse lets everything through
-        pass
     return
