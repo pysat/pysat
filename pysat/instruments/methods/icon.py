@@ -10,7 +10,7 @@ import numpy as np
 import os
 
 import pysat
-import pysat._files as pfiles
+import pysat.files as pfiles
 
 
 logger = logging.getLogger(__name__)
@@ -143,7 +143,7 @@ def list_remote_files(tag, sat_id, user=None, password=None,
     Returns
     --------
     pandas.Series
-        A Series formatted for the Files class (pysat._files.Files)
+        A Series formatted for the Files class (pysat.files.Files)
         containing filenames and indexed by date and time
     """
 
@@ -241,7 +241,7 @@ def list_remote_files(tag, sat_id, user=None, password=None,
 
     # we now have a list of all files in the instrument data directories
     # need to whittle list down to the versions and revisions most appropriate
-    search_dict = pysat._files.construct_searchstring_from_format(remote_fname)
+    search_dict = pysat.files.construct_searchstring_from_format(remote_fname)
     search_str = '*/' + search_dict['search_string']
     remote_files = fnmatch.filter(day_file_list, search_str)
 
