@@ -4,17 +4,17 @@ Thermospheric Imaging (MIGHTI) instrument onboard the Ionospheric
 CONnection Explorer (ICON) satellite.  Accesses local data in
 netCDF format.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'icon'
-name : string
+name
     'mighti'
-tag : string
+tag
     Supports 'los_wind_green', 'los_wind_red', 'vector_wind_green',
     'vector_wind_red', 'temperature'.  Note that not every data product
     available for every sat_id
-sat_id : string
+sat_id
     '', 'a', or 'b'
 
 Warnings
@@ -35,6 +35,7 @@ Example
 By default, pysat removes the ICON level tags from variable names, ie,
 ICON_L27_Ion_Density becomes Ion_Density.  To retain the original names, use
 ::
+
     mighti = pysat.Instrument(platform='icon', name='mighti',
                               tag='vector_wind_green', clean_level='clean',
                               keep_original_names=True)
@@ -138,7 +139,7 @@ def init(self):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object
 
     """
@@ -152,8 +153,13 @@ def init(self):
 
 
 def default(inst):
-    """Default routine to be applied when loading data.  Adjusts epoch timestamps
-    to datetimes and removes variable preambles.
+    """Default routine to be applied when loading data.  Adjusts epoch
+    timestamps to datetimes and removes variable preambles.
+
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument class object
 
     """
 
@@ -212,6 +218,7 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
     Examples
     --------
     ::
+
         inst = pysat.Instrument('icon', 'fuv')
         inst.load(2020, 1)
 
@@ -238,19 +245,11 @@ def load(fnames, tag=None, sat_id=None, keep_original_names=False):
 def clean(inst):
     """Provides data cleaning based upon clean_level.
 
-    clean_level is set upon Instrument instantiation to
-    one of the following:
-
-    'Clean'
-    'Dusty'
-    'Dirty'
-    'None'
-
     Routine is called by pysat, and not by the end user directly.
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
@@ -282,9 +281,6 @@ def clean(inst):
             for var in ver_vars:
                 inst[var] = inst[var].where(inst[ver_flag]
                                             >= min_val[inst.clean_level])
-        else:
-            # dirty and worse lets everything through
-            pass
 
     elif inst.tag.find('vector') >= 0:
         # vector winds area
@@ -309,9 +305,6 @@ def clean(inst):
             for var in ver_vars:
                 inst[var] = inst[var].where(inst[ver_flag]
                                             >= min_val[inst.clean_level])
-        else:
-            # dirty lets everything through
-            pass
 
     elif inst.tag.find('temp') >= 0:
         # neutral temperatures
@@ -323,12 +316,13 @@ def clean(inst):
                                  saa_flag))
             cal_flag = '_'.join(('ICON_L1_MIGHTI', inst.sat_id.upper(),
                                  cal_flag))
-            var = '_'.JOIN(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
+            var = '_'.join(('ICON_L23_MIGHTI', inst.sat_id.upper(), var))
         if inst.clean_level in ['clean', 'dusty']:
+            # filter out areas with bad calibration data
+            # as well as data marked in the SAA
             inst[var] = inst[var].where((inst[saa_flag] == 0)
                                         & (inst[cal_flag] == 0))
-        else:
-            # dirty and worse lets everything through
-            pass
+            # filter out negative temperatures
+            inst[var] = inst[var].where(inst[var] > 0)
 
     return
