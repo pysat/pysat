@@ -412,8 +412,9 @@ class Instrument(object):
                 try:
                     # integer based indexing
                     return self.data.iloc[key]
-                except TypeError:
+                except (TypeError, ValueError):
                     # If it's not an integer, TypeError is thrown
+                    # If it's a list, ValueError is thrown
                     return self.data[key]
         else:
             return self.__getitem_xarray__(key)
