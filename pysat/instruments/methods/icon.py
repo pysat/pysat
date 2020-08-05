@@ -10,7 +10,7 @@ import numpy as np
 import os
 
 import pysat
-import pysat._files as pfiles
+from pysat.utils import files as futils
 
 
 logger = logging.getLogger(__name__)
@@ -241,13 +241,13 @@ def list_remote_files(tag, sat_id, user=None, password=None,
 
     # we now have a list of all files in the instrument data directories
     # need to whittle list down to the versions and revisions most appropriate
-    search_dict = pysat._files.construct_searchstring_from_format(remote_fname)
+    search_dict = futils.construct_searchstring_from_format(remote_fname)
     search_str = '*/' + search_dict['search_string']
     remote_files = fnmatch.filter(day_file_list, search_str)
 
     # pull out date information from the files
-    stored = pfiles.parse_fixed_width_filenames(remote_files, remote_fname)
-    output = pfiles.process_parsed_filenames(stored)
+    stored = futils.parse_fixed_width_filenames(remote_files, remote_fname)
+    output = futils.process_parsed_filenames(stored)
     # return information, limited to start and stop dates
     return output[start:stop]
 

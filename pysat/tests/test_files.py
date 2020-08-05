@@ -12,6 +12,7 @@ import tempfile
 
 import pysat
 import pysat.instruments.pysat_testing
+from pysat.utils import files as futils
 
 from importlib import reload as re_load
 
@@ -154,8 +155,7 @@ class TestBasics():
                                           minute=minute[i], second=second[i],
                                           version=version[i]))
 
-        file_dict = pysat._files.parse_delimited_filenames(file_list, fname,
-                                                           '_')
+        file_dict = futils.parse_delimited_filenames(file_list, fname, '_')
         assert np.all(file_dict['year'] == year)
         assert np.all(file_dict['month'] == month)
         assert np.all(file_dict['day'] == day)
