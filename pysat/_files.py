@@ -533,19 +533,22 @@ class Files(object):
             wildcard = False
         else:
             wildcard = True
-        search_dict = construct_searchstring_from_format(format_str,
-                                                         wildcard=wildcard)
+        search_dict = \
+            futils.construct_searchstring_from_format(format_str,
+                                                      wildcard=wildcard)
         search_str = search_dict['search_string']
         # perform local file search
-        files = search_local_system_formatted_filename(data_path, search_str)
+        files = futils.search_local_system_formatted_filename(data_path,
+                                                              search_str)
         # we have a list of files, now we need to extract the information
         # pull of data from the areas identified by format_str
         if delimiter is None:
-            stored = parse_fixed_width_filenames(files, format_str)
+            stored = futils.parse_fixed_width_filenames(files, format_str)
         else:
-            stored = parse_delimited_filenames(files, format_str, delimiter)
+            stored = futils.parse_delimited_filenames(files, format_str,
+                                                      delimiter)
         # process the parsed filenames and return a properly formatted Series
-        return process_parsed_filenames(stored, two_digit_year_break)
+        return futils.process_parsed_filenames(stored, two_digit_year_break)
 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
