@@ -109,13 +109,18 @@ class TestCIonly():
 
         re_load(pysat)
 
+        captured = capsys.readouterr()
+        assert captured.out.find("Hi there!") >= 0
+
+        # Make sure user files are blank
+        with open(os.path.join(root, 'data_path.txt'), 'r') as f:
+            assert len(f.readlines()) == 0
+        with open(os.path.join(root, 'user_modules.txt'), 'r') as f:
+            assert len(f.readlines()) == 0
+
         # Move settings back
         shutil.rmtree(root)
         shutil.move(new_root, root)
-
-        captured = capsys.readouterr()
-
-        assert captured.out.find("Hi there!") >= 0
 
 
 class TestScaleUnits():
