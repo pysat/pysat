@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-07-03
+## [3.0.0] - 2020-08-05
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - `strict_time_flag` now defaults to True
   - Use of start / stop notation in remote_file_list
   - Added variable rename method to Instrument object (#91)
+  - Migrated file methods to pysat.utils.files (#336)
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
@@ -33,6 +34,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed utils.coords.spherical_to_cartesian
   - Removed utils.coords.global_to_local_cartesian
   - Removed utils.coords.local_horizontal_to_global_geo
+  - Deprecation Warnings for methods in `pysat._files`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
