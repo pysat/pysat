@@ -45,8 +45,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
         # years above or equal to break are considered to be 1900+
         # years below break are considered to be 2000+
         if two_digit_year_break is not None:
-            idx, = np.where(np.array(stored['year']) >=
-                            two_digit_year_break)
+            idx, = np.where(np.array(stored['year'])
+                            >= two_digit_year_break)
             stored['year'][idx] = stored['year'][idx] + 1900
             idx, = np.where(np.array(stored['year']) < two_digit_year_break)
             stored['year'][idx] = stored['year'][idx] + 2000
@@ -346,7 +346,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                         # store length and add to the search string
                         lengths.append(int(i))
                         if not wildcard:
-                            search_str += '?'*int(i)
+                            search_str += '?' * int(i)
                         else:
                             search_str += '*'
                         break
