@@ -67,6 +67,7 @@ list_remote_files = demeter.list_remote_files
 
 
 def init(self):
+    self.meta = demeter.set_metadata('iap', meta_dict={})
     logger.info(' '.join(("When using this data please include a version of,"
                           "the acknowledgement outlined in the metadata",
                           "attribute 'info.acknowledgements'.  We recommend",

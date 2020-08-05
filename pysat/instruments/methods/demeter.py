@@ -572,23 +572,25 @@ def set_metadata(name, meta_dict):
 
     # Initialise the meta data
     meta = pysat.Meta()
-    for cc in meta_dict['data names']:
-        # Determine the long instrument name
-        if cc in long_inst[name].keys():
-            ll = long_inst[name][cc]
-        else:
-            ll = long_name[cc]
+    # Set acknowledgements and references
+    meta.acknowledgements = ackn[name]
+    meta.references = refs[name]
 
-        # Assign the data units, long names, acknowledgements, and references
-        meta[cc] = {'units': meta_dict['data units'][cc], 'long_name': ll}
+    # If dict has name / unit info, grab those for metadata
+    if 'data names' in meta_dict.keys():
+        for cc in meta_dict['data names']:
+            # Determine the long instrument name
+            if cc in long_inst[name].keys():
+                ll = long_inst[name][cc]
+            else:
+                ll = long_name[cc]
 
-    # Set the remaining metadata
-    meta_dict['acknowledgements'] = ackn[name]
-    meta_dict['reference'] = refs[name]
-    mkeys = list(meta_dict.keys())
-    mkeys.pop(mkeys.index('data names'))
-    mkeys.pop(mkeys.index('data units'))
+            # Assign the data units, long names
+            meta[cc] = {'units': meta_dict['data units'][cc], 'long_name': ll}
 
-    meta.info = {cc: meta_dict[cc] for cc in mkeys}
+        mkeys = list(meta_dict.keys())
+        mkeys.pop(mkeys.index('data names'))
+        mkeys.pop(mkeys.index('data units'))
+        meta.info = {cc: meta_dict[cc] for cc in mkeys}
 
     return meta
