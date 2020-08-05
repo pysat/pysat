@@ -383,6 +383,8 @@ class Instrument(object):
 
             # By name
             inst['name']
+            # By list of names
+            inst[['name1', 'name2']]
             # By position
             inst[row_index, 'name']
             # Slicing by row
