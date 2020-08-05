@@ -1,14 +1,15 @@
 """
 tests the pysat utils area
 """
+from importlib import reload as re_load
 import numpy as np
 import os
-import pytest
+import shutil
 import tempfile
 
-import pysat
+import pytest
 
-from importlib import reload as re_load
+import pysat
 
 
 # ----------------------------------
@@ -81,23 +82,40 @@ class TestBasics():
             pysat.utils.set_data_dir('/fake/directory/path', store=False)
         assert str(excinfo.value).find('does not lead to a valid dir') >= 0
 
-    def test_initial_pysat_load(self):
-        import shutil
-        saved = False
+
+class TestCIonly():
+    """Tests where we mess with local settings.
+    These only run in CI environments such as Travis and Appveyor to avoid
+    breaking an end user's setup
+    """
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        ci_env = (os.environ.get('TRAVIS') == 'true')
+        if not ci_env:
+            pytest.skip("Skipping local tests to avoid breaking user setup")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del ci_env
+
+    def test_initial_pysat_load(self, capsys):
+        """Ensure inital load routines work"""
+
+        # Move settings directory to simulate first load after install
         root = os.path.join(os.getenv('HOME'), '.pysat')
         new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
         shutil.move(root, new_root)
-        saved = True
 
         re_load(pysat)
 
-        if saved:
-            # remove directory, trying to be careful
-            os.remove(os.path.join(root, 'data_path.txt'))
-            os.rmdir(root)
-            shutil.move(new_root, root)
+        # Move settings back
+        shutil.rmtree(root)
+        shutil.move(new_root, root)
 
-        assert True
+        captured = capsys.readouterr()
+
+        assert captured.out.find("Hi there!") >= 0
 
 
 class TestScaleUnits():
