@@ -552,6 +552,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     """Accepts dict with data parsed from filenames and creates
     a pandas Series object formatted for the Files class.
 
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat x, please use the version under
+      pysat.utils.files
+
     Parameters
     ----------
     stored : orderedDict
@@ -589,6 +593,10 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 def parse_fixed_width_filenames(files, format_str):
     """Parses list of files, extracting data identified by format_str
 
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat x, please use the version under
+      pysat.utils.files
+
     Parameters
     ----------
     files : list
@@ -622,6 +630,10 @@ def parse_fixed_width_filenames(files, format_str):
 
 def parse_delimited_filenames(files, format_str, delimiter):
     """Parses list of files, extracting data identified by format_str
+
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat x, please use the version under
+      pysat.utils.files
 
     Parameters
     ----------
@@ -658,6 +670,10 @@ def parse_delimited_filenames(files, format_str, delimiter):
 def construct_searchstring_from_format(format_str, wildcard=False):
     """
     Parses format file string and returns string formatted for searching.
+
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat x, please use the version under
+      pysat.utils.files
 
     Parameters
     ----------
@@ -705,6 +721,10 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 def search_local_system_formatted_filename(data_path, search_str):
     """
     Parses format file string and returns string formatted for searching.
+
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat x, please use the version under
+      pysat.utils.files
 
     Parameters
     ----------
