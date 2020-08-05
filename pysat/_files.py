@@ -143,10 +143,10 @@ class Files(object):
         else:
             # construct subdirectory path
             self.sub_dir_path = \
-                    self.directory_format.format(name=self._sat.name,
-                                                 platform=self._sat.platform,
-                                                 tag=self._sat.tag,
-                                                 sat_id=self._sat.sat_id)
+                self.directory_format.format(name=self._sat.name,
+                                             platform=self._sat.platform,
+                                             tag=self._sat.tag,
+                                             sat_id=self._sat.sat_id)
         # ensure we have a path for pysat data directory
         if data_dir == '':
             raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",
@@ -271,7 +271,7 @@ class Files(object):
 
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path,
-                                                 'previous_'+name),
+                                                 'previous_' + name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f',
                                     header=False)
                 self.files.to_csv(os.path.join(self.home_path, name),
@@ -299,7 +299,7 @@ class Files(object):
 
         fname = self.stored_file_name
         if prev_version:
-            fname = os.path.join(self.home_path, 'previous_'+fname)
+            fname = os.path.join(self.home_path, 'previous_' + fname)
         else:
             fname = os.path.join(self.home_path, fname)
 
@@ -400,9 +400,9 @@ class Files(object):
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
-                raise ValueError('Could not find "' + fname +
-                                 '" in available file list. Valid Example: ' +
-                                 self.files.iloc[0])
+                raise ValueError(' '.join(('Could not find "{:}"'.format(fname),
+                                           'in available file list. Valid',
+                                           'Example:', self.files.iloc[0])))
         # return a scalar rather than array - otherwise introduces array to
         # index warnings.
         return idx[0]
@@ -467,14 +467,14 @@ class Files(object):
             for (sta, stp) in zip(start, end):
                 id1 = self.get_index(sta)
                 id2 = self.get_index(stp)
-                files.extend(self.files.iloc[id1:id2+1])
+                files.extend(self.files.iloc[id1:(id2 + 1)])
         elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
             estr = 'Either both or none of the inputs need to be iterable'
             raise ValueError(estr)
         else:
             id1 = self.get_index(start)
             id2 = self.get_index(end)
-            files = self.files[id1:id2+1].to_list()
+            files = self.files[id1:(id2 + 1)].to_list()
         return files
 
     def _remove_data_dir_path(self, inp=None):
@@ -523,8 +523,8 @@ class Files(object):
         """
 
         if data_path is None:
-            raise ValueError("Must supply instrument directory path " +
-                             "(dir_path)")
+            raise ValueError(" ".join(("Must supply instrument directory path",
+                                       "(dir_path)")))
 
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
