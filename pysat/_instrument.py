@@ -1105,7 +1105,7 @@ class Instrument(object):
             output_str += 'Time range: '
             output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
             output_str += ' --- '
-            output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S') + '\n'
+            output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
             output_str += 'Number of Times: ' + str(len(self.index)) + '\n'
             output_str += 'Number of variables: ' + str(len(self.variables))
 
@@ -1119,7 +1119,7 @@ class Instrument(object):
                 output_str += self.variables[i + 3 * num].ljust(30)
             output_str += '\n'
         else:
-            output_str += 'No loaded data.' + '\n'
+            output_str += 'No loaded data.\n'
         output_str += '\n'
 
         return output_str
