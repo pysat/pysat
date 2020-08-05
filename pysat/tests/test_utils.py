@@ -114,7 +114,9 @@ class TestCIonly():
 
         # Make sure user files are blank
         with open(os.path.join(root, 'data_path.txt'), 'r') as f:
-            assert len(f.readlines()) == 0
+            dir_list = f.readlines()
+            assert len(dir_list) == 1
+            assert dir_list[0].find('/home/travis/build/pysatData') >= 0
         with open(os.path.join(root, 'user_modules.txt'), 'r') as f:
             assert len(f.readlines()) == 0
 
