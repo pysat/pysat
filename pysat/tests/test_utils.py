@@ -91,13 +91,13 @@ class TestCIonly():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
-        ci_env = (os.environ.get('TRAVIS') == 'true')
-        if not ci_env:
+        self.ci_env = (os.environ.get('TRAVIS') == 'true')
+        if not self.ci_env:
             pytest.skip("Skipping local tests to avoid breaking user setup")
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del ci_env
+        del self.ci_env
 
     def test_initial_pysat_load(self, capsys):
         """Ensure inital load routines work"""
