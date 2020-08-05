@@ -173,7 +173,6 @@ class InstTestClass():
                 assert isinstance(inst.meta.acknowledgements, str)
                 assert isinstance(inst.meta.references, str)
 
-
     @pytest.mark.first
     @pytest.mark.download
     def test_download(self, inst):
