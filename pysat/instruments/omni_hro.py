@@ -101,6 +101,24 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument class object
+
+    """
+
+    ackn_str = ''.join(('For full acknowledgement info, please see: ',
+                        'https://omniweb.gsfc.nasa.gov/html/citing.html'))
+    self.meta.acknowledgements = ackn_str
+    logger.info(ackn_str)
+
+
 def clean(omni):
     for fill_attr in ["fillval", "fill"]:
         # case insensitive check for attribute name
