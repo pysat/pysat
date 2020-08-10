@@ -84,11 +84,12 @@ def init(self):
     # coped from SD Documents area of VT SuperDARN webpage
     # http://vt.superdarn.org/tiki-list_file_gallery.php?galleryId=81
     # How to acknowledge use of SuperDARN Data - 2017
-    logger.info('Authors should acknowledge the use of SuperDARN data. ' +
-          'SuperDARN is a collection of radars funded by national scientific ' +
-          'funding agencies of Australia, Canada, China, France, Italy, ' +
-          'Japan, Norway, South Africa, United Kingdom and the United States ' +
-          'of America.')
+    logger.info(' '.join(('Authors should acknowledge the use of SuperDARN',
+                          'data. SuperDARN is a collection of radars funded by',
+                          'national scientific funding agencies of Australia,',
+                          'Canada, China, France, Italy, Japan, Norway, South',
+                          'Africa, United Kingdom and the United States of',
+                          'America.')))
     return
 
 
@@ -232,7 +233,7 @@ def load(fnames, tag=None, sat_id=None):
             drift_frame.index.name = 'index'
             sum_vec = 0
             for nvec in info.nvec:
-                in_list.append(drift_frame.iloc[sum_vec:sum_vec+nvec])
+                in_list.append(drift_frame.iloc[sum_vec:(sum_vec + nvec)])
                 sum_vec += nvec
 
             in_dict['stid'].extend(info.stid)
@@ -242,8 +243,8 @@ def load(fnames, tag=None, sat_id=None):
             in_dict['gsct'].extend(info.gsct)
             in_dict['nvec'].extend(info.nvec)
             in_dict['pmax'].extend(info.pmax)
-            in_dict['start_time'].extend([info.sTime]*len(info.pmax))
-            in_dict['end_time'].extend([info.eTime]*len(info.pmax))
+            in_dict['start_time'].extend([info.sTime] * len(info.pmax))
+            in_dict['end_time'].extend([info.eTime] * len(info.pmax))
             in_dict['vemax'].extend(info.vemax)
             in_dict['vemin'].extend(info.vemin)
             in_dict['pmin'].extend(info.pmin)
