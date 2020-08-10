@@ -40,9 +40,12 @@ from __future__ import print_function
 from __future__ import absolute_import
 import datetime as dt
 import functools
+import logging
 
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
+
+logger = logging.getLogger(__name__)
 
 # include basic instrument info
 platform = 'timed'
@@ -74,6 +77,37 @@ list_remote_files = functools.partial(cdw.list_remote_files,
 # support load routine
 # use the default CDAWeb method
 load = functools.partial(cdw.load, fake_daily_files_from_monthly=True)
+
+
+# code should be defined below as needed
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    """
+
+    rules_url = 'http://www.timed.jhuapl.edu/WWW/scripts/mdc_rules.pl'
+    ackn_str = ' '.join(('Please see the Rules of the Road at',
+                         rules_url))
+    logger.info(ackn_str)
+    self.meta.acknowledgements = ackn_str
+    self.meta.references = ' '.join(('Woods, T. N., Eparvier, F. G., Bailey,',
+                                     'S. M., Chamberlin, P. C., Lean, J.,',
+                                     'Rottman, G. J., Solomon, S. C., Tobiska,',
+                                     'W. K., and Woodraska, D. L. (2005),',
+                                     'Solar EUV Experiment (SEE): Mission',
+                                     'overview and first results, J. Geophys.',
+                                     'Res., 110, A01312,',
+                                     'doi:10.1029/2004JA010765.'))
+
+    return
 
 
 def clean(inst):
