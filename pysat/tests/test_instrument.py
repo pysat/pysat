@@ -466,6 +466,11 @@ class TestBasics():
         self.testInst.load(2009, 1)
         assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
 
+    def test_basic_data_access_by_name_list(self):
+        self.testInst.load(2009, 1)
+        assert np.all(self.testInst[['uts', 'mlt']]
+                      == self.testInst.data[['uts', 'mlt']])
+
     def test_data_access_by_row_slicing_and_name(self):
         self.testInst.load(2009, 1)
         assert np.all(self.testInst[0:10, 'uts'] ==
