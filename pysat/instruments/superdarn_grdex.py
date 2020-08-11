@@ -84,12 +84,18 @@ def init(self):
     # coped from SD Documents area of VT SuperDARN webpage
     # http://vt.superdarn.org/tiki-list_file_gallery.php?galleryId=81
     # How to acknowledge use of SuperDARN Data - 2017
-    logger.info(' '.join(('Authors should acknowledge the use of SuperDARN',
-                          'data. SuperDARN is a collection of radars funded by',
-                          'national scientific funding agencies of Australia,',
-                          'Canada, China, France, Italy, Japan, Norway, South',
-                          'Africa, United Kingdom and the United States of',
-                          'America.')))
+    ack_str = ' '.join(('The authors acknowledge the use of SuperDARN',
+                        'data. SuperDARN is a collection of radars funded by',
+                        'national scientific funding agencies of Australia,',
+                        'Canada, China, France, Italy, Japan, Norway, South',
+                        'Africa, the United Kingdom and the United States of',
+                        'America.\n',
+                        'Of data from a subset of radars are used, please',
+                        'contact the PI for an institution-specific',
+                        'acknowledgement and publication guidleines.'))
+    self.meta.acknowledgements = ack_str
+    self.meta.references = ''
+    logger.info(ack_str)
     return
 
 
