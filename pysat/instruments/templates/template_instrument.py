@@ -144,18 +144,18 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     fnames : array-like
         iterable of filename strings, full path, to data files to be loaded.
         This input is nominally provided by pysat itself.
-    tag : string ('')
+    tag : string
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. While
         tag defaults to None here, pysat provides '' as the default
-        tag unless specified by user at Instrument instantiation.
-    sat_id : string ('')
+        tag unless specified by user at Instrument instantiation. (default='')
+    sat_id : string
         Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    **kwargs : extra keywords
-        Passthrough for additional keyword arguments specified when
-        instantiating an Instrument object. These additional keywords
-        are passed through to this routine by pysat.
+        This input is nominally provided by pysat itself. (default='')
+    custom_keyword : type to be set
+        Developers may include any custom keywords, with default values
+        defined in the method signature. This is included here as a
+        place holder and should be removed.
 
     Returns
     -------
@@ -233,6 +233,75 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     return data, meta
 
 
+def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
+             **kwargs):
+    """Placeholder for PLATFORM/NAME downloads.
+
+    This routine is invoked by pysat and is not intended for direct use by the
+    end user.
+
+    Parameters
+    ----------
+    date_array : array-like
+        list of datetimes to download data for. The sequence of dates need not
+        be contiguous.
+    tag : string
+        Tag identifier used for particular dataset. This input is provided by
+        pysat. (default='')
+    sat_id : string
+        Satellite ID string identifier used for particular dataset. This input
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
+        User string input used for download. Provided by user and passed via
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
+    custom_keywords : placeholder
+        Additional keywords supplied by user when invoking the download
+        routine attached to a pysat.Instrument object are passed to this
+        routine. Use of custom keywords here is discouraged.
+
+    """
+
+    return
+
+
+# code should be defined below as needed
+def clean(inst):
+    """Routine to return PLATFORM/NAME data cleaned to the specified level
+
+    Cleaning level is specified in inst.clean_level and pysat
+    will accept user input for several strings. The clean_level is
+    specified at instantiation of the Instrument object.
+
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    Note
+    ----
+    In general, pysat uses the following nomenclature for cleaning levels
+
+    - 'clean'
+        All parameters should be good, suitable for statistical and case studies
+    - 'dusty'
+        All paramers should generally be good though same may not be great
+    - 'dirty'
+        There are data areas that have issues, data should be used with caution
+    - 'none'
+        No cleaning applied, routine not called in this case.
+
+
+    """
+
+    return
+
+
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Produce a list of files corresponding to PLATFORM/NAME.
 
@@ -241,20 +310,20 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : string ('')
+    tag : string
         tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
+        This input is nominally provided by pysat itself. (default='')
+    sat_id : string
         Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    data_path : string (None)
+        This input is nominally provided by pysat itself. (default='')
+    data_path : string
         Full path to directory containing files to be loaded. This
         is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
+        at Instrument instantiation and it will appear here. (default=None)
+    format_str : string
         String template used to parse the datasets filenames. If a user
         supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
+        then it will appear here, otherwise defaults to None. (default=None)
 
     Returns
     -------
@@ -317,67 +386,3 @@ def list_remote_files(tag, sat_id, user=None, password=None):
     """
 
     pass
-
-
-def download(date_array, tag, sat_id, data_path=None, user=None, password=None,
-             **kwargs):
-    """Placeholder for PLATFORM/NAME downloads.
-
-    This routine is invoked by pysat and is not intended for direct use by the
-    end user.
-
-    Parameters
-    ----------
-    date_array : array-like
-        list of datetimes to download data for. The sequence of dates need not
-        be contiguous.
-    tag : string
-        Tag identifier used for particular dataset. This input is provided by
-        pysat. (default='')
-    sat_id : string
-        Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat. (default='')
-    data_path : string
-        Path to directory to download data to. (default=None)
-    user : string
-        User string input used for download. Provided by user and passed via
-        pysat. If an account is required for dowloads this routine here must
-        error if user not supplied. (default=None)
-    password : string
-        Password for data download. (default=None)
-    custom_keywords : placeholder
-        Additional keywords supplied by user when invoking the download
-        routine attached to a pysat.Instrument object are passed to this
-        routine. Use of custom keywords here is discouraged.
-
-    """
-
-    return
-
-
-# code should be defined below as needed
-def clean(inst):
-    """Routine to return PLATFORM/NAME data cleaned to the specified level
-
-    Cleaning level is specified in inst.clean_level and pysat
-    will accept user input for several strings. The clean_level is
-    specified at instantiation of the Instrument object.
-
-    'clean' All parameters should be good, suitable for statistical and
-            case studies
-    'dusty' All paramers should generally be good though same may
-            not be great
-    'dirty' There are data areas that have issues, data should be used
-            with caution
-    'none'  No cleaning applied, routine not called in this case.
-
-
-    Parameters
-    -----------
-    inst : pysat.Instrument
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
-
-    """
-
-    return
