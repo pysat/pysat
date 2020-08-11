@@ -304,7 +304,11 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
 
     """
-    out_dict = {'search_string': '', 'keys': [], 'lengths': [], 'string_blocks': []}
+
+    out_dict = {'search_string': '',
+                'keys': [],
+                'lengths': [],
+                'string_blocks': []}
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
 
@@ -317,8 +321,8 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         # numnber of ?s goes with length of data to be parsed
         # length grabbed from format keywords so we know
         # later on where to parse information out from
-        out_dict['search_str'] += snip[0]
-        out_dict['snips'].append(snip[0])
+        out_dict['search_string'] += snip[0]
+        out_dict['string_blocks'].append(snip[0])
         if snip[1] is not None:
             out_dict['keys'].append(snip[1])
             # try and determine formatting width
@@ -331,9 +335,9 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                         # store length and add to the search string
                         out_dict['lengths'].append(int(i))
                         if not wildcard:
-                            out_dict['search_str'] += '?' * int(i)
+                            out_dict['search_string'] += '?' * int(i)
                         else:
-                            out_dict['search_str'] += '*'
+                            out_dict['search_string'] += '*'
                         break
             else:
                 raise ValueError("Couldn't determine formatting width")
