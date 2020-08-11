@@ -50,6 +50,7 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import datetime as dt
+import logging
 import os
 import sys
 
@@ -58,7 +59,6 @@ import netCDF4
 import pandas as pds
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 platform = 'cosmic'
@@ -76,6 +76,33 @@ _test_dates = {'': {'ionprf': dt.datetime(2008, 1, 1),
                     'scnlv1': dt.datetime(2008, 1, 1)}}
 _test_download = {'': {kk: False for kk in tags.keys()}}
 _password_req = {'': {kk: True for kk in tags.keys()}}
+
+
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument class object
+
+    """
+    ack = ' '.join((''))
+    refs = ' '.join(('Y. Liou et al., "FORMOSAT-3/COSMIC GPS',
+                     'Radio Occultation Mission: Preliminary',
+                     'Results," in IEEE Transactions on',
+                     'Geoscience and Remote Sensing, vol. 45,',
+                     'no. 11, pp. 3813-3826, Nov. 2007, doi:',
+                     '10.1109/TGRS.2007.903365.\n',
+                     'Additional information can be found at',
+                     'https://cdaac-www.cosmic.ucar.edu/cdaac/doc/cosmic.html'))
+    self.meta.acknowledgements = ack
+    self.meta.references = refs
+    logger.info(ack)
+
+    return
 
 
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
