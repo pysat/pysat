@@ -203,6 +203,10 @@ class InstTestClass():
         # make sure download was successful
         if len(inst.files.files) > 0:
             try:
+                # Grab required metadata from instantiation
+                ackn_str = inst.meta.acknowledgements
+                refs_str = inst.meta.references
+                # Set Clean Level
                 inst.clean_level = clean_level
                 target = 'Fake Data to be cleared'
                 inst.data = [target]
@@ -220,6 +224,9 @@ class InstTestClass():
 
                 # Make sure fake data is cleared
                 assert target not in inst.data
+                # Make sure required metadata are still there after load
+                assert inst.meta.acknowledgements == ackn_str
+                assert inst.meta.references == refs_str
                 # If cleaning not used, something should be in the file
                 # Not used for clean levels since cleaning may remove all data
                 if clean_level == "none":
