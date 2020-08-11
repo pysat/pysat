@@ -77,7 +77,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
                 raise ValueError(' '.join(('Unknown sat_id or tag:',
                                            str(estr))))
         out = pysat.Files.from_os(data_path=data_path,
-                                  format_str=format_str)
+                                  format_str=format_str,
+                                  two_digit_year_break=two_digit_year_break)
 
         if (not out.empty) and fake_daily_files_from_monthly:
             out.loc[out.index[-1] + pds.DateOffset(months=1)
