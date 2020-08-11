@@ -134,15 +134,9 @@ def parse_fixed_width_filenames(files, format_str):
     import collections
 
     # create storage for data to be parsed from filenames
-    stored = collections.OrderedDict()
-    stored['year'] = []
-    stored['month'] = []
-    stored['day'] = []
-    stored['hour'] = []
-    stored['minute'] = []
-    stored['second'] = []
-    stored['version'] = []
-    stored['revision'] = []
+    ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
+                    'version', 'revision']
+    stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
     if len(files) == 0:
         stored['files'] = []
@@ -295,7 +289,7 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
     Returns
     -------
-    dict
+    out_dict : dict
         'search_string' format_str with data to be parsed replaced with ?
         'keys' keys for data to be parsed
         'lengths' string length for data to be parsed
@@ -313,29 +307,23 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v??.cdf'
 
     """
-
+    out_dict = {'search_string': '', 'keys': [], 'lengths': [], 'string_blocks': []}
     if format_str is None:
         raise ValueError("Must supply a filename template (format_str).")
 
     # parse format string to figure out how to construct the search string
     # to identify files in the filesystem
-    search_str = ''
     form = string.Formatter()
-    # stores the keywords extracted from format_string
-    keys = []
-    # and length of string
-    snips = []
-    lengths = []
     for snip in form.parse(format_str):
         # collect all of the format keywords
         # replace them in the string with the '?' wildcard
         # numnber of ?s goes with length of data to be parsed
         # length grabbed from format keywords so we know
         # later on where to parse information out from
-        search_str += snip[0]
-        snips.append(snip[0])
+        out_dict['search_str'] += snip[0]
+        out_dict['snips'].append(snip[0])
         if snip[1] is not None:
-            keys.append(snip[1])
+            out_dict['keys'].append(snip[1])
             # try and determine formatting width
             temp = re.findall(r'\d+', snip[2])
             if temp:
@@ -344,19 +332,16 @@ def construct_searchstring_from_format(format_str, wildcard=False):
                     # make sure there is truly something there
                     if i != 0:
                         # store length and add to the search string
-                        lengths.append(int(i))
+                        out_dict['lengths'].append(int(i))
                         if not wildcard:
-                            search_str += '?' * int(i)
+                            out_dict['search_str'] += '?' * int(i)
                         else:
-                            search_str += '*'
+                            out_dict['search_str'] += '*'
                         break
             else:
                 raise ValueError("Couldn't determine formatting width")
 
-    return {'search_string': search_str,
-            'keys': keys,
-            'lengths': lengths,
-            'string_blocks': snips}
+    return out_dict
 
 
 def search_local_system_formatted_filename(data_path, search_str):
@@ -376,7 +361,7 @@ def search_local_system_formatted_filename(data_path, search_str):
 
     Returns
     -------
-    list
+    files : list
         list of files matching the format_str
 
     Note
