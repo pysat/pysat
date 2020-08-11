@@ -97,6 +97,7 @@ download = functools.partial(cdw.download, supported_tags)
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
+
 def init(self):
     """Initializes the Instrument object with instrument specific values.
 
