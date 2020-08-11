@@ -53,14 +53,15 @@ of the National Science Foundation.
 """
 
 import datetime as dt
+import logging
 import numpy as np
 import os
 
 import pandas as pds
 
 import pysat
+from pysat.instruments.methods import sw as mm_sw
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -79,6 +80,25 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'forecast': today + pds.DateOffset(days=1)}}
 # Other tags assumed to be True
 _test_download_travis = {'': {'': False}}
+
+
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    """
+
+    self.meta.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)
+    self.meta.references = mm_sw.references(self.name, self.tag)
+    logger.info(self.meta.acknowledgements)
+    return
 
 
 def load(fnames, tag=None, sat_id=None):
