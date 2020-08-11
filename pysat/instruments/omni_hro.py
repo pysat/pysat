@@ -47,9 +47,6 @@ calculate_dayside_reconnection
     Calculate the dayside reconnection rate
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-
 import datetime as dt
 import functools
 import numpy as np

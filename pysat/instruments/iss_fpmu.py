@@ -21,8 +21,7 @@ Warnings
 - Module not written by FPMU team.
 
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
 import datetime as dt
 import functools
 import numpy as np

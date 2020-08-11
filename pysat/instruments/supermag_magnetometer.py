@@ -34,7 +34,6 @@ Warnings
 
 """
 
-from __future__ import print_function, absolute_import
 import datetime as dt
 import functools
 import numpy as np

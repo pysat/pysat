@@ -72,9 +72,6 @@ J. Klenzing
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-
 import datetime as dt
 import functools
 

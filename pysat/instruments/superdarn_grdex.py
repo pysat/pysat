@@ -31,8 +31,6 @@ are constituted from what it is thought to be good data.
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
 import datetime as dt
 import functools
 

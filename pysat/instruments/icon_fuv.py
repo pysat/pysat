@@ -42,9 +42,6 @@ Conversion to FUV, Oct 8th, 2028, University of Texas at Dallas
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-
 import datetime as dt
 import functools
 import logging
