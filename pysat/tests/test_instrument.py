@@ -13,13 +13,14 @@ import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
 import pysat.instruments.pysat_testing2d
 
+xarray_epoch_name = 'time'
+
 
 # ------------------------------------------------------------------------------
 #
 # Test Instrument object basics
 #
 # ------------------------------------------------------------------------------
-
 class TestBasics():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
@@ -286,16 +287,15 @@ class TestBasics():
             # dimension
             # xarray specific functionality
             # change name of main dim to support test for dim keyword
-            data1 = data1.rename({'time': 'time2'})
-            data2 = data2.rename({'time': 'time2'})
+            data1 = data1.rename({xarray_epoch_name: 'Epoch2'})
+            data2 = data2.rename({xarray_epoch_name: 'Epoch2'})
 
             # concat together
-            self.testInst.data = \
-                self.testInst.concat_data([data1, data2],
-                                          dim='time2').rename({'time2':
-                                                               'time'})
+            self.testInst.data = self.testInst.concat_data(
+                [data1, data2], dim='Epoch2').rename({'Epoch2':
+                                                      xarray_epoch_name})
             # test for concatenation
-            # Instrument.data must have a 'time' index
+            # Instrument.data must have a 'Epoch' index
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
             assert (self.testInst[0:len1, :]
@@ -335,7 +335,7 @@ class TestBasics():
             assert np.all(self.testInst.index == self.testInst.data.index)
         else:
             assert np.all(self.testInst.index ==
-                          self.testInst.data.indexes['time'])
+                          self.testInst.data.indexes[xarray_epoch_name])
 
     # #--------------------------------------------------------------------------
     # #
@@ -465,6 +465,11 @@ class TestBasics():
     def test_basic_data_access_by_name(self):
         self.testInst.load(2009, 1)
         assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
+
+    def test_basic_data_access_by_name_list(self):
+        self.testInst.load(2009, 1)
+        assert np.all(self.testInst[['uts', 'mlt']]
+                      == self.testInst.data[['uts', 'mlt']])
 
     def test_data_access_by_row_slicing_and_name(self):
         self.testInst.load(2009, 1)
@@ -635,7 +640,7 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['time'] == 5
+            assert a.sizes[xarray_epoch_name] == 5
 
     def test_getting_all_data_by_numpy_array_of_int(self):
         self.testInst.load(2009, 1)
@@ -643,7 +648,7 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['time'] == 5
+            assert a.sizes[xarray_epoch_name] == 5
 
     # --------------------------------------------------------------------------
     #

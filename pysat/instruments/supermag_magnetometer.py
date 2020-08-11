@@ -228,11 +228,12 @@ def list_files(tag='', sat_id=None, data_path=None, format_str=None):
                 new_files = []
                 # Assigns the validity of each station file to be 1 year
                 for orig in orig_files.iteritems():
-                    files.loc[orig[0] + doff - pds.DateOffset(days=1)] = orig[1]
+                    step = orig[0] + doff - pds.DateOffset(days=1)
+                    files.loc[step] = orig[1]
                     files = files.sort_index()
-                    new_files.append(files.loc[orig[0]: orig[0] + doff - \
-                            pds.DateOffset(days=1)].asfreq('D', method='pad'))
-                files = pds.concat(new_files, sort = True)
+                    new_files.append(
+                        files.loc[orig[0]:step].asfreq('D', method='pad'))
+                files = pds.concat(new_files, sort=True)
 
                 files = files.dropna()
                 files = files.sort_index()
@@ -467,8 +468,7 @@ def load_ascii_data(fname, tag):
                 if dflag:
                     dflag = False  # Unset the date flag
                     dstring = " ".join(lsplit[:6])
-                    dtime = dt.datetime.strptime(dstring,
-                                                    "%Y %m %d %H %M %S")
+                    dtime = dt.datetime.strptime(dstring, "%Y %m %d %H %M %S")
                     snum = int(lsplit[6])  # Set the number of stations
 
                     # Load the times
@@ -510,7 +510,7 @@ def load_ascii_data(fname, tag):
                                     ddict[dkeys[tag][i]].append(ll)
                                 else:
                                     ddict[dkeys[tag][-1]][-1] += \
-                                                            " {:s}".format(ll)
+                                        " {:s}".format(ll)
                     elif len(lsplit) == ndata['']:
                         snum -= 1  # Mark the ingestion of a station
                         if tag != "indices":
@@ -809,7 +809,7 @@ def append_ascii_data(file_strings, tag):
                     inum = ind_num
 
                     # Adjust reference data for new number of station lines
-                    idates[idate+1:] += snum
+                    idates[(idate + 1):] += snum
                     num_stations[idate] += snum
 
                     # Adjust date line for new number of station lines
@@ -824,7 +824,7 @@ def append_ascii_data(file_strings, tag):
                         # section
                         onum += 1
                         snum -= 1
-                        out_lines.insert(idates[idate]+onum, line)
+                        out_lines.insert(idates[idate] + onum, line)
 
                         # Save the station name to update the parameter line
                         if not lsplit[0] in station_names:

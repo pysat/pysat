@@ -32,8 +32,8 @@ def getyrdoy(date):
     try:
         doy = date.toordinal() - dt.datetime(date.year, 1, 1).toordinal() + 1
     except AttributeError:
-        raise AttributeError("Must supply a pandas datetime object or " +
-                             "equivalent")
+        raise AttributeError(' '.join(("Must supply a pandas datetime object",
+                                       "or equivalent")))
     else:
         return date.year, doy
 
@@ -195,20 +195,20 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     uts_del = uts.copy().astype(float)
     # determine where there are changes in year and month that need to be
     # accounted for
-    _, idx = np.unique(year*100.+month, return_index=True)
+    _, idx = np.unique((year * 100. + month), return_index=True)
     # create another index array for faster algorithm below
     idx2 = np.hstack((idx, len(year) + 1))
     # computes UTC seconds offset for each unique set of year and month
     for _idx, _idx2 in zip(idx[1:], idx2[2:]):
-        temp = (dt.datetime(year[_idx], month[_idx], 1) -
-                dt.datetime(year[0], month[0], 1))
+        temp = (dt.datetime(year[_idx], month[_idx], 1)
+                - dt.datetime(year[0], month[0], 1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
     uts_del += (day - 1) * 86400
     # add in seconds since unix epoch to first day
-    uts_del += (dt.datetime(year[0], month[0], 1) -
-                dt.datetime(1970, 1, 1)).total_seconds()
+    uts_del += (dt.datetime(year[0], month[0], 1)
+                - dt.datetime(1970, 1, 1)).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)

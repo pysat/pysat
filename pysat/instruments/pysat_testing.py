@@ -47,11 +47,6 @@ def init(self):
     ----------
     inst : pysat.Instrument
         This object
-    file_date_range : (pds.date_range)
-        Optional keyword argument that specifies the range of dates for which
-        test files will be created
-    mangle_file_dates : bool
-        If True, the loaded file list time index is shifted by 5-minutes.
 
     Returns
     --------
@@ -64,7 +59,7 @@ def init(self):
     self.new_thing = True
 
     # work on file index if keyword present
-    if 'file_date_range' in self.kwargs:
+    if self.kwargs['file_date_range'] is not None:
         # set list files routine to desired date range
         # attach to the instrument object
         fdr = self.kwargs['file_date_range']
@@ -72,10 +67,9 @@ def init(self):
         self.files.refresh()
 
     # mess with file dates if kwarg option present
-    if 'mangle_file_dates' in self.kwargs:
-        if self.kwargs['mangle_file_dates']:
-            self.files.files.index = \
-                self.files.files.index + pds.DateOffset(minutes=5)
+    if self.kwargs['mangle_file_dates']:
+        self.files.files.index = \
+            self.files.files.index + pds.DateOffset(minutes=5)
 
 
 def default(self):
@@ -102,30 +96,30 @@ def default(self):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False, **kwargs):
+         malformed_index=False, mangle_file_dates=False):
     """ Loads the test files
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '' or a string to change the behaviour of
         dummy1 for constellation testing)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    sim_multi_file_right : (boolean)
+    sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
-    sim_multi_file_left : (boolean)
+    sim_multi_file_left : boolean
         Adjusts date range to be 12 hours in the past or twelve hours before
         root_date (default=False)
-    root_date : (NoneType)
+    root_date : NoneType
         Optional central date, uses _test_dates if not specified.
         (default=None)
-    file_date_range : (pds.date_range or NoneType)
-        Range of dates for files or None, if this optional arguement is not
+    file_date_range : pds.date_range or NoneType
+        Range of dates for files or None, if this optional argument is not
         used. Shift actually performed by the init function.
         (default=None)
     malformed_index : bool (default=False)
@@ -133,16 +127,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.
-    **kwargs : Additional keywords
-        Additional keyword arguments supplied at pyast.Instrument instantiation
-        are passed here
 
     Returns
     -------
-    data : (pds.DataFrame)
+    data : pds.DataFrame
         Testing data
-    meta : (pysat.Meta)
-        Metadataxs
+    meta : pysat.Meta
+        Metadata
 
     """
 
