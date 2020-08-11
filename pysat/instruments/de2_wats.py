@@ -48,16 +48,15 @@ about the processing done at NSSDC is given in WATS_NSSDC_PRO_DE.DOC.
 References
 ----------
 N. W. Spencer, L. E. Wharton, H. B. Niemann, A. E. Hedin, G. R. Carrignan,
-J. C. Maurer
-The Dynamics Explorer Wind and Temperature Spectrometer
+J. C. Maurer, The Dynamics Explorer Wind and Temperature Spectrometer
 Space Sci. Instrum., v. 5, n. 4, p. 417, 1981.
 
 Properties
 ----------
 platform
-    Supports 'de2'
+    'de2'
 name
-    Supports 'wats'
+    'wats'
 sat_id
     None Supported
 tag
@@ -68,6 +67,9 @@ Authors
 J. Klenzing
 
 """
+
+from __future__ import print_function
+from __future__ import absolute_import
 
 import datetime as dt
 import functools

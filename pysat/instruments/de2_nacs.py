@@ -58,9 +58,9 @@ Space Sci. Instrum., v. 5, n. 4, p. 429, 1981.
 Properties
 ----------
 platform
-    Supports 'de2'
+    'de2'
 name
-    Supports 'nacs'
+    'nacs'
 sat_id
     None Supported
 tag
@@ -71,6 +71,9 @@ Authors
 J. Klenzing
 
 """
+
+from __future__ import print_function
+from __future__ import absolute_import
 
 import datetime as dt
 import functools
@@ -107,6 +110,7 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
+# code should be defined below as needed
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 

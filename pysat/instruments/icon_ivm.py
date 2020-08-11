@@ -14,11 +14,6 @@ tag
 sat_id
     'a' or 'b'
 
-Warnings
---------
-- No download routine as ICON has not yet been launched
-- Data not yet publicly available
-
 Example
 -------
 ::

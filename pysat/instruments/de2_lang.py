@@ -33,9 +33,9 @@ p. 493, 1981.
 Properties
 ----------
 platform
-    Supports 'de2'
+    'de2'
 name
-    Supports 'lang'
+    'lang'
 sat_id
     None Supported
 tag

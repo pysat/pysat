@@ -43,9 +43,9 @@ for dynamics explorer-B,” Space Sci. Instrum. 5, 503–510 (1981).
 Properties
 ----------
 platform
-    Supports 'de2'
+    'de2'
 name
-    Supports 'rpa'
+    'rpa'
 sat_id
     None Supported
 tag

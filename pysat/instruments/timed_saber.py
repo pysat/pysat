@@ -33,7 +33,6 @@ Users of SABER data are asked to respect the following guidelines
     and model version numbers should also be specified.
   - Pre-prints of publications and conference abstracts should be widely
     distributed to interested parties within the mission and related projects.
-  - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
 
 Warnings
 --------
