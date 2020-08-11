@@ -56,50 +56,16 @@ import functools
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
 
-# the platform and name strings associated with this instrument
-# need to be defined at the top level
-# these attributes will be copied over to the Instrument object by pysat
-# the strings used here should also be used to name this file
-# platform_name.py
 platform = 'timed'
 name = 'saber'
-
-# dictionary of data 'tags' and corresponding description
 tags = {'': ''}
-
-# Let pysat know if there are multiple satellite platforms supported
-# by these routines
-# define a dictionary keyed by satellite ID, each with a list of
-# corresponding tags
-# sat_ids = {'a':['L1', 'L0'], 'b':['L1', 'L2'], 'c':['L1', 'L3']}
 sat_ids = {'': ['']}
-
-# Define good days to download data for when pysat undergoes testing.
-# format is outer dictionary has sat_id as the key
-# each sat_id has a dictionary of test dates keyed by tag string
-# _test_dates = {'a':{'L0':dt.datetime(2019,1,1),
-#                     'L1':dt.datetime(2019,1,2)},
-#                'b':{'L1':dt.datetime(2019,3,1),
-#                     'L2':dt.datetime(2019,11,23),}}
 _test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
 
-# Additional information needs to be defined
-# to support the CDAWeb list files routine
-# We need to define a filename format string for every
-# supported combination of sat_id and tag string
-# fname1 = 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-# fname2 = 'cnofs_vefi_acfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
-# supported_tags = {'sat1':{'tag1':fname1},
-#                   'sat2':{'tag2':fname2}}
-# you can use format keywords year, month, day, hour, min, sec,
-# version and revision
-# see code docstring for latest
 fname = ''.join(('timed_l2av207_saber_{year:04d}{month:02d}{day:02d}',
                  '????_v01.cdf'))
 supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
-# the command below presets some of the methods inputs, leaving
-# those provided by pysat available when invoked
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
@@ -110,25 +76,10 @@ multi_file_day = True
 # Set to True if data will be returned via a pandas DataFrame
 pandas_format = True
 
-#
-# support load routine
-#
 # use the default CDAWeb method
-# no other information needs to be supplied here
-# pysatCDF is used to load data
 load = cdw.load
 
-#
-# support download routine
-#
-# to use the default CDAWeb method
-# we need to provide additional information
-# directory location on CDAWeb ftp server
-# formatting template for filenames on CDAWeb
-# formatting template for files saved to the local disk
-# a dictionary needs to be created for each sat_id and tag
-# combination along with the file format template
-# outer dict keyed by sat_id, inner dict keyed by tag
+# use the default CDAWeb method
 basic_tag = {'dir': '/pub/data/timed/saber/level2a_v2_07_cdf',
              'remote_fname': '{year:4d}/{month:02d}/' + fname,
              'local_fname': fname}
@@ -140,30 +91,6 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
-# code should be defined below as needed
-def default(self):
-    """Default customization function.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
-    """
-
-    return
-
-
-# code should be defined below as needed
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
