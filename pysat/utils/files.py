@@ -1,3 +1,4 @@
+import collections
 import glob
 import numpy as np
 import os
@@ -5,6 +6,8 @@ import re
 import string
 
 import pandas as pds
+
+from pysat.utils.time import create_datetime_index
 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
@@ -34,8 +37,6 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
         for this filtering, revision is optional.
 
     """
-
-    from pysat.utils.time import create_datetime_index
 
     search_dict = construct_searchstring_from_format(stored['format_str'])
     keys = search_dict['keys']
@@ -131,8 +132,6 @@ def parse_fixed_width_filenames(files, format_str):
 
     """
 
-    import collections
-
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
                     'version', 'revision']
@@ -207,8 +206,6 @@ def parse_delimited_filenames(files, format_str, delimiter):
         'format_str' - formatted string from input
 
     """
-
-    import collections
 
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
