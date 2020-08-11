@@ -123,12 +123,6 @@ def remove_leading_text(inst, target=None):
     target : str or list of strings
         Leading string to remove. If none supplied, returns unmodified
 
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
-
     """
 
     if target is None:

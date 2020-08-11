@@ -17,28 +17,28 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
 
     Parameters
     ----------
-    standard_inst : (pysat.Instrument or NoneType)
+    standard_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'kp' name,
         and '' tag or None to exclude (default=None)
-    recent_inst : (pysat.Instrument or NoneType)
+    recent_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'kp' name,
         and 'recent' tag or None to exclude (default=None)
-    forecast_inst : (pysat.Instrument or NoneType)
+    forecast_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'kp' name,
         and 'forecast' tag or None to exclude (default=None)
-    start : (dt.datetime or NoneType)
+    start : dt.datetime or NoneType
         Starting time for combining data, or None to use earliest loaded
         date from the pysat Instruments (default=None)
-    stop : (dt.datetime)
+    stop : dt.datetime
         Ending time for combining data, or None to use the latest loaded date
         from the pysat Instruments (default=None)
-    fill_val : (int or float)
+    fill_val : int or float
         Desired fill value (since the standard instrument fill value differs
         from the other sources) (default=np.nan)
 
     Returns
     -------
-    kp_inst : (pysat.Instrument)
+    kp_inst : pysat.Instrument
         Instrument object containing Kp observations for the desired period of
         time, merging the standard, recent, and forecasted values based on
         their reliability
@@ -51,6 +51,7 @@ def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
     Will not attempt to download any missing data, but will load data
 
     """
+
     notes = "Combines data from"
 
     # Create an ordered list of the Instruments, excluding any that are None
@@ -245,22 +246,22 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
 
     Parameters
     ----------
-    standard_inst : (pysat.Instrument or NoneType)
+    standard_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'f107' name,
         and '', 'all', 'prelim', or 'daily' tag
-    forecast_inst : (pysat.Instrument or NoneType)
+    forecast_inst : pysat.Instrument or NoneType
         Instrument object containing data for the 'sw' platform, 'f107' name,
         and 'prelim', '45day' or 'forecast' tag
-    start : (dt.datetime or NoneType)
+    start : dt.datetime or NoneType
         Starting time for combining data, or None to use earliest loaded
         date from the pysat Instruments (default=None)
-    stop : (dt.datetime)
+    stop : dt.datetime
         Ending time for combining data, or None to use the latest loaded date
         from the pysat Instruments (default=None)
 
     Returns
     -------
-    f107_inst : (pysat.Instrument)
+    f107_inst : pysat.Instrument
         Instrument object containing F10.7 observations for the desired period
         of time, merging the standard, 45day, and forecasted values based on
         their reliability
@@ -273,6 +274,7 @@ def combine_f107(standard_inst, forecast_inst, start=None, stop=None):
     Will not attempt to download any missing data, but will load data
 
     """
+
     # Initialize metadata and flags
     notes = "Combines data from"
     stag = standard_inst.tag if len(standard_inst.tag) > 0 else 'default'
@@ -444,22 +446,18 @@ def calc_daily_Ap(ap_inst, ap_name='3hr_ap', daily_name='Ap',
 
     Parameters
     ----------
-    ap_inst : (pysat.Instrument)
+    ap_inst : pysat.Instrument
         pysat instrument containing 3-hourly ap data
-    ap_name : (str)
+    ap_name : str
         Column name for 3-hourly ap data (default='3hr_ap')
-    daily_name : (str)
+    daily_name : str
         Column name for daily Ap data (default='Ap')
-    running_name : (str or NoneType)
+    running_name : str or NoneType
         Column name for daily running average of ap, not output if None
         (default=None)
 
-    Returns
-    -------
-    Void : updates intrument to include daily Ap index under daily_name
-
-    Notes
-    -----
+    Note
+    ----
     Ap is the mean of the 3hr ap indices measured for a given day
 
     Option for running average is included since this information is used

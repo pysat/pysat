@@ -11,21 +11,21 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : (str)
+    tag : str
         pysat instrument tag (default=None)
-    sat_id : (str)
+    sat_id : str
         pysat satellite ID tag (default=None)
-    data_path : (str)
+    data_path : str
         pysat data path (default=None)
-    format_str : (str)
+    format_str : str
         file format string (default=None)
-    file_date_range : (pds.date_range)
+    file_date_range : pds.date_range
         File date range. The default mode generates a list of 3 years of daily
         files (1 year back, 2 years forward) based on the test_dates passed
         through below.  Otherwise, accepts a range of files specified by the
         user.
         (default=None)
-    test_dates : (dt.datetime)
+    test_dates : dt.datetime
         Pass the _test_date object through from the test instrument files
 
     Returns
@@ -59,23 +59,23 @@ def list_remote_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     Parameters
     ----------
-    tag : (str)
+    tag : str
         pysat instrument tag (default=None)
-    sat_id : (str)
+    sat_id : str
         pysat satellite ID tag (default=None)
-    data_path : (str)
+    data_path : str
         pysat data path (default=None)
-    format_str : (str)
+    format_str : str
         file format string (default=None)
-    start : (dt.datetime or NoneType)
+    start : dt.datetime or NoneType
         Starting time for file list. A None value will start 1 year before
         test_date
         (default=None)
-    stop : (dt.datetime or NoneType)
+    stop : dt.datetime or NoneType
         Ending time for the file list.  A None value will stop 2 years 1 month
         after test_date
         (default=None)
-    test_dates : (dt.datetime)
+    test_dates : dt.datetime
         Pass the _test_date object through from the test instrument files
 
     Returns
@@ -109,30 +109,24 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
-        pysat. If an account
-        is required for dowloads this routine here must error if user not
-        supplied.
-    password : string (None)
-        Password for data download.
+        pysat. If an account is required for dowloads this routine here must
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
     **kwargs : dict
         Additional keywords supplied by user when invoking the download
         routine attached to a pysat.Instrument object are passed to this
         routine via kwargs.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
 
     """
 
@@ -177,10 +171,10 @@ def generate_times(fnames, sat_id, freq='1S'):
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames.  Currently, only the first is used.  Does not
         support multi-file days as of yet.
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
     freq : string
@@ -189,11 +183,11 @@ def generate_times(fnames, sat_id, freq='1S'):
 
     Outputs
     -------
-    uts : (array)
+    uts : array
         Array of integers representing uts for a given day
-    index : (DatetimeIndex)
+    index : DatetimeIndex
         The DatetimeIndex to be used in the pysat test instrument objects
-    date : (datetime)
+    date : datetime
         The requested date reconstructed from the fake file name
     """
 
@@ -232,8 +226,8 @@ def define_period():
     period : dict
         Dictionary of periods to use in test instruments
 
-    Notes
-    -----
+    Note
+    ----
     Local time and longitude slightly out of sync to simulate motion of Earth
 
     """

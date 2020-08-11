@@ -30,11 +30,11 @@ def load(fnames, tag=None, sat_id=None,
 
     Parameters
     ------------
-    fnames : (pandas.Series)
+    fnames : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
     fake_daily_files_from_monthly : bool
         Some CDAWeb instrument data files are stored by month, interfering
@@ -48,9 +48,9 @@ def load(fnames, tag=None, sat_id=None,
 
     Returns
     ---------
-    data : (pandas.DataFrame)
+    data : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
     Examples
@@ -115,31 +115,26 @@ def download(supported_tags, date_array, tag, sat_id,
         pre-set with functools.partial then assigned to new instrument code.
     date_array : array_like
         Array of datetimes to download data for. Provided by pysat.
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
     sat_id : (str or NoneType)
         satellite id or None (default=None)
-    remote_site : (string or NoneType)
+    remote_site : string or NoneType
         Remote site to download data from
         (default='https://cdaweb.gsfc.nasa.gov')
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    user : (string or NoneType)
+    user : string or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
-    password : (string or NoneType)
+    password : string or NoneType
         User password to be passed along to resource with relevant data.
         (default=None)
     fake_daily_files_from_monthly : bool
         Some CDAWeb instrument data files are stored by month. This flag,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
 
     Examples
     --------
@@ -269,23 +264,23 @@ def list_remote_files(tag, sat_id,
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.
         (default=None)
-    remote_site : (string or NoneType)
+    remote_site : string or NoneType
         Remote site to download data from
         (default='https://cdaweb.gsfc.nasa.gov')
     supported_tags : dict
         dict of dicts. Keys are supported tag names for download. Value is
         a dict with 'dir', 'remote_fname', 'local_fname'. Inteded to be
         pre-set with functools.partial then assigned to new instrument code.
-    user : (string or NoneType)
+    user : string or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
-    password : (string or NoneType)
+    password : string or NoneType
         User password to be passed along to resource with relevant data.
         (default=None)
     fake_daily_files_from_monthly : bool
@@ -293,19 +288,19 @@ def list_remote_files(tag, sat_id,
         when true, accomodates this reality with user feedback on a monthly
         time frame.
         (default=False)
-    two_digit_year_break : (int or NoneType)
+    two_digit_year_break : int or NoneType
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
         (default=None)
-    delimiter : (string or NoneType)
+    delimiter : string or NoneType
         If filename is delimited, then provide delimiter alone e.g. '_'
         (default=None)
-    start : (dt.datetime or NoneType)
+    start : dt.datetime or NoneType
         Starting time for file list. A None value will start with the first
         file found.
         (default=None)
-    stop : (dt.datetime or NoneType)
+    stop : dt.datetime or NoneType
         Ending time for the file list.  A None value will stop with the last
         file found.
         (default=None)

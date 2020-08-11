@@ -35,10 +35,10 @@ def list_remote_files(tag, sat_id):
 
     Parameters
     ----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
 
@@ -83,7 +83,7 @@ def load_general_header(fhandle):
 
     Parameters
     ------------
-    fhandle : (file handle)
+    fhandle : file handle
         File handle
 
     Returns
@@ -149,7 +149,7 @@ def load_location_parameters(fhandle):
 
     Parameters
     ------------
-    fhandle : (file handle)
+    fhandle : file handle
         File handle
 
     Returns
@@ -238,7 +238,7 @@ def load_attitude_parameters(fhandle):
 
     Parameters
     ------------
-    fhandle : (file handle)
+    fhandle : file handle
         File handle
 
     Returns
@@ -315,6 +315,7 @@ def load_binary_file(fname, load_experiment_data):
         Data from file stored in a numpy array
     meta : dict
         Meta data for file, including data names and units
+
     """
 
     data = list()
