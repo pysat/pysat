@@ -59,14 +59,18 @@ filter_geoquiet
 """
 
 import datetime as dt
+import ftplib
+from ftplib import FTP
+import logging
 import numpy as np
 import os
+import requests
+import sys
 
 import pandas as pds
 
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -286,9 +290,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     # download standard Kp data
     if tag == '':
-        import ftplib
-        from ftplib import FTP
-        import sys
         ftp = FTP('ftp.gfz-potsdam.de')   # connect to host, default port
         ftp.login()               # user anonymous, passwd anonymous@
         ftp.cwd('/pub/home/obs/kp-ap/tab')
@@ -328,7 +329,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         ftp.close()
 
     elif tag == 'forecast':
-        import requests
         logger.info(' '.join(('This routine can only download the current',
                               'forecast, not archived forecasts')))
         # download webpage
@@ -366,7 +366,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'recent':
-        import requests
         logger.info(' '.join(('This routine can only download the current',
                               'webpage, not archived forecasts')))
         # download webpage

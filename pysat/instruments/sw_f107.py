@@ -43,16 +43,21 @@ is not appropriate for 'forecast' data.
 
 """
 
-import os
 import datetime as dt
+import ftplib
+from ftplib import FTP
+import json
+import logging
+import numpy as np
+import os
+import requests
+import sys
 import warnings
 
-import numpy as np
 import pandas as pds
 
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 platform = 'sw'
@@ -358,9 +363,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     # download standard F107 data
     if tag == '':
         # download from LASP, by month
-        import requests
-        import json
-
         for date in date_array:
             # modify date to be the start of the month
             if date.day != 1:
@@ -396,8 +398,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     elif tag == 'all':
         # download from LASP, by year
-        import requests
-        import json
 
         # download webpage
         dstr = 'http://lasp.colorado.edu/lisird/latis/dap/'
@@ -428,9 +428,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'prelim':
-        import ftplib
-        from ftplib import FTP
-        import sys
         ftp = FTP('ftp.swpc.noaa.gov')  # connect to host, default port
         ftp.login()  # user anonymous, passwd anonymous@
         ftp.cwd('/pub/indices/old_indices')
@@ -538,7 +535,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         ftp.close()
 
     elif tag == 'daily':
-        import requests
         logger.info('This routine can only download the latest 30 day file')
 
         # download webpage
@@ -551,7 +547,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         rewrite_daily_file(today.year, outfile, r.text)
 
     elif tag == 'forecast':
-        import requests
         logger.info(' '.join(('This routine can only download the current',
                               'forecast, not archived forecasts')))
         # download webpage
@@ -580,7 +575,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == '45day':
-        import requests
         logger.info(' '.join(('This routine can only download the current',
                               'forecast, not archived forecasts')))
         # download webpage

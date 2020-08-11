@@ -36,11 +36,13 @@ Warnings
 
 from __future__ import print_function, absolute_import
 import datetime as dt
-import pandas as pds
+import functools
 import numpy as np
 from os import path
-import functools
+import re
 import warnings
+
+import pandas as pds
 
 import pysat
 

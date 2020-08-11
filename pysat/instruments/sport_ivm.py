@@ -7,16 +7,14 @@ with the development of code associated with SPORT and the IVM.
 
 """
 
-# import pandas as pds
-# import numpy as np
 import datetime as dt
 import functools
+import logging
 import warnings
 
 import pysat
 from pysat.instruments.methods import general as mm_gen
 
-import logging
 logger = logging.getLogger(__name__)
 
 

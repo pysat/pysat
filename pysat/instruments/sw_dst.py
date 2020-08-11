@@ -27,8 +27,12 @@ of the National Science Foundation.
 """
 
 import datetime as dt
+import ftplib
+from ftplib import FTP
 import os
 import numpy as np
+import sys
+
 import pandas as pds
 
 import pysat
@@ -199,9 +203,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     """
 
-    import ftplib
-    from ftplib import FTP
-    import sys
     ftp = FTP('ftp.ngdc.noaa.gov')   # connect to host, default port
     ftp.login()               # user anonymous, passwd anonymous@
     ftp.cwd('/STP/GEOMAGNETIC_DATA/INDICES/DST')
