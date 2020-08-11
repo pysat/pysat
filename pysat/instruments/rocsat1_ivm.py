@@ -66,18 +66,14 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    --------
+    Note
+    ----
     No cleaning currently available for ROCSAT-1 IVM.
+
     """
 
     warnings.warn("No cleaning currently available for ROCSAT")

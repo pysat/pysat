@@ -4,15 +4,15 @@ Proton Fluxes, Time-Shifted to the Nose of the Earth's Bow Shock, plus Solar
 and Magnetic Indices. Downloads data from the NASA Coordinated Data Analysis
 Web (CDAWeb). Supports both 5 and 1 minute files.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'omni'
-name : string
+name
     'hro'
-tag : string
+tag
     Select time between samples, one of {'1min', '5min'}
-sat_id : string
+sat_id
     None supported
 
 Note
@@ -36,13 +36,14 @@ Warnings
 
 Custom Functions
 ----------------
-time_shift_to_magnetic_poles : Shift time from bowshock to intersection with
-                               one of the magnetic poles
-calculate_clock_angle : Calculate the clock angle and IMF mag in the YZ plane
-calculate_imf_steadiness : Calculate the IMF steadiness using clock angle and
-                           magnitude in the YZ plane
-calculate_dayside_reconnection : Calculate the dayside reconnection rate
-
+time_shift_to_magnetic_poles
+    Shift time from bowshock to intersection with one of the magnetic poles
+calculate_clock_angle
+    Calculate the clock angle and IMF mag in the YZ plane
+calculate_imf_steadiness
+    Calculate the IMF steadiness using clock angle and magnitude in the YZ plane
+calculate_dayside_reconnection
+    Calculate the dayside reconnection rate
 """
 
 from __future__ import print_function
@@ -204,6 +205,7 @@ def calculate_imf_steadiness(inst, steady_window=15, min_window_frac=0.75,
     max_bmag_cv : float
         Maximum coefficient of variation of the IMF magnitude in the GSM
         Y-Z plane (default=0.5)
+
     """
 
     # We are not going to interpolate through missing values
@@ -281,7 +283,9 @@ def calculate_dayside_reconnection(inst):
     Notes
     --------
     recon_day = 3.8 Re (Vx / 4e5 m/s)^1/3 Vx B_yz (sin(theta/2))^9/2
+
     """
+
     rearth = 6371008.8
     sin_htheta = np.power(np.sin(np.radians(0.5 * inst['clock_angle'])), 4.5)
     byz = inst['BYZ_GSM'] * 1.0e-9

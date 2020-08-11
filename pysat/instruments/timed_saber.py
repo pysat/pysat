@@ -3,6 +3,19 @@
 (SABER) instrument on the Thermosphere Ionosphere Mesosphere Energetics
 Dynamics (TIMED) satellite.
 
+Properties
+----------
+platform : string
+    'timed'
+name : string
+    'saber'
+tag : string
+    None supported
+sat_id : string
+    None supported
+
+Note
+----
 SABER "Rules of the Road" for DATA USE
 Users of SABER data are asked to respect the following guidelines
 
@@ -22,26 +35,10 @@ Users of SABER data are asked to respect the following guidelines
     distributed to interested parties within the mission and related projects.
   - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
 
-Parameters
-----------
-platform : string
-    'timed'
-name : string
-    'saber'
-tag : string
-    None supported
-sat_id : string
-    None supported
-
-Note
-----
-::
-
-    Notes
-
 Warnings
 --------
 - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
+
 
 Authors
 -------
@@ -185,17 +182,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 

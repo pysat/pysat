@@ -208,11 +208,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : NoneType
-        data in inst is modified in-place.
-
     Notes
     --------
     No data download currently available for CHAMP

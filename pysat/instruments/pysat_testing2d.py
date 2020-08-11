@@ -30,12 +30,6 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
@@ -52,12 +46,6 @@ def default(inst):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     pass
@@ -68,21 +56,21 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    malformed_index : bool (False)
+    malformed_index : bool
         If True, the time index will be non-unique and non-monotonic.
-
+        (default=False)
     Returns
     -------
-    data : (pds.DataFrame)
+    data : pds.DataFrame
         Testing data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Metadataxs
 
     """

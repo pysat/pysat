@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Supports Dst values. Downloads data from NGDC.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'sw'
-name : string
+name
     'dst'
-tag : string
+tag
     None supported
 
 Note
@@ -50,23 +50,24 @@ def load(fnames, tag=None, sat_id=None):
 
     Parameters
     ------------
-    fnames : (pandas.Series)
+    fnames : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
     ---------
-    data : (pandas.DataFrame)
+    data : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
     Note
     ----
     Called by pysat. Not intended for direct use by user.
+
 
     """
 
@@ -130,22 +131,22 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are '1min' and '5min'.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
     Returns
     --------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Notes
@@ -182,20 +183,15 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-
-    Returns
-    --------
-    Void : (NoneType)
-        data downloaded to disk, if available.
 
     Notes
     -----
