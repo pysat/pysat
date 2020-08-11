@@ -2,8 +2,6 @@
 """Provides generalized routines for integrating instruments into pysat.
 """
 
-from __future__ import absolute_import, division, print_function
-
 import datetime as dt
 import logging
 import pandas as pds

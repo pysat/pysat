@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Provides non-instrument specific routines for ICON data"""
 
-from __future__ import absolute_import, division, print_function
-
 import fnmatch
 import ftplib
 import logging

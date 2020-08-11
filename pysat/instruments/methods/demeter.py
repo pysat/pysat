@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 """Provides non-instrument routines for DEMETER microsatellite data"""
 
-from __future__ import absolute_import, division, print_function
-
 import datetime as dt
+import logging
 import numpy as np
 import warnings
 
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 

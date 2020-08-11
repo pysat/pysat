@@ -5,7 +5,6 @@ intervention.
 
 """
 
-from __future__ import absolute_import, division, print_function
 import datetime as dt
 import os
 import requests
