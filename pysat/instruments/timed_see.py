@@ -86,11 +86,6 @@ def init(self):
     Runs once upon instantiation.
 
 
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
     """
 
     rules_url = 'http://www.timed.jhuapl.edu/WWW/scripts/mdc_rules.pl'

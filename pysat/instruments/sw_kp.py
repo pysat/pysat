@@ -88,11 +88,6 @@ def init(self):
     Runs once upon instantiation.
 
 
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
     """
 
     self.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)

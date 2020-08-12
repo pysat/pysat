@@ -83,11 +83,6 @@ def init(self):
 
     Runs once upon instantiation.
 
-    Parameters
-    -----------
-    inst : pysat.Instrument
-        Instrument class object
-
     """
     ack = ' '.join((''))
     refs = ' '.join(('Y. Liou et al., "FORMOSAT-3/COSMIC GPS',

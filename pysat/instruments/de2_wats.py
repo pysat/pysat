@@ -125,11 +125,6 @@ def init(self):
 
     Runs once upon instantiation.
 
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object
-
     """
 
     logger.info(mm_de2.ackn_str)

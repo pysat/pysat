@@ -106,11 +106,6 @@ def init(self):
 
     Runs once upon instantiation.
 
-    Parameters
-    -----------
-    inst : pysat.Instrument
-        Instrument class object
-
     """
 
     ackn_str = ''.join(('For full acknowledgement info, please see: ',

@@ -99,11 +99,6 @@ def init(self):
 
     Runs once upon instantiation.
 
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object
-
     """
     logger.info(mm_cnofs.ackn_str)
     self.acknowledgements = mm_cnofs.ackn_str
