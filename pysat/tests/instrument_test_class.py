@@ -161,7 +161,7 @@ class InstTestClass():
                 # Test the required class attributes
                 for iattr in self.inst_attrs:
                     assert hasattr(inst, iattr)
-                    assert isinstance(getattr(module, iattr),
+                    assert isinstance(getattr(inst, iattr),
                                       self.attr_types[iattr])
 
     @pytest.mark.all_inst
