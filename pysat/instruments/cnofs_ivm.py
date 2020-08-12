@@ -90,6 +90,18 @@ list_remote_files = functools.partial(cdw.list_remote_files,
 
 
 def default(ivm):
+    """Apply C/NOFS IVM default attributes
+
+    The sample rate for loaded data is attached at inst.sample_rate
+    before any attached custom methods are executed.
+
+    Parameters
+    ----------
+    ivm : pysat.Instrument
+        C/NOFS IVM Instrument object
+
+    """
+
     ivm.sample_rate = 1.0 if ivm.date >= dt.datetime(2010, 7, 29) else 2.0
 
 
