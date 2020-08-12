@@ -46,8 +46,8 @@ for orbit_count, vefi in enumerate(vefi.orbits):
     f, ax = plt.subplots(7, sharex=True, figsize=(8.5, 11))
 
     ax[0].plot(vefi['longitude'], vefi['B_flag'])
-    ax[0].set_title(vefi.data.index[0].ctime() +
-                    ' - '+vefi.data.index[-1].ctime())
+    ax[0].set_title(' - '.join((vefi.data.index[0].ctime(),
+                                vefi.data.index[-1].ctime())))
     ax[0].set_ylabel('Interp. Flag')
     ax[0].set_ylim((0, 2))
 
