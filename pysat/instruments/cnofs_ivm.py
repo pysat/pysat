@@ -110,7 +110,7 @@ def init(self):
     self.references = '\n'.join((mm_cnofs.refs['mission'],
                                  mm_cnofs.refs['ivm']))
 
-    pass
+    return
 
 
 def default(ivm):

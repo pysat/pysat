@@ -45,7 +45,7 @@ def init(self):
     self.references = 'Mission papers to be added when published'
     logger.info(self.acknowledgements)
 
-    pass
+    return
 
 
 def load(fnames, tag=None, sat_id=None, **kwargs):

@@ -70,6 +70,7 @@ def init(self):
     if self.kwargs['mangle_file_dates']:
         self.files.files.index = \
             self.files.files.index + pds.DateOffset(minutes=5)
+    return
 
 
 def default(self):

@@ -116,7 +116,7 @@ def init(self):
     self.references = ''.join((mm_icon.refs['mission'],
                                mm_icon.refs['ivm']))
 
-    pass
+    return
 
 
 def default(inst):

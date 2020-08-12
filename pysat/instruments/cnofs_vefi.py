@@ -109,7 +109,7 @@ def init(self):
     self.references = '\n'.join((mm_cnofs.refs['mission'],
                                  mm_cnofs.refs['vefi']))
 
-    pass
+    return
 
 
 def clean(inst):
