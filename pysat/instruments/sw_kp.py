@@ -109,7 +109,8 @@ def load(fnames, tag=None, sat_id=None):
     meta : pysat.Meta
         Object containing metadata such as column names and units
 
-    Notes
+    Note
+    ----
     -----
     Called by pysat. Not intended for direct use by user.
 
