@@ -117,19 +117,13 @@ def generate_instrument_list(package=None):
 class InstTestClass():
     """Provides standardized tests for pysat instrument libraries.
     """
-    def setup(self):
-        self.module_attrs = ['platform', 'name', 'tags', 'sat_ids',
-                             'load', 'list_files', 'download']
-        self.inst_attrs = ['tag', 'sat_id', 'acknowledgements', 'references']
-        self.inst_callable = ['load', 'list_files', 'download', 'clean',
-                              'default']
-        self.attr_types = {'platform': str, 'name': str, 'tags': dict,
-                           'sat_ids': dict, 'tag': str, 'sat_id': str,
-                           'acknowledgements': str, 'references': str}
-
-    def teardown(self):
-        del self.inst_attrs, self.inst_callable, self.inst_types
-        del self.module_attrs
+    module_attrs = ['platform', 'name', 'tags', 'sat_ids',
+                    'load', 'list_files', 'download']
+    inst_attrs = ['tag', 'sat_id', 'acknowledgements', 'references']
+    inst_callable = ['load', 'list_files', 'download', 'clean', 'default']
+    attr_types = {'platform': str, 'name': str, 'tags': dict,
+                  'sat_ids': dict, 'tag': str, 'sat_id': str,
+                  'acknowledgements': str, 'references': str}
 
     @pytest.mark.all_inst
     def test_modules_standard(self, name):
