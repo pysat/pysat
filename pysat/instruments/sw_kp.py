@@ -111,7 +111,6 @@ def load(fnames, tag=None, sat_id=None):
 
     Note
     ----
-    -----
     Called by pysat. Not intended for direct use by user.
 
 
@@ -205,7 +204,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         formats associated with the supplied tags are used. (default=None)
 
     Returns
-    --------
+    -------
     pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
