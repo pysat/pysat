@@ -53,7 +53,6 @@ import datetime as dt
 import logging
 import os
 import requests
-from requests.auth import HTTPBasicAuth
 import shutil
 import sys
 import tarfile
@@ -465,13 +464,14 @@ def download(date_array, tag, sat_id, data_path=None,
         yr, doy = pysat.utils.time.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
         # Try re-processed data (preferred)
+        auth = requests.auth.HTTPBasicAuth(user, password)
         try:
             dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
                              "tarservice/data/cosmic2013/"))
             dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
                                                                      doy=doy)
             top_dir = os.path.join(data_path, 'cosmic2013')
-            req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+            req = requests.get(dwnld, auth=auth)
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             # if response is negative, try post-processed data
@@ -481,7 +481,7 @@ def download(date_array, tag, sat_id, data_path=None,
                 dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'
                 dwnld = dwnld.format(year=yr, doy=doy)
                 top_dir = os.path.join(data_path, 'cosmic')
-                req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+                req = requests.get(dwnld, auth=auth)
                 req.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 estr = ''.join((str(err), '\n', 'Data not found'))

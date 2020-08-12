@@ -60,7 +60,6 @@ filter_geoquiet
 
 import datetime as dt
 import ftplib
-from ftplib import FTP
 import logging
 import numpy as np
 import os
@@ -110,7 +109,8 @@ def load(fnames, tag=None, sat_id=None):
     meta : pysat.Meta
         Object containing metadata such as column names and units
 
-    Notes
+    Note
+    ----
     -----
     Called by pysat. Not intended for direct use by user.
 
@@ -210,8 +210,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         A class containing the verified available files
 
 
-    Notes
-    -----
+    Note
+    ----
     Called by pysat. Not intended for direct use by user.
 
 
@@ -290,8 +290,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     # download standard Kp data
     if tag == '':
-        ftp = FTP('ftp.gfz-potsdam.de')   # connect to host, default port
-        ftp.login()               # user anonymous, passwd anonymous@
+        ftp = ftplib.FTP('ftp.gfz-potsdam.de')  # connect to host, default port
+        ftp.login()  # user anonymous, passwd anonymous@
         ftp.cwd('/pub/home/obs/kp-ap/tab')
         dnames = list()
 
@@ -423,8 +423,8 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     kp_inst : pysat.Instrument (optional)
         Kp pysat.Instrument object ready to load Kp data.Overrides kpData.
 
-    Notes
-    -----
+    Note
+    ----
     Loads Kp data for the same timeframe covered by sat and sets sat.data to
     NaN for times when Kp > maxKp and for filterTime after Kp drops below
     maxKp.
