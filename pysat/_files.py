@@ -503,13 +503,14 @@ class Files(object):
             Supports 'year', 'month', 'day', 'hour', 'minute', 'second',
             'version', and 'revision'
             Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        two_digit_year_break : int
+        two_digit_year_break : int or None
             If filenames only store two digits for the year, then
             '1900' will be added for years >= two_digit_year_break
             and '2000' will be added for years < two_digit_year_break.
-        delimiter : string (None)
+            If None, then four-digit years are assumed. (default=None)
+        delimiter : string
             If set, then filename will be processed using delimiter rather
-            than assuming a fixed width
+            than assuming a fixed width (default=None)
 
         Note
         ----

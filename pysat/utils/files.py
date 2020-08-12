@@ -19,10 +19,12 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     stored : orderedDict
         Dict produced by parse_fixed_width_filenames or
         parse_delimited_filenames
-    two_digit_year_break : int
+    two_digit_year_break : int or None
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
+        If None, then four-digit years are assumed.
+        (default=None)
 
     Returns
     -------
