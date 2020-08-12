@@ -135,6 +135,7 @@ def init(self):
     logger.info(mm_de2.ackn_str)
     self.acknowledgements = mm_de2.ackn_str
     self.references = mm_de2.refs['lang']
+    return
 
 
 def default(self):
@@ -175,8 +176,8 @@ def clean(inst):
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Notes
-    -----
+    Note
+    ----
 
     """
 

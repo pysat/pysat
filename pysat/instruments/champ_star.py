@@ -60,7 +60,7 @@ def init(self):
                                 'Gravity, Magnetic and Atmospheric',
                                 'Studies. Springer, Berlin, Heidelberg.',
                                 'doi.org/10.1007/978-3-540-38366-6_2'))
-    pass
+    return
 
 
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):

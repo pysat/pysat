@@ -40,6 +40,7 @@ def init(self):
     logger.info(mm_test.ackn_str)
     self.acknowledgements = mm_test.ackn_str
     self.references = mm_test.refs
+    return
 
 
 def load(fnames, tag=None, sat_id=None):

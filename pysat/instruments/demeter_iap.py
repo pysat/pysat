@@ -71,6 +71,7 @@ def init(self):
     self.acknowledgements = ackn_str
     self.references = ref_str
     logger.info(ackn_str)
+    return
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,

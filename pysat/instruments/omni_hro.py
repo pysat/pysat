@@ -123,6 +123,7 @@ def init(self):
                                 'Vol. 110, No. A2, A02209,',
                                 '10.1029/2004JA010649.'))
     logger.info(ackn_str)
+    return
 
 
 def clean(omni):
