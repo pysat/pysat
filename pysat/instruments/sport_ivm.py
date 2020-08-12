@@ -40,8 +40,8 @@ def init(self):
 
     """
     self.acknowledgements = ' '.join(("Mission acknowledgements and data",
-                                           "restrictions will be printed here",
-                                           "when available."))
+                                      "restrictions will be printed here",
+                                      "when available."))
     self.references = 'Mission papers to be added when published'
     logger.info(self.acknowledgements)
 

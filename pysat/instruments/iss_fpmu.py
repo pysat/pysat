@@ -79,19 +79,19 @@ def init(self):
     logger.info(ackn_str)
     self.acknowledgements = ackn_str
     self.references = ' '.join(('V. N. Coffey et al., "Validation of the',
-                                     'Plasma Densities and Temperatures From',
-                                     'the ISS Floating Potential Measurement',
-                                     'Unit," in IEEE Transactions on Plasma',
-                                     'Science, vol. 36, no. 5, pp. 2301-2308,',
-                                     'Oct. 2008,',
-                                     'doi: 10.1109/TPS.2008.2004271.\n',
-                                     'A. Barjatya, C.M. Swenson, D.C.',
-                                     'Thompson, and K.H. Wright Jr., Data',
-                                     'analysis of the Floating Potential',
-                                     'Measurement Unit aboard the',
-                                     'International Space Station, Rev. Sci.',
-                                     'Instrum. 80, 041301 (2009),',
-                                     'https://doi.org/10.1063/1.3116085'))
+                                'Plasma Densities and Temperatures From',
+                                'the ISS Floating Potential Measurement',
+                                'Unit," in IEEE Transactions on Plasma',
+                                'Science, vol. 36, no. 5, pp. 2301-2308,',
+                                'Oct. 2008,',
+                                'doi: 10.1109/TPS.2008.2004271.\n',
+                                'A. Barjatya, C.M. Swenson, D.C.',
+                                'Thompson, and K.H. Wright Jr., Data',
+                                'analysis of the Floating Potential',
+                                'Measurement Unit aboard the',
+                                'International Space Station, Rev. Sci.',
+                                'Instrum. 80, 041301 (2009),',
+                                'https://doi.org/10.1063/1.3116085'))
 
     return
 

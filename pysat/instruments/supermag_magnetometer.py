@@ -77,9 +77,9 @@ def init(self):
                         'http://supermag.jhuapl.edu/info/?page=rulesoftheroad'))
     self.acknowledgements = ackn_str
     self.references = ' '.join(('Gjerloev, J. W. (2012), The SuperMAG',
-                                     'data processing technique, J. Geophys.',
-                                     'Res., 117 , A09213,',
-                                     'doi:10.1029/2012JA017683.'))
+                                'data processing technique, J. Geophys.',
+                                'Res., 117 , A09213,',
+                                'doi:10.1029/2012JA017683.'))
     logger.info(ackn_str)
 
     # if the tag is 'indices', update data_path to reflect this

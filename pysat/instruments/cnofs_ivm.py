@@ -108,7 +108,7 @@ def init(self):
     logger.info(mm_cnofs.ackn_str)
     self.acknowledgements = mm_cnofs.ackn_str
     self.references = '\n'.join((mm_cnofs.refs['mission'],
-                                      mm_cnofs.refs['ivm']))
+                                 mm_cnofs.refs['ivm']))
 
     pass
 

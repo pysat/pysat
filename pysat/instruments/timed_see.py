@@ -99,13 +99,13 @@ def init(self):
     logger.info(ackn_str)
     self.acknowledgements = ackn_str
     self.references = ' '.join(('Woods, T. N., Eparvier, F. G., Bailey,',
-                                     'S. M., Chamberlin, P. C., Lean, J.,',
-                                     'Rottman, G. J., Solomon, S. C., Tobiska,',
-                                     'W. K., and Woodraska, D. L. (2005),',
-                                     'Solar EUV Experiment (SEE): Mission',
-                                     'overview and first results, J. Geophys.',
-                                     'Res., 110, A01312,',
-                                     'doi:10.1029/2004JA010765.'))
+                                'S. M., Chamberlin, P. C., Lean, J.,',
+                                'Rottman, G. J., Solomon, S. C., Tobiska,',
+                                'W. K., and Woodraska, D. L. (2005),',
+                                'Solar EUV Experiment (SEE): Mission',
+                                'overview and first results, J. Geophys.',
+                                'Res., 110, A01312,',
+                                'doi:10.1029/2004JA010765.'))
 
     return
 

@@ -117,11 +117,11 @@ def init(self):
                         'https://omniweb.gsfc.nasa.gov/html/citing.html'))
     self.acknowledgements = ackn_str
     self.references = ' '.join(('J.H. King and N.E. Papitashvili, Solar',
-                                     'wind spatial scales in and comparisons',
-                                     'of hourly Wind and ACE plasma and',
-                                     'magnetic field data, J. Geophys. Res.,',
-                                     'Vol. 110, No. A2, A02209,',
-                                     '10.1029/2004JA010649.'))
+                                'wind spatial scales in and comparisons',
+                                'of hourly Wind and ACE plasma and',
+                                'magnetic field data, J. Geophys. Res.,',
+                                'Vol. 110, No. A2, A02209,',
+                                '10.1029/2004JA010649.'))
     logger.info(ackn_str)
 
 
