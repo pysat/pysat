@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-08-10
+## [3.0.0] - 2020-08-12
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -48,6 +48,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Include flake8 check as part of testing suites
   - Improve unit testing coverage of instrument functions and instrument object
   - Updated path to rocsat data
+  - Removed implicit conversion to integers in methods.general.convert_timestamp_to_datetime
 
 ## [2.2.0] - 2020-07-06
 - New Features
