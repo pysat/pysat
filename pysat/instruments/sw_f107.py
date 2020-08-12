@@ -45,7 +45,6 @@ is not appropriate for 'forecast' data.
 
 import datetime as dt
 import ftplib
-from ftplib import FTP
 import json
 import logging
 import numpy as np
@@ -428,7 +427,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'prelim':
-        ftp = FTP('ftp.swpc.noaa.gov')  # connect to host, default port
+        ftp = ftplib.FTP('ftp.swpc.noaa.gov')  # connect to host, default port
         ftp.login()  # user anonymous, passwd anonymous@
         ftp.cwd('/pub/indices/old_indices')
 

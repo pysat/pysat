@@ -60,7 +60,6 @@ filter_geoquiet
 
 import datetime as dt
 import ftplib
-from ftplib import FTP
 import logging
 import numpy as np
 import os
@@ -290,8 +289,8 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     # download standard Kp data
     if tag == '':
-        ftp = FTP('ftp.gfz-potsdam.de')   # connect to host, default port
-        ftp.login()               # user anonymous, passwd anonymous@
+        ftp = ftplib.FTP('ftp.gfz-potsdam.de')  # connect to host, default port
+        ftp.login()  # user anonymous, passwd anonymous@
         ftp.cwd('/pub/home/obs/kp-ap/tab')
         dnames = list()
 
