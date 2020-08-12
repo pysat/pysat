@@ -6,6 +6,7 @@ intervention.
 """
 
 import datetime as dt
+import logging
 import os
 import requests
 import sys
@@ -15,7 +16,6 @@ import pandas as pds
 
 import pysat
 
-import logging
 logger = logging.getLogger(__name__)
 
 
