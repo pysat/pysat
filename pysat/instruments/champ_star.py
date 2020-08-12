@@ -45,11 +45,6 @@ def init(self):
 
     Runs once upon instantiation.
 
-    Parameters
-    -----------
-    inst : (pysat.Instrument)
-        Instrument class object
-
     """
 
     self.acknowledgements = 'Data available through ???'
