@@ -50,6 +50,7 @@ Warnings
 from __future__ import print_function
 from __future__ import absolute_import
 import datetime as dt
+import logging
 import os
 import sys
 
@@ -57,8 +58,8 @@ import numpy as np
 import netCDF4
 import pandas as pds
 import pysat
+from pysat.utils import files as futils
 
-import logging
 logger = logging.getLogger(__name__)
 
 platform = 'cosmic'
@@ -116,15 +117,13 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         format_str = ''.join(('*.*/*.{year:04d}.{day:03d}',
                               '.{hour:02d}.{minute:02d}.*_nc'))
     # process format string to get string to search for
-    search_dict = pysat._files.construct_searchstring_from_format(format_str)
+    search_dict = futils.construct_searchstring_from_format(format_str)
     search_str = search_dict['search_string']
     # perform local file search
-    files = pysat._files.search_local_system_formatted_filename(data_path,
-                                                                search_str)
+    files = futils.search_local_system_formatted_filename(data_path, search_str)
     # we have a list of files, now we need to extract the information
     # pull of data from the areas identified by format_str
-    stored = pysat._files.parse_delimited_filenames(files, format_str,
-                                                    delimiter='.')
+    stored = futils.parse_delimited_filenames(files, format_str, delimiter='.')
     if len(stored['year']) > 0:
         year = np.array(stored['year'])
         day = np.array(stored['day'])
