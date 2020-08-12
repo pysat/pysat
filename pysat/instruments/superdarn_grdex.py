@@ -93,8 +93,8 @@ def init(self):
                         'Of data from a subset of radars are used, please',
                         'contact the PI for an institution-specific',
                         'acknowledgement and publication guidleines.'))
-    self.meta.acknowledgements = ack_str
-    self.meta.references = ''
+    self.acknowledgements = ack_str
+    self.references = ''
     logger.info(ack_str)
     return
 

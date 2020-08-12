@@ -170,8 +170,8 @@ class InstTestClass():
             for tag in module.sat_ids[sat_id]:
                 inst = pysat.Instrument(inst_module=module, tag=tag,
                                         sat_id=sat_id)
-                assert isinstance(inst.meta.acknowledgements, str)
-                assert isinstance(inst.meta.references, str)
+                assert isinstance(inst.acknowledgements, str)
+                assert isinstance(inst.references, str)
 
     @pytest.mark.first
     @pytest.mark.download
@@ -204,8 +204,8 @@ class InstTestClass():
         if len(inst.files.files) > 0:
             try:
                 # Grab required metadata from instantiation
-                ackn_str = inst.meta.acknowledgements
-                refs_str = inst.meta.references
+                ackn_str = inst.acknowledgements
+                refs_str = inst.references
                 # Set Clean Level
                 inst.clean_level = clean_level
                 target = 'Fake Data to be cleared'
@@ -225,8 +225,8 @@ class InstTestClass():
                 # Make sure fake data is cleared
                 assert target not in inst.data
                 # Make sure required metadata are still there after load
-                assert inst.meta.acknowledgements == ackn_str
-                assert inst.meta.references == refs_str
+                assert inst.acknowledgements == ackn_str
+                assert inst.references == refs_str
                 # If cleaning not used, something should be in the file
                 # Not used for clean levels since cleaning may remove all data
                 if clean_level == "none":

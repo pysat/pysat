@@ -133,8 +133,8 @@ def init(self):
     """
 
     logger.info(mm_de2.ackn_str)
-    self.meta.acknowledgements = mm_de2.ackn_str
-    self.meta.references = mm_de2.refs['lang']
+    self.acknowledgements = mm_de2.ackn_str
+    self.references = mm_de2.refs['lang']
 
 
 def default(self):

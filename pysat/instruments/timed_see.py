@@ -97,8 +97,8 @@ def init(self):
     ackn_str = ' '.join(('Please see the Rules of the Road at',
                          rules_url))
     logger.info(ackn_str)
-    self.meta.acknowledgements = ackn_str
-    self.meta.references = ' '.join(('Woods, T. N., Eparvier, F. G., Bailey,',
+    self.acknowledgements = ackn_str
+    self.references = ' '.join(('Woods, T. N., Eparvier, F. G., Bailey,',
                                      'S. M., Chamberlin, P. C., Lean, J.,',
                                      'Rottman, G. J., Solomon, S. C., Tobiska,',
                                      'W. K., and Woodraska, D. L. (2005),',

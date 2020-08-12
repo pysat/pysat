@@ -77,8 +77,8 @@ def init(self):
     ackn_str = ' '.join(('Data provided through NASA CDAWeb.  Contact',
                          'Rob.Suggs@nasa.gov for support and use.'))
     logger.info(ackn_str)
-    self.meta.acknowledgements = ackn_str
-    self.meta.references = ' '.join(('V. N. Coffey et al., "Validation of the',
+    self.acknowledgements = ackn_str
+    self.references = ' '.join(('V. N. Coffey et al., "Validation of the',
                                      'Plasma Densities and Temperatures From',
                                      'the ISS Floating Potential Measurement',
                                      'Unit," in IEEE Transactions on Plasma',

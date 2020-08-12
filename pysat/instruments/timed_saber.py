@@ -120,8 +120,8 @@ def init(self):
     ackn_str = ' '.join(('Please see the Rules of the Road at',
                          rules_url))
     logger.info(ackn_str)
-    self.meta.acknowledgements = ackn_str
-    self.meta.references = ''
+    self.acknowledgements = ackn_str
+    self.references = ''
 
     return
 

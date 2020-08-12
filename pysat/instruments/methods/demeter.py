@@ -360,22 +360,20 @@ def load_binary_file(fname, load_experiment_data):
     return data, meta
 
 
-def set_metadata(name, meta_dict):
-    """ Set metadata for each DEMETER instrument, using dict containing
-    metadata
+def set_refs(name):
+    """ Set references and acknowledgements for each DEMETER instrument
 
     Parameters
     ------------
     name : string
         DEMETER instrument name
-    meta_dict : dict
-        Dictionary containing metadata information and data attributes.  Data
-        attributes are available in the keys 'data names' and 'data units'
 
     Returns
     ----------
-    meta : pysat.Meta
-        Meta class boject
+    ackn_str : string
+        Acknowlegedements for specific instruments
+    ref_str : string
+        Reference list for specific instruments
 
     """
 
@@ -436,6 +434,30 @@ def set_metadata(name, meta_dict):
     if name not in refs.keys():
         refs[name] = 'Instrument reference information available at ' + \
             'https://demeter.cnes.fr/en/DEMETER/A_publications.htm'
+
+    ackn_str = ackn[name]
+    ref_str = refs[name]
+    return ackn_str, ref_str
+
+
+def set_metadata(name, meta_dict):
+    """ Set metadata for each DEMETER instrument, using dict containing
+    metadata
+
+    Parameters
+    ------------
+    name : string
+        DEMETER instrument name
+    meta_dict : dict
+        Dictionary containing metadata information and data attributes.  Data
+        attributes are available in the keys 'data names' and 'data units'
+
+    Returns
+    ----------
+    meta : pysat.Meta
+        Meta class boject
+
+    """
 
     # Define the long-form names for non-instrument specific data
     long_name = {'P_field': 'P field',
@@ -572,9 +594,6 @@ def set_metadata(name, meta_dict):
 
     # Initialise the meta data
     meta = pysat.Meta()
-    # Set acknowledgements and references
-    meta.acknowledgements = ackn[name]
-    meta.references = refs[name]
 
     # If dict has name / unit info, grab those for metadata
     if 'data names' in meta_dict.keys():

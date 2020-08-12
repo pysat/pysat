@@ -115,8 +115,8 @@ def init(self):
 
     ackn_str = ''.join(('For full acknowledgement info, please see: ',
                         'https://omniweb.gsfc.nasa.gov/html/citing.html'))
-    self.meta.acknowledgements = ackn_str
-    self.meta.references = ' '.join(('J.H. King and N.E. Papitashvili, Solar',
+    self.acknowledgements = ackn_str
+    self.references = ' '.join(('J.H. King and N.E. Papitashvili, Solar',
                                      'wind spatial scales in and comparisons',
                                      'of hourly Wind and ACE plasma and',
                                      'magnetic field data, J. Geophys. Res.,',

@@ -75,8 +75,8 @@ def init(self):
 
     ackn_str = ''.join(('For full acknowledgement info, please see: ',
                         'http://supermag.jhuapl.edu/info/?page=rulesoftheroad'))
-    self.meta.acknowledgements = ackn_str
-    self.meta.references = ' '.join(('Gjerloev, J. W. (2012), The SuperMAG',
+    self.acknowledgements = ackn_str
+    self.references = ' '.join(('Gjerloev, J. W. (2012), The SuperMAG',
                                      'data processing technique, J. Geophys.',
                                      'Res., 117 , A09213,',
                                      'doi:10.1029/2012JA017683.'))

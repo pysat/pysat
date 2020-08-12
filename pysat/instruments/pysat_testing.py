@@ -55,8 +55,8 @@ def init(self):
 
     self.new_thing = True
     logger.info(mm_test.ackn_str)
-    self.meta.acknowledgements = mm_test.ackn_str
-    self.meta.references = mm_test.refs
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
 
     # work on file index if keyword present
     if self.kwargs['file_date_range'] is not None:

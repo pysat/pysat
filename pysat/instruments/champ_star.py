@@ -52,8 +52,8 @@ def init(self):
 
     """
 
-    self.meta.acknowledgements = 'Data available through ???'
-    self.meta.references = ' '.join(('Perosanz F. et al. (2003) On Board',
+    self.acknowledgements = 'Data available through ???'
+    self.references = ' '.join(('Perosanz F. et al. (2003) On Board',
                                      'Evaluation of the STAR Accelerometer.',
                                      'In: Reigber C., Lühr H., Schwintzer P.',
                                      '(eds) First CHAMP Mission Results for',

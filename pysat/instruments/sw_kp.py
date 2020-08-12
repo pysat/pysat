@@ -95,9 +95,9 @@ def init(self):
 
     """
 
-    self.meta.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)
-    self.meta.references = mm_sw.references(self.name, self.tag)
-    logger.info(self.meta.acknowledgements)
+    self.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)
+    self.references = mm_sw.references(self.name, self.tag)
+    logger.info(self.acknowledgements)
     return
 
 

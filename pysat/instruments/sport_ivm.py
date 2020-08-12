@@ -39,11 +39,11 @@ def init(self):
     Runs once upon instantiation.
 
     """
-    self.meta.acknowledgements = ' '.join(("Mission acknowledgements and data",
+    self.acknowledgements = ' '.join(("Mission acknowledgements and data",
                                            "restrictions will be printed here",
                                            "when available."))
-    self.meta.references = 'Mission papers to be added when published'
-    logger.info(self.meta.acknowledgements)
+    self.references = 'Mission papers to be added when published'
+    logger.info(self.acknowledgements)
 
     pass
 

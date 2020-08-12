@@ -38,8 +38,8 @@ def init(self):
 
     self.new_thing = True
     logger.info(mm_test.ackn_str)
-    self.meta.acknowledgements = mm_test.ackn_str
-    self.meta.references = mm_test.refs
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
 
 
 def load(fnames, tag=None, sat_id=None):

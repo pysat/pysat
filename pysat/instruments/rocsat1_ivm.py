@@ -70,12 +70,12 @@ def init(self):
     Runs once upon instantiation.
 
     """
-    self.meta.acknowledgements = ' '.join(('Data provided through NASA CDAWeb',
+    self.acknowledgements = ' '.join(('Data provided through NASA CDAWeb',
                                            'Key Parameters - Shin-Yi Su',
                                            '(Institute of Space Science,',
                                            'National Central University,',
                                            'Taiwan, R.O.C.)'))
-    self.meta.references = ' '.join(('Yeh, H.C., S.‐Y. Su, Y.C. Yeh, J.M. Wu,',
+    self.references = ' '.join(('Yeh, H.C., S.‐Y. Su, Y.C. Yeh, J.M. Wu,',
                                      'R. A. Heelis, and B. J. Holt, Scientific',
                                      'mission of the IPEI payload on board',
                                      'ROCSAT‐1, Terr. Atmos. Ocean. Sci., 9,',
@@ -85,7 +85,7 @@ def init(self):
                                      'results, Vertical ion drift statistics,',
                                      'Terr. Atmos. Ocean. Sci., 10, 805,',
                                      '1999b.'))
-    logger.info(self.meta.acknowledgements)
+    logger.info(self.acknowledgements)
 
     return
 

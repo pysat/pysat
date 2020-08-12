@@ -145,8 +145,8 @@ def init(self):
     """
 
     logger.info(mm_icon.ackn_str)
-    self.meta.acknowledgements = mm_icon.ackn_str
-    self.meta.references = ''.join((mm_icon.refs['mission'],
+    self.acknowledgements = mm_icon.ackn_str
+    self.references = ''.join((mm_icon.refs['mission'],
                                     mm_icon.refs['mighti']))
 
     pass

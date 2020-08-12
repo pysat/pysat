@@ -98,8 +98,8 @@ def init(self):
                      '10.1109/TGRS.2007.903365.\n',
                      'Additional information can be found at',
                      'https://cdaac-www.cosmic.ucar.edu/cdaac/doc/cosmic.html'))
-    self.meta.acknowledgements = ack
-    self.meta.references = refs
+    self.acknowledgements = ack
+    self.references = refs
     logger.info(ack)
 
     return
