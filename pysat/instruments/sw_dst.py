@@ -197,7 +197,7 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
 
-    Notes
+    Note
     -----
     Called by pysat. Not intended for direct use by user.
 

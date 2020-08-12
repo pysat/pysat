@@ -278,8 +278,8 @@ def calculate_dayside_reconnection(inst):
     inst : pysat.Instrument
         Instrument with OMNI HRO data, requires BYZ_GSM and clock_angle
 
-    Notes
-    --------
+    Note
+    -----
     recon_day = 3.8 Re (Vx / 4e5 m/s)^1/3 Vx B_yz (sin(theta/2))^9/2
 
     """

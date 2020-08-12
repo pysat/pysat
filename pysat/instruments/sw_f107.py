@@ -105,7 +105,7 @@ def load(fnames, tag=None, sat_id=None):
     meta : pysat.Meta
         Object containing metadata such as column names and units
 
-    Notes
+    Note
     -----
     Called by pysat. Not intended for direct use by user.
 
@@ -203,7 +203,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
-    Notes
+    Note
     -----
     Called by pysat. Not intended for direct use by user.
 

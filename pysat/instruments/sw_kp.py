@@ -210,8 +210,8 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         A class containing the verified available files
 
 
-    Notes
-    -----
+    Note
+    ----
     Called by pysat. Not intended for direct use by user.
 
 
@@ -423,8 +423,8 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     kp_inst : pysat.Instrument (optional)
         Kp pysat.Instrument object ready to load Kp data.Overrides kpData.
 
-    Notes
-    -----
+    Note
+    ----
     Loads Kp data for the same timeframe covered by sat and sets sat.data to
     NaN for times when Kp > maxKp and for filterTime after Kp drops below
     maxKp.
