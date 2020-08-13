@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Provides non-instrument specific routines for ICON data"""
 
-from __future__ import absolute_import, division, print_function
-
 import fnmatch
 import ftplib
 import logging
@@ -120,31 +118,33 @@ def list_remote_files(tag, sat_id, user=None, password=None,
     a particular UC-Berkeley SSL dataset related to ICON.
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    user : (string or NoneType)
+    user : string or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
-    password : (string or NoneType)
+    password : string or NoneType
         User password to be passed along to resource with relevant data.
         (default=None)
-    start : (dt.datetime or NoneType)
+    start : dt.datetime or NoneType
         Starting time for file list. A None value will start with the first
         file found.
         (default=None)
-    stop : (dt.datetime or NoneType)
+    stop : dt.datetime or NoneType
         Ending time for the file list.  A None value will stop with the last
         file found.
         (default=None)
+
     Returns
     --------
     pandas.Series
         A Series formatted for the Files class (pysat._files.Files)
         containing filenames and indexed by date and time
+
     """
 
     if (user is not None) or (password is not None):
@@ -255,33 +255,31 @@ def list_remote_files(tag, sat_id, user=None, password=None,
 def ssl_download(date_array, tag, sat_id, data_path=None,
                  user=None, password=None, supported_tags=None):
     """Download ICON data from public area of SSL ftp server
+
     Parameters
     ----------
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for downloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
     **kwargs : dict
         Additional keywords supplied by user when invoking the download
         routine attached to a pysat.Instrument object are passed to this
         routine via kwargs.
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
+
     """
 
     # get a list of remote files

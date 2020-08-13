@@ -9,29 +9,37 @@ on the mission, operations, instrumenation, and measurements.
 Also a good place to provide contact information. This text will
 be included in the pysat API documentation.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     *List platform string here*
-name : string
+name
     *List name string here*
-sat_id : string
+sat_id
     *List supported sat_ids here*
-tag : string
+tag
     *List supported tag strings here*
 
 Note
 ----
-::
-
-    Notes
+- Optional section, remove if no notes
 
 Warnings
 --------
+- Optional section, remove if no warnings
+- Two blank lines needed afterward for proper formatting
+
+
+Examples
+--------
+::
+
+    Example code can go here
 
 
 Authors
 -------
+Author name and institution
 
 """
 
@@ -134,12 +142,6 @@ def default(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     return
@@ -153,28 +155,24 @@ def clean(inst):
     will accept user input for several strings. The clean_level is
     specified at instantiation of the Instrument object.
 
-    'clean' All parameters should be good, suitable for statistical and
-            case studies
-    'dusty' All paramers should generally be good though same may
-            not be great
-    'dirty' There are data areas that have issues, data should be used
-            with caution
-    'none'  No cleaning applied, routine not called in this case.
-
-
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
+    Note
+    ----
+    In general, pysat uses the following nomenclature for cleaning levels
 
-    Notes
-    -----
+    - 'clean'
+        All parameters should be good, suitable for statistical and case studies
+    - 'dusty'
+        All paramers should generally be good though same may not be great
+    - 'dirty'
+        There are data areas that have issues, data should be used with caution
+    - 'none'
+        No cleaning applied, routine not called in this case.
 
     """
 

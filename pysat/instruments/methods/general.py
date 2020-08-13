@@ -2,10 +2,9 @@
 """Provides generalized routines for integrating instruments into pysat.
 """
 
-from __future__ import absolute_import, division, print_function
-
 import datetime as dt
 import logging
+import numpy as np
 import pandas as pds
 
 import pysat
@@ -108,7 +107,7 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     """
 
     inst.data[epoch_name] = pds.to_datetime(
-        [dt.datetime.utcfromtimestamp(x * sec_mult)
+        [dt.datetime.utcfromtimestamp(int(np.floor(x * sec_mult)))
          for x in inst.data[epoch_name]])
     return
 
@@ -122,12 +121,6 @@ def remove_leading_text(inst, target=None):
         associated pysat.Instrument object
     target : str or list of strings
         Leading string to remove. If none supplied, returns unmodified
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
 
     """
 

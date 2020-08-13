@@ -119,20 +119,20 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : string ('')
+    tag : string
         tag name used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
-    sat_id : string ('')
+        This input is nominally provided by pysat itself. (default='')
+    sat_id : string
         Satellite ID used to identify particular data set to be loaded.
-        This input is nominally provided by pysat itself.
+        This input is nominally provided by pysat itself. (default='')
     data_path : string
         Full path to directory containing files to be loaded. This
         is provided by pysat. The user may specify their own data path
-        at Instrument instantiation and it will appear here.
-    format_str : string (None)
+        at Instrument instantiation and it will appear here. (default=None)
+    format_str : string
         String template used to parse the datasets filenames. If a user
         supplies a template string at Instrument instantiation
-        then it will appear here, otherwise defaults to None.
+        then it will appear here, otherwise defaults to None. (default=None)
 
     Returns
     -------
@@ -186,26 +186,20 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
+        is provided by pysat. (default='')
     data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for dowloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
-
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
-
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
 
     """
 
