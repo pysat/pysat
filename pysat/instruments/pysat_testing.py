@@ -2,8 +2,7 @@
 """
 Produces fake instrument data for testing.
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
 import datetime as dt
 import functools
 import numpy as np
@@ -48,12 +47,6 @@ def init(self):
     inst : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
@@ -82,12 +75,6 @@ def default(self):
     ----------
     self : pysat.Instrument
         This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
 
     """
 

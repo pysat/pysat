@@ -7,17 +7,17 @@ Analysis Web (CDAWeb).
 Supports two options for loading that may be
 specified at instantiation.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'timed'
-name : string
+name
     'see'
-tag : string
+tag
     None
-sat_id : string
+sat_id
     None supported
-flatten_twod : bool (True)
+flatten_twod
     If True, then two dimensional data is flattened across
     columns. Name mangling is used to group data, first column
     is 'name', last column is 'name_end'. In between numbers are
@@ -25,6 +25,7 @@ flatten_twod : bool (True)
     may be accessed via, data.loc[:, 'item':'item_end']
     If False, then 2D data is stored as a series of DataFrames,
     indexed by Epoch. data.loc[0, 'item']
+    (default=True)
 
 Note
 ----
@@ -36,8 +37,6 @@ Warnings
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
 import datetime as dt
 import functools
 
@@ -81,18 +80,14 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    --------
+    Note
+    ----
     No cleaning currently available.
+
     """
 
     return None

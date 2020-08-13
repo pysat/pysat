@@ -12,20 +12,20 @@ Default behavior is to search for the 2013 re-processed data first, then the
 post-processed data as recommended on
 https://cdaac-www.cosmic.ucar.edu/cdaac/products.html
 
-Parameters
+Properties
 ----------
-altitude_bin : integer
-    Number of kilometers to bin altitude profiles by when loading.
-    Currently only supported for tag='ionprf'.
-platform : string
+platform
     'cosmic'
-name : string
+name
     'gps' for Radio Occultation profiles
-tag : string
+tag
     Select profile type, or scintillation, one of:
     {'ionprf', 'sonprf', 'wetprf', 'atmprf', 'scnlv1'}
-sat_id : string
+sat_id
     None supported
+altitude_bin
+    Number of kilometers to bin altitude profiles by when loading.
+    Currently only supported for tag='ionprf'.
 
 Note
 ----
@@ -42,17 +42,20 @@ Warnings
   types into others. This issue could prevent data loading for some variables
   such as 'MSL_Altitude' in the 'sonprf' and 'wetprf' files. The default
   UserWarning when this occurs is
+  ::
+
     'UserWarning: WARNING: missing_value not used since it cannot be safely
     cast to variable data type'
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
 import datetime as dt
 import logging
 import os
+import requests
+import shutil
 import sys
+import tarfile
 
 import numpy as np
 import netCDF4
@@ -84,24 +87,25 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     ----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (NoneType)
+    format_str : NoneType
         User specified file format not supported here. (default=None)
 
     Returns
     -------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     """
+
     estr = 'Building a list of COSMIC files, which can possibly take time. '
     logger.info('{:s}~1s per 100K files'.format(estr))
     sys.stdout.flush()
@@ -163,11 +167,11 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
 
     Parameters
     ----------
-    fnames : (pandas.Series)
+    fnames : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
     altitude_bin : integer
         Number of kilometers to bin altitude profiles by when loading.
@@ -175,9 +179,9 @@ def load(fnames, tag=None, sat_id=None, altitude_bin=None):
 
     Returns
     -------
-    output : (pandas.DataFrame)
+    output : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
     """
@@ -278,11 +282,11 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
     Parameters
     ----------
-    files : (pandas.Series)
+    files : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
     altitude_bin : integer
         Number of kilometers to bin altitude profiles by when loading.
@@ -290,7 +294,7 @@ def load_files(files, tag=None, sat_id=None, altitude_bin=None):
 
     Returns
     -------
-    output : (list of dicts, one per file)
+    output : list of dicts, one per file
         Object containing satellite data
 
     """
@@ -431,20 +435,11 @@ def download(date_array, tag, sat_id, data_path=None,
 
     Parameters
     ----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
 
-    Returns
-    -------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
     """
-    import requests
-    from requests.auth import HTTPBasicAuth
-    import tarfile
-    import shutil
 
     if tag == 'ionprf':
         sub_dir = 'ionPrf'
@@ -468,13 +463,14 @@ def download(date_array, tag, sat_id, data_path=None,
         yr, doy = pysat.utils.time.getyrdoy(date)
         yrdoystr = '{year:04d}.{doy:03d}'.format(year=yr, doy=doy)
         # Try re-processed data (preferred)
+        auth = requests.auth.HTTPBasicAuth(user, password)
         try:
             dwnld = ''.join(("https://cdaac-www.cosmic.ucar.edu/cdaac/rest/",
                              "tarservice/data/cosmic2013/"))
             dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'.format(year=yr,
                                                                      doy=doy)
             top_dir = os.path.join(data_path, 'cosmic2013')
-            req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+            req = requests.get(dwnld, auth=auth)
             req.raise_for_status()
         except requests.exceptions.HTTPError:
             # if response is negative, try post-processed data
@@ -484,7 +480,7 @@ def download(date_array, tag, sat_id, data_path=None,
                 dwnld = dwnld + sub_dir + '/{year:04d}.{doy:03d}'
                 dwnld = dwnld.format(year=yr, doy=doy)
                 top_dir = os.path.join(data_path, 'cosmic')
-                req = requests.get(dwnld, auth=HTTPBasicAuth(user, password))
+                req = requests.get(dwnld, auth=auth)
                 req.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 estr = ''.join((str(err), '\n', 'Data not found'))
@@ -524,14 +520,9 @@ def clean(inst):
 
     Parameters
     ----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    -------
-    Void : (NoneType)
-        data in inst is modified in-place.
 
     Notes
     -----
