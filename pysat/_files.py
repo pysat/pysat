@@ -1,16 +1,12 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
 import datetime as dt
-import glob
 import numpy as np
 import os
-import re
-import string
+import warnings
 import weakref
+
 import pandas as pds
 from pysat import data_dir as data_dir
-
+from pysat.utils import files as futils
 from pysat import logger
 
 
@@ -147,10 +143,10 @@ class Files(object):
         else:
             # construct subdirectory path
             self.sub_dir_path = \
-                    self.directory_format.format(name=self._sat.name,
-                                                 platform=self._sat.platform,
-                                                 tag=self._sat.tag,
-                                                 sat_id=self._sat.sat_id)
+                self.directory_format.format(name=self._sat.name,
+                                             platform=self._sat.platform,
+                                             tag=self._sat.tag,
+                                             sat_id=self._sat.sat_id)
         # ensure we have a path for pysat data directory
         if data_dir == '':
             raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",
@@ -275,7 +271,7 @@ class Files(object):
 
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path,
-                                                 'previous_'+name),
+                                                 'previous_' + name),
                                     date_format='%Y-%m-%d %H:%M:%S.%f',
                                     header=False)
                 self.files.to_csv(os.path.join(self.home_path, name),
@@ -303,7 +299,7 @@ class Files(object):
 
         fname = self.stored_file_name
         if prev_version:
-            fname = os.path.join(self.home_path, 'previous_'+fname)
+            fname = os.path.join(self.home_path, 'previous_' + fname)
         else:
             fname = os.path.join(self.home_path, fname)
 
@@ -404,9 +400,9 @@ class Files(object):
             idx, = np.where(fname == np.array(self.files))
 
             if len(idx) == 0:
-                raise ValueError('Could not find "' + fname +
-                                 '" in available file list. Valid Example: ' +
-                                 self.files.iloc[0])
+                raise ValueError(' '.join(('Could not find "{:}"'.format(fname),
+                                           'in available file list. Valid',
+                                           'Example:', self.files.iloc[0])))
         # return a scalar rather than array - otherwise introduces array to
         # index warnings.
         return idx[0]
@@ -471,14 +467,14 @@ class Files(object):
             for (sta, stp) in zip(start, end):
                 id1 = self.get_index(sta)
                 id2 = self.get_index(stp)
-                files.extend(self.files.iloc[id1:id2+1])
+                files.extend(self.files.iloc[id1:(id2 + 1)])
         elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
             estr = 'Either both or none of the inputs need to be iterable'
             raise ValueError(estr)
         else:
             id1 = self.get_index(start)
             id2 = self.get_index(end)
-            files = self.files[id1:id2+1].to_list()
+            files = self.files[id1:(id2 + 1)].to_list()
         return files
 
     def _remove_data_dir_path(self, inp=None):
@@ -507,13 +503,14 @@ class Files(object):
             Supports 'year', 'month', 'day', 'hour', 'minute', 'second',
             'version', and 'revision'
             Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
-        two_digit_year_break : int
+        two_digit_year_break : int or None
             If filenames only store two digits for the year, then
             '1900' will be added for years >= two_digit_year_break
             and '2000' will be added for years < two_digit_year_break.
-        delimiter : string (None)
+            If None, then four-digit years are assumed. (default=None)
+        delimiter : string
             If set, then filename will be processed using delimiter rather
-            than assuming a fixed width
+            than assuming a fixed width (default=None)
 
         Note
         ----
@@ -527,8 +524,8 @@ class Files(object):
         """
 
         if data_path is None:
-            raise ValueError("Must supply instrument directory path " +
-                             "(dir_path)")
+            raise ValueError(" ".join(("Must supply instrument directory path",
+                                       "(dir_path)")))
 
         # parse format string to figure out the search string to use
         # to identify files in the filesystem
@@ -537,24 +534,31 @@ class Files(object):
             wildcard = False
         else:
             wildcard = True
-        search_dict = construct_searchstring_from_format(format_str,
-                                                         wildcard=wildcard)
+        search_dict = \
+            futils.construct_searchstring_from_format(format_str,
+                                                      wildcard=wildcard)
         search_str = search_dict['search_string']
         # perform local file search
-        files = search_local_system_formatted_filename(data_path, search_str)
+        files = futils.search_local_system_formatted_filename(data_path,
+                                                              search_str)
         # we have a list of files, now we need to extract the information
         # pull of data from the areas identified by format_str
         if delimiter is None:
-            stored = parse_fixed_width_filenames(files, format_str)
+            stored = futils.parse_fixed_width_filenames(files, format_str)
         else:
-            stored = parse_delimited_filenames(files, format_str, delimiter)
+            stored = futils.parse_delimited_filenames(files, format_str,
+                                                      delimiter)
         # process the parsed filenames and return a properly formatted Series
-        return process_parsed_filenames(stored, two_digit_year_break)
+        return futils.process_parsed_filenames(stored, two_digit_year_break)
 
 
 def process_parsed_filenames(stored, two_digit_year_break=None):
     """Accepts dict with data parsed from filenames and creates
     a pandas Series object formatted for the Files class.
+
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat 4.0.0, please use the version under
+      pysat.utils.files
 
     Parameters
     ----------
@@ -580,80 +584,22 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
 
     """
 
-    from pysat.utils.time import create_datetime_index
+    funcname = "process_parsed_filenames"
+    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
+                            "deprecated and will be removed in a future",
+                            "version. Please use",
+                            "pysat.utils.files.{:s}.".format(funcname)]),
+                  DeprecationWarning, stacklevel=2)
 
-    search_dict = construct_searchstring_from_format(stored['format_str'])
-    keys = search_dict['keys']
-
-    if len(stored['files']) > 0:
-        # deal with the possibility of two digit years
-        # years above or equal to break are considered to be 1900+
-        # years below break are considered to be 2000+
-        if two_digit_year_break is not None:
-            idx, = np.where(np.array(stored['year']) >=
-                            two_digit_year_break)
-            stored['year'][idx] = stored['year'][idx] + 1900
-            idx, = np.where(np.array(stored['year']) < two_digit_year_break)
-            stored['year'][idx] = stored['year'][idx] + 2000
-
-        # need to sort the information for things to work
-        rec_arr = [stored[key] for key in keys]
-        rec_arr.append(stored['files'])
-        # sort all arrays
-        # create a sortable records array
-        # keys with files
-        val_keys = keys + ['files']
-        rec_arr = np.rec.fromarrays(rec_arr, names=val_keys)
-        rec_arr.sort(order=val_keys, axis=0)
-
-        # pull out sorted info
-        for key in keys:
-            stored[key] = rec_arr[key]
-        files = rec_arr['files']
-
-        # add hour and minute information to 'second'
-        if stored['second'] is None:
-            stored['second'] = np.zeros(len(files))
-        if stored['hour'] is not None:
-            stored['second'] += 3600 * stored['hour']
-        if stored['minute'] is not None:
-            stored['second'] += 60 * stored['minute']
-        # version shouldn't be set to zero
-        # version is required to remove duplicate datetimes
-        if stored['revision'] is None:
-            stored['revision'] = np.zeros(len(files))
-
-        index = create_datetime_index(year=stored['year'],
-                                      month=stored['month'],
-                                      day=stored['day'],
-                                      uts=stored['second'])
-
-        # if version and revision are supplied
-        # use these parameters to weed out files that have been replaced
-        # with updated versions
-        # first, check for duplicate index times
-        dups = index[index.duplicated()].unique()
-        if (len(dups) > 0) and (stored['version'] is not None):
-            # we have duplicates
-            # keep the highest version/revision combo
-            version = pds.Series(stored['version'], index=index)
-            revision = pds.Series(stored['revision'], index=index)
-            revive = version * 100000. + revision
-            frame = pds.DataFrame({'files': files, 'revive': revive,
-                                   'time': index}, index=index)
-            frame = frame.sort_values(by=['time', 'revive'],
-                                      ascending=[True, False])
-            frame = frame.drop_duplicates(subset='time', keep='first')
-
-            return frame['files']
-        else:
-            return pds.Series(files, index=index)
-    else:
-        return pds.Series(None, dtype='object')
+    return futils.process_parsed_filenames(stored, two_digit_year_break)
 
 
 def parse_fixed_width_filenames(files, format_str):
     """Parses list of files, extracting data identified by format_str
+
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat 4.0.0, please use the version under
+      pysat.utils.files
 
     Parameters
     ----------
@@ -676,66 +622,22 @@ def parse_fixed_width_filenames(files, format_str):
 
     """
 
-    import collections
+    funcname = "parse_fixed_width_filenames"
+    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
+                            "deprecated and will be removed in a future",
+                            "version. Please use",
+                            "pysat.utils.files.{:s}.".format(funcname)]),
+                  DeprecationWarning, stacklevel=2)
 
-    # create storage for data to be parsed from filenames
-    stored = collections.OrderedDict()
-    stored['year'] = []
-    stored['month'] = []
-    stored['day'] = []
-    stored['hour'] = []
-    stored['minute'] = []
-    stored['second'] = []
-    stored['version'] = []
-    stored['revision'] = []
-
-    if len(files) == 0:
-        stored['files'] = []
-        # include format string as convenience for later functions
-        stored['format_str'] = format_str
-        return stored
-
-    # parse format string to get information needed to parse filenames
-    search_dict = construct_searchstring_from_format(format_str)
-    snips = search_dict['string_blocks']
-    lengths = search_dict['lengths']
-    keys = search_dict['keys']
-
-    # determine the locations the date/version information in a filename is
-    # stored use these indices to slice out date from filenames
-    idx = 0
-    begin_key = []
-    end_key = []
-    for i, snip in enumerate(snips):
-        idx += len(snip)
-        if i < (len(lengths)):
-            begin_key.append(idx)
-            idx += lengths[i]
-            end_key.append(idx)
-    max_len = idx
-    # setting up negative indexing to pick out filenames
-    key_str_idx = [np.array(begin_key, dtype=int) - max_len,
-                   np.array(end_key, dtype=int) - max_len]
-    # need to parse out dates for datetime index
-    for i, temp in enumerate(files):
-        for j, key in enumerate(keys):
-            val = temp[key_str_idx[0][j]:key_str_idx[1][j]]
-            stored[key].append(val)
-    # convert to numpy arrays
-    for key in stored.keys():
-        stored[key] = np.array(stored[key]).astype(int)
-        if len(stored[key]) == 0:
-            stored[key] = None
-    # include files in output
-    stored['files'] = files
-    # include format string as convenience for later functions
-    stored['format_str'] = format_str
-
-    return stored
+    return futils.parse_fixed_width_filenames(files, format_str)
 
 
 def parse_delimited_filenames(files, format_str, delimiter):
     """Parses list of files, extracting data identified by format_str
+
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat 4.0.0, please use the version under
+      pysat.utils.files
 
     Parameters
     ----------
@@ -759,72 +661,23 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     """
 
-    import collections
+    funcname = "parse_delimited_filenames"
+    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
+                            "deprecated and will be removed in a future",
+                            "version. Please use",
+                            "pysat.utils.files.{:s}.".format(funcname)]),
+                  DeprecationWarning, stacklevel=2)
 
-    # create storage for data to be parsed from filenames
-    ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
-                    'version', 'revision']
-    stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
-
-    # exit early if there are no files
-    if len(files) == 0:
-        stored['files'] = []
-        # include format string as convenience for later functions
-        stored['format_str'] = format_str
-        return stored
-
-    # parse format string to get information needed to parse filenames
-    search_dict = construct_searchstring_from_format(format_str, wildcard=True)
-    snips = search_dict['string_blocks']
-    keys = search_dict['keys']
-
-    # going to parse string on delimiter
-    # it is possible that other regions have the delimiter but aren't
-    # going to be parsed out
-    # so apply delimiter breakdown to the string blocks as a guide
-    pblock = []
-    parsed_block = [snip.split(delimiter) for snip in snips]
-    for _ in parsed_block:
-        if _ != ['', '']:
-            if _[0] == '':
-                _ = _[1:]
-            if _[-1] == '':
-                _ = _[:-1]
-            pblock.extend(_)
-        pblock.append('')
-    parsed_block = pblock[:-1]
-    # need to parse out dates for datetime index
-    for temp in files:
-        split_name = temp.split(delimiter)
-        idx = 0
-        for sname, bname in zip(split_name, parsed_block):
-            if bname == '':
-                # areas with data to be parsed are indicated with a
-                # '' in parsed_block
-                stored[keys[idx]].append(sname)
-                idx += 1
-
-    # convert to numpy arrays
-    for key in stored.keys():
-        try:
-            # Assume key value is numeric integer
-            stored[key] = np.array(stored[key]).astype(int)
-        except ValueError:
-            # Store key value as string
-            stored[key] = np.array(stored[key])
-        if len(stored[key]) == 0:
-            stored[key] = None
-    # include files in output
-    stored['files'] = files
-    # include format string as convenience for later functions
-    stored['format_str'] = format_str
-
-    return stored
+    return futils.parse_delimited_filenames(files, format_str, delimiter)
 
 
 def construct_searchstring_from_format(format_str, wildcard=False):
     """
     Parses format file string and returns string formatted for searching.
+
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat 4.0.0, please use the version under
+      pysat.utils.files
 
     Parameters
     ----------
@@ -859,54 +712,23 @@ def construct_searchstring_from_format(format_str, wildcard=False):
 
     """
 
-    if format_str is None:
-        raise ValueError("Must supply a filename template (format_str).")
+    funcname = "construct_searchstring_from_format"
+    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
+                            "deprecated and will be removed in a future",
+                            "version. Please use",
+                            "pysat.utils.files.{:s}.".format(funcname)]),
+                  DeprecationWarning, stacklevel=2)
 
-    # parse format string to figure out how to construct the search string
-    # to identify files in the filesystem
-    search_str = ''
-    form = string.Formatter()
-    # stores the keywords extracted from format_string
-    keys = []
-    # and length of string
-    snips = []
-    lengths = []
-    for snip in form.parse(format_str):
-        # collect all of the format keywords
-        # replace them in the string with the '?' wildcard
-        # numnber of ?s goes with length of data to be parsed
-        # length grabbed from format keywords so we know
-        # later on where to parse information out from
-        search_str += snip[0]
-        snips.append(snip[0])
-        if snip[1] is not None:
-            keys.append(snip[1])
-            # try and determine formatting width
-            temp = re.findall(r'\d+', snip[2])
-            if temp:
-                # there are items, try and grab width
-                for i in temp:
-                    # make sure there is truly something there
-                    if i != 0:
-                        # store length and add to the search string
-                        lengths.append(int(i))
-                        if not wildcard:
-                            search_str += '?'*int(i)
-                        else:
-                            search_str += '*'
-                        break
-            else:
-                raise ValueError("Couldn't determine formatting width")
-
-    return {'search_string': search_str,
-            'keys': keys,
-            'lengths': lengths,
-            'string_blocks': snips}
+    return futils.construct_searchstring_from_format(format_str, wildcard)
 
 
 def search_local_system_formatted_filename(data_path, search_str):
     """
     Parses format file string and returns string formatted for searching.
+
+    .. deprecated:: 3.0.0
+      This function will be removed in pysat 4.0.0, please use the version under
+      pysat.utils.files
 
     Parameters
     ----------
@@ -932,10 +754,11 @@ def search_local_system_formatted_filename(data_path, search_str):
 
     """
 
-    # perform local file search
-    abs_search_str = os.path.join(data_path, search_str)
-    files = glob.glob(abs_search_str)
-    # remove data_path portion
-    files = [sfile.split(data_path)[-1] for sfile in files]
-    # return info
-    return files
+    funcname = "search_local_system_formatted_filename"
+    warnings.warn(' '.join(["_files.{:s} is".format(funcname),
+                            "deprecated and will be removed in a future",
+                            "version. Please use",
+                            "pysat.utils.files.{:s}.".format(funcname)]),
+                  DeprecationWarning, stacklevel=2)
+
+    return futils.search_local_system_formatted_filename(data_path, search_str)

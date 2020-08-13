@@ -40,34 +40,22 @@ W. B. Hanson, R. A. Heelis, R. A. Power, C. R. Lippincott, D. R. Zuccaro,
 B. J. Holt, L. H. Harmon, and S. Sanatani, “The retarding potential analyzer
 for dynamics explorer-B,” Space Sci. Instrum. 5, 503–510 (1981).
 
-Parameters
+Properties
 ----------
-platform : string
-    Supports 'de2'
-name : string
-    Supports 'rpa'
-sat_id : string
-    Supports ''
-tag : string
+platform
+    'de2'
+name
+    'rpa'
+sat_id
     None Supported
-
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
+tag
+    None Supported
 
 Authors
 -------
+J. Klenzing
 
 """
-
-from __future__ import print_function
-from __future__ import absolute_import
 
 import datetime as dt
 import functools
@@ -121,22 +109,6 @@ def init(self):
     return
 
 
-def default(self):
-    """Default customization function.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    """
-
-    return
-
-
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
@@ -155,12 +127,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Note
-    ----
 
     """
 

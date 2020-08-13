@@ -14,11 +14,6 @@ tag
 sat_id
     'a' or 'b'
 
-Warnings
---------
-- No download routine as ICON has not yet been launched
-- Data not yet publicly available
-
 Example
 -------
 ::
@@ -40,9 +35,6 @@ Author
 R. A. Stoneback
 
 """
-
-from __future__ import print_function
-from __future__ import absolute_import
 
 import datetime as dt
 import functools

@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """Supports Kp index values. Downloads data from ftp.gfz-potsdam.de or SWPC.
 
-Parameters
+Properties
 ----------
-platform : string
+platform
     'sw'
-name : string
+name
     'kp'
-tag : string
-    '' Standard Kp data
-    'forecast' Grab forecast data from SWPC (next 3 days)
-    'recent' Grab last 30 days of Kp data from SWPC
+tag
+    - '' Standard Kp data
+    - 'forecast' Grab forecast data from SWPC (next 3 days)
+    - 'recent' Grab last 30 days of Kp data from SWPC
 
 Note
 ----
@@ -24,6 +24,7 @@ for the current day. When loading forecast data, the date specified with the
 load command is the date the forecast was generated. The data loaded will span
 three days. To always ensure you are loading the most recent data, load
 the data with tomorrow's date.
+::
 
     kp = pysat.Instrument('sw', 'kp', tag='recent')
     kp.download()
@@ -50,12 +51,20 @@ Any opinions, findings, and conclusions or recommendations expressed in this
 material are those of the author(s) and do not necessarily reflect the views
 of the National Science Foundation.
 
+Custom Functions
+----------------
+filter_geoquiet
+    Filters pysat.Instrument data for given time after Kp drops below gate.
+
 """
 
 import datetime as dt
+import ftplib
 import logging
 import numpy as np
 import os
+import requests
+import sys
 
 import pandas as pds
 
@@ -101,22 +110,22 @@ def load(fnames, tag=None, sat_id=None):
 
     Parameters
     ------------
-    fnames : (pandas.Series)
+    fnames : pandas.Series
         Series of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         tag or None (default=None)
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         satellite id or None (default=None)
 
     Returns
     ---------
-    data : (pandas.DataFrame)
+    data : pandas.DataFrame
         Object containing satellite data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Object containing metadata such as column names and units
 
-    Notes
-    -----
+    Note
+    ----
     Called by pysat. Not intended for direct use by user.
 
 
@@ -196,26 +205,27 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
 
     Returns
-    --------
-    pysat.Files.from_os : (pysat._files.Files)
+    -------
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
-    Notes
-    -----
+
+    Note
+    ----
     Called by pysat. Not intended for direct use by user.
 
 
@@ -271,20 +281,15 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are '' and 'forecast'.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-
-    Returns
-    --------
-    Void : (NoneType)
-        data downloaded to disk, if available.
 
     Note
     ----
@@ -294,15 +299,13 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
     --------
     Only able to download current forecast data, not archived forecasts.
 
+
     """
 
     # download standard Kp data
     if tag == '':
-        import ftplib
-        from ftplib import FTP
-        import sys
-        ftp = FTP('ftp.gfz-potsdam.de')   # connect to host, default port
-        ftp.login()               # user anonymous, passwd anonymous@
+        ftp = ftplib.FTP('ftp.gfz-potsdam.de')  # connect to host, default port
+        ftp.login()  # user anonymous, passwd anonymous@
         ftp.cwd('/pub/home/obs/kp-ap/tab')
         dnames = list()
 
@@ -340,7 +343,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         ftp.close()
 
     elif tag == 'forecast':
-        import requests
         logger.info(' '.join(('This routine can only download the current',
                               'forecast, not archived forecasts')))
         # download webpage
@@ -378,7 +380,6 @@ def download(date_array, tag, sat_id, data_path, user=None, password=None):
         data.to_csv(os.path.join(data_path, data_file), header=True)
 
     elif tag == 'recent':
-        import requests
         logger.info(' '.join(('This routine can only download the current',
                               'webpage, not archived forecasts')))
         # download webpage
@@ -436,13 +437,8 @@ def filter_geoquiet(sat, maxKp=None, filterTime=None, kpData=None,
     kp_inst : pysat.Instrument (optional)
         Kp pysat.Instrument object ready to load Kp data.Overrides kpData.
 
-    Returns
-    -------
-    None : NoneType
-        sat Instrument object modified in place
-
-    Notes
-    -----
+    Note
+    ----
     Loads Kp data for the same timeframe covered by sat and sets sat.data to
     NaN for times when Kp > maxKp and for filterTime after Kp drops below
     maxKp.
@@ -485,18 +481,12 @@ def initialize_kp_metadata(meta, data_key, fill_val=-1):
 
     Parameters
     ----------
-    meta : (pysat._meta.Meta)
+    meta : pysat._meta.Meta
         Pysat Metadata
-    data_key : (str)
+    data_key : str
         String denoting the data key
-    fill_val : (int or float)
+    fill_val : int or float
         File-specific fill value (default=-1)
-
-    Returns
-    -------
-    Void
-
-    Updates metadata
 
     """
 
@@ -518,7 +508,7 @@ def convert_3hr_kp_to_ap(kp_inst):
 
     Parameters
     ----------
-    kp_inst : (pysat.Instrument)
+    kp_inst : pysat.Instrument
         Pysat instrument containing Kp data
 
     Returns

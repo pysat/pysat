@@ -30,34 +30,22 @@ J. P. Krehbiel, L. H. Brace, R. F. Theis, W. H. Pinkus, and R. B. Kaplan,
 The Dynamics Explorer 2 Langmuir Probe (LANG), Space Sci. Instrum., v. 5, n. 4,
 p. 493, 1981.
 
-Parameters
+Properties
 ----------
-platform : string
-    Supports 'de2'
-name : string
-    Supports 'lang'
-sat_id : string
+platform
+    'de2'
+name
+    'lang'
+sat_id
     None Supported
-tag : string
+tag
     None Supported
-
-Note
-----
-::
-
-    Notes
-
-Warnings
---------
-
 
 Authors
 -------
+J. Klenzing
 
 """
-
-from __future__ import print_function
-from __future__ import absolute_import
 
 import datetime as dt
 import functools
@@ -110,25 +98,6 @@ def init(self):
     self.references = mm_de2.refs['lang']
     return
 
-
-# code should be defined below as needed
-def default(self):
-    """Default customization function.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    """
-
-    return
-
-
-# code should be defined below as needed
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
@@ -147,12 +116,9 @@ def clean(inst):
 
     Parameters
     -----------
-    inst : (pysat.Instrument)
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Notes
-    -----
 
     """
 

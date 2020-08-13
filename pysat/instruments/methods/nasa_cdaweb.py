@@ -14,7 +14,7 @@ import sys
 from bs4 import BeautifulSoup
 import pandas as pds
 
-import pysat
+from pysat.utils import files as futils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -353,13 +353,13 @@ def list_remote_files(tag, sat_id,
 
     # Parse the path to find the number of levels to search
     format_dir = dir_split[0]
-    search_dir = pysat._files.construct_searchstring_from_format(format_dir)
+    search_dir = futils.construct_searchstring_from_format(format_dir)
     n_layers = len(search_dir['keys'])
 
     # only keep file portion of format
     format_str = dir_split[-1]
     # Generate list of targets to identify files
-    search_dict = pysat._files.construct_searchstring_from_format(format_str)
+    search_dict = futils.construct_searchstring_from_format(format_str)
     targets = [x.strip('?') for x in search_dict['string_blocks'] if len(x) > 0]
 
     remote_dirs = []
@@ -415,15 +415,13 @@ def list_remote_files(tag, sat_id,
 
     # parse remote filenames to get date information
     if delimiter is None:
-        stored = pysat._files.parse_fixed_width_filenames(full_files,
-                                                          format_str)
+        stored = futils.parse_fixed_width_filenames(full_files, format_str)
     else:
-        stored = pysat._files.parse_delimited_filenames(full_files,
-                                                        format_str, delimiter)
+        stored = futils.parse_delimited_filenames(full_files, format_str,
+                                                  delimiter)
 
     # process the parsed filenames and return a properly formatted Series
-    stored_list = pysat._files.process_parsed_filenames(stored,
-                                                        two_digit_year_break)
+    stored_list = futils.process_parsed_filenames(stored, two_digit_year_break)
     # Downselect to user-specified dates, if needed
     if start is not None:
         mask = (stored_list.index >= start)

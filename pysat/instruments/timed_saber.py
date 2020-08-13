@@ -3,6 +3,19 @@
 (SABER) instrument on the Thermosphere Ionosphere Mesosphere Energetics
 Dynamics (TIMED) satellite.
 
+Properties
+----------
+platform : string
+    'timed'
+name : string
+    'saber'
+tag : string
+    None supported
+sat_id : string
+    None supported
+
+Note
+----
 SABER "Rules of the Road" for DATA USE
 Users of SABER data are asked to respect the following guidelines
 
@@ -20,37 +33,17 @@ Users of SABER data are asked to respect the following guidelines
     and model version numbers should also be specified.
   - Pre-prints of publications and conference abstracts should be widely
     distributed to interested parties within the mission and related projects.
-  - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
-
-Parameters
-----------
-platform : string
-    'timed'
-name : string
-    'saber'
-tag : string
-    None supported
-sat_id : string
-    None supported
-
-Note
-----
-::
-
-    Notes
 
 Warnings
 --------
 - Note on Temperature Errors: http://saber.gats-inc.com/temp_errors.php
+
 
 Authors
 -------
 J. Klenzing, 4 March 2019
 
 """
-
-from __future__ import print_function
-from __future__ import absolute_import
 
 import datetime as dt
 import logging
@@ -65,8 +58,6 @@ logger = logging.getLogger(__name__)
 
 platform = 'timed'
 name = 'saber'
-
-# dictionary of data 'tags' and corresponding description
 tags = {'': ''}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
@@ -75,8 +66,6 @@ fname = ''.join(('timed_l2av207_saber_{year:04d}{month:02d}{day:02d}',
                  '????_v01.cdf'))
 supported_tags = {'': {'': fname}}
 # use the CDAWeb methods list files routine
-# the command below presets some of the methods inputs, leaving
-# those provided by pysat available when invoked
 list_files = functools.partial(mm_gen.list_files,
                                supported_tags=supported_tags)
 
@@ -87,10 +76,10 @@ multi_file_day = True
 # Set to True if data will be returned via a pandas DataFrame
 pandas_format = True
 
-# pysatCDF is used to load data
+# use the default CDAWeb method
 load = cdw.load
 
-# support downlaod files from CDAWeb
+# use the default CDAWeb method
 basic_tag = {'dir': '/pub/data/timed/saber/level2a_v2_07_cdf',
              'remote_fname': '{year:4d}/{month:02d}/' + fname,
              'local_fname': fname}
@@ -102,17 +91,11 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
-# code should be defined below as needed
 def init(self):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation.
 
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
 
     """
 
@@ -126,7 +109,6 @@ def init(self):
     return
 
 
-# code should be defined below as needed
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
@@ -144,18 +126,10 @@ def clean(inst):
 
 
     Parameters
-    -----------
-    inst : (pysat.Instrument)
+    ----------
+    inst : pysat.Instrument
         Instrument class object, whose attribute clean_level is used to return
         the desired level of data selectivity.
-
-    Returns
-    --------
-    Void : (NoneType)
-        data in inst is modified in-place.
-
-    Notes
-    -----
 
     """
 
