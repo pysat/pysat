@@ -98,6 +98,7 @@ def init(self):
     self.references = mm_de2.refs['lang']
     return
 
+
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
