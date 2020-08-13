@@ -46,11 +46,15 @@ J. Klenzing, 4 March 2019
 """
 
 import datetime as dt
+import logging
 import functools
 
 # CDAWeb methods prewritten for pysat
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
+
+
+logger = logging.getLogger(__name__)
 
 platform = 'timed'
 name = 'saber'
@@ -85,6 +89,24 @@ download = functools.partial(cdw.download, supported_tags, multi_file_day=True)
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
+
+
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+
+    """
+
+    rules_url = 'http://saber.gats-inc.com/data_services.php'
+    ackn_str = ' '.join(('Please see the Rules of the Road at',
+                         rules_url))
+    logger.info(ackn_str)
+    self.acknowledgements = ackn_str
+    self.references = ''
+
+    return
 
 
 def clean(inst):

@@ -11,6 +11,58 @@ import numpy as np
 import pysat
 
 
+def acknowledgements(name, tag):
+    """Returns acknowledgements for space weather dataset
+
+    Parameters
+    ----------
+    name : string
+        Name of space weather index, eg, dst, f107, kp
+    tag : string
+        Tag of the space waether index
+
+    """
+
+    ackn = {'dst': {'': ''},
+            'f107': {'': '',
+                     'all': '',
+                     'prelim': '',
+                     'daily': '',
+                     'forecast': '',
+                     '45day': ''},
+            'kp': {'': '',
+                   'forecast': '',
+                   'recent': ''}}
+
+    return ackn[name][tag]
+
+
+def references(name, tag):
+    """Returns references for space weather dataset
+
+    Parameters
+    ----------
+    name : string
+        Name of space weather index, eg, dst, f107, kp
+    tag : string
+        Tag of the space waether index
+
+    """
+
+    refs = {'dst': {'': ''},
+            'f107': {'': '',
+                     'all': '',
+                     'prelim': '',
+                     'daily': '',
+                     'forecast': '',
+                     '45day': ''},
+            'kp': {'': '',
+                   'forecast': '',
+                   'recent': ''}}
+
+    return refs[name][tag]
+
+
 def combine_kp(standard_inst=None, recent_inst=None, forecast_inst=None,
                start=None, stop=None, fill_val=np.nan):
     """ Combine the output from the different Kp sources for a range of dates

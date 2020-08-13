@@ -100,6 +100,26 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    """
+
+    ackn_str = ''.join(('For full acknowledgement info, please see: ',
+                        'https://omniweb.gsfc.nasa.gov/html/citing.html'))
+    self.acknowledgements = ackn_str
+    self.references = ' '.join(('J.H. King and N.E. Papitashvili, Solar',
+                                'wind spatial scales in and comparisons',
+                                'of hourly Wind and ACE plasma and',
+                                'magnetic field data, J. Geophys. Res.,',
+                                'Vol. 110, No. A2, A02209,',
+                                '10.1029/2004JA010649.'))
+    logger.info(ackn_str)
+    return
+
+
 def clean(omni):
     for fill_attr in ["fillval", "fill"]:
         # case insensitive check for attribute name

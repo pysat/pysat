@@ -48,11 +48,13 @@ def init(self):
     Runs once upon instantiation.
 
     """
+    self.acknowledgements = ' '.join(("Mission acknowledgements and data",
+                                      "restrictions will be printed here",
+                                      "when available."))
+    self.references = 'Mission papers to be added when published'
+    logger.info(self.acknowledgements)
 
-    logger.info(' '.join(("Mission acknowledgements and data restrictions",
-                          "will be printed here when available.")))
-
-    pass
+    return
 
 
 def load(fnames, tag=None, sat_id=None, **kwargs):

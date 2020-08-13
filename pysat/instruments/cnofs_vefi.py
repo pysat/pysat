@@ -58,10 +58,14 @@ Warnings
 
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
+from pysat.instruments.methods import cnofs as mm_cnofs
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
+
+logger = logging.getLogger(__name__)
 
 platform = 'cnofs'
 name = 'vefi'
@@ -89,6 +93,20 @@ download = functools.partial(cdw.download, supported_tags)
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
+
+
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    """
+    logger.info(mm_cnofs.ackn_str)
+    self.acknowledgements = mm_cnofs.ackn_str
+    self.references = '\n'.join((mm_cnofs.refs['mission'],
+                                 mm_cnofs.refs['vefi']))
+
+    return
 
 
 def clean(inst):

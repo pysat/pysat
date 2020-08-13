@@ -82,6 +82,28 @@ _test_download = {'': {kk: False for kk in tags.keys()}}
 _password_req = {'': {kk: True for kk in tags.keys()}}
 
 
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    """
+    ack = ' '.join((''))
+    refs = ' '.join(('Y. Liou et al., "FORMOSAT-3/COSMIC GPS',
+                     'Radio Occultation Mission: Preliminary',
+                     'Results," in IEEE Transactions on',
+                     'Geoscience and Remote Sensing, vol. 45,',
+                     'no. 11, pp. 3813-3826, Nov. 2007, doi:',
+                     '10.1109/TGRS.2007.903365.\n',
+                     'Additional information can be found at',
+                     'https://cdaac-www.cosmic.ucar.edu/cdaac/doc/cosmic.html'))
+    self.acknowledgements = ack
+    self.references = refs
+    logger.info(ack)
+
+    return
+
+
 def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data.
 

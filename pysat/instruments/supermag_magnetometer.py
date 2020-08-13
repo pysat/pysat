@@ -36,6 +36,7 @@ Warnings
 
 import datetime as dt
 import functools
+import logging
 import numpy as np
 from os import path
 import re
@@ -44,6 +45,8 @@ import warnings
 import pandas as pds
 
 import pysat
+
+logger = logging.getLogger(__name__)
 
 platform = 'supermag'
 name = 'magnetometer'
@@ -67,6 +70,15 @@ def init(self):
         This object
 
     """
+
+    ackn_str = ''.join(('For full acknowledgement info, please see: ',
+                        'http://supermag.jhuapl.edu/info/?page=rulesoftheroad'))
+    self.acknowledgements = ackn_str
+    self.references = ' '.join(('Gjerloev, J. W. (2012), The SuperMAG',
+                                'data processing technique, J. Geophys.',
+                                'Res., 117 , A09213,',
+                                'doi:10.1029/2012JA017683.'))
+    logger.info(ackn_str)
 
     # if the tag is 'indices', update data_path to reflect this
     # both 'indices' and 'all' are stored under 'all'

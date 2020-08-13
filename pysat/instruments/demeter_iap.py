@@ -77,13 +77,11 @@ list_remote_files = demeter.list_remote_files
 
 
 def init(self):
-    logger.info(' '.join(("When using this data please include a version of,"
-                          "the acknowledgement outlined in the metadata",
-                          "attribute 'info.acknowledgements'.  We recommend",
-                          "that data users contact the experiment PI early in",
-                          "their study. Experiment reference information is",
-                          "available in the metadata attribute",
-                          "'info.reference'")))
+    ackn_str, ref_str = demeter.set_refs('iap')
+    self.acknowledgements = ackn_str
+    self.references = ref_str
+    logger.info(ackn_str)
+    return
 
 
 def list_files(tag="survey", sat_id='', data_path=None, format_str=None,

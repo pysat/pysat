@@ -5,12 +5,15 @@ Produces fake instrument data for testing.
 
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 import pandas as pds
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
+
+logger = logging.getLogger(__name__)
 
 # pysat required parameters
 platform = 'pysat'
@@ -50,6 +53,9 @@ def init(self):
     """
 
     self.new_thing = True
+    logger.info(mm_test.ackn_str)
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
 
     # work on file index if keyword present
     if self.kwargs['file_date_range'] is not None:
@@ -63,6 +69,7 @@ def init(self):
     if self.kwargs['mangle_file_dates']:
         self.files.files.index = \
             self.files.files.index + pds.DateOffset(minutes=5)
+    return
 
 
 def default(self):

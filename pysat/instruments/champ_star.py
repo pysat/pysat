@@ -42,6 +42,24 @@ _test_dates = {'': {'': dt.datetime(2007, 1, 1)}}
 _test_download = {'': {'': False}}
 
 
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    """
+
+    self.acknowledgements = 'Data available through ???'
+    self.references = ' '.join(('Perosanz F. et al. (2003) On Board',
+                                'Evaluation of the STAR Accelerometer.',
+                                'In: Reigber C., Lühr H., Schwintzer P.',
+                                '(eds) First CHAMP Mission Results for',
+                                'Gravity, Magnetic and Atmospheric',
+                                'Studies. Springer, Berlin, Heidelberg.',
+                                'doi.org/10.1007/978-3-540-38366-6_2'))
+    return
+
+
 def list_files(tag='', sat_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data
 

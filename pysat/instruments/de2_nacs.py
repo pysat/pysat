@@ -74,9 +74,13 @@ J. Klenzing
 
 import datetime as dt
 import functools
+import logging
 
+from pysat.instruments.methods import de2 as mm_de2
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
+
+logger = logging.getLogger(__name__)
 
 platform = 'de2'
 name = 'nacs'
@@ -107,7 +111,19 @@ list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
 
 
-# code should be defined below as needed
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    """
+
+    logger.info(mm_de2.ackn_str)
+    self.acknowledgements = mm_de2.ackn_str
+    self.references = mm_de2.refs['lang']
+    return
+
+
 def clean(inst):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 

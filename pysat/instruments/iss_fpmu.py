@@ -24,10 +24,13 @@ Warnings
 
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 from pysat.instruments.methods import general as mm_gen
 from pysat.instruments.methods import nasa_cdaweb as cdw
+
+logger = logging.getLogger(__name__)
 
 platform = 'iss'
 name = 'fpmu'
@@ -56,6 +59,35 @@ download = functools.partial(cdw.download, supported_tags)
 # support listing files currently on CDAWeb
 list_remote_files = functools.partial(cdw.list_remote_files,
                                       supported_tags=supported_tags)
+
+
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+    """
+
+    ackn_str = ' '.join(('Data provided through NASA CDAWeb.  Contact',
+                         'Rob.Suggs@nasa.gov for support and use.'))
+    logger.info(ackn_str)
+    self.acknowledgements = ackn_str
+    self.references = ' '.join(('V. N. Coffey et al., "Validation of the',
+                                'Plasma Densities and Temperatures From',
+                                'the ISS Floating Potential Measurement',
+                                'Unit," in IEEE Transactions on Plasma',
+                                'Science, vol. 36, no. 5, pp. 2301-2308,',
+                                'Oct. 2008,',
+                                'doi: 10.1109/TPS.2008.2004271.\n',
+                                'A. Barjatya, C.M. Swenson, D.C.',
+                                'Thompson, and K.H. Wright Jr., Data',
+                                'analysis of the Floating Potential',
+                                'Measurement Unit aboard the',
+                                'International Space Station, Rev. Sci.',
+                                'Instrum. 80, 041301 (2009),',
+                                'https://doi.org/10.1063/1.3116085'))
+
+    return
 
 
 def clean(inst):

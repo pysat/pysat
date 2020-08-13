@@ -69,6 +69,7 @@ import sys
 import pandas as pds
 
 import pysat
+from pysat.instruments.methods import sw as mm_sw
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,20 @@ _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'forecast': today + pds.DateOffset(days=1)}}
 # Other tags assumed to be True
 _test_download_travis = {'': {'': False}}
+
+
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
+
+    Runs once upon instantiation.
+
+
+    """
+
+    self.acknowledgements = mm_sw.acknowledgements(self.name, self.tag)
+    self.references = mm_sw.references(self.name, self.tag)
+    logger.info(self.acknowledgements)
+    return
 
 
 def load(fnames, tag=None, sat_id=None):

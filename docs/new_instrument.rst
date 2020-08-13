@@ -122,6 +122,43 @@ string can be used to let pysat know how many levels the dataset has.
   sat_ids = {'': ['']}
 
 
+Required Variables
+------------------
+
+Pysat also requires that instruments include information pertaining to
+acknowledgements and references for an instrument.  These are simply defined as
+strings at the instrument level.  In the most basic case, these can be defined
+with the data information at the top.
+
+.. code:: python
+
+  platform = 'your_platform_name'
+  name = 'name_of_instrument'
+  tags = {'': ''}
+  sat_ids = {'': ['']}
+  acknowledgements = 'Ancillary data provided under Radchaai grant PS31612.E3353A83'
+  references = 'Breq et al, 2013'
+
+
+Alternatively, for an instrument with different reference statements for different
+tags, these could be defined under the optional ``init`` function.
+
+.. code:: python
+
+  platform = 'your_platform_name'
+  name = 'name_of_instrument'
+  tags = {'tag1': '',
+          'tag2': ''}
+  sat_ids = {'': ['']}
+  acknowledgements = 'Ancillary data provided under Radchaai grant PS31612.E3353A83'
+
+  def init(self):
+      if self.tag == 'tag1':
+          self.references = 'Breq et al, 2013'
+      elif self.tag == 'tag2':
+          self.references = 'Mianaai and Mianaai, 2014'
+
+
 Required Routines
 -----------------
 
