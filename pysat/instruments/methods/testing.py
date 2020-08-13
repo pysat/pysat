@@ -130,7 +130,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
 
     """
 
-    pass
+    return
 
 
 def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],

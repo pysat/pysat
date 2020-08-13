@@ -385,4 +385,4 @@ def list_remote_files(tag, sat_id, user=None, password=None):
 
     """
 
-    pass
+    return
