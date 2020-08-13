@@ -50,8 +50,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Include flake8 check as part of testing suites
   - Improve unit testing coverage of instrument functions and instrument object
     - Add tests for acknowledgements and references
-  - Updated path to rocsat data
   - Removed implicit conversion to integers in methods.general.convert_timestamp_to_datetime
+  - Removed instruments (migrated to new libraries)
 
 ## [2.2.0] - 2020-07-06
 - New Features
