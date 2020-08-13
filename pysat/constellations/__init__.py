@@ -6,4 +6,4 @@ is contained within a subpackage of the pysat.instruments
 package.
 """
 
-__all__ = ['de2', 'icon']
+__all__ = []
