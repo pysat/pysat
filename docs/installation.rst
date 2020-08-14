@@ -33,14 +33,9 @@ An advantage to installing through github is access to the development branches.
 
 Note that pysat requires a number of packages for the install.
 
-    * beautifulsoup4
-    * lxml
-    * madrigalWeb
     * netCDF4
     * numpy (>=1.12)
     * pandas (>=0.23)
-    * pysatCDF
-    * requests
     * scipy
     * xarray
 
