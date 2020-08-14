@@ -41,6 +41,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3
   - Improved pandas 1.1.0 compatibility in tests
+  - Fixed coupling of two_digit_year_break keyword to underlying method in methods.general.list_files
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
