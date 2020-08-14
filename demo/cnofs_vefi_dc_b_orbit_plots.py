@@ -40,14 +40,14 @@ for orbit_count, vefi in enumerate(vefi.orbits):
     # with erroneous lines connecting measurements on both sides of the gap
     # command below fills in any data gaps using a 1-second cadence with NaNs
     # see pandas documentation for more info
-    vefi.data = vefi.data.resample('1S',  fill_method='ffill', limit=1,
+    vefi.data = vefi.data.resample('1S', fill_method='ffill', limit=1,
                                    label='left')
 
     f, ax = plt.subplots(7, sharex=True, figsize=(8.5, 11))
 
     ax[0].plot(vefi['longitude'], vefi['B_flag'])
-    ax[0].set_title(vefi.data.index[0].ctime() +
-                    ' - '+vefi.data.index[-1].ctime())
+    ax[0].set_title(' - '.join((vefi.data.index[0].ctime(),
+                                vefi.data.index[-1].ctime())))
     ax[0].set_ylabel('Interp. Flag')
     ax[0].set_ylim((0, 2))
 
