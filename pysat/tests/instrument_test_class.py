@@ -54,8 +54,8 @@ def generate_instrument_list(package=None):
     package : python module
         The instrument library package to test, eg, 'pysat.instruments'
 
-    Notes
-    -----
+    Note
+    ----
     Only want to do this once per instrument library being tested.
 
     """
