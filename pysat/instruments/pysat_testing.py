@@ -26,12 +26,16 @@ tags = {'': 'Regular testing data set',
         'descend': 'Descending Integers from 0 testing data set',
         'plus10': 'Ascending Integers from 10 testing data set',
         'fives': 'All 5s testing data set',
-        'mlt_offset': 'dummy1 is offset by five from regular testing set'}
+        'mlt_offset': 'dummy1 is offset by five from regular testing set',
+        'no_download': 'simulate an instrument without download support'}
 
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in sat_id to change the number of points per day
-sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
+                'no_download']}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1),
+                    'no_download': dt.datetime(2009, 1, 1)}}
+_test_download = {'': {'no_download': False}}
 
 
 def init(self):
