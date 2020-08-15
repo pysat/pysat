@@ -225,7 +225,12 @@ class InstTestClass():
                     # Check if instrument is failing due to strict time flag
                     if str(verr).find('Loaded data') > 0:
                         inst.strict_time_flag = False
-                        inst.load(date=start)
+                        with warnings.catch_warnings(record=True) as war:
+                            inst.load(date=start)
+                        assert len(war) >= 1
+                        categories = [war[j].category for j in range(0,
+                                                                     len(war))]
+                        assert UserWarning in categories
                     else:
                         # If error message does not match, raise error anyway
                         raise(verr)

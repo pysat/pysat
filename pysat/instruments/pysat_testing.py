@@ -27,14 +27,16 @@ tags = {'': 'Regular testing data set',
         'plus10': 'Ascending Integers from 10 testing data set',
         'fives': 'All 5s testing data set',
         'mlt_offset': 'dummy1 is offset by five from regular testing set',
-        'no_download': 'simulate an instrument without download support'}
+        'no_download': 'simulate an instrument without download support',
+        'non_strict': 'simulate an instrument without strict_time_flag'}
 
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in sat_id to change the number of points per day
 sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
                 'no_download']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
-                    'no_download': dt.datetime(2009, 1, 1)}}
+                    'no_download': dt.datetime(2009, 1, 1),
+                    'non_strict': dt.datetime(2009, 1, 1)}}
 _test_download = {'': {'no_download': False}}
 
 
@@ -211,7 +213,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
-    if malformed_index:
+    # Activate for testing malformed_index, and for instrument_test_class
+    if malformed_index or tag == 'non_strict':
         index = index.tolist()
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
