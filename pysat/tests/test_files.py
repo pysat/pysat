@@ -1003,3 +1003,14 @@ class TestDeprecation():
 
         assert len(war) >= 1
         assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_search_local_system_formatted_filename(self):
+        """Test if _files.search_local_system_formatted_filename is deprecated
+        """
+
+        with warnings.catch_warnings(record=True) as war:
+            # Empty input produces empty output
+            pysat._files.search_local_system_formatted_filename('', '')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
