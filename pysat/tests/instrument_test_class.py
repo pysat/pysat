@@ -45,7 +45,7 @@ def remove_files(inst):
                                'ensure temp directory is used')))
 
 
-def generate_instrument_list(package=None):
+def generate_instrument_list(package):
     """Iterate through and create all of the test Instruments needed.
 
 
@@ -59,9 +59,6 @@ def generate_instrument_list(package=None):
     Only want to do this once per instrument library being tested.
 
     """
-
-    if package is None:
-        package = pysat.instruments
 
     instrument_names = package.__all__
     instrument_download = []
