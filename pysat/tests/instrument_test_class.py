@@ -45,7 +45,7 @@ def remove_files(inst):
                                'ensure temp directory is used')))
 
 
-def generate_instrument_list(package=None):
+def generate_instrument_list(package):
     """Iterate through and create all of the test Instruments needed.
 
 
@@ -54,14 +54,11 @@ def generate_instrument_list(package=None):
     package : python module
         The instrument library package to test, eg, 'pysat.instruments'
 
-    Notes
-    -----
+    Note
+    ----
     Only want to do this once per instrument library being tested.
 
     """
-
-    if package is None:
-        package = pysat.instruments
 
     instrument_names = package.__all__
     instrument_download = []
@@ -225,7 +222,12 @@ class InstTestClass():
                     # Check if instrument is failing due to strict time flag
                     if str(verr).find('Loaded data') > 0:
                         inst.strict_time_flag = False
-                        inst.load(date=start)
+                        with warnings.catch_warnings(record=True) as war:
+                            inst.load(date=start)
+                        assert len(war) >= 1
+                        categories = [war[j].category for j in range(0,
+                                                                     len(war))]
+                        assert UserWarning in categories
                     else:
                         # If error message does not match, raise error anyway
                         raise(verr)

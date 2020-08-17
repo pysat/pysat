@@ -1,6 +1,7 @@
 import datetime as dt
 import numpy as np
 import os
+import warnings
 
 import pandas as pds
 
@@ -137,6 +138,9 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
         routine via kwargs.
 
     """
+
+    if tag == 'no_download':
+        warnings.warn('This simulates an instrument without download support')
 
     return
 
