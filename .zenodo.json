@@ -5,7 +5,9 @@
         "name": "Russell Stoneback"
       }, 
       {
-        "name": "Jeff Klenzing"
+        "affiliation": "Goddard Space Flight Center",
+        "name": "Jeff Klenzing",
+        "orcid": "0000-0001-8321-6074"
       }, 
       {
         "affiliation": "U.S. Naval Research Laboratory", 
