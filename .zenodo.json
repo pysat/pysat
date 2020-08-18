@@ -1,0 +1,52 @@
+{
+    "creators": [
+      {
+        "affiliation": "University of Texas at Dallas", 
+        "name": "Russell Stoneback"
+      }, 
+      {
+        "name": "Jeff Klenzing"
+      }, 
+      {
+        "affiliation": "U.S. Naval Research Laboratory", 
+        "name": "Angeline Burrell",
+        "orcid": "0000-0001-8875-9326"
+      }, 
+      {
+        "name": "Carey Spence"
+      }, 
+      {
+        "name": "Asher Pembroke"
+      }, 
+      {
+        "affiliation": "University of Texas at Dallas", 
+        "name": "Matthew Depew"
+      }, 
+      {
+        "name": "NHargrave"
+      }, 
+      {
+        "name": "Jonathon Smith"
+      }, 
+      {
+        "name": "vvonbose"
+      }, 
+      {
+        "affiliation": "NASA, Community Coordinated Modeling Center", 
+        "name": "Asher Pembroke"
+      }, 
+      {
+        "name": "Gayatri"
+      }, 
+      {
+        "affiliation": "@olist", 
+        "name": "Silvio Leite"
+      }
+    ], 
+    "access_right": "open", 
+    "resource_type": {
+      "type": "software", 
+      "title": "Software"
+    },
+  }
+}
