@@ -216,3 +216,19 @@ class TestRegistration():
         ensure_updated_stored_modules(self.modules)
 
         return
+
+    def test_platform_removal(self):
+        """Test registering multiple instruments at once"""
+
+        # register all modules at once
+        registry.register(self.module_names)
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # verify registration
+        ensure_live_registry_updated(self.modules)
+        # verify stored update
+        ensure_updated_stored_modules(self.modules)
+        # remove them using only platform
+        registry.remove(self.platform_names)
+
+        return
