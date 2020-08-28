@@ -186,7 +186,7 @@ class TestRegistration():
             # registered has been removed
             for platform, name in zip(self.platforms, self.platform_names):
                 registry.remove(platform, name)
-        except:
+        except Exception:
             # ok if a module has already been removed
             pass
         # ensure things are clean, all have been removed
