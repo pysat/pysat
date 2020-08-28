@@ -41,6 +41,58 @@ def create_fake_module(full_module_name, platform, name):
     sys.modules['.'.join([package_name, module_name])] = instrument
 
 
+def create_and_verify_fake_modules(modules):
+    """Create fake modules and verify instantiation
+    via pysat.Instrument(inst_module=module)
+
+    Parameters
+    ----------
+    modules : list
+        List of tuples (module_string, platform, name)
+        that will be checked against stored
+        pysat.user_modules
+
+    """
+
+    # create modules
+    for module_name, platform, name in modules:
+        # create modules
+        create_fake_module(module_name, platform, name)
+        # import fake modules
+        test_mod = importlib.import_module(module_name)
+        # load module by keyword
+        inst = Instrument(inst_module=test_mod)
+        # ensure we have the correct one
+        assert inst.platform == platform
+        assert inst.name == name
+
+    return
+
+
+def verify_platform_name_instantiation(modules):
+    """Verify that platform and name are sufficient
+    for importing module.
+
+    Parameters
+    ----------
+    modules : list
+        List of tuples (module_string, platform, name)
+        that will be checked against stored
+        pysat.user_modules
+
+    """
+
+    # verify instantiation
+    for module_name, platform, name in modules:
+        # load by platform and name
+        inst2 = Instrument(platform, name)
+        # ensure we have the correct one
+        assert inst2.platform == platform
+        assert inst2.name == name
+
+    return
+
+
 def ensure_updated_stored_modules(modules):
     """Ensure stored pysat.user_modules updated
     to include modules
@@ -121,37 +173,26 @@ def test_registration():
 
     # make sure instruments are not yet registered
     ensure_not_in_stored_modules(modules)
+    # create modules
+    create_and_verify_fake_modules(modules)
 
     # create modules
     for module_name, platform, name in modules:
-        # create modules
-        create_fake_module(module_name, platform, name)
-        # import fake modules
-        test_mod = importlib.import_module(module_name)
-
-        # load module by keyword
-        inst = Instrument(inst_module=test_mod)
-        # ensure we have the correct one
-        assert inst.platform == platform
-        assert inst.name == name
-
         # register package
         registry.register(module_name)
-        # load by platform and name
-        inst2 = Instrument(platform, name)
-        # ensure we have the correct one
-        assert inst2.platform == platform
-        assert inst2.name == name
 
-        # check that global registry was updated
-        ensure_live_registry_updated([(module_name, platform, name)])
-
+    # verify instantiation
+    verify_platform_name_instantiation(modules)
+    # check that global registry was updated
+    ensure_live_registry_updated(modules)
     # verify update
     ensure_updated_stored_modules(modules)
     # clean up
     registry.remove(platforms, platform_names)
     # ensure things are clean
     ensure_not_in_stored_modules(modules)
+
+    return
 
 
 def test_multi_registration():
@@ -171,35 +212,19 @@ def test_multi_registration():
 
     # make sure instruments are not yet registered
     ensure_not_in_stored_modules(modules)
-
     # create modules
-    for module_name, platform, name in modules:
-        # create modules
-        create_fake_module(module_name, platform, name)
-        # import fake modules
-        test_mod = importlib.import_module(module_name)
-        # load module by keyword
-        inst = Instrument(inst_module=test_mod)
-        # ensure we have the correct one
-        assert inst.platform == platform
-        assert inst.name == name
-
+    create_and_verify_fake_modules(modules)
     # register all modules at once
     registry.register(module_names)
     # verify registration
     ensure_live_registry_updated(modules)
     # verify stored update
     ensure_updated_stored_modules(modules)
-
     # verify instantiation
-    for module_name, platform, name in modules:
-        # load by platform and name
-        inst2 = Instrument(platform, name)
-        # ensure we have the correct one
-        assert inst2.platform == platform
-        assert inst2.name == name
-
+    verify_platform_name_instantiation(modules)
     # clean up
     registry.remove(platforms, platform_names)
     # ensure things are clean
     ensure_not_in_stored_modules(modules)
+
+    return
