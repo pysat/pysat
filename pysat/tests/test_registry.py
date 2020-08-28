@@ -3,7 +3,7 @@ tests the registration of user-defined modules
 """
 import pytest
 import sys
-
+import pysat
 from pysat import user_modules
 from pysat.utils import registry
 from pysat import Instrument
@@ -186,7 +186,7 @@ class TestRegistration():
             # registered has been removed
             for platform, name in zip(self.platforms, self.platform_names):
                 registry.remove(platform, name)
-        except Exception:
+        except ValueError:
             # ok if a module has already been removed
             pass
         # ensure things are clean, all have been removed
@@ -223,6 +223,7 @@ class TestRegistration():
         ensure_updated_stored_modules(self.modules)
 
         return
+
 
     def test_platform_removal_array(self):
         """Test removing entire platform at once"""
@@ -290,4 +291,42 @@ class TestRegistration():
         with pytest.raises(ValueError):
             registry.remove([self.platforms[0]], ['made_up_name'])
 
+        return
+
+
+class TestModuleRegistration():
+
+    def test_module_registration(self):
+        """Test registering a module containing multiple instruments"""
+
+        # remove any existing support which may be let over
+        # errors if you try to remove a package that isn't
+        # registered
+        try:
+            registry.remove('pysat')
+        except ValueError:
+            pass
+
+        # register package
+        registry.register_by_module(pysat.instruments)
+        # get a list of pysat instruments loaded
+        platform_names = user_modules['pysat'].keys()
+        platform = ['pysat'] * len(user_modules['pysat'])
+        mods = ['pysat.instruments.pysat_' + name for name in platform_names]
+        modules = []
+        for plat, name, mod_str in zip(platform, platform_names, mods):
+            modules.append((mod_str, plat, name))
+        self.modules = modules
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # check that global registry was updated
+        ensure_live_registry_updated(self.modules)
+        # verify update
+        ensure_updated_stored_modules(self.modules)
+        # remove modules
+        registry.remove('pysat')
+        # verifictaion not performed as functionality already tested
+        # further, the verify method also checks that the module
+        # can't be imported afterward. Since these are pysat modules,
+        # they can be imported even when not in user_modules
         return
