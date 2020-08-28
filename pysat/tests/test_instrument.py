@@ -432,17 +432,14 @@ class TestBasics():
         self.testInst.load(2009, 1)
 
         # Ensure the desired data variable is present and delete all others
-        dvars = self.testInst.variables
-        assert 'uts' in dvars
-        for dkey in dvars:
-            if dkey != 'uts':
-                del self.testInst.data[dkey]
+        self.testInst.data = self.testInst.data[['dummy1', 'mlt']]
 
         # Test output with one data variable
         output = self.testInst.__str__()
         assert output.find('Number of variables:') > 0
         assert output.find('Variable Names') > 0
-        assert output.find('uts') > 0
+        assert output.find('dummy1') > 0
+        assert output.find('mlt') > 0
 
     # -------------------------------------------------------------------------
     #
