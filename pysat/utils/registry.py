@@ -87,24 +87,20 @@ def store():
 
 
 def register(module_names):
-    """Registers a user module by name
+    """Registers a user pysat.Instrument module by name
+
+    Enables instantiation of a third-party Instrument
+    module using
+    ::
+        inst = pysat.Instrument(platform, name)
 
     Parameters
     -----------
     module_names : str or list-like of str
-        specify package name and instrument module
-        examples:
-            my.package.name.my_instrument
-            my.pckage.name.myInstrument
+        specify package name and instrument modules
 
-    Returns
-    --------
-    Updates the user module registry specified in
-    pysat_dir/user_module.txt
-
-
-    Notes
-    ------
+    Note
+    ----
     Modules should be importable using
         from my.package.name import my_instrument
 
@@ -115,14 +111,15 @@ def register(module_names):
     pysat instrument files could result in unexpected consequences.
 
     Examples
-    ---------
-    from pysat import Instrument, user_modules
-    from pysat.utils import registry
+    --------
+    ::
+        from pysat import Instrument, user_modules
+        from pysat.utils import registry
 
-    registry.register('my.package.name.myInstrument')
-    assert 'my.package.name.myInstrument' in user_modules
+        registry.register('my.package.name.myInstrument')
+        assert 'my.package.name.myInstrument' in user_modules
 
-    testInst = Instrument()
+        testInst = Instrument(platform, name)
 
     """
 
@@ -170,14 +167,21 @@ def register(module_names):
 def register_by_module(module):
     """Register all sub-modules attached to input module
 
-    Gets a list of sub-modules by using the __all__ attribute,
-    defined in the module's __init__.py
+    Enables instantiation of a third-party Instrument
+    module using
+    ::
+        inst = pysat.Instrument(platform, name)
 
     Parameters
     ----------
     module : Python module
         Module with one or more pysat.Instrument support modules
         attached as sub-modules to the input `module`
+
+    Note
+    ----
+    Gets a list of sub-modules by using the __all__ attribute,
+    defined in the module's __init__.py
 
     """
 
