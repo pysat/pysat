@@ -200,7 +200,7 @@ def remove(platforms, names=None):
     for platform, name in zip(platforms, names):
 
         # error string if module not registered
-        estr = ''.join((platform, ', ', name, ': not a registered',
+        estr = ''.join((platform, ', ', name, ': not a registered ',
                         'instrument module.'))
 
         if platform in pysat.user_modules:
