@@ -34,33 +34,64 @@ pysat will search the instruments shipped with pysat before
 checking the user_modules registry.
 """
 
-import pysat
+import importlib
+import logging
 import os
+
+import pysat
+
+logger = logging.getLogger(__name__)
 
 
 def load_saved_modules():
-    """get list of modules from user_modules.txt"""
-    saved_modules = []
-    with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'r') as f:
-        for line in f:
+    """Load registered pysat.Instrument modules
+
+    Returns
+    -------
+    dict of dicts
+        instrument module strings are keyed by
+        platform then name
+
+    """
+    saved_modules = {}
+    fpath = os.path.join(pysat.pysat_dir, 'user_modules.txt')
+    with open(fpath, 'r') as fopen:
+        for line in fopen:
             if line != '' and (line is not None):
-                saved_modules.append(line.strip())
+                # remove trailing whitespace
+                line = line.strip()
+                # stored as platform, name, module string
+                platform, name, inst_module = line.split(' ')
+                # dict of dicts, keyed by platform then name
+                if platform not in saved_modules:
+                    saved_modules[platform] = {}
+                # store instrument module string
+                saved_modules[platform][name] = inst_module
+
     return saved_modules
 
 
 def store():
-    """Rewrite user_modules.txt based on current listing"""
-    with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'w') as f:
-        for mod in pysat.user_modules:
-            f.write(mod + '\n')
+    """Store registered pysat.Instrument modules to disk"""
+
+    with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'w') as fopen:
+        for platform in pysat.user_modules:
+            for name in pysat.user_modules[platform]:
+                # instrument module string
+                inst_mod = pysat.user_modules[platform][name]
+                # format for storage
+                # platform, name, instrument module
+                out = ' '.join((platform, name, inst_mod, '\n'))
+                # store
+                fopen.write(out)
 
 
-def register(module_name):
+def register(module_names):
     """Registers a user module by name, returning the loaded module
 
     Parameters
     -----------
-    module_name : string
+    module_names : str or list-like of str
         specify package name and instrument module
         examples:
             my.package.name.my_instrument
@@ -91,41 +122,106 @@ def register(module_name):
     registry.register('my.package.name.myInstrument')
     assert 'my.package.name.myInstrument' in user_modules
 
-
-
     testInst = Instrument()
 
-
-
     """
-    import importlib
-    inst_module = importlib.import_module(module_name)
 
-    if module_name not in pysat.user_modules:
-        print('registering user module {}'.format(module_name))
-        pysat.user_modules.append(module_name)
-        store()
+    if isinstance(module_names, str):
+        module_names = [module_names]
 
-    return inst_module
+    for module_name in module_names:
+        # first, ensure module string directs to something importable
+        try:
+            inst_module = importlib.import_module(module_name)
+        except Exception as error:
+            # log error and then preserve trace and propagate error
+            logger.error(error)
+            raise
+
+        # second, check that module is itself pysat compatible
+
+        # registry is a dict of dicts
+        # platform, name, module string
+        # get platform and name identifiers from imported module
+        platform = inst_module.platform
+        name = inst_module.name
+        # only register module if not already present
+        # multiple names allowed for a single platform
+        if platform not in pysat.user_modules:
+            # setup `of dict` part of dict of dicts
+            pysat.user_modules[platform] = {}
+        # only register name if not present under platform
+        if name not in pysat.user_modules[platform]:
+            logger.info('Registering user module {}'.format(module_name))
+            # add to current user modules structure
+            pysat.user_modules[platform][name] = module_name
+            # store user modules to disk
+            store()
+        else:
+            # platform/name combination already registered
+            estr = ' '.join(('An instrument has already been registered using',
+                             'platform:', platform, 'and name:', name,
+                             'which maps to:', module_name))
+            raise ValueError(estr)
+
+    return
 
 
-def remove(*module_names):
+def remove(platforms, names=None):
     """Removes module from registered user modules
 
     Parameters
-    -----------
-    module_names : str or multiple str
-        full module package names to remove from registry
+    ----------
+    platforms : str of list-like of str
+        One or more platform identifiers to remove
+    names : str of list-like of str
+        Name identifiers, paired with platforms, to remove.
+        If names is None, then all instruments under
+        `platforms` will be removed. Supports a mixed
+        combination of name labels and None. (default=None)
 
-    Notes
-    ------
-    Current list of user modules can be retrieved from pysat.user_modules
-
+    Note
+    ----
+    Current registered user modules available at pysat.user_modules
 
     """
-    for module_name in module_names:
-        try:
-            pysat.user_modules.remove(module_name)
-            store()
-        except ValueError:
-            print('User module {} not found'.format(module_name))
+
+    # support input of both string and list-like of strings
+    if isinstance(platforms, str):
+        platforms = [platforms]
+    if isinstance(names, str):
+        names = [names]
+
+    # ensure names is as long as platforms under default input
+    if names is None:
+        names = [None] * len(platforms)
+
+    # iterate over inputs and remove modules
+    for platform, name in zip(platforms, names):
+
+        # error string if module not registered
+        estr = ''.join((platform, ', ', name, ': not a registered',
+                        'instrument module.'))
+
+        if platform in pysat.user_modules:
+            if name is None:
+                # remove platform entirely
+                pysat.user_modules.pop(platform)
+                # store
+                store()
+            else:
+                # name supplied, remove single module
+                if name in pysat.user_modules[platform]:
+                    # remove module
+                    pysat.user_modules[platform].pop(name)
+                else:
+                    # name not in platform
+                    raise ValueError(estr)
+                # remove platform if no remaining instruments
+                if len(pysat.user_modules[platform]) == 0:
+                    pysat.user_modules.pop(platform)
+                # store
+                store()
+        else:
+            # platform not in registered modules
+            raise ValueError(estr)

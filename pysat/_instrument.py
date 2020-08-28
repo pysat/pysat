@@ -946,34 +946,20 @@ class Instrument(object):
         self.pandas_format = True
 
         if by_name:
-            # look for code with filename name, any errors passed up
-            # start with local areas
-            import_success = False
-            try:
+            if self.platform == 'pysat':
+                # look within pysat
                 inst = \
                     importlib.import_module(''.join(('.', self.platform, '_',
                                                      self.name)),
                                             package='pysat.instruments')
-                import_success = True
-            except ImportError:
-                # iterate through user set modules
-                for mod in user_modules:
-                    # get my.package.name from my.package.name.platform_name
-                    try:
-                        inst = importlib.import_module(mod)
-                        if ((inst.platform == self.platform)
-                                & (inst.name == self.name)):
-                            import_success = True
-                            # done!
-                            break
-                    except ImportError:
-                        pass
-                if not import_success:
-                    raise ImportError(' '.join(('Could not find a registered',
-                                                'module for', self.platform,
-                                                self.name, '\nAvailable',
-                                                'modules:',
-                                                ', '.join((user_modules)))))
+            else:
+                # not a native pysat.Instrument
+                try:
+                    mod = user_modules[self.platform][self.name]
+                    inst = importlib.import_module(mod)
+                except Exception as error:
+                    logger.error(error)
+                    raise
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
             inst = inst_module
