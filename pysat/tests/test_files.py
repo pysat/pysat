@@ -135,6 +135,23 @@ class TestBasics():
         pysat.utils.set_data_dir(self.data_path, store=False)
         del self.testInst
 
+    def test_basic_repr(self):
+        """The repr output will match the str output"""
+        output_repr = self.testInst.files.__repr__()
+        output_str = self.testInst.files.__str__()
+        assert isinstance(output_repr, str)
+        assert isinstance(output_str, str)
+        assert output_str == output_repr
+
+    def test_basic_str(self):
+        """Check for lines from each decision point in str"""
+        output = self.testInst.files.__str__()
+        assert isinstance(output, str)
+        # Test basic file output
+        assert output.find('Number of files') > 0
+        # Test no files
+        assert output.find('Date Range') > 0
+
     def test_parse_delimited_filename(self):
         """Check ability to parse delimited files"""
         # Note: Can be removed if future instrument that uses delimited

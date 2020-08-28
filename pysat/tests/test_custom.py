@@ -49,6 +49,38 @@ class TestBasics():
         """
         del self.testInst, self.ncols
 
+    def test_basic_repr(self):
+        """The repr output will match the str output"""
+        output_repr = self.testInst.custom.__repr__()
+        output_str = self.testInst.custom.__str__()
+        assert isinstance(output_repr, str)
+        assert isinstance(output_str, str)
+        assert output_str == output_repr
+
+    def test_basic_str(self):
+        """Check for lines from each decision point in str"""
+        output = self.testInst.custom.__str__()
+        assert isinstance(output, str)
+        # No custom functions
+        assert output.find('0 applied') > 0
+
+    def test_basic_str_w_function(self):
+        """Check for lines from each decision point in str"""
+        def mult_data(inst, mult, dkey="mlt"):
+            out_key = '{:.0f}x{:s}'.format(mult, dkey)
+            inst.data[out_key] = mult * inst.data[dkey]
+            return
+
+        self.testInst.custom.attach(mult_data, 'modify', args=[2.0],
+                                    kwargs={"dkey": "mlt"})
+        output = self.testInst.custom.__str__()
+        assert isinstance(output, str)
+        # No custom functions
+        assert output.find('1 applied') > 0
+        assert output.find('mult_data') > 0
+        assert output.find('Args') > 0
+        assert output.find('Kwargs') > 0
+
     def test_single_modifying_custom_function_error(self):
         """Test for error when custom function loaded as modify returns a value
         """
