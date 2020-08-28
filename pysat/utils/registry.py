@@ -87,7 +87,7 @@ def store():
 
 
 def register(module_names):
-    """Registers a user module by name, returning the loaded module
+    """Registers a user module by name
 
     Parameters
     -----------
@@ -167,6 +167,33 @@ def register(module_names):
     return
 
 
+def register_by_module(module):
+    """Register all sub-modules attached to input module
+
+    Gets a list of sub-modules by using the __all__ attribute,
+    defined in the module's __init__.py
+
+    Parameters
+    ----------
+    module : Python module
+        Module with one or more pysat.Instrument support modules
+        attached as sub-modules to the input `module`
+
+    """
+
+    # get a list of all user specified modules attached to module
+    try:
+        module_names = module.__all__
+        # add in package preamble
+        module_names = [module.__name__ + '.' + mod for mod in module_names]
+        register(module_names)
+    except Exception as error:
+        logger.error(error)
+        raise
+
+    return
+
+
 def remove(platforms, names=None):
     """Removes module from registered user modules
 
@@ -199,10 +226,6 @@ def remove(platforms, names=None):
     # iterate over inputs and remove modules
     for platform, name in zip(platforms, names):
 
-        # error string if module not registered
-        estr = ''.join((platform, ', ', name, ': not a registered ',
-                        'instrument module.'))
-
         if platform in pysat.user_modules:
             if name is None:
                 # remove platform entirely
@@ -216,6 +239,9 @@ def remove(platforms, names=None):
                     pysat.user_modules[platform].pop(name)
                 else:
                     # name not in platform
+                    # error string if module not registered
+                    estr = ''.join((platform, ', ', name, ': not a registered ',
+                                    'instrument module.'))
                     raise ValueError(estr)
                 # remove platform if no remaining instruments
                 if len(pysat.user_modules[platform]) == 0:
@@ -223,5 +249,11 @@ def remove(platforms, names=None):
                 # store
                 store()
         else:
+            # error string if module not registered
+            estr = ''.join((platform, ': is not a registered ',
+                            'instrument platform.'))
+
             # platform not in registered modules
             raise ValueError(estr)
+
+    return
