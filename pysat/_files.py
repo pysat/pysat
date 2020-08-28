@@ -180,6 +180,23 @@ class Files(object):
                 # couldn't find stored info, load file list and then store
                 self.refresh()
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        num_files = len(self.files)
+        output_str += 'Local File Statistics\n'
+        output_str += '---------------------\n'
+        output_str += 'Number of files: {:d}\n'.format(num_files)
+
+        if num_files > 0:
+            output_str += 'Date Range: '
+            output_str += self.files.index[0].strftime('%d %B %Y')
+            output_str += ' --- '
+            output_str += self.files.index[-1].strftime('%d %B %Y')
+
+        return output_str
+
     def _filter_empty_files(self):
         """Update the file list (files) with empty files ignored"""
 
