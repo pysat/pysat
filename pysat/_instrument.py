@@ -1053,9 +1053,12 @@ class Instrument(object):
             # Either flags are not specified, or this combo is not
             self._password_req = False
 
+    def __repr__(self):
+        return self.__str__()
+
     def __str__(self):
 
-        output_str = '\npysat Instrument object\n'
+        output_str = 'pysat Instrument object\n'
         output_str += '-----------------------\n'
         output_str += 'Platform: ' + self.platform + '\n'
         output_str += 'Name: ' + self.name + '\n'
@@ -1103,24 +1106,32 @@ class Instrument(object):
         output_str += '\n\nLoaded Data Statistics' + '\n'
         output_str += '----------------------' + '\n'
         if not self.empty:
+            # Display loaded data
+            num_vars = len(self.variables)
+            max_vars = 6
+
             output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
             output_str += 'DOY: {:03d}'.format(self.doy) + '\n'
             output_str += 'Time range: '
             output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
             output_str += ' --- '
             output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
-            output_str += 'Number of Times: ' + str(len(self.index)) + '\n'
-            output_str += 'Number of variables: ' + str(len(self.variables))
+            output_str += 'Number of Times: {:d}\n'.format(len(self.index))
+            output_str += 'Number of variables: {:d}\n'.format(num_vars)
 
-            output_str += '\n\nVariable Names:' + '\n'
-            num = len(self.variables) // 3
-            for i in np.arange(num):
-                output_str += self.variables[3 * i].ljust(30)
-                output_str += self.variables[3 * i + 1].ljust(30)
-                output_str += self.variables[3 * i + 2].ljust(30) + '\n'
-            for i in np.arange(len(self.variables) - 3 * num):
-                output_str += self.variables[i + 3 * num].ljust(30)
-            output_str += '\n'
+            if num_vars <= max_vars:
+                output_str += '\nVariable Names:' + '\n'
+                num = len(self.variables) // 3
+                for i in np.arange(num):
+                    output_str += self.variables[3 * i].ljust(30)
+                    output_str += self.variables[3 * i + 1].ljust(30)
+                    output_str += self.variables[3 * i + 2].ljust(30) + '\n'
+                for i in np.arange(len(self.variables) - 3 * num):
+                    output_str += self.variables[i + 3 * num].ljust(30)
+                output_str += '\n'
+            else:
+                output_str += "\nSee variable names using "
+                output_str += "print(inst.variables)\n"
         else:
             output_str += 'No loaded data.\n'
         output_str += '\n'
