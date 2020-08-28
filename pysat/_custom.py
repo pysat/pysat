@@ -50,6 +50,22 @@ class Custom(object):
         self._args = []
         self._kwargs = []
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        num_funcs = len(self._functions)
+        out_str = "Custom Functions: {:d} applied\n".format(num_funcs)
+        if num_funcs > 0:
+            for i, func in enumerate(self._functions):
+                out_str += "    {:d}: {:}\n".format(func.__repr__())
+                if len(self._args[i]) > 0:
+                    out_str += "     : Args={:}\n".format(self._args[i])
+                if len(self._kwargs[i]) > 0:
+                    out_str += "     : Kwargs={:}\n".format(self._kwargs[i])
+
+        return out_str
+
     def attach(self, function, kind='modify', at_pos='end', args=[],
                kwargs={}):
         """Attach a function to custom processing queue.
