@@ -156,75 +156,63 @@ def ensure_not_in_stored_modules(modules):
             Instrument(platform, name)
 
 
-def test_registration():
-    modules = [
-        ('package1.module1', 'platname1', 'name1'),
-        ('package2.module2', 'platname2', 'name2')]
+class TestRegistration():
+    def setup(self):
+        self.modules = [
+            ('package1.module1', 'platname1', 'name1'),
+            ('package2.module2', 'platname2', 'name2')]
 
-    module_names = [mod[0] for mod in modules]
-    platforms = [mod[1] for mod in modules]
-    platform_names = [mod[2] for mod in modules]
+        self.module_names = [mod[0] for mod in self.modules]
+        self.platforms = [mod[1] for mod in self.modules]
+        self.platform_names = [mod[2] for mod in self.modules]
 
-    # do pre-cleanup
-    try:
-        registry.remove(platforms, platform_names)
-    except ValueError:
-        pass
+        # do pre-cleanup
+        try:
+            registry.remove(self.platforms, self.platform_names)
+        except ValueError:
+            pass
 
-    # make sure instruments are not yet registered
-    ensure_not_in_stored_modules(modules)
-    # create modules
-    create_and_verify_fake_modules(modules)
+        # make sure instruments are not yet registered
+        ensure_not_in_stored_modules(self.modules)
+        # create modules
+        create_and_verify_fake_modules(self.modules)
 
-    # create modules
-    for module_name, platform, name in modules:
-        # register package
-        registry.register(module_name)
+        return
 
-    # verify instantiation
-    verify_platform_name_instantiation(modules)
-    # check that global registry was updated
-    ensure_live_registry_updated(modules)
-    # verify update
-    ensure_updated_stored_modules(modules)
-    # clean up
-    registry.remove(platforms, platform_names)
-    # ensure things are clean
-    ensure_not_in_stored_modules(modules)
+    def teardown(self):
+        # clean up
+        registry.remove(self.platforms, self.platform_names)
+        # ensure things are clean
+        ensure_not_in_stored_modules(self.modules)
 
-    return
+    def test_single_registration(self):
+        """Test registering package one at a time"""
 
+        # create modules
+        for module_name, platform, name in self.modules:
+            # register package
+            registry.register(module_name)
 
-def test_multi_registration():
-    modules = [
-        ('package1.module1', 'platname1', 'name1'),
-        ('package2.module2', 'platname2', 'name2')]
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # check that global registry was updated
+        ensure_live_registry_updated(self.modules)
+        # verify update
+        ensure_updated_stored_modules(self.modules)
 
-    module_names = [mod[0] for mod in modules]
-    platforms = [mod[1] for mod in modules]
-    platform_names = [mod[2] for mod in modules]
+        return
 
-    # do pre-cleanup
-    try:
-        registry.remove(platforms, platform_names)
-    except ValueError:
-        pass
+    def test_multi_registration(self):
+        """Test registering multiple instruments at once"""
 
-    # make sure instruments are not yet registered
-    ensure_not_in_stored_modules(modules)
-    # create modules
-    create_and_verify_fake_modules(modules)
-    # register all modules at once
-    registry.register(module_names)
-    # verify registration
-    ensure_live_registry_updated(modules)
-    # verify stored update
-    ensure_updated_stored_modules(modules)
-    # verify instantiation
-    verify_platform_name_instantiation(modules)
-    # clean up
-    registry.remove(platforms, platform_names)
-    # ensure things are clean
-    ensure_not_in_stored_modules(modules)
+        # register all modules at once
+        registry.register(self.module_names)
 
-    return
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # verify registration
+        ensure_live_registry_updated(self.modules)
+        # verify stored update
+        ensure_updated_stored_modules(self.modules)
+
+        return
