@@ -64,13 +64,15 @@ To set up `pysat` for local development:
 
 5. Update/add documentation (in ``docs``), if relevant
 
-5. Commit your changes and push your branch to GitHub::
+6. Add your name to the .zenodo.json file as an author
+
+7. Commit your changes and push your branch to GitHub::
 
     git add .
     git commit -m "Brief description of your changes"
     git push origin name-of-your-bugfix-or-feature
 
-6. Submit a pull request through the GitHub website. Pull requests should be
+8. Submit a pull request through the GitHub website. Pull requests should be
    made to the ``develop`` branch.
 
 Pull Request Guidelines
