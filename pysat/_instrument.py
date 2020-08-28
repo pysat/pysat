@@ -1057,7 +1057,7 @@ class Instrument(object):
         return self.__str__()
 
     def __str__(self):
-
+        # Print the Instrument properties
         output_str = 'pysat Instrument object\n'
         output_str += '-----------------------\n'
         output_str += 'Platform: ' + self.platform + '\n'
@@ -1065,18 +1065,16 @@ class Instrument(object):
         output_str += 'Tag: ' + self.tag + '\n'
         output_str += 'Satellite id: ' + self.sat_id + '\n'
 
+        # Print out the data processing information
         output_str += '\nData Processing\n'
         output_str += '---------------\n'
         output_str += 'Cleaning Level: ' + self.clean_level + '\n'
         output_str += 'Data Padding: ' + self.pad.__repr__() + '\n'
         output_str += 'Keyword Arguments Passed to load(): '
-        output_str += self.kwargs.__repr__() + '\nCustom Functions : \n'
-        if len(self.custom._functions) > 0:
-            for func in self.custom._functions:
-                output_str += '    ' + func.__repr__() + '\n'
-        else:
-            output_str += '    ' + 'No functions applied.\n'
+        output_str += self.kwargs.__repr__() + '\n'
+        output_str += self.custom.__repr__()
 
+        # Print out the orbit settings
         output_str += '\nOrbit Settings' + '\n'
         output_str += '--------------' + '\n'
         if self.orbits.orbit_index is None:
@@ -1093,6 +1091,7 @@ class Instrument(object):
             else:
                 output_str += 'None\n'
 
+        # Print the local file information
         output_str += '\nLocal File Statistics' + '\n'
         output_str += '---------------------' + '\n'
         output_str += 'Number of files: ' + str(len(self.files.files)) + '\n'
@@ -1103,10 +1102,10 @@ class Instrument(object):
             output_str += ' --- '
             output_str += self.files.files.index[-1].strftime('%d %B %Y')
 
+        # Display loaded data
         output_str += '\n\nLoaded Data Statistics' + '\n'
         output_str += '----------------------' + '\n'
         if not self.empty:
-            # Display loaded data
             num_vars = len(self.variables)
             max_vars = 6
 
