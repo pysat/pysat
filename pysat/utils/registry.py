@@ -186,6 +186,7 @@ def register_by_module(module):
         module_names = module.__all__
         # add in package preamble
         module_names = [module.__name__ + '.' + mod for mod in module_names]
+        # register all of them
         register(module_names)
     except Exception as error:
         logger.error(error)
