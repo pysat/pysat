@@ -1054,16 +1054,19 @@ class Instrument(object):
             self._password_req = False
 
     def __repr__(self):
-        return self.__str__()
-
-    def __str__(self):
-        # Print the Instrument properties
+        # Print the basic Instrument properties
         output_str = 'pysat Instrument object\n'
         output_str += '-----------------------\n'
         output_str += 'Platform: ' + self.platform + '\n'
         output_str += 'Name: ' + self.name + '\n'
         output_str += 'Tag: ' + self.tag + '\n'
         output_str += 'Satellite id: ' + self.sat_id + '\n'
+
+        return output_str
+
+    def __str__(self):
+        # Get the basic Instrument properties
+        output_str = self.__repr__()
 
         # Print out the data processing information
         output_str += '\nData Processing\n'
@@ -1075,11 +1078,9 @@ class Instrument(object):
         output_str += self.custom.__repr__()
 
         # Print out the orbit settings
-        output_str += '\nOrbit Settings' + '\n'
-        output_str += '--------------' + '\n'
-        if self.orbits.orbit_index is None:
-            output_str += 'Orbit properties not set.\n'
-        else:
+        if self.orbits.orbit_index is not None:
+            output_str += '\nOrbit Settings' + '\n'
+            output_str += '--------------' + '\n'
             output_str += 'Orbit Kind: ' + self.orbit_info['kind'] + '\n'
             output_str += 'Orbit Index: ' + self.orbit_info['index'] + '\n'
             output_str += 'Orbit Period: '
@@ -1092,15 +1093,7 @@ class Instrument(object):
                 output_str += 'None\n'
 
         # Print the local file information
-        output_str += '\nLocal File Statistics' + '\n'
-        output_str += '---------------------' + '\n'
-        output_str += 'Number of files: ' + str(len(self.files.files)) + '\n'
-
-        if len(self.files.files) > 0:
-            output_str += 'Date Range: '
-            output_str += self.files.files.index[0].strftime('%d %B %Y')
-            output_str += ' --- '
-            output_str += self.files.files.index[-1].strftime('%d %B %Y')
+        output_str += self.files.__repr__()
 
         # Display loaded data
         output_str += '\n\nLoaded Data Statistics' + '\n'
