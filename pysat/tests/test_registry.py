@@ -181,8 +181,15 @@ class TestRegistration():
 
     def teardown(self):
         # clean up
-        registry.remove(self.platforms, self.platform_names)
-        # ensure things are clean
+        try:
+            # remove singly to ensure everything that could've been
+            # registered has been removed
+            for platform, name in zip(self.platforms, self.platform_names):
+                registry.remove(platform, name)
+        except:
+            # ok if a module has already been removed
+            pass
+        # ensure things are clean, all have been removed
         ensure_not_in_stored_modules(self.modules)
 
     def test_single_registration(self):
@@ -202,7 +209,7 @@ class TestRegistration():
 
         return
 
-    def test_multi_registration(self):
+    def test_array_registration(self):
         """Test registering multiple instruments at once"""
 
         # register all modules at once
@@ -217,8 +224,8 @@ class TestRegistration():
 
         return
 
-    def test_platform_removal(self):
-        """Test registering multiple instruments at once"""
+    def test_platform_removal_array(self):
+        """Test removing entire platform at once"""
 
         # register all modules at once
         registry.register(self.module_names)
@@ -229,6 +236,58 @@ class TestRegistration():
         # verify stored update
         ensure_updated_stored_modules(self.modules)
         # remove them using only platform
-        registry.remove(self.platform_names)
+        registry.remove(self.platforms)
+        # test for removal performed by teardown
+        return
+
+    def test_platform_removal_single_string(self):
+        """Test removing entire platform at once"""
+
+        # register all modules at once
+        registry.register(self.module_names)
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # verify registration
+        ensure_live_registry_updated(self.modules)
+        # verify stored update
+        ensure_updated_stored_modules(self.modules)
+        # remove them using only platform
+        for platform in self.platforms:
+            registry.remove(platform)
+        # test for removal performed by teardown
+
+        return
+
+    def test_platform_removal_error(self):
+        """Test error raised when removing module not present"""
+
+        # remove non-registered modules using only platform
+        with pytest.raises(ValueError):
+            registry.remove(['made_up_name'])
+
+        return
+
+    def test_platform_string_removal_error(self):
+        """Test error raised when removing module not present"""
+
+        # remove non-registered modules using only platform
+        with pytest.raises(ValueError):
+            registry.remove('made_up_name')
+
+        return
+
+    def test_platform_name_removal_error(self):
+        """Test error raised when removing module not present"""
+
+        # register all modules at once
+        registry.register(self.module_names)
+
+        # remove non-registered modules using platform and name
+        with pytest.raises(ValueError):
+            registry.remove(['made_up_name'], ['made_up_name'])
+
+        # remove non-registered modules using good platform and bad name
+        with pytest.raises(ValueError):
+            registry.remove([self.platforms[0]], ['made_up_name'])
 
         return
