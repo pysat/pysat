@@ -58,7 +58,7 @@ class Custom(object):
         out_str = "Custom Functions: {:d} applied\n".format(num_funcs)
         if num_funcs > 0:
             for i, func in enumerate(self._functions):
-                out_str += "    {:d}: {:}\n".format(func.__repr__())
+                out_str += "    {:d}: {:}\n".format(i, func.__repr__())
                 if len(self._args[i]) > 0:
                     out_str += "     : Args={:}\n".format(self._args[i])
                 if len(self._kwargs[i]) > 0:

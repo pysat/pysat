@@ -185,7 +185,7 @@ class Files(object):
 
     def __str__(self):
         num_files = len(self.files)
-        output_str += 'Local File Statistics\n'
+        output_str = 'Local File Statistics\n'
         output_str += '---------------------\n'
         output_str += 'Number of files: {:d}\n'.format(num_files)
 
