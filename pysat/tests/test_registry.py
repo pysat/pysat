@@ -209,6 +209,33 @@ class TestRegistration():
 
         return
 
+    def test_single_registration_invalid_error(self):
+        """Test registering bad package str"""
+
+        # register packages again, this should error
+        with pytest.raises(Exception):
+            registry.register('made.up.name')
+
+        return
+
+    def test_duplicate_registration_error(self):
+        """Test register error for duplicate package"""
+
+        # register all modules at once
+        registry.register(self.module_names)
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # check that global registry was updated
+        ensure_live_registry_updated(self.modules)
+        # verify update
+        ensure_updated_stored_modules(self.modules)
+
+        # register packages again, this should error
+        with pytest.raises(ValueError):
+            registry.register(self.module_names)
+
+        return
+
     def test_array_registration(self):
         """Test registering multiple instruments at once"""
 
