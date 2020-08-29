@@ -15,23 +15,22 @@ instrument files.
 
 Instrument support modules must be registered before use. For
 example, assume there is an implementation for myInstrument in the
-module my.package.myInstrument having  platform and name attributes
+module my.package.myInstrument with platform and name attributes
 'myplatform' and 'myname'. Such an instrument may be registered with
-
+::
     registry.register('my.package.myInstrument')
-
 
 The full module name "my.package.myInstrument" will be
 registered in pysat_dir/user_modules.txt and is also listed in
-pysat.user_modules.
+::
+    pysat.user_modules
+which is stored as a dict of dicts keyed by platform and name.
 
 Once registered, subsequent calls to Instrument may use the platform
-and name:
-
+and name string identifiers.
+::
     Instrument('myplatform', 'myname')
 
-pysat will search the instruments shipped with pysat before
-checking the user_modules registry.
 """
 
 import importlib
@@ -72,7 +71,7 @@ def load_saved_modules():
 
 
 def store():
-    """Store registered pysat.Instrument modules to disk"""
+    """Store registered pysat.Instrument user modules to disk"""
 
     with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'w') as fopen:
         for platform in pysat.user_modules:
@@ -92,23 +91,38 @@ def register(module_names):
     Enables instantiation of a third-party Instrument
     module using
     ::
-        inst = pysat.Instrument(platform, name)
+        inst = pysat.Instrument(platform, name, tag=tag, sat_id=sat_id)
 
     Parameters
     -----------
     module_names : str or list-like of str
         specify package name and instrument modules
 
+    Raises
+    ------
+    ValueError
+        If platform and name associated with module_name(s) are currently
+        registered
+
+    Warnings
+    --------
+    Registering a module that contains code other than pysat instrument
+    files could result in unexpected consequences.
+
     Note
     ----
     Modules should be importable using
+    ::
         from my.package.name import my_instrument
 
     Module names do not have to follow the pysat platform_name naming
     convection.
-
-    Warning: Registering a module that contains code other than
-    pysat instrument files could result in unexpected consequences.
+    
+    Current registered modules bay be found at
+    ::
+        pysat.user_modules
+        
+    which is stored as a dict of dicts keyed by platform and name.
 
     Examples
     --------
@@ -117,7 +131,6 @@ def register(module_names):
         from pysat.utils import registry
 
         registry.register('my.package.name.myInstrument')
-        assert 'my.package.name.myInstrument' in user_modules
 
         testInst = Instrument(platform, name)
 
@@ -198,10 +211,25 @@ def register_by_module(module):
         Module with one or more pysat.Instrument support modules
         attached as sub-modules to the input `module`
 
+    Raises
+    ------
+    ValueError
+        If platform and name associated with a module are already registered
+
     Note
     ----
     Gets a list of sub-modules by using the __all__ attribute,
     defined in the module's __init__.py
+
+    Examples
+    --------
+    ::
+        import pysat
+        import pysatModels
+        pysat.utils.registry.register_by_module(pysatModels.models)
+
+        import pysatSpaceWeather
+        pysat.utils.registry.register_by_module(pysatSpaceWeather.instruments)
 
     """
 
@@ -228,6 +256,11 @@ def remove(platforms, names=None):
         `platforms` will be removed. Supports a mixed
         combination of name labels and None. (default=None)
 
+    Raises
+    ------
+    ValueError
+        If platform and name are not currently registered
+
     Note
     ----
     Current registered user modules available at pysat.user_modules
@@ -246,7 +279,6 @@ def remove(platforms, names=None):
 
     # iterate over inputs and remove modules
     for platform, name in zip(platforms, names):
-
         if platform in pysat.user_modules:
             if name is None:
                 # remove platform entirely
@@ -260,7 +292,6 @@ def remove(platforms, names=None):
                     pysat.user_modules[platform].pop(name)
                 else:
                     # name not in platform
-                    # error string if module not registered
                     estr = ''.join((platform, ', ', name, ': not a registered ',
                                     'instrument module.'))
                     raise ValueError(estr)
@@ -273,7 +304,6 @@ def remove(platforms, names=None):
             # error string if module not registered
             estr = ''.join((platform, ': is not a registered ',
                             'instrument platform.'))
-
             # platform not in registered modules
             raise ValueError(estr)
 
