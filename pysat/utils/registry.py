@@ -117,11 +117,11 @@ def register(module_names):
 
     Module names do not have to follow the pysat platform_name naming
     convection.
-    
+
     Current registered modules bay be found at
     ::
         pysat.user_modules
-        
+
     which is stored as a dict of dicts keyed by platform and name.
 
     Examples
