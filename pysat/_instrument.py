@@ -958,7 +958,12 @@ class Instrument(object):
                     mod = user_modules[self.platform][self.name]
                     inst = importlib.import_module(mod)
                 except Exception as error:
-                    logger.error(error)
+                    estr = ' '.join(('pysat was either unable to locate the',
+                                     'module in the registry or',
+                                     'successfully import the module',
+                                     'for platform:', self.platform,
+                                     'and name:', self.name))
+                    logger.error(estr)
                     raise
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
