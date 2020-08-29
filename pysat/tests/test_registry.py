@@ -224,7 +224,6 @@ class TestRegistration():
 
         return
 
-
     def test_platform_removal_array(self):
         """Test removing entire platform at once"""
 
