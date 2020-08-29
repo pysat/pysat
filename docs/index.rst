@@ -15,9 +15,7 @@ Welcome to pysat's documentation!
    quickstart.rst
    tutorial.rst
    examples.rst
-   supported_instruments.rst
    new_instrument.rst
-   data_templates.rst
    dependency.rst
    api.rst
    contributing.rst

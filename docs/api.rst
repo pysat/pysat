@@ -22,6 +22,11 @@ General
 
 .. _rst_general_data_cdaweb:
 
+netCDF Pandas
+^^^^^^^^^^^^^
+
+.. automodule:: pysat.instruments.templates.netcdf_pandas
+  :members: __doc__, init, load, list_files, download
 
 Instrument Templates
 --------------------
