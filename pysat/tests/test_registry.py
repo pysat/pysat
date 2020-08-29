@@ -310,7 +310,7 @@ class TestRegistration():
             ensure_not_in_stored_modules([self.modules[count]])
             # test other names still present
             if count < len(self.platforms) - 1:
-                ensure_updated_stored_modules(self.modules[count+1:])
+                ensure_updated_stored_modules(self.modules[count + 1:])
             count += 1
         # test for full removal also performed by teardown
 
