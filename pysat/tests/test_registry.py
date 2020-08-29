@@ -285,9 +285,34 @@ class TestRegistration():
         # remove them using only platform
         for i, platform in enumerate(np.unique(self.platforms)):
             registry.remove(platform)
-            # doing this one by one ensures more lines tested
-            ensure_not_in_stored_modules([self.modules[i]])
-        # test for removal also performed by teardown
+
+        # doing this one by one ensures more lines tested
+
+        return
+
+    def test_platform_name_removal_single_string(self):
+        """Test removing single platform/name at a time"""
+
+        # register all modules at once
+        registry.register(self.module_names)
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # verify registration
+        ensure_live_registry_updated(self.modules)
+        # verify stored update
+        ensure_updated_stored_modules(self.modules)
+        # remove them using only platform
+        count = 0
+        for platform, name in zip(self.platforms, self.platform_names):
+            registry.remove(platform, name)
+            # doing this one by one allows for test that all names
+            # for a platform aren't removed
+            ensure_not_in_stored_modules([self.modules[count]])
+            # test other names still present
+            if count < len(self.platforms) - 1:
+                ensure_updated_stored_modules(self.modules[count+1:])
+            count += 1
+        # test for full removal also performed by teardown
 
         return
 
