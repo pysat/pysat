@@ -1,8 +1,11 @@
 """
 tests the registration of user-defined modules
 """
+
+import numpy as np
 import pytest
 import sys
+
 import pysat
 from pysat import user_modules
 from pysat.utils import registry
@@ -160,6 +163,7 @@ class TestRegistration():
     def setup(self):
         self.modules = [
             ('package1.module1', 'platname1', 'name1'),
+            ('package11.module2', 'platname1', 'name2'),
             ('package2.module2', 'platname2', 'name2')]
 
         self.module_names = [mod[0] for mod in self.modules]
@@ -263,7 +267,7 @@ class TestRegistration():
         # verify stored update
         ensure_updated_stored_modules(self.modules)
         # remove them using only platform
-        registry.remove(self.platforms)
+        registry.remove(np.unique(self.platforms))
         # test for removal performed by teardown
         return
 
@@ -279,7 +283,7 @@ class TestRegistration():
         # verify stored update
         ensure_updated_stored_modules(self.modules)
         # remove them using only platform
-        for platform in self.platforms:
+        for platform in np.unique(self.platforms):
             registry.remove(platform)
         # test for removal performed by teardown
 
