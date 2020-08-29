@@ -283,9 +283,11 @@ class TestRegistration():
         # verify stored update
         ensure_updated_stored_modules(self.modules)
         # remove them using only platform
-        for platform in np.unique(self.platforms):
+        for i, platform in enumerate(np.unique(self.platforms)):
             registry.remove(platform)
-        # test for removal performed by teardown
+            # doing this one by one ensures more lines tested
+            ensure_not_in_stored_modules([self.modules[i]])
+        # test for removal also performed by teardown
 
         return
 
