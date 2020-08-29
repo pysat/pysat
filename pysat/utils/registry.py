@@ -39,7 +39,7 @@ import logging
 import os
 
 import pysat
-
+import pysat.tests.instrument_test_class as itc
 logger = logging.getLogger(__name__)
 
 
@@ -136,6 +136,9 @@ def register(module_names):
             raise
 
         # second, check that module is itself pysat compatible
+        validate = itc.InstTestClass()
+        validate.test_modules_standard('', inst_module)
+        validate.test_standard_function_presence('', inst_module)
 
         # registry is a dict of dicts
         # platform, name, module string
