@@ -137,6 +137,21 @@ def register(module_names):
 
         # second, check that module is itself pysat compatible
         validate = itc.InstTestClass()
+
+        # two options here
+        # first - work with test code as is and create dummy structure
+        # to make things work
+        class Foo(object):
+            pass
+        # parse string to get package part and instrument module part
+        parse = module_name.split('.')
+
+        validate.package = Foo()
+        validate.package.__name__ = '.'.join(parse[:-1])
+        validate.test_modules_standard(parse[-1])
+        validate.test_standard_function_presence(parse[-1])
+
+        # second option, use a small mod to the test method signature
         validate.test_modules_standard('', inst_module)
         validate.test_standard_function_presence('', inst_module)
 
