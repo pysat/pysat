@@ -130,9 +130,11 @@ def register(module_names):
         # first, ensure module string directs to something importable
         try:
             inst_module = importlib.import_module(module_name)
-        except Exception as error:
-            # log error and then preserve trace and propagate error
-            logger.error(error)
+        except Exception:
+            # log then preserve trace and propagate error
+            estr = ' '.join(('There was a problem trying to import',
+                             module_name))
+            logger.error(estr)
             raise
 
         # second, check that module is itself pysat compatible
@@ -204,15 +206,11 @@ def register_by_module(module):
     """
 
     # get a list of all user specified modules attached to module
-    try:
-        module_names = module.__all__
-        # add in package preamble
-        module_names = [module.__name__ + '.' + mod for mod in module_names]
-        # register all of them
-        register(module_names)
-    except Exception as error:
-        logger.error(error)
-        raise
+    module_names = module.__all__
+    # add in package preamble
+    module_names = [module.__name__ + '.' + mod for mod in module_names]
+    # register all of them
+    register(module_names)
 
     return
 
