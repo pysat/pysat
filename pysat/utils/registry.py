@@ -34,17 +34,17 @@ pysat will search the instruments shipped with pysat before
 checking the user_modules registry.
 """
 
-import pysat
 import os
-from portalocker import Lock
+import pysat
+from pysat.utils import NetworkLock
 
 
 def load_saved_modules():
     """get list of modules from user_modules.txt"""
     saved_modules = []
     user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
-    with Lock(user_modules_file, 'r', pysat.file_timeout) as f:
-        for line in f:
+    with NetworkLock(user_modules_file, 'r', pysat.file_timeout) as fout:
+        for line in fout:
             if line != '' and (line is not None):
                 saved_modules.append(line.strip())
     return saved_modules
@@ -53,13 +53,13 @@ def load_saved_modules():
 def store():
     """Rewrite user_modules.txt based on current listing"""
     user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
-    with Lock(user_modules_file, 'w', pysat.file_timeout) as f:
+    with NetworkLock(user_modules_file, 'w', pysat.file_timeout) as fout:
         for mod in pysat.user_modules:
-            f.write(mod + '\n')
+            fout.write(mod + '\n')
 
         # in case of network file system
-        f.flush()
-        os.fsync(f.fileno())
+        fout.flush()
+        os.fsync(fout.fileno())
 
 
 def register(module_name):
