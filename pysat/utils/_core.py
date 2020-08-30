@@ -1,12 +1,9 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
-import os
 from importlib import reload as re_load
-
-import xarray as xr
+import numpy as np
+import os
 
 from portalocker import Lock, TemporaryFileLock
+import xarray as xr
 
 import pysat
 
