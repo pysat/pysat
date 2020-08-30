@@ -271,7 +271,7 @@ class Meta(object):
         """Drops variables (names) from metadata."""
 
         # drop lower dimension data
-        self._data = self._data.drop(names, axis=0)
+        self.data = self._data.drop(names, axis=0)
         # drop higher dimension data
         for name in names:
             if name in self._ho_data:
@@ -317,7 +317,7 @@ class Meta(object):
         other_updated.min_label = self.min_label
         other_updated.max_label = self.max_label
         other_updated.fill_label = self.fill_label
-        return other
+        return other_updated
 
     def accept_default_labels(self, other):
         """Applies labels for default meta labels from other onto self.
