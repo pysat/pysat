@@ -1084,8 +1084,8 @@ class TestBasics():
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
     def test_meta_immutable(self):
-        assert self.meta.mutable
 
+        self.meta.mutable = True
         greeting = '...listen!'
         self.meta.hey = greeting
         assert self.meta.hey == greeting
