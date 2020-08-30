@@ -36,13 +36,10 @@ Main Features
 
 """
 
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import absolute_import
+import logging
 import os
 from portalocker import Lock
 
-import logging
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
@@ -78,12 +75,12 @@ if not os.path.isdir(pysat_dir):
     if (os.environ.get('TRAVIS') == 'true'):
         data_dir = '/home/travis/build/pysatData'
     data_path_file = os.path.join(pysat_dir, 'data_path.txt')
-    with Lock(data_path_file, 'w', file_timeout) as f:
-        f.write(data_dir)
+    with Lock(data_path_file, 'w', file_timeout) as fout:
+        fout.write(data_dir)
 
         # in case of network files system
-        f.flush()
-        os.fsync(f.fileno())
+        fout.flush()
+        os.fsync(fout.fileno())
 
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
