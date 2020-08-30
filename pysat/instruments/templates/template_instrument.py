@@ -181,8 +181,8 @@ def init(self):
 
     """
     # direct feedback to logging info
-    logger.info("Mission acknowledgements and data restrictions will be" +
-                "here when available.")
+    logger.info(" ".join(("Mission acknowledgements and data restrictions will",
+                          "be here when available.")))
     # acknowledgements
     self.meta.acknowledgements = ''
     # references
@@ -347,7 +347,4 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
                                            max_label='ValidMax',
                                            fill_label='FillVal',
                                            pandas_format=pandas_format)
-    # Some variables may need modification.  For example, pysat requires a
-    # variable in the index named 'time' for xarray objects.  These can be set
-    # here
-
+    return
