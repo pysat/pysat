@@ -20,8 +20,6 @@ General
 .. automodule:: pysat.instruments.methods.general
    :members:
 
-.. _rst_general_data_cdaweb:
-
 Instrument Templates
 --------------------
 
