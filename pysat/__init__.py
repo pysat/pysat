@@ -54,10 +54,8 @@ file_timeout = 10
 here = os.path.abspath(os.path.dirname(__file__))
 version_filename = os.path.join(here, 'version.txt')
 
-
 with Lock(version_filename, 'r', file_timeout) as version_file:
     __version__ = version_file.read().strip()
-
 
 # get home directory
 home_dir = os.path.expanduser('~')
@@ -95,7 +93,6 @@ if not os.path.isdir(pysat_dir):
         # in case of network files system
         fout.flush()
         os.fsync(fout.fileno())
-
 
 else:
     # load up stored data path
