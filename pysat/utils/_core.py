@@ -222,7 +222,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     if pandas_format:
         for fname in fnames:
             with TemporaryFileLock(fname + '.Lock', pysat.file_timeout) as tfl, \
-                netCDF4.Dataset(fname, mode='r', format=file_format) as data:
+                    netCDF4.Dataset(fname, mode='r', format=file_format) as data:
                 # build up dictionary with all global ncattrs
                 # and add those attributes to a pysat meta object
                 ncattrsList = data.ncattrs()
