@@ -14,20 +14,24 @@ discovery. A compatible module may also be supplied directly using
 
     pysat.Instrument(inst_module=python_module_object).
 
-Some data repositories have pysat templates prepared to assist
-in integrating a new instrument. See :ref:`supported-data-templates` or the
-template instrument module code under `pysat/instruments/templates/` for more.
-A general template has also been included to make starting any Instrument
-module easier.
 
-A compatible module may be supplied directly to :python:`pysat.Instrument(inst_module = myInstrument)`
-if it also contains attributes platform and name. Such modules may be registered as
+A general template has also been included to make starting any Instrument
+module easier at `pysat/instruments/templates/`. Some data repositories have
+pysat templates prepared to assist in integrating a new instrument. See
+the associated pysat* package for that particular data source, such as
+pysatNASA for supporting additional NASA instruments.
+
+External modules may be registered as
 part of pysat's user instrument registry using the following syntax:
 
 .. code-block:: python
 
   from pysat.utils import registry
+  # register single instrument
   registry.register('my.package.myInstrument')
+  # register all insstrument sub-modules
+  import my.package
+  registry.register_from_module(my.package)
 
 After registry, the instrument module name is stored in the user's home directory
 under :code:`~.pysat/user_modules.txt`. The instrument may then be instantiated with
@@ -37,9 +41,6 @@ the instrument's platform and name:
 
   inst = Instrument('myplatform', 'myname')
 
-
-Some data repositories have pysat templates prepared to assist in integrating
-a new instrument. See Supported Templates for more.
 
 Instrument Libraries
 --------------------
