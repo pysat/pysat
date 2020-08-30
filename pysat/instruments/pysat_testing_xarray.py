@@ -2,16 +2,18 @@
 """
 Produces fake instrument data for testing.
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 import xarray
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
+
+logger = logging.getLogger(__name__)
 
 # pysat required parameters
 platform = 'pysat'
@@ -22,6 +24,8 @@ tags = {'': 'Regular testing data set'}
 sat_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
+
+epoch_name = u'time'
 
 
 def init(self):
@@ -34,15 +38,13 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
+    logger.info(mm_test.ackn_str)
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
+    return
 
 
 def default(inst):
@@ -55,11 +57,6 @@ def default(inst):
     ----------
     self : pysat.Instrument
         This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
 
 
     """
@@ -74,20 +71,20 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    sim_multi_file_right : (boolean)
+    sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
-    sim_multi_file_left : (boolean)
+    sim_multi_file_left : boolean
         Adjusts date range to be 12 hours in the past or twelve hours before
         root_date (default=False)
-    malformed_index : (boolean)
+    malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
     kwargs : dict
         Additional unspecified keywords supplied to pysat.Instrument upon
@@ -95,9 +92,9 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     Returns
     -------
-    data : (xr.Dataset)
+    data : xr.Dataset
         Testing data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Metadata
 
     """
@@ -119,22 +116,23 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
-        index[6:9] = [index[6]]*3
+        index[6:9] = [index[6]] * 3
 
-    data = xarray.Dataset({'uts': (('time'), index)}, coords={'time': index})
+    data = xarray.Dataset({'uts': ((epoch_name), index)},
+                          coords={epoch_name: index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = date - root_date
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
-    data['mlt'] = (('time'), mlt)
+    data['mlt'] = ((epoch_name), mlt)
 
     # do slt, 20 second offset from mlt
-    slt = mm_test.generate_fake_data(time_delta.total_seconds()+20, uts,
+    slt = mm_test.generate_fake_data(time_delta.total_seconds() + 20, uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
-    data['slt'] = (('time'), slt)
+    data['slt'] = ((epoch_name), slt)
 
     # create a fake longitude, resets every 6240 seconds
     # sat moves at 360/5820 deg/s, Earth rotates at 360/86400, takes extra time
@@ -142,19 +140,19 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     longitude = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                            period=iperiod['lon'],
                                            data_range=drange['lon'])
-    data['longitude'] = (('time'), longitude)
+    data['longitude'] = ((epoch_name), longitude)
 
     # create latitude area for testing polar orbits
     angle = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                        period=iperiod['angle'],
                                        data_range=drange['angle'])
     latitude = 90.0 * np.cos(angle)
-    data['latitude'] = (('time'), latitude)
+    data['latitude'] = ((epoch_name), latitude)
 
     # create constant altitude at 400 km
     alt0 = 400.0
     altitude = alt0 * np.ones(data['latitude'].shape)
-    data['altitude'] = (('time'), altitude)
+    data['altitude'] = ((epoch_name), altitude)
 
     # fake orbit number
     fake_delta = date - dt.datetime(2008, 1, 1)
@@ -162,30 +160,38 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
                                            uts, period=iperiod['lt'],
                                            cyclic=False)
 
-    data['orbit_num'] = (('time'), orbit_num)
+    data['orbit_num'] = ((epoch_name), orbit_num)
 
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.).astype(int)
-    data['dummy1'] = (('time'), mlt_int)
-    data['dummy2'] = (('time'), long_int)
-    data['dummy3'] = (('time'), mlt_int + long_int * 1000.)
-    data['dummy4'] = (('time'), uts)
-    data['string_dummy'] = (('time'), ['test'] * len(data.indexes['time']))
-    data['unicode_dummy'] = (('time'), [u'test'] * len(data.indexes['time']))
-    data['int8_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
+    data['dummy1'] = ((epoch_name), mlt_int)
+    data['dummy2'] = ((epoch_name), long_int)
+    data['dummy3'] = ((epoch_name), mlt_int + long_int * 1000.)
+    data['dummy4'] = ((epoch_name), uts)
+    data['string_dummy'] = ((epoch_name),
+                            ['test'] * len(data.indexes[epoch_name]))
+    data['unicode_dummy'] = ((epoch_name),
+                             [u'test'] * len(data.indexes[epoch_name]))
+    data['int8_dummy'] = ((epoch_name),
+                          np.array([1] * len(data.indexes[epoch_name]),
                           dtype=np.int8))
-    data['int16_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
+    data['int16_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
                            dtype=np.int16))
-    data['int32_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
+    data['int32_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
                            dtype=np.int32))
-    data['int64_dummy'] = (('time'), np.array([1] * len(data.indexes['time']),
+    data['int64_dummy'] = ((epoch_name),
+                           np.array([1] * len(data.indexes[epoch_name]),
                            dtype=np.int64))
 
     return data, meta.copy()
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
+list_remote_files = functools.partial(mm_test.list_remote_files,
+                                      test_dates=_test_dates)
 download = functools.partial(mm_test.download)
 
 
@@ -193,10 +199,10 @@ meta = pysat.Meta()
 meta['uts'] = {'units': 's',
                'long_name': 'Universal Time',
                'custom': False}
-meta['Epoch'] = {'units': 'Milliseconds since 1970-1-1',
-                 'Bin_Location': 0.5,
-                 'notes': 'UTC time at middle of geophysical measurement.',
-                 'desc': 'UTC seconds', }
+meta[epoch_name] = {'units': 'Milliseconds since 1970-1-1',
+                    'Bin_Location': 0.5,
+                    'notes': 'UTC time at middle of geophysical measurement.',
+                    'desc': 'UTC seconds', }
 meta['mlt'] = {'units': 'hours',
                'long_name': 'Magnetic Local Time',
                'label': 'MLT',

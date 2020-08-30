@@ -2,13 +2,14 @@
 """Provides generalized routines for integrating instruments into pysat.
 """
 
-from __future__ import absolute_import, division, print_function
-
+import datetime as dt
+import logging
+import numpy as np
 import pandas as pds
 
 import pysat
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,19 +22,19 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     Parameters
     -----------
-    tag : (string or NoneType)
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    data_path : (string or NoneType)
+    data_path : string or NoneType
         Path to data directory.  If None is specified, the value previously
         set in Instrument.files.data_path is used.  (default=None)
-    format_str : (string or NoneType)
+    format_str : string or NoneType
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
-    supported_tags : (dict or NoneType)
+    supported_tags : dict or NoneType
         keys are sat_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
     fake_daily_files_from_monthly : bool
@@ -48,7 +49,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     Returns
     --------
-    pysat.Files.from_os : (pysat._files.Files)
+    pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Examples
@@ -72,9 +73,11 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
             try:
                 format_str = supported_tags[sat_id][tag]
             except KeyError as estr:
-                raise ValueError('Unknown sat_id or tag: ' + estr)
+                raise ValueError(' '.join(('Unknown sat_id or tag:',
+                                           str(estr))))
         out = pysat.Files.from_os(data_path=data_path,
-                                  format_str=format_str)
+                                  format_str=format_str,
+                                  two_digit_year_break=two_digit_year_break)
 
         if (not out.empty) and fake_daily_files_from_monthly:
             out.loc[out.index[-1] + pds.DateOffset(months=1)
@@ -88,3 +91,67 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         estr = ''.join(('A directory must be passed to the loading routine ',
                         'for <Instrument Code>'))
         raise ValueError(estr)
+
+
+def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
+    """Use datetime instead of timestamp for Epoch
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        associated pysat.Instrument object
+    sec_mult : float
+        Multiplier needed to convert epoch time to seconds (default=1.0)
+    epoch_name : str
+        variable name for instrument index (default='Epoch')
+
+    """
+
+    inst.data[epoch_name] = pds.to_datetime(
+        [dt.datetime.utcfromtimestamp(int(np.floor(x * sec_mult)))
+         for x in inst.data[epoch_name]])
+    return
+
+
+def remove_leading_text(inst, target=None):
+    """Removes leading text on variable names
+
+    Parameters
+    ----------
+    inst : pysat.Instrument
+        associated pysat.Instrument object
+    target : str or list of strings
+        Leading string to remove. If none supplied, returns unmodified
+
+    """
+
+    if target is None:
+        return
+    elif isinstance(target, str):
+        target = [target]
+    elif (not isinstance(target, list)) or (not isinstance(target[0], str)):
+        raise ValueError('target must be a string or list of strings')
+
+    for prepend_str in target:
+
+        if isinstance(inst.data, pds.DataFrame):
+            inst.data.rename(columns=lambda x: x.split(prepend_str)[-1],
+                             inplace=True)
+        else:
+            map = {}
+            for key in inst.data.variables.keys():
+                map[key] = key.split(prepend_str)[-1]
+            inst.data = inst.data.rename(name_dict=map)
+
+        inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
+                              inplace=True)
+        orig_keys = inst.meta.keys_nD()
+        for keynd in orig_keys:
+            if keynd.find(prepend_str) >= 0:
+                new_key = keynd.split(prepend_str)[-1]
+                new_meta = inst.meta.pop(keynd)
+                new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
+                                     inplace=True)
+                inst.meta[new_key] = new_meta
+
+    return

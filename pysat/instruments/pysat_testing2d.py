@@ -2,16 +2,18 @@
 """
 Produces fake instrument data for testing.
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 import pandas as pds
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
+
+logger = logging.getLogger(__name__)
 
 platform = 'pysat'
 name = 'testing2d'
@@ -30,15 +32,13 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
+    logger.info(mm_test.ackn_str)
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
+    return
 
 
 def default(inst):
@@ -52,12 +52,6 @@ def default(inst):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     pass
@@ -68,21 +62,21 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    malformed_index : bool (False)
+    malformed_index : bool
         If True, the time index will be non-unique and non-monotonic.
-
+        (default=False)
     Returns
     -------
-    data : (pds.DataFrame)
+    data : pds.DataFrame
         Testing data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Metadataxs
 
     """
@@ -106,7 +100,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
                                              period=iperiod['lt'],
                                              data_range=drange['lt'])
     # do slt, 20 second offset from mlt
-    data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds()+20,
+    data['slt'] = mm_test.generate_fake_data(time_delta.total_seconds() + 20,
                                              uts, period=iperiod['lt'],
                                              data_range=drange['lt'])
     # create a fake longitude, resets every 6240 seconds
@@ -130,7 +124,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]
         # non unique
-        index[6:9] = [index[6]]*3
+        index[6:9] = [index[6]] * 3
 
     data.index = index
     data.index.name = 'epoch'
@@ -180,6 +174,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
+list_remote_files = functools.partial(mm_test.list_remote_files,
+                                      test_dates=_test_dates)
 download = functools.partial(mm_test.download)
 
 

@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-04-24
+## [3.0.0] - 2020-08-12
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -12,6 +12,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - New flags added to instruments to streamline unit testing: `_test_download`, `_test_download_travis`, `_password_req`
   - Madrigal instruments migrated to pysatMadrigal
   - methods.nasa_cdaweb.list_files moved to methods.general
+  - `strict_time_flag` now defaults to True
+  - Use of start / stop notation in remote_file_list
+  - Added variable rename method to Instrument object (#91)
+  - Migrated file methods to pysat.utils.files (#336)
 - Deprecations
   - Removed ssnl
   - Removed utils.stats
@@ -22,30 +26,64 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed coords.scale_units
   - Removed time.season_date_range
   - DeprecationWarning for strict_time_flag only triggered if sloppy data is found
+  - Remove convenience methods imported from pandas
+  - Changed the default `custom.attatch` input to allow keyword arguement use when additional function input is required
+  - Removed python 2.7 syntax
+  - Removed utils.coords.geodetic_to_geocentric
+  - Removed utils.coords.geodetic_to_geocentric_horizontal
+  - Removed utils.coords.spherical_to_cartesian
+  - Removed utils.coords.global_to_local_cartesian
+  - Removed utils.coords.local_horizontal_to_global_geo
+  - Deprecation Warnings for methods in `pysat._files`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
   - Added a tutorial for developers of instrument libraries for pysat
+  - Added .zenodo.json file, to improve specification of authors in citation
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
+  - Improved string handling robustness when writing netCDF4 files in Python 3
+  - Improved pandas 1.1.0 compatibility in tests
+  - Fixed coupling of two_digit_year_break keyword to underlying method in methods.general.list_files
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
+  - Remove wildcard imports, relative imports
+  - Include flake8 check as part of testing suites
+  - Improve unit testing coverage of instrument functions and instrument object
+    - Add tests for acknowledgements and references
+  - Removed implicit conversion to integers in methods.general.convert_timestamp_to_datetime
+  - Removed instruments (migrated to new libraries)
 
-## [2.2.0] - 2020-2-29
+## [2.2.0] - 2020-07-06
 - New Features
    - Decreased time to load COSMIC GPS data by about 50%
    - Added DE2 Langmuir Probe, NACS, RPA, and WATS instruments
    - Updated `test_files.py` to be pytest compatible
-   - Updates to instrument testing objects for consistency
    - Added check to ensure non-pysat keywords supplied at instantiation
      are supported by underlying data set methods
+   - Updates to instrument testing objects for consistency
    - Changed madrigal methods to use `madrigalWeb` as a module rather than
      calling it externally
+   - Added warning when FillValue metadata could lead to unexpected results
+     when writing a netCDF4 file
+   - Use conda to manage Travis CI test environment
+   - Update ICON instrument file structure
+   - Added NaN filter for metadata when writing netCDF4 files
+   - Test instruments now part of compiled package for development elsewhere
+   - Custom instrument keywords and defaults are now always found in inst.kwargs
 - Deprecation Warning
   - custom.add will be renamed custom.attach in pysat 3.0.0
+  - Several functions in coords will be removed in pysat 3.0.0.  These functions will move to pysatMadrigal
+    - geodetic_to_geocentric
+    - geodetic_to_geocentric_horizontal
+    - spherical_to_cartesian
+    - global_to_local_cartesian
+    - local_horizontal_to_global_geo
+  - methods.nasa_cdaweb.list_files will move to methods.general.list_files in pysat 3.0.0.
 - Documentation
   - Fixed description of tag and sat_id behaviour in testing instruments
+  - Added discussion of github install, develop branches, and reqs to docs
 - Bug Fix
   - `_files._attach_files` now checks for an empty file list before appending
   - Fixed boolean logic when checking for start and stop dates in `_instrument.download`
@@ -61,7 +99,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added small time offsets (< 1s) to ensure COSMIC files and data have unique times
   - Updates to Travis CI environment
   - Removed `inplace` use in xarray `assign` function, which is no longer allowed
+  - Removed old code and incorrect comments from F10.7 support
+  - Updated use of numpy.linspace to be compatible with numpy 1.18.
   - Fixed output of orbit_info during print(inst)
+  - Fixed a bug when requesting non-existent files from CDAWeb (#426)
+  - Improved compatibility of parse_delimited_filenames (#439)
+  - Fixed bug assigning dates to COSMIC files
 
 
 ## [2.1.0] - 2019-11-18

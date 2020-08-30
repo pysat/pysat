@@ -59,16 +59,6 @@ class TestConstellation:
             "\npysat Constellation object:\ntesting\ntesting\n"
 
 
-class TestAdditionIdenticalInstruments:
-    def setup(self):
-        self.const1 = pysat.Constellation(name='testing')
-        self.const2 = pysat.Constellation(name='single_test')
-
-    def teardown(self):
-        del self.const1
-        del self.const2
-
-
 class TestDataMod:
     """Test adapted from test_custom.py."""
     def setup(self):
@@ -96,6 +86,6 @@ class TestDataMod:
 
         self.attach(custom1, 'add')
         self.testConst.load(2009, 1)
-        ans = (self.testConst[0].data['doubleMLT'].values ==
-               2. * self.testConst[0].data.mlt.values).all()
+        ans = (self.testConst[0].data['doubleMLT'].values
+               == 2. * self.testConst[0].data.mlt.values).all()
         assert ans

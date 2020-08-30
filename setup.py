@@ -19,20 +19,11 @@ with codecs.open(os.path.join(here, version_filename)) as version_file:
 
 # packages to be installed
 # starting with packages common across all setups
-install_requires = ['requests', 'beautifulsoup4', 'lxml', 'netCDF4', 'portalocker']
-# packages with Fortran code
-fortran_install = ['pysatCDF']
-# python version specific support libraries
-install_requires.extend(['numpy>=1.12', 'scipy', 'pandas>=0.23', 'xarray'])
+install_requires = ['numpy>=1.12', 'scipy', 'pandas>=0.23', 'xarray',
+                    'netCDF4', 'portalocker']
 
 # flag, True if on readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
-
-# include Fortran for normal install
-# read the docs doesn't do Fortran
-if not on_rtd:
-    # not on ReadTheDocs, add Fortran
-    install_requires.extend(fortran_install)
 
 setup(
     name='pysat',

@@ -2,6 +2,7 @@
 # Test some of the basic _core functions
 import datetime as dt
 from importlib import reload as re_load
+import logging
 import numpy as np
 
 import pandas as pds
@@ -10,6 +11,9 @@ import pytest
 import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
+import pysat.instruments.pysat_testing2d
+
+xarray_epoch_name = 'time'
 
 
 # ------------------------------------------------------------------------------
@@ -17,7 +21,6 @@ import pysat.instruments.pysat_testing_xarray
 # Test Instrument object basics
 #
 # ------------------------------------------------------------------------------
-
 class TestBasics():
     def setup(self):
         re_load(pysat.instruments.pysat_testing)
@@ -49,7 +52,8 @@ class TestBasics():
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
         with pytest.raises(ValueError):
-            pysat.Instrument(platform='pysat', name='testing', sat_id='10',
+            pysat.Instrument(platform=self.testInst.platform,
+                             name=self.testInst.name, sat_id='10',
                              clean_level='clean',
                              unsupported_keyword_yeah=True)
 
@@ -62,7 +66,8 @@ class TestBasics():
             self.testInst.load()
 
     def test_basic_instrument_load_by_file_and_multifile(self):
-        testInst = pysat.Instrument(platform='pysat', name='testing',
+        testInst = pysat.Instrument(platform=self.testInst.platform,
+                                    name=self.testInst.name,
                                     sat_id='10',
                                     clean_level='clean',
                                     update_files=True,
@@ -168,13 +173,51 @@ class TestBasics():
     def test_prev_filename_load_default(self):
         """Test prev day is loaded when invoking .prev."""
         self.testInst.load(fname='2009-01-04.nofile')
-        # print(self.testInst.date)
         self.testInst.prev()
         test_date = self.testInst.index[0]
         test_date = dt.datetime(test_date.year, test_date.month,
                                 test_date.day)
         assert (test_date == dt.datetime(2009, 1, 3))
         assert (test_date == self.testInst.date)
+
+    def test_list_files(self):
+        files = self.testInst.files.files
+        assert isinstance(files, pds.Series)
+
+    def test_remote_file_list(self):
+        files = self.testInst.remote_file_list(start=dt.datetime(2009, 1, 1),
+                                               stop=dt.datetime(2009, 1, 31))
+        assert files.index[0] == dt.datetime(2009, 1, 1)
+        assert files.index[-1] == dt.datetime(2009, 1, 31)
+
+    def test_remote_date_range(self):
+        files = self.testInst.remote_date_range(start=dt.datetime(2009, 1, 1),
+                                                stop=dt.datetime(2009, 1, 31))
+        assert len(files) == 2
+        assert files[0] == dt.datetime(2009, 1, 1)
+        assert files[-1] == dt.datetime(2009, 1, 31)
+
+    def test_download_updated_files(self, caplog):
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.testInst.download_updated_files()
+        # Perform a local search
+        assert "files locally" in caplog.text
+        # New files are found
+        assert "that are new or updated" in caplog.text
+        # download new files
+        assert "Downloading data to" in caplog.text
+        # Update local file list
+        assert "Updating pysat file list" in caplog.text
+
+    def test_download_recent_data(self, caplog):
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.testInst.download()
+        # Tells user that recent data will be downloaded
+        assert "most recent data by default" in caplog.text
+        # download new files
+        assert "Downloading data to" in caplog.text
+        # Update local file list
+        assert "Updating pysat file list" in caplog.text
 
     # --------------------------------------------------------------------------
     #
@@ -244,16 +287,15 @@ class TestBasics():
             # dimension
             # xarray specific functionality
             # change name of main dim to support test for dim keyword
-            data1 = data1.rename({'time': 'time2'})
-            data2 = data2.rename({'time': 'time2'})
+            data1 = data1.rename({xarray_epoch_name: 'Epoch2'})
+            data2 = data2.rename({xarray_epoch_name: 'Epoch2'})
 
             # concat together
-            self.testInst.data = \
-                self.testInst.concat_data([data1, data2],
-                                          dim='time2').rename({'time2':
-                                                               'time'})
+            self.testInst.data = self.testInst.concat_data(
+                [data1, data2], dim='Epoch2').rename({'Epoch2':
+                                                      xarray_epoch_name})
             # test for concatenation
-            # Instrument.data must have a 'time' index
+            # Instrument.data must have a 'Epoch' index
             len3 = len(self.testInst.index)
             assert (len3 == len1 + len2)
             assert (self.testInst[0:len1, :]
@@ -292,8 +334,8 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert np.all(self.testInst.index == self.testInst.data.index)
         else:
-            assert np.all(self.testInst.index ==
-                          self.testInst.data.indexes['time'])
+            assert np.all(self.testInst.index
+                          == self.testInst.data.indexes[xarray_epoch_name])
 
     # #--------------------------------------------------------------------------
     # #
@@ -327,7 +369,7 @@ class TestBasics():
         # No loaded data
         assert output.find('No loaded data') > 0
         assert output.find('Number of variables:') < 0
-        assert output.find('dummy') < 0
+        assert output.find('uts') < 0
 
     def test_repr_w_orbit(self):
         re_load(pysat.instruments.pysat_testing)
@@ -369,7 +411,7 @@ class TestBasics():
         output = self.testInst.__str__()
         assert output.find('No loaded data') < 0
         assert output.find('Number of variables:') > 0
-        assert output.find('dummy') > 0
+        assert output.find('uts') > 0
 
     # --------------------------------------------------------------------------
     #
@@ -417,17 +459,22 @@ class TestBasics():
 
     # --------------------------------------------------------------------------
     #
-    # Test basis data access features, both getting and setting data
+    # Test basic data access features, both getting and setting data
     #
     # --------------------------------------------------------------------------
     def test_basic_data_access_by_name(self):
         self.testInst.load(2009, 1)
         assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
 
+    def test_basic_data_access_by_name_list(self):
+        self.testInst.load(2009, 1)
+        assert np.all(self.testInst[['uts', 'mlt']]
+                      == self.testInst.data[['uts', 'mlt']])
+
     def test_data_access_by_row_slicing_and_name(self):
         self.testInst.load(2009, 1)
-        assert np.all(self.testInst[0:10, 'uts'] ==
-                      self.testInst.data['uts'].values[0:10])
+        assert np.all(self.testInst[0:10, 'uts']
+                      == self.testInst.data['uts'].values[0:10])
 
     def test_data_access_by_row_slicing_and_name_slicing(self):
         self.testInst.load(2009, 1)
@@ -438,32 +485,35 @@ class TestBasics():
 
     def test_data_access_by_row_slicing_w_ndarray_and_name(self):
         self.testInst.load(2009, 1)
-        assert np.all(self.testInst[np.arange(0, 10), 'uts'] ==
-                      self.testInst.data['uts'].values[0:10])
+        assert np.all(self.testInst[np.arange(0, 10), 'uts']
+                      == self.testInst.data['uts'].values[0:10])
 
     def test_data_access_by_row_and_name(self):
         self.testInst.load(2009, 1)
-        assert np.all(self.testInst[0, 'uts'] ==
-                      self.testInst.data['uts'].values[0])
+        assert np.all(self.testInst[0, 'uts']
+                      == self.testInst.data['uts'].values[0])
 
     def test_data_access_by_row_index(self):
         self.testInst.load(2009, 1)
         idx = np.arange(10)
-        assert np.all(self.testInst[idx]['uts'] ==
-                      self.testInst.data['uts'].values[idx])
+        assert np.all(self.testInst[idx]['uts']
+                      == self.testInst.data['uts'].values[idx])
 
     def test_data_access_by_datetime_and_name(self):
         self.testInst.load(2009, 1)
         ind = dt.datetime(2009, 1, 1, 0, 0, 0)
-        assert np.all(self.testInst[ind, 'uts'] ==
-                      self.testInst.data['uts'].values[0])
+        assert np.all(self.testInst[ind, 'uts']
+                      == self.testInst.data['uts'].values[0])
 
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
+        time_step = (self.testInst.index[1]
+                     - self.testInst.index[0]).value / 1.E9
+        offset = pds.DateOffset(seconds=(10 * time_step))
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
-        stop = dt.datetime(2009, 1, 1, 0, 0, 10)
-        assert np.all(self.testInst[start:stop, 'uts'] ==
-                      self.testInst.data['uts'].values[0:11])
+        stop = start + offset
+        assert np.all(self.testInst[start:stop, 'uts']
+                      == self.testInst.data['uts'].values[0:11])
 
     def test_setting_data_by_name(self):
         self.testInst.load(2009, 1)
@@ -472,9 +522,10 @@ class TestBasics():
 
     def test_setting_series_data_by_name(self):
         self.testInst.load(2009, 1)
-        self.testInst['doubleMLT'] = 2.*pds.Series(self.testInst['mlt'].values,
-                                                   index=self.testInst.index)
-        assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
+        self.testInst['doubleMLT'] = \
+            2. * pds.Series(self.testInst['mlt'].values,
+                            index=self.testInst.index)
+        assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
 
         self.testInst['blankMLT'] = pds.Series(None, dtype='float64')
         assert np.all(np.isnan(self.testInst['blankMLT']))
@@ -482,11 +533,11 @@ class TestBasics():
     def test_setting_pandas_dataframe_by_names(self):
         self.testInst.load(2009, 1)
         self.testInst[['doubleMLT', 'tripleMLT']] = \
-            pds.DataFrame({'doubleMLT': 2.*self.testInst['mlt'].values,
-                           'tripleMLT': 3.*self.testInst['mlt'].values},
+            pds.DataFrame({'doubleMLT': 2. * self.testInst['mlt'].values,
+                           'tripleMLT': 3. * self.testInst['mlt'].values},
                           index=self.testInst.index)
-        assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
-        assert np.all(self.testInst['tripleMLT'] == 3.*self.testInst['mlt'])
+        assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
+        assert np.all(self.testInst['tripleMLT'] == 3. * self.testInst['mlt'])
 
     def test_setting_data_by_name_single_element(self):
         self.testInst.load(2009, 1)
@@ -498,10 +549,10 @@ class TestBasics():
 
     def test_setting_data_by_name_with_meta(self):
         self.testInst.load(2009, 1)
-        self.testInst['doubleMLT'] = {'data': 2.*self.testInst['mlt'],
+        self.testInst['doubleMLT'] = {'data': 2. * self.testInst['mlt'],
                                       'units': 'hours',
                                       'long_name': 'double trouble'}
-        assert np.all(self.testInst['doubleMLT'] == 2.*self.testInst['mlt'])
+        assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
         assert self.testInst.meta['doubleMLT'].units == 'hours'
         assert self.testInst.meta['doubleMLT'].long_name == 'double trouble'
 
@@ -520,66 +571,69 @@ class TestBasics():
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[0, 'doubleMLT'] = 0
-        assert np.all(self.testInst[1:, 'doubleMLT'] ==
-                      2. * self.testInst[1:, 'mlt'])
+        assert np.all(self.testInst[1:, 'doubleMLT']
+                      == 2. * self.testInst[1:, 'mlt'])
         assert self.testInst[0, 'doubleMLT'] == 0
 
     def test_setting_partial_data_by_integer_and_name(self):
         self.testInst.load(2009, 1)
-        self.testInst['doubleMLT'] = 2.*self.testInst['mlt']
+        self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[[0, 1, 2, 3], 'doubleMLT'] = 0
-        assert np.all(self.testInst[4:, 'doubleMLT'] ==
-                      2. * self.testInst[4:, 'mlt'])
+        assert np.all(self.testInst[4:, 'doubleMLT']
+                      == 2. * self.testInst[4:, 'mlt'])
         assert np.all(self.testInst[[0, 1, 2, 3], 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_slice_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[0:10, 'doubleMLT'] = 0
-        assert np.all(self.testInst[10:, 'doubleMLT'] ==
-                      2. * self.testInst[10:, 'mlt'])
+        assert np.all(self.testInst[10:, 'doubleMLT']
+                      == 2. * self.testInst[10:, 'mlt'])
         assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_index_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[self.testInst.index[0:10], 'doubleMLT'] = 0
-        assert np.all(self.testInst[10:, 'doubleMLT'] ==
-                      2. * self.testInst[10:, 'mlt'])
+        assert np.all(self.testInst[10:, 'doubleMLT']
+                      == 2. * self.testInst[10:, 'mlt'])
         assert np.all(self.testInst[0:10, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_numpy_array_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[np.array([0, 1, 2, 3]), 'doubleMLT'] = 0
-        assert np.all(self.testInst[4:, 'doubleMLT'] ==
-                      2. * self.testInst[4:, 'mlt'])
+        assert np.all(self.testInst[4:, 'doubleMLT']
+                      == 2. * self.testInst[4:, 'mlt'])
         assert np.all(self.testInst[0:4, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_datetime_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0), 'doubleMLT'] = 0
-        assert np.all(self.testInst[0, 'doubleMLT'] ==
-                      2. * self.testInst[0, 'mlt'])
+        assert np.all(self.testInst[0, 'doubleMLT']
+                      == 2. * self.testInst[0, 'mlt'])
         assert np.all(self.testInst[0, 'doubleMLT'] == 0)
 
     def test_setting_partial_data_by_datetime_slicing_and_name(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0):
-                      dt.datetime(2009, 1, 1, 0, 0, 10),
-                      'doubleMLT'] = 0
-        assert np.all(self.testInst[11:, 'doubleMLT'] ==
-                      2. * self.testInst[11:, 'mlt'])
+        time_step = (self.testInst.index[1]
+                     - self.testInst.index[0]).value / 1.E9
+        offset = pds.DateOffset(seconds=(10 * time_step))
+        start = dt.datetime(2009, 1, 1, 0, 0, 0)
+        stop = start + offset
+        self.testInst[start:stop, 'doubleMLT'] = 0
+        assert np.all(self.testInst[11:, 'doubleMLT']
+                      == 2. * self.testInst[11:, 'mlt'])
         assert np.all(self.testInst[0:11, 'doubleMLT'] == 0)
 
     def test_modifying_data_inplace(self):
         self.testInst.load(2009, 1)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         self.testInst['doubleMLT'] += 100
-        assert np.all(self.testInst['doubleMLT'] ==
-                      2.*self.testInst['mlt'] + 100)
+        assert np.all(self.testInst['doubleMLT']
+                      == 2. * self.testInst['mlt'] + 100)
 
     def test_getting_all_data_by_index(self):
         self.testInst.load(2009, 1)
@@ -587,7 +641,7 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['time'] == 5
+            assert a.sizes[xarray_epoch_name] == 5
 
     def test_getting_all_data_by_numpy_array_of_int(self):
         self.testInst.load(2009, 1)
@@ -595,7 +649,133 @@ class TestBasics():
         if self.testInst.pandas_format:
             assert len(a) == 5
         else:
-            assert a.sizes['time'] == 5
+            assert a.sizes[xarray_epoch_name] == 5
+
+    # --------------------------------------------------------------------------
+    #
+    # Test variable renaming
+    #
+    # --------------------------------------------------------------------------
+
+    @pytest.mark.parametrize("values", [{'uts': 'uts1'},
+                                        {'uts': 'uts2',
+                                         'mlt': 'mlt2'},
+                                        {'uts': 'long change with spaces'}])
+    def test_basic_variable_renaming(self, values):
+        # test single variable
+        self.testInst.load(2009, 1)
+        self.testInst.rename(values)
+        for key in values:
+            # check for new name
+            assert values[key] in self.testInst.data
+            assert values[key] in self.testInst.meta
+            # ensure old name not present
+            assert key not in self.testInst.data
+            assert key not in self.testInst.meta
+
+    @pytest.mark.parametrize("values", [{'help': 'I need somebody'},
+                                        {'UTS': 'litte_uts'},
+                                        {'utS': 'uts1'},
+                                        {'utS': 'uts'}])
+    def test_unknown_variable_error_renaming(self, values):
+        # check for error for unknown variable name
+        self.testInst.load(2009, 1)
+        with pytest.raises(ValueError):
+            self.testInst.rename(values)
+
+    @pytest.mark.parametrize("values", [{'uts': 'UTS1'},
+                                        {'uts': 'UTs2',
+                                         'mlt': 'Mlt2'},
+                                        {'uts': 'Long Change with spaces'}])
+    def test_basic_variable_renaming_lowercase(self, values):
+        # test single variable
+        self.testInst.load(2009, 1)
+        self.testInst.rename(values, lowercase_data_labels=True)
+        for key in values:
+            # check for new name
+            assert values[key].lower() in self.testInst.data
+            assert values[key].lower() in self.testInst.meta
+            # ensure case retained in meta
+            assert values[key] == self.testInst.meta[values[key]].name
+            # ensure old name not present
+            assert key not in self.testInst.data
+            assert key not in self.testInst.meta
+
+    @pytest.mark.parametrize("values", [{'profiles': {'density': 'ionization'}},
+                                        {'profiles': {'density': 'mass'},
+                                         'alt_profiles':
+                                             {'density': 'volume'}}])
+    def test_ho_pandas_variable_renaming(self, values):
+        # check for pysat_testing2d instrument
+        if self.testInst.platform == 'pysat':
+            if self.testInst.name == 'testing2d':
+                self.testInst.load(2009, 1)
+                self.testInst.rename(values)
+                for key in values:
+                    for ikey in values[key]:
+                        # check column name unchanged
+                        assert key in self.testInst.data
+                        assert key in self.testInst.meta
+                        # check for new name in HO data
+                        assert values[key][ikey] in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert values[key][ikey] in check_var
+                        # ensure old name not present
+                        assert ikey not in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert ikey not in check_var
+
+    @pytest.mark.parametrize("values", [{'profiles':
+                                        {'help': 'I need somebody'}},
+                                        {'fake_profi':
+                                        {'help': 'Not just anybody'}},
+                                        {'wrong_profile':
+                                        {'help': 'You know I need someone'},
+                                         'fake_profiles':
+                                        {'Beatles': 'help!'},
+                                         'profiles':
+                                        {'density': 'valid_change'}},
+                                        {'fake_profile':
+                                        {'density': 'valid HO change'}},
+                                        {'Nope_profiles':
+                                        {'density': 'valid_HO_change'}}])
+    def test_ho_pandas_unknown_variable_error_renaming(self, values):
+        # check for pysat_testing2d instrument
+        if self.testInst.platform == 'pysat':
+            if self.testInst.name == 'testing2d':
+                self.testInst.load(2009, 1)
+                # check for error for unknown column or HO variable name
+                with pytest.raises(ValueError):
+                    self.testInst.rename(values)
+
+    @pytest.mark.parametrize("values", [{'profiles': {'density': 'Ionization'}},
+                                        {'profiles': {'density': 'MASa'},
+                                         'alt_profiles':
+                                             {'density': 'VoLuMe'}}])
+    def test_ho_pandas_variable_renaming_lowercase(self, values):
+        # check for pysat_testing2d instrument
+        if self.testInst.platform == 'pysat':
+            if self.testInst.name == 'testing2d':
+                self.testInst.load(2009, 1)
+                self.testInst.rename(values)
+                for key in values:
+                    for ikey in values[key]:
+                        # check column name unchanged
+                        assert key in self.testInst.data
+                        assert key in self.testInst.meta
+                        # check for new name in HO data
+                        test_val = values[key][ikey]
+                        assert test_val in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        # case insensitive check
+                        assert values[key][ikey] in check_var
+                        # ensure new case in there
+                        check_var = check_var[values[key][ikey]].name
+                        assert values[key][ikey] == check_var
+                        # ensure old name not present
+                        assert ikey not in self.testInst[0, key]
+                        check_var = self.testInst.meta[key]['children']
+                        assert ikey not in check_var
 
     # --------------------------------------------------------------------------
     #
@@ -641,12 +821,12 @@ class TestBasics():
             self.testInst.bounds = [start, 1]
 
     def test_set_bounds_mixed_iterable(self):
-        start = [dt.datetime(2009, 1, 1)]*2
+        start = [dt.datetime(2009, 1, 1)] * 2
         with pytest.raises(ValueError):
             self.testInst.bounds = [start, '2009-01-01.nofile']
 
     def test_set_bounds_mixed_iterabless(self):
-        start = [dt.datetime(2009, 1, 1)]*2
+        start = [dt.datetime(2009, 1, 1)] * 2
         with pytest.raises(ValueError):
             self.testInst.bounds = [start, [dt.datetime(2009, 1, 1),
                                             '2009-01-01.nofile']]
@@ -670,24 +850,24 @@ class TestBasics():
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
-        assert np.all(self.testInst._iter_list ==
-                      pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop).tolist())
 
     def test_set_bounds_by_default(self):
         start = self.testInst.files.start_date
         stop = self.testInst.files.stop_date
         self.testInst.bounds = (None, None)
-        assert np.all(self.testInst._iter_list ==
-                      pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop).tolist())
         self.testInst.bounds = None
-        assert np.all(self.testInst._iter_list ==
-                      pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop).tolist())
         self.testInst.bounds = (start, None)
-        assert np.all(self.testInst._iter_list ==
-                      pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop).tolist())
         self.testInst.bounds = (None, stop)
-        assert np.all(self.testInst._iter_list ==
-                      pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop).tolist())
 
     def test_set_bounds_by_date_extra_time(self):
         start = dt.datetime(2009, 1, 1, 1, 10)
@@ -695,8 +875,8 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         start = self.testInst._filter_datetime_input(start)
         stop = self.testInst._filter_datetime_input(stop)
-        assert np.all(self.testInst._iter_list ==
-                      pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop).tolist())
 
     def test_iterate_over_bounds_set_by_date(self):
         start = dt.datetime(2009, 1, 1)
@@ -780,9 +960,9 @@ class TestBasics():
         start = '2009-01-01.nofile'
         stop = '2009-01-03.nofile'
         self.testInst.bounds = (start, stop)
-        assert np.all(self.testInst._iter_list ==
-                      ['2009-01-01.nofile', '2009-01-02.nofile',
-                       '2009-01-03.nofile'])
+        assert np.all(self.testInst._iter_list
+                      == ['2009-01-01.nofile', '2009-01-02.nofile',
+                          '2009-01-03.nofile'])
 
     def test_iterate_over_bounds_set_by_fname(self):
         start = '2009-01-01.nofile'
@@ -834,10 +1014,10 @@ class TestBasics():
         start = ['2009-01-01.nofile', '2009-02-01.nofile']
         stop = ['2009-01-03.nofile', '2009-02-03.nofile']
         self.testInst.bounds = (start, stop)
-        assert np.all(self.testInst._iter_list ==
-                      ['2009-01-01.nofile', '2009-01-02.nofile',
-                       '2009-01-03.nofile', '2009-02-01.nofile',
-                       '2009-02-02.nofile', '2009-02-03.nofile'])
+        assert np.all(self.testInst._iter_list
+                      == ['2009-01-01.nofile', '2009-01-02.nofile',
+                          '2009-01-03.nofile', '2009-02-01.nofile',
+                          '2009-02-02.nofile', '2009-02-03.nofile'])
 
     def test_iterate_over_bounds_set_by_fname_season(self):
         start = ['2009-01-01.nofile', '2009-02-01.nofile']
@@ -883,6 +1063,25 @@ class TestBasicsXarray(TestBasics):
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
                                          sat_id='10',
+                                         clean_level='clean',
+                                         update_files=True)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+
+# ------------------------------------------------------------------------------
+#
+# Repeat tests above with 2d data
+#
+# ------------------------------------------------------------------------------
+class TestBasics2D(TestBasics):
+    def setup(self):
+        re_load(pysat.instruments.pysat_testing2d)
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
+                                         sat_id='50',
                                          clean_level='clean',
                                          update_files=True)
 
@@ -1160,11 +1359,11 @@ class TestDataPadding():
 
     def test_data_padding(self):
         self.testInst.load(2009, 2, verifyPad=True)
-        assert (self.testInst.index[0] ==
-                self.testInst.date - pds.DateOffset(minutes=5))
-        assert (self.testInst.index[-1] == self.testInst.date +
-                pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                pds.DateOffset(minutes=5))
+        assert (self.testInst.index[0]
+                == self.testInst.date - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] == self.testInst.date
+                + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                + pds.DateOffset(minutes=5))
 
     def test_data_padding_offset_instantiation(self):
         testInst = pysat.Instrument(platform='pysat', name='testing',
@@ -1172,11 +1371,10 @@ class TestDataPadding():
                                     pad=pds.DateOffset(minutes=5),
                                     update_files=True)
         testInst.load(2009, 2, verifyPad=True)
-        assert (testInst.index[0] ==
-                testInst.date - pds.DateOffset(minutes=5))
-        assert (testInst.index[-1] == testInst.date +
-                pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                pds.DateOffset(minutes=5))
+        assert (testInst.index[0] == testInst.date - pds.DateOffset(minutes=5))
+        assert (testInst.index[-1] == testInst.date
+                + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                + pds.DateOffset(minutes=5))
 
     def test_data_padding_bad_instantiation(self):
         with pytest.raises(ValueError):
@@ -1230,7 +1428,6 @@ class TestDataPadding():
     def test_data_padding_prev(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.prev(verifyPad=True)
-        print(self.testInst.index)
         assert (self.testInst.index[0] == self.testInst.date
                 - pds.DateOffset(minutes=5))
         assert (self.testInst.index[-1] == self.testInst.date
@@ -1242,19 +1439,19 @@ class TestDataPadding():
         self.testInst.load(2009, 10)
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
-        assert (self.testInst.index[0] == self.testInst.date -
-                pds.DateOffset(minutes=5))
-        assert (self.testInst.index[-1] == self.testInst.date +
-                pds.DateOffset(hours=23, minutes=59, seconds=59) +
-                pds.DateOffset(minutes=5))
+        assert (self.testInst.index[0] == self.testInst.date
+                - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1] == self.testInst.date
+                + pds.DateOffset(hours=23, minutes=59, seconds=59)
+                + pds.DateOffset(minutes=5))
 
     def test_data_padding_jump(self):
         self.testInst.load(2009, 2, verifyPad=True)
         self.testInst.load(2009, 11, verifyPad=True)
-        assert (self.testInst.index[0] ==
-                self.testInst.date - pds.DateOffset(minutes=5))
-        assert (self.testInst.index[-1] ==
-                self.testInst.date
+        assert (self.testInst.index[0]
+                == self.testInst.date - pds.DateOffset(minutes=5))
+        assert (self.testInst.index[-1]
+                == self.testInst.date
                 + pds.DateOffset(hours=23, minutes=59, seconds=59)
                 + pds.DateOffset(minutes=5))
 
@@ -1270,10 +1467,9 @@ class TestDataPadding():
 
     def test_data_padding_removal(self):
         self.testInst.load(2009, 1)
-        # print(self.testInst.index)
         assert (self.testInst.index[0] == self.testInst.date)
-        assert (self.testInst.index[-1] == self.testInst.date +
-                pds.DateOffset(hour=23, minutes=59, seconds=59))
+        assert (self.testInst.index[-1] == self.testInst.date
+                + pds.DateOffset(hour=23, minutes=59, seconds=59))
 
 
 class TestDataPaddingXarray(TestDataPadding):

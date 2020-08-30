@@ -2,18 +2,18 @@
 """
 Produces fake instrument data for testing.
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
 import datetime as dt
 import functools
+import logging
 import numpy as np
-import os
 
-import pandas as pds
 import xarray as xr
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
+
+logger = logging.getLogger(__name__)
 
 platform = 'pysat'
 name = 'testmodel'
@@ -33,15 +33,13 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
+    logger.info(mm_test.ackn_str)
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
+    return
 
 
 def load(fnames, tag=None, sat_id=None):
@@ -49,20 +47,18 @@ def load(fnames, tag=None, sat_id=None):
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : (str or NoneType)
+    sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-
-
     Returns
     -------
-    data : (xr.Dataset)
+    data : xr.Dataset
         Testing data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Metadata
 
     """
@@ -83,7 +79,7 @@ def load(fnames, tag=None, sat_id=None):
         for j, long in enumerate(longitude):
             slt[i, j] = np.mod(ut / 3600.0 + long / 15.0, 24.0)
     data['slt'] = (('time', 'longitude'), slt)
-    data['mlt'] = (('time', 'longitude'), np.mod(slt+0.2, 24.0))
+    data['mlt'] = (('time', 'longitude'), np.mod(slt + 0.2, 24.0))
 
     # Fake 3D data consisting of values between 0 and 21 everywhere
     dummy1 = np.mod(data['uts'] * data['latitude'] * data['longitude'], 21.0)
@@ -97,6 +93,8 @@ def load(fnames, tag=None, sat_id=None):
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
+list_remote_files = functools.partial(mm_test.list_remote_files,
+                                      test_dates=_test_dates)
 download = functools.partial(mm_test.download)
 
 meta = pysat.Meta()

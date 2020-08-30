@@ -5,11 +5,6 @@ import os
 import warnings
 import numpy as np
 import pandas as pds
-# python 2/3 compatibility
-try:
-    basestring
-except NameError:
-    basestring = str
 
 
 class Meta(object):
@@ -47,6 +42,9 @@ class Meta(object):
     fill_label : str
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
+    export_nan: list
+         List of labels that should be exported even if their value is nan.
+         By default, metadata with a value of nan will be exluded from export.
 
 
     Attributes
@@ -79,7 +77,6 @@ class Meta(object):
     fill_label : str
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
-
 
     Notes
     -----
@@ -175,7 +172,10 @@ class Meta(object):
                  desc_label='desc', plot_label='label', axis_label='axis',
                  scale_label='scale', min_label='value_min',
                  max_label='value_max', fill_label='fill',
-                 ):
+                 export_nan=None):
+
+        if export_nan is None:
+            export_nan = []
 
         # set mutability of Meta attributes
         self.mutable = True
@@ -191,10 +191,15 @@ class Meta(object):
         self._min_label = min_label
         self._max_label = max_label
         self._fill_label = fill_label
+        # by default metadata with a value of nan will not be exported
+        # unless the name is in the _export_nan list. Initialize the list
+        # with the fill label, since it is reasonable to assume that a fill
+        # value of nan would be intended to be exported
+        self._export_nan = [fill_label] + export_nan
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
         # use any user provided data to instantiate object with data
-        # attirube unit and name labels are called within
+        # attribute unit and name labels are called within
         if metadata is not None:
             if isinstance(metadata, pds.DataFrame):
                 self._data = metadata
@@ -216,12 +221,9 @@ class Meta(object):
                                                       self._max_label,
                                                       self._fill_label])
 
-
-
         # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
-
 
     @property
     def ho_data(self):
@@ -375,7 +377,7 @@ class Meta(object):
         if recurse:
             for item_name in self.keys_nD():
                 output_str += '\n\n'
-                output_str += 'Metadata for '+item_name+'\n'
+                output_str += 'Metadata for ' + item_name + '\n'
                 output_str += self.ho_data[item_name].__str__(False)
 
         return output_str
@@ -393,10 +395,8 @@ class Meta(object):
                     default_nan, default_nan]
         self._data.loc[input_name, labels] = defaults
 
-
-
     def __setattr__(self, name, value):
-        """Conditionally sets attributes based on self.mutable flag 
+        """Conditionally sets attributes based on self.mutable flag
 
         @properties are assumed to be mutable.
 
@@ -413,7 +413,7 @@ class Meta(object):
                 # check if the property is settable
                 if propobj.fset is None:
                     raise AttributeError(''.join("can't set attribute - ",
-                                        "property has no fset"))
+                                                 "property has no fset"))
 
                 # make mutable in case fset needs it to be
                 mutable_tmp = self.mutable
@@ -431,17 +431,17 @@ class Meta(object):
                     super(Meta, self).__setattr__(name, value)
                 else:
                     raise AttributeError(''.join(("cannot set attribute - ",
-                                                    "object's attributes are immutable")))
+                                                  "object's attributes are",
+                                                  "immutable")))
         else:
             super(Meta, self).__setattr__(name, value)
-        
 
     def __setitem__(self, names, input_data):
         """Convenience method for adding metadata."""
 
         if isinstance(input_data, dict):
             # if not passed an iterable, make it one
-            if isinstance(names, basestring):
+            if isinstance(names, str):
                 names = [names]
                 for key in input_data:
                     input_data[key] = [input_data[key]]
@@ -484,14 +484,23 @@ class Meta(object):
                     for i, name in enumerate(names):
                         to_be_set = input_data[key][i]
                         if hasattr(to_be_set, '__iter__') and \
-                                not isinstance(to_be_set, basestring):
-                            if isinstance(to_be_set[0], basestring):
+                                not isinstance(to_be_set, str):
+                            # we have some list-like object
+                            # can only store a single element
+                            if len(to_be_set) == 0:
+                                # empty list, ensure there is something
+                                to_be_set = ['']
+                            if isinstance(to_be_set[0], str) or \
+                                    isinstance(to_be_set, bytes):
+                                if isinstance(to_be_set, bytes):
+                                    to_be_set = to_be_set.decode("utf-8")
+
                                 self._data.loc[name, key] = \
                                     '\n\n'.join(to_be_set)
                             else:
                                 warnings.warn(' '.join(('Array elements are',
-                                                        ' disallowed in meta.',
-                                                        ' Dropping input :',
+                                                        'not allowed in meta.',
+                                                        'Dropping input :',
                                                         key)))
                         else:
                             self._data.loc[name, key] = to_be_set
@@ -587,7 +596,7 @@ class Meta(object):
 
         def match_name(func, name, names):
             """Applies func on name(s) depending on name type"""
-            if isinstance(name, basestring):
+            if isinstance(name, str):
                 return func(name)
             elif isinstance(name, slice):
                 return [func(nn) for nn in names[name]]
@@ -615,7 +624,7 @@ class Meta(object):
         elif isinstance(key, list):
             return self[key, :]
 
-        elif isinstance(key, basestring):
+        elif isinstance(key, str):
             # ensure variable is present somewhere
             if key in self:
                 # get case preserved string for variable name
@@ -1024,7 +1033,7 @@ class Meta(object):
 
         # instrument attributes stay with instrument
         inst_attr = dir(inst)
-        
+
         for key in transfer_key:
             if key not in banned:
                 if key not in inst_attr:
@@ -1084,8 +1093,8 @@ class Meta(object):
                         # np.nan is not equal to anything
                         # if both values are NaN, ok in my book
                         try:
-                            if not (np.isnan(self[key, attr]) and
-                                    np.isnan(other[key, attr])):
+                            if not (np.isnan(self[key, attr])
+                                    and np.isnan(other[key, attr])):
                                 # one or both are not NaN and they aren't equal
                                 # test failed
                                 return False
@@ -1122,13 +1131,14 @@ class Meta(object):
                 # now time to check if all elements are individually equal
                 for key2 in self[key].children.keys():
                     for attr in self[key].children.attrs():
-                        if not (self[key].children[key2, attr] ==
-                                other[key].children[key2, attr]):
+                        if not (self[key].children[key2, attr]
+                                == other[key].children[key2, attr]):
                             try:
-                                if not (np.isnan(self[key].children[key2,
-                                                                    attr]) and
-                                        np.isnan(other[key].children[key2,
-                                                                     attr])):
+                                nan_self = np.isnan(self[key].children[key2,
+                                                                       attr])
+                                nan_other = np.isnan(other[key].children[key2,
+                                                                         attr])
+                                if not (nan_self and nan_other):
                                     return False
                             except TypeError:
                                 # comparison above gets unhappy with string
