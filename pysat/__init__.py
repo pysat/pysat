@@ -91,36 +91,36 @@ if not os.path.isdir(pysat_dir):
                    "top-level directory to store science data.")))
 
     modules_file = os.path.join(pysat_dir, 'user_modules.txt')
-    with Lock(modules_file, 'w', file_timeout) as f:
-        f.write('')
+    with Lock(modules_file, 'w', file_timeout) as fout:
+        fout.write('')
         user_modules = []
 
         # in case of network files system
-        f.flush()
-        os.fsync(f.fileno())
+        fout.flush()
+        os.fsync(fout.fileno())
 
 
 else:
     # load up stored data path
     data_path_file = os.path.join(pysat_dir, 'data_path.txt')
-    with Lock(data_path_file, 'r', file_timeout) as f:
-        data_dir = f.readline()
+    with Lock(data_path_file, 'r', file_timeout) as fout:
+        data_dir = fout.readline()
     # load up stored user modules
     user_modules = []
     modules_file = os.path.join(pysat_dir, 'user_modules.txt')
     if os.path.exists(modules_file):
-        with Lock(modules_file, 'r', file_timeout) as f:
-            for _ in f:
+        with Lock(modules_file, 'r', file_timeout) as fout:
+            for _ in fout:
                 if _ != '' and (_ is not None):
                     user_modules.append(_.strip())
     else:
         # write user modules file
-        with Lock(modules_file, 'w', file_timeout) as f:
-            f.write('')
+        with Lock(modules_file, 'w', file_timeout) as fout:
+            fout.write('')
 
             # in case of network files system
-            f.flush()
-            os.fsync(f.fileno())
+            fout.flush()
+            os.fsync(fout.fileno())
 
 
 from pysat import utils

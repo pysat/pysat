@@ -32,8 +32,8 @@ def set_data_dir(path=None, store=True):
         if store:
             data_path_file = os.path.join(os.path.expanduser('~'),
                                           '.pysat', 'data_path.txt')
-            with Lock(data_path_file, 'w', pysat.file_timeout) as f:
-                f.write(path)
+            with NetworkLock(data_path_file, 'w', pysat.file_timeout) as fout:
+                fout.write(path)
 
         pysat.data_dir = path
         pysat._files = re_load(pysat._files)
