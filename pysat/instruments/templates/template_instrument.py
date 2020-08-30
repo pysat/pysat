@@ -247,7 +247,6 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 
-
 # not required but recommended
 def list_remote_files(tag, sat_id, user=None, password=None):
     """Return a Pandas Series of every file for chosen remote data.
