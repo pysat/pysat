@@ -968,18 +968,17 @@ def create_instrument(j):
                           '{revision:03d}.pysat_testing_file'))
 
     testInst = \
-        pysat.Instrument(   inst_module=pysat.instruments.pysat_testing,
-                            clean_level='clean',
-                            update_files=True,
-                            temporary_file_list=False)
-
+        pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                         clean_level='clean',
+                         update_files=True,
+                         temporary_file_list=False)
 
     start = pysat.datetime(2007, 12, 30)
     stop = pysat.datetime(2007, 12, 31)
     create_versioned_files(testInst, start, stop,
-                        freq='1D', use_doy=False,
-                        root_fname = root_fname,
-                        timeout = .5)
+                           freq='1D', use_doy=False,
+                           root_fname=root_fname,
+                           timeout=0.5)
 
     testInst = \
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
@@ -1031,7 +1030,8 @@ class TestFilesRaceCondition():
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
 
-        print('initial files created in {}:'.format(self.testInst.files.data_path))
+        print(' '.join(('initial files created in ',
+                        self.testInst.files.data_path)))
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
@@ -1045,10 +1045,7 @@ class TestFilesRaceCondition():
                          clean_level='clean',
                          update_files=True,
                          temporary_file_list=self.temporary_file_list)
-        try:
-            pysat.utils.set_data_dir(self.data_path, store=False)
-        except:
-            pass
+        pysat.utils.set_data_dir(self.data_path, store=False)
 
     def test_race_condition(self):
         from multiprocessing import Pool
