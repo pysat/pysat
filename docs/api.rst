@@ -22,12 +22,6 @@ General
 
 .. _rst_general_data_cdaweb:
 
-netCDF Pandas
-^^^^^^^^^^^^^
-
-.. automodule:: pysat.instruments.templates.netcdf_pandas
-  :members: __doc__, init, load, list_files, download
-
 Instrument Templates
 --------------------
 
@@ -37,6 +31,11 @@ General Instrument
 .. automodule:: pysat.instruments.templates.template_instrument
    :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
 
+netCDF Pandas
+^^^^^^^^^^^^^
+
+.. automodule:: pysat.instruments.templates.netcdf_pandas
+  :members: __doc__, init, load, list_files, download
 
 Constellation
 -------------
