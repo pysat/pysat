@@ -48,19 +48,19 @@ third.
        mean_val = pandas.Series()
        # iterate over season, calculate the mean
        for inst in iterator:
-	      if not inst.data.empty:
-                  # compute mean absolute using pandas functions and store
-                  # data could be an image, or lower dimension, account for 2D and lower
-                  data = inst[data_label]
-                  data.dropna(inplace=True)
+           if not inst.empty:
+               # compute mean absolute using pandas functions and store
+               # data could be an image, or lower dimension, account for 2D and lower
+               data = inst[data_label]
+               data.dropna(inplace=True)
 
-                  if by_orbit:
-                      date = inst.data.index[0]
-                  else:
-                      date = inst.date
+               if by_orbit:
+                   date = inst.data.index[0]
+               else:
+                   date = inst.date
 
-                  data = pysat.ssnl.computational_form(data)
-                  mean_val[date] = data.abs().mean(axis=0, skipna=True)
+               data = pysat.ssnl.computational_form(data)
+               mean_val[date] = data.abs().mean(axis=0, skipna=True)
 
        del iterator
        return mean_val

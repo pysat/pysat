@@ -39,7 +39,7 @@ application to non-DMSP data sets.
        # iterate over season, calculate the mean
        for date in date_array:
 	       inst.load(date=date)
-	           if not inst.data.empty:
+	           if not inst.empty:
                    # compute absolute mean using pandas functions and store
                    mean_val[inst.date] = inst[data_label].abs().mean(skipna=True)
        return mean_val
@@ -119,21 +119,21 @@ more than 1D datasets.
        # iterate over season, calculate the mean
        for date in date_array:
            inst.load(date=date)
-	   if not inst.data.empty:
+           if not inst.empty:
                # compute mean absolute using pandas functions and store
                # data could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
                if isinstance(data.iloc[0], pandas.DataFrame):
-	           # 3D data, 2D data at every time
+                   # 3D data, 2D data at every time
                    data_panel = pandas.Panel.from_dict(dict([(i, data.iloc[i]) for i in xrange(len(data))]))
                    mean_val[inst.date] = data_panel.abs().mean(axis=0,skipna=True)
                elif isinstance(data.iloc[0], pandas.Series):
-	           # 2D data, 1D data for each time
+                   # 2D data, 1D data for each time
                    data_frame = pandas.DataFrame(data.tolist())
                    data_frame.index = data.index
                    mean_val[inst.date] = data_frame.abs().mean(axis=0, skipna=True)
                else:
-		  # 1D data
+                   # 1D data
                    mean_val[inst.date] = inst[data_label].abs().mean(axis=0,skipna=True)
 
    return mean_val
@@ -162,7 +162,7 @@ the little mess caused by dimensionality.
        # iterate over season, calculate the mean
        for date in date_array:
            inst.load(date=date)
-	   if not inst.data.empty:
+           if not inst.empty:
                # compute mean absolute using pandas functions and store
                # data could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]

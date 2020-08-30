@@ -76,7 +76,7 @@ Building support for this iteration into the mean_day example is easy.
        mean_val = pandas.Series()
 
        for inst in inst:
-	   if not inst.data.empty:
+	   if not inst.empty:
                # compute mean absolute using pandas functions and store
                # data could be an image, or lower dimension, account for 2D and lower
                data = inst[data_label]
