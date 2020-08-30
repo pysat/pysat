@@ -1030,16 +1030,17 @@ class TestBasics():
                                                             strict_names=True)
 
     def test_transfer_attributes_to_instrument_strict_names_false(self):
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.jojo_beans = 'yep!'
-        self.meta.name = 'Failure!'
-        self.meta.date = 'yo yo2'
-        self.testInst.load(2009, 1)
-        self.testInst.jojo_beans = 'nope!'
-        self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                    strict_names=False)
-        assert self.testInst.jojo_beans == 'yep!'
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta._yo_yo = 'yo yo'
+            self.meta.jojo_beans = 'yep!'
+            self.meta.name = 'Failure!'
+            self.meta.date = 'yo yo2'
+            self.testInst.load(2009, 1)
+            self.testInst.jojo_beans = 'nope!'
+            self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                        strict_names=False)
+            assert self.testInst.jojo_beans == 'yep!'
 
     def test_merge_meta(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
