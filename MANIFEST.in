@@ -6,7 +6,6 @@ include *.md
 include description.txt
 include LICENSE
 include pysat/version.txt
-prune pysat/tests
 prune docs
 prune demo
 exclude *.pdf
