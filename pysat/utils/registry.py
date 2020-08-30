@@ -58,7 +58,7 @@ def store():
             f.write(mod + '\n')
 
         # in case of network file system
-        f.flush() 
+        f.flush()
         os.fsync(f.fileno())
 
 
