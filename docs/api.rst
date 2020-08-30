@@ -14,11 +14,14 @@ Instrument Methods
 The following methods support the variety of actions needed
 by underlying pysat.Instrument modules.
 
+.. _rst_general_data_general:
+
 General
 ^^^^^^^
 
 .. automodule:: pysat.instruments.methods.general
    :members:
+
 
 Instrument Templates
 --------------------
