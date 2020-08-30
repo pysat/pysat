@@ -114,8 +114,8 @@ and email address as their username and password.
    user = 'Firstname+Lastname'
    password = 'email@address.com'
    # define date range to download data
-   start = pysat.datetime(2001, 1, 1)
-   stop = pysat.datetime(2001, 1, 2)
+   start = dt.datetime(2001, 1, 1)
+   stop = dt.datetime(2001, 1, 2)
    # download data to local system
    dmsp.download(start, stop, user=user, password=password)
 
