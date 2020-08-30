@@ -298,8 +298,8 @@ data files, like those produced by the Ionospheric Connections Explorer
   label             Label used for plots
   name              Name of variable, or long_name
   notes             Notes about variable
-  min               Maximum valid value
-  max               Minimum valid value
+  max               Maximum valid value
+  min               Minimum valid value
   scale             Axis scale, linear or log
   units             Variable units
 ===============     ===================================
