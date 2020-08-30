@@ -1833,7 +1833,7 @@ class Instrument(object):
             stop = dt.datetime(2009,1,31)
             inst.bounds = (start,stop)
 
-            start2 = pysat.datetetime(2010,1,1)
+            start2 = dt.datetetime(2010,1,1)
             stop2 = dt.datetime(2010,2,14)
             inst.bounds = ([start, start2], [stop, stop2])
 

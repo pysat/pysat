@@ -973,8 +973,8 @@ def create_instrument(j):
                          update_files=True,
                          temporary_file_list=False)
 
-    start = pysat.datetime(2007, 12, 30)
-    stop = pysat.datetime(2007, 12, 31)
+    start = dt.datetime(2007, 12, 30)
+    stop = dt.datetime(2007, 12, 31)
     create_versioned_files(testInst, start, stop,
                            freq='1D', use_doy=False,
                            root_fname=root_fname,
@@ -1019,8 +1019,8 @@ class TestFilesRaceCondition():
                                    '_{day:03d}{hour:02d}{minute:02d}',
                                    '{second:02d}_stuff_{version:02d}_',
                                    '{revision:03d}.pysat_testing_file'))
-        start = pysat.datetime(2007, 12, 30)
-        stop = pysat.datetime(2008, 12, 31)
+        start = dt.datetime(2007, 12, 30)
+        stop = dt.datetime(2008, 12, 31)
         create_versioned_files(self.testInst, start, stop, freq='1D',
                                use_doy=False, root_fname=self.root_fname)
 
