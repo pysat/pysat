@@ -52,7 +52,8 @@ Pysat itself may be installed from a terminal command line via::
 
    pip install pysat
 
-There are a few packages that pysat depends on, and need to be installed:
+There are a few packages that pysat depends on that will be installed as
+needed by the installer:
 
      * netCDF4
      * numpy (>=1.12)
