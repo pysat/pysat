@@ -160,7 +160,7 @@ Python environment: Python 2.7.x
 
    .. note::
 
-       gayui will be replaced with your username
+       gayui will need to be replaced with your username
 
 #. In your MSYS2 MINGW64 environment, run::
 
