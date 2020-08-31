@@ -84,8 +84,6 @@ virtual environment and using::
 The use of `develop` rather than `install` installs the code 'in-place', so
 any changes to the software do not have to be reinstalled to take effect.
 
-The development version for v3.0 can be found in the ``develop-3``
-branch (see above for caveats).
 
 
 **Windows**
