@@ -51,7 +51,8 @@ class Custom(object):
         self._kwargs = []
 
     def __repr__(self):
-        return self.__str__()
+        out_str = "Custom({:d} functions applied)".format(len(self._functions))
+        return out_str
 
     def __str__(self):
         num_funcs = len(self._functions)
