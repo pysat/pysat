@@ -51,7 +51,8 @@ class Custom(object):
         self._kwargs = []
 
     def __repr__(self):
-        out_str = "Custom({:d} functions applied)".format(len(self._functions))
+        out_str = "Custom -> {:d} functions applied".format(
+            len(self._functions))
         return out_str
 
     def __str__(self):
