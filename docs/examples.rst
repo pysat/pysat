@@ -19,10 +19,9 @@ pysat goes through that trouble for you.
 .. code:: python
 
    import datetime as dt
+   import matplotlib.pyplot as plt
    import os
-   import matplotlib.pyplot as plt
    import pysat
-   import matplotlib.pyplot as plt
 
    # set the directory to save plots to
    results_dir = ''
