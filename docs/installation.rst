@@ -52,27 +52,14 @@ Pysat itself may be installed from a terminal command line via::
 
    pip install pysat
 
-Note that pysat requires a number of packages for the install.  The upper caps
-for packages below have been removed for the upcoming pysat 3.0.0 release.
-The development version can be found in the ``develop-3``
-branch (see above for caveats).
+There are a few packages that pysat depends on, and need to be installed:
 
-     * beautifulsoup4
-     * h5py
-     * lxml
-     * madrigalWeb
-     * matplotlib
      * netCDF4
      * numpy (>=1.12)
-     * pandas (>=0.23, <0.25)
-     * PyForecastTools
-     * pysatCDF
-     * requests
+     * pandas (>=0.23)
      * scipy
-     * xarray (<0.15)
+     * xarray
 
-The upper caps for packages above will be removed for the upcoming pysat
-3.0.0 release.
 
 **Development Installation**
 
