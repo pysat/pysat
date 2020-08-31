@@ -1057,7 +1057,7 @@ class Instrument(object):
                            self.name, "', sat_id='", self.sat_id,
                            "', clean_level='", self.clean_level,
                            "', pad={:}, orbit_info=".format(self.pad),
-                           "{:})".format(self.orbit_info)])
+                           "{:}, **{:})".format(self.orbit_info, self.kwargs)])
 
         return out_str
 
