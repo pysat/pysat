@@ -1,8 +1,5 @@
 numpydoc
 ipython
-h5py
 netCDF4
 xarray
 pandas
-madrigalWeb
-PyForecastTools
