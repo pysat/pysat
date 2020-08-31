@@ -145,7 +145,7 @@ Python environment: Python 2.7.x
 
 		mkdir src
 		cd src
-		git clone https://github.com/rstoneback/pysatCDF.git
+		git clone https://github.com/pysat/pysatCDF.git
 		cd pysatCDF
 
 #. Using a text editor of your choice, create a file called setup.cfg in::
