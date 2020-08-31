@@ -1074,7 +1074,7 @@ class Instrument(object):
         output_str += 'Cleaning Level: ' + self.clean_level + '\n'
         output_str += 'Data Padding: ' + self.pad.__repr__() + '\n'
         output_str += 'Keyword Arguments Passed to load(): '
-        output_str += self.kwargs.__repr__() + '\n'
+        output_str += self.kwargs.__str__() + '\n'
         output_str += self.custom.__repr__()
 
         # Print out the orbit settings
