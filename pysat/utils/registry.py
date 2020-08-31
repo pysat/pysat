@@ -36,14 +36,14 @@ checking the user_modules registry.
 
 import os
 import pysat
-from pysat.utils import NetworkLock
 
 
 def load_saved_modules():
     """get list of modules from user_modules.txt"""
     saved_modules = []
     user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
-    with NetworkLock(user_modules_file, 'r', pysat.file_timeout) as fout:
+    with pysat.utils.NetworkLock(user_modules_file, 'r',
+                                 pysat.file_timeout) as fout:
         for line in fout:
             if line != '' and (line is not None):
                 saved_modules.append(line.strip())
@@ -53,7 +53,8 @@ def load_saved_modules():
 def store():
     """Rewrite user_modules.txt based on current listing"""
     user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
-    with NetworkLock(user_modules_file, 'w', pysat.file_timeout) as fout:
+    with pysat.utils.NetworkLock(user_modules_file, 'w',
+                                 pysat.file_timeout) as fout:
         for mod in pysat.user_modules:
             fout.write(mod + '\n')
 
