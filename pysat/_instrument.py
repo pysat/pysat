@@ -1075,7 +1075,7 @@ class Instrument(object):
         output_str += 'Data Padding: ' + self.pad.__repr__() + '\n'
         output_str += 'Keyword Arguments Passed to load(): '
         output_str += self.kwargs.__str__() + '\n'
-        output_str += self.custom.__repr__()
+        output_str += self.custom.__str__()
 
         # Print out the orbit settings
         if self.orbits.orbit_index is not None:
