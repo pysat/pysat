@@ -183,13 +183,21 @@ class Files(object):
                 self.refresh()
 
     def __repr__(self):
-        out_str = "".join(["Files(", self._sat.__repr__(), ", manual_org=",
-                           "{:}, directory_format=".format(self.manual_org),
-                           self.directory_format, ", update_files=",
+        # Because the local Instrument object is weakly referenced, it may
+        # not always be accessible
+        try:
+            inst_repr = self._sat.__repr__()
+        except ReferenceError:
+            inst_repr = "Instrument(weakly referenced)"
+
+        out_str = "".join(["Files(", inst_repr, ", manual_org=",
+                           "{:}, directory_format='".format(self.manual_org),
+                           self.directory_format, "', update_files=",
                            "{:}, file_format=".format(self._update_files),
-                           "{:}, write_to_disk".format(self.file_format),
-                           "{:}, ignore_empty_".format(self.write_to_disk),
-                           "files={:})".format(self.ignore_empty_files),
+                           "{:}, ".format(self.file_format.__repr__()),
+                           "write_to_disk={:}, ".format(self.write_to_disk),
+                           "ignore_empty_files=",
+                           "{:})".format(self.ignore_empty_files),
                            " -> {:d} Local files".format(len(self.files))])
 
         return out_str
