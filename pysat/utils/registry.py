@@ -248,22 +248,41 @@ def remove(platforms, names=None):
 
     Parameters
     ----------
-    platforms : str of list-like of str
+    platforms : str or list-like of str
         One or more platform identifiers to remove
-    names : str of list-like of str
+    names : str or list-like of str
         Name identifiers, paired with platforms, to remove.
-        If names is None, then all instruments under
-        `platforms` will be removed. Supports a mixed
-        combination of name labels and None. (default=None)
-
+        If the names element paired with the platform element is None,
+        then all instruments under the specified platform will be
+        removed. Should be the same type as `platforms`. Supplying None
+        will default to removing all instruments for all specified
+        platforms. (default=None)
     Raises
     ------
     ValueError
-        If platform and name are not currently registered
+        If platform and/or name are not currently registered
 
     Note
     ----
     Current registered user modules available at pysat.user_modules
+
+    Examples
+    --------
+    ::
+        platforms = ['platform1', 'platform2']
+        names = ['name1', 'name2']
+
+        # remove all instruments with platform=='platform1'
+        registry.remove(platforms[0])
+        # remove all instruments with platform 'platform1' or 'platform2'
+        registry.remove(platforms)
+        # remove all instruments with 'platform1', and individual instrument
+        # for 'platform2', 'name2'
+        registry.remove(platforms, [None, 'name2']
+        # remove 'platform1', 'name1', as well as 'platform2', 'name2'
+        registry.remove(platforms, names)
+        # remove 'platform1', 'name1'
+        registry.remove('platform1', 'name1')
 
     """
 
@@ -274,8 +293,16 @@ def remove(platforms, names=None):
         names = [names]
 
     # ensure names is as long as platforms under default input
+    # done after we ensure platforms is list-like
     if names is None:
         names = [None] * len(platforms)
+
+    # ensure equal number of inputs
+    if len(names) != len(platforms):
+        estr = "".join(("The number of 'platforms' and 'names' must be the ",
+                        "same, or names must be None, which removes all ",
+                        "instruments under each platform."))
+        raise ValueError(estr)
 
     # iterate over inputs and remove modules
     for platform, name in zip(platforms, names):
