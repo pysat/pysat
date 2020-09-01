@@ -386,7 +386,7 @@ class TestModuleRegistration():
                                module_names]
         self.platforms = ['pysat'] * len(self.platform_names)
         module_strings = ['.'.join((pkg_name, name)) for name in
-                           module_names]
+                          module_names]
         self.modules = [(mod, plat, nam) for mod, plat, nam in
                         zip(module_strings, self.platforms,
                             self.platform_names)]
