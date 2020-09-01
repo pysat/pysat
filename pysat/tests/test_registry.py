@@ -372,7 +372,7 @@ class TestRegistration():
 
 
 class TestModuleRegistration():
-    def setup(self, ):
+    def setup(self):
 
         self.inst_module = pysat.instruments
         # package name
