@@ -39,9 +39,11 @@ def create_fake_module(full_module_name, platform, name):
     package = importlib.util.module_from_spec(package_spec)
 
     setattr(package, module_name, instrument)
-
+    setattr(package, '__all__', [module_name])
     sys.modules[package_name] = package
     sys.modules['.'.join([package_name, module_name])] = instrument
+
+    return
 
 
 def create_and_verify_fake_modules(modules):
@@ -352,26 +354,51 @@ class TestRegistration():
 
         return
 
+    def test_module_registration_single(self):
+        """Test registering a module containing an instrument"""
+
+        # register package by module
+        for module in self.modules:
+            root = module[0].split('.')[0]
+            registry.register_by_module(sys.modules[root])
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # check that global registry was updated
+        ensure_live_registry_updated(self.modules)
+        # verify update
+        ensure_updated_stored_modules(self.modules)
+
+        return
+
 
 class TestModuleRegistration():
-    def setup(self):
-        # remove any existing support which may be let over
-        # errors if you try to remove a package that isn't
-        # registered
-        try:
-            registry.remove('pysat')
-        except ValueError:
-            pass
+    def setup(self, ):
 
-        # test using pysat instruments module
         self.inst_module = pysat.instruments
+        # package name
+        pkg_name = self.inst_module.__name__
 
         # construct inputs similar to TestRegistration
         # to enable use of existing methods
-        self.platform_names = self.inst_module.__all__
-        self.platforms = ['pysat'] * len(user_modules['pysat'])
-        self.modules = ['pysat.instruments.pysat_' + name for name in
-                        self.platform_names]
+        # almost fully general
+        module_names = self.inst_module.__all__
+        self.platform_names = [snip.split('pysat')[-1][1:] for snip in
+                               module_names]
+        self.platforms = ['pysat'] * len(self.platform_names)
+        module_strings = ['.'.join((pkg_name, name)) for name in
+                           module_names]
+        self.modules = [(mod, plat, nam) for mod, plat, nam in
+                        zip(module_strings, self.platforms,
+                            self.platform_names)]
+
+        # remove any existing support which may be let over
+        # errors if you try to remove a package that isn't
+        # registered
+        for plat_name in np.unique(self.platforms):
+            try:
+                registry.remove(plat_name)
+            except ValueError:
+                pass
 
         return
 
@@ -385,21 +412,17 @@ class TestModuleRegistration():
         except ValueError:
             # ok if a module has already been removed
             pass
-        # ensure things are clean, all have been removed
-        ensure_not_in_stored_modules(self.modules)
 
         return
 
-    def test_module_registration(self):
+    def test_module_registration_multiple(self):
         """Test registering a module containing multiple instruments"""
 
         # register package by module
         registry.register_by_module(self.inst_module)
-        # verify instantiation
-        verify_platform_name_instantiation(self.modules)
         # check that global registry was updated
         ensure_live_registry_updated(self.modules)
-        # verify update
+        # verify update on disk
         ensure_updated_stored_modules(self.modules)
 
         return
