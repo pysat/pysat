@@ -354,7 +354,7 @@ class TestRegistration():
 
         return
 
-    def test_platform_name_removal_error(self):
+    def test_platform_name_length_removal_error(self):
         """Test error raised when platforms and names unequal lengths"""
 
         # register all modules at once
