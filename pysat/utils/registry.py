@@ -243,20 +243,19 @@ def register_by_module(module):
     return
 
 
-def remove(platforms, names=None):
+def remove(platforms, names):
     """Removes module from registered user modules
 
     Parameters
     ----------
-    platforms : str or list-like of str
-        One or more platform identifiers to remove
-    names : str or list-like of str
+    platforms : list-like of str
+        Platform identifiers to remove
+    names : list-like of str
         Name identifiers, paired with platforms, to remove.
         If the names element paired with the platform element is None,
         then all instruments under the specified platform will be
-        removed. Should be the same type as `platforms`. Supplying None
-        will default to removing all instruments for all specified
-        platforms. (default=None)
+        removed. Should be the same type as `platforms`.
+
     Raises
     ------
     ValueError
@@ -273,29 +272,16 @@ def remove(platforms, names=None):
         names = ['name1', 'name2']
 
         # remove all instruments with platform=='platform1'
-        registry.remove(platforms[0])
+        registry.remove(['platform1'], [None])
         # remove all instruments with platform 'platform1' or 'platform2'
-        registry.remove(platforms)
+        registry.remove(platforms, [None, None])
         # remove all instruments with 'platform1', and individual instrument
         # for 'platform2', 'name2'
         registry.remove(platforms, [None, 'name2']
         # remove 'platform1', 'name1', as well as 'platform2', 'name2'
         registry.remove(platforms, names)
-        # remove 'platform1', 'name1'
-        registry.remove('platform1', 'name1')
 
     """
-
-    # support input of both string and list-like of strings
-    if isinstance(platforms, str):
-        platforms = [platforms]
-    if isinstance(names, str):
-        names = [names]
-
-    # ensure names is as long as platforms under default input
-    # done after we ensure platforms is list-like
-    if names is None:
-        names = [None] * len(platforms)
 
     # ensure equal number of inputs
     if len(names) != len(platforms):

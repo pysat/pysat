@@ -191,7 +191,7 @@ class TestRegistration():
             # remove singly to ensure everything that could've been
             # registered has been removed
             for platform, name in zip(self.platforms, self.platform_names):
-                registry.remove(platform, name)
+                registry.remove([platform], [name])
         except ValueError:
             # ok if a module has already been removed
             pass
@@ -271,7 +271,8 @@ class TestRegistration():
         # verify stored update
         ensure_updated_stored_modules(self.modules)
         # remove them using only platform
-        registry.remove(np.unique(self.platforms))
+        uplatforms = np.unique(self.platforms)
+        registry.remove(uplatforms, [None] * len(uplatforms))
         # test for removal performed by teardown
         return
 
@@ -288,7 +289,7 @@ class TestRegistration():
         ensure_updated_stored_modules(self.modules)
         # remove them using only platform
         for i, platform in enumerate(np.unique(self.platforms)):
-            registry.remove(platform)
+            registry.remove([platform], [None])
 
         # doing this one by one ensures more lines tested
 
@@ -308,7 +309,7 @@ class TestRegistration():
         # remove them using only platform
         count = 0
         for platform, name in zip(self.platforms, self.platform_names):
-            registry.remove(platform, name)
+            registry.remove([platform], [name])
             # doing this one by one allows for test that all names
             # for a platform aren't removed
             ensure_not_in_stored_modules([self.modules[count]])
@@ -325,16 +326,7 @@ class TestRegistration():
 
         # remove non-registered modules using only platform
         with pytest.raises(ValueError):
-            registry.remove(['made_up_name'])
-
-        return
-
-    def test_platform_string_removal_error(self):
-        """Test error raised when removing module not present"""
-
-        # remove non-registered modules using only platform
-        with pytest.raises(ValueError):
-            registry.remove('made_up_name')
+            registry.remove(['made_up_name'], [None])
 
         return
 
@@ -365,7 +357,7 @@ class TestRegistration():
             registry.remove(['made_up_name', 'second'], ['made_up_name'])
 
         with pytest.raises(ValueError):
-            registry.remove('made_up_name', ['made_up_name', 'second'])
+            registry.remove(['made_up_name'], ['made_up_name', 'second'])
 
         with pytest.raises(ValueError):
             registry.remove([], ['made_up_name', 'second'])
@@ -374,7 +366,7 @@ class TestRegistration():
             registry.remove([], ['made_up_name'])
 
         with pytest.raises(ValueError):
-            registry.remove([], 'made_up_name')
+            registry.remove([], ['made_up_name'])
 
         return
 
@@ -420,7 +412,7 @@ class TestModuleRegistration():
         # registered
         for plat_name in np.unique(self.platforms):
             try:
-                registry.remove(plat_name)
+                registry.remove([plat_name], [None])
             except ValueError:
                 pass
 
@@ -432,7 +424,7 @@ class TestModuleRegistration():
             # remove singly to ensure everything that could've been
             # registered has been removed
             for platform, name in zip(self.platforms, self.platform_names):
-                registry.remove(platform, name)
+                registry.remove([platform], [name])
         except ValueError:
             # ok if a module has already been removed
             pass
