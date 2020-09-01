@@ -130,7 +130,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         used. Shift actually performed by the init function.
         (default=None)
     malformed_index : boolean
-        If True, time index will be non-unique and non-monotonic. (default=False)
+        If True, time index will be non-unique and non-monotonic (default=False)
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.
