@@ -196,6 +196,8 @@ class TestRegistration():
         # ensure things are clean, all have been removed
         ensure_not_in_stored_modules(self.modules)
 
+        return
+
     def test_single_registration(self):
         """Test registering package one at a time"""
 
@@ -352,10 +354,7 @@ class TestRegistration():
 
 
 class TestModuleRegistration():
-
-    def test_module_registration(self):
-        """Test registering a module containing multiple instruments"""
-
+    def setup(self):
         # remove any existing support which may be let over
         # errors if you try to remove a package that isn't
         # registered
@@ -364,26 +363,43 @@ class TestModuleRegistration():
         except ValueError:
             pass
 
-        # register package
-        registry.register_by_module(pysat.instruments)
-        # get a list of pysat instruments loaded
-        platform_names = user_modules['pysat'].keys()
-        platform = ['pysat'] * len(user_modules['pysat'])
-        mods = ['pysat.instruments.pysat_' + name for name in platform_names]
-        modules = []
-        for plat, name, mod_str in zip(platform, platform_names, mods):
-            modules.append((mod_str, plat, name))
-        self.modules = modules
+        # test using pysat instruments module
+        self.inst_module = pysat.instruments
+
+        # construct inputs similar to TestRegistration
+        # to enable use of existing methods
+        self.platform_names = self.inst_module.__all__
+        self.platforms = ['pysat'] * len(user_modules['pysat'])
+        self.modules = ['pysat.instruments.pysat_' + name for name in
+                        self.platform_names]
+
+        return
+
+    def teardown(self):
+        # clean up
+        try:
+            # remove singly to ensure everything that could've been
+            # registered has been removed
+            for platform, name in zip(self.platforms, self.platform_names):
+                registry.remove(platform, name)
+        except ValueError:
+            # ok if a module has already been removed
+            pass
+        # ensure things are clean, all have been removed
+        ensure_not_in_stored_modules(self.modules)
+
+        return
+
+    def test_module_registration(self):
+        """Test registering a module containing multiple instruments"""
+
+        # register package by module
+        registry.register_by_module(self.inst_module)
         # verify instantiation
         verify_platform_name_instantiation(self.modules)
         # check that global registry was updated
         ensure_live_registry_updated(self.modules)
         # verify update
         ensure_updated_stored_modules(self.modules)
-        # remove modules
-        registry.remove('pysat')
-        # verifictaion not performed as functionality already tested
-        # further, the verify method also checks that the module
-        # can't be imported afterward. Since these are pysat modules,
-        # they can be imported even when not in user_modules
+
         return
