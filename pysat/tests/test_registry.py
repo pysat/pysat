@@ -354,6 +354,30 @@ class TestRegistration():
 
         return
 
+    def test_platform_name_removal_error(self):
+        """Test error raised when platforms and names unequal lengths"""
+
+        # register all modules at once
+        registry.register(self.module_names)
+
+        # unequal lengths
+        with pytest.raises(ValueError):
+            registry.remove(['made_up_name', 'second'], ['made_up_name'])
+
+        with pytest.raises(ValueError):
+            registry.remove('made_up_name', ['made_up_name', 'second'])
+
+        with pytest.raises(ValueError):
+            registry.remove([], ['made_up_name', 'second'])
+
+        with pytest.raises(ValueError):
+            registry.remove([], ['made_up_name'])
+
+        with pytest.raises(ValueError):
+            registry.remove([], 'made_up_name')
+
+        return
+
     def test_module_registration_single(self):
         """Test registering a module containing an instrument"""
 
