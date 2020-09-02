@@ -123,13 +123,12 @@ class InstTestClass():
                   'acknowledgements': str, 'references': str}
 
     @pytest.mark.all_inst
-    def test_modules_standard(self, name, module=None):
+    def test_modules_standard(self, name):
         """Checks that modules are importable and have standard properties.
         """
         # ensure that each module is at minimum importable
-        if module is None:
-            module = import_module(''.join(('.', name)),
-                                   package=self.package.__name__)
+        module = import_module(''.join(('.', name)),
+                               package=self.package.__name__)
         # Check for presence of basic instrument module attributes
         for mattr in self.module_attrs:
             assert hasattr(module, mattr)
@@ -157,12 +156,11 @@ class InstTestClass():
                                       self.attr_types[iattr])
 
     @pytest.mark.all_inst
-    def test_standard_function_presence(self, name, module=None):
+    def test_standard_function_presence(self, name):
         """Check if each function is callable and all required functions exist
         """
-        if module is None:
-            module = import_module(''.join(('.', name)),
-                                   package=self.package.__name__)
+        module = import_module(''.join(('.', name)),
+                               package=self.package.__name__)
 
         # Test for presence of all standard module functions
         for mcall in self.inst_callable:
