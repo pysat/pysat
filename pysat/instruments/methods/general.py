@@ -68,29 +68,45 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     """
 
-    if data_path is not None:
-        if format_str is None:
-            try:
-                format_str = supported_tags[sat_id][tag]
-            except KeyError as estr:
-                raise ValueError(' '.join(('Unknown sat_id or tag:',
-                                           str(estr))))
-        out = pysat.Files.from_os(data_path=data_path,
-                                  format_str=format_str,
-                                  two_digit_year_break=two_digit_year_break)
-
-        if (not out.empty) and fake_daily_files_from_monthly:
-            out.loc[out.index[-1] + pds.DateOffset(months=1)
-                    - pds.DateOffset(days=1)] = out.iloc[-1]
-            out = out.asfreq('D', 'pad')
-            out = out + '_' + out.index.strftime('%Y-%m-%d')
-            return out
-
-        return out
-    else:
+    # Test the input
+    if data_path is None:
         estr = ''.join(('A directory must be passed to the loading routine ',
                         'for <Instrument Code>'))
         raise ValueError(estr)
+
+    if format_str is None:
+        try:
+            format_str = supported_tags[sat_id][tag]
+        except KeyError as kerr:
+            raise ValueError(' '.join(('Unknown sat_id or tag:',
+                                       str(kerr))))
+
+    # Get the series of files
+    out = pysat.Files.from_os(data_path=data_path, format_str=format_str,
+                              two_digit_year_break=two_digit_year_break)
+
+    # If the data is monthly, pad the series
+    # TODO: take file frequency as an input to allow e.g., weekly files
+    if (not out.empty) and fake_daily_files_from_monthly:
+        emonth = out.index[-1]
+        out.loc[out.index[-1] + pds.DateOffset(months=1)
+                - pds.DateOffset(days=1)] = out.iloc[-1]
+        new_out = out.asfreq('D')
+            
+        for i, out_month in enumerate(out.index):
+            if(out_month.month == emonth.month
+               and out_month.year == emonth.year):
+                out_month = emonth
+
+            mrange = pds.date_range(start=out_month, periods=2, freq='MS')
+            irange = pds.date_range(*mrange.values, freq="D").values[:-1]
+            new_out[irange] = out.loc[out_month]
+
+        # Assign the non-NaN files to out and add days to the filenames
+        out = new_out.dropna()
+        out = out + '_' + out.index.strftime('%Y-%m-%d')
+
+    return out
 
 
 def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
