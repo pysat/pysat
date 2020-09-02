@@ -433,13 +433,16 @@ class TestBasics():
         self.testInst.load(self.ref_time.year, self.ref_doy)
 
         # Ensure the desired data variable is present and delete all others
-        self.testInst.data = self.testInst.data[['mlt']]
+        # 4-6 variables are needed to test all lines; choose the lesser limit
+        nvar = 4
+        self.testInst.data = self.testInst.data[self.testInst.variables[:nvar]]
 
         # Test output with one data variable
         self.out = self.testInst.__str__()
-        assert self.out.find('Number of variables:') > 0
+        assert self.out.find('Number of variables: 4') > 0
         assert self.out.find('Variable Names') > 0
-        assert self.out.find('mlt') > 0
+        for n in range(nvar):
+            assert self.out.find(self.testInst.variables[n]) > 0
 
     # -------------------------------------------------------------------------
     #
