@@ -150,6 +150,7 @@ def register(module_names):
         # second, check that module is itself pysat compatible
         validate = itc.InstTestClass()
         # work with test code, create dummy structure to make things work
+
         class Foo(object):
             pass
         validate.package = Foo()
