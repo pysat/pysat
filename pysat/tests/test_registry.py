@@ -346,7 +346,12 @@ class TestRegistration():
 
         return
 
-    def test_platform_name_length_removal_error(self):
+    @pytest.mark.parametrize("platforms, names",
+                             [(['made_up_name', 'second'], ['made_up_name']),
+                              (['made_up_name'], ['made_up_name', 'second']),
+                              ([], ['made_up_name', 'second']),
+                              ([], ['made_up_name'])])
+    def test_platform_name_length_removal_error(self, platforms, names):
         """Test error raised when platforms and names unequal lengths"""
 
         # register all modules at once
@@ -354,19 +359,7 @@ class TestRegistration():
 
         # unequal lengths
         with pytest.raises(ValueError):
-            registry.remove(['made_up_name', 'second'], ['made_up_name'])
-
-        with pytest.raises(ValueError):
-            registry.remove(['made_up_name'], ['made_up_name', 'second'])
-
-        with pytest.raises(ValueError):
-            registry.remove([], ['made_up_name', 'second'])
-
-        with pytest.raises(ValueError):
-            registry.remove([], ['made_up_name'])
-
-        with pytest.raises(ValueError):
-            registry.remove([], ['made_up_name'])
+            registry.remove(platforms, names)
 
         return
 
