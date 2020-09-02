@@ -200,32 +200,6 @@ class TestRegistration():
 
         return
 
-    def test_single_registration(self):
-        """Test registering package one at a time"""
-
-        # create modules
-        for module_name, platform, name in self.modules:
-            # register package
-            registry.register(module_name)
-
-        # verify instantiation
-        verify_platform_name_instantiation(self.modules)
-        # check that global registry was updated
-        ensure_live_registry_updated(self.modules)
-        # verify update
-        ensure_updated_stored_modules(self.modules)
-
-        return
-
-    def test_single_registration_invalid_error(self):
-        """Test registering bad package str"""
-
-        # register packages again, this should error
-        with pytest.raises(Exception):
-            registry.register('made.up.name')
-
-        return
-
     def test_duplicate_registration_error(self):
         """Test register error for duplicate package"""
 
@@ -237,14 +211,13 @@ class TestRegistration():
         ensure_live_registry_updated(self.modules)
         # verify update
         ensure_updated_stored_modules(self.modules)
-
         # register packages again, this should error
         with pytest.raises(ValueError):
             registry.register(self.module_names)
 
         return
 
-    def test_array_registration(self):
+    def test_registration(self):
         """Test registering multiple instruments at once"""
 
         # register all modules at once
@@ -259,7 +232,7 @@ class TestRegistration():
 
         return
 
-    def test_platform_removal_array(self):
+    def test_platform_removal(self):
         """Test removing entire platform at once"""
 
         # register all modules at once
@@ -276,8 +249,8 @@ class TestRegistration():
         # test for removal performed by teardown
         return
 
-    def test_platform_removal_single_string(self):
-        """Test removing entire platform at once"""
+    def test_platform_removal_single(self):
+        """Test removing single platform at a time"""
 
         # register all modules at once
         registry.register(self.module_names)
@@ -288,14 +261,20 @@ class TestRegistration():
         # verify stored update
         ensure_updated_stored_modules(self.modules)
         # remove them using only platform
-        for i, platform in enumerate(np.unique(self.platforms)):
-            registry.remove([platform], [None])
-
         # doing this one by one ensures more lines tested
+        # and ensures other registered packages are still there
+        uplatforms, idx = np.unique(self.platforms, return_index=True)
+        umodules = np.asarray(self.modules)[idx]
+        for i, platform in enumerate(uplatforms):
+            registry.remove([platform], [None])
+            ensure_not_in_stored_modules([umodules[i]])
+            # test other names still present
+            if i < len(self.platforms) - 1:
+                ensure_updated_stored_modules(umodules[i + 1:])
 
         return
 
-    def test_platform_name_removal_single_string(self):
+    def test_platform_name_removal_single(self):
         """Test removing single platform/name at a time"""
 
         # register all modules at once
@@ -330,7 +309,10 @@ class TestRegistration():
 
         return
 
-    def test_platform_name_removal_error(self):
+    @pytest.mark.parametrize("platforms, names",
+                             [(['made_up_name'], ['made_up_name']),
+                              (['platname1'], ['made_up_name'])])
+    def test_platform_name_removal_error(self, platforms, names):
         """Test error raised when removing module not present"""
 
         # register all modules at once
@@ -338,11 +320,7 @@ class TestRegistration():
 
         # remove non-registered modules using platform and name
         with pytest.raises(ValueError):
-            registry.remove(['made_up_name'], ['made_up_name'])
-
-        # remove non-registered modules using good platform and bad name
-        with pytest.raises(ValueError):
-            registry.remove([self.platforms[0]], ['made_up_name'])
+            registry.remove(platforms, names)
 
         return
 

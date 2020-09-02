@@ -136,9 +136,6 @@ def register(module_names):
 
     """
 
-    if isinstance(module_names, str):
-        module_names = [module_names]
-
     for module_name in module_names:
         # first, ensure module string directs to something importable
         try:
