@@ -95,7 +95,7 @@ def register(module_names):
 
     Parameters
     -----------
-    module_names : str or list-like of str
+    module_names : list-like of str
         specify package name and instrument modules
 
     Raises
@@ -152,23 +152,21 @@ def register(module_names):
 
         # second, check that module is itself pysat compatible
         validate = itc.InstTestClass()
-
-        # two options here
-        # first - work with test code as is and create dummy structure
-        # to make things work
+        # work with test code, create dummy structure to make things work
         class Foo(object):
             pass
+        validate.package = Foo()
         # parse string to get package part and instrument module part
         parse = module_name.split('.')
-
-        validate.package = Foo()
-        validate.package.__name__ = '.'.join(parse[:-1])
-        validate.test_modules_standard(parse[-1])
-        validate.test_standard_function_presence(parse[-1])
-
-        # second option, use a small mod to the test method signature
-        validate.test_modules_standard('', inst_module)
-        validate.test_standard_function_presence('', inst_module)
+        # module name without package
+        mod_part = parse[-1]
+        # the package preamble
+        pack_part = parse[:-1]
+        # assign package info to Test class
+        validate.package.__name__ = '.'.join(pack_part)
+        # run tests
+        validate.test_modules_standard(mod_part)
+        validate.test_standard_function_presence(mod_part)
 
         # registry is a dict of dicts
         # platform, name, module string
