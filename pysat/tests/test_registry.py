@@ -357,6 +357,14 @@ class TestRegistration():
 
         return
 
+    def test_module_registration_non_importable(self):
+        """Test registering a non-existent module"""
+
+        with pytest.raises(Exception):
+            registry.register(['made.up.module'])
+
+        return
+
 
 class TestModuleRegistration():
     def setup(self):
