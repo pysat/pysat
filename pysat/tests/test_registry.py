@@ -6,10 +6,11 @@ import numpy as np
 import pytest
 import sys
 
-import pysat
+
 from pysat import user_modules
 from pysat.utils import registry
 from pysat import Instrument
+from pysat import instruments
 from pysat.instruments import pysat_testing
 import importlib
 
@@ -369,7 +370,7 @@ class TestRegistration():
 class TestModuleRegistration():
     def setup(self):
 
-        self.inst_module = pysat.instruments
+        self.inst_module = instruments
         # package name
         pkg_name = self.inst_module.__name__
 
