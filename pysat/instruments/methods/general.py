@@ -92,7 +92,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         out.loc[out.index[-1] + pds.DateOffset(months=1)
                 - pds.DateOffset(days=1)] = out.iloc[-1]
         new_out = out.asfreq('D')
-            
+
         for i, out_month in enumerate(out.index):
             if(out_month.month == emonth.month
                and out_month.year == emonth.year):
