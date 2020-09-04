@@ -1083,18 +1083,7 @@ class Instrument(object):
 
         # Print out the orbit settings
         if self.orbits.orbit_index is not None:
-            output_str += 'Orbit Settings\n'
-            output_str += '--------------\n'
-            output_str += 'Orbit Kind: {:s}\n'.format(self.orbit_info['kind'])
-            output_str += 'Orbit Index: {:s}\n'.format(self.orbit_info['index'])
-            output_str += 'Orbit Period: {:s}\n'.format(
-                self.orbit_info['period'].__str__())
-            output_str += 'Number of Orbits: {:d}\n'.format(self.orbits.num)
-            output_str += 'Loaded Orbit Number: '
-            if self.orbits.current is not None:
-                output_str += '{:d}\n\n'.format(self.orbits.current)
-            else:
-                output_str += 'None\n\n'
+            output_str += '{:s}\n'.format(self.orbits.__str__())
 
         # Print the local file information
         output_str += self.files.__str__()
