@@ -902,8 +902,8 @@ class Orbits(object):
         else:
             # no data found
             while self.sat.empty:
-                 # Cycle to more data or raise stopIteration at end of data set
-                self.sat.prev() 
+                # Cycle to more data or raise stopIteration at end of data set
+                self.sat.prev()
             self.prev()
 
     def __iter__(self):
