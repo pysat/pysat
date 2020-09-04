@@ -82,23 +82,23 @@ class Orbits(object):
             self.sat = sat
 
         if kind is None:
-            kind = 'local time'
+            self.kind = 'local time'
         else:
-            kind = kind.lower()
+            self.kind = kind.lower()
 
         if period is None:
             period = pds.Timedelta(np.timedelta64(97, 'm'))
         self.orbit_period = pds.Timedelta(period)
 
-        if (kind == 'local time') or (kind == 'lt'):
+        if self.kind in ['local time', 'lt']:
             self._detBreaks = functools.partial(self._equaBreaks,
                                                 orbit_index_period=24.)
-        elif (kind == 'longitude') or (kind == 'long'):
+        elif self.kind in ['longitude', 'long', 'lon']:
             self._detBreaks = functools.partial(self._equaBreaks,
                                                 orbit_index_period=360.)
-        elif kind == 'polar':
+        elif self.kind == 'polar':
             self._detBreaks = self._polarBreaks
-        elif kind == 'orbit':
+        elif self.kind == 'orbit':
             self._detBreaks = self._orbitNumberBreaks
         else:
             raise ValueError('Unknown kind of orbit requested.')
@@ -107,6 +107,28 @@ class Orbits(object):
         self.num = 0
         self._current = 0
         self.orbit_index = index
+
+    def __repr__(self):
+        """ Print the basic Orbits properties"""
+        out_str = "".join(["Orbits(sat=", self.sat.__repr__(), ", index=",
+                           "{:}, kind=".format(self.orbit_index),
+                           self.kind.__repr__(), ", period=",
+                           self.orbit_period.__repr__(), ")"])
+        return out_str
+
+    def __str__(self):
+        """ Descriptively print the basic Obits properties"""
+        output_str += 'Orbit Settings\n'
+        output_str += '--------------\n'
+        output_str += 'Orbit Kind: {:s}\n'.format(self.kind)
+        output_str += 'Orbit Index: {:s}\n'.format(self.orbit_index)
+        output_str += 'Orbit Period: {:s}\n'.format(self.orbit_period.__str__())
+        output_str += 'Number of Orbits: {:d}\n'.format(self.num)
+        output_str += 'Loaded Orbit Number: '
+        if self._current is not None:
+            output_str += '{:d}\n'.format(self._current)
+        else:
+            output_str += 'None\n'
 
     @property
     def current(self):
