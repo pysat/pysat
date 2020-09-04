@@ -1052,7 +1052,7 @@ class Instrument(object):
             self._password_req = False
 
     def __repr__(self):
-        # Print the basic Instrument properties
+        """ Print the basic Instrument properties"""
         out_str = "".join(["Instrument(platform='", self.platform, "', name='",
                            self.name, "', sat_id='", self.sat_id,
                            "', clean_level='", self.clean_level,
@@ -1062,6 +1062,8 @@ class Instrument(object):
         return out_str
 
     def __str__(self):
+        """ Descriptively print the basic Instrument properties"""
+
         # Get the basic Instrument properties
         output_str = 'pysat Instrument object\n'
         output_str += '-----------------------\n'
