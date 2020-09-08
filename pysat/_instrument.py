@@ -946,6 +946,7 @@ class Instrument(object):
         self.pandas_format = True
 
         if by_name:
+            # pysat platform is reserved for modules within pysat.instruments
             if self.platform == 'pysat':
                 # look within pysat
                 inst = \
@@ -954,17 +955,30 @@ class Instrument(object):
                                             package='pysat.instruments')
             else:
                 # not a native pysat.Instrument
+                # first, get the supporting instrument module from
+                # the pysat registry
                 try:
                     mod = user_modules[self.platform][self.name]
-                    inst = importlib.import_module(mod)
-                except Exception:
-                    estr = ' '.join(('pysat was either unable to locate the',
-                                     'module in the registry or',
-                                     'successfully import the module',
-                                     'for platform:', self.platform,
-                                     'and name:', self.name))
+                except KeyError as kerr:
+                    estr = ''.join(('unknown platform or name supplied to user',
+                                    ' modules: {:} or {:} not in {:}'))
+                    estr = estr.format(self.platform, self.name,
+                                       user_modules.__repr__())
                     logger.error(estr)
-                    raise
+                    raise KeyError(kerr)
+                # import registered module
+                # though modules are checked to ensure they may be imported
+                # when registered, something may have changed on the system
+                # since it was originally checked.
+                try:
+                    inst = importlib.import_module(mod)
+                except ImportError as ierr:
+                    estr = ' '.join(('unable to locate or import module for',
+                                     'platform {:}, name {:}'))
+                    estr = estr.format(self.platform, self.name)
+                    logger.error(estr)
+                    raise ImportError(ierr)
+
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
             inst = inst_module
