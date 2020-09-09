@@ -11,7 +11,7 @@ Orbit-by-Orbit Plots
 --------------------
 
 Plotting a series of orbit-by-orbit plots is a great way to become familiar
-with a data set. If the data set doesn't come with orbit information, this can
+with a satellite data set. If the data set doesn't come with orbit information, this can
 be a challenge. Orbits also go past day breaks, so if data comes in daily files
 this requires loading multiple files at once, joining the data together, etc.
 pysat goes through that trouble for you.
