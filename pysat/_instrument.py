@@ -276,19 +276,19 @@ class Instrument(object):
         self.min_label = min_label
         self.max_label = max_label
         self.fill_label = fill_label
-        self.meta = pysat._meta.Meta(units_label=self.units_label,
-                                     name_label=self.name_label,
-                                     notes_label=self.notes_label,
-                                     desc_label=self.desc_label,
-                                     plot_label=self.plot_label,
-                                     axis_label=self.axis_label,
-                                     scale_label=self.scale_label,
-                                     min_label=self.min_label,
-                                     max_label=self.max_label,
-                                     fill_label=self.fill_label)
+        self.meta = pysat.Meta(units_label=self.units_label,
+                               name_label=self.name_label,
+                               notes_label=self.notes_label,
+                               desc_label=self.desc_label,
+                               plot_label=self.plot_label,
+                               axis_label=self.axis_label,
+                               scale_label=self.scale_label,
+                               min_label=self.min_label,
+                               max_label=self.max_label,
+                               fill_label=self.fill_label)
 
         # function processing class, processes data on load
-        self.custom = pysat._custom.Custom()
+        self.custom = pysat.Custom()
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
         self._next_data = self._null_data.copy()
@@ -315,12 +315,12 @@ class Instrument(object):
         # instantiate Files class
         manual_org = False if manual_org is None else manual_org
         temporary_file_list = not temporary_file_list
-        self.files = pysat._files.Files(self, manual_org=manual_org,
-                                        directory_format=self.directory_format,
-                                        update_files=update_files,
-                                        file_format=self.file_format,
-                                        write_to_disk=temporary_file_list,
-                                        ignore_empty_files=ignore_empty_files)
+        self.files = pysat.Files(self, manual_org=manual_org,
+                                 directory_format=self.directory_format,
+                                 update_files=update_files,
+                                 file_format=self.file_format,
+                                 write_to_disk=temporary_file_list,
+                                 ignore_empty_files=ignore_empty_files)
 
         # set bounds for iteration
         # self.bounds requires the Files class
@@ -340,7 +340,7 @@ class Instrument(object):
             else:
                 # default provided by instrument module
                 orbit_info = self.orbit_info
-        self.orbits = pysat._orbits.Orbits(self, **orbit_info)
+        self.orbits = pysat.Orbits(self, **orbit_info)
         self.orbit_info = orbit_info
 
         # Create empty placeholder for meta translation table
@@ -541,16 +541,16 @@ class Instrument(object):
                         # subvariables.  Meta can filter out empty metadata as
                         # needed, the check above reduces the need to create
                         # Meta instances
-                        ho_meta = pysat._meta.Meta(units_label=self.units_label,
-                                                   name_label=self.name_label,
-                                                   notes_label=self.notes_label,
-                                                   desc_label=self.desc_label,
-                                                   plot_label=self.plot_label,
-                                                   axis_label=self.axis_label,
-                                                   scale_label=self.scale_label,
-                                                   fill_label=self.fill_label,
-                                                   min_label=self.min_label,
-                                                   max_label=self.max_label)
+                        ho_meta = pysat.Meta(units_label=self.units_label,
+                                             name_label=self.name_label,
+                                             notes_label=self.notes_label,
+                                             desc_label=self.desc_label,
+                                             plot_label=self.plot_label,
+                                             axis_label=self.axis_label,
+                                             scale_label=self.scale_label,
+                                             fill_label=self.fill_label,
+                                             min_label=self.min_label,
+                                             max_label=self.max_label)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
 
@@ -1237,30 +1237,30 @@ class Instrument(object):
             except pds.errors.OutOfBoundsDatetime:
                 bad_datetime = True
                 data = self._null_data.copy()
-                mdata = pysat._meta.Meta(units_label=self.units_label,
-                                         name_label=self.name_label,
-                                         notes_label=self.notes_label,
-                                         desc_label=self.desc_label,
-                                         plot_label=self.plot_label,
-                                         axis_label=self.axis_label,
-                                         scale_label=self.scale_label,
-                                         min_label=self.min_label,
-                                         max_label=self.max_label,
-                                         fill_label=self.fill_label)
+                mdata = pysat.Meta(units_label=self.units_label,
+                                   name_label=self.name_label,
+                                   notes_label=self.notes_label,
+                                   desc_label=self.desc_label,
+                                   plot_label=self.plot_label,
+                                   axis_label=self.axis_label,
+                                   scale_label=self.scale_label,
+                                   min_label=self.min_label,
+                                   max_label=self.max_label,
+                                   fill_label=self.fill_label)
 
         else:
             bad_datetime = False
             data = self._null_data.copy()
-            mdata = pysat._meta.Meta(units_label=self.units_label,
-                                     name_label=self.name_label,
-                                     notes_label=self.notes_label,
-                                     desc_label=self.desc_label,
-                                     plot_label=self.plot_label,
-                                     axis_label=self.axis_label,
-                                     scale_label=self.scale_label,
-                                     min_label=self.min_label,
-                                     max_label=self.max_label,
-                                     fill_label=self.fill_label)
+            mdata = pysat.Meta(units_label=self.units_label,
+                               name_label=self.name_label,
+                               notes_label=self.notes_label,
+                               desc_label=self.desc_label,
+                               plot_label=self.plot_label,
+                               axis_label=self.axis_label,
+                               scale_label=self.scale_label,
+                               min_label=self.min_label,
+                               max_label=self.max_label,
+                               fill_label=self.fill_label)
 
         output_str = '{platform} {name} {tag} {sat_id}'
         output_str = output_str.format(platform=self.platform,
@@ -1270,7 +1270,7 @@ class Instrument(object):
         if not isinstance(data, self._data_library):
             raise TypeError(' '.join(('Data returned by instrument load',
                             'routine must be a', self._data_library)))
-        if not isinstance(mdata, pysat._meta.Meta):
+        if not isinstance(mdata, pysat.Meta):
             raise TypeError('Metadata returned must be a pysat.Meta object')
 
         # let user know if data was returned or not
@@ -1481,9 +1481,6 @@ class Instrument(object):
                 self.meta = self._curr_meta.copy()
             else:
                 self.data = self._null_data.copy()
-                # line below removed as it would delete previous meta, if any
-                # if you end a seasonal analysis with a day with no data, then
-                # no meta: self.meta = pysat._meta.Meta()
 
             # multi file days can extend past a single day, only want data from
             # specific date if loading by day
@@ -1831,7 +1828,7 @@ class Instrument(object):
             stop = dt.datetime(2009,1,31)
             inst.bounds = (start,stop)
 
-            start2 = pysat.datetetime(2010,1,1)
+            start2 = dt.datetetime(2010,1,1)
             stop2 = dt.datetime(2010,2,14)
             inst.bounds = ([start, start2], [stop, stop2])
 
@@ -1941,12 +1938,10 @@ class Instrument(object):
         --------
         ::
 
-            inst = pysat.Instrument(platform=platform,
-                                    name=name,
-                                    tag=tag)
-            start = dt.datetime(2009,1,1)
-            stop = dt.datetime(2009,1,31)
-            inst.bounds = (start,stop)
+            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
+            start = dt.datetime(2009, 1, 1)
+            stop = dt.datetime(2009, 1, 31)
+            inst.bounds = (start, stop)
             for inst in inst:
                 print('Another day loaded', inst.date)
 
