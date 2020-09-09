@@ -387,7 +387,7 @@ class TestModuleRegistration():
                         zip(module_strings, self.platforms,
                             self.platform_names)]
 
-        # remove any existing support which may be let over
+        # remove any existing support which may be left over
         # errors if you try to remove a package that isn't
         # registered
         for plat_name in np.unique(self.platforms):
