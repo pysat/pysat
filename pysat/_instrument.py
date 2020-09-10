@@ -1341,8 +1341,10 @@ class Instrument(object):
 
         """
         if self._load_by_date:
-            next_date = self.date + pds.DateOffset(days=1)
-            return self._load_data(date=next_date)
+            next_date = self.date + self.increment
+            next_next_date = next_date + self.increment + pds.DateOffset(days=1)
+            return self._load_data(date=next_date,
+                                   date2=next_next_date)
         else:
             return self._load_data(fid=(self._fid + 1))
 
@@ -1357,8 +1359,8 @@ class Instrument(object):
         """
 
         if self._load_by_date:
-            prev_date = self.date - pds.DateOffset(days=1)
-            return self._load_data(date=prev_date)
+            prev_date = self.date - self.increment
+            return self._load_data(date=prev_date, date2=self.date)
         else:
             return self._load_data(fid=(self._fid - 1))
 
@@ -1380,7 +1382,7 @@ class Instrument(object):
             self._load_by_date = False
 
     def load(self, yr=None, doy=None, yr2=None, doy2=None, date=None,
-             date2=None, fname=None, fid=None, verifyPad=False):
+             date2=None, fname=None, verifyPad=False):
         """Load instrument data into Instrument object .data.
 
         Parameters
@@ -1417,10 +1419,10 @@ class Instrument(object):
             # increment
             if date2 is not None:
                 # support loading a range of dates
-                inc = date2 - date
+                self.increment = date2 - date
             else:
                 # defaults to single day load
-                inc = pds.DateOffset(days=1)
+                self.increment = pds.DateOffset(days=1)
             curr = date
         elif (yr is not None) & (doy is not None):
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
@@ -1428,24 +1430,19 @@ class Instrument(object):
             # increment
             if (yr2 is not None) & (doy2 is not None):
                 date2 = dt.datetime(yr2, 1, 1) + pds.DateOffset(days=(doy2 - 1))
-                inc = date2 - date
+                self.increment = date2 - date
             elif (yr2 is not None) or (doy2 is not None):
                 raise ValueError('Both yr2 and doy2 must be set, or neither.')
             else:
-                inc = pds.DateOffset(days=1)
+                self.increment = pds.DateOffset(days=1)
             curr = self.date
         elif fname is not None:
             # date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
             # increment one file at a time
-            inc = 1
+            self.increment = 1
             curr = self._fid.copy()
-        elif fid is not None:
-            self._set_load_parameters(date=None, fid=fid)
-            # increment one file at a time
-            inc = 1
-            curr = fid
         else:
             estr = 'Must supply a yr,doy pair, or datetime object, or filename'
             estr = '{:s} to load data from.'.format(estr)
@@ -1502,8 +1499,8 @@ class Instrument(object):
                 self._next_data.sort_index(inplace=True)
 
             # make tracking indexes consistent with new loads
-            self._next_data_track = curr + inc
-            self._prev_data_track = curr - inc
+            self._next_data_track = curr + self.increment
+            self._prev_data_track = curr - self.increment
             # attach data to object
             if not self._empty(self._curr_data):
                 self.data = self._curr_data.copy()
@@ -1578,7 +1575,7 @@ class Instrument(object):
         # if self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
-                                              inc=inc)
+                                              inc=self.increment)
             if not self.empty:
                 self.meta = meta
 
@@ -2014,9 +2011,9 @@ class Instrument(object):
                 elif idx[-1] + 1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
-                    idx += 1
-                    self.load(date=self._iter_list[idx[0]],
-                              verifyPad=verifyPad)
+                    date = self._iter_list[idx[0]] + self.increment
+                    date2 = date + self.increment
+                    self.load(date=date, date2=date2, verifyPad=verifyPad)
             else:
                 self.load(date=self._iter_list[0], verifyPad=verifyPad)
 
@@ -2054,9 +2051,9 @@ class Instrument(object):
                 elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
-                    idx -= 1
-                    self.load(date=self._iter_list[idx[0]],
-                              verifyPad=verifyPad)
+                    date = self._iter_list[idx[0]] - self.increment
+                    date2 = self._iter_list[idx[0]]
+                    self.load(date=date, date2=date2, verifyPad=verifyPad)
             else:
                 self.load(date=self._iter_list[-1], verifyPad=verifyPad)
 
