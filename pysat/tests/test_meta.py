@@ -982,60 +982,65 @@ class TestBasics():
         assert (self.meta['new2'].long_name == 'boo2')
 
     def test_transfer_attributes_to_instrument(self):
-        self.meta.new_attribute = 'hello'
-        self.meta.date = None
-        self.meta.transfer_attributes_to_instrument(self.testInst)
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta._yo_yo = 'yo yo'
+            self.meta.date = None
+            self.meta.transfer_attributes_to_instrument(self.testInst)
 
-        assert self.testInst.new_attribute == 'hello'
-        assert self.testInst.date is None
+            assert self.testInst.new_attribute == 'hello'
+            assert self.testInst.date is None
 
     def test_transfer_attributes_to_instrument_leading_(self):
-        self.meta.new_attribute = 'hello'
-        self.meta.date = None
-        self.meta._yo_yo = 'yo yo'
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-        with pytest.raises(AttributeError):
-            self.testInst._yo_yo
-
-        # Check to make sure other values still transferred
-        assert self.testInst.new_attribute == 'hello'
-        assert self.testInst.date is None
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta._yo_yo = 'yo yo'
+            self.meta.date = None
+            self.meta.transfer_attributes_to_instrument(self.testInst)
+            with pytest.raises(AttributeError):
+                self.testInst._yo_yo
+            # Check to make sure other values still transferred
+            assert self.testInst.new_attribute == 'hello'
+            assert self.testInst.date is None
 
     def test_transfer_attributes_to_instrument_leading__(self):
-        self.meta.new_attribute = 'hello'
-        self.meta.date = None
-        self.meta.__yo_yo = 'yo yo'
-        self.meta.transfer_attributes_to_instrument(self.testInst)
-        with pytest.raises(AttributeError):
-            self.testInst.__yo_yo
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta.__yo_yo = 'yo yo'
+            self.meta.date = None
+            self.meta.transfer_attributes_to_instrument(self.testInst)
+            with pytest.raises(AttributeError):
+                self.testInst.__yo_yo
 
-        # Check to make sure other values still transferred
-        assert self.testInst.new_attribute == 'hello'
-        assert self.testInst.date is None
+            # Check to make sure other values still transferred
+            assert self.testInst.new_attribute == 'hello'
+            assert self.testInst.date is None
 
     def test_transfer_attributes_to_instrument_strict_names(self):
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.jojo_beans = 'yep!'
-        self.meta.name = 'Failure!'
-        self.meta.date = 'yo yo2'
-        self.testInst.load(2009, 1)
-        self.testInst.jojo_beans = 'nope!'
-        with pytest.raises(RuntimeError):
-            self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                        strict_names=True)
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta._yo_yo = 'yo yo'
+            self.meta.jojo_beans = 'yep!'
+            self.meta.name = 'Failure!'
+            self.meta.date = 'yo yo2'
+            self.testInst.load(2009, 1)
+            self.testInst.jojo_beans = 'nope!'
+            with pytest.raises(RuntimeError):
+                self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                            strict_names=True)
 
     def test_transfer_attributes_to_instrument_strict_names_false(self):
-        self.meta.new_attribute = 'hello'
-        self.meta._yo_yo = 'yo yo'
-        self.meta.jojo_beans = 'yep!'
-        self.meta.name = 'Failure!'
-        self.meta.date = 'yo yo2'
-        self.testInst.load(2009, 1)
-        self.testInst.jojo_beans = 'nope!'
-        self.meta.transfer_attributes_to_instrument(self.testInst,
-                                                    strict_names=False)
-        assert self.testInst.jojo_beans == 'yep!'
+        if self.meta.mutable:
+            self.meta.new_attribute = 'hello'
+            self.meta._yo_yo = 'yo yo'
+            self.meta.jojo_beans = 'yep!'
+            self.meta.name = 'Failure!'
+            self.meta.date = 'yo yo2'
+            self.testInst.load(2009, 1)
+            self.testInst.jojo_beans = 'nope!'
+            self.meta.transfer_attributes_to_instrument(self.testInst,
+                                                        strict_names=False)
+            assert self.testInst.jojo_beans == 'yep!'
 
     def test_merge_meta(self):
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
@@ -1073,8 +1078,8 @@ class TestBasics():
         assert (self.meta['NEW21'].YoYoYO == 'yolo')
 
     def test_meta_immutable(self):
-        assert self.meta.mutable
 
+        self.meta.mutable = True
         greeting = '...listen!'
         self.meta.hey = greeting
         assert self.meta.hey == greeting
@@ -1154,3 +1159,22 @@ class TestBasics():
         assert 'test_nan_export' in f['test_nan_variable'].ncattrs()
         assert 'non_nan_export' not in f['test_nan_variable'].ncattrs()
         assert 'extra_check' in f['test_nan_variable'].ncattrs()
+
+
+class TestBasicsImmuatble(TestBasics):
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.meta = pysat.Meta()
+        # disable mutability
+        self.meta.mutable = False
+
+        # Instrument object
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean')
+        # pre-load data to ensure mutable set to false
+        self.testInst.load(2009, 1)
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+        del self.meta
