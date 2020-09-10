@@ -101,7 +101,8 @@ def default(self):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False):
+         malformed_index=False, mangle_file_dates=False,
+         num_daily_samples=None):
     """ Loads the test files
 
     Parameters
@@ -134,6 +135,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.
+    num_daily_samples : int
+        Number of samples per day
 
     Returns
     -------
@@ -147,7 +150,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='1S')
+
+    uts, index, dates = mm_test.generate_times(fnames, sat_id, freq='1S')
 
     # Specify the date tag locally and determine the desired date range
     pds_offset = pds.DateOffset(hours=12)
@@ -158,11 +162,12 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     else:
         root_date = root_date or _test_dates['']['']
 
-    data = pds.DataFrame(uts, columns=['uts'])
+    # store UTS, mod 86400
+    data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
-    time_delta = date - root_date
+    time_delta = dates[0] - root_date
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(),
                                              uts, period=iperiod['lt'],
                                              data_range=drange['lt'])
@@ -190,7 +195,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['altitude'] = alt0 * np.ones(data['latitude'].shape)
 
     # fake orbit number
-    fake_delta = date - (_test_dates[''][''] - pds.DateOffset(years=1))
+    fake_delta = dates[0] - (_test_dates[''][''] - pds.DateOffset(years=1))
     data['orbit_num'] = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                                    uts, period=iperiod['lt'],
                                                    cyclic=False)

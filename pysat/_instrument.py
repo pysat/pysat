@@ -1211,7 +1211,7 @@ class Instrument(object):
 
         return self.today() - pds.DateOffset(days=1)
 
-    def _load_data(self, date=None, fid=None):
+    def _load_data(self, date=None, fid=None, inc=None):
         """
         Load data for an instrument on given date or fid, dependng upon input.
 
@@ -1221,6 +1221,9 @@ class Instrument(object):
             file date
         fid : (int or NoneType)
             filename index value
+        inc : pds.DateOffset or int
+            Increment of files or dates to load, starting from the
+            root date or fid
 
         Returns
         --------
@@ -1233,9 +1236,9 @@ class Instrument(object):
         date = self._filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
-            fname = self.files[fid:(fid + 1)]
+            fname = self.files[fid:(fid + inc)]
         elif date is not None:
-            fname = self.files[date:(date + pds.DateOffset(days=1))]
+            fname = self.files[date:(date + inc)]
         else:
             raise ValueError('Must supply either a date or file id number.')
 
@@ -1376,8 +1379,8 @@ class Instrument(object):
             self.doy = None
             self._load_by_date = False
 
-    def load(self, yr=None, doy=None, date=None, fname=None, fid=None,
-             verifyPad=False):
+    def load(self, yr=None, doy=None, yr2=None, doy2=None, date=None,
+             date2=None, fname=None, fid=None, verifyPad=False):
         """Load instrument data into Instrument object .data.
 
         Parameters
@@ -1410,14 +1413,26 @@ class Instrument(object):
             # ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date,
                                       fid=None)
+            date = self._filter_datetime_input(date)
             # increment
-            inc = pds.DateOffset(days=1)
-            curr = self._filter_datetime_input(date)
+            if date2 is not None:
+                # support loading a range of dates
+                inc = date2 - date
+            else:
+                # defaults to single day load
+                inc = pds.DateOffset(days=1)
+            curr = date
         elif (yr is not None) & (doy is not None):
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
             self._set_load_parameters(date=date, fid=None)
             # increment
-            inc = pds.DateOffset(days=1)
+            if (yr2 is not None) & (doy2 is not None):
+                date2 = dt.datetime(yr2, 1, 1) + pds.DateOffset(days=(doy2 - 1))
+                inc = date2 - date
+            elif (yr2 is not None) or (doy2 is not None):
+                raise ValueError('Both yr2 and doy2 must be set, or neither.')
+            else:
+                inc = pds.DateOffset(days=1)
             curr = self.date
         elif fname is not None:
             # date will have to be set later by looking at the data
@@ -1562,7 +1577,8 @@ class Instrument(object):
 
         # if self.pad is False, load single day
         else:
-            self.data, meta = self._load_data(date=self.date, fid=self._fid)
+            self.data, meta = self._load_data(date=self.date, fid=self._fid,
+                                              inc=inc)
             if not self.empty:
                 self.meta = meta
 

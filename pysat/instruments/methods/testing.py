@@ -204,26 +204,37 @@ def generate_times(fnames, sat_id, freq='1S'):
     """
 
     # TODO: Expand for multi-file days
-    # grab date from filename
-    parts = os.path.split(fnames[0])[-1].split('-')
-    yr = int(parts[0])
-    month = int(parts[1])
-    day = int(parts[2][0:2])
-    date = dt.datetime(yr, month, day)
+    uts = []
+    indices = []
+    dates = []
+    for loop, fname in enumerate(fnames):
+        # grab date from filename
+        parts = os.path.split(fname)[-1].split('-')
+        yr = int(parts[0])
+        month = int(parts[1])
+        day = int(parts[2][0:2])
+        date = dt.datetime(yr, month, day)
+        dates.append(date)
 
-    # Create one day of data at desired frequency
-    end_date = date + pds.DateOffset(seconds=86399)
-    index = pds.date_range(start=date, end=end_date, freq=freq)
-    # Allow numeric string to select first set of data
-    try:
-        index = index[0:int(sat_id)]
-    except ValueError:
-        # non-integer sat_id produces ValueError
-        pass
+        # Create one day of data at desired frequency
+        end_date = date + pds.DateOffset(seconds=86399)
+        index = pds.date_range(start=date, end=end_date, freq=freq)
+        indices.extend(index)
+        # Allow numeric string to select first set of data
+        try:
+            index = index[0:int(sat_id)]
+        except ValueError:
+            # non-integer sat_id produces ValueError
+            pass
 
-    uts = index.hour * 3600 + index.minute * 60 + index.second
+        uts.extend(index.hour * 3600 + index.minute * 60 + index.second
+                   + 86400. * loop)
+    # combine index times together
+    index = pds.DatetimeIndex(indices)
+    # make UTS an array
+    uts = np.array(uts)
 
-    return uts, index, date
+    return uts, index, dates
 
 
 def define_period():
