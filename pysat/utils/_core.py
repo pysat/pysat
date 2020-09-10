@@ -495,13 +495,15 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
         output += '\n'
 
     # Print out remaining variables one at a time on a single line
-    for i in range(sel_len - ncols * num):
-        if middle >= 0:
-            if i == 0 and num > 0:
-                output += "...".center(lpad * ncols) + '\n'
-            elif num == 0 and i == nhalf:
-                output += "...".center(lpad if lpad > 4 else 4)
-        output += out_strs[nsel][i + ncols * num].ljust(lpad)
-    output += '\n'
+    extra_cols = sel_len - ncols * num
+    if extra_cols > 0:
+        for i in range(extra_cols):
+            if middle >= 0:
+                if i == 0 and num > 0:
+                    output += "...".center(lpad * ncols) + '\n'
+                elif num == 0 and i == nhalf:
+                    output += "...".center(lpad if lpad > 4 else 4)
+            output += out_strs[nsel][i + ncols * num].ljust(lpad)
+        output += '\n'
 
     return output
