@@ -1106,6 +1106,9 @@ class Instrument(object):
 
             output_str += '\nVariable Names:\n'
             output_str += utils._core.fmt_output_in_cols(self.variables)
+
+            # Print the short version of the metadata
+            output_str += '\n{:s}'.format(self.meta.__str__(long_str=False))
         else:
             output_str += 'No loaded data.\n'
 
