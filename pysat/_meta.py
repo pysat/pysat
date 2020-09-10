@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pds
 
 import pysat
+import pysat.utils._core as core_utils
 
 
 class Meta(object):
@@ -397,6 +398,12 @@ class Meta(object):
 
     def __repr__(self):
         """String describing MetaData instantiation parameters
+
+        Returns
+        -------
+        out_str : str
+            Simply formatted output string
+
         """
         nvar = len([kk for kk in self.keys()])
         out_str = ''.join(['Meta(metadata=', self._data.__repr__(),
@@ -414,37 +421,60 @@ class Meta(object):
                            ' -> {:d} Variables'.format(nvar)])
         return out_str
 
-    def __str__(self, recurse=True):
+    def __str__(self, long_str=True):
         """String describing Meta instance, variables, and attributes
 
         Parameters
         ----------
-        recurse : boolean
-            True for recursive call, False for distinct call (default=True)
+        long_str : bool
+            Return short version if False and long version if True
+            (default=True)
+
+        Returns
+        -------
+        out_str : str
+            Nicely formatted output string
 
         """
+        # Get the desired variables as lists
+        labs = [var for var in self.attrs()]
+        vdim = [var for var in self.keys()]
+        ndim = [var for var in self.keys_nD()]
 
-        # cover 1D parameters
-        if recurse:
-            output_str = 'Metadata for 1D variables\n'
-        else:
-            output_str = ''
+        # Get the lengths of each list
+        nlabels = len(labs)
+        nvdim = len(vdim)
+        nndim = len(ndim)
 
-        for ind in self.keys():
-            output_str += ind.ljust(30)
-        output_str += '\n\n'
-        output_str += 'Tracking the following:\n'
-        for col in self.attrs():
-            output_str += col.ljust(30)
+        # Print the short output
+        out_str = "pysat Meta object\n"
+        out_str += "-----------------\n"
+        out_str += "Tracking {:d} metadata values\n".format(nlabels)
+        out_str += "Metadata for {:d} variables\n".format(nvdim)
+        out_str += "Metadata for {:d} ND variables\n".format(nndim)
 
-        output_str += '\n'
-        if recurse:
-            for item_name in self.keys_nD():
-                output_str += '\n\n'
-                output_str += 'Metadata for ' + item_name + '\n'
-                output_str += self.ho_data[item_name].__str__(False)
+        # Print the longer output
+        if long_str:
+            # Print all the metadata labels
+            if nlabels > 0:
+                ncol = 5
+                out_str += "\nMetadata labels:\n"
+                out_str += core_utils.fmt_output_in_cols(labs, ncols=ncol,
+                                                         max_num=nlabels)
 
-        return output_str
+            # Print a subset of the metadata variables, divided by order
+            ncol = 3
+            max_num = 6  # Should be divible by 2 and ncol
+            if nvdim > 0:
+                out_str += "\nMetadata variables:\n"
+                out_str += core_utils.fmt_output_in_cols(vdim, ncols=ncol,
+                                                         max_num=max_num)
+            if nndim > 0:
+                out_str += "\nND Metadata variables:\n"
+                out_str += core_utils.fmt_output_in_cols(ndim, ncols=ncol,
+                                                         max_num=max_num)
+
+        return out_str
 
     def _insert_default_values(self, input_name):
 
@@ -600,9 +630,8 @@ class Meta(object):
                             self[item] = val
 
         elif isinstance(input_data, pds.Series):
-            # outputs from Meta object are a Series.
-            # thus this takes in input from a Meta object
-            # set data usind standard assignment via a dict
+            # Outputs from Meta object are a Series. Thus this takes in input
+            # from a Meta object. Set data using standard assignment via a dict
             in_dict = input_data.to_dict()
             if 'children' in in_dict:
                 child = in_dict.pop('children')
