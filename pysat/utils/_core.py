@@ -433,3 +433,75 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         out.attrs = {}
 
     return out, mdata
+
+
+def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
+    """ Format a string with desired output values in columns
+
+    Parameters
+    ----------
+    out_strs : array-like
+        Array like object containing strings to print
+    ncols : int
+        Number of columns to print (default=3)
+    max_num : int
+        Maximum number of out_strs members to print.  Best display achieved if
+        this number is divisable by 2 and ncols (default=6)
+    lpad : int or NoneType
+        Left padding or None to use length of longest string + 1 (default=None)
+
+    Returns
+    -------
+    output : string
+        String with desired data formatted in columns
+
+    """
+    output = ""
+    
+    # Ensure output strings are array-like
+    out_strs = np.asarray(out_strs)
+    if out_strs.shape == ():
+        out_strs = np.array([out_strs])
+
+    # If there are more data values than desired, keep the first and last
+    out_len = len(out_strs)
+    middle = -1
+    if out_len > max_num:
+        nhalf = int(max_num / 2)
+        middle = nhalf // ncols
+        if middle == 0:
+            middle = 1
+        nsel = [i for i in range(nhalf)]
+        nsel.extend([i for i in np.arange(out_len - nhalf, out_len)])
+    else:
+        nsel = np.arange(0, out_len)
+    sel_len = len(nsel)
+
+    # If desired, determine the left padding spacing
+    if lpad is None:
+       lpad = max([len(ostr) for ostr in out_strs[nsel]]) + 1
+
+    # Print out the groups of variables in rows
+    num = sel_len // ncols
+    for i in range(num):
+        # If data has been cut, indicate this with an ellipses row
+        if i == middle:
+            middle = -1
+            output += "...".center(lpad * ncols) + '\n'
+
+        # Print out data for each selected column in this row
+        for j in range(ncols):
+            output += out_strs[nsel][ncols * i + j].ljust(lpad)
+        output += '\n'
+
+    # Print out remaining variables one at a time on a single line
+    for i in range(sel_len - ncols * num):
+        if middle >= 0:
+            if i == 0 and num > 0:
+                output += "...".center(lpad * ncols) + '\n'
+            elif num == 0 and i == nhalf:
+                output += "...".center(lpad if lpad > 4 else 4)
+        output += out_strs[nsel][i + ncols * num].ljust(lpad)
+    output += '\n'
+
+    return output
