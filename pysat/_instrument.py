@@ -365,6 +365,9 @@ class Instrument(object):
             if key not in self.kwargs:
                 self.kwargs[key] = default_keywords[key]
 
+        # start with a daily increment for loading
+        self.increment = pds.DateOffset(days=1)
+
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
         self._init_rtn(self)
