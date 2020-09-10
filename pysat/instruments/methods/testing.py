@@ -203,7 +203,6 @@ def generate_times(fnames, sat_id, freq='1S'):
         The requested date reconstructed from the fake file name
     """
 
-    # TODO: Expand for multi-file days
     uts = []
     indices = []
     dates = []
