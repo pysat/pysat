@@ -85,7 +85,7 @@ def store():
                 fopen.write(out)
 
 
-def register(module_names):
+def register(module_names, overwrite=False):
     """Registers a user pysat.Instrument module by name
 
     Enables instantiation of a third-party Instrument
@@ -97,12 +97,16 @@ def register(module_names):
     -----------
     module_names : list-like of str
         specify package name and instrument modules
+    overwrite : bool
+        If True, an existing registration will be updated
+        with the new module information.
 
     Raises
     ------
     ValueError
-        If platform and name associated with module_name(s) are currently
-        registered
+        If a new module is input with a platform and name that is already
+        associated with a registered module and the overwrite flag is set to
+        False.
 
     Warnings
     --------
@@ -185,10 +189,22 @@ def register(module_names):
             store()
         else:
             # platform/name combination already registered
-            estr = ' '.join(('An instrument has already been registered using',
-                             'platform:', platform, 'and name:', name,
-                             'which maps to:', module_name))
-            raise ValueError(estr)
+            # check if this is a new package or just a redundant assignment
+            if module_name != pysat.user_modules[platform][name]:
+                # new assignment, check for overwrite flag
+                if not overwrite:
+                    estr = ' '.join(('An instrument has already been ',
+                                     'registered for platform:', platform,
+                                     'and name:', name,
+                                     'which maps to:', module_name, 'To assign',
+                                     'a new module the overwrite flag',
+                                     'must be enabled.'))
+                    raise ValueError(estr)
+                else:
+                    # overwrite with new module information
+                    pysat.user_modules[platform][name] = module_name
+                    # store
+                    store()
 
     return
 
@@ -303,17 +319,17 @@ def remove(platforms, names):
                     # name not in platform
                     estr = ''.join((platform, ', ', name, ': not a registered ',
                                     'instrument module.'))
-                    raise ValueError(estr)
+                    logger.info(estr)
                 # remove platform if no remaining instruments
                 if len(pysat.user_modules[platform]) == 0:
                     pysat.user_modules.pop(platform)
                 # store
                 store()
         else:
-            # error string if module not registered
+            # info string if module not registered
             estr = ''.join((platform, ': is not a registered ',
                             'instrument platform.'))
             # platform not in registered modules
-            raise ValueError(estr)
+            logger.info(estr)
 
     return

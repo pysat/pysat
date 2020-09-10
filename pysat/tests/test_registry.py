@@ -2,6 +2,7 @@
 tests the registration of user-defined modules
 """
 
+import copy
 import numpy as np
 import pytest
 import sys
@@ -174,10 +175,7 @@ class TestRegistration():
         self.platform_names = [mod[2] for mod in self.modules]
 
         # do pre-cleanup
-        try:
-            registry.remove(self.platforms, self.platform_names)
-        except ValueError:
-            pass
+        registry.remove(self.platforms, self.platform_names)
 
         # make sure instruments are not yet registered
         ensure_not_in_stored_modules(self.modules)
@@ -188,14 +186,7 @@ class TestRegistration():
 
     def teardown(self):
         # clean up
-        try:
-            # remove singly to ensure everything that could've been
-            # registered has been removed
-            for platform, name in zip(self.platforms, self.platform_names):
-                registry.remove([platform], [name])
-        except ValueError:
-            # ok if a module has already been removed
-            pass
+        registry.remove(self.platforms, self.platform_names)
         # ensure things are clean, all have been removed
         ensure_not_in_stored_modules(self.modules)
 
@@ -212,9 +203,40 @@ class TestRegistration():
         ensure_live_registry_updated(self.modules)
         # verify update
         ensure_updated_stored_modules(self.modules)
+
+        # create a new package, the same as an existing one
+        # but with a different module name
+        mod_name = self.module_names[0]
+        sys.modules['pysat_error.test_faux_module'] = sys.modules[mod_name]
         # register packages again, this should error
         with pytest.raises(ValueError):
-            registry.register(self.module_names)
+            registry.register(['pysat_error.test_faux_module'])
+
+        return
+
+    def test_duplicate_registration_overwrite(self):
+        """Test register error for duplicate package"""
+
+        # register all modules at once
+        registry.register(self.module_names)
+        # verify instantiation
+        verify_platform_name_instantiation(self.modules)
+        # check that global registry was updated
+        ensure_live_registry_updated(self.modules)
+        # verify update
+        ensure_updated_stored_modules(self.modules)
+
+        # create a new package, the same as an existing one
+        # but with a different module name
+        mod_name = self.module_names[0]
+        sys.modules['pysat_error.test_faux_module'] = sys.modules[mod_name]
+        # register packages again
+        registry.register(['pysat_error.test_faux_module'], overwrite=True)
+        self.modules[0] = ('pysat_error.test_faux_module', 'platname1', 'name1')
+        # check that global registry was updated
+        ensure_live_registry_updated(self.modules)
+        # verify update
+        ensure_updated_stored_modules(self.modules)
 
         return
 
@@ -301,27 +323,14 @@ class TestRegistration():
 
         return
 
-    def test_platform_removal_error(self):
+    def test_platform_removal_not_present(self):
         """Test error raised when removing module not present"""
 
-        # remove non-registered modules using only platform
-        with pytest.raises(ValueError):
-            registry.remove(['made_up_name'], [None])
-
-        return
-
-    @pytest.mark.parametrize("platforms, names",
-                             [(['made_up_name'], ['made_up_name']),
-                              (['platname1'], ['made_up_name'])])
-    def test_platform_name_removal_error(self, platforms, names):
-        """Test error raised when removing module not present"""
-
-        # register all modules at once
-        registry.register(self.module_names)
-
-        # remove non-registered modules using platform and name
-        with pytest.raises(ValueError):
-            registry.remove(platforms, names)
+        # try to remove non-registered modules using only platform
+        stored_modules = copy.deepcopy(user_modules)
+        registry.remove(['made_up_name'], [None])
+        # make sure nothing changed
+        assert stored_modules == user_modules
 
         return
 
@@ -388,26 +397,13 @@ class TestModuleRegistration():
                             self.platform_names)]
 
         # remove any existing support which may be let over
-        # errors if you try to remove a package that isn't
-        # registered
-        for plat_name in np.unique(self.platforms):
-            try:
-                registry.remove([plat_name], [None])
-            except ValueError:
-                pass
+        registry.remove(self.platforms, [None] * len(self.platforms))
 
         return
 
     def teardown(self):
         # clean up
-        try:
-            # remove singly to ensure everything that could've been
-            # registered has been removed
-            for platform, name in zip(self.platforms, self.platform_names):
-                registry.remove([platform], [name])
-        except ValueError:
-            # ok if a module has already been removed
-            pass
+        registry.remove(self.platforms, self.platform_names)
 
         return
 
