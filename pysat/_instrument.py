@@ -1104,23 +1104,8 @@ class Instrument(object):
             output_str += 'Number of Times: {:d}\n'.format(len(self.index))
             output_str += 'Number of variables: {:d}\n'.format(num_vars)
 
-            if num_vars <= max_vars:
-                output_str += '\nVariable Names:\n'
-                num = len(self.variables) // 3
-
-                # Print out groups of three variables at a time on one line
-                for i in np.arange(num):
-                    output_str += self.variables[3 * i].ljust(30)
-                    output_str += self.variables[3 * i + 1].ljust(30)
-                    output_str += self.variables[3 * i + 2].ljust(30) + '\n'
-
-                # Print out remaining variables one at a time on one line
-                for i in np.arange(len(self.variables) - 3 * num):
-                    output_str += self.variables[i + 3 * num].ljust(30)
-                output_str += '\n'
-            else:
-                output_str += "\nSee variable names using "
-                output_str += "print(inst.variables)\n"
+            output_str += '\nVariable Names:\n'
+            output_str += utils._core.fmt_output_in_cols(self.variables)
         else:
             output_str += 'No loaded data.\n'
 
