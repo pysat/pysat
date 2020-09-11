@@ -218,14 +218,13 @@ def generate_times(fnames, sat_id, freq='1S'):
         # Create one day of data at desired frequency
         end_date = date + pds.DateOffset(seconds=86399)
         index = pds.date_range(start=date, end=end_date, freq=freq)
-        indices.extend(index)
         # Allow numeric string to select first set of data
         try:
             index = index[0:int(sat_id)]
         except ValueError:
             # non-integer sat_id produces ValueError
             pass
-
+        indices.extend(index)
         uts.extend(index.hour * 3600 + index.minute * 60 + index.second
                    + 86400. * loop)
     # combine index times together
