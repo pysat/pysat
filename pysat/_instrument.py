@@ -2018,7 +2018,7 @@ class Instrument(object):
                 # every item being the last day loaded
                 # with the copy, behavior is as expected, though
                 # memory and execution time goes up
-                yield self #.copy()
+                yield self
 
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.

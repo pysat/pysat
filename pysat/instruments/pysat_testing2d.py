@@ -133,8 +133,8 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # DataFrame
     high_rate_template = pds.date_range(dates[0],
                                         dates[0] + pds.DateOffset(hours=0,
-                                                              minutes=1,
-                                                              seconds=39),
+                                                                  minutes=1,
+                                                                  seconds=39),
                                         freq='2S')
 
     # create a few simulated profiles
