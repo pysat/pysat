@@ -2005,6 +2005,11 @@ class Instrument(object):
                 self.load(date=date, date2=date2)
                 # track the previous maximum, will be next rounds start date
                 prev_date = date2
+                # TODO: Discuss .copy()
+                # without copy, a = [inst for inst in inst] leads to
+                # every item being the last day loaded
+                # with the copy, behavior is as expected, though
+                # memory and execution time goes up
                 yield self #.copy()
 
     def next(self, verifyPad=False):
