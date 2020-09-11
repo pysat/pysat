@@ -457,7 +457,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
 
     """
     output = ""
-    
+
     # Ensure output strings are array-like
     out_strs = np.asarray(out_strs)
     if out_strs.shape == ():
@@ -471,7 +471,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
         middle = nhalf // ncols
         if middle == 0:
             middle = 1
-        nsel = [i for i in range(nhalf)]
+        nsel = [0] if nhalf == 0 else [i for i in range(nhalf)]
         nsel.extend([i for i in np.arange(out_len - nhalf, out_len)])
     else:
         nsel = np.arange(0, out_len)
