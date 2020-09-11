@@ -88,7 +88,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
+    uts, index, dates = mm_test.generate_times(fnames, sat_id, freq='100S')
 
     if malformed_index:
         index = index.tolist()
@@ -104,7 +104,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # figure out how far in time from the root start
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
-    time_delta = date - dt.datetime(2009, 1, 1)
+    time_delta = dates[0] - dt.datetime(2009, 1, 1)
 
     # mlt runs 0-24 each orbit.
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,

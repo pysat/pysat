@@ -102,7 +102,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, sat_id=sat_id, freq='1S')
+    uts, index, dates = mm_test.generate_times(fnames, sat_id=sat_id, freq='1S')
 
     if sim_multi_file_right:
         root_date = dt.datetime(2009, 1, 1, 12)
@@ -122,7 +122,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
                           coords={epoch_name: index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
-    time_delta = date - root_date
+    time_delta = dates[0] - root_date
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
@@ -155,7 +155,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['altitude'] = ((epoch_name), altitude)
 
     # fake orbit number
-    fake_delta = date - dt.datetime(2008, 1, 1)
+    fake_delta = dates[0] - dt.datetime(2008, 1, 1)
     orbit_num = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                            uts, period=iperiod['lt'],
                                            cyclic=False)

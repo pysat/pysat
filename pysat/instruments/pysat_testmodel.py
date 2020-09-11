@@ -64,13 +64,13 @@ def load(fnames, tag=None, sat_id=None):
     """
 
     # create an artifical satellite data set
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='900S')
+    uts, index, dates = mm_test.generate_times(fnames, sat_id, freq='900S')
 
     # Define range of simulated 3D model
     latitude = np.linspace(-50, 50, 21)
     longitude = np.linspace(0, 360, 73)
     altitude = np.linspace(300, 500, 41)
-    data = xr.Dataset({'uts': (('time'), uts)},
+    data = xr.Dataset({'uts': (('time'), np.mod(uts, 86400.))},
                       coords={'time': index, 'latitude': latitude,
                               'longitude': longitude, 'altitude': altitude})
 
