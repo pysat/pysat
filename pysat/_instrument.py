@@ -1988,9 +1988,24 @@ class Instrument(object):
                 yield self
 
         elif self._iter_type == 'date':
+            # iterate over dates
+            # account if a user established a loading increment via a previous
+            # load, which would not be captured in the list of dates to iterate
+            # initialize tracking variable with a safe value
+            prev_date = self._iter_list[0]
+            # iterate!
             for date in self._iter_list:
-                self.load(date=date)
-                yield self
+                # user specified range of dates
+                date2 = date + self.increment
+                if date < prev_date:
+                    # increment is larger than spread of dates and
+                    # this date has already been loaded, go back to loop start
+                    # and increment date
+                    continue
+                self.load(date=date, date2=date2)
+                # track the previous maximum, will be next rounds start date
+                prev_date = date2
+                yield self #.copy()
 
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
