@@ -1345,9 +1345,8 @@ class Instrument(object):
         """
         if self._load_by_date:
             next_date = self.date + self.increment
-            next_next_date = next_date + self.increment + pds.DateOffset(days=1)
             return self._load_data(date=next_date,
-                                   date2=next_next_date)
+                                   inc=self.increment)
         else:
             return self._load_data(fid=(self._fid + 1))
 
@@ -1363,7 +1362,7 @@ class Instrument(object):
 
         if self._load_by_date:
             prev_date = self.date - self.increment
-            return self._load_data(date=prev_date, date2=self.date)
+            return self._load_data(date=prev_date, inc=self.increment)
         else:
             return self._load_data(fid=(self._fid - 1))
 
