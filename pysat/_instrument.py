@@ -1413,10 +1413,17 @@ class Instrument(object):
 
         """
         # set options used by loading routine based upon user input
+        if (yr is None) and (doy is None) and (yr2 is None) and (doy2 is None) \
+                and (date is None) and (date2 is None) and (fname is None):
+            # empty call, treat as if all data requested
+            date = self.files.files.index[0]
+            date2 = self.files.files.index[-1] + pds.DateOffset(days=1)
+            self._set_load_parameters(date=date, fid=None)
+            curr = date
+            self.increment = date2 - date
         if date is not None:
             # ensure date portion from user is only year, month, day
-            self._set_load_parameters(date=date,
-                                      fid=None)
+            self._set_load_parameters(date=date, fid=None)
             date = self._filter_datetime_input(date)
             # increment
             if date2 is not None:
