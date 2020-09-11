@@ -1443,10 +1443,11 @@ class Instrument(object):
             # increment one file at a time
             self.increment = 1
             curr = self._fid.copy()
-        elif (yr is None) and (doy is None) and (yr2 is None) and (
-                        doy2 is None) \
-                 and (date is None) and (date2 is None) and (fname is None):
+        elif (yr is None) and (doy is None) and (yr2 is None) and \
+                (doy2 is None) and (date is None) and (date2 is None) and \
+                (fname is None):
             # empty call, treat as if all data requested
+            # all data within bounds (?)
             date = self.files.files.index[0]
             date2 = self.files.files.index[-1] + pds.DateOffset(days=1)
             self._set_load_parameters(date=date, fid=None)
