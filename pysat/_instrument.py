@@ -1345,10 +1345,9 @@ class Instrument(object):
         """
         if self._load_by_date:
             next_date = self.date + self.increment
-            return self._load_data(date=next_date,
-                                   inc=self.increment)
+            return self._load_data(date=next_date, inc=self.increment)
         else:
-            return self._load_data(fid=(self._fid + 1))
+            return self._load_data(fid=(self._fid + 1), inc=self.increment)
 
     def _load_prev(self):
         """Load the next days data (or file) without decrementing the date.
@@ -1364,7 +1363,7 @@ class Instrument(object):
             prev_date = self.date - self.increment
             return self._load_data(date=prev_date, inc=self.increment)
         else:
-            return self._load_data(fid=(self._fid - 1))
+            return self._load_data(fid=(self._fid - 1), inc=self.increment)
 
     def _set_load_parameters(self, date=None, fid=None):
         # filter supplied data so that it is only year, month, and day
@@ -1413,27 +1412,7 @@ class Instrument(object):
 
         """
         # set options used by loading routine based upon user input
-        if (yr is None) and (doy is None) and (yr2 is None) and (doy2 is None) \
-                and (date is None) and (date2 is None) and (fname is None):
-            # empty call, treat as if all data requested
-            date = self.files.files.index[0]
-            date2 = self.files.files.index[-1] + pds.DateOffset(days=1)
-            self._set_load_parameters(date=date, fid=None)
-            curr = date
-            self.increment = date2 - date
-        if date is not None:
-            # ensure date portion from user is only year, month, day
-            self._set_load_parameters(date=date, fid=None)
-            date = self._filter_datetime_input(date)
-            # increment
-            if date2 is not None:
-                # support loading a range of dates
-                self.increment = date2 - date
-            else:
-                # defaults to single day load
-                self.increment = pds.DateOffset(days=1)
-            curr = date
-        elif (yr is not None) & (doy is not None):
+        if (yr is not None) & (doy is not None):
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
             self._set_load_parameters(date=date, fid=None)
             # increment
@@ -1445,6 +1424,18 @@ class Instrument(object):
             else:
                 self.increment = pds.DateOffset(days=1)
             curr = self.date
+        elif date is not None:
+            # ensure date portion from user is only year, month, day
+            self._set_load_parameters(date=date, fid=None)
+            date = self._filter_datetime_input(date)
+            # increment
+            if date2 is not None:
+                # support loading a range of dates
+                self.increment = date2 - date
+            else:
+                # defaults to single day load
+                self.increment = pds.DateOffset(days=1)
+            curr = date
         elif fname is not None:
             # date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
@@ -1452,6 +1443,15 @@ class Instrument(object):
             # increment one file at a time
             self.increment = 1
             curr = self._fid.copy()
+        elif (yr is None) and (doy is None) and (yr2 is None) and (
+                        doy2 is None) \
+                 and (date is None) and (date2 is None) and (fname is None):
+            # empty call, treat as if all data requested
+            date = self.files.files.index[0]
+            date2 = self.files.files.index[-1] + pds.DateOffset(days=1)
+            self._set_load_parameters(date=date, fid=None)
+            curr = date
+            self.increment = date2 - date
         else:
             estr = 'Must supply a yr,doy pair, or datetime object, or filename'
             estr = '{:s} to load data from.'.format(estr)
@@ -1469,7 +1469,8 @@ class Instrument(object):
                 # using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
                 self._curr_data, self._curr_meta = \
-                    self._load_data(date=self.date, fid=self._fid)
+                    self._load_data(date=self.date, fid=self._fid,
+                                    inc=self.increment)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 # moving forward in time
@@ -1496,7 +1497,8 @@ class Instrument(object):
                     del self._next_data
                     self._prev_data, self._prev_meta = self._load_prev()
                     self._curr_data, self._curr_meta = \
-                        self._load_data(date=self.date, fid=self._fid)
+                        self._load_data(date=self.date, fid=self._fid,
+                                        inc=self.increment)
                     self._next_data, self._next_meta = self._load_next()
 
             # make sure datetime indices for all data is monotonic
