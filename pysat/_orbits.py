@@ -118,17 +118,17 @@ class Orbits(object):
 
     def __str__(self):
         """ Descriptively print the basic Obits properties"""
-        output_str += 'Orbit Settings\n'
+        output_str = 'Orbit Settings\n'
         output_str += '--------------\n'
-        output_str += 'Orbit Kind: {:s}\n'.format(self.kind)
-        output_str += 'Orbit Index: {:s}\n'.format(self.orbit_index)
-        output_str += 'Orbit Period: {:s}\n'.format(self.orbit_period.__str__())
+        output_str += 'Orbit Kind: {:s}\n'.format(self.kind.__repr__())
+        output_str += 'Orbit Index: {:s}\n'.format(self.orbit_index.__repr__())
+        output_str += 'Orbit Period: {:s}\n'.format(
+            self.orbit_period.__repr__())
         output_str += 'Number of Orbits: {:d}\n'.format(self.num)
-        output_str += 'Loaded Orbit Number: '
-        if self._current is not None:
-            output_str += '{:d}\n'.format(self._current)
-        else:
-            output_str += 'None\n'
+        output_str += 'Loaded Orbit Number: {:s}\n'.format(
+            self._current.__repr__())
+
+        return output_str
 
     @property
     def current(self):
