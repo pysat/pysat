@@ -438,8 +438,10 @@ class Meta(object):
         """
         # Get the desired variables as lists
         labs = [var for var in self.attrs()]
-        vdim = [var for var in self.keys()]
-        ndim = [var for var in self.keys_nD()]
+        vdim = [var for var in self.keys() if var not in self.keys_nD()]
+        ndim = ["{:} -> {:d} children".format(var, len(
+            [kk for kk in self[var]['children'].keys()]))
+                for var in self.keys_nD()]
 
         # Get the lengths of each list
         nlabels = len(labs)
@@ -450,7 +452,7 @@ class Meta(object):
         out_str = "pysat Meta object\n"
         out_str += "-----------------\n"
         out_str += "Tracking {:d} metadata values\n".format(nlabels)
-        out_str += "Metadata for {:d} variables\n".format(nvdim)
+        out_str += "Metadata for {:d} standard variables\n".format(nvdim)
         out_str += "Metadata for {:d} ND variables\n".format(nndim)
 
         # Print the longer output
@@ -466,7 +468,7 @@ class Meta(object):
             ncol = 3
             max_num = 6  # Should be divible by 2 and ncol
             if nvdim > 0:
-                out_str += "\nMetadata variables:\n"
+                out_str += "\nStandard Metadata variables:\n"
                 out_str += core_utils.fmt_output_in_cols(vdim, ncols=ncol,
                                                          max_num=max_num)
             if nndim > 0:
@@ -653,12 +655,11 @@ class Meta(object):
             # get Meta approved variable names
             new_item_name = self.var_case_name(names)
 
-            # ensure that Meta labels of object to be assigned
-            # are consistent with self
-            # input_data accepts self's labels
+            # Ensure that Meta labels of object to be assigned are
+            # consistent with self.  input_data accepts self's labels
             input_data.accept_default_labels(self)
 
-            # go through and ensure Meta object to be added has variable and
+            # Go through and ensure Meta object to be added has variable and
             # attribute names consistent with other variables and attributes
             # this covers custom attributes not handled by default routine
             # above
@@ -668,17 +669,16 @@ class Meta(object):
                 new_names.append(self.attr_case_name(name))
             input_data.data.columns = new_names
 
-            # same thing for variables
+            # Same thing for variables
             var_names = input_data.data.index
             new_names = []
             for name in var_names:
                 new_names.append(self.var_case_name(name))
             input_data.data.index = new_names
 
-            # assign Meta object now that things are consistent with Meta
-            # object settings
-            # but first, make sure there are lower dimension metadata
-            # parameters, passing in an empty dict fills in defaults
+            # Assign Meta object now that things are consistent with Meta
+            # object settings, but first make sure there are lower dimension
+            # metadata parameters, passing in an empty dict fills in defaults
             # if there is no existing metadata info
             self[new_item_name] = {}
 
