@@ -64,7 +64,7 @@ class Constellation(object):
                 output_str += "{:d} '{:s}' '{:s}' '{:s}' '{:s}'\n".format(
                     i, inst.platform, inst.name, inst.tag, inst.sat_id)
         else:
-            output_str += "No loaded Instruments.\n"
+            output_str += "No loaded Instruments\n"
 
         return output_str
 
