@@ -189,7 +189,7 @@ class TestSpecificUTOrbits():
         """
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
-        self.etime = self.stime + dt.timedelta(seconds=(self.inc_min * 60 - 1)) 
+        self.etime = self.stime + dt.timedelta(seconds=(self.inc_min * 60 - 1))
         assert (self.testInst.index[0] == self.stime)
         assert (self.testInst.index[-1] == self.etime)
 
@@ -198,10 +198,10 @@ class TestSpecificUTOrbits():
         """
         self.testInst.load(date=self.stime)
         self.testInst.orbits.prev()
-        self.stime +=  14 * relativedelta(minutes=self.inc_min)
+        self.stime += 14 * relativedelta(minutes=self.inc_min)
         self.etime = self.stime + dt.timedelta(seconds=((self.inc_min * 60)
                                                         - 1))
-        assert self.testInst.index[0]  == self.stime
+        assert self.testInst.index[0] == self.stime
         assert self.testInst.index[-1] == self.etime
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_next(self):

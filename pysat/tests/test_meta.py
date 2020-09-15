@@ -75,7 +75,7 @@ class TestBasics():
             elif skey in self.default_nan:
                 self.default_nan.pop(self.default_nan.index(skey))
             self.default_val[skey] = set_dict[skey]
-            
+
         # Initialize the Meta data
         self.testInst.load(*self.stime)
         self.dval = 'test_inst_data_assign_meta'

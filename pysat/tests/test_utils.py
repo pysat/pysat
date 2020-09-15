@@ -581,7 +581,7 @@ class TestFmtCols():
 
     @pytest.mark.parametrize("key,val,raise_type",
                              [("ncols", 0, ZeroDivisionError),
-                              ("max_num", -10, ValueError),])
+                              ("max_num", -10, ValueError)])
     def test_fmt_raises(self, key, val, raise_type):
         self.in_kwargs[key] = val
         with pytest.raises(raise_type):

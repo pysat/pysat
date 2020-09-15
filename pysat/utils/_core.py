@@ -479,7 +479,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
 
     # If desired, determine the left padding spacing
     if lpad is None:
-       lpad = max([len(ostr) for ostr in out_strs[nsel]]) + 1
+        lpad = max([len(ostr) for ostr in out_strs[nsel]]) + 1
 
     # Print out the groups of variables in rows
     num = sel_len // ncols

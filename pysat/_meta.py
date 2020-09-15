@@ -439,8 +439,9 @@ class Meta(object):
         # Get the desired variables as lists
         labs = [var for var in self.attrs()]
         vdim = [var for var in self.keys() if var not in self.keys_nD()]
-        ndim = ["{:} -> {:d} children".format(
-            var, len([kk for kk in self[var]['children'].keys()]))
+        nchild = {var: len([kk for kk in self[var]['children'].keys()])
+                  for var in self.keys_nD()}
+        ndim = ["{:} -> {:d} children".format(var, nchild[var])
                 for var in self.keys_nD()]
 
         # Get the lengths of each list
