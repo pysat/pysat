@@ -5,7 +5,9 @@ class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
 
     Created as part of a Spring 2018 UTDesign project.
+
     """
+
     def __init__(self, instruments=None, name=None):
         """
         Constructs a Constellation given a list of instruments or the name of
@@ -41,17 +43,27 @@ class Constellation(object):
             self.instruments = []
 
     def __getitem__(self, *args, **kwargs):
-        """ Look up a member Instrument by index."""
+        """
+        Look up a member Instrument by index.
+
+        """
+  
         return self.instruments.__getitem__(*args, **kwargs)
 
     def __repr__(self):
-        """ Print the basic Constellation properties"""
+        """ Print the basic Constellation properties
+
+        """
+
         out_str = "Constellation(instruments={:}) -> {:d} Instruments".format(
             self.instruments, len(self.instruments))
         return out_str
 
     def __str__(self):
-        """ Print names of instruments within constellation."""
+        """ Print names of instruments within constellation
+
+        """
+
         output_str = 'pysat Constellation object:\n'
         output_str += '---------------------------\n'
 
@@ -79,6 +91,7 @@ class Constellation(object):
             Ending time for Instrument bounds attribute
 
         """
+
         for instrument in self.instruments:
             instrument.bounds = (start, stop)
 
@@ -101,18 +114,19 @@ class Constellation(object):
                 name of function or function object to be added to queue
 
             kind : {'add, 'modify', 'pass'}
-                add
+                - add
                     Adds data returned from fuction to instrument object.
-                modify
+                - modify
                     pysat instrument object supplied to routine. Any and all
                     changes to object are retained.
-                pass
+                - pass
                     A copy of pysat object is passed to function. No
                     data is accepted from return.
 
             at_pos : string or int
                 insert at position. (default, insert at end).
-            args : extra arguments
+            args
+                extra arguments
 
         Note
         ----
@@ -142,14 +156,14 @@ class Constellation(object):
         reproduced here.)
 
         Parameters
-        ---------
+        ----------
         yr : integer
             Year for desired data
         doy : integer
             day of year
         data : datetime object
             date to load
-        fname : 'string'
+        fname : string
             filename to be loaded
         verifyPad : boolean
             if true, padding data not removed (debug purposes)

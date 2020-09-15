@@ -45,7 +45,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     """ Update longitude to the desired range
 
     Parameters
-    ------------
+    ----------
     inst : pysat.Instrument instance
         instrument object to be updated
     lon_name : string
@@ -56,7 +56,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
         Lowest allowed longitude value (default=-180.0)
 
     Returns
-    ---------
+    -------
     updates instrument data in column 'lon_name'
 
     """
@@ -64,7 +64,7 @@ def update_longitude(inst, lon_name=None, high=180.0, low=-180.0):
     from pysat.utils.coords import adjust_cyclic_data
 
     if lon_name not in inst.data.keys():
-        raise ValueError('uknown longitude variable name')
+        raise ValueError('unknown longitude variable name')
 
     new_lon = adjust_cyclic_data(inst[lon_name], high=high, low=low)
 
@@ -81,7 +81,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     """ Append solar local time to an instrument object
 
     Parameters
-    ------------
+    ----------
     inst : pysat.Instrument instance
         instrument object to be updated
     lon_name : string
@@ -90,7 +90,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
         name of the output solar local time data key (default='slt')
 
     Returns
-    ---------
+    -------
     updates instrument data in column specified by slt_name
 
     """

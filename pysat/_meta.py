@@ -108,6 +108,7 @@ class Meta(object):
     Examples
     --------
     ::
+
         # instantiate Meta object, default values for attribute labels are used
         meta = pysat.Meta()
         # set a couple base units
@@ -792,10 +793,11 @@ class Meta(object):
         Examples
         --------
         :
-                @name_label.setter
-                def name_label(self, new_label):
-                    self._label_setter(new_label, self._name_label,
-                                        use_names_default=True)
+
+            @name_label.setter
+            def name_label(self, new_label):
+                self._label_setter(new_label, self._name_label,
+                                    use_names_default=True)
 
         Note
         ----
@@ -1043,14 +1045,15 @@ class Meta(object):
             if True, ensure there are no duplicate variable names
             (default=False)
 
-        Notes
-        -----
+        Note
+        ----
         Uses units and name label of self if other is different
 
         Returns
         -------
         mdata : Meta
             Concatenated object
+
         """
 
         mdata = self.copy()

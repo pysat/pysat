@@ -78,6 +78,16 @@ Coordinates
 .. automodule:: pysat.utils.coords
    :members:
 
+Files
+^^^^^
+.. automodule:: pysat.utils.files
+  :members:
+
+Registry
+^^^^^^^^^^^
+.. automodule:: pysat.utils.registry
+   :members:
+
 Statistics
 ^^^^^^^^^^
 .. automodule:: pysat.utils.stats
