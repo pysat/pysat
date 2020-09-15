@@ -100,7 +100,7 @@ else:
     with Lock(data_path_file, 'r', file_timeout) as fout:
         data_dir = fout.readline()
     # load up stored user modules
-    user_modules = []
+    user_modules = {}
     modules_file = os.path.join(pysat_dir, 'user_modules.txt')
     if os.path.exists(modules_file):
         with Lock(modules_file, 'r', file_timeout) as fopen:
