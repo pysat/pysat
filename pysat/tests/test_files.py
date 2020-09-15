@@ -16,7 +16,7 @@ import tempfile
 import pysat
 import pysat.instruments.pysat_testing
 from pysat.utils import files as futils
-from pysat.utils import NetworkLock as Lock
+from pysat.utils import NetworkLock
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -66,9 +66,9 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
         fname = os.path.join(inst.files.data_path, root_fname.format(year=yr,
                              day=doy, month=date.month, hour=date.hour,
                              minute=date.minute, second=date.second))
-        with Lock(fname, 'w', pysat.file_timeout) as f:
+        with NetworkLock(fname, 'w', pysat.file_timeout) as fout:
             if content is not None:
-                f.write(content)
+                fout.write(content)
             if timeout is not None:
                 time.sleep(timeout)
 
@@ -693,7 +693,7 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
                                                        second=date.second,
                                                        version=version,
                                                        revision=revision))
-                with Lock(fname, 'w', pysat.file_timeout):
+                with NetworkLock(fname, 'w', pysat.file_timeout):
                     if timeout is not None:
                         time.sleep(timeout)
 
