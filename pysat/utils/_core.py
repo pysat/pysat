@@ -30,7 +30,7 @@ def set_data_dir(path=None, store=True):
         if store:
             data_path_file = os.path.join(os.path.expanduser('~'),
                                           '.pysat', 'data_path.txt')
-            with NetworkLock(data_path_file, 'w', pysat.file_timeout) as fout:
+            with NetworkLock(data_path_file, 'w') as fout:
                 fout.write(path)
 
         pysat.data_dir = path
@@ -225,9 +225,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     if pandas_format:
         for fname in fnames:
-            with TemporaryFileLock(fname + '.Lock', pysat.file_timeout), \
-                    netCDF4.Dataset(fname, mode='r',
-                                    format=file_format) as data:
+            with netCDF4.Dataset(fname, mode='r', format=file_format) as data:
                 # build up dictionary with all global ncattrs
                 # and add those attributes to a pysat meta object
                 ncattrsList = data.ncattrs()
@@ -446,7 +444,8 @@ class NetworkLock(Lock):
         """Lock manager compatible with networked file systems
         """
 
-        super(NetworkLock, self).__init__(*args, **kwargs)
+        super(NetworkLock, self).__init__(timeout=pysat.file_timeout, *args,
+                                          **kwargs)
 
     def release(self):
         """Releases the Lock so the file system

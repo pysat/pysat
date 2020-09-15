@@ -58,8 +58,7 @@ def load_saved_modules():
 
     saved_modules = {}
     user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
-    with pysat.utils.NetworkLock(user_modules_file, 'r',
-                                 pysat.file_timeout) as fopen:
+    with pysat.utils.NetworkLock(user_modules_file, 'r') as fopen:
         for line in fopen:
             if line != '' and (line is not None):
                 # remove trailing whitespace

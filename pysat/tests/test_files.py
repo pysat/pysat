@@ -66,7 +66,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
         fname = os.path.join(inst.files.data_path, root_fname.format(year=yr,
                              day=doy, month=date.month, hour=date.hour,
                              minute=date.minute, second=date.second))
-        with NetworkLock(fname, 'w', pysat.file_timeout) as fout:
+        with NetworkLock(fname, 'w') as fout:
             if content is not None:
                 fout.write(content)
             if timeout is not None:
@@ -693,7 +693,7 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
                                                        second=date.second,
                                                        version=version,
                                                        revision=revision))
-                with NetworkLock(fname, 'w', pysat.file_timeout):
+                with NetworkLock(fname, 'w'):
                     if timeout is not None:
                         time.sleep(timeout)
 
