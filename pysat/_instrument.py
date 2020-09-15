@@ -1456,10 +1456,6 @@ class Instrument(object):
                                  'enabled.'))
                 raise ValueError(estr)
 
-            # TODO: all data within bounds (?)-requires support for
-            #  loading multiple filenames or multiple non-consequtive dates
-            #
-
             date = self.files.files.index[0]
             date2 = self.files.files.index[-1] + pds.DateOffset(days=1)
 
@@ -1849,11 +1845,23 @@ class Instrument(object):
 
         # if instrument object has default bounds, update them
         if len(self.bounds[0]) == 1:
-            # TODO: update both files and dates iterations
-            if (self.bounds[0][0] == first_date
-                    and self.bounds[1][0] == last_date):
-                logger.info('Updating instrument object bounds.')
-                self.bounds = None
+            # get current bounds
+            curr_bound = self.bounds
+            if self._iter_type == 'date':
+                if (curr_bound[0][0] == first_date
+                        and curr_bound[1][0] == last_date):
+                    logger.info('Updating instrument object bounds by date.')
+                    self.bounds = (self.files.first_date, self.files.last_date,
+                                   curr_bound[2], curr_bound[3])
+            if self._iter_type == 'file':
+                if (curr_bound[0][0] == self.files[first_date]
+                        and curr_bound[1][0] == self.files[last_date]):
+                    logger.info('Updating instrument object bounds by file.')
+                    self.bounds = (self.files[self.files.first_date],
+                                   self.files[self.files.last_date],
+                                   curr_bound[2], curr_bound[3])
+
+        return
 
     @property
     def bounds(self):
@@ -1967,7 +1975,6 @@ class Instrument(object):
                     # method allows for inputs like inst.bounds = (start, None)
                     # and bounds will fill the None with actual begin or end
                     # allow for a Nonetype only if length is one
-                    print('yo')
                     if len(starts) == 1:
                         if start is None or (end is None):
                             # we are good, one of them is None, no error
@@ -2060,7 +2067,6 @@ class Instrument(object):
         elif self._iter_type == 'date':
             # iterate over dates
             # list of dates generated whenever bounds are set
-            # TODO: Do bounds need to be updated after a download?
             for date in self._iter_list:
                 # user specified range of dates
                 date2 = date + self._iter_width
