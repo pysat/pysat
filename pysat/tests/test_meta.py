@@ -1198,18 +1198,26 @@ class TestBasics():
 
 class TestBasicsImmuatble(TestBasics):
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        self.meta = pysat.Meta()
-        # disable mutability
-        self.meta.mutable = False
+        """Runs before every method to create a clean testing setup
+        """
 
-        # Instrument object
+        # Instrument object and disable mutability
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
-        # pre-load data to ensure mutable set to false
-        self.testInst.load(2009, 1)
+        self.meta = self.testInst.meta
+        self.meta.mutable = False
+
+        # Assign remaining values
+        self.dval = None
+        self.stime = [2009, 1]
+        self.out = None
+        self.default_name = ['long_name', 'axis', 'label']
+        self.default_nan = ['fill', 'value_min', 'value_max']
+        self.default_val = {'notes': '', 'units': '', 'desc': '',
+                            'scale': 'linear'}
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        del self.testInst
-        del self.meta
+        """Runs after every method to clean up previous testing
+        """
+        del self.testInst, self.meta, self.out, self.stime
+        del self.default_name, self.default_nan, self.default_val, self.dval
