@@ -74,7 +74,6 @@ class Files(object):
         # update Files instance.
         vefi.files.refresh()
 
-
     """
 
     def __init__(self, sat, manual_org=False, directory_format=None,
@@ -240,14 +239,15 @@ class Files(object):
         """Attach results of instrument list_files routine to Instrument object
 
         Parameters
-        -----------
+        ----------
         file_info :
             Stored file information
 
         Returns
-        ---------
+        -------
         updates the file list (files), start_date, and stop_date attributes
         of the Files class object.
+
         """
 
         if not files_info.empty:
@@ -331,6 +331,7 @@ class Files(object):
         pandas.Series
             Full path file names are indexed by datetime
             Series is empty if there is no file list to load
+
         """
 
         fname = self.stored_file_name

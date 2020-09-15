@@ -78,8 +78,8 @@ class Meta(object):
         String used to label fill value in storage. Defaults to 'fill' per
         netCDF4 standard
 
-    Notes
-    -----
+    Note
+    ----
     Meta object preserves the case of variables and attributes as it first
     receives the data. Subsequent calls to set new metadata with the same
     variable or attribute will use case of first call. Accessing or setting
@@ -105,6 +105,7 @@ class Meta(object):
     Examples
     --------
     ::
+
         # instantiate Meta object, default values for attribute labels are used
         meta = pysat.Meta()
         # set a couple base units
@@ -670,13 +671,14 @@ class Meta(object):
         Examples
         --------
         :
-                @name_label.setter
-                def name_label(self, new_label):
-                    self._label_setter(new_label, self._name_label,
-                                        use_names_default=True)
 
-        Notes
-        -----
+            @name_label.setter
+            def name_label(self, new_label):
+                self._label_setter(new_label, self._name_label,
+                                    use_names_default=True)
+
+        Note
+        ----
         Not intended for end user
 
         """
@@ -847,8 +849,8 @@ class Meta(object):
 
         Case-insensitive check
 
-        Notes
-        -----
+        Note
+        ----
         Does not check higher order meta objects
 
         Parameters
@@ -910,14 +912,15 @@ class Meta(object):
         strict : bool
             if True, ensure there are no duplicate variable names
 
-        Notes
-        -----
+        Note
+        ----
         Uses units and name label of self if other is different
 
         Returns
         -------
         Meta
             Concatenated object
+
         """
 
         mdata = self.copy()
