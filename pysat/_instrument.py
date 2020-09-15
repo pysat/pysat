@@ -1942,6 +1942,8 @@ class Instrument(object):
             self._iter_type = 'date'
             if self._iter_step is None:
                 self._iter_step = pds.DateOffset(days=1)
+            if self._iter_width is None:
+                self._iter_width = pds.DateOffset(days=1)
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
                 self._iter_list = \
