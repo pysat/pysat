@@ -656,6 +656,7 @@ class Instrument(object):
         Examples
         --------
         ..
+
             # standard renaming
             new_names = {'old_name': 'new_name',
                          'old_name2':, 'new_name2'}
@@ -666,6 +667,7 @@ class Instrument(object):
         Note that this rename will be invoked individually for all
         times in the dataset.
         ..
+
             # applies to higher-order datasets
             # that are loaded into pandas
             # general example
@@ -895,8 +897,8 @@ class Instrument(object):
         void
             Instrument.data modified in place.
 
-        Notes
-        -----
+        Note
+        ----
         For pandas, sort=False is passed along to the underlying
         pandas.concat method. If sort is supplied as a keyword, the
         user provided value is used instead.
@@ -2850,8 +2852,8 @@ def _get_supported_keywords(load_func):
         dict of supported keywords and default values
 
 
-    Notes
-    -----
+    Note
+    ----
         If the input is a partial function then the
         list of keywords returned only includes keywords
         that have not already been set as part of

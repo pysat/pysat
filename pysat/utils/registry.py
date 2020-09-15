@@ -18,17 +18,20 @@ example, assume there is an implementation for myInstrument in the
 module my.package.myInstrument with platform and name attributes
 'myplatform' and 'myname'. Such an instrument may be registered with
 ::
+
     registry.register('my.package.myInstrument')
 
 The full module name "my.package.myInstrument" will be
 registered in pysat_dir/user_modules.txt and is also listed in
 ::
+
     pysat.user_modules
 which is stored as a dict of dicts keyed by platform and name.
 
 Once registered, subsequent calls to Instrument may use the platform
 and name string identifiers.
 ::
+
     Instrument('myplatform', 'myname')
 
 """
@@ -52,6 +55,7 @@ def load_saved_modules():
         platform then name
 
     """
+
     saved_modules = {}
     fpath = os.path.join(pysat.pysat_dir, 'user_modules.txt')
     with open(fpath, 'r') as fopen:
@@ -91,10 +95,11 @@ def register(module_names, overwrite=False):
     Enables instantiation of a third-party Instrument
     module using
     ::
+
         inst = pysat.Instrument(platform, name, tag=tag, sat_id=sat_id)
 
     Parameters
-    -----------
+    ----------
     module_names : list-like of str
         specify package name and instrument modules
     overwrite : bool
@@ -117,6 +122,7 @@ def register(module_names, overwrite=False):
     ----
     Modules should be importable using
     ::
+
         from my.package.name import my_instrument
 
     Module names do not have to follow the pysat platform_name naming
@@ -124,6 +130,7 @@ def register(module_names, overwrite=False):
 
     Current registered modules bay be found at
     ::
+
         pysat.user_modules
 
     which is stored as a dict of dicts keyed by platform and name.
@@ -131,6 +138,7 @@ def register(module_names, overwrite=False):
     Examples
     --------
     ::
+
         from pysat import Instrument, user_modules
         from pysat.utils import registry
 
@@ -236,6 +244,7 @@ def register_by_module(module):
     Examples
     --------
     ::
+
         import pysat
         import pysatModels
         pysat.utils.registry.register_by_module(pysatModels.models)
@@ -280,6 +289,7 @@ def remove(platforms, names):
     Examples
     --------
     ::
+
         platforms = ['platform1', 'platform2']
         names = ['name1', 'name2']
 

@@ -41,6 +41,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added a tutorial for developers of instrument libraries for pysat
   - Added .zenodo.json file, to improve specification of authors in citation
   - Improved __str__ and __repr__ functions for basic classes
+  - Improved docstring readability and consistency
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3
