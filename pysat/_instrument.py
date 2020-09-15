@@ -1887,7 +1887,9 @@ class Instrument(object):
             inst.bounds = ([start, start2], [stop, stop2])
 
         """
-        return self._iter_start, self._iter_stop
+        out = (self._iter_start, self._iter_stop, self._iter_step,
+               self._iter_width)
+        return out
 
     @bounds.setter
     def bounds(self, value=None):
@@ -1899,9 +1901,7 @@ class Instrument(object):
             raise ValueError(' '.join(('Must supply both a start and end',
                                        'date/file. Supply None if you want the',
                                        'first/last possible.')))
-        start = value[0]
-        end = value[1]
-        if len(value) == 2:
+        elif len(value) == 2:
             # includes start and stop only
             self._iter_step = None
             self._iter_width = None
@@ -1913,6 +1913,10 @@ class Instrument(object):
             # also includes loading window (data width)
             self._iter_step = value[2]
             self._iter_width = value[3]
+        # pull out start and end times now that other optional items have
+        # been checked out.
+        start = value[0]
+        end = value[1]
 
         if (start is None) and (end is None):
             # set default using first and last file date
@@ -1930,13 +1934,13 @@ class Instrument(object):
 
         else:
             # user provided some inputs
-            starts = np.asarray(start)
-            ends = np.asarray(end)
-            # ensure consistency if input was a string
-            if starts.shape == ():
-                starts = np.array([starts])
-            if ends.shape == ():
-                ends = np.array([ends])
+            starts = np.asarray([start])
+            ends = np.asarray([end])
+            # ensure consistency if list-like already
+            if len(starts.shape) > 1:
+                starts = starts[0]
+            if len(ends.shape) > 1:
+                ends = ends[0]
 
             # check equal number of elements
             if len(starts) != len(ends):
@@ -1945,9 +1949,20 @@ class Instrument(object):
                 raise ValueError(estr)
 
             # check everything is the same type
-            base = type(start[0])
+            base = type(starts[0])
             for lstart, lend in zip(starts, ends):
-                if (type(lstart) != type(lend)) or (type(lstart) != base):
+                etype = type(lend)
+                check1 = not isinstance(lstart, etype)
+                check2 = not isinstance(lstart, base)
+                if check1 or check2:
+                    # method allows for inputs like inst.bounds = (start, None)
+                    # and bounds will fill the None with actual begin or end
+                    # allow for a Nonetype only if length is one
+                    print('yo')
+                    if len(starts) == 1:
+                        if start is None or (end is None):
+                            # we are good, one of them is None, no error
+                            break
                     raise ValueError(' '.join(('Start and end items must all',
                                                'be of the same type')))
 
@@ -1959,7 +1974,7 @@ class Instrument(object):
                 # replace None with first/last, as appropriate
                 if starts[0] is None:
                     starts = [self.files[0]]
-                if end is None:
+                if ends[0] is None:
                     ends = [self.files.files[-1]]
                 # default step size
                 if self._iter_step is None:
@@ -2035,11 +2050,8 @@ class Instrument(object):
 
         elif self._iter_type == 'date':
             # iterate over dates
-            # account if a user established a loading increment via a previous
-            # load, which would not be captured in the list of dates to iterate
-            # initialize tracking variable with a safe value
-            prev_date = self._iter_list[0]
-            # iterate!
+            # list of dates generated whenever bounds are set
+            # TODO: Do bounds need to be updated after a download?
             for date in self._iter_list:
                 # user specified range of dates
                 date2 = date + self._iter_width
@@ -2065,34 +2077,46 @@ class Instrument(object):
 
         """
 
+        # make sure we can iterate
+        if len(self._iter_list) == 0:
+            # nothing to potentially iterate over
+            raise StopIteration(''.join(('File list is empty. ',
+                                         'Nothing to be done.')))
+
         if self._iter_type == 'date':
             if self.date is not None:
-                next_date = self.date + self._iter_step
-                idx, = np.where(self._iter_list == next_date)
-                if (len(idx) == 0):
-                    raise StopIteration(''.join(('File list is empty. ',
-                                                 'Nothing to be done.')))
-                elif idx[-1] + 1 >= len(self._iter_list):
+                # data is already loaded in .data
+                idx, = np.where(self.data == self._iter_list)
+                if idx[0] >= len(self._iter_list) - 1:
+                    # gone to far!
                     raise StopIteration('Outside the set date boundaries.')
                 else:
+                    # not on the last day, safe to move forward
+                    next_date = self._iter_list[idx[0] + 1]
                     date2 = next_date + self._iter_width
                     self.load(date=next_date, date2=date2, verifyPad=verifyPad)
             else:
+                # no data currently loaded, start at the beginning
                 date = self._iter_list[0]
                 date2 = date + self._iter_width
                 self.load(date=date, date2=date2, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             if self._fid is not None:
+                # data already loaded in .data
                 first = self.files.get_index(self._iter_list[0])
                 last = self.files.get_index(self._iter_list[-1])
                 if (self._fid < first) | (self._fid + 1 > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    self.load(fname=self._iter_list[self._fid + 1 - first],
-                              verifyPad=verifyPad)
+                    # TODO: Add suport for expanded range of files to load
+                    fname = self._iter_list[self._fid + 1 - first]
+                    self.load(fname=fname, verifyPad=verifyPad)
             else:
+                # no data loaded yet, start with the first file
                 self.load(fname=self._iter_list[0], verifyPad=verifyPad)
+
+        return
 
     def prev(self, verifyPad=False):
         """Manually iterate backwards through the data in Instrument object.
@@ -2116,7 +2140,7 @@ class Instrument(object):
                 elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
-                    date = self._iter_list[idx[0]] - self.increment
+                    date = self._iter_list[idx[0] - 1]
                     date2 = self._iter_list[idx[0]]
                     self.load(date=date, date2=date2, verifyPad=verifyPad)
             else:
