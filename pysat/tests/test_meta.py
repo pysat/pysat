@@ -63,23 +63,27 @@ class TestBasics():
         with pytest.raises(ValueError):
             self.meta = pysat.Meta(metadata='Not a Panda')
 
-    @pytest.mark.parametrize("set_dict",
-                             [({}), ({'units': 'V', 'long_name': 'Longgggg'})])
-    def test_inst_data_assign_meta(self, set_dict):
+    @pytest.mark.parametrize("labels,vals",
+                             [([], []),
+                              (['units', 'long_name'], ['V', 'Longgggg'])])
+    def test_inst_data_assign_meta(self, labels, vals):
         """ Test Meta initialization with data
         """
-        # Update the testing data
-        for skey in set_dict:
-            if skey in self.default_name:
-                self.default_name.pop(self.default_name.index(skey))
-            elif skey in self.default_nan:
-                self.default_nan.pop(self.default_nan.index(skey))
-            self.default_val[skey] = set_dict[skey]
-
-        # Initialize the Meta data
+        # Initialize the instrument
         self.testInst.load(*self.stime)
         self.dval = 'test_inst_data_assign_meta'
-        set_dict['data'] = self.testInst['mlt']
+
+        # Update the testing data and set the new data dictionary
+        set_dict = {'data': self.testInst['mlt']}
+        for i, slabel in enumerate(labels):
+            if slabel in self.default_name:
+                self.default_name.pop(self.default_name.index(slabel))
+            elif slabel in self.default_nan:
+                self.default_nan.pop(self.default_nan.index(slabel))
+            self.default_val[slabel] = vals[i]
+            set_dict[slabel] = vals[i]
+
+        # Initialize the Meta data
         self.testInst[self.dval] = set_dict
         self.meta = self.testInst.meta
 
@@ -1196,7 +1200,7 @@ class TestBasics():
         assert 'extra_check' in f['test_nan_variable'].ncattrs()
 
 
-class TestBasicsImmuatble(TestBasics):
+class TestBasicsImmutable(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup
         """
