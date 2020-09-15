@@ -129,35 +129,35 @@ class TestBasics():
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert self.out == self.ref_time
 
-    # def test_basic_fid_instrument_load(self):
-    #     """Test if first day is loaded by default when first invoking .next.
-    #     """
-    #     self.ref_time = dt.datetime(2008, 1, 1)
-    #     self.testInst.load(fid=0)
-    #     self.out = self.testInst.index[0]
-    #     self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-    #     assert (self.out == self.ref_time)
-    #     assert (self.out == self.testInst.date)
-    #
-    # def test_next_fid_load_default(self):
-    #     """Test next day is being loaded (checking object date)."""
-    #     self.ref_time = dt.datetime(2008, 1, 2)
-    #     self.testInst.load(fid=0)
-    #     self.testInst.next()
-    #     self.out = self.testInst.index[0]
-    #     self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-    #     assert (self.out == self.ref_time)
-    #     assert (self.out == self.testInst.date)
-    #
-    # def test_prev_fid_load_default(self):
-    #     """Test prev day is loaded when invoking .prev."""
-    #     self.ref_time = dt.datetime(2008, 1, 3)
-    #     self.testInst.load(fid=3)
-    #     self.testInst.prev()
-    #     self.out = self.testInst.index[0]
-    #     self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-    #     assert (self.out == self.ref_time)
-    #     assert (self.out == self.testInst.date)
+    def test_basic_fname_instrument_load(self):
+        """Test if first day is loaded by default when first invoking .next.
+        """
+        self.ref_time = dt.datetime(2008, 1, 1)
+        self.testInst.load(fname=self.testInst.files[0])
+        self.out = self.testInst.index[0]
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        assert (self.out == self.ref_time)
+        assert (self.out == self.testInst.date)
+
+    def test_next_fname_load_default(self):
+        """Test next day is being loaded (checking object date)."""
+        self.ref_time = dt.datetime(2008, 1, 2)
+        self.testInst.load(fname=self.testInst.files[0])
+        self.testInst.next()
+        self.out = self.testInst.index[0]
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        assert (self.out == self.ref_time)
+        assert (self.out == self.testInst.date)
+
+    def test_prev_fname_load_default(self):
+        """Test prev day is loaded when invoking .prev."""
+        self.ref_time = dt.datetime(2008, 1, 3)
+        self.testInst.load(fname=self.testInst.files[3])
+        self.testInst.prev()
+        self.out = self.testInst.index[0]
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        assert (self.out == self.ref_time)
+        assert (self.out == self.testInst.date)
 
     def test_filename_load(self):
         """Test if file is loadable by filename, relative to
@@ -1238,70 +1238,70 @@ class TestDataPaddingbyFile():
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.rawInst, self.delta
 
-    def test_fid_data_padding(self):
-        self.testInst.load(fid=1, verifyPad=True)
-        self.rawInst.load(fid=1)
+    def test_fname_data_padding(self):
+        self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
+        self.rawInst.load(fname=self.testInst.files[1])
         self.delta = pds.DateOffset(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
-    def test_fid_data_padding_next(self):
-        self.testInst.load(fid=1, verifyPad=True)
+    def test_fname_data_padding_next(self):
+        self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.testInst.next(verifyPad=True)
-        self.rawInst.load(fid=2)
+        self.rawInst.load(fname=self.testInst.files[2])
         self.delta = pds.DateOffset(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
-    def test_fid_data_padding_multi_next(self):
+    def test_fname_data_padding_multi_next(self):
         """This also tests that _prev_data and _next_data cacheing"""
-        self.testInst.load(fid=1)
+        self.testInst.load(fname=self.testInst.files[1])
         self.testInst.next()
         self.testInst.next(verifyPad=True)
-        self.rawInst.load(fid=3)
+        self.rawInst.load(fname=self.testInst.files[3])
         self.delta = pds.DateOffset(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
-    def test_fid_data_padding_prev(self):
-        self.testInst.load(fid=2, verifyPad=True)
+    def test_fname_data_padding_prev(self):
+        self.testInst.load(fname=self.testInst.files[2], verifyPad=True)
         self.testInst.prev(verifyPad=True)
-        self.rawInst.load(fid=1)
+        self.rawInst.load(fname=self.testInst.files[1])
         self.delta = pds.DateOffset(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
-    def test_fid_data_padding_multi_prev(self):
+    def test_fname_data_padding_multi_prev(self):
         """This also tests that _prev_data and _next_data cacheing"""
-        self.testInst.load(fid=10)
+        self.testInst.load(fname=self.testInst.files[10])
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
-        self.rawInst.load(fid=8)
+        self.rawInst.load(fname=self.testInst.files[8])
         self.delta = pds.DateOffset(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
-    def test_fid_data_padding_jump(self):
-        self.testInst.load(fid=1, verifyPad=True)
-        self.testInst.load(fid=10, verifyPad=True)
-        self.rawInst.load(fid=10)
+    def test_fname_data_padding_jump(self):
+        self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
+        self.testInst.load(fname=self.testInst.files[10], verifyPad=True)
+        self.rawInst.load(fname=self.testInst.files[10])
         self.delta = pds.DateOffset(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
-    def test_fid_data_padding_uniqueness(self):
-        self.testInst.load(fid=1, verifyPad=True)
+    def test_fname_data_padding_uniqueness(self):
+        self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         assert (self.testInst.index.is_unique)
 
-    def test_fid_data_padding_all_samples_present(self):
-        self.testInst.load(fid=1, verifyPad=True)
+    def test_fname_data_padding_all_samples_present(self):
+        self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.delta = pds.date_range(self.testInst.index[0],
                                     self.testInst.index[-1], freq='S')
         assert (np.all(self.testInst.index == self.delta))
 
-    def test_fid_data_padding_removal(self):
-        self.testInst.load(fid=1)
-        self.rawInst.load(fid=1)
+    def test_fname_data_padding_removal(self):
+        self.testInst.load(fname=self.testInst.files[1])
+        self.rawInst.load(fname=self.testInst.files[1])
         assert self.testInst.index[0] == self.rawInst.index[0]
         assert self.testInst.index[-1] == self.rawInst.index[-1]
         assert len(self.rawInst.data) == len(self.testInst.data)
