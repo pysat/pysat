@@ -55,6 +55,11 @@ def init(self):
     ----------
     inst : pysat.Instrument
         This object
+    file_date_range : pds.date_range
+        Optional keyword argument that specifies the range of dates for which
+        test files will be created
+    mangle_file_dates : bool
+        If True, the loaded file list time index is shifted by 5-minutes.
 
     """
 
@@ -119,11 +124,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         Optional central date, uses _test_dates if not specified.
         (default=None)
     file_date_range : pds.date_range or NoneType
+        Range of dates for files or None, if this optional arguement is not
+    file_date_range : pds.date_range or NoneType
         Range of dates for files or None, if this optional argument is not
         used. Shift actually performed by the init function.
         (default=None)
-    malformed_index : bool (default=False)
-        If True, time index for simulation will be non-unique and non-monotonic
+    malformed_index : boolean
+        If True, time index will be non-unique and non-monotonic (default=False)
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.

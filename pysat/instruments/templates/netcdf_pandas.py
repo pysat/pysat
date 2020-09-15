@@ -147,6 +147,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
         is 'SPORT_L2_IVM_{year:04d}-{month:02d}-{day:02d}_' +
         'v{version:02d}r{revision:04d}.NC'
 
+
     Note
     ----
     The returned Series should not have any duplicate datetimes. If there are

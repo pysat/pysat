@@ -286,7 +286,7 @@ class Meta(object):
         """
 
         # drop lower dimension data
-        self._data = self._data.drop(names, axis=0)
+        self.data = self._data.drop(names, axis=0)
 
         # drop higher dimension data
         for name in names:

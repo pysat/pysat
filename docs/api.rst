@@ -8,6 +8,36 @@ Instrument
 .. autoclass:: pysat.Instrument
    :members:
 
+Instrument Methods
+------------------
+
+The following methods support the variety of actions needed
+by underlying pysat.Instrument modules.
+
+.. _rst_general_data_general:
+
+General
+^^^^^^^
+
+.. automodule:: pysat.instruments.methods.general
+   :members:
+
+
+Instrument Templates
+--------------------
+
+General Instrument
+^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pysat.instruments.templates.template_instrument
+   :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
+
+netCDF Pandas
+^^^^^^^^^^^^^
+
+.. automodule:: pysat.instruments.templates.netcdf_pandas
+  :members: __doc__, init, load, list_files, download
+
 Constellation
 -------------
 
@@ -41,4 +71,19 @@ Orbits
 Utilities
 ---------
 .. automodule:: pysat.utils
+   :members:
+
+Coordinates
+^^^^^^^^^^^
+.. automodule:: pysat.utils.coords
+   :members:
+
+Statistics
+^^^^^^^^^^
+.. automodule:: pysat.utils.stats
+   :members:
+
+Time
+^^^^^^^^^^^
+.. automodule:: pysat.utils.time
    :members:
