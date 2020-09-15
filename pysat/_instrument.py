@@ -1447,13 +1447,22 @@ class Instrument(object):
                 (doy2 is None) and (date is None) and (date2 is None) and \
                 (fname is None):
             # empty call, treat as if all data requested
-            # all data within bounds (?)
-            # TODO: Doesn't work with multi_file_day or data padding
-            # add a check and raise Error if those options are set
-            # when using this option the Instrument really shouldn't work
-            # with next/prev and __iter__ anymore, nowhere to go from here.
+            if self.multi_file_day:
+                estr = ''.join(('`load()` is not supported with multi_file_day',
+                                '=True.'))
+                raise ValueError(estr)
+            if self.pad is not None:
+                estr = ' '.join(('`load()` is not supported with data padding',
+                                 'enabled.'))
+                raise ValueError(estr)
+
+            # TODO: all data within bounds (?)-requires support for
+            #  loading multiple filenames or multiple non-consequtive dates
+            #
+
             date = self.files.files.index[0]
             date2 = self.files.files.index[-1] + pds.DateOffset(days=1)
+
             self._set_load_parameters(date=date, fid=None)
             curr = date
             self.load_step = date2 - date
@@ -2086,7 +2095,7 @@ class Instrument(object):
         if self._iter_type == 'date':
             if self.date is not None:
                 # data is already loaded in .data
-                idx, = np.where(self.data == self._iter_list)
+                idx, = np.where(self.date == self._iter_list)
                 if idx[0] >= len(self._iter_list) - 1:
                     # gone to far!
                     raise StopIteration('Outside the set date boundaries.')
@@ -2109,7 +2118,7 @@ class Instrument(object):
                 if (self._fid < first) | (self._fid + 1 > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    # TODO: Add suport for expanded range of files to load
+                    # TODO: Add support for expanded range of files to load
                     fname = self._iter_list[self._fid + 1 - first]
                     self.load(fname=fname, verifyPad=verifyPad)
             else:
