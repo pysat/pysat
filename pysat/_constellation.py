@@ -47,7 +47,7 @@ class Constellation(object):
         Look up a member Instrument by index.
 
         """
-  
+
         return self.instruments.__getitem__(*args, **kwargs)
 
     def __repr__(self):
