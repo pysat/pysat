@@ -14,7 +14,8 @@ import pysat.tests.test_utils
 
 class TestBasics():
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
+        """Runs before every method to create a clean testing setup
+        """
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.meta = self.testInst.meta
@@ -27,16 +28,14 @@ class TestBasics():
                             'scale': 'linear'}
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
+        """Runs after every method to clean up previous testing
+        """
         del self.testInst, self.meta, self.out, self.stime
         del self.default_name, self.default_nan, self.default_val, self.dval
 
-    def test_meta_settings(self):
+    def check_meta_settings(self):
         """ Test the Meta settings for a specified value
         """
-        if self.dval is None:
-            return
-
         # Test the Meta data for the data value, self.dval
         for lkey in self.default_name:
             assert self.meta[self.dval, lkey] == self.dval
@@ -88,7 +87,7 @@ class TestBasics():
         self.meta = self.testInst.meta
 
         # Test the Meta settings
-        self.test_meta_settings()
+        self.check_meta_settings()
 
     @pytest.mark.parametrize("mlabel,slist", [("units", []),
                                               ("notes", ['A', 'B'])])
@@ -106,7 +105,7 @@ class TestBasics():
         self.default_val[mlabel] = '\n\n'.join(slist)
 
         # Test the Meta settings
-        self.test_meta_settings()
+        self.check_meta_settings()
 
     def test_inst_data_assign_meta_then_data(self):
         """ Test meta assignment when data updated after metadata
@@ -122,7 +121,7 @@ class TestBasics():
         self.default_val['units'] = 'V'
 
         # Test the Meta settings
-        self.test_meta_settings()
+        self.check_meta_settings()
 
     def test_inst_ho_data_assign_no_meta_default(self):
         self.testInst.load(*self.stime)
@@ -258,7 +257,7 @@ class TestBasics():
         self.default_name = []
 
         # Test the Meta settings
-        self.test_meta_settings()
+        self.check_meta_settings()
 
     def test_inst_assign_from_meta_w_ho(self):
         self.testInst.load(*self.stime)
