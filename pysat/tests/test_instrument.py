@@ -129,35 +129,35 @@ class TestBasics():
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert self.out == self.ref_time
 
-    def test_basic_fid_instrument_load(self):
-        """Test if first day is loaded by default when first invoking .next.
-        """
-        self.ref_time = dt.datetime(2008, 1, 1)
-        self.testInst.load(fid=0)
-        self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.ref_time)
-        assert (self.out == self.testInst.date)
-
-    def test_next_fid_load_default(self):
-        """Test next day is being loaded (checking object date)."""
-        self.ref_time = dt.datetime(2008, 1, 2)
-        self.testInst.load(fid=0)
-        self.testInst.next()
-        self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.ref_time)
-        assert (self.out == self.testInst.date)
-
-    def test_prev_fid_load_default(self):
-        """Test prev day is loaded when invoking .prev."""
-        self.ref_time = dt.datetime(2008, 1, 3)
-        self.testInst.load(fid=3)
-        self.testInst.prev()
-        self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.ref_time)
-        assert (self.out == self.testInst.date)
+    # def test_basic_fid_instrument_load(self):
+    #     """Test if first day is loaded by default when first invoking .next.
+    #     """
+    #     self.ref_time = dt.datetime(2008, 1, 1)
+    #     self.testInst.load(fid=0)
+    #     self.out = self.testInst.index[0]
+    #     self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+    #     assert (self.out == self.ref_time)
+    #     assert (self.out == self.testInst.date)
+    #
+    # def test_next_fid_load_default(self):
+    #     """Test next day is being loaded (checking object date)."""
+    #     self.ref_time = dt.datetime(2008, 1, 2)
+    #     self.testInst.load(fid=0)
+    #     self.testInst.next()
+    #     self.out = self.testInst.index[0]
+    #     self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+    #     assert (self.out == self.ref_time)
+    #     assert (self.out == self.testInst.date)
+    #
+    # def test_prev_fid_load_default(self):
+    #     """Test prev day is loaded when invoking .prev."""
+    #     self.ref_time = dt.datetime(2008, 1, 3)
+    #     self.testInst.load(fid=3)
+    #     self.testInst.prev()
+    #     self.out = self.testInst.index[0]
+    #     self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+    #     assert (self.out == self.ref_time)
+    #     assert (self.out == self.testInst.date)
 
     def test_filename_load(self):
         """Test if file is loadable by filename, relative to
