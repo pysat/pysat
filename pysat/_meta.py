@@ -499,8 +499,9 @@ class Meta(object):
         ----------
         name : str
             Attribute name to be assigned to Meta
-        value : str, float, int, NoneType, boolean
-            Value to be assigned to attribute specified by name
+        value : str or boolean
+            String to be assigned to attribute specified by name or boolean
+            if name is 'mutable'
 
         Note
         ----
