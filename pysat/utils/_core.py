@@ -444,8 +444,8 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
 class NetworkLock(Lock):
     def __init__(self, *args, **kwargs):
-        '''Lock manager compatible with networked file systems
-        '''
+        """Lock manager compatible with networked file systems
+        """
 
         super(NetworkLock, self).__init__(*args, **kwargs)
 
