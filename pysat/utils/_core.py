@@ -148,7 +148,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                  scale_label='scale', min_label='value_min',
                  max_label='value_max', fill_label='fill',
                  pandas_format=True):
-    # unix_time=False, **kwargs):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -450,14 +449,14 @@ class NetworkLock(Lock):
         super(NetworkLock, self).__init__(*args, **kwargs)
 
     def release(self):
-        '''Releases the Lock so the file system
+        """Releases the Lock so the file system
 
         From portalocker docs:
           On some networked filesystems it might be needed to force
           a `os.fsync()` before closing the file so it's
           actually written before another client reads the file.
 
-        '''
+        """
 
         self.fh.flush()
         os.fsync(self.fh.fileno())
