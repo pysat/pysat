@@ -88,7 +88,7 @@ if not os.path.isdir(pysat_dir):
     modules_file = os.path.join(pysat_dir, 'user_modules.txt')
     with Lock(modules_file, 'w', file_timeout) as fout:
         fout.write('')
-        user_modules = []
+        user_modules = {}
 
         # in case of network files system
         fout.flush()
