@@ -346,7 +346,7 @@ class Meta(object):
         other_updated.fill_label = self.fill_label
 
         # Return the updated Meta class object
-        return other
+        return other_updated
 
     def accept_default_labels(self, other):
         """Applies labels for default meta labels from other onto self.
@@ -439,8 +439,8 @@ class Meta(object):
         # Get the desired variables as lists
         labs = [var for var in self.attrs()]
         vdim = [var for var in self.keys() if var not in self.keys_nD()]
-        ndim = ["{:} -> {:d} children".format(var, len(
-            [kk for kk in self[var]['children'].keys()]))
+        ndim = ["{:} -> {:d} children".format(
+            var, len([kk for kk in self[var]['children'].keys()]))
                 for var in self.keys_nD()]
 
         # Get the lengths of each list
@@ -498,7 +498,7 @@ class Meta(object):
         ----------
         name : str
             Attribute name to be assigned to Meta
-        value : 
+        value : str, float, int, NoneType, boolean
             Value to be assigned to attribute specified by name
 
         Note
@@ -507,6 +507,7 @@ class Meta(object):
 
         We avoid recursively setting properties using
         method from https://stackoverflow.com/a/15751135
+
         """
 
         # mutable handled explicitly to avoid recursion
@@ -694,8 +695,7 @@ class Meta(object):
         Parameters
         ----------
         key : str, tuple, or list
-           A single variable name, a tuple, or a list
-           
+            A single variable name, a tuple, or a list
 
         Examples
         --------
@@ -807,14 +807,14 @@ class Meta(object):
             if current_label in self.attrs():
                 # old label exists and has expected case
                 self.data.loc[:, new_label] = self.data.loc[:, current_label]
-                self.data.drop(current_label, axis=1, inplace=True)
+                self.data = self.data.drop(current_label, axis=1)
             else:
                 if self.has_attr(current_label):
                     # there is something like label, wrong case though
                     current_label = self.attr_case_name(current_label)
                     self.data.loc[:, new_label] = \
                         self.data.loc[:, current_label]
-                    self.data.drop(current_label, axis=1, inplace=True)
+                    self.data = self.data.drop(current_label, axis=1)
                 else:
                     # there is no existing label
                     # setting for the first time

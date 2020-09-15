@@ -1093,7 +1093,6 @@ class Instrument(object):
         output_str += '----------------------\n'
         if not self.empty:
             num_vars = len(self.variables)
-            max_vars = 6
 
             output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
             output_str += 'DOY: {:03d}\n'.format(self.doy)

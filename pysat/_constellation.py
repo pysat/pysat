@@ -46,7 +46,7 @@ class Constellation(object):
 
     def __repr__(self):
         """ Print the basic Constellation properties"""
-        out_str ="Constellation(instruments={:}) -> {:d} Instruments".format(
+        out_str = "Constellation(instruments={:}) -> {:d} Instruments".format(
             self.instruments, len(self.instruments))
         return out_str
 
