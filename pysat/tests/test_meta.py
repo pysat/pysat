@@ -64,7 +64,8 @@ class TestBasics():
 
     @pytest.mark.parametrize("labels,vals",
                              [([], []),
-                              (['units', 'long_name'], ['V', 'Longgggg'])])
+                              (['units', 'long_name'], ['V', 'Longgggg']),
+                              (['fill'], [-999])])
     def test_inst_data_assign_meta(self, labels, vals):
         """ Test Meta initialization with data
         """
