@@ -446,6 +446,7 @@ class NetworkLock(Lock):
     def __init__(self, *args, **kwargs):
         '''Lock manager compatible with networked file systems
         '''
+
         super(NetworkLock, self).__init__(*args, **kwargs)
 
     def release(self):
@@ -455,7 +456,9 @@ class NetworkLock(Lock):
           On some networked filesystems it might be needed to force
           a `os.fsync()` before closing the file so it's
           actually written before another client reads the file.
+
         '''
+
         self.fh.flush()
         os.fsync(self.fh.fileno())
 
