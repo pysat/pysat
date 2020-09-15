@@ -6,13 +6,13 @@ appreciated!  Pysat is a community-driven project and welcomes both feedback and
 contributions.
 
 Short version
-=============
+-------------
 
 * Submit bug reports and feature requests at `GitHub <https://github.com/rstoneback/pysat/issues>`_
 * Make pull requests to the ``develop`` branch
 
 Bug reports
-===========
+-----------
 
 When `reporting a bug <https://github.com/rstoneback/pysat/issues>`_ please
 include:
@@ -22,7 +22,7 @@ include:
 * Detailed steps to reproduce the bug
 
 Feature requests and feedback
-=============================
+-----------------------------
 
 The best way to send feedback is to file an issue at
 `GitHub <https://github.com/rstoneback/pysat/issues>`_.
@@ -35,7 +35,7 @@ If you are proposing a feature:
   are welcome :)
 
 Development
-===========
+-----------
 
 To set up `pysat` for local development:
 

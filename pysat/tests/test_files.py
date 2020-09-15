@@ -118,6 +118,8 @@ class TestBasics():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        self.out = ''
+
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -136,7 +138,22 @@ class TestBasics():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         pysat.utils.set_data_dir(self.data_path, store=False)
-        del self.testInst
+        del self.testInst, self.out
+
+    def test_basic_repr(self):
+        """The repr output will match the str output"""
+        self.out = self.testInst.files.__repr__()
+        assert isinstance(self.out, str)
+        assert self.out.find("Local files") > 0
+
+    def test_basic_str(self):
+        """Check for lines from each decision point in str"""
+        self.out = self.testInst.files.__str__()
+        assert isinstance(self.out, str)
+        # Test basic file output
+        assert self.out.find('Number of files') > 0
+        # Test no files
+        assert self.out.find('Date Range') > 0
 
     def test_parse_delimited_filename(self):
         """Check ability to parse delimited files"""

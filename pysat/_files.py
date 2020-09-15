@@ -74,7 +74,6 @@ class Files(object):
         # update Files instance.
         vefi.files.refresh()
 
-
     """
 
     def __init__(self, sat, manual_org=False, directory_format=None,
@@ -114,8 +113,10 @@ class Files(object):
             removed from the stored list of files.
         """
 
-        # pysat.Instrument object
+        # Set the hidden variables
         self._sat = weakref.proxy(sat)
+        self._update_files = update_files
+
         # location of .pysat file
         self.home_path = os.path.join(os.path.expanduser('~'), '.pysat')
         self.start_date = None
@@ -180,6 +181,40 @@ class Files(object):
                 # couldn't find stored info, load file list and then store
                 self.refresh()
 
+    def __repr__(self):
+        # Because the local Instrument object is weakly referenced, it may
+        # not always be accessible
+        try:
+            inst_repr = self._sat.__repr__()
+        except ReferenceError:
+            inst_repr = "Instrument(weakly referenced)"
+
+        out_str = "".join(["Files(", inst_repr, ", manual_org=",
+                           "{:}, directory_format='".format(self.manual_org),
+                           self.directory_format, "', update_files=",
+                           "{:}, file_format=".format(self._update_files),
+                           "{:}, ".format(self.file_format.__repr__()),
+                           "write_to_disk={:}, ".format(self.write_to_disk),
+                           "ignore_empty_files=",
+                           "{:})".format(self.ignore_empty_files),
+                           " -> {:d} Local files".format(len(self.files))])
+
+        return out_str
+
+    def __str__(self):
+        num_files = len(self.files)
+        output_str = 'Local File Statistics\n'
+        output_str += '---------------------\n'
+        output_str += 'Number of files: {:d}\n'.format(num_files)
+
+        if num_files > 0:
+            output_str += 'Date Range: '
+            output_str += self.files.index[0].strftime('%d %B %Y')
+            output_str += ' --- '
+            output_str += self.files.index[-1].strftime('%d %B %Y')
+
+        return output_str
+
     def _filter_empty_files(self):
         """Update the file list (files) with empty files ignored"""
 
@@ -204,14 +239,15 @@ class Files(object):
         """Attach results of instrument list_files routine to Instrument object
 
         Parameters
-        -----------
+        ----------
         file_info :
             Stored file information
 
         Returns
-        ---------
+        -------
         updates the file list (files), start_date, and stop_date attributes
         of the Files class object.
+
         """
 
         if not files_info.empty:
@@ -295,6 +331,7 @@ class Files(object):
         pandas.Series
             Full path file names are indexed by datetime
             Series is empty if there is no file list to load
+
         """
 
         fname = self.stored_file_name

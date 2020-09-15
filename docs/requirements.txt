@@ -1,2 +1,5 @@
 numpydoc
 ipython
+netCDF4
+xarray
+pandas

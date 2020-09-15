@@ -43,11 +43,42 @@ class TestBasics():
                                          clean_level='clean')
         self.testInst.load(2008, 1)
         self.ncols = len(self.testInst.data.columns)
+        self.out = None
 
     def teardown(self):
         """Runs after every method to clean up previous testing.
         """
-        del self.testInst, self.ncols
+        del self.testInst, self.ncols, self.out
+
+    def test_basic_repr(self):
+        """The repr output will match the str output"""
+        self.out = self.testInst.custom.__repr__()
+        assert isinstance(self.out, str)
+        assert self.out.find("functions applied") > 0
+
+    def test_basic_str(self):
+        """Check for lines from each decision point in str"""
+        self.out = self.testInst.custom.__str__()
+        assert isinstance(self.out, str)
+        # No custom functions
+        assert self.out.find('0 applied') > 0
+
+    def test_basic_str_w_function(self):
+        """Check for lines from each decision point in str"""
+        def mult_data(inst, mult, dkey="mlt"):
+            out_key = '{:.0f}x{:s}'.format(mult, dkey)
+            inst.data[out_key] = mult * inst.data[dkey]
+            return
+
+        self.testInst.custom.attach(mult_data, 'modify', args=[2.0],
+                                    kwargs={"dkey": "mlt"})
+        self.out = self.testInst.custom.__str__()
+        assert isinstance(self.out, str)
+        # No custom functions
+        assert self.out.find('1 applied') > 0
+        assert self.out.find('mult_data') > 0
+        assert self.out.find('Args') > 0
+        assert self.out.find('Kwargs') > 0
 
     def test_single_modifying_custom_function_error(self):
         """Test for error when custom function loaded as modify returns a value
