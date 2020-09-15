@@ -161,13 +161,11 @@ class TestSpecificUTOrbits():
                 break
 
             # Test the start index
-            self.etime = self.stime + i * relativedelta(hours=1,
-                                                        minutes=self.inc_min)
+            self.etime = self.stime + i * relativedelta(minutes=self.inc_min)
             assert self.testInst.index[0] == self.etime
 
             # Test the end index
-            self.etime += (relativedelta(hours=1, minutes=self.inc_min)
-                           - relativedelta(seconds=1))
+            self.etime += relativedelta(seconds=((self.inc_min * 60) - 1))
             assert self.testInst.index[-1] == self.etime
 
     def test_orbit_next_call_no_loaded_data(self):
@@ -191,8 +189,7 @@ class TestSpecificUTOrbits():
         """
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
-        self.etime = (self.stime + dt.timedelta(hours=1, minutes=self.inc_min)
-                      - dt.timedelta(seconds=1))
+        self.etime = self.stime + dt.timedelta(seconds=(self.inc_min * 60 - 1)) 
         assert (self.testInst.index[0] == self.stime)
         assert (self.testInst.index[-1] == self.etime)
 
@@ -201,13 +198,11 @@ class TestSpecificUTOrbits():
         """
         self.testInst.load(date=self.stime)
         self.testInst.orbits.prev()
-        assert (self.testInst.index[0]
-                == (self.stime
-                    + 14 * relativedelta(hours=1, minutes=self.inc_min)))
-        assert (self.testInst.index[-1]
-                == (self.stime
-                    + 15 * relativedelta(hours=1, minutes=self.inc_min)
-                    - relativedelta(seconds=1)))
+        self.stime +=  14 * relativedelta(minutes=self.inc_min)
+        self.etime = self.stime + dt.timedelta(seconds=((self.inc_min * 60)
+                                                        - 1))
+        assert self.testInst.index[0]  == self.stime
+        assert self.testInst.index[-1] == self.etime
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_next(self):
         """ Test orbit next call with data for previous day
@@ -218,7 +213,7 @@ class TestSpecificUTOrbits():
         assert (self.testInst.index[0] == dt.datetime(2008, 12, 30, 23, 45))
         assert (self.testInst.index[-1]
                 == (dt.datetime(2008, 12, 30, 23, 45)
-                    + relativedelta(hours=1, minutes=36, seconds=59)))
+                    + relativedelta(seconds=(self.inc_min * 60 - 1))))
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_prev(self):
         self.stime -= dt.timedelta(days=1)
@@ -226,7 +221,7 @@ class TestSpecificUTOrbits():
         self.testInst.orbits.prev()
         assert (self.testInst.index[0]
                 == (dt.datetime(2009, 1, 1)
-                    - relativedelta(hours=1, minutes=self.inc_min)))
+                    - relativedelta(minutes=self.inc_min)))
         assert (self.testInst.index[-1]
                 == (dt.datetime(2009, 1, 1) - relativedelta(seconds=1)))
 
