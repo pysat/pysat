@@ -366,7 +366,7 @@ class Instrument(object):
                 self.kwargs[key] = default_keywords[key]
 
         # start with a daily increment for loading
-        self.increment = pds.DateOffset(days=1)
+        self.load_step = pds.DateOffset(days=1)
 
         # run instrument init function, a basic pass function is used
         # if user doesn't supply the init function
@@ -1344,10 +1344,10 @@ class Instrument(object):
 
         """
         if self._load_by_date:
-            next_date = self.date + self.increment
-            return self._load_data(date=next_date, inc=self.increment)
+            next_date = self.date + self.load_step
+            return self._load_data(date=next_date, inc=self.load_step)
         else:
-            return self._load_data(fid=(self._fid + 1), inc=self.increment)
+            return self._load_data(fid=(self._fid + 1), inc=self.load_step)
 
     def _load_prev(self):
         """Load the next days data (or file) without decrementing the date.
@@ -1360,10 +1360,10 @@ class Instrument(object):
         """
 
         if self._load_by_date:
-            prev_date = self.date - self.increment
-            return self._load_data(date=prev_date, inc=self.increment)
+            prev_date = self.date - self.load_step
+            return self._load_data(date=prev_date, inc=self.load_step)
         else:
-            return self._load_data(fid=(self._fid - 1), inc=self.increment)
+            return self._load_data(fid=(self._fid - 1), inc=self.load_step)
 
     def _set_load_parameters(self, date=None, fid=None):
         # filter supplied data so that it is only year, month, and day
@@ -1418,11 +1418,11 @@ class Instrument(object):
             # increment
             if (yr2 is not None) & (doy2 is not None):
                 date2 = dt.datetime(yr2, 1, 1) + pds.DateOffset(days=(doy2 - 1))
-                self.increment = date2 - date
+                self.load_step = date2 - date
             elif (yr2 is not None) or (doy2 is not None):
                 raise ValueError('Both yr2 and doy2 must be set, or neither.')
             else:
-                self.increment = pds.DateOffset(days=1)
+                self.load_step = pds.DateOffset(days=1)
             curr = self.date
         elif date is not None:
             # ensure date portion from user is only year, month, day
@@ -1431,28 +1431,32 @@ class Instrument(object):
             # increment
             if date2 is not None:
                 # support loading a range of dates
-                self.increment = date2 - date
+                self.load_step = date2 - date
             else:
                 # defaults to single day load
-                self.increment = pds.DateOffset(days=1)
+                self.load_step = pds.DateOffset(days=1)
             curr = date
         elif fname is not None:
             # date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
             # increment one file at a time
-            self.increment = 1
+            self.load_step = 1
             curr = self._fid.copy()
         elif (yr is None) and (doy is None) and (yr2 is None) and \
                 (doy2 is None) and (date is None) and (date2 is None) and \
                 (fname is None):
             # empty call, treat as if all data requested
             # all data within bounds (?)
+            # TODO: Doesn't work with multi_file_day or data padding
+            # add a check and raise Error if those options are set
+            # when using this option the Instrument really shouldn't work
+            # with next/prev and __iter__ anymore, nowhere to go from here.
             date = self.files.files.index[0]
             date2 = self.files.files.index[-1] + pds.DateOffset(days=1)
             self._set_load_parameters(date=date, fid=None)
             curr = date
-            self.increment = date2 - date
+            self.load_step = date2 - date
         else:
             estr = 'Must supply a yr,doy pair, or datetime object, or filename'
             estr = '{:s} to load data from.'.format(estr)
@@ -1471,7 +1475,7 @@ class Instrument(object):
                 self._prev_data, self._prev_meta = self._load_prev()
                 self._curr_data, self._curr_meta = \
                     self._load_data(date=self.date, fid=self._fid,
-                                    inc=self.increment)
+                                    inc=self.load_step)
                 self._next_data, self._next_meta = self._load_next()
             else:
                 # moving forward in time
@@ -1499,7 +1503,7 @@ class Instrument(object):
                     self._prev_data, self._prev_meta = self._load_prev()
                     self._curr_data, self._curr_meta = \
                         self._load_data(date=self.date, fid=self._fid,
-                                        inc=self.increment)
+                                        inc=self.load_step)
                     self._next_data, self._next_meta = self._load_next()
 
             # make sure datetime indices for all data is monotonic
@@ -1511,8 +1515,8 @@ class Instrument(object):
                 self._next_data.sort_index(inplace=True)
 
             # make tracking indexes consistent with new loads
-            self._next_data_track = curr + self.increment
-            self._prev_data_track = curr - self.increment
+            self._next_data_track = curr + self.load_step
+            self._prev_data_track = curr - self.load_step
             # attach data to object
             if not self._empty(self._curr_data):
                 self.data = self._curr_data.copy()
@@ -1587,7 +1591,7 @@ class Instrument(object):
         # if self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
-                                              inc=self.increment)
+                                              inc=self.load_step)
             if not self.empty:
                 self.meta = meta
 
@@ -1774,7 +1778,7 @@ class Instrument(object):
         password : string
             password, if required by instrument data archive
         date_array : list-like
-            Sequence of dates to download date for. Takes precendence over
+            Sequence of dates to download date for. Takes precedence over
             start and stop inputs
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments
@@ -1836,6 +1840,7 @@ class Instrument(object):
 
         # if instrument object has default bounds, update them
         if len(self.bounds[0]) == 1:
+            # TODO: update both files and dates iterations
             if (self.bounds[0][0] == first_date
                     and self.bounds[1][0] == last_date):
                 logger.info('Updating instrument object bounds.')
@@ -1849,10 +1854,17 @@ class Instrument(object):
         ----------
         start : datetime object, filename, or None (default)
             start of iteration, if None uses first data date.
-            list-like collection also accepted
+            list-like collection also accepted.
         end :  datetime object, filename, or None (default)
             end of iteration, inclusive. If None uses last data date.
-            list-like collection also accepted
+            list-like collection also accepted.
+        step : pandas.DateOffset, int, or None
+            Step size used when iterating from start to end. Use a
+            DateOffset when setting bounds by date, an integer when setting
+            bounds by file. Defaults to a single day (file).
+        width : pandas.DateOffset, int, or None
+            Data window used when loading data within iteration. Defaults to a
+            single day (file) if not assigned.
 
         Note
         ----
@@ -1868,7 +1880,7 @@ class Instrument(object):
                                     tag=tag)
             start = dt.datetime(2009,1,1)
             stop = dt.datetime(2009,1,31)
-            inst.bounds = (start,stop)
+            inst.bounds = (start, stop)
 
             start2 = pysat.datetetime(2010,1,1)
             stop2 = dt.datetime(2010,2,14)
@@ -1880,91 +1892,116 @@ class Instrument(object):
     @bounds.setter
     def bounds(self, value=None):
         if value is None:
-            value = (None, None)
+            # user wants defaults
+            value = (None, None, None, None)
+
         if len(value) < 2:
             raise ValueError(' '.join(('Must supply both a start and end',
-                                       'date/file Supply None if you want the',
-                                       'first/last possible')))
-
+                                       'date/file. Supply None if you want the',
+                                       'first/last possible.')))
         start = value[0]
         end = value[1]
-        # get the frequency, or step size, of season
-        if len(value) == 3:
-            step = value[2]
-        else:
-            # default to daily
-            step = 'D'
+        if len(value) == 2:
+            # includes start and stop only
+            self._iter_step = None
+            self._iter_width = None
+        elif len(value) == 3:
+            # also includes step size
+            self._iter_step = value[2]
+            self._iter_width = None
+        elif len(value) == 4:
+            # also includes loading window (data width)
+            self._iter_step = value[2]
+            self._iter_width = value[3]
 
         if (start is None) and (end is None):
-            # set default
+            # set default using first and last file date
             self._iter_start = [self.files.start_date]
             self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
+            if self._iter_step is None:
+                self._iter_step = pds.DateOffset(days=1)
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
                 self._iter_list = \
                     utils.time.create_date_range(self._iter_start,
                                                  self._iter_stop,
-                                                 freq=step)
+                                                 freq=self._iter_step)
 
-        elif((hasattr(start, '__iter__') and not isinstance(start, str))
-             and (hasattr(end, '__iter__') and not isinstance(end, str))):
+        else:
+            # user provided some inputs
+            starts = np.asarray(start)
+            ends = np.asarray(end)
+            # ensure consistency if input was a string
+            if starts.shape == ():
+                starts = np.array([starts])
+            if ends.shape == ():
+                ends = np.array([ends])
+
+            # check equal number of elements
+            if len(starts) != len(ends):
+                estr = ' '.join(('Both start and end must have the same',
+                                 'number of elements'))
+                raise ValueError(estr)
+
+            # check everything is the same type
             base = type(start[0])
-            for s, t in zip(start, end):
-                if (type(s) != type(t)) or (type(s) != base):
+            for lstart, lend in zip(starts, ends):
+                if (type(lstart) != type(lend)) or (type(lstart) != base):
                     raise ValueError(' '.join(('Start and end items must all',
                                                'be of the same type')))
-            if isinstance(start[0], str):
+
+            # set bounds based upon passed data type
+            if isinstance(starts[0], str) or isinstance(ends[0], str):
+                # one of the inputs is a string
                 self._iter_type = 'file'
-                self._iter_list = self.files.get_file_array(start, end)
-            elif isinstance(start[0], dt.datetime):
+                # could be (string, None) or (None, string)
+                # replace None with first/last, as appropriate
+                if starts[0] is None:
+                    starts = [self.files[0]]
+                if end is None:
+                    ends = [self.files.files[-1]]
+                # default step size
+                if self._iter_step is None:
+                    self._iter_step = 1
+                # default window size
+                if self._iter_width is None:
+                    self._iter_width = 1
+
+                # grab list of files with user bounds
+                self._iter_list = self.files.get_file_array(starts, ends)
+                # down-select based upon step size
+                self._iter_list = self._iter_list[::self._iter_step]
+
+            elif isinstance(starts[0], dt.datetime) or isinstance(ends[0],
+                                                                  dt.datetime):
+                # one of the inputs is a date
                 self._iter_type = 'date'
-                start = self._filter_datetime_input(start)
-                end = self._filter_datetime_input(end)
-                self._iter_list = utils.time.create_date_range(start, end,
-                                                               freq=step)
+
+                if starts[0] is None:
+                    starts = [self.files.start_date]
+                if ends[0] is None:
+                    ends = [self.files.stop_date]
+                # default step size
+                if self._iter_step is None:
+                    self._iter_step = pds.DateOffset(days=1)
+                # default window size
+                if self._iter_width is None:
+                    self._iter_width = pds.DateOffset(days=1)
+
+                starts = self._filter_datetime_input(starts)
+                ends = self._filter_datetime_input(ends)
+                freq = self._iter_step
+                self._iter_list = utils.time.create_date_range(starts, ends,
+                                                               freq=freq)
+
             else:
                 raise ValueError(' '.join(('Input is not a known type, string',
                                            'or datetime')))
-            self._iter_start = start
-            self._iter_stop = end
+            self._iter_start = starts
+            self._iter_stop = ends
 
-        elif((hasattr(start, '__iter__') and not isinstance(start, str))
-             or (hasattr(end, '__iter__') and not isinstance(end, str))):
-            raise ValueError(' '.join(('Both start and end must be iterable if',
-                                       'one bound is iterable')))
-
-        elif isinstance(start, str) or isinstance(end, str):
-            if isinstance(start, dt.datetime) or \
-                    isinstance(end, dt.datetime):
-                raise ValueError('Not allowed to mix file and date bounds')
-            if start is None:
-                start = self.files[0]
-            if end is None:
-                end = self.files.files[-1]
-            self._iter_start = [start]
-            self._iter_stop = [end]
-            self._iter_list = self.files.get_file_array(self._iter_start,
-                                                        self._iter_stop)
-            self._iter_type = 'file'
-
-        elif isinstance(start, dt.datetime) or isinstance(end, dt.datetime):
-            if start is None:
-                start = self.files.start_date
-            if end is None:
-                end = self.files.stop_date
-            self._iter_start = [self._filter_datetime_input(start)]
-            self._iter_stop = [self._filter_datetime_input(end)]
-            self._iter_list = utils.time.create_date_range(self._iter_start,
-                                                           self._iter_stop,
-                                                           freq=step)
-            self._iter_type = 'date'
-        else:
-            raise ValueError(''.join(('Provided an invalid combination of',
-                                      ' bounds. if specifying by file, both',
-                                      ' bounds must be by file. Other ',
-                                      'combinations of datetime objects ',
-                                      'and None are allowed.')))
+        return
 
     def __iter__(self):
         """Iterates instrument object by loading subsequent days or files.
@@ -2005,15 +2042,9 @@ class Instrument(object):
             # iterate!
             for date in self._iter_list:
                 # user specified range of dates
-                date2 = date + self.increment
-                if date < prev_date:
-                    # increment is larger than spread of dates and
-                    # this date has already been loaded, go back to loop start
-                    # and increment date
-                    continue
+                date2 = date + self._iter_width
                 self.load(date=date, date2=date2)
-                # track the previous maximum, will be next rounds start date
-                prev_date = date2
+
                 # TODO: Discuss .copy()
                 # without copy, a = [inst for inst in inst] leads to
                 # every item being the last day loaded
@@ -2036,18 +2067,20 @@ class Instrument(object):
 
         if self._iter_type == 'date':
             if self.date is not None:
-                idx, = np.where(self._iter_list == self.date)
+                next_date = self.date + self._iter_step
+                idx, = np.where(self._iter_list == next_date)
                 if (len(idx) == 0):
                     raise StopIteration(''.join(('File list is empty. ',
                                                  'Nothing to be done.')))
                 elif idx[-1] + 1 >= len(self._iter_list):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
-                    date = self._iter_list[idx[0]] + self.increment
-                    date2 = date + self.increment
-                    self.load(date=date, date2=date2, verifyPad=verifyPad)
+                    date2 = next_date + self._iter_width
+                    self.load(date=next_date, date2=date2, verifyPad=verifyPad)
             else:
-                self.load(date=self._iter_list[0], verifyPad=verifyPad)
+                date = self._iter_list[0]
+                date2 = date + self._iter_width
+                self.load(date=date, date2=date2, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             if self._fid is not None:
