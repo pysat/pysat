@@ -64,8 +64,11 @@ class TestBasics():
             self.testInst.load(self.ref_time.year)
 
     def test_basic_instrument_load_no_input(self):
-        with pytest.raises(TypeError):
-            self.testInst.load()
+        self.testInst.load()
+        assert(self.testInst.index[0] == self.testInst.files.start_date)
+        assert(self.testInst.index[-1] >= self.testInst.files.stop_date)
+        assert(self.testInst.index[-1] <= self.testInst.files.stop_date
+               + pds.DateOffset(days=1))
 
     def test_basic_instrument_load_by_file_and_multifile(self):
         self.out = pysat.Instrument(platform=self.testInst.platform,
@@ -850,7 +853,7 @@ class TestBasics():
 
     def test_set_bounds_wrong_type(self):
         start = dt.datetime(2009, 1, 1)
-        with pytest.raises(AttributeError):
+        with pytest.raises(ValueError):
             self.testInst.bounds = [start, 1]
 
     def test_set_bounds_mixed_iterable(self):
