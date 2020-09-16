@@ -47,9 +47,9 @@ class TestBasics():
         data)."""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.index[0]
-        assert(self.out == self.ref_time)
+        assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert(self.out == self.testInst.date)
+        assert (self.out == self.testInst.date)
 
     def test_basic_instrument_load_two_days(self):
         """Test if the correct day is being loaded (checking object date and
@@ -57,13 +57,12 @@ class TestBasics():
         self.testInst.load(self.ref_time.year, self.ref_doy,
                            self.ref_time.year, self.ref_doy + 2)
         self.out = self.testInst.index[0]
-        assert(self.out == self.ref_time)
+        assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert(self.out == self.testInst.date)
+        assert (self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
-        # num_daily_samples seconds per file
-        secs = self.testInst.kwargs['num_daily_samples'] - 1
-        assert(self.out == self.ref_time + pds.DateOffset(days=1, seconds=secs))
+        assert (self.out >= self.ref_time + pds.DateOffset(days=1))
+        assert (self.out <= self.ref_time + pds.DateOffset(days=2))
 
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
@@ -84,10 +83,10 @@ class TestBasics():
 
     def test_basic_instrument_load_no_input(self):
         self.testInst.load()
-        assert(self.testInst.index[0] == self.testInst.files.start_date)
-        assert(self.testInst.index[-1] >= self.testInst.files.stop_date)
-        assert(self.testInst.index[-1] <= self.testInst.files.stop_date
-               + pds.DateOffset(days=1))
+        assert (self.testInst.index[0] == self.testInst.files.start_date)
+        assert (self.testInst.index[-1] >= self.testInst.files.stop_date)
+        assert (self.testInst.index[-1] <= self.testInst.files.stop_date
+                + pds.DateOffset(days=1))
 
     def test_basic_instrument_load_by_file_and_multifile(self):
         self.out = pysat.Instrument(platform=self.testInst.platform,
@@ -124,9 +123,8 @@ class TestBasics():
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
-        # num_daily_samples seconds per file
-        secs = self.testInst.kwargs['num_daily_samples'] - 1
-        assert(self.out == self.ref_time + pds.DateOffset(days=1, seconds=secs))
+        assert (self.out >= self.ref_time + pds.DateOffset(days=1))
+        assert (self.out <= self.ref_time + pds.DateOffset(days=2))
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
         # put in a date that has more than year, month, day
