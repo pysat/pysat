@@ -1469,24 +1469,33 @@ class Instrument(object):
             # make tracking indexes consistent with new loads
             self._next_data_track = curr + inc
             self._prev_data_track = curr - inc
+
             # attach data to object
             if not self._empty(self._curr_data):
+                # The data being added isn't empty, so copy the data values
+                # and the meta data values
                 self.data = self._curr_data.copy()
                 self.meta = self._curr_meta.copy()
             else:
+                # If a new default/empty Meta is added here then it creates
+                # a bug by potentially overwriting existing, good meta data
+                # with an empty Meta object. For example, this will happen if
+                # a multi-day analysis ends on a day with no data.
+                # Do not re-introduce this issue.
                 self.data = self._null_data.copy()
 
-            # multi file days can extend past a single day, only want data from
-            # specific date if loading by day
-            # set up times for the possible data padding coming up
+            # Load by file or by date, as spedified
             if self._load_by_date:
+                # Multi-file days can extend past a single day, only want data
+                # from a specific date if loading by day.  Set up times for
+                # the possible data padding coming up.
                 first_time = self.date
                 first_pad = self.date - loop_pad
                 last_time = self.date + pds.DateOffset(days=1)
                 last_pad = self.date + pds.DateOffset(days=1) + loop_pad
                 want_last_pad = False
-            # loading by file, can't be a multi_file-day flag situation
             elif (not self._load_by_date) and (not self.multi_file_day):
+                # Loading by file, can't be a multi_file-day flag situation
                 first_time = self._index(self._curr_data)[0]
                 first_pad = first_time - loop_pad
                 last_time = self._index(self._curr_data)[-1]
@@ -1502,9 +1511,11 @@ class Instrument(object):
             if (not self._empty(self._prev_data)) & (not self.empty):
                 stored_data = self.data  # .copy()
                 temp_time = copy.deepcopy(self.index[0])
+
                 # pad data using access mechanisms that works
                 # for both pandas and xarray
                 self.data = self._prev_data.copy()
+
                 # __getitem__ used below to get data
                 # from instrument object. Details
                 # for handling pandas and xarray are different
@@ -1520,6 +1531,7 @@ class Instrument(object):
             if (not self._empty(self._next_data)) & (not self.empty):
                 stored_data = self.data  # .copy()
                 temp_time = copy.deepcopy(self.index[-1])
+
                 # pad data using access mechanisms that work
                 # for both pandas and xarray
                 self.data = self._next_data.copy()
