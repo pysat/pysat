@@ -2,7 +2,7 @@ from importlib import reload as re_load
 import numpy as np
 import os
 
-from portalocker import Lock, TemporaryFileLock
+from portalocker import Lock
 import xarray as xr
 
 import pysat
