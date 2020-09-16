@@ -76,6 +76,11 @@ class TestBasics():
         with pytest.raises(TypeError):
             self.testInst.load(self.ref_time.year)
 
+    def test_basic_instrument_load_yr_no_doy2(self):
+        with pytest.raises(TypeError):
+            self.testInst.load(self.ref_time.year, self.ref_doy,
+                               self.ref_time.year)
+
     def test_basic_instrument_load_no_input(self):
         self.testInst.load()
         assert(self.testInst.index[0] == self.testInst.files.start_date)
@@ -92,6 +97,16 @@ class TestBasics():
                                     multi_file_day=True)
         with pytest.raises(ValueError):
             self.out.load(fname=self.out.files[0])
+
+    def test_basic_instrument_load_and_multifile(self):
+        self.out = pysat.Instrument(platform=self.testInst.platform,
+                                    name=self.testInst.name,
+                                    sat_id='10',
+                                    clean_level='clean',
+                                    update_files=True,
+                                    multi_file_day=True)
+        with pytest.raises(ValueError):
+            self.out.load()
 
     def test_basic_instrument_load_by_date(self):
         self.testInst.load(date=self.ref_time)
@@ -1470,6 +1485,10 @@ class TestDataPadding():
                              clean_level='clean',
                              pad=2,
                              update_files=True)
+
+    def test_data_padding_bad_load(self):
+        with pytest.raises(ValueError):
+            self.testInst.load()
 
     def test_yrdoy_data_padding_missing_days(self):
         self.testInst.load(2008, 1)
