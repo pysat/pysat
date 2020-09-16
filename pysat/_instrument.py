@@ -1875,10 +1875,11 @@ class Instrument(object):
         end :  datetime object, filename, or None (default)
             end of iteration, inclusive. If None uses last data date.
             list-like collection also accepted.
-        step : pandas.DateOffset, int, or None
+        step : str, int, or None
             Step size used when iterating from start to end. Use a
-            DateOffset when setting bounds by date, an integer when setting
-            bounds by file. Defaults to a single day (file).
+            Pandas frequency string ('3D', '1M') when setting bounds by date,
+            an integer when setting bounds by file. Defaults to a single
+            day (file).
         width : pandas.DateOffset, int, or None
             Data window used when loading data within iteration. Defaults to a
             single day (file) if not assigned.
@@ -1891,17 +1892,31 @@ class Instrument(object):
         Examples
         --------
         ::
+            import datetime as dt
+            import pandas as pds
+            import pysat
 
-            inst = pysat.Instrument(platform=platform,
-                                    name=name,
-                                    tag=tag)
+            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
             start = dt.datetime(2009,1,1)
             stop = dt.datetime(2009,1,31)
+            # Defaults to stepping by a single day and a data loading window
+            # of one day/file.
             inst.bounds = (start, stop)
 
-            start2 = pysat.datetetime(2010,1,1)
+            # Set bounds by file. Iterates a file at a time.
+            inst.bounds = ('filename1', 'filename2')
+
+            # Create a more complicated season, multiple start and stop dates.
+            start2 = dt.datetetime(2010,1,1)
             stop2 = dt.datetime(2010,2,14)
             inst.bounds = ([start, start2], [stop, stop2])
+
+            # Iterate via a non-standard step size of two days.
+            inst.bounds = ([start, start2], [stop, stop2], '2D')
+
+            # Load more than a single day/file at a time when iterating
+            inst.bounds = ([start, start2], [stop, stop2], '2D',
+                           pds.DateOffset(days=3))
 
         """
         out = (self._iter_start, self._iter_stop, self._iter_step,
@@ -1941,7 +1956,7 @@ class Instrument(object):
             self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
             if self._iter_step is None:
-                self._iter_step = pds.DateOffset(days=1)
+                self._iter_step = '1D'
             if self._iter_width is None:
                 self._iter_width = pds.DateOffset(days=1)
             if self._iter_start[0] is not None:
@@ -1950,7 +1965,6 @@ class Instrument(object):
                     utils.time.create_date_range(self._iter_start,
                                                  self._iter_stop,
                                                  freq=self._iter_step)
-
         else:
             # user provided some inputs
             starts = np.asarray([start])
@@ -2012,6 +2026,8 @@ class Instrument(object):
                 self._iter_type = 'date'
 
                 if starts[0] is None:
+                    # start and stop dates on self.files already filtered
+                    # to include only year, month, and day
                     starts = [self.files.start_date]
                 if ends[0] is None:
                     ends = [self.files.stop_date]
@@ -2022,6 +2038,7 @@ class Instrument(object):
                 if self._iter_width is None:
                     self._iter_width = pds.DateOffset(days=1)
 
+                # create list-like of dates for iteration
                 starts = self._filter_datetime_input(starts)
                 ends = self._filter_datetime_input(ends)
                 freq = self._iter_step
