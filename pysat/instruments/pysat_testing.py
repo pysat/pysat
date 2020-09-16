@@ -7,6 +7,7 @@ import datetime as dt
 import functools
 import logging
 import numpy as np
+import warnings
 
 import pandas as pds
 
@@ -147,11 +148,20 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     """
 
-    # create an artifical satellite data set
+    # create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    uts, index, dates = mm_test.generate_times(fnames, sat_id, freq='1S')
+    if num_daily_samples is None:
+        if sat_id != '':
+            estr = ' '.join(('sat_id will no longer be supported',
+                             'for setting the number of samples per day.'))
+            warnings.warn(estr, DeprecationWarning)
+            num_daily_samples = int(sat_id)
+        else:
+            num_daily_samples = 86400
+    uts, index, dates = mm_test.generate_times(fnames, num_daily_samples,
+                                               freq='1S')
 
     # Specify the date tag locally and determine the desired date range
     pds_offset = pds.DateOffset(hours=12)

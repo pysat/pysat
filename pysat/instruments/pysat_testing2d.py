@@ -7,6 +7,7 @@ import datetime as dt
 import functools
 import logging
 import numpy as np
+import warnings
 
 import pandas as pds
 
@@ -57,7 +58,8 @@ def default(inst):
     pass
 
 
-def load(fnames, tag=None, sat_id=None, malformed_index=False):
+def load(fnames, tag=None, sat_id=None, malformed_index=False,
+         num_daily_samples=None):
     """ Loads the test files
 
     Parameters
@@ -72,6 +74,9 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     malformed_index : bool
         If True, the time index will be non-unique and non-monotonic.
         (default=False)
+    num_daily_samples : int
+        Number of samples per day
+
     Returns
     -------
     data : pds.DataFrame
@@ -84,8 +89,18 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
+    if num_daily_samples is None:
+        if sat_id != '':
+            estr = ' '.join(('sat_id will no longer be supported',
+                             'for setting the number of samples per day.'))
+            warnings.warn(estr, DeprecationWarning)
+            num_daily_samples = int(sat_id)
+        else:
+            num_daily_samples = 864
+
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, dates = mm_test.generate_times(fnames, sat_id, freq='100S')
+    uts, index, dates = mm_test.generate_times(fnames, num_daily_samples,
+                                               freq='100S')
     # seed DataFrame with UT array
     data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
