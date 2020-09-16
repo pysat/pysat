@@ -1239,6 +1239,7 @@ class Instrument(object):
         date = self._filter_datetime_input(date)
         if fid is not None:
             # get filename based off of index value
+            # inclusive loading on filenames
             fname = self.files[fid:(fid + inc)]
         elif date is not None:
             fname = self.files[date:(date + inc)]
@@ -1347,7 +1348,8 @@ class Instrument(object):
             next_date = self.date + self.load_step
             return self._load_data(date=next_date, inc=self.load_step)
         else:
-            return self._load_data(fid=(self._fid + 1), inc=self.load_step)
+            next_id = self._fid + self.load_step
+            return self._load_data(fid=next_id, inc=self.load_step)
 
     def _load_prev(self):
         """Load the next days data (or file) without decrementing the date.
@@ -1363,7 +1365,8 @@ class Instrument(object):
             prev_date = self.date - self.load_step
             return self._load_data(date=prev_date, inc=self.load_step)
         else:
-            return self._load_data(fid=(self._fid - 1), inc=self.load_step)
+            prev_id = self._fid - self.load_step
+            return self._load_data(fid=prev_id, inc=self.load_step)
 
     def _set_load_parameters(self, date=None, fid=None):
         # filter supplied data so that it is only year, month, and day
@@ -1383,25 +1386,39 @@ class Instrument(object):
             self._load_by_date = False
 
     def load(self, yr=None, doy=None, yr2=None, doy2=None, date=None,
-             date2=None, fname=None, verifyPad=False):
+             date2=None, fname=None, fname2=None, verifyPad=False):
         """Load instrument data into Instrument object .data.
 
         Parameters
         ----------
         yr : integer
-            year for desired data
+            Year for desired data. pysat will load all files with an
+            associated date between yr, doy and yr, doy + 1
         doy : integer
-            day of year
-        date : datetime object
-            date to load
+            Day of year for desired data. Must be present with yr input.
+        yr2 : integer
+            Used when loading a range of dates, from yr, doy to yr2, doy2 based
+            upon the dates associated with the Instrument's files. Date range
+            is inclusive for yr, doy but exclusive for yr2, doy2.
+        doy2 : integer
+            Used when loading a range of dates, from yr, doy to yr2, doy2 based
+            upon the dates associated with the Instrument's files. Date range
+            is inclusive for yr, doy but exclusive for yr2, doy2.
+        date : dt.datetime
+            Date to load data for. pysat will load all files with an associated
+            date between date and date + 1 day
+        date2 : dt.datetime
+            Used when loading a range of data from `date` to `date2` based
+            upon the dates associated with the Instrument's files. Date range
+            is inclusive for date but exclusive for date2.
         fname : 'string'
-            filename to be loaded
+            Filename to be loaded
+        fname2 : 'string'
+            Used when loading a range of filenames from `fname` to `fname2`,
+            inclusive.
         verifyPad : boolean
-            if True, padding data not removed (debug purposes)
-
-        Returns
-        --------
-        Void.  Data is added to self.data
+            if True, padding data not removed (debug purposes). Padding
+            parameters are provided at Instrument instantiation.
 
         Note
         ----
@@ -1410,7 +1427,41 @@ class Instrument(object):
         are automatically applied to the data before it is available to
         user in .data.
 
+        A mixed combination of `.load()` keywords such as `yr` and `date` are
+        not allowed.
+
+        Examples
+        --------
+        ::
+            import datetime as dt
+            import pysat
+
+            inst = pysat.Instrument('pysat', 'testing')
+
+            # load a single day by year and day of year
+            inst.load(2009, 1)
+
+            # load a single day by date
+            date = dt.datetime(2009, 1, 1)
+            inst.load(date=date)
+
+            # load a single file, first file in this example
+            inst.load(fname=inst.files[0])
+
+            # load a range of days, data between
+            # Jan. 1st (inclusive) - Jan. 3rd (exclusive)
+            inst.load(2009, 1, 2009, 3)
+
+            # same procedure using datetimes
+            date = dt.datetime(2009, 1, 1)
+            date2 = dt.datetime(2009, 1, 3)
+            inst.load(date=date, date2=date2)
+
+            # same procedure using filenames
+            inst.load(fname=inst.files[0], fname2=inst.files[2])
+
         """
+
         # set options used by loading routine based upon user input
         if (yr is not None) & (doy is not None):
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
@@ -1440,8 +1491,22 @@ class Instrument(object):
             # date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
-            # increment one file at a time
-            self.load_step = 1
+            # check for loading by file range
+            if fname2 is not None:
+                # get index for both files so the delta may be computed
+                idx1 = self.files.get_index(fname)
+                idx2 = self.files.get_index(fname2)
+                diff = idx2 - idx1
+                if diff < 0:
+                    estr = ''.join(('`fname2` must occur at a later date than ',
+                                    '`fname`. Swapping filename inputs will ',
+                                    'resolve the error.'))
+                    raise ValueError(estr)
+                else:
+                    self.load_step = diff
+            else:
+                # increment one file at a time
+                self.load_step = 1
             curr = self._fid.copy()
         elif (yr is None) and (doy is None) and (yr2 is None) and \
                 (doy2 is None) and (date is None) and (date2 is None) and \
@@ -1463,8 +1528,7 @@ class Instrument(object):
             curr = date
             self.load_step = date2 - date
         else:
-            estr = 'Must supply a yr,doy pair, or datetime object, or filename'
-            estr = '{:s} to load data from.'.format(estr)
+            estr = 'Unkown input.'
             raise TypeError(estr)
 
         self.orbits._reset()
@@ -2079,8 +2143,15 @@ class Instrument(object):
         """
 
         if self._iter_type == 'file':
+            width = self._iter_width
             for fname in self._iter_list:
-                self.load(fname=fname)
+                if width > 1:
+                    # load more than one file at a time
+                    # get location for second file
+                    nfid = self.files.get_index(fname) + self._iter_width
+                    self.load(fname=fname, fname2=self.files[nfid])
+                else:
+                    self.load(fname=fname)
                 yield self
 
         elif self._iter_type == 'date':
@@ -2140,19 +2211,42 @@ class Instrument(object):
                 self.load(date=date, date2=date2, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
+            first = self.files.get_index(self._iter_list[0])
+            last = self.files.get_index(self._iter_list[-1])
+            step = self._iter_step
+            width = self._iter_width
             if self._fid is not None:
                 # data already loaded in .data
-                first = self.files.get_index(self._iter_list[0])
-                last = self.files.get_index(self._iter_list[-1])
-                if (self._fid < first) | (self._fid + 1 > last):
+                if (self._fid < first) | (self._fid + step > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    # TODO: Add support for expanded range of files to load
-                    fname = self._iter_list[self._fid + 1 - first]
-                    self.load(fname=fname, verifyPad=verifyPad)
+                    # step size already accounted for in the list of files
+                    # get location of current file in iteration list
+                    if self.files[self._fid] in self._iter_list:
+                        idx = 0
+                        fname = self.files[self._fid]
+                        for i, name in enumerate(self._iter_list):
+                            if name == fname:
+                                idx = i
+                                break
+                    else:
+                        estr = ''.join(('Unable to find loaded filename ',
+                                        'in the iteration filelist, ',
+                                        'self._iter_list'))
+                        raise ValueError(estr)
+                    fname = self._iter_list[idx + 1]
             else:
                 # no data loaded yet, start with the first file
-                self.load(fname=self._iter_list[0], verifyPad=verifyPad)
+                fname = self._iter_list[0]
+
+            if width > 1:
+                # load more than one file at a time
+                # get location for second file
+                nfid = self.files.get_index(fname) + self._iter_width
+                self.load(fname=fname, fname2=self.files[nfid],
+                          verifyPad=verifyPad)
+            else:
+                self.load(fname=fname, verifyPad=verifyPad)
 
         return
 
@@ -2176,31 +2270,62 @@ class Instrument(object):
 
         if self._iter_type == 'date':
             if self.date is not None:
+                # some data already loaded in .data
                 idx, = np.where(self._iter_list == self.date)
                 if len(idx) == 0:
                     estr = ''.join(('Unable to find current date in ',
                                     'iteration file list. Out of bounds.'))
                     raise StopIteration(estr)
                 elif idx[0] == 0:
+                    # too far!
                     raise StopIteration('Outside the set date boundaries.')
                 else:
+                    # not on first day, safe to move backward
                     date = self._iter_list[idx[0] - 1]
                     date2 = self._iter_list[idx[0]]
                     self.load(date=date, date2=date2, verifyPad=verifyPad)
             else:
-                self.load(date=self._iter_list[-1], verifyPad=verifyPad)
+                # no data currently loaded, start at the end
+                date2 = self._iter_list[-1]
+                date = date2 - self._iter_width
+                self.load(date=date, date2=date2, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
+            first = self.files.get_index(self._iter_list[0])
+            last = self.files.get_index(self._iter_list[-1])
+            step = self._iter_step
+            width = self._iter_width
             if self._fid is not None:
-                first = self.files.get_index(self._iter_list[0])
-                last = self.files.get_index(self._iter_list[-1])
-                if (self._fid - 1 < first) | (self._fid > last):
+                if (self._fid - step < first) | (self._fid > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    self.load(fname=self._iter_list[self._fid - 1 - first],
-                              verifyPad=verifyPad)
+                    if self.files[self._fid] in self._iter_list:
+                        # find location of file
+                        idx = 0
+                        fname = self.files[self._fid]
+                        for i, name in enumerate(self._iter_list):
+                            if name == fname:
+                                idx = i
+                                break
+                    else:
+                        estr = ''.join(('Unable to find loaded filename ',
+                                        'in the iteration filelist, ',
+                                        'self._iter_list'))
+                        raise ValueError(estr)
+                    fname = self._iter_list[idx - 1]
             else:
-                self.load(fname=self._iter_list[-1], verifyPad=verifyPad)
+                fname = self._iter_list[-1]
+
+            if width > 1:
+                # load more than one file at a time
+                # get location for second file
+                nfid = self.files.get_index(fname) - self._iter_width
+                self.load(fname=fname, fname2=self.files[nfid],
+                          verifyPad=verifyPad)
+            else:
+                self.load(fname=fname, verifyPad=verifyPad)
+
+        return
 
     def _get_var_type_code(self, coltype):
         '''Determines the two-character type code for a given variable type
