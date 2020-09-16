@@ -178,7 +178,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     return data
 
 
-def generate_times(fnames, sat_id, freq='1S'):
+def generate_times(fnames, num, freq='1S'):
     """Construct list of times for simulated instruments
 
     Parameters
@@ -186,9 +186,8 @@ def generate_times(fnames, sat_id, freq='1S'):
     fnames : list
         List of filenames.  Currently, only the first is used.  Does not
         support multi-file days as of yet.
-    sat_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+    num : int or Nonetype
+        Number of times to generate
     freq : string
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
@@ -220,9 +219,9 @@ def generate_times(fnames, sat_id, freq='1S'):
         index = pds.date_range(start=date, end=end_date, freq=freq)
         # Allow numeric string to select first set of data
         try:
-            index = index[0:int(sat_id)]
+            index = index[0:num]
         except ValueError:
-            # non-integer sat_id produces ValueError
+            # non-integer num produces ValueError
             pass
         indices.extend(index)
         uts.extend(index.hour * 3600 + index.minute * 60 + index.second
