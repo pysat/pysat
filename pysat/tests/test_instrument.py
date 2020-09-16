@@ -61,8 +61,9 @@ class TestBasics():
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert(self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
-        assert(self.out == self.ref_time + pds.DateOffset(days=2)
-               - pds.DateOffset(seconds=1))
+        # 10 seconds per file
+        assert(self.out == self.ref_time + pds.DateOffset(days=1)
+               - pds.DateOffset(seconds=10))
 
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
@@ -77,7 +78,7 @@ class TestBasics():
             self.testInst.load(self.ref_time.year)
 
     def test_basic_instrument_load_yr_no_doy2(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             self.testInst.load(self.ref_time.year, self.ref_doy,
                                self.ref_time.year)
 

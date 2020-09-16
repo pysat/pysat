@@ -219,7 +219,7 @@ def generate_times(fnames, num, freq='1S'):
         index = pds.date_range(start=date, end=end_date, freq=freq)
         # Allow numeric string to select first set of data
         try:
-            index = index[0:num]
+            index = index[0:int(num)]
         except ValueError:
             # non-integer num produces ValueError
             pass
