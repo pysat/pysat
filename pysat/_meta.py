@@ -784,7 +784,7 @@ class Meta(object):
         current_label : str
             The hidden attribute to be updated that actually stores metadata
         default : float
-            Deafult setting to use for label if there is no attribute
+            Default setting to use for label if there is no attribute
             value (default=np.nan)
         use_names_default : bool
             if True, MetaData variable names are used as the default
