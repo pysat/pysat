@@ -1851,14 +1851,14 @@ class Instrument(object):
                 if (curr_bound[0][0] == first_date
                         and curr_bound[1][0] == last_date):
                     logger.info('Updating instrument object bounds by date.')
-                    self.bounds = (self.files.first_date, self.files.last_date,
+                    self.bounds = (self.files.start_date, self.files.stop_date,
                                    curr_bound[2], curr_bound[3])
             if self._iter_type == 'file':
                 if (curr_bound[0][0] == self.files[first_date]
                         and curr_bound[1][0] == self.files[last_date]):
                     logger.info('Updating instrument object bounds by file.')
-                    self.bounds = (self.files[self.files.first_date],
-                                   self.files[self.files.last_date],
+                    self.bounds = (self.files[self.files.start_date],
+                                   self.files[self.files.stop_date],
                                    curr_bound[2], curr_bound[3])
 
         return
