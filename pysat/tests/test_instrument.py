@@ -62,7 +62,7 @@ class TestBasics():
         assert(self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
         # num_daily_samples seconds per file
-        secs = self.testInst.kwargs['num_daily_samples']
+        secs = self.testInst.kwargs['num_daily_samples'] - 1
         assert(self.out == self.ref_time + pds.DateOffset(days=1, seconds=secs))
 
     def test_basic_instrument_bad_keyword(self):
@@ -125,7 +125,7 @@ class TestBasics():
         assert (self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
         # num_daily_samples seconds per file
-        secs = self.testInst.kwargs['num_daily_samples']
+        secs = self.testInst.kwargs['num_daily_samples'] - 1
         assert(self.out == self.ref_time + pds.DateOffset(days=1, seconds=secs))
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
