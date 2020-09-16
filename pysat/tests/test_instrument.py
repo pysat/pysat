@@ -1147,32 +1147,50 @@ class TestBasics():
 
     def test_set_bounds_fname_with_frequency(self):
         start = '2009-01-01.nofile'
+        start_date = dt.datetime(2009, 1, 1)
         stop = '2009-01-03.nofile'
+        stop_date = dt.datetime(2009, 1, 3)
         self.testInst.bounds = (start, stop, 2)
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop, freq='2D').tolist())
+        out = pds.date_range(start_date, stop_date, freq='2D').tolist()
+        # convert filenames in list to a date
+        date_list = []
+        for item in self.testInst._iter_list:
+            snip = item.split('.')[0]
+            date_list.append(dt.datetime.strptime(snip, '%Y-%m-%d'))
+        assert np.all(date_list == out)
 
     def test_iterate_bounds_fname_with_frequency(self):
         start = '2009-01-01.nofile'
+        start_date = dt.datetime(2009, 1, 1)
         stop = '2009-01-03.nofile'
+        stop_date = dt.datetime(2009, 1, 3)
         self.testInst.bounds = (start, stop, 2)
 
         dates = []
         for inst in self.testInst:
             dates.append(inst.date)
-        out = pds.date_range(start, stop, freq='2D').tolist()
+        out = pds.date_range(start_date, stop_date, freq='2D').tolist()
         assert np.all(dates == out)
 
     def test_set_bounds_fname_with_frequency_and_width(self):
         start = '2009-01-01.nofile'
+        start_date = dt.datetime(2009, 1, 1)
         stop = '2009-01-03.nofile'
+        stop_date = dt.datetime(2009, 1, 3)
         self.testInst.bounds = (start, stop, 2, 2)
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop, freq='2D').tolist())
+        out = pds.date_range(start_date, stop_date, freq='2D').tolist()
+        # convert filenames in list to a date
+        date_list = []
+        for item in self.testInst._iter_list:
+            snip = item.split('.')[0]
+            date_list.append(dt.datetime.strptime(snip, '%Y-%m-%d'))
+        assert np.all(date_list == out)
 
     def test_iterate_bounds_fname_with_frequency_and_width(self):
         start = '2009-01-01.nofile'
+        start_date = dt.datetime(2009, 1, 1)
         stop = '2009-01-03.nofile'
+        stop_date = dt.datetime(2009, 1, 3)
         self.testInst.bounds = (start, stop, 2, 2)
 
         dates = []
@@ -1180,7 +1198,7 @@ class TestBasics():
         for inst in self.testInst:
             dates.append(inst.date)
             time_range.append((self.testInst.index[0], self.testInst.index[-1]))
-        out = pds.date_range(start, stop, freq='2D').tolist()
+        out = pds.date_range(start_date, stop_date, freq='2D').tolist()
         assert np.all(dates == out)
         # verify range of loaded data
         for i, trange in enumerate(time_range):
