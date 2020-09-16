@@ -47,9 +47,22 @@ class TestBasics():
         data)."""
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.index[0]
+        assert(self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.ref_time)
-        assert (self.out == self.testInst.date)
+        assert(self.out == self.testInst.date)
+
+    def test_basic_instrument_load_two_days(self):
+        """Test if the correct day is being loaded (checking object date and
+        data)."""
+        self.testInst.load(self.ref_time.year, self.ref_doy,
+                           self.ref_time.year, self.ref_doy + 2)
+        self.out = self.testInst.index[0]
+        assert(self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        assert(self.out == self.testInst.date)
+        self.out = self.testInst.index[-1]
+        assert(self.out == self.ref_time + pds.DateOffset(days=2)
+               - pds.DateOffset(seconds=1))
 
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
@@ -83,16 +96,27 @@ class TestBasics():
     def test_basic_instrument_load_by_date(self):
         self.testInst.load(date=self.ref_time)
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
+
+    def test_basic_instrument_load_by_dates(self):
+        date2 = self.ref_time + pds.DateOffset(days=2)
+        self.testInst.load(date=self.ref_time, date2=date2)
+        self.out = self.testInst.index[0]
+        assert (self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        assert (self.out == self.testInst.date)
+        self.out = self.testInst.index[-1]
+        assert(self.out == self.ref_time + pds.DateOffset(days=2)
+               - pds.DateOffset(seconds=1))
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
         # put in a date that has more than year, month, day
         self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1))
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
 
     def test_basic_instrument_load_data(self):
@@ -107,8 +131,8 @@ class TestBasics():
         self.ref_doy = 366
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
 
     def test_next_load_default(self):
@@ -117,8 +141,9 @@ class TestBasics():
         self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.next()
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert self.out == self.ref_time
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        assert (self.out == self.testInst.date)
 
     def test_prev_load_default(self):
         """Test if last day is loaded by default when first invoking .prev.
@@ -126,8 +151,9 @@ class TestBasics():
         self.ref_time = dt.datetime(2010, 12, 31)
         self.testInst.prev()
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert self.out == self.ref_time
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        assert (self.out == self.testInst.date)
 
     def test_basic_fname_instrument_load(self):
         """Test if first day is loaded by default when first invoking .next.
@@ -135,8 +161,8 @@ class TestBasics():
         self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.load(fname=self.testInst.files[0])
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
 
     def test_next_fname_load_default(self):
@@ -145,8 +171,8 @@ class TestBasics():
         self.testInst.load(fname=self.testInst.files[0])
         self.testInst.next()
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
 
     def test_prev_fname_load_default(self):
@@ -155,8 +181,8 @@ class TestBasics():
         self.testInst.load(fname=self.testInst.files[3])
         self.testInst.prev()
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
 
     def test_filename_load(self):
@@ -170,8 +196,8 @@ class TestBasics():
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         self.testInst.next()
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.ref_time + dt.timedelta(days=1))
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
 
     def test_prev_filename_load_default(self):
@@ -179,8 +205,8 @@ class TestBasics():
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         self.testInst.prev()
         self.out = self.testInst.index[0]
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.ref_time - dt.timedelta(days=1))
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
 
     def test_list_files(self):
