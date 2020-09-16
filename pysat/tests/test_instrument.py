@@ -61,9 +61,9 @@ class TestBasics():
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert(self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
-        # 10 seconds per file
-        assert(self.out == self.ref_time + pds.DateOffset(days=1)
-               + pds.DateOffset(seconds=9))
+        # num_daily_samples seconds per file
+        secs = self.testInst.kwargs['num_daily_samples']
+        assert(self.out == self.ref_time + pds.DateOffset(days=1, seconds=secs))
 
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
@@ -124,8 +124,9 @@ class TestBasics():
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
-        assert(self.out == self.ref_time + pds.DateOffset(days=1)
-               + pds.DateOffset(seconds=9))
+        # num_daily_samples seconds per file
+        secs = self.testInst.kwargs['num_daily_samples']
+        assert(self.out == self.ref_time + pds.DateOffset(days=1, seconds=secs))
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
         # put in a date that has more than year, month, day
