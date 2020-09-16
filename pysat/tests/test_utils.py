@@ -14,7 +14,6 @@ import pysat
 
 # ----------------------------------
 # test netCDF export file support
-
 def prep_dir(inst=None):
 
     if inst is None:
@@ -523,3 +522,118 @@ class TestBasicNetCDF4xarray():
             loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
                                                          epoch_name='time',
                                                          pandas_format=True)
+
+
+class TestFmtCols():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # store current pysat directory
+        self.in_str = np.arange(0, 40, 1).astype(str)
+        self.in_kwargs = {"ncols": 5, "max_num": 40, "lpad": None}
+        self.out_str = None
+        self.filler_row = -1
+        self.ncols = None
+        self.nrows = None
+        self.lpad = len(self.in_str[-1]) + 1
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.in_str, self.in_kwargs, self.out_str, self.filler_row
+        del self.ncols, self.nrows, self.lpad
+
+    def test_output(self):
+        """ Test for the expected number of rows, columns, and fillers
+        """
+        if self.out_str is None and self.ncols is None and self.nrows is None:
+            return
+
+        # Test the number of rows
+        out_rows = self.out_str.split('\n')[:-1]
+        assert len(out_rows) == self.nrows
+
+        # Test the number of columns
+        for i, row in enumerate(out_rows):
+            split_row = row.split()
+
+            # Test for filler ellipses and standard row length
+            if i == self.filler_row:
+                assert '...' in split_row
+                if i > 0:
+                    assert len(split_row) == 1
+                    assert len(row) == self.lpad * self.ncols
+            else:
+                assert len(row) == self.lpad * len(split_row)
+
+                if i == len(out_rows) - 1:
+                    assert len(split_row) <= self.ncols
+                else:
+                    assert len(split_row) == self.ncols
+
+        return
+
+    def test_neg_ncols(self):
+        """ Test the output if the column number is negative
+        """
+        self.in_kwargs['ncols'] = -5
+        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
+                                                            **self.in_kwargs)
+        assert len(self.out_str) == 0
+
+    @pytest.mark.parametrize("key,val,raise_type",
+                             [("ncols", 0, ZeroDivisionError),
+                              ("max_num", -10, ValueError)])
+    def test_fmt_raises(self, key, val, raise_type):
+        self.in_kwargs[key] = val
+        with pytest.raises(raise_type):
+            pysat.utils._core.fmt_output_in_cols(self.in_str, **self.in_kwargs)
+
+    @pytest.mark.parametrize("ncol", [(3), (5), (10)])
+    def test_ncols(self, ncol):
+        """ Test the output for different number of columns
+        """
+        # Set the input
+        self.in_kwargs['ncols'] = ncol
+
+        # Set the comparison values
+        self.ncols = ncol
+        self.nrows = int(np.ceil(self.in_kwargs['max_num'] / ncol))
+
+        # Get and test the output
+        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
+                                                            **self.in_kwargs)
+        self.test_output()
+
+    @pytest.mark.parametrize("max_num,filler,nrow", [(0, 0, 1), (1, 0, 1),
+                                                     (10, 1, 3), (50, -1, 8)])
+    def test_max_num(self, max_num, filler, nrow):
+        """ Test the output for the maximum number of values
+        """
+        # Set the input
+        self.in_kwargs['max_num'] = max_num
+
+        # Set the comparison values
+        self.filler_row = filler
+        self.ncols = self.in_kwargs['ncols']
+        self.nrows = nrow
+
+        # Get and test the output
+        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
+                                                            **self.in_kwargs)
+        self.test_output()
+
+    @pytest.mark.parametrize("in_pad", [5, 30])
+    def test_lpad(self, in_pad):
+        """ Test the output for different number of columns
+        """
+        # Set the input
+        self.in_kwargs['lpad'] = in_pad
+        self.ncols = self.in_kwargs['ncols']
+        self.nrows = int(np.ceil(self.in_kwargs['max_num'] / self.ncols))
+
+        # Set the comparison values
+        self.lpad = in_pad
+
+        # Get and test the output
+        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
+                                                            **self.in_kwargs)
+        self.test_output()
