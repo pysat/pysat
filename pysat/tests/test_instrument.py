@@ -882,6 +882,42 @@ class TestBasics():
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='M').tolist())
 
+    def test_iterate_bounds_with_frequency(self):
+        start = dt.datetime(2009, 1, 1)
+        stop = dt.datetime(2009, 1, 16)
+        self.testInst.bounds = (start, stop, '2D', pds.DateOffset(days=2))
+        dates = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+        out = pds.date_range(start, stop, freq='2D').tolist()
+        assert np.all(dates == out)
+
+    def test_set_bounds_with_frequency_and_width(self):
+        start = dt.datetime(2009, 1, 1)
+        stop = dt.datetime(2010, 1, 1)
+        self.testInst.bounds = (start, stop, '10D', pds.DateOffset(days=10))
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop, freq='10D').tolist())
+
+    def test_iterate_bounds_with_frequency_and_width(self):
+        start = dt.datetime(2009, 1, 1)
+        stop = dt.datetime(2009, 1, 16)
+        self.testInst.bounds = (start, stop, '2D', pds.DateOffset(days=2))
+        dates = []
+        time_range = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+            time_range.append((self.testInst.index[0], self.testInst.index[-1]))
+        out = pds.date_range(start, stop, freq='2D').tolist()
+        assert np.all(dates == out)
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range) - 1:
+                assert trange[1] <= out[i+1]
+                assert trange[1] >= out[i]
+                assert trange[1] >= out[i] + pds.DateOffset(days=1)
+
     def test_set_bounds_too_few(self):
         start = dt.datetime(2009, 1, 1)
         with pytest.raises(ValueError):
@@ -1108,6 +1144,51 @@ class TestBasics():
         out = pds.date_range(start_d[0], stop_d[0]).tolist()
         out.extend(pds.date_range(start_d[1], stop_d[1]).tolist())
         assert np.all(dates == out)
+
+    def test_set_bounds_fname_with_frequency(self):
+        start = '2009-01-01.nofile'
+        stop = '2009-01-03.nofile'
+        self.testInst.bounds = (start, stop, 2)
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop, freq='2D').tolist())
+
+    def test_iterate_bounds_fname_with_frequency(self):
+        start = '2009-01-01.nofile'
+        stop = '2009-01-03.nofile'
+        self.testInst.bounds = (start, stop, 2)
+
+        dates = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+        out = pds.date_range(start, stop, freq='2D').tolist()
+        assert np.all(dates == out)
+
+    def test_set_bounds_fname_with_frequency_and_width(self):
+        start = '2009-01-01.nofile'
+        stop = '2009-01-03.nofile'
+        self.testInst.bounds = (start, stop, 2, 2)
+        assert np.all(self.testInst._iter_list
+                      == pds.date_range(start, stop, freq='2D').tolist())
+
+    def test_iterate_bounds_fname_with_frequency_and_width(self):
+        start = '2009-01-01.nofile'
+        stop = '2009-01-03.nofile'
+        self.testInst.bounds = (start, stop, 2, 2)
+
+        dates = []
+        time_range = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+            time_range.append((self.testInst.index[0], self.testInst.index[-1]))
+        out = pds.date_range(start, stop, freq='2D').tolist()
+        assert np.all(dates == out)
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range) - 1:
+                assert trange[1] <= out[i+1]
+                assert trange[1] >= out[i]
+                assert trange[1] >= out[i] + pds.DateOffset(days=1)
 
     def test_creating_empty_instrument_object(self):
         null = pysat.Instrument()
