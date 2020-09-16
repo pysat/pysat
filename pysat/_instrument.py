@@ -2104,7 +2104,11 @@ class Instrument(object):
             if self.date is not None:
                 # data is already loaded in .data
                 idx, = np.where(self.date == self._iter_list)
-                if idx[0] >= len(self._iter_list) - 1:
+                if len(idx) == 0:
+                    estr = ''.join(('Unable to find current date in ',
+                                    'iteration file list. Out of bounds.'))
+                    raise StopIteration(estr)
+                elif idx[-1] >= len(self._iter_list) - 1:
                     # gone to far!
                     raise StopIteration('Outside the set date boundaries.')
                 else:
@@ -2147,13 +2151,19 @@ class Instrument(object):
         first day(default)/file will be loaded.
 
         """
+        # make sure we can iterate
+        if len(self._iter_list) == 0:
+            # nothing to potentially iterate over
+            raise StopIteration(''.join(('File list is empty. ',
+                                         'Nothing to be done.')))
 
         if self._iter_type == 'date':
             if self.date is not None:
                 idx, = np.where(self._iter_list == self.date)
                 if len(idx) == 0:
-                    raise StopIteration(''.join(('File list is empty. ',
-                                                 'Nothing to be done.')))
+                    estr = ''.join(('Unable to find current date in ',
+                                    'iteration file list. Out of bounds.'))
+                    raise StopIteration(estr)
                 elif idx[0] == 0:
                     raise StopIteration('Outside the set date boundaries.')
                 else:
