@@ -2,17 +2,18 @@ language: python
 dist: xenial
 matrix:
   include:
-    - name: docs
+    - name: 'docs'
       python: '3.6'
       script: 
         - sphinx-build -E -b html docs dist/docs
         - sphinx-build -b linkcheck docs dist/docs
-    - python: '3.6'
-      <<: *test_script
+    - name: '3.6 with flake8'
+      python: '3.6'
+      script: pytest -vs --flake8 --cov=pysat/
     - python: '3.7'
-      <<: *test_script
+      script: pytest -vs --cov=pysat/
     - python: '3.8'
-      <<: *test_script
+      script: pytest -vs --cov=pysat/
 
 services: xvfb
 cache: pip
@@ -39,16 +40,15 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
   - while read requirement; do conda install --yes $requirement; done < requirements.txt
-  # Get latest coveralls from pip, not conda
-  - pip install coveralls
+  # Get latest coveralls and sphinx-build from pip, not conda
+  - pip install coveralls sphinx-build
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
   - python setup.py install
 
-# command to run tests
-_test_script: &test_script
-  script: pytest -vs --flake8 --cov=pysat/
-
 after_success:
  - coveralls --rcfile=setup.cfg
+
+allow_failures:
+  - name: 'docs'
