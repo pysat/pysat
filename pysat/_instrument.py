@@ -1328,7 +1328,7 @@ class Instrument(object):
             next_date = self.date + self.load_step
             return self._load_data(date=next_date, inc=self.load_step)
         else:
-            next_id = self._fid + self.load_step
+            next_id = self._fid + self.load_step + 1
             return self._load_data(fid=next_id, inc=self.load_step)
 
     def _load_prev(self):
@@ -1345,7 +1345,7 @@ class Instrument(object):
             prev_date = self.date - self.load_step
             return self._load_data(date=prev_date, inc=self.load_step)
         else:
-            prev_id = self._fid - self.load_step
+            prev_id = self._fid - self.load_step - 1
             return self._load_data(fid=prev_id, inc=self.load_step)
 
     def _set_load_parameters(self, date=None, fid=None):
@@ -1487,7 +1487,7 @@ class Instrument(object):
                     self.load_step = diff
             else:
                 # increment one file at a time
-                self.load_step = 1
+                self.load_step = 0
             curr = self._fid.copy()
         elif (yr is None) and (doy is None) and (yr2 is None) and \
                 (doy2 is None) and (date is None) and (date2 is None) and \
@@ -1565,8 +1565,15 @@ class Instrument(object):
                 self._next_data.sort_index(inplace=True)
 
             # make tracking indexes consistent with new loads
-            self._next_data_track = curr + self.load_step
-            self._prev_data_track = curr - self.load_step
+            if self._load_by_date:
+                self._next_data_track = curr + self.load_step
+                self._prev_data_track = curr - self.load_step
+            else:
+                # File and date loads have to be treated differently
+                # due to change in inclusive/exclusive range end
+                # treatment. Loading by file is inclusive.
+                self._next_data_track = curr + self.load_step + 1
+                self._prev_data_track = curr - self.load_step - 1
             # attach data to object
             if not self._empty(self._curr_data):
                 # The data being added isn't empty, so copy the data values
