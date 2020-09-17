@@ -28,7 +28,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed time.season_date_range
   - DeprecationWarning for strict_time_flag only triggered if sloppy data is found
   - Remove convenience methods imported from pandas
-  - Changed the default `custom.attatch` input to allow keyword arguement use when additional function input is required
+  - Changed the default `custom.attach` input to allow keyword arguement use when additional function input is required
   - Removed python 2.7 syntax
   - Removed utils.coords.geodetic_to_geocentric
   - Removed utils.coords.geodetic_to_geocentric_horizontal
