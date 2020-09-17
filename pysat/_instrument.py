@@ -2313,7 +2313,7 @@ class Instrument(object):
             if width > 1:
                 # load more than one file at a time
                 # get location for second file
-                nfid = self.files.get_index(fname) - self._iter_width + 1
+                nfid = self.files.get_index(fname) + self._iter_width - 1
                 self.load(fname=fname, fname2=self.files[nfid],
                           verifyPad=verifyPad)
             else:

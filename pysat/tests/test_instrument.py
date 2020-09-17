@@ -182,7 +182,7 @@ class TestBasics():
         """Test Error if trying to iterate when on a file not in iteration list
         """
         self.ref_time = dt.datetime(2008, 1, 1)
-        self.testInst.load(self.testInst.files[1])
+        self.testInst.load(fname=self.testInst.files[1])
         # set new bounds thst doesn't include this date
         self.testInst.bounds = (self.testInst.files[0], self.testInst.files[20],
                                 2, 1)
@@ -193,7 +193,7 @@ class TestBasics():
         """Test Error if trying to iterate when on a file not in iteration list
         """
         self.ref_time = dt.datetime(2008, 1, 1)
-        self.testInst.load(self.testInst.files[10])
+        self.testInst.load(fname=self.testInst.files[12])
         # set new bounds thst doesn't include this date
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
                                 2, 1)
@@ -1275,6 +1275,62 @@ class TestBasics():
             if i < len(time_range) - 1:
                 assert trange[1] <= out[i + 1]
                 assert trange[1] >= out[i]
+                assert trange[1] >= out[i] + pds.DateOffset(days=1)
+
+    def test_next_fname_with_frequency_and_width(self):
+        """Test using next() via fname with non-default frequency and width"""
+        start = '2009-01-01.nofile'
+        start_date = dt.datetime(2009, 1, 1)
+        stop = '2009-01-10.nofile'
+        stop_date = dt.datetime(2009, 1, 10)
+        self.testInst.bounds = (start, stop, 2, 2)
+
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.next()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+        out = pds.date_range(start_date, stop_date, freq='2D').tolist()
+        assert np.all(dates == out)
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range) - 1:
+                assert trange[1] <= out[i + 1]
+                assert trange[1] >= out[i]
+                assert trange[1] >= out[i] + pds.DateOffset(days=1)
+
+    def test_prev_fname_with_frequency_and_width(self):
+        """Test using prev() via fname with non-default frequency and width"""
+        start = '2009-01-01.nofile'
+        start_date = dt.datetime(2009, 1, 1)
+        stop = '2009-01-10.nofile'
+        stop_date = dt.datetime(2009, 1, 10)
+        self.testInst.bounds = (start, stop, 2, 2)
+
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.prev()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+        # verification dates, reverse order
+        out = pds.date_range(start_date, stop_date, freq='2D').tolist()[::-1]
+        assert np.all(dates == out)
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range):
+                assert trange[0] >= out[i]
                 assert trange[1] >= out[i] + pds.DateOffset(days=1)
 
     def test_creating_empty_instrument_object(self):
