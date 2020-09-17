@@ -40,8 +40,8 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
   - while read requirement; do conda install --yes $requirement; done < requirements.txt
-  # Get dependencies not provided by conda from pip
-  - pip install coveralls sphinx pytest-flake8
+  # Get dependencies not provided by conda from pip (testing dependencies)
+  - pip install coveralls sphinx pytest-flake8 numpydoc ipython
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
