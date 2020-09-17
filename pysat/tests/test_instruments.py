@@ -24,7 +24,7 @@ for method in method_list:
                  for j in range(0, Nargs)]
         # Add instruments from your library
         if 'all_inst' in names:
-            mark = pytest.mark.parametrize("name", instruments['names'])
+            mark = pytest.mark.parametrize("inst_name", instruments['names'])
             getattr(InstTestClass, method).pytestmark.append(mark)
         elif 'download' in names:
             mark = pytest.mark.parametrize("inst_dict", instruments['download'])

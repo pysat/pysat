@@ -152,11 +152,11 @@ class InstTestClass():
                   'acknowledgements': str, 'references': str}
 
     @pytest.mark.all_inst
-    def test_modules_standard(self, name):
+    def test_modules_standard(self, inst_name):
         """Checks that modules are importable and have standard properties.
         """
         # ensure that each module is at minimum importable
-        module = import_module(''.join(('.', name)),
+        module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
         # Check for presence of basic instrument module attributes
         for mattr in self.module_attrs:
@@ -185,10 +185,10 @@ class InstTestClass():
                                       self.attr_types[iattr])
 
     @pytest.mark.all_inst
-    def test_standard_function_presence(self, name):
+    def test_standard_function_presence(self, inst_name):
         """Check if each function is callable and all required functions exist
         """
-        module = import_module(''.join(('.', name)),
+        module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
 
         # Test for presence of all standard module functions
@@ -201,9 +201,9 @@ class InstTestClass():
                 assert mcall not in self.module_attrs
 
     @pytest.mark.all_inst
-    def test_instrument_test_dates(self, name):
+    def test_instrument_test_dates(self, inst_name):
         """Check that module has structured test dates correctly."""
-        module = import_module(''.join(('.', name)),
+        module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
         info = module._test_dates
         for sat_id in info.keys():
