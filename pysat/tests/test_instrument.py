@@ -73,15 +73,18 @@ class TestBasics():
                              unsupported_keyword_yeah=True)
 
     def test_basic_instrument_load_yr_no_doy(self):
+        """Ensure doy required if yr present"""
         with pytest.raises(TypeError):
             self.testInst.load(self.ref_time.year)
 
     def test_basic_instrument_load_yr_no_doy2(self):
+        """Ensure doy2 required if yr2 present"""
         with pytest.raises(ValueError):
             self.testInst.load(self.ref_time.year, self.ref_doy,
                                self.ref_time.year)
 
     def test_basic_instrument_load_no_input(self):
+        """Test .load() loads all data"""
         self.testInst.load()
         assert (self.testInst.index[0] == self.testInst.files.start_date)
         assert (self.testInst.index[-1] >= self.testInst.files.stop_date)
@@ -89,6 +92,7 @@ class TestBasics():
                 + pds.DateOffset(days=1))
 
     def test_basic_instrument_load_by_file_and_multifile(self):
+        """Ensure multi_file_day has to be False when loading by filename"""
         self.out = pysat.Instrument(platform=self.testInst.platform,
                                     name=self.testInst.name,
                                     num_daily_samples=10,
@@ -99,6 +103,7 @@ class TestBasics():
             self.out.load(fname=self.out.files[0])
 
     def test_basic_instrument_load_and_multifile(self):
+        """Ensure .load() only runs when multi_file_day is False"""
         self.out = pysat.Instrument(platform=self.testInst.platform,
                                     name=self.testInst.name,
                                     num_daily_samples=10,
@@ -109,6 +114,7 @@ class TestBasics():
             self.out.load()
 
     def test_basic_instrument_load_by_date(self):
+        """Test loading by date"""
         self.testInst.load(date=self.ref_time)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
@@ -116,6 +122,7 @@ class TestBasics():
         assert (self.out == self.testInst.date)
 
     def test_basic_instrument_load_by_dates(self):
+        """Test date range loading, date and date2"""
         date2 = self.ref_time + pds.DateOffset(days=2)
         self.testInst.load(date=self.ref_time, date2=date2)
         self.out = self.testInst.index[0]
@@ -127,6 +134,7 @@ class TestBasics():
         assert (self.out <= self.ref_time + pds.DateOffset(days=2))
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
+        """Ensure .load(date=date) only uses year, month, day portion of date"""
         # put in a date that has more than year, month, day
         self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1))
         self.out = self.testInst.index[0]
