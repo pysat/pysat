@@ -41,7 +41,7 @@ install:
   - conda activate test-environment
   - while read requirement; do conda install --yes $requirement; done < requirements.txt
   # Get dependencies not provided by conda from pip
-  - pip install coveralls sphinx-build pytest-flake8
+  - pip install coveralls sphinx pytest-flake8
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
