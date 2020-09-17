@@ -20,6 +20,7 @@ def set_data_dir(path=None, store=True):
         valid path to directory pysat uses to look for data
     store : bool
         if True, store data directory for future runs
+
     """
 
     # account for a user prefix in the path, such as ~
@@ -44,32 +45,33 @@ def scale_units(out_unit, in_unit):
     """ Determine the scaling factor between two units
 
     Parameters
-    -------------
+    ----------
     out_unit : str
         Desired unit after scaling
     in_unit : str
         Unit to be scaled
 
     Returns
-    -----------
+    -------
     unit_scale : float
         Scaling factor that will convert from in_units to out_units
 
-    Notes
-    -------
+    Note
+    ----
     Accepted units include degrees ('deg', 'degree', 'degrees'),
     radians ('rad', 'radian', 'radians'),
     hours ('h', 'hr', 'hrs', 'hour', 'hours'), and lengths ('m', 'km', 'cm').
     Can convert between degrees, radians, and hours or different lengths.
 
     Example
-    -----------
+    -------
     ::
-    import numpy as np
-    two_pi = 2.0 * np.pi
-    scale = scale_units("deg", "RAD")
-    two_pi *= scale
-    two_pi # will show 360.0
+
+        import numpy as np
+        two_pi = 2.0 * np.pi
+        scale = scale_units("deg", "RAD")
+        two_pi *= scale
+        two_pi # will show 360.0
 
 
     """
@@ -151,34 +153,36 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
 
     Parameters
     ----------
-    fnames : string or array_like of strings (None)
-        filenames to load
-    strict_meta : boolean (False)
-        check if metadata across fnames is the same
-    file_format : string (None)
+    fnames : string or array_like of strings
+        filenames to load (default=None)
+    strict_meta : boolean
+        check if metadata across fnames is the same (default=False)
+    file_format : string
         file_format keyword passed to netCDF4 routine
         NETCDF3_CLASSIC, NETCDF3_64BIT, NETCDF4_CLASSIC, and NETCDF4
-    epoch_name : string ('Epoch')
-    units_label : string ('units')
-        keyword for unit information
-    name_label : string ('long_name')
-        keyword for informative name label
-    notes_label : string ('notes')
-        keyword for file notes
-    desc_label : string ('desc')
-        keyword for data descriptions
-    plot_label : string ('label')
-        keyword for name to use on plot labels
-    axis_label : string ('axis')
-        keyword for axis labels
-    scale_label : string ('scale')
-        keyword for plot scaling
-    min_label : string ('value_min')
-        keyword for minimum in allowable value range
-    max_label : string ('value_max')
-        keyword for maximum in allowable value range
-    fill_label : string ('fill')
-        keyword for fill values
+        (default=None)
+    epoch_name : string
+        (default='Epoch')
+    units_label : string
+        keyword for unit information (default='units')
+    name_label : string
+        keyword for informative name label (default='long_name')
+    notes_label : string
+        keyword for file notes (default='notes')
+    desc_label : string
+        keyword for data descriptions (default='desc')
+    plot_label : string
+        keyword for name to use on plot labels (default='label')
+    axis_label : string
+        keyword for axis labels (default='axis')
+    scale_label : string
+        keyword for plot scaling (default='scale')
+    min_label : string
+        keyword for minimum in allowable value range (default='value_min')
+    max_label : string
+        keyword for maximum in allowable value range (defualt='value_max')
+    fill_label : string
+        keyword for fill values (default='fill')
 
     Returns
     --------
@@ -186,6 +190,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         DataFrame output
     mdata : pysat._meta.Meta
         Meta data
+
     """
 
     import copy
@@ -433,3 +438,77 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         out.attrs = {}
 
     return out, mdata
+
+
+def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
+    """ Format a string with desired output values in columns
+
+    Parameters
+    ----------
+    out_strs : array-like
+        Array like object containing strings to print
+    ncols : int
+        Number of columns to print (default=3)
+    max_num : int
+        Maximum number of out_strs members to print.  Best display achieved if
+        this number is divisable by 2 and ncols (default=6)
+    lpad : int or NoneType
+        Left padding or None to use length of longest string + 1 (default=None)
+
+    Returns
+    -------
+    output : string
+        String with desired data formatted in columns
+
+    """
+    output = ""
+
+    # Ensure output strings are array-like
+    out_strs = np.asarray(out_strs)
+    if out_strs.shape == ():
+        out_strs = np.array([out_strs])
+
+    # If there are more data values than desired, keep the first and last
+    out_len = len(out_strs)
+    middle = -1
+    if out_len > max_num:
+        nhalf = int(max_num / 2)
+        middle = nhalf // ncols
+        if middle == 0:
+            middle = 1
+        nsel = [0] if nhalf == 0 else [i for i in range(nhalf)]
+        nsel.extend([i for i in np.arange(out_len - nhalf, out_len)])
+    else:
+        nsel = np.arange(0, out_len)
+    sel_len = len(nsel)
+
+    # If desired, determine the left padding spacing
+    if lpad is None:
+        lpad = max([len(ostr) for ostr in out_strs[nsel]]) + 1
+
+    # Print out the groups of variables in rows
+    num = sel_len // ncols
+    for i in range(num):
+        # If data has been cut, indicate this with an ellipses row
+        if i == middle:
+            middle = -1
+            output += "...".center(lpad * ncols) + '\n'
+
+        # Print out data for each selected column in this row
+        for j in range(ncols):
+            output += out_strs[nsel][ncols * i + j].ljust(lpad)
+        output += '\n'
+
+    # Print out remaining variables one at a time on a single line
+    extra_cols = sel_len - ncols * num
+    if extra_cols > 0:
+        for i in range(extra_cols):
+            if middle >= 0:
+                if i == 0 and num > 0:
+                    output += "...".center(lpad * ncols) + '\n'
+                elif num == 0 and i == nhalf:
+                    output += "...".center(lpad if lpad > 4 else 4)
+            output += out_strs[nsel][i + ncols * num].ljust(lpad)
+        output += '\n'
+
+    return output

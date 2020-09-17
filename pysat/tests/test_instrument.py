@@ -439,16 +439,17 @@ class TestBasics():
                                     orbit_info=orbit_info)
 
         self.out = testInst.__str__()
+
         # Check that orbit info is passed through
-        assert self.out.find('Orbit properties not set') < 0
-        assert self.out.find('Orbit Kind:') > 0
-        assert self.out.find('Loaded Orbit Number: None') > 0
+        assert self.out.find('Orbit Settings') > 0
+        assert self.out.find(orbit_info['kind']) > 0
+        assert self.out.find('Loaded Orbit Number: 0') > 0
+
         # Activate orbits, check that message has changed
         testInst.load(self.ref_time.year, self.ref_doy)
         testInst.orbits.next()
         self.out = testInst.__str__()
-        assert self.out.find('Loaded Orbit Number: None') < 0
-        assert self.out.find('Loaded Orbit Number: ') > 0
+        assert self.out.find('Loaded Orbit Number: 1') > 0
 
     def test_str_w_padding(self):
         """Test string output with data padding """
@@ -469,7 +470,7 @@ class TestBasics():
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.__str__()
         assert self.out.find('Number of variables:') > 0
-        assert self.out.find('uts') < 0
+        assert self.out.find('...') > 0
 
     def test_str_w_load_less_data(self):
         """Test string output with loaded data """

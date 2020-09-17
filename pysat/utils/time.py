@@ -50,14 +50,14 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
         String containing month digits
     str_day : string
         String containing day of month digits
-    str_hr : string ('0')
-        String containing the hour of day
-    str_min : string ('0')
-        String containing the minutes of hour
-    str_sec : string ('0')
-        String containing the seconds of minute
-    century : int (2000)
-        Century, only used if str_yr is a 2-digit year
+    str_hr : string
+        String containing the hour of day (default='0')
+    str_min : string
+        String containing the minutes of hour (default='0')
+    str_sec : string
+        String containing the seconds of minute (default='0')
+    century : int
+        Century, only used if str_yr is a 2-digit year (default=2000)
 
     Returns
     -------
@@ -78,16 +78,16 @@ def calc_freq(index):
 
     Parameters
     ----------
-    index : (array-like)
+    index : array-like
         Datetime list, array, or Index
 
     Returns
     -------
-    freq : (str)
+    freq : str
        Frequency string as described in Pandas Offset Aliases
 
-    Notes
-    -----
+    Note
+    ----
     Calculates the minimum time difference and sets that as the frequency.
 
     To reduce the amount of calculations done, the returned frequency is

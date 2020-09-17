@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
   - custom.attach replaces custom.add
-  - Unit tests are now pytest compatible
+  - Unit tests are now pytest compatible and use parametrize
   - Added altitudes to test instruments
   - New flags added to instruments to streamline unit testing: `_test_download`, `_test_download_travis`, `_password_req`
   - Madrigal instruments migrated to pysatMadrigal
@@ -41,6 +41,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added a tutorial for developers of instrument libraries for pysat
   - Added .zenodo.json file, to improve specification of authors in citation
   - Improved __str__ and __repr__ functions for basic classes
+  - Improved docstring readability and consistency
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3

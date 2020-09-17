@@ -37,8 +37,8 @@ class Custom(object):
 
     Note
     ----
-    User should interact with Custom through pysat.Instrument instance's
-    attribute, instrument.custom
+    User should interact with Custom through `pysat.Instrument` instance's
+    attribute, `instrument.custom`
 
     """
 
@@ -80,13 +80,13 @@ class Custom(object):
         function : string or function object
             name of function or function object to be added to queue
         kind : {'add', 'modify', 'pass}
-            add
+            - add
                 Adds data returned from function to instrument object.
                 A copy of pysat instrument object supplied to routine.
-            modify
+            - modify
                 pysat instrument object supplied to routine. Any and all
                 changes to object are retained.
-            pass
+            - pass
                 A copy of pysat object is passed to function. No
                 data is accepted from return.
             (default='modify')
@@ -275,7 +275,3 @@ class Custom(object):
         self._args = []
         self._kwargs = []
         self._kind = []
-
-#################################################
-# END CUSTOM CLASS ##############################
-#################################################
