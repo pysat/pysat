@@ -57,7 +57,11 @@ def generate_instrument_list(inst_loc):
 
     Note
     ----
-    Only want to do this once per instrument library being tested.
+    - Only want to do this once per instrument library being tested.
+    - There are a number of checks here to skip import issues for certain cases.
+      These are caught later in the tests below as part of InstTestClass. This
+      is done to ensure the success of this routine so that tests for all
+      instruments can be run uninterupted even if one instrument is broken.
 
     """
 
@@ -76,7 +80,10 @@ def generate_instrument_list(inst_loc):
             module = import_module(''.join(('.', inst_module)),
                                    package=inst_loc.__name__)
         except ImportError:
-            print(' '.join(["Couldn't import", inst_module]))
+            # If this can't be imported, we can't pull out the info for the
+            # download / no_download tests.  Leaving in basic tests for all
+            # instruments, but skipping the rest.  The import error will be
+            # caught as part of the pytest.mark.all_inst tests in InstTestClass
             pass
         else:
             # try to grab basic information about the module so we
@@ -84,6 +91,9 @@ def generate_instrument_list(inst_loc):
             try:
                 info = module._test_dates
             except AttributeError:
+                # If a module does not have a test date, add it anyway for
+                # other tests.  This will be caught later by
+                # InstTestClass.test_instrument_test_dates
                 info = {}
                 info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
@@ -91,6 +101,8 @@ def generate_instrument_list(inst_loc):
                 for tag in info[sat_id].keys():
                     inst_dict = {'inst_module': module, 'tag': tag,
                                  'sat_id': sat_id}
+                    # Initialize instrument so that pysat can generate skip
+                    # flags where appropriate
                     inst = pysat.Instrument(inst_module=module,
                                             tag=tag,
                                             sat_id=sat_id,
