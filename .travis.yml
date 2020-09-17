@@ -9,11 +9,11 @@ matrix:
         - sphinx-build -b linkcheck docs dist/docs
     - name: '3.6 with flake8'
       python: '3.6'
-      script: pytest -vs --flake8 --cov=pysat/
+      script: pytest --flake8 --cov=pysat/
     - python: '3.7'
-      script: pytest -vs --cov=pysat/
+      script: pytest --cov=pysat/
     - python: '3.8'
-      script: pytest -vs --cov=pysat/
+      script: pytest --cov=pysat/
 
 services: xvfb
 cache: pip
