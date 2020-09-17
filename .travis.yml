@@ -52,3 +52,4 @@ after_success:
 
 allow_failures:
   - name: 'docs'
+    python: '3.6'
