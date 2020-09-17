@@ -5,4 +5,3 @@ xarray
 netCDF4
 pytest-cov
 pytest-ordering
-pytest-flake8
