@@ -225,6 +225,14 @@ class TestBasics():
         assert self.testInst.index[-1] >= self.ref_time + pds.DateOffset(days=1)
         assert self.testInst.index[-1] <= self.ref_time + pds.DateOffset(days=2)
 
+    def test_filenames_load_out_of_order(self):
+        """Test error raised if fnames out of temporal order"""
+        fname2 = self.ref_time + pds.DateOffset(days=1)
+        fname2 = fname2.strftime('%Y-%m-%d.nofile')
+        with pytest.raises(ValueError):
+            self.testInst.load(fname=fname2,
+                               fname2=self.ref_time.strftime('%Y-%m-%d.nofile'))
+
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
@@ -273,6 +281,25 @@ class TestBasics():
         assert "Downloading data to" in caplog.text
         # Update local file list
         assert "Updating pysat file list" in caplog.text
+
+    def test_download_updated_files_file_bounds_default(self, caplog):
+        """Ensure that Instrument bound are updated, post download, when
+        bounds are set as first and last file."""
+        # set bounds to first and last file
+        self.testInst.bounds = (self.testInst.files[0], self.testInst.files[-1])
+        # now download files
+        with caplog.at_level(logging.INFO, logger='pysat'):
+            self.testInst.download_updated_files()
+        # Perform a local search
+        assert "files locally" in caplog.text
+        # New files are found
+        assert "that are new or updated" in caplog.text
+        # download new files
+        assert "Downloading data to" in caplog.text
+        # Update local file list
+        assert "Updating pysat file list" in caplog.text
+        # default bounds update
+        assert "Updating instrument object bounds by file" in caplog.text
 
     def test_download_recent_data(self, caplog):
         with caplog.at_level(logging.INFO, logger='pysat'):
