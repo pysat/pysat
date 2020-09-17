@@ -186,7 +186,7 @@ def generate_times(fnames, num, freq='1S'):
     fnames : list
         List of filenames.  Currently, only the first is used.  Does not
         support multi-file days as of yet.
-    num : int or Nonetype
+    num : int
         Number of times to generate
     freq : string
         Frequency of temporal output, compatible with pandas.date_range
@@ -217,12 +217,7 @@ def generate_times(fnames, num, freq='1S'):
         # Create one day of data at desired frequency
         end_date = date + pds.DateOffset(seconds=86399)
         index = pds.date_range(start=date, end=end_date, freq=freq)
-        # Allow numeric string to select first set of data
-        try:
-            index = index[0:int(num)]
-        except ValueError:
-            # non-integer num produces ValueError
-            pass
+        index = index[0:num]
         indices.extend(index)
         uts.extend(index.hour * 3600 + index.minute * 60 + index.second
                    + 86400. * loop)
