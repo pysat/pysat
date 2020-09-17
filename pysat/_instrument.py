@@ -2233,7 +2233,7 @@ class Instrument(object):
                 # no data loaded yet, start with the first file
                 fname = self._iter_list[0]
 
-            if width > 0:
+            if width > 1:
                 # load more than one file at a time
                 # get location for second file
                 nfid = self.files.get_index(fname) + self._iter_width - 1
