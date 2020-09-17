@@ -2,8 +2,17 @@ language: python
 dist: xenial
 matrix:
   include:
-    - python: 3.6
-    - python: 3.7
+    - name: docs
+      python: '3.6'
+      script: 
+        - sphinx-build -E -b html docs dist/docs
+        - sphinx-build -b linkcheck docs dist/docs
+    - python: '3.6'
+      <<: *test_script
+    - python: '3.7'
+      <<: *test_script
+    - python: '3.8'
+      <<: *test_script
 
 services: xvfb
 cache: pip
@@ -27,19 +36,18 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   # Create conda test environment
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray netCDF4 pytest-cov pytest-ordering future
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION --file requirements.txt
   - conda activate test-environment
   # Get latest coveralls from pip, not conda
   - pip install coveralls
-  - pip install pytest-flake8
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
   - python setup.py install
 
 # command to run tests
-script:
- - pytest -vs --flake8 --cov=pysat/
+_test_script: &test_script
+  script: pytest -vs --flake8 --cov=pysat/
 
 after_success:
  - coveralls --rcfile=setup.cfg
