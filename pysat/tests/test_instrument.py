@@ -178,15 +178,27 @@ class TestBasics():
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
 
-    def test_basic_fname_instrument_load(self):
-        """Test if first day is loaded by default when first invoking .next.
+    def test_next_load_bad_start_file(self):
+        """Test Error if trying to iterate when on a file not in iteration list
         """
         self.ref_time = dt.datetime(2008, 1, 1)
-        self.testInst.load(fname=self.testInst.files[0])
-        self.out = self.testInst.index[0]
-        assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
-        assert (self.out == self.testInst.date)
+        self.testInst.load(self.testInst.files[1])
+        # set new bounds thst doesn't include this date
+        self.testInst.bounds = (self.testInst.files[0], self.testInst.files[20],
+                                2, 1)
+        with pytest.raises(ValueError):
+            self.testInst.next()
+
+    def test_prev_load_bad_start_file(self):
+        """Test Error if trying to iterate when on a file not in iteration list
+        """
+        self.ref_time = dt.datetime(2008, 1, 1)
+        self.testInst.load(self.testInst.files[10])
+        # set new bounds thst doesn't include this date
+        self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
+                                2, 1)
+        with pytest.raises(ValueError):
+            self.testInst.prev()
 
     def test_next_fname_load_default(self):
         """Test next day is being loaded (checking object date)."""
@@ -203,6 +215,16 @@ class TestBasics():
         self.ref_time = dt.datetime(2008, 1, 3)
         self.testInst.load(fname=self.testInst.files[3])
         self.testInst.prev()
+        self.out = self.testInst.index[0]
+        assert (self.out == self.ref_time)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        assert (self.out == self.testInst.date)
+
+    def test_basic_fname_instrument_load(self):
+        """Test loading by filename from attached .files.
+        """
+        self.ref_time = dt.datetime(2008, 1, 1)
+        self.testInst.load(fname=self.testInst.files[0])
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
