@@ -1067,7 +1067,6 @@ class Meta(object):
                                                 'objects in keys().')))
             for key in other.keys_nD():
                 if key in mdata:
-
                     raise RuntimeError(''.join(('Duplicated keys (variable ',
                                                 'names) across Meta '
                                                 'objects in keys_nD().')))
