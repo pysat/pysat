@@ -30,7 +30,8 @@ for method in method_list:
             mark = pytest.mark.parametrize("inst_dict", instruments['download'])
             getattr(InstTestClass, method).pytestmark.append(mark)
         elif 'no_download' in names:
-            mark = pytest.mark.parametrize("inst_dict", instruments['no_download'])
+            mark = pytest.mark.parametrize("inst_dict",
+                                           instruments['no_download'])
             getattr(InstTestClass, method).pytestmark.append(mark)
 
 
