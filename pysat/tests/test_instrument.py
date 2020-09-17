@@ -351,7 +351,7 @@ class TestBasics():
             assert np.all(self.testInst[0:len1, :] == data1.to_array()[:, :])
             assert np.all(self.testInst[len1:, :] == data2.to_array()[:, :])
 
-            # concat together while also specifying a different concatentation
+            # concat together while also specifying a different concatenation
             # dimension
             # xarray specific functionality
             # change name of main dim to support test for dim keyword
