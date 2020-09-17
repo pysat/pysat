@@ -1588,15 +1588,15 @@ class Instrument(object):
                 # Do not re-introduce this issue.
                 self.data = self._null_data.copy()
 
-            # Load by file or by date, as spedified
+            # Load by file or by date, as specified
             if self._load_by_date:
                 # Multi-file days can extend past a single day, only want data
                 # from a specific date if loading by day.  Set up times for
                 # the possible data padding coming up.
                 first_time = self.date
                 first_pad = self.date - loop_pad
-                last_time = self.date + pds.DateOffset(days=1)
-                last_pad = self.date + pds.DateOffset(days=1) + loop_pad
+                last_time = self.date + self.load_step
+                last_pad = self.date + self.load_step + loop_pad
                 want_last_pad = False
             elif (not self._load_by_date) and (not self.multi_file_day):
                 # Loading by file, can't be a multi_file-day flag situation
