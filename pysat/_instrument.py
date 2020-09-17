@@ -2280,8 +2280,8 @@ class Instrument(object):
                     self.load(date=date, date2=date2, verifyPad=verifyPad)
             else:
                 # no data currently loaded, start at the end
-                date2 = self._iter_list[-1] + pds.DateOffset(days=1)
-                date = date2 - self._iter_width
+                date2 = self._iter_list[-1] + self._iter_width
+                date = self._iter_list[-1]
                 self.load(date=date, date2=date2, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
