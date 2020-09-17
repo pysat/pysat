@@ -2272,7 +2272,7 @@ class Instrument(object):
                     self.load(date=date, date2=date2, verifyPad=verifyPad)
             else:
                 # no data currently loaded, start at the end
-                date2 = self._iter_list[-1]
+                date2 = self._iter_list[-1] + pds.DateOffset(days=1)
                 date = date2 - self._iter_width
                 self.load(date=date, date2=date2, verifyPad=verifyPad)
 
