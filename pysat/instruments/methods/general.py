@@ -151,23 +151,23 @@ def remove_leading_text(inst, target=None):
     for prepend_str in target:
 
         if isinstance(inst.data, pds.DataFrame):
-            inst.data.rename(columns=lambda x: x.split(prepend_str)[-1],
-                             inplace=True)
+            inst.data = inst.data.rename(
+                columns=lambda x: x.split(prepend_str)[-1])
         else:
-            map = {}
+            map_keys = {}
             for key in inst.data.variables.keys():
-                map[key] = key.split(prepend_str)[-1]
-            inst.data = inst.data.rename(name_dict=map)
+                map_keys[key] = key.split(prepend_str)[-1]
+            inst.data = inst.data.rename(name_dict=map_keys)
 
-        inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                              inplace=True)
-        orig_keys = inst.meta.keys_nD()
+        inst.meta.data = inst.meta.data.rename(
+            index=lambda x: x.split(prepend_str)[-1])
+        orig_keys = [kk for kk in inst.meta.keys_nD()]
         for keynd in orig_keys:
             if keynd.find(prepend_str) >= 0:
                 new_key = keynd.split(prepend_str)[-1]
                 new_meta = inst.meta.pop(keynd)
-                new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                                     inplace=True)
+                new_meta.data = new_meta.data.rename(
+                    index=lambda x: x.split(prepend_str)[-1])
                 inst.meta[new_key] = new_meta
 
     return
