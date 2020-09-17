@@ -93,14 +93,19 @@ developers.  Continuing the above example, developers may copy over the
   from pysat.tests.instrument_test_class import InstTestClass
 
   # Developers for instrument libraries should update the following line to
-  # point to their own library package
+  # point to their own library location
   # e.g.,
-  # instruments = generate_instrument_list(package=mypackage.instruments)
-  instruments = generate_instrument_list(package=customLibrary.instruments)
+  # instruments = generate_instrument_list(inst_loc=mypackage.instruments)
+  instruments = generate_instrument_list(inst_loc=customLibrary.instruments)
 
 The above code scans the list of instruments and flags each instrument for one
 or more of the test types, as defined below.  This bit of the code should
-generally be unchanged.
+generally be unchanged.  Instruments are grouped in three lists:
+- instruments['names']: A list of all module names to check for standardization
+- instruments['download']: A list of dicts containing info to initialize instruments
+  for end-to-end testing
+- instruments['no_download']: A list of dicts containing info to initialize
+  instruments without download support for specialized local tests
 
 .. code:: python
 
@@ -116,17 +121,18 @@ generally be unchanged.
                    for j in range(0, Nargs)]
           # Add instruments from your library
           if 'all_inst' in names:
-              mark = pytest.mark.parametrize("name", instruments['names'])
+              mark = pytest.mark.parametrize("inst_name", instruments['names'])
               getattr(InstTestClass, method).pytestmark.append(mark)
           elif 'download' in names:
-              mark = pytest.mark.parametrize("inst", instruments['download'])
+              mark = pytest.mark.parametrize("inst_dict", instruments['download'])
               getattr(InstTestClass, method).pytestmark.append(mark)
           elif 'no_download' in names:
-              mark = pytest.mark.parametrize("inst", instruments['no_download'])
+              mark = pytest.mark.parametrize("inst_dict",
+                                             instruments['no_download'])
               getattr(InstTestClass, method).pytestmark.append(mark)
 
 Finally, the ``setup`` function under the ``TestInstruments`` class should be
-updated with the package name.
+updated with the location of the instrument library.
 
 .. code:: Python
 
@@ -137,12 +143,12 @@ updated with the package name.
           # Developers for instrument libraries should update the following line
           # to point to their own library package
           # e.g.,
-          # self.package = mypackage.instruments
-          self.package = customLibrary.instruments
+          # self.inst_loc = mypackage.instruments
+          self.inst_loc = customLibrary.instruments
 
       def teardown(self):
           """Runs after every method to clean up previous testing."""
-          del self.package
+          del self.inst_loc
 
 
 Testing custom analysis routines
