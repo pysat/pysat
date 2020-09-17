@@ -206,6 +206,17 @@ class TestBasics():
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
         assert self.testInst.index[0] == self.ref_time
 
+    def test_filenames_load(self):
+        """Test if files are loadable by filenames, relative to
+        top_data_dir/platform/name/tag"""
+        fname2 = self.ref_time + pds.DateOffset(days=1)
+        fname2 = fname2.strftime('%Y-%m-%d.nofile')
+        self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'),
+                           fname2=fname2)
+        assert self.testInst.index[0] == self.ref_time
+        assert self.testInst.index[-1] >= self.ref_time + pds.DateOffset(days=1)
+        assert self.testInst.index[-1] <= self.ref_time + pds.DateOffset(days=2)
+
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
