@@ -1438,7 +1438,8 @@ class Instrument(object):
             inst.load(date=date, date2=date2)
 
             # same procedure using filenames
-            inst.load(fname=inst.files[0], fname2=inst.files[2])
+            # note the change in index due to inclusive slicing on filenames!
+            inst.load(fname=inst.files[0], fname2=inst.files[1])
 
         """
 
