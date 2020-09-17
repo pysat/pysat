@@ -202,6 +202,12 @@ def generate_times(fnames, num, freq='1S'):
         The requested date reconstructed from the fake file name
     """
 
+    if isinstance(num, str):
+        estr = ''.join(('generate_times support for input strings interpreted ',
+                        'as the number of times has been deprecated. Please ',
+                        'switch to using integers.'))
+        warnings.warn(estr, DeprecationWarning)
+
     uts = []
     indices = []
     dates = []
