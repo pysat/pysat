@@ -1,0 +1,10 @@
+numpy
+scipy
+pandas
+xarray
+netCDF4
+pytest-cov
+pytest-ordering
+pytest-flake8
+sphinx-build
+future
