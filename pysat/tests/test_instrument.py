@@ -934,7 +934,7 @@ class TestBasics():
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
             if i < len(time_range) - 1:
-                assert trange[1] <= out[i+1]
+                assert trange[1] <= out[i + 1]
                 assert trange[1] >= out[i]
                 assert trange[1] >= out[i] + pds.DateOffset(days=1)
 
@@ -1224,7 +1224,7 @@ class TestBasics():
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
             if i < len(time_range) - 1:
-                assert trange[1] <= out[i+1]
+                assert trange[1] <= out[i + 1]
                 assert trange[1] >= out[i]
                 assert trange[1] >= out[i] + pds.DateOffset(days=1)
 
