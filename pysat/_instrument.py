@@ -1220,7 +1220,7 @@ class Instrument(object):
         if fid is not None:
             # get filename based off of index value
             # inclusive loading on filenames
-            fname = self.files[fid:(fid + inc)]
+            fname = self.files[fid:(fid + inc + 1)]
         elif date is not None:
             fname = self.files[date:(date + inc)]
         else:
@@ -2134,7 +2134,7 @@ class Instrument(object):
                 if width > 1:
                     # load more than one file at a time
                     # get location for second file
-                    nfid = self.files.get_index(fname) + self._iter_width
+                    nfid = self.files.get_index(fname) + self._iter_width - 1
                     self.load(fname=fname, fname2=self.files[nfid])
                 else:
                     self.load(fname=fname)
@@ -2225,10 +2225,10 @@ class Instrument(object):
                 # no data loaded yet, start with the first file
                 fname = self._iter_list[0]
 
-            if width > 1:
+            if width > 0:
                 # load more than one file at a time
                 # get location for second file
-                nfid = self.files.get_index(fname) + self._iter_width
+                nfid = self.files.get_index(fname) + self._iter_width - 1
                 self.load(fname=fname, fname2=self.files[nfid],
                           verifyPad=verifyPad)
             else:
@@ -2305,7 +2305,7 @@ class Instrument(object):
             if width > 1:
                 # load more than one file at a time
                 # get location for second file
-                nfid = self.files.get_index(fname) - self._iter_width
+                nfid = self.files.get_index(fname) - self._iter_width + 1
                 self.load(fname=fname, fname2=self.files[nfid],
                           verifyPad=verifyPad)
             else:
