@@ -1644,6 +1644,7 @@ class TestInstListGeneration():
         """
         # reset pysat instrument library
         re_load(pysat.instruments)
+        re_load(pysat.instruments.pysat_testing)
         del self.test_library
 
     def test_import_error_behavior(self):
