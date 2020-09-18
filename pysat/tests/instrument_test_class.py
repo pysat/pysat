@@ -5,7 +5,6 @@ be imported directly for external instrument libraries of pysat instruments.
 """
 import datetime as dt
 from importlib import import_module
-from importlib import reload as re_load
 import os
 import tempfile
 import warnings
@@ -150,46 +149,6 @@ def initialize_test_inst_and_date(inst_dict):
     test_dates = inst_dict['inst_module']._test_dates
     date = test_dates[inst_dict['sat_id']][inst_dict['tag']]
     return test_inst, date
-
-
-class TestInstListGeneration():
-    """Provides tests to ensure the instrument list generator above is working
-    """
-
-    def setup(self):
-        """Runs before every method to create a clean testing setup.
-        """
-        self.test_library = pysat.instruments
-
-    def teardown(self):
-        """Runs after every method to clean up previous testing.
-        """
-        # reset pysat instrument library
-        re_load(pysat.instruments)
-        del self.test_library
-
-    def test_import_error_behavior(self):
-        """Check that instrument list works if a broken instrument is found"""
-        self.test_library.__all__.append('broken_inst')
-        # This instrument does not exist.  The routine should run as normal but
-        # raise a warning for the user
-        inst_list = generate_instrument_list(self.test_library)
-        assert 'broken_inst' in inst_list['names']
-        for dict in inst_list['download']:
-            assert 'broken_inst' not in dict['inst_module'].__name__
-        for dict in inst_list['no_download']:
-            assert 'broken_inst' not in dict['inst_module'].__name__
-
-    def test_for_test_date_error(self):
-        """Check that instruments without _test_dates are still added to the list
-        """
-        del self.test_library.pysat_testing._test_dates
-        # If an instrument does not have the _test_dates attribute, it should
-        # still be added to the list for other checks to be run
-        # This will be caught later by InstTestClass.test_instrument_test_dates
-        assert ~hasattr(self.test_library.pysat_testing, '_test_dates')
-        inst_list = generate_instrument_list(self.test_library)
-        assert 'pysat_testing' in inst_list['names']
 
 
 class InstTestClass():
