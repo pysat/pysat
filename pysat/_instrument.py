@@ -1516,6 +1516,26 @@ class Instrument(object):
         # if pad  or multi_file_day is true, need to have a three day/file load
         loop_pad = self.pad if self.pad is not None \
             else pds.DateOffset(seconds=0)
+        # check for constiency between loading range and data padding, if any
+        if self.pad is not None:
+            if self._load_by_date:
+                _tdate = dt.datetime(2009, 1, 1)
+                if _tdate + self.load_step < _tdate + loop_pad:
+                    estr = ''.join(('Data padding window must be shorter than ',
+                                    'data loading window. Load a greater ',
+                                    'range of data or shorten the padding.'))
+                    raise ValueError(estr)
+            else:
+                # loading by file
+                wstr = ''.join(('Using a data padding window ',
+                                'when loading by file can produce unexpected ',
+                                'results whenever the padding window ',
+                                'is longer than the range of data in a file. ',
+                                'Hard to know if an offset is reasonable or ',
+                                'not or what the proper response is. ',
+                                'Temporary response to raise awareness.'))
+                logger.warning(wstr)
+
         if (self.pad is not None) | self.multi_file_day:
             if self._empty(self._next_data) & self._empty(self._prev_data):
                 # data has not already been loaded for previous and next days
@@ -1606,10 +1626,8 @@ class Instrument(object):
                 last_pad = last_time + loop_pad
                 want_last_pad = True
             else:
-                raise ValueError(" ".join(("multi_file_day and loading by date",
-                                           "are effectively equivalent.  Can't",
-                                           "have multi_file_day and load by",
-                                           "file.")))
+                raise ValueError(" ".join(("Can't have multi_file_day and load",
+                                           "by file.")))
 
             # pad data based upon passed parameter
             if (not self._empty(self._prev_data)) & (not self.empty):
@@ -1626,7 +1644,7 @@ class Instrument(object):
                 # and handled by __getitem__
                 self.data = self[first_pad:temp_time]
                 if not self.empty:
-                    if (self.index[-1] == temp_time):
+                    if self.index[-1] == temp_time:
                         self.data = self[:-1]
                     self.data = self.concat_data([self.data, stored_data])
                 else:
