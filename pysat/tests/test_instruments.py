@@ -1,13 +1,13 @@
 import pytest
 
-# Make sure to import your instrument library here
+# Make sure to import your instrument package here
 import pysat
 # Import the test classes from pysat
 from pysat.tests.instrument_test_class import generate_instrument_list
 from pysat.tests.instrument_test_class import InstTestClass
 
 # Developers for instrument libraries should update the following line to
-# point to their own library location
+# point to their own subpackage location
 # e.g.,
 # instruments = generate_instrument_list(inst_loc=mypackage.instruments)
 instruments = generate_instrument_list(inst_loc=pysat.instruments)
@@ -40,7 +40,7 @@ class TestInstruments(InstTestClass):
     def setup(self):
         """Runs before every method to create a clean testing setup."""
         # Developers for instrument libraries should update the following line
-        # to point to their own library location, e.g.,
+        # to point to their own subpackage location, e.g.,
         # self.inst_loc = mypackage.instruments
         self.inst_loc = pysat.instruments
 

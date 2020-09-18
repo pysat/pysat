@@ -51,12 +51,13 @@ def generate_instrument_list(inst_loc):
 
     Parameters
     ----------
-    inst_loc : python module
-        The location of the instrument library to test, eg, 'pysat.instruments'
+    inst_loc : python subpackage
+        The location of the instrument subpackage to test,
+        eg, 'pysat.instruments'
 
     Note
     ----
-    - Only want to do this once per instrument library being tested.
+    - Only want to do this once per instrument subpackage being tested.
     - There are a number of checks here to skip import issues for certain cases.
       These are caught later in the tests below as part of InstTestClass. This
       is done to ensure the success of this routine so that tests for all

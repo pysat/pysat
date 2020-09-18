@@ -132,7 +132,7 @@ generally be unchanged.  Instruments are grouped in three lists:
               getattr(InstTestClass, method).pytestmark.append(mark)
 
 Finally, the ``setup`` function under the ``TestInstruments`` class should be
-updated with the location of the instrument library.
+updated with the location of the instrument subpackage.
 
 .. code:: Python
 
@@ -141,7 +141,7 @@ updated with the location of the instrument library.
       def setup(self):
           """Runs before every method to create a clean testing setup."""
           # Developers for instrument libraries should update the following line
-          # to point to their own library package
+          # to point to the location of the subpackage
           # e.g.,
           # self.inst_loc = mypackage.instruments
           self.inst_loc = customLibrary.instruments
