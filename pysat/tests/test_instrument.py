@@ -1711,6 +1711,7 @@ class TestDataPadding():
                              update_files=True)
 
     def test_data_padding_bad_load(self):
+        """Not allowed to enable data padding when loading all data, load()"""
         with pytest.raises(ValueError):
             self.testInst.load()
 
