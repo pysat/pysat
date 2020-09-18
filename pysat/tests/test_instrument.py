@@ -1658,7 +1658,7 @@ class TestInstListGeneration():
         for dict in inst_list['no_download']:
             assert 'broken_inst' not in dict['inst_module'].__name__
 
-    def test_for_test_date_error(self):
+    def test_for_missing_test_date(self):
         """Check that instruments without _test_dates are still added to the list
         """
         del self.test_library.pysat_testing._test_dates
