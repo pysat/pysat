@@ -84,8 +84,8 @@ class InstTestClass():
 
                 # Test the required class attributes
                 for iattr in self.inst_attrs:
-                    assert (hasattr(inst, iattr),
-                            "Instrument missing {:}".format(iattr))
+                    assert hasattr(inst, iattr), \
+                        "Instrument missing {:}".format(iattr)
                     assert isinstance(getattr(inst, iattr),
                                       self.attr_types[iattr])
 
