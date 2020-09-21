@@ -12,7 +12,7 @@ import pysat
 import pysat.instruments.pysat_testing
 import pysat.instruments.pysat_testing_xarray
 import pysat.instruments.pysat_testing2d
-from pysat.tests.instrument_test_class import generate_instrument_list
+from pysat.utils import generate_instrument_list
 
 xarray_epoch_name = 'time'
 
