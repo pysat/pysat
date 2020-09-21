@@ -5,8 +5,6 @@ be imported directly for external instrument libraries of pysat instruments.
 """
 import datetime as dt
 from importlib import import_module
-import os
-import tempfile
 import warnings
 
 import pytest
@@ -16,33 +14,6 @@ import pysat
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 user_download_dict = {'supermag_magnetometer': {'user': 'rstoneback',
                                                 'password': 'None'}}
-
-
-def remove_files(inst):
-    """Remove any files downloaded as part of the unit tests.
-
-    Parameters
-    ----------
-    inst : pysat.Instrument
-        The instrument object that is being tested
-
-    """
-    temp_dir = inst.files.data_path
-    # Check if there are less than 20 files to ensure this is the testing
-    # directory
-    if len(inst.files.files.values) < 20:
-        for the_file in list(inst.files.files.values):
-            # Check if filename is appended with date for fake_daily data
-            # ie, does an underscore exist to the right of the file extension?
-            if the_file.rfind('_') > the_file.rfind('.'):
-                # If so, trim the appendix to get the original filename
-                the_file = the_file[:the_file.rfind('_')]
-            file_path = os.path.join(temp_dir, the_file)
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-    else:
-        warnings.warn(''.join(('Files > 20.  Not deleted.  Please check to ',
-                               'ensure temp directory is used')))
 
 
 def initialize_test_inst_and_date(inst_dict):
@@ -190,9 +161,6 @@ class InstTestClass():
             # Not used for clean levels since cleaning may remove all data
             if clean_level == "none":
                 assert not test_inst.empty
-            # For last parametrized clean_level, remove files
-            if clean_level == "clean":
-                remove_files(test_inst)
         else:
             pytest.skip("Download data not available")
 

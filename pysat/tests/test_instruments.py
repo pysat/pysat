@@ -1,10 +1,19 @@
+import tempfile
+
 import pytest
 
-# Make sure to import your instrument package here
 import pysat
+# Make sure to import your instrument package here
+# e.g.,
+# import mypackage
+
 # Import the test classes from pysat
 from pysat.utils import generate_instrument_list
 from pysat.tests.instrument_test_class import InstTestClass
+
+
+dir_name = tempfile.mkdtemp()
+saved_path = pysat.data_dir
 
 # Developers for instrument libraries should update the following line to
 # point to their own subpackage location
@@ -51,4 +60,6 @@ class TestInstruments(InstTestClass):
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.inst_loc
+        pysat.utils.set_data_dir(self.saved_path, store=False)
+        self.tempdir.cleanup()
+        del self.inst_loc, self.saved_path, self.tempdir
