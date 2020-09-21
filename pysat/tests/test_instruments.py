@@ -46,8 +46,8 @@ for method in method_list:
 
 class TestInstruments(InstTestClass):
 
-    def setup(self):
-        """Runs before every method to create a clean testing setup."""
+    def setup_class(self):
+        """Runs once before the tests to initialize the testing setup."""
         # Make sure to use a temporary directory so that the user's setup is not
         # altered
         self.tempdir = tempfile.TemporaryDirectory()
@@ -58,8 +58,14 @@ class TestInstruments(InstTestClass):
         # self.inst_loc = mypackage.instruments
         self.inst_loc = pysat.instruments
 
-    def teardown(self):
+    def teardown_class(self):
         """Runs after every method to clean up previous testing."""
         pysat.utils.set_data_dir(self.saved_path, store=False)
         self.tempdir.cleanup()
         del self.inst_loc, self.saved_path, self.tempdir
+
+    def setup_method(self):
+        """Runs before every method to create a clean testing setup."""
+
+    def teardown_method(self):
+        """Runs after every method to clean up previous testing."""
