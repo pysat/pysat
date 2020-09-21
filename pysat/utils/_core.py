@@ -1,9 +1,8 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
+import datetime as dt
+from importlib import import_module
+from importlib import reload as re_load
 import numpy as np
 import os
-from importlib import reload as re_load
 
 import xarray as xr
 
@@ -510,5 +509,78 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
                     output += "...".center(lpad if lpad > 4 else 4)
             output += out_strs[nsel][i + ncols * num].ljust(lpad)
         output += '\n'
+
+    return output
+
+
+def generate_instrument_list(inst_loc):
+    """Iterate through and classify instruments in a given subpackage.
+
+
+    Parameters
+    ----------
+    inst_loc : python subpackage
+        The location of the instrument subpackage to test,
+        e.g., 'pysat.instruments'
+
+    Note
+    ----
+    - This routine currently supports classification of instruments for unit
+      tests both in the core package and in seperate instrument packages that
+      use pysat.
+
+    """
+
+    instrument_names = inst_loc.__all__
+    instrument_download = []
+    instrument_no_download = []
+
+    # Look through list of available instrument modules in the given location
+    for inst_module in instrument_names:
+        try:
+            module = import_module(''.join(('.', inst_module)),
+                                   package=inst_loc.__name__)
+        except ImportError:
+            # If this can't be imported, we can't pull out the info for the
+            # download / no_download tests.  Leaving in basic tests for all
+            # instruments, but skipping the rest.  The import error will be
+            # caught as part of the pytest.mark.all_inst tests in InstTestClass
+            pass
+        else:
+            # try to grab basic information about the module so we
+            # can iterate over all of the options
+            try:
+                info = module._test_dates
+            except AttributeError:
+                # If a module does not have a test date, add it anyway for
+                # other tests.  This will be caught later by
+                # InstTestClass.test_instrument_test_dates
+                info = {}
+                info[''] = {'': dt.datetime(2009, 1, 1)}
+                module._test_dates = info
+            for sat_id in info.keys():
+                for tag in info[sat_id].keys():
+                    inst_dict = {'inst_module': module, 'tag': tag,
+                                 'sat_id': sat_id}
+                    # Initialize instrument so that pysat can generate skip
+                    # flags where appropriate
+                    inst = pysat.Instrument(inst_module=module,
+                                            tag=tag,
+                                            sat_id=sat_id,
+                                            temporary_file_list=True)
+                    travis_skip = ((os.environ.get('TRAVIS') == 'true')
+                                   and not inst._test_download_travis)
+                    if inst._test_download:
+                        if not travis_skip:
+                            instrument_download.append(inst_dict)
+                    elif not inst._password_req:
+                        # we don't want to test download for this combo
+                        # But we do want to test the download warnings
+                        # for instruments without a password requirement
+                        instrument_no_download.append(inst_dict)
+
+    output = {'names': instrument_names,
+              'download': instrument_download,
+              'no_download': instrument_no_download}
 
     return output
