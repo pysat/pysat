@@ -1,6 +1,5 @@
 import datetime as dt
-from importlib import import_module
-from importlib import reload as re_load
+import importlib
 import numpy as np
 import os
 
@@ -33,8 +32,8 @@ def set_data_dir(path=None, store=True):
                                    'data_path.txt'), 'w') as f:
                 f.write(path)
         pysat.data_dir = path
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
+        pysat._files = importlib.reload(pysat._files)
+        pysat._instrument = importlib.reload(pysat._instrument)
     else:
         raise ValueError(' '.join(('Path {:s} does not lead to a valid',
                                    'directory.')).format(path))
@@ -538,8 +537,8 @@ def generate_instrument_list(inst_loc):
     # Look through list of available instrument modules in the given location
     for inst_module in instrument_names:
         try:
-            module = import_module(''.join(('.', inst_module)),
-                                   package=inst_loc.__name__)
+            module = importlib.import_module(''.join(('.', inst_module)),
+                                             package=inst_loc.__name__)
         except ImportError:
             # If this can't be imported, we can't pull out the info for the
             # download / no_download tests.  Leaving in basic tests for all
