@@ -1665,6 +1665,6 @@ class TestInstListGeneration():
         # If an instrument does not have the _test_dates attribute, it should
         # still be added to the list for other checks to be run
         # This will be caught later by InstTestClass.test_instrument_test_dates
-        assert ~hasattr(self.test_library.pysat_testing, '_test_dates')
+        assert not hasattr(self.test_library.pysat_testing, '_test_dates')
         inst_list = generate_instrument_list(self.test_library)
         assert 'pysat_testing' in inst_list['names']

@@ -12,7 +12,6 @@ from pysat.utils import generate_instrument_list
 from pysat.tests.instrument_test_class import InstTestClass
 
 
-dir_name = tempfile.mkdtemp()
 saved_path = pysat.data_dir
 
 # Developers for instrument libraries should update the following line to
