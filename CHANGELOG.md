@@ -9,14 +9,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - custom.attach replaces custom.add
   - Unit tests are now pytest compatible and use parametrize
   - Added altitudes to test instruments
-  - New flags added to instruments to streamline unit testing: `_test_download`, `_test_download_travis`, `_password_req`
-  - Madrigal instruments migrated to pysatMadrigal
+  - New flags added to instruments to streamline unit testing:
+    `_test_download`, `_test_download_travis`, `_password_req`
   - methods.nasa_cdaweb.list_files moved to methods.general
   - `strict_time_flag` now defaults to True
   - Use of start / stop notation in remote_file_list
   - Added variable rename method to Instrument object (#91)
   - Migrated file methods to pysat.utils.files (#336)
 - Deprecations
+  - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
+    pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
   - Removed ssnl
   - Removed utils.stats
   - Removed model_utils
@@ -25,9 +27,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - import DataFrame and Series directly from pandas, not pysat
   - Removed coords.scale_units
   - Removed time.season_date_range
-  - DeprecationWarning for strict_time_flag only triggered if sloppy data is found
+  - DeprecationWarning for strict_time_flag only triggered if sloppy data is
+    found
   - Remove convenience methods imported from pandas
-  - Changed the default `custom.attatch` input to allow keyword arguement use when additional function input is required
+  - Changed the default `custom.attatch` input to allow keyword arguement use
+    when additional function input is required
   - Removed python 2.7 syntax
   - Removed utils.coords.geodetic_to_geocentric
   - Removed utils.coords.geodetic_to_geocentric_horizontal
@@ -35,6 +39,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed utils.coords.global_to_local_cartesian
   - Removed utils.coords.local_horizontal_to_global_geo
   - Deprecation Warnings for methods in `pysat._files`
+  - Addressed several Warnings raised by incorrect use of dependent packages
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and sat_id behaviour in testing instruments
@@ -47,7 +52,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3
   - Improved pandas 1.1.0 compatibility in tests
-  - Fixed coupling of two_digit_year_break keyword to underlying method in methods.general.list_files
+  - Fixed coupling of two_digit_year_break keyword to underlying method in
+    methods.general.list_files
   - Fixed additional file date range for monthly data with gaps
 - Maintenance
   - nose dependency removed from unit tests
@@ -55,9 +61,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Remove wildcard imports, relative imports
   - Include flake8 check as part of testing suites
   - Improve unit testing coverage of instrument functions and instrument object
-    - Add tests for acknowledgements and references
-  - Removed implicit conversion to integers in methods.general.convert_timestamp_to_datetime
-  - Removed instruments (migrated to new libraries)
+  - Add tests for acknowledgements and references
+  - Removed implicit conversion to integers in
+    methods.general.convert_timestamp_to_datetime
 
 ## [2.2.1] - 2020-07-29
 - Documentation
