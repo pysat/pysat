@@ -484,6 +484,14 @@ class Instrument(object):
     def __setitem__(self, key, new):
         """Convenience method for adding data to instrument.
 
+        Parameters
+        ----------
+        key : str, tuple, dict
+            String label, or dict or tuple of indices for new data
+        new : dict, pandas.DataFrame, or xarray.Dataset
+            New data as a dict (assigned with key 'data'), DataFrame, or
+            Dataset
+
         Examples
         --------
         ::
@@ -511,6 +519,8 @@ class Instrument(object):
             if isinstance(key, tuple):
                 try:
                     # Pass directly through to loc
+                    # This line raises a FutureWarning, but will be caught
+                    # by TypeError, so may not be an issue
                     self.data.loc[key[0], key[1]] = new
                 except (KeyError, TypeError):
                     # TypeError for single integer

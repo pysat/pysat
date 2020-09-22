@@ -230,11 +230,12 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                 # build up dictionary with all global ncattrs
                 # and add those attributes to a pysat meta object
                 ncattrsList = data.ncattrs()
-                for d in ncattrsList:
-                    if hasattr(mdata, d):
-                        mdata.__setattr__(d + '_', data.getncattr(d))
+                for ncattr in ncattrsList:
+                    if hasattr(mdata, ncattr):
+                        mdata.__setattr__('{:}_'.format(ncattr),
+                                          data.getncattr(ncattr))
                     else:
-                        mdata.__setattr__(d, data.getncattr(d))
+                        mdata.__setattr__(ncattr, data.getncattr(ncattr))
 
                 loadedVars = {}
                 for key in data.variables.keys():
