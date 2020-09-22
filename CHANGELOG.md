@@ -30,7 +30,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - DeprecationWarning for strict_time_flag only triggered if sloppy data is
     found
   - Remove convenience methods imported from pandas
-  - Changed the default `custom.attatch` input to allow keyword arguement use
+  - Changed the default `custom.attach` input to allow keyword argument use
     when additional function input is required
   - Removed python 2.7 syntax
   - Removed utils.coords.geodetic_to_geocentric
