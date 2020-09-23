@@ -77,8 +77,8 @@ class TestBasics():
         with pytest.raises(TypeError):
             self.testInst.load(self.ref_time.year)
 
-    def test_basic_instrument_load_yr_no_doy2(self):
-        """Ensure doy2 required if yr2 present"""
+    def test_basic_instrument_load_yr_no_end_doy(self):
+        """Ensure end_doy required if end_yr present"""
         with pytest.raises(ValueError):
             self.testInst.load(self.ref_time.year, self.ref_doy,
                                self.ref_time.year)
