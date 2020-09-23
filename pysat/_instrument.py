@@ -1449,7 +1449,8 @@ class Instrument(object):
             self._set_load_parameters(date=date, fid=None)
             # increment
             if (yr2 is not None) & (doy2 is not None):
-                end_date = dt.datetime(yr2, 1, 1) + pds.DateOffset(days=(doy2 - 1))
+                _temp = (doy2 - 1)
+                end_date = dt.datetime(yr2, 1, 1) + pds.DateOffset(days=_temp)
                 self.load_step = end_date - date
             elif (yr2 is not None) or (doy2 is not None):
                 raise ValueError('Both yr2 and doy2 must be set, or neither.')
@@ -1950,11 +1951,11 @@ class Instrument(object):
         start : datetime object, filename, or None (default)
             start of iteration, if None uses first data date.
             list-like collection also accepted.
-        end :  datetime object, filename, or None (default)
-            end of iteration, inclusive. If None uses last data date.
+        stop :  datetime object, filename, or None (default)
+            stop of iteration, inclusive. If None uses last data date.
             list-like collection also accepted.
         step : str, int, or None
-            Step size used when iterating from start to end. Use a
+            Step size used when iterating from start to stop. Use a
             Pandas frequency string ('3D', '1M') when setting bounds by date,
             an integer when setting bounds by file. Defaults to a single
             day (file).
@@ -2008,7 +2009,7 @@ class Instrument(object):
             value = (None, None, None, None)
 
         if len(value) < 2:
-            raise ValueError(' '.join(('Must supply both a start and end',
+            raise ValueError(' '.join(('Must supply both a start and stop',
                                        'date/file. Supply None if you want the',
                                        'first/last possible.')))
         elif len(value) == 2:
@@ -2023,12 +2024,12 @@ class Instrument(object):
             # also includes loading window (data width)
             self._iter_step = value[2]
             self._iter_width = value[3]
-        # pull out start and end times now that other optional items have
+        # pull out start and stop times now that other optional items have
         # been checked out.
         start = value[0]
-        end = value[1]
+        stop = value[1]
 
-        if (start is None) and (end is None):
+        if (start is None) and (stop is None):
             # set default using first and last file date
             self._iter_start = [self.files.start_date]
             self._iter_stop = [self.files.stop_date]
@@ -2046,46 +2047,46 @@ class Instrument(object):
         else:
             # user provided some inputs
             starts = np.asarray([start])
-            ends = np.asarray([end])
+            stops = np.asarray([stop])
             # ensure consistency if list-like already
             if len(starts.shape) > 1:
                 starts = starts[0]
-            if len(ends.shape) > 1:
-                ends = ends[0]
+            if len(stops.shape) > 1:
+                stops = stops[0]
 
             # check equal number of elements
-            if len(starts) != len(ends):
-                estr = ' '.join(('Both start and end must have the same',
+            if len(starts) != len(stops):
+                estr = ' '.join(('Both start and stop must have the same',
                                  'number of elements'))
                 raise ValueError(estr)
 
             # check everything is the same type
             base = type(starts[0])
-            for lstart, lend in zip(starts, ends):
-                etype = type(lend)
+            for lstart, lstop in zip(starts, stops):
+                etype = type(lstop)
                 check1 = not isinstance(lstart, etype)
                 check2 = not isinstance(lstart, base)
                 if check1 or check2:
                     # method allows for inputs like inst.bounds = (start, None)
-                    # and bounds will fill the None with actual begin or end
+                    # and bounds will fill the None with actual start or stop
                     # allow for a Nonetype only if length is one
                     if len(starts) == 1:
-                        if start is None or (end is None):
+                        if start is None or (stop is None):
                             # we are good, one of them is None, no error
                             break
-                    raise ValueError(' '.join(('Start and end items must all',
+                    raise ValueError(' '.join(('Start and stop items must all',
                                                'be of the same type')))
 
             # set bounds based upon passed data type
-            if isinstance(starts[0], str) or isinstance(ends[0], str):
+            if isinstance(starts[0], str) or isinstance(stops[0], str):
                 # one of the inputs is a string
                 self._iter_type = 'file'
                 # could be (string, None) or (None, string)
                 # replace None with first/last, as appropriate
                 if starts[0] is None:
                     starts = [self.files[0]]
-                if ends[0] is None:
-                    ends = [self.files.files[-1]]
+                if stops[0] is None:
+                    stops = [self.files.files[-1]]
                 # default step size
                 if self._iter_step is None:
                     self._iter_step = 1
@@ -2094,11 +2095,11 @@ class Instrument(object):
                     self._iter_width = 1
 
                 # grab list of files with user bounds
-                self._iter_list = self.files.get_file_array(starts, ends)
+                self._iter_list = self.files.get_file_array(starts, stops)
                 # down-select based upon step size
                 self._iter_list = self._iter_list[::self._iter_step]
 
-            elif isinstance(starts[0], dt.datetime) or isinstance(ends[0],
+            elif isinstance(starts[0], dt.datetime) or isinstance(stops[0],
                                                                   dt.datetime):
                 # one of the inputs is a date
                 self._iter_type = 'date'
@@ -2107,8 +2108,8 @@ class Instrument(object):
                     # start and stop dates on self.files already filtered
                     # to include only year, month, and day
                     starts = [self.files.start_date]
-                if ends[0] is None:
-                    ends = [self.files.stop_date]
+                if stops[0] is None:
+                    stops = [self.files.stop_date]
                 # default step size
                 if self._iter_step is None:
                     self._iter_step = pds.DateOffset(days=1)
@@ -2118,16 +2119,16 @@ class Instrument(object):
 
                 # create list-like of dates for iteration
                 starts = self._filter_datetime_input(starts)
-                ends = self._filter_datetime_input(ends)
+                stops = self._filter_datetime_input(stops)
                 freq = self._iter_step
-                self._iter_list = utils.time.create_date_range(starts, ends,
+                self._iter_list = utils.time.create_date_range(starts, stops,
                                                                freq=freq)
 
             else:
                 raise ValueError(' '.join(('Input is not a known type, string',
                                            'or datetime')))
             self._iter_start = starts
-            self._iter_stop = ends
+            self._iter_stop = stops
 
         return
 
