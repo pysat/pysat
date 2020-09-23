@@ -1445,6 +1445,9 @@ class Instrument(object):
 
         # set options used by loading routine based upon user input
         if (yr is not None) & (doy is not None):
+            # verify arguments make sense, in context
+            _check_load_arguments_none(fname, stop_fname, date, end_date)
+            # convert yr/doy to a date
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
             self._set_load_parameters(date=date, fid=None)
             # increment end by a day if none supplied
@@ -1461,6 +1464,9 @@ class Instrument(object):
                 self.load_step = pds.DateOffset(days=1)
             curr = self.date
         elif date is not None:
+            # verify arguments make sense, in context
+            _check_load_arguments_none(fname, stop_fname, yr, doy, end_yr,
+                                       end_doy)
             # ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
             date = self._filter_datetime_input(date)
@@ -1473,6 +1479,8 @@ class Instrument(object):
                 self.load_step = pds.DateOffset(days=1)
             curr = date
         elif fname is not None:
+            # verify arguments make sense, in context
+            _check_load_arguments_none(yr, doy, end_yr, end_doy, date, end_date)
             # date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
@@ -3233,5 +3241,29 @@ def _check_if_keywords_supported(func, **kwargs):
             estr = ' '.join((name, 'is not a supported keyword by pysat or',
                              'by the underlying supporting load routine.',
                              'Please double check the keyword inputs.'))
+            raise ValueError(estr)
+    return
+
+
+def _check_load_arguments_none(*args):
+    """Ensure all arguments are None.
+
+    Used to support .load method checks
+    that arguments that should be None are None, while
+    also keeping the .load method reable.
+
+    Parameters
+    ----------
+    *args : mixed
+        Variables that are to checked to ensure None
+
+    """
+
+    for arg in args:
+        if arg is not None:
+            estr = ''.join(('An inconsistent set of inputs have been ',
+                            'supplied as input. Please double-check that ',
+                            'only date, filename, or year/day of year ',
+                            'combinations are provided.'))
             raise ValueError(estr)
     return
