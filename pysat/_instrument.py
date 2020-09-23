@@ -1447,14 +1447,16 @@ class Instrument(object):
         if (yr is not None) & (doy is not None):
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
             self._set_load_parameters(date=date, fid=None)
-            # increment
+            # increment end by a day if none supplied
             if (end_yr is not None) & (end_doy is not None):
                 _temp = (end_doy - 1)
                 end_date = dt.datetime(end_yr, 1, 1)
                 end_date += pds.DateOffset(days=_temp)
                 self.load_step = end_date - date
             elif (end_yr is not None) or (end_doy is not None):
-                raise ValueError('Both end_yr and end_doy must be set, or neither.')
+                estr = ''.join(('Both end_yr and end_doy must be set, ',
+                                'or neither.'))
+                raise ValueError(estr)
             else:
                 self.load_step = pds.DateOffset(days=1)
             curr = self.date
@@ -1511,7 +1513,7 @@ class Instrument(object):
             curr = date
             self.load_step = end_date - date
         else:
-            estr = 'Unkown input.'
+            estr = 'Unknown or incomplete input combination.'
             raise TypeError(estr)
 
         self.orbits._reset()
