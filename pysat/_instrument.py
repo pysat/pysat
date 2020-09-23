@@ -1365,7 +1365,7 @@ class Instrument(object):
             self.doy = None
             self._load_by_date = False
 
-    def load(self, yr=None, doy=None, yr2=None, doy2=None, date=None,
+    def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, fname2=None, verifyPad=False):
         """Load instrument data into Instrument object .data.
 
@@ -1376,14 +1376,14 @@ class Instrument(object):
             associated date between yr, doy and yr, doy + 1
         doy : integer
             Day of year for desired data. Must be present with yr input.
-        yr2 : integer
-            Used when loading a range of dates, from yr, doy to yr2, doy2 based
-            upon the dates associated with the Instrument's files. Date range
-            is inclusive for yr, doy but exclusive for yr2, doy2.
-        doy2 : integer
-            Used when loading a range of dates, from yr, doy to yr2, doy2 based
-            upon the dates associated with the Instrument's files. Date range
-            is inclusive for yr, doy but exclusive for yr2, doy2.
+        end_yr : integer
+            Used when loading a range of dates, from yr, doy to end_yr, end_doy
+            based upon the dates associated with the Instrument's files. Date
+            range is inclusive for yr, doy but exclusive for end_yr, end_doy.
+        end_doy : integer
+            Used when loading a range of dates, from yr, doy to end_yr, end_doy
+            based upon the dates associated with the Instrument's files. Date
+            range is inclusive for yr, doy but exclusive for end_yr, end_doy.
         date : dt.datetime
             Date to load data for. pysat will load all files with an associated
             date between date and date + 1 day
@@ -1448,12 +1448,13 @@ class Instrument(object):
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
             self._set_load_parameters(date=date, fid=None)
             # increment
-            if (yr2 is not None) & (doy2 is not None):
-                _temp = (doy2 - 1)
-                end_date = dt.datetime(yr2, 1, 1) + pds.DateOffset(days=_temp)
+            if (end_yr is not None) & (end_doy is not None):
+                _temp = (end_doy - 1)
+                end_date = dt.datetime(end_yr, 1, 1)
+                end_date += pds.DateOffset(days=_temp)
                 self.load_step = end_date - date
-            elif (yr2 is not None) or (doy2 is not None):
-                raise ValueError('Both yr2 and doy2 must be set, or neither.')
+            elif (end_yr is not None) or (end_doy is not None):
+                raise ValueError('Both end_yr and end_doy must be set, or neither.')
             else:
                 self.load_step = pds.DateOffset(days=1)
             curr = self.date
@@ -1490,9 +1491,9 @@ class Instrument(object):
                 # increment one file at a time
                 self.load_step = 0
             curr = self._fid.copy()
-        elif (yr is None) and (doy is None) and (yr2 is None) and \
-                (doy2 is None) and (date is None) and (end_date is None) and \
-                (fname is None):
+        elif (yr is None) and (doy is None) and (end_yr is None) and \
+                (end_doy is None) and (date is None) and \
+                (end_date is None) and (fname is None):
             # empty call, treat as if all data requested
             if self.multi_file_day:
                 estr = ''.join(('`load()` is not supported with multi_file_day',
