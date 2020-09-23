@@ -96,7 +96,7 @@ def register(module_names, overwrite=False):
     module using
     ::
 
-        inst = pysat.Instrument(platform, name, tag=tag, sat_id=sat_id)
+        inst = pysat.Instrument(platform, name, tag=tag, inst_id=inst_id)
 
     Parameters
     ----------

@@ -70,7 +70,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                 f.write(content)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
     if format_str is None:
@@ -572,8 +572,8 @@ class TestInstrumentWithFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         # add new files
@@ -585,9 +585,9 @@ class TestInstrumentWithFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
+                             inst_id='hello',
                              directory_format=''.join(('pysat_testing_',
-                                                       '{tag}_{sat_id}')),
+                                                       '{tag}_{inst_id}')),
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
 
@@ -693,7 +693,7 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
                 open(fname, 'w')
 
 
-def list_versioned_files(tag=None, sat_id=None, data_path=None,
+def list_versioned_files(tag=None, inst_id=None, data_path=None,
                          format_str=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
@@ -889,8 +889,8 @@ class TestInstrumentWithVersionedFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         # add new files
@@ -902,8 +902,8 @@ class TestInstrumentWithVersionedFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
 

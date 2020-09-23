@@ -11,7 +11,7 @@ class TestLogging():
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='10',
+        self.testInst = pysat.Instrument('pysat', 'testing', inst_id='10',
                                          clean_level='clean')
         self.out = ''
         self.log_capture = StringIO()
@@ -39,7 +39,7 @@ class TestBasics():
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing', sat_id='10',
+        self.testInst = pysat.Instrument('pysat', 'testing', inst_id='10',
                                          clean_level='clean')
         self.testInst.load(2008, 1)
         self.ncols = len(self.testInst.data.columns)
@@ -420,7 +420,7 @@ class TestBasicsXarray(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', sat_id='10',
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray', inst_id='10',
                                          clean_level='clean')
         self.testInst.load(2008, 1)
         self.ncols = len([kk for kk in self.testInst.data.keys()])
@@ -437,7 +437,7 @@ class ConstellationTestBasics(TestBasics):
         """Runs before every method to create a clean testing setup
         """
         self.testConst = pysat.Constellation([
-            pysat.Instrument('pysat', 'testing', sat_id='10',
+            pysat.Instrument('pysat', 'testing', inst_id='10',
                              clean_level='clean')
             for i in range(5)])
 

@@ -34,7 +34,7 @@ name = 'pandas'
 # dictionary of data 'tags' and corresponding description
 tags = {'': 'netCDF4'}
 # dictionary of satellite IDs, list of corresponding tags
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
@@ -49,7 +49,7 @@ def init(self):
     pass
 
 
-def load(fnames, tag=None, sat_id=None, **kwargs):
+def load(fnames, tag=None, inst_id=None, **kwargs):
     """Loads data using pysat.utils.load_netcdf4 .
 
     This routine is called as needed by pysat. It is not intended
@@ -63,7 +63,7 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     tag : string
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
-    sat_id : string
+    inst_id : string
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself.
     **kwargs : extra keywords
@@ -107,14 +107,14 @@ def load(fnames, tag=None, sat_id=None, **kwargs):
     return pysat.utils.load_netcdf4(fnames, **kwargs)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Produce a list of files corresponding to format_str located at
     data_path.
 
     This routine is invoked by pysat and is not intended for direct use by
     the end user.
 
-    Multiple data levels may be supported via the 'tag' and 'sat_id' input
+    Multiple data levels may be supported via the 'tag' and 'inst_id' input
     strings.
 
     Parameters
@@ -122,7 +122,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     tag : string
         tag name used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
-    sat_id : string
+    inst_id : string
         Satellite ID used to identify particular data set to be loaded.
         This input is nominally provided by pysat itself. (default='')
     data_path : string
@@ -155,7 +155,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     rest discarded. This routine uses the pysat.Files.from_os constructor, thus
     the returned files are up to pysat specifications.
 
-    Normally the format_str for each supported tag and sat_id is defined within
+    Normally the format_str for each supported tag and inst_id is defined within
     this routine. However, as this is a generic routine, those definitions
     can't be made here. This method could be used in an instrument specific
     module where the list_files routine in the new package defines the
@@ -174,7 +174,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 
-def download(date_array, tag, sat_id, data_path=None, user=None,
+def download(date_array, tag, inst_id, data_path=None, user=None,
              password=None):
     """Downloads data for supported instruments, however this is a template
     call.
@@ -190,7 +190,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     tag : string
         Tag identifier used for particular dataset. This input is provided by
         pysat. (default='')
-    sat_id : string
+    inst_id : string
         Satellite ID string identifier used for particular dataset. This input
         is provided by pysat. (default='')
     data_path : string (None)

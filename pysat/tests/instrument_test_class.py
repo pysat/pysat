@@ -85,11 +85,11 @@ def generate_instrument_list(package):
                 info = {}
                 info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
-            for sat_id in info.keys():
-                for tag in info[sat_id].keys():
+            for inst_id in info.keys():
+                for tag in info[inst_id].keys():
                     inst = pysat.Instrument(inst_module=module,
                                             tag=tag,
-                                            sat_id=sat_id,
+                                            inst_id=inst_id,
                                             temporary_file_list=True)
                     inst._test_dates = module._test_dates
                     travis_skip = ((os.environ.get('TRAVIS') == 'true')
@@ -114,12 +114,12 @@ def generate_instrument_list(package):
 class InstTestClass():
     """Provides standardized tests for pysat instrument libraries.
     """
-    module_attrs = ['platform', 'name', 'tags', 'sat_ids',
+    module_attrs = ['platform', 'name', 'tags', 'inst_ids',
                     'load', 'list_files', 'download']
-    inst_attrs = ['tag', 'sat_id', 'acknowledgements', 'references']
+    inst_attrs = ['tag', 'inst_id', 'acknowledgements', 'references']
     inst_callable = ['load', 'list_files', 'download', 'clean', 'default']
     attr_types = {'platform': str, 'name': str, 'tags': dict,
-                  'sat_ids': dict, 'tag': str, 'sat_id': str,
+                  'inst_ids': dict, 'tag': str, 'inst_id': str,
                   'acknowledgements': str, 'references': str}
 
     @pytest.mark.all_inst
@@ -137,16 +137,16 @@ class InstTestClass():
                                   self.attr_types[mattr])
 
         # Check for presence of required instrument attributes
-        for sat_id in module.sat_ids.keys():
-            for tag in module.sat_ids[sat_id]:
+        for inst_id in module.inst_ids.keys():
+            for tag in module.inst_ids[inst_id]:
                 inst = pysat.Instrument(inst_module=module, tag=tag,
-                                        sat_id=sat_id)
+                                        inst_id=inst_id)
 
                 # Test to see that the class parameters were passed in
                 assert isinstance(inst, pysat.Instrument)
                 assert inst.platform == module.platform
                 assert inst.name == module.name
-                assert inst.sat_id == sat_id
+                assert inst.inst_id == inst_id
                 assert inst.tag == tag
 
                 # Test the required class attributes
@@ -177,16 +177,16 @@ class InstTestClass():
         module = import_module(''.join(('.', name)),
                                package=self.package.__name__)
         info = module._test_dates
-        for sat_id in info.keys():
-            for tag in info[sat_id].keys():
-                assert isinstance(info[sat_id][tag], dt.datetime)
+        for inst_id in info.keys():
+            for tag in info[inst_id].keys():
+                assert isinstance(info[inst_id][tag], dt.datetime)
 
     @pytest.mark.first
     @pytest.mark.download
     def test_download(self, inst):
         """Check that instruments are downloadable."""
         try:
-            start = inst._test_dates[inst.sat_id][inst.tag]
+            start = inst._test_dates[inst.inst_id][inst.tag]
             # check for username
             inst_name = '_'.join((inst.platform, inst.name))
             dl_dict = user_download_dict[inst_name] if inst_name in \
@@ -201,7 +201,7 @@ class InstTestClass():
                                        inst.platform,
                                        inst.name,
                                        inst.tag,
-                                       inst.sat_id)))
+                                       inst.inst_id)))
 
     @pytest.mark.second
     @pytest.mark.download
@@ -215,7 +215,7 @@ class InstTestClass():
                 inst.clean_level = clean_level
                 target = 'Fake Data to be cleared'
                 inst.data = [target]
-                start = inst._test_dates[inst.sat_id][inst.tag]
+                start = inst._test_dates[inst.inst_id][inst.tag]
                 try:
                     inst.load(date=start)
                 except ValueError as verr:
@@ -249,7 +249,7 @@ class InstTestClass():
                                            inst.platform,
                                            inst.name,
                                            inst.tag,
-                                           inst.sat_id)))
+                                           inst.inst_id)))
         else:
             pytest.skip("Download data not available")
 
@@ -261,7 +261,7 @@ class InstTestClass():
             name = '_'.join((inst.platform, inst.name))
             if hasattr(getattr(self.package, name), 'list_remote_files'):
                 assert callable(inst.remote_file_list)
-                date = inst._test_dates[inst.sat_id][inst.tag]
+                date = inst._test_dates[inst.inst_id][inst.tag]
                 files = inst.remote_file_list(start=date, stop=date)
                 # If test date is correctly chosen, files should exist
                 assert len(files) > 0
@@ -272,12 +272,12 @@ class InstTestClass():
             # list is opaque
             raise type(merr)(' '.join((str(merr), '\nProblem with checking:',
                                        inst.platform, inst.name, inst.tag,
-                                       inst.sat_id)))
+                                       inst.inst_id)))
 
     @pytest.mark.no_download
     def test_download_warning(self, inst):
         """Check that instruments without download support have a warning."""
-        start = inst._test_dates[inst.sat_id][inst.tag]
+        start = inst._test_dates[inst.inst_id][inst.tag]
         try:
             with warnings.catch_warnings(record=True) as war:
                 inst.download(start, start)
@@ -289,4 +289,4 @@ class InstTestClass():
             # list is opaque
             raise type(merr)(' '.join((str(merr), '\nProblem with checking:',
                                        inst.platform, inst.name, inst.tag,
-                                       inst.sat_id)))
+                                       inst.inst_id)))
