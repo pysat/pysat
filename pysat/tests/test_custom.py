@@ -420,8 +420,8 @@ class TestBasicsXarray(TestBasics):
     def setup(self):
         """Runs before every method to create a clean testing setup.
         """
-        self.testInst = pysat.Instrument('pysat', 'testing_xarray', inst_id='10',
-                                         clean_level='clean')
+        self.testInst = pysat.Instrument('pysat', 'testing_xarray',
+                                         inst_id='10', clean_level='clean')
         self.testInst.load(2008, 1)
         self.ncols = len([kk for kk in self.testInst.data.keys()])
 

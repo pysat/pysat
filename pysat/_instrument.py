@@ -1233,7 +1233,8 @@ class Instrument(object):
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             try:
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
-                                             inst_id=self.inst_id, **self.kwargs)
+                                             inst_id=self.inst_id,
+                                             **self.kwargs)
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
                 mdata.accept_default_labels(self)

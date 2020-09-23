@@ -33,7 +33,7 @@ tags = {'': 'Regular testing data set',
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in inst_id to change the number of points per day
 inst_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
-                'no_download']}
+                 'no_download']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'no_download': dt.datetime(2009, 1, 1),
                     'non_strict': dt.datetime(2009, 1, 1)}}

@@ -102,7 +102,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, inst_id=inst_id, freq='1S')
+    uts, index, date = mm_test.generate_times(fnames, inst_id=inst_id,
+                                              freq='1S')
 
     if sim_multi_file_right:
         root_date = dt.datetime(2009, 1, 1, 12)
