@@ -1852,7 +1852,7 @@ class Instrument(object):
         start : pandas.datetime (yesterday)
             start date to download data
         stop : pandas.datetime (tomorrow)
-            stop date to download data
+            stop date (inclusive) to download data
         freq : string
             Stepsize between dates for season, 'D' for daily, 'M' monthly
             (see pandas)
