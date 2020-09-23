@@ -64,6 +64,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Add tests for acknowledgements and references
   - Removed implicit conversion to integers in
     methods.general.convert_timestamp_to_datetime
+  - Rename sat_id as inst_id
 
 ## [2.2.1] - 2020-07-29
 - Documentation
