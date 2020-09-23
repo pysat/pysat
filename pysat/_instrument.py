@@ -1366,7 +1366,7 @@ class Instrument(object):
             self._load_by_date = False
 
     def load(self, yr=None, doy=None, yr2=None, doy2=None, date=None,
-             date2=None, fname=None, fname2=None, verifyPad=False):
+             end_date=None, fname=None, fname2=None, verifyPad=False):
         """Load instrument data into Instrument object .data.
 
         Parameters
@@ -1387,10 +1387,10 @@ class Instrument(object):
         date : dt.datetime
             Date to load data for. pysat will load all files with an associated
             date between date and date + 1 day
-        date2 : dt.datetime
-            Used when loading a range of data from `date` to `date2` based
+        end_date : dt.datetime
+            Used when loading a range of data from `date` to `end_date` based
             upon the dates associated with the Instrument's files. Date range
-            is inclusive for date but exclusive for date2.
+            is inclusive for date but exclusive for end_date.
         fname : 'string'
             Filename to be loaded
         fname2 : 'string'
@@ -1434,8 +1434,8 @@ class Instrument(object):
 
             # same procedure using datetimes
             date = dt.datetime(2009, 1, 1)
-            date2 = dt.datetime(2009, 1, 3)
-            inst.load(date=date, date2=date2)
+            end_date = dt.datetime(2009, 1, 3)
+            inst.load(date=date, end_date=end_date)
 
             # same procedure using filenames
             # note the change in index due to inclusive slicing on filenames!
@@ -1449,8 +1449,8 @@ class Instrument(object):
             self._set_load_parameters(date=date, fid=None)
             # increment
             if (yr2 is not None) & (doy2 is not None):
-                date2 = dt.datetime(yr2, 1, 1) + pds.DateOffset(days=(doy2 - 1))
-                self.load_step = date2 - date
+                end_date = dt.datetime(yr2, 1, 1) + pds.DateOffset(days=(doy2 - 1))
+                self.load_step = end_date - date
             elif (yr2 is not None) or (doy2 is not None):
                 raise ValueError('Both yr2 and doy2 must be set, or neither.')
             else:
@@ -1461,9 +1461,9 @@ class Instrument(object):
             self._set_load_parameters(date=date, fid=None)
             date = self._filter_datetime_input(date)
             # increment
-            if date2 is not None:
+            if end_date is not None:
                 # support loading a range of dates
-                self.load_step = date2 - date
+                self.load_step = end_date - date
             else:
                 # defaults to single day load
                 self.load_step = pds.DateOffset(days=1)
@@ -1490,7 +1490,7 @@ class Instrument(object):
                 self.load_step = 0
             curr = self._fid.copy()
         elif (yr is None) and (doy is None) and (yr2 is None) and \
-                (doy2 is None) and (date is None) and (date2 is None) and \
+                (doy2 is None) and (date is None) and (end_date is None) and \
                 (fname is None):
             # empty call, treat as if all data requested
             if self.multi_file_day:
@@ -1503,11 +1503,11 @@ class Instrument(object):
                 raise ValueError(estr)
 
             date = self.files.files.index[0]
-            date2 = self.files.files.index[-1] + pds.DateOffset(days=1)
+            end_date = self.files.files.index[-1] + pds.DateOffset(days=1)
 
             self._set_load_parameters(date=date, fid=None)
             curr = date
-            self.load_step = date2 - date
+            self.load_step = end_date - date
         else:
             estr = 'Unkown input.'
             raise TypeError(estr)
@@ -2171,8 +2171,8 @@ class Instrument(object):
             # list of dates generated whenever bounds are set
             for date in self._iter_list:
                 # user specified range of dates
-                date2 = date + self._iter_width
-                self.load(date=date, date2=date2)
+                end_date = date + self._iter_width
+                self.load(date=date, end_date=end_date)
 
                 # TODO: Discuss .copy()
                 # without copy, a = [inst for inst in inst] leads to
@@ -2214,13 +2214,14 @@ class Instrument(object):
                 else:
                     # not on the last day, safe to move forward
                     next_date = self._iter_list[idx[0] + 1]
-                    date2 = next_date + self._iter_width
-                    self.load(date=next_date, date2=date2, verifyPad=verifyPad)
+                    end_date = next_date + self._iter_width
+                    self.load(date=next_date, end_date=end_date,
+                              verifyPad=verifyPad)
             else:
                 # no data currently loaded, start at the beginning
                 date = self._iter_list[0]
-                date2 = date + self._iter_width
-                self.load(date=date, date2=date2, verifyPad=verifyPad)
+                end_date = date + self._iter_width
+                self.load(date=date, end_date=end_date, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             first = self.files.get_index(self._iter_list[0])
@@ -2294,13 +2295,13 @@ class Instrument(object):
                 else:
                     # not on first day, safe to move backward
                     date = self._iter_list[idx[0] - 1]
-                    date2 = self._iter_list[idx[0]]
-                    self.load(date=date, date2=date2, verifyPad=verifyPad)
+                    end_date = self._iter_list[idx[0]]
+                    self.load(date=date, end_date=end_date, verifyPad=verifyPad)
             else:
                 # no data currently loaded, start at the end
-                date2 = self._iter_list[-1] + self._iter_width
+                end_date = self._iter_list[-1] + self._iter_width
                 date = self._iter_list[-1]
-                self.load(date=date, date2=date2, verifyPad=verifyPad)
+                self.load(date=date, end_date=end_date, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             first = self.files.get_index(self._iter_list[0])

@@ -122,9 +122,9 @@ class TestBasics():
         assert (self.out == self.testInst.date)
 
     def test_basic_instrument_load_by_dates(self):
-        """Test date range loading, date and date2"""
-        date2 = self.ref_time + pds.DateOffset(days=2)
-        self.testInst.load(date=self.ref_time, date2=date2)
+        """Test date range loading, date and end_date"""
+        end_date = self.ref_time + pds.DateOffset(days=2)
+        self.testInst.load(date=self.ref_time, end_date=end_date)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
@@ -1070,7 +1070,7 @@ class TestBasics():
         out = pds.date_range(start, stop).tolist()
         assert np.all(dates == out)
 
-    def test_iterate_over_bounds_set_by_date2(self):
+    def test_iterate_over_bounds_set_by_end_date(self):
         start = dt.datetime(2008, 1, 1)
         stop = dt.datetime(2010, 12, 31)
         self.testInst.bounds = (start, stop)
