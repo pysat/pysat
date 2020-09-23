@@ -1366,7 +1366,7 @@ class Instrument(object):
             self._load_by_date = False
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
-             end_date=None, fname=None, fname2=None, verifyPad=False):
+             end_date=None, fname=None, stop_fname=None, verifyPad=False):
         """Load instrument data into Instrument object .data.
 
         Parameters
@@ -1393,8 +1393,8 @@ class Instrument(object):
             is inclusive for date but exclusive for end_date.
         fname : 'string'
             Filename to be loaded
-        fname2 : 'string'
-            Used when loading a range of filenames from `fname` to `fname2`,
+        stop_fname : 'string'
+            Used when loading a range of filenames from `fname` to `stop_fname`,
             inclusive.
         verifyPad : boolean
             if True, padding data not removed (debug purposes). Padding
@@ -1439,7 +1439,7 @@ class Instrument(object):
 
             # same procedure using filenames
             # note the change in index due to inclusive slicing on filenames!
-            inst.load(fname=inst.files[0], fname2=inst.files[1])
+            inst.load(fname=inst.files[0], stop_fname=inst.files[1])
 
         """
 
@@ -1475,15 +1475,15 @@ class Instrument(object):
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
             # check for loading by file range
-            if fname2 is not None:
+            if stop_fname is not None:
                 # get index for both files so the delta may be computed
                 idx1 = self.files.get_index(fname)
-                idx2 = self.files.get_index(fname2)
+                idx2 = self.files.get_index(stop_fname)
                 diff = idx2 - idx1
                 if diff < 0:
-                    estr = ''.join(('`fname2` must occur at a later date than ',
-                                    '`fname`. Swapping filename inputs will ',
-                                    'resolve the error.'))
+                    estr = ''.join(('`stop_fname` must occur at a later date ',
+                                    'than `fname`. Swapping filename inputs ',
+                                    'will resolve the error.'))
                     raise ValueError(estr)
                 else:
                     self.load_step = diff
@@ -2163,7 +2163,7 @@ class Instrument(object):
                     # load more than one file at a time
                     # get location for second file
                     nfid = self.files.get_index(fname) + self._iter_width - 1
-                    self.load(fname=fname, fname2=self.files[nfid])
+                    self.load(fname=fname, stop_fname=self.files[nfid])
                 else:
                     self.load(fname=fname)
                 yield self
@@ -2258,7 +2258,7 @@ class Instrument(object):
                 # load more than one file at a time
                 # get location for second file
                 nfid = self.files.get_index(fname) + self._iter_width - 1
-                self.load(fname=fname, fname2=self.files[nfid],
+                self.load(fname=fname, stop_fname=self.files[nfid],
                           verifyPad=verifyPad)
             else:
                 self.load(fname=fname, verifyPad=verifyPad)
@@ -2335,7 +2335,7 @@ class Instrument(object):
                 # load more than one file at a time
                 # get location for second file
                 nfid = self.files.get_index(fname) + self._iter_width - 1
-                self.load(fname=fname, fname2=self.files[nfid],
+                self.load(fname=fname, stop_fname=self.files[nfid],
                           verifyPad=verifyPad)
             else:
                 self.load(fname=fname, verifyPad=verifyPad)

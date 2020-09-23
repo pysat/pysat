@@ -239,21 +239,21 @@ class TestBasics():
     def test_filenames_load(self):
         """Test if files are loadable by filenames, relative to
         top_data_dir/platform/name/tag"""
-        fname2 = self.ref_time + pds.DateOffset(days=1)
-        fname2 = fname2.strftime('%Y-%m-%d.nofile')
+        stop_fname = self.ref_time + pds.DateOffset(days=1)
+        stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'),
-                           fname2=fname2)
+                           stop_fname=stop_fname)
         assert self.testInst.index[0] == self.ref_time
         assert self.testInst.index[-1] >= self.ref_time + pds.DateOffset(days=1)
         assert self.testInst.index[-1] <= self.ref_time + pds.DateOffset(days=2)
 
     def test_filenames_load_out_of_order(self):
         """Test error raised if fnames out of temporal order"""
-        fname2 = self.ref_time + pds.DateOffset(days=1)
-        fname2 = fname2.strftime('%Y-%m-%d.nofile')
+        stop_fname = self.ref_time + pds.DateOffset(days=1)
+        stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         with pytest.raises(ValueError):
-            self.testInst.load(fname=fname2,
-                               fname2=self.ref_time.strftime('%Y-%m-%d.nofile'))
+            self.testInst.load(fname=stop_fname,
+                               stop_fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
 
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
