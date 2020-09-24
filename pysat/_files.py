@@ -483,34 +483,34 @@ class Files(object):
             except TypeError:
                 return self.files.loc[key]
 
-    def get_file_array(self, start, end):
-        """Return a list of filenames between and including start and end.
+    def get_file_array(self, start, stop):
+        """Return a list of filenames between and including start and stop.
 
         Parameters
         ----------
             start: array_like or single string
                 filenames for start of returned filelist
             stop: array_like or single string
-                filenames inclusive end of list
+                filenames inclusive stop of list
 
         Returns
         -------
-            list of filenames between and including start and end over all
+            list of filenames between and including start and stop over all
             intervals.
 
         """
-        if hasattr(start, '__iter__') & hasattr(end, '__iter__'):
+        if hasattr(start, '__iter__') & hasattr(stop, '__iter__'):
             files = []
-            for (sta, stp) in zip(start, end):
+            for (sta, stp) in zip(start, stop):
                 id1 = self.get_index(sta)
                 id2 = self.get_index(stp)
                 files.extend(self.files.iloc[id1:(id2 + 1)])
-        elif hasattr(start, '__iter__') | hasattr(end, '__iter__'):
+        elif hasattr(start, '__iter__') | hasattr(stop, '__iter__'):
             estr = 'Either both or none of the inputs need to be iterable'
             raise ValueError(estr)
         else:
             id1 = self.get_index(start)
-            id2 = self.get_index(end)
+            id2 = self.get_index(stop)
             files = self.files[id1:(id2 + 1)].to_list()
         return files
 
