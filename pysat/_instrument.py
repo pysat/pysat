@@ -1543,9 +1543,8 @@ class Instrument(object):
                                 'when loading by file can produce unexpected ',
                                 'results whenever the padding window ',
                                 'is longer than the range of data in a file. ',
-                                'Hard to know if an offset is reasonable or ',
-                                'not or what the proper response is. ',
-                                'Temporary response to raise awareness.'))
+                                'Improving the breadth of the padding window ',
+                                'is planned for the future.'))
                 logger.warning(wstr)
 
         if (self.pad is not None) | self.multi_file_day:
@@ -2097,7 +2096,7 @@ class Instrument(object):
                 if starts[0] is None:
                     starts = [self.files[0]]
                 if stops[0] is None:
-                    stops = [self.files.files[-1]]
+                    stops = [self.files[-1]]
                 # default step size
                 if self._iter_step is None:
                     self._iter_step = 1
@@ -2105,10 +2104,23 @@ class Instrument(object):
                 if self._iter_width is None:
                     self._iter_width = 1
 
-                # grab list of files with user bounds
-                self._iter_list = self.files.get_file_array(starts, stops)
-                # down-select based upon step size
-                self._iter_list = self._iter_list[::self._iter_step]
+                _temp = []
+                self._iter_list = []
+                for _start, _stop in zip(starts, stops):
+                    _temp = self.files.get_file_array([_start], [_stop])
+                    # downselect based upon step size
+                    _temp = _temp[::self._iter_step]
+                    # make sure iterations don't go past last day
+                    # get index of stop file frmo main file list
+                    stop_idx = self.files.get_index(_stop)
+                    # get index of last in iteration list
+                    iter_idx = self.files.get_index(_temp[-1])
+
+                    if iter_idx + self._iter_width - 1 > stop_idx:
+                        i = -int(np.ceil(self._iter_width / self._iter_step))
+                        self._iter_list.extend(_temp[:i])
+                    else:
+                        self._iter_list.extend(_temp)
 
             elif isinstance(starts[0], dt.datetime) or isinstance(stops[0],
                                                                   dt.datetime):
@@ -2132,8 +2144,23 @@ class Instrument(object):
                 starts = self._filter_datetime_input(starts)
                 stops = self._filter_datetime_input(stops)
                 freq = self._iter_step
-                self._iter_list = utils.time.create_date_range(starts, stops,
-                                                               freq=freq)
+                _temp = []
+                self._iter_list = []
+                for start, stop in zip(starts, stops):
+                    _temp = utils.time.create_date_range(start, stop, freq=freq)
+                    # make sure iterations don't go past last day
+                    i = -1
+                    num = -len(_temp)
+                    while _temp[i] + self._iter_width - \
+                             pds.DateOffset(days=1) > stop and (i > num):
+                        i -= 1
+                    i += 1
+                    if i < 0:
+                        self._iter_list.extend(_temp[:i])
+                    else:
+                        self._iter_list.extend(_temp)
+                # go back to time index
+                self._iter_list = pds.DatetimeIndex(self._iter_list)
 
             else:
                 raise ValueError(' '.join(('Input is not a known type, string',
@@ -2142,6 +2169,38 @@ class Instrument(object):
             self._iter_stop = stops
 
         return
+
+    def check_date_in_bounds(self, date, raise_error=False):
+        """Ensure date in date range indicated by self.bounds
+
+        Parameters
+        ----------
+        date : dt.datetime
+            Date to be checked
+        raise_error : bool
+            If True, error raised if not in bounds
+
+        Raises
+        ------
+        StopIteration if date out of bounds
+
+        """
+
+        if self._iter_type == 'date':
+            bounds = self.bounds
+        elif self._iter_type == 'file':
+            # need to convert filenames to dates
+            raise NotImplementedError()
+
+        _offs = pds.DateOffset(days=1)
+        in_bounds = False
+        for sb, eb in zip(bounds[0], bounds[1]):
+            if date >= sb and (date <= eb + _offs):
+                in_bounds = True
+        if not in_bounds and raise_error:
+            raise StopIteration('Outside the set date boundaries.')
+
+        return in_bounds
 
     def __iter__(self):
         """Iterates instrument object by loading subsequent days or files.
@@ -2169,29 +2228,30 @@ class Instrument(object):
         if self._iter_type == 'file':
             width = self._iter_width
             for fname in self._iter_list:
-                if width > 1:
-                    # load more than one file at a time
-                    # get location for second file
-                    nfid = self.files.get_index(fname) + self._iter_width - 1
-                    self.load(fname=fname, stop_fname=self.files[nfid])
-                else:
-                    self.load(fname=fname)
-                yield self
+                # Without a copy, a = [inst for inst in inst] leads to
+                # every item being the last day loaded.
+                # With the copy, behavior is as expected. Making a copy
+                # of an empty object is going to be faster than a full one.
+                self.data = self._null_data
+                friend = self.copy()
+                # load range of files
+                # get location for second file, width of 1 loads only one file
+                nfid = self.files.get_index(fname) + width - 1
+                friend.load(fname=fname, stop_fname=self.files[nfid])
+                yield friend
 
         elif self._iter_type == 'date':
             # iterate over dates
             # list of dates generated whenever bounds are set
             for date in self._iter_list:
+                # do copy trick, starting with null data in object
+                self.data = self._null_data
+                friend = self.copy()
                 # user specified range of dates
                 end_date = date + self._iter_width
-                self.load(date=date, end_date=end_date)
-
-                # TODO: Discuss .copy()
-                # without copy, a = [inst for inst in inst] leads to
-                # every item being the last day loaded
-                # with the copy, behavior is as expected, though
-                # memory and execution time goes up
-                yield self
+                # load range of dates
+                friend.load(date=date, end_date=end_date)
+                yield friend
 
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
@@ -2224,9 +2284,12 @@ class Instrument(object):
                     # gone to far!
                     raise StopIteration('Outside the set date boundaries.')
                 else:
-                    # not on the last day, safe to move forward
+                    # not going past the last day, safe to move forward
                     next_date = self._iter_list[idx[0] + 1]
                     end_date = next_date + self._iter_width
+                    # # ensure end_date in bounds
+                    # self.check_date_in_bounds(end_date)
+                    # in bounds, lets load
                     self.load(date=next_date, end_date=end_date,
                               verifyPad=verifyPad)
             else:
@@ -2242,7 +2305,8 @@ class Instrument(object):
             width = self._iter_width
             if self._fid is not None:
                 # data already loaded in .data
-                if (self._fid < first) | (self._fid + step > last):
+                if (self._fid < first) | (self._fid + step > last) | \
+                                         (self._fid + width > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
                     # step size already accounted for in the list of files
@@ -2307,7 +2371,7 @@ class Instrument(object):
                 else:
                     # not on first day, safe to move backward
                     date = self._iter_list[idx[0] - 1]
-                    end_date = self._iter_list[idx[0]]
+                    end_date = self._iter_list[idx[0] - 1] + self._iter_width
                     self.load(date=date, end_date=end_date, verifyPad=verifyPad)
             else:
                 # no data currently loaded, start at the end
@@ -2341,14 +2405,14 @@ class Instrument(object):
             else:
                 fname = self._iter_list[-1]
 
-            if width > 1:
-                # load more than one file at a time
-                # get location for second file
-                nfid = self.files.get_index(fname) + self._iter_width - 1
-                self.load(fname=fname, stop_fname=self.files[nfid],
-                          verifyPad=verifyPad)
-            else:
-                self.load(fname=fname, verifyPad=verifyPad)
+            # if width > 1:
+            #     # load more than one file at a time
+            #     # get location for second file
+            nfid = self.files.get_index(fname) + self._iter_width - 1
+            self.load(fname=fname, stop_fname=self.files[nfid],
+                      verifyPad=verifyPad)
+            # else:
+            #     self.load(fname=fname, verifyPad=verifyPad)
 
         return
 
