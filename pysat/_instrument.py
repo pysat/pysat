@@ -2110,12 +2110,12 @@ class Instrument(object):
                     _temp = self.files.get_file_array([_start], [_stop])
                     # downselect based upon step size
                     _temp = _temp[::self._iter_step]
-                    # make sure iterations don't go past last day
-                    # get index of stop file frmo main file list
+                    # Make sure iterations don't go past last day
+                    # Get index of stop file from main file list
                     stop_idx = self.files.get_index(_stop)
                     # get index of last in iteration list
                     iter_idx = self.files.get_index(_temp[-1])
-
+                    # don't let loaded data go past stop bound
                     if iter_idx + self._iter_width - 1 > stop_idx:
                         i = -int(np.ceil(self._iter_width / self._iter_step))
                         self._iter_list.extend(_temp[:i])
@@ -2287,8 +2287,6 @@ class Instrument(object):
                     # not going past the last day, safe to move forward
                     next_date = self._iter_list[idx[0] + 1]
                     end_date = next_date + self._iter_width
-                    # # ensure end_date in bounds
-                    # self.check_date_in_bounds(end_date)
                     # in bounds, lets load
                     self.load(date=next_date, end_date=end_date,
                               verifyPad=verifyPad)
@@ -2305,8 +2303,7 @@ class Instrument(object):
             width = self._iter_width
             if self._fid is not None:
                 # data already loaded in .data
-                if (self._fid < first) | (self._fid + step > last) | \
-                                         (self._fid + width > last):
+                if (self._fid < first) | (self._fid + step > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
                     # step size already accounted for in the list of files
@@ -2328,14 +2325,11 @@ class Instrument(object):
                 # no data loaded yet, start with the first file
                 fname = self._iter_list[0]
 
-            if width > 1:
-                # load more than one file at a time
-                # get location for second file
-                nfid = self.files.get_index(fname) + self._iter_width - 1
-                self.load(fname=fname, stop_fname=self.files[nfid],
-                          verifyPad=verifyPad)
-            else:
-                self.load(fname=fname, verifyPad=verifyPad)
+            # load range of files at a time
+            # get location for second file. Note a width of 1 loads single file
+            nfid = self.files.get_index(fname) + self._iter_width - 1
+            self.load(fname=fname, stop_fname=self.files[nfid],
+                      verifyPad=verifyPad)
 
         return
 
@@ -2405,14 +2399,9 @@ class Instrument(object):
             else:
                 fname = self._iter_list[-1]
 
-            # if width > 1:
-            #     # load more than one file at a time
-            #     # get location for second file
             nfid = self.files.get_index(fname) + self._iter_width - 1
             self.load(fname=fname, stop_fname=self.files[nfid],
                       verifyPad=verifyPad)
-            # else:
-            #     self.load(fname=fname, verifyPad=verifyPad)
 
         return
 
