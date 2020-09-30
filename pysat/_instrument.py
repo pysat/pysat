@@ -1087,7 +1087,7 @@ class Instrument(object):
         output_str += "Platform: '{:s}'\n".format(self.platform)
         output_str += "Name: '{:s}'\n".format(self.name)
         output_str += "Tag: '{:s}'\n".format(self.tag)
-        output_str += "Satellite id: '{:s}'\n".format(self.inst_id)
+        output_str += "Instrument id: '{:s}'\n".format(self.inst_id)
 
         # Print out the data processing information
         output_str += '\nData Processing\n'
