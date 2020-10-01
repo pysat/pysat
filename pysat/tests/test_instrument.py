@@ -1467,13 +1467,89 @@ class TestBasics():
 
         return
 
+    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-11.nofile',
+                                         dt.datetime(2009, 1, 11),
+                                         2, 2),
+                                        ('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-12.nofile',
+                                         dt.datetime(2009, 1, 12),
+                                         2, 3),
+                                        ('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-13.nofile',
+                                         dt.datetime(2009, 1, 13),
+                                         3, 2),
+                                        ('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-03.nofile',
+                                         dt.datetime(2009, 1, 3),
+                                         4, 2),
+                                        ('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-12.nofile',
+                                         dt.datetime(2009, 1, 12),
+                                         2, 1)])
     def test_prev_fname_with_frequency_and_width(self, values):
-        """Test using prev() via fname with non-default frequency and width"""
-        start = '2009-01-01.nofile'
-        start_date = dt.datetime(2009, 1, 1)
-        stop = '2009-01-10.nofile'
-        stop_date = dt.datetime(2009, 1, 10)
-        self.testInst.bounds = (start, stop, 2, 2)
+        """Test using prev() via fname with non-default frequency and width,
+        won't hit bounds stop date"""
+        start = values[0]
+        start_date = values[1]
+        stop = values[2]
+        stop_date = values[3]
+        self.testInst.bounds = (start, stop, values[4], values[5])
+        days_offset = pds.DateOffset(days=values[5] - 1)
+
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.prev()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+        # verification dates, reverse order
+        out = pds.date_range(start_date, stop_date - days_offset,
+                             freq=str(values[4]) + 'D').tolist()[::-1]
+        assert np.all(dates == out)
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range):
+                assert trange[1] >= out[i] + days_offset
+            else:
+                assert trange[1] < stop_date
+        
+        return
+
+    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-11.nofile',
+                                         dt.datetime(2009, 1, 10),
+                                         2, 2),
+                                        ('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-09.nofile',
+                                         dt.datetime(2009, 1, 9),
+                                         4, 1),
+                                        ('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-11.nofile',
+                                         dt.datetime(2009, 1, 11),
+                                         1, 3),
+                                        ('2009-01-01.nofile',
+                                         dt.datetime(2009, 1, 1),
+                                         '2009-01-11.nofile',
+                                         dt.datetime(2009, 1, 11),
+                                         1, 11),
+                                        ])
+    def test_prev_fname_with_frequency_and_width_incl(self, values):
+        """Test using prev() via fname with non-default frequency and width,
+        won't hit bounds stop date"""
 
         start = values[0]
         start_date = values[1]
@@ -1493,14 +1569,18 @@ class TestBasics():
         except StopIteration:
             pass
         # verification dates, reverse order
-        out = pds.date_range(start_date, stop_date, freq='2D').tolist()[::-1]
+        out = pds.date_range(start_date, stop_date - days_offset,
+                             freq=str(values[4]) + 'D').tolist()[::-1]
         assert np.all(dates == out)
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
             if i < len(time_range):
-                assert trange[0] >= out[i]
-                assert trange[1] >= out[i] + pds.DateOffset(days=1)
+                assert trange[1] >= out[i] + days_offset
+            else:
+                assert trange[1] < stop_date + pds.DateOffset(days=1)
+
+        return
 
     def test_creating_empty_instrument_object(self):
         null = pysat.Instrument()
