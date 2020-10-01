@@ -55,14 +55,14 @@ class InstTestClass():
                   'inst_ids': dict, 'tag': str, 'inst_id': str,
                   'acknowledgements': str, 'references': str}
 
-    def assert_hasattr(obj, attr_name):
+    def assert_hasattr(self, obj, attr_name):
         """ Nice assertion statement for `assert hasattr(obj, attr_name)`
         """
         estr = "Object {:} missing attribute {:}".format(obj.__repr__(),
                                                          attr_name)
         assert hasattr(obj, attr_name), estr
 
-    def assert_isinstance(obj, obj_type):
+    def assert_isinstance(self, obj, obj_type):
         """ Nice assertion statement for `assert isinstance(obj, obj_type)`
         """
         estr = "Object {:} is type {:}, but should be type {:}".format(
