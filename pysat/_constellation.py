@@ -71,7 +71,7 @@ class Constellation(object):
 
         if ninst > 0:
             output_str += "\nIndex Platform Name Tag Inst_ID\n"
-            output_str += "------------------------------\n"
+            output_str += "-------------------------------\n"
             for i, inst in enumerate(self.instruments):
                 output_str += "{:d} '{:s}' '{:s}' '{:s}' '{:s}'\n".format(
                     i, inst.platform, inst.name, inst.tag, inst.inst_id)
