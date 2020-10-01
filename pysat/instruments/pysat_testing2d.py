@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 platform = 'pysat'
 name = 'testing2d'
 tags = {'': 'Regular testing data set'}
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 
@@ -57,7 +57,7 @@ def default(inst):
     pass
 
 
-def load(fnames, tag=None, sat_id=None, malformed_index=False):
+def load(fnames, tag=None, inst_id=None, malformed_index=False):
     """ Loads the test files
 
     Parameters
@@ -66,7 +66,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
         List of filenames
     tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
     malformed_index : bool
@@ -85,7 +85,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
+    uts, index, date = mm_test.generate_times(fnames, inst_id, freq='100S')
     # seed DataFrame with UT array
     data = pds.DataFrame(uts, columns=['uts'])
 

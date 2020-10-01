@@ -558,15 +558,15 @@ def generate_instrument_list(inst_loc):
                 info = {}
                 info[''] = {'': dt.datetime(2009, 1, 1)}
                 module._test_dates = info
-            for sat_id in info.keys():
-                for tag in info[sat_id].keys():
+            for inst_id in info.keys():
+                for tag in info[inst_id].keys():
                     inst_dict = {'inst_module': module, 'tag': tag,
-                                 'sat_id': sat_id}
+                                 'inst_id': inst_id}
                     # Initialize instrument so that pysat can generate skip
                     # flags where appropriate
                     inst = pysat.Instrument(inst_module=module,
                                             tag=tag,
-                                            sat_id=sat_id,
+                                            inst_id=inst_id,
                                             temporary_file_list=True)
                     travis_skip = ((os.environ.get('TRAVIS') == 'true')
                                    and not inst._test_download_travis)

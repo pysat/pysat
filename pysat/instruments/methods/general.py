@@ -13,7 +13,7 @@ import pysat
 logger = logging.getLogger(__name__)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
                two_digit_year_break=None):
     """Return a Pandas Series of every file for chosen satellite data.
@@ -25,7 +25,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -35,7 +35,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
     supported_tags : dict or NoneType
-        keys are sat_id, each containing a dict keyed by tag
+        keys are inst_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
     fake_daily_files_from_monthly : bool
         Some CDAWeb instrument data files are stored by month, interfering
@@ -76,9 +76,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     if format_str is None:
         try:
-            format_str = supported_tags[sat_id][tag]
+            format_str = supported_tags[inst_id][tag]
         except KeyError as kerr:
-            raise ValueError(' '.join(('Unknown sat_id or tag:',
+            raise ValueError(' '.join(('Unknown inst_id or tag:',
                                        str(kerr))))
 
     # Get the series of files

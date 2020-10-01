@@ -35,7 +35,7 @@ class Instrument(object):
         name of instrument.
     tag : string, optional
         identifies particular subset of instrument data.
-    sat_id : string, optional
+    inst_id : string, optional
         identity within constellation
     clean_level : {'clean','dusty','dirty','none'}, optional
         level of data quality
@@ -72,7 +72,7 @@ class Instrument(object):
         expressed as '{platform}/{name}/{tag}'
     file_format : str or NoneType
         File naming structure in string format.  Variables such as year,
-        month, and sat_id will be filled in as needed using python string
+        month, and inst_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
         instrument list_files routine.
     ignore_empty_files : boolean
@@ -172,7 +172,7 @@ class Instrument(object):
 
     """
 
-    def __init__(self, platform=None, name=None, tag=None, sat_id=None,
+    def __init__(self, platform=None, name=None, tag=None, inst_id=None,
                  clean_level='clean', update_files=None, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
@@ -184,9 +184,9 @@ class Instrument(object):
                  min_label='value_min', max_label='value_max',
                  fill_label='fill', *arg, **kwargs):
 
-        # Set default tag and sat_id
+        # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
-        self.sat_id = sat_id.lower() if sat_id is not None else ''
+        self.inst_id = inst_id.lower() if inst_id is not None else ''
 
         if inst_module is None:
             # use strings to look up module name
@@ -235,7 +235,7 @@ class Instrument(object):
         elif self.directory_format is not None:
             try:
                 # check if it is a function
-                self.directory_format = self.directory_format(tag, sat_id)
+                self.directory_format = self.directory_format(tag, inst_id)
             except TypeError:
                 pass
         # assign the file format string, if provided by user
@@ -1046,7 +1046,7 @@ class Instrument(object):
             # Assume we test download routines regardless of env unless
             # specified otherwise
             self._test_download = \
-                inst._test_download[self.sat_id][self.tag]
+                inst._test_download[self.inst_id][self.tag]
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
             self._test_download = True
@@ -1055,7 +1055,7 @@ class Instrument(object):
             # Assume we test download routines on travis unless specified
             # otherwise
             self._test_download_travis = \
-                inst._test_download_travis[self.sat_id][self.tag]
+                inst._test_download_travis[self.inst_id][self.tag]
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
             self._test_download_travis = True
@@ -1063,7 +1063,7 @@ class Instrument(object):
             # Used for tests which require password access
             # Assume password not required unless specified otherwise
             self._password_req = \
-                inst._password_req[self.sat_id][self.tag]
+                inst._password_req[self.inst_id][self.tag]
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
             self._password_req = False
@@ -1071,7 +1071,7 @@ class Instrument(object):
     def __repr__(self):
         """ Print the basic Instrument properties"""
         out_str = "".join(["Instrument(platform='", self.platform, "', name='",
-                           self.name, "', sat_id='", self.sat_id,
+                           self.name, "', inst_id='", self.inst_id,
                            "', clean_level='", self.clean_level,
                            "', pad={:}, orbit_info=".format(self.pad),
                            "{:}, **{:})".format(self.orbit_info, self.kwargs)])
@@ -1087,7 +1087,7 @@ class Instrument(object):
         output_str += "Platform: '{:s}'\n".format(self.platform)
         output_str += "Name: '{:s}'\n".format(self.name)
         output_str += "Tag: '{:s}'\n".format(self.tag)
-        output_str += "Satellite id: '{:s}'\n".format(self.sat_id)
+        output_str += "Instrument id: '{:s}'\n".format(self.inst_id)
 
         # Print out the data processing information
         output_str += '\nData Processing\n'
@@ -1233,7 +1233,8 @@ class Instrument(object):
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             try:
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
-                                             sat_id=self.sat_id, **self.kwargs)
+                                             inst_id=self.inst_id,
+                                             **self.kwargs)
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
                 mdata.accept_default_labels(self)
@@ -1266,10 +1267,10 @@ class Instrument(object):
                                max_label=self.max_label,
                                fill_label=self.fill_label)
 
-        output_str = '{platform} {name} {tag} {sat_id}'
+        output_str = '{platform} {name} {tag} {inst_id}'
         output_str = output_str.format(platform=self.platform,
                                        name=self.name, tag=self.tag,
-                                       sat_id=self.sat_id)
+                                       inst_id=self.inst_id)
         # check that data and metadata are the data types we expect
         if not isinstance(data, self._data_library):
             raise TypeError(' '.join(('Data returned by instrument load',
@@ -1646,7 +1647,7 @@ class Instrument(object):
 
         """
 
-        return self._list_remote_rtn(self.tag, self.sat_id,
+        return self._list_remote_rtn(self.tag, self.inst_id,
                                      start=start, stop=stop)
 
     def remote_date_range(self, start=None, stop=None):
@@ -1791,13 +1792,13 @@ class Instrument(object):
         if user is None:
             self._download_rtn(date_array,
                                tag=self.tag,
-                               sat_id=self.sat_id,
+                               inst_id=self.inst_id,
                                data_path=self.files.data_path,
                                **kwargs)
         else:
             self._download_rtn(date_array,
                                tag=self.tag,
-                               sat_id=self.sat_id,
+                               inst_id=self.inst_id,
                                data_path=self.files.data_path,
                                user=user,
                                password=password, **kwargs)
@@ -2890,7 +2891,7 @@ def _get_supported_keywords(load_func):
 
     pop_list = []
     # account for keywords that exist for every load function
-    pre_kws = ['fnames', 'sat_id', 'tag']
+    pre_kws = ['fnames', 'inst_id', 'tag']
     # insert 'missing' default for 'fnames'
     defaults.insert(0, None)
     # account for keywords already set since input was a partial function

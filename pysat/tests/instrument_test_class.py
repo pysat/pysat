@@ -36,9 +36,9 @@ def initialize_test_inst_and_date(inst_dict):
 
     test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                  tag=inst_dict['tag'],
-                                 sat_id=inst_dict['sat_id'])
+                                 inst_id=inst_dict['inst_id'])
     test_dates = inst_dict['inst_module']._test_dates
-    date = test_dates[inst_dict['sat_id']][inst_dict['tag']]
+    date = test_dates[inst_dict['inst_id']][inst_dict['tag']]
     return test_inst, date
 
 
@@ -47,12 +47,12 @@ class InstTestClass():
 
     Note: Not diretly run by pytest, but inherited through test_instruments.py
     """
-    module_attrs = ['platform', 'name', 'tags', 'sat_ids',
+    module_attrs = ['platform', 'name', 'tags', 'inst_ids',
                     'load', 'list_files', 'download']
-    inst_attrs = ['tag', 'sat_id', 'acknowledgements', 'references']
+    inst_attrs = ['tag', 'inst_id', 'acknowledgements', 'references']
     inst_callable = ['load', 'list_files', 'download', 'clean', 'default']
     attr_types = {'platform': str, 'name': str, 'tags': dict,
-                  'sat_ids': dict, 'tag': str, 'sat_id': str,
+                  'inst_ids': dict, 'tag': str, 'inst_id': str,
                   'acknowledgements': str, 'references': str}
 
     @pytest.mark.all_inst
@@ -70,16 +70,16 @@ class InstTestClass():
                                   self.attr_types[mattr])
 
         # Check for presence of required instrument attributes
-        for sat_id in module.sat_ids.keys():
-            for tag in module.sat_ids[sat_id]:
+        for inst_id in module.inst_ids.keys():
+            for tag in module.inst_ids[inst_id]:
                 inst = pysat.Instrument(inst_module=module, tag=tag,
-                                        sat_id=sat_id)
+                                        inst_id=inst_id)
 
                 # Test to see that the class parameters were passed in
                 assert isinstance(inst, pysat.Instrument)
                 assert inst.platform == module.platform
                 assert inst.name == module.name
-                assert inst.sat_id == sat_id
+                assert inst.inst_id == inst_id
                 assert inst.tag == tag
 
                 # Test the required class attributes
@@ -111,9 +111,9 @@ class InstTestClass():
         module = import_module(''.join(('.', inst_name)),
                                package=self.inst_loc.__name__)
         info = module._test_dates
-        for sat_id in info.keys():
-            for tag in info[sat_id].keys():
-                assert isinstance(info[sat_id][tag], dt.datetime)
+        for inst_id in info.keys():
+            for tag in info[inst_id].keys():
+                assert isinstance(info[inst_id][tag], dt.datetime)
 
     @pytest.mark.first
     @pytest.mark.download

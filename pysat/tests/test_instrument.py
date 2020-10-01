@@ -27,7 +27,7 @@ class TestBasics():
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         sat_id='10',
+                                         inst_id='10',
                                          clean_level='clean',
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 1)
@@ -56,7 +56,7 @@ class TestBasics():
         """Checks for error when instantiating with bad load_rtn keywords"""
         with pytest.raises(ValueError):
             pysat.Instrument(platform=self.testInst.platform,
-                             name=self.testInst.name, sat_id='10',
+                             name=self.testInst.name, inst_id='10',
                              clean_level='clean',
                              unsupported_keyword_yeah=True)
 
@@ -71,7 +71,7 @@ class TestBasics():
     def test_basic_instrument_load_by_file_and_multifile(self):
         self.out = pysat.Instrument(platform=self.testInst.platform,
                                     name=self.testInst.name,
-                                    sat_id='10',
+                                    inst_id='10',
                                     clean_level='clean',
                                     update_files=True,
                                     multi_file_day=True)
@@ -390,7 +390,7 @@ class TestBasics():
                       'kind': 'local time',
                       'period': np.timedelta64(97, 'm')}
         testInst = pysat.Instrument(platform='pysat', name='testing',
-                                    sat_id='10',
+                                    inst_id='10',
                                     clean_level='clean',
                                     update_files=True,
                                     orbit_info=orbit_info)
@@ -1097,7 +1097,7 @@ class TestBasicsXarray(TestBasics):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
-                                         sat_id='10',
+                                         inst_id='10',
                                          clean_level='clean',
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 1)
@@ -1119,7 +1119,7 @@ class TestBasics2D(TestBasics):
         reload(pysat.instruments.pysat_testing2d)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
-                                         sat_id='50',
+                                         inst_id='50',
                                          clean_level='clean',
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 1)
@@ -1142,7 +1142,7 @@ class TestBasicsShiftedFileDates(TestBasics):
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         sat_id='10',
+                                         inst_id='10',
                                          clean_level='clean',
                                          update_files=True,
                                          mangle_file_dates=True,
@@ -1166,7 +1166,7 @@ class TestMalformedIndex():
         reload(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         sat_id='10',
+                                         inst_id='10',
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
@@ -1199,7 +1199,7 @@ class TestMalformedIndexXarray(TestMalformedIndex):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
-                                         sat_id='10',
+                                         inst_id='10',
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
