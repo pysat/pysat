@@ -2117,7 +2117,8 @@ class Instrument(object):
                     iter_idx = self.files.get_index(_temp[-1])
                     # don't let loaded data go past stop bound
                     if iter_idx + self._iter_width - 1 > stop_idx:
-                        i = -int(np.ceil(self._iter_width / self._iter_step))
+                        i = np.ceil((self._iter_width - 1) / self._iter_step)
+                        i = -int(i)
                         self._iter_list.extend(_temp[:i])
                     else:
                         self._iter_list.extend(_temp)
