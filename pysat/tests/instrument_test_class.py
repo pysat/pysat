@@ -55,6 +55,20 @@ class InstTestClass():
                   'inst_ids': dict, 'tag': str, 'inst_id': str,
                   'acknowledgements': str, 'references': str}
 
+    def assert_hasattr(obj, attr_name):
+        """ Nice assertion statement for `assert hasattr(obj, attr_name)`
+        """
+        estr = "Object {:} missing attribute {:}".format(obj.__repr__(),
+                                                         attr_name)
+        assert hasattr(obj, attr_name), estr
+
+    def assert_isinstance(obj, obj_type):
+        """ Nice assertion statement for `assert isinstance(obj, obj_type)`
+        """
+        estr = "Object {:} is type {:}, but should be type {:}".format(
+            obj.__repr__(), type(obj), obj_type)
+        assert isinstance(obj, obj_type), estr
+
     @pytest.mark.all_inst
     def test_modules_standard(self, inst_name):
         """Checks that modules are importable and have standard properties.
@@ -64,10 +78,10 @@ class InstTestClass():
                                package=self.inst_loc.__name__)
         # Check for presence of basic instrument module attributes
         for mattr in self.module_attrs:
-            assert hasattr(module, mattr)
+            self.assert_hasattr(module, mattr)
             if mattr in self.attr_types.keys():
-                assert isinstance(getattr(module, mattr),
-                                  self.attr_types[mattr])
+                self.assert_isinstance(getattr(module, mattr),
+                                       self.attr_types[mattr])
 
         # Check for presence of required instrument attributes
         for inst_id in module.inst_ids.keys():
@@ -76,7 +90,7 @@ class InstTestClass():
                                         inst_id=inst_id)
 
                 # Test to see that the class parameters were passed in
-                assert isinstance(inst, pysat.Instrument)
+                self.assert_isinstance(inst, pysat.Instrument)
                 assert inst.platform == module.platform
                 assert inst.name == module.name
                 assert inst.inst_id == inst_id
@@ -84,10 +98,9 @@ class InstTestClass():
 
                 # Test the required class attributes
                 for iattr in self.inst_attrs:
-                    assert hasattr(inst, iattr), \
-                        "Instrument missing {:}".format(iattr)
-                    assert isinstance(getattr(inst, iattr),
-                                      self.attr_types[iattr])
+                    self.assert_hasattr(inst, iattr)
+                    self.assert_isinstance(getattr(inst, iattr),
+                                           self.attr_types[iattr])
 
     @pytest.mark.all_inst
     def test_standard_function_presence(self, inst_name):
@@ -113,7 +126,7 @@ class InstTestClass():
         info = module._test_dates
         for inst_id in info.keys():
             for tag in info[inst_id].keys():
-                assert isinstance(info[inst_id][tag], dt.datetime)
+                self.assert_isinstance(info[inst_id][tag], dt.datetime)
 
     @pytest.mark.first
     @pytest.mark.download
