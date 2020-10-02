@@ -26,7 +26,7 @@ class TestBasics():
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_daily_samples=10,
+                                         num_samples=10,
                                          clean_level='clean',
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 1)
@@ -68,7 +68,7 @@ class TestBasics():
         """Checks for error when instantiating with bad load_rtn keywords"""
         with pytest.raises(ValueError):
             pysat.Instrument(platform=self.testInst.platform,
-                             name=self.testInst.name, num_daily_samples=10,
+                             name=self.testInst.name, num_samples=10,
                              clean_level='clean',
                              unsupported_keyword_yeah=True)
 
@@ -95,7 +95,7 @@ class TestBasics():
         """Ensure multi_file_day has to be False when loading by filename"""
         self.out = pysat.Instrument(platform=self.testInst.platform,
                                     name=self.testInst.name,
-                                    num_daily_samples=10,
+                                    num_samples=10,
                                     clean_level='clean',
                                     update_files=True,
                                     multi_file_day=True)
@@ -106,7 +106,7 @@ class TestBasics():
         """Ensure .load() only runs when multi_file_day is False"""
         self.out = pysat.Instrument(platform=self.testInst.platform,
                                     name=self.testInst.name,
-                                    num_daily_samples=10,
+                                    num_samples=10,
                                     clean_level='clean',
                                     update_files=True,
                                     multi_file_day=True)
@@ -501,7 +501,7 @@ class TestBasics():
                       'kind': 'local time',
                       'period': np.timedelta64(97, 'm')}
         testInst = pysat.Instrument(platform='pysat', name='testing',
-                                    num_daily_samples=10,
+                                    num_samples=10,
                                     clean_level='clean',
                                     update_files=True,
                                     orbit_info=orbit_info)
@@ -954,7 +954,7 @@ class TestBasics():
     def test_iterate_bounds_with_frequency(self):
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 16)
-        self.testInst.bounds = (start, stop, '2D', pds.DateOffset(days=2))
+        self.testInst.bounds = (start, stop, '2D')
         dates = []
         for inst in self.testInst:
             dates.append(inst.date)
@@ -968,24 +968,87 @@ class TestBasics():
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='10D').tolist())
 
-    def test_iterate_bounds_with_frequency_and_width(self):
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2009, 1, 16)
-        self.testInst.bounds = (start, stop, '2D', pds.DateOffset(days=2))
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 3), '2D',
+                                         pds.DateOffset(days=2)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 4), '2D',
+                                         pds.DateOffset(days=3)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 5), '3D',
+                                         pds.DateOffset(days=1)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 17), '5D',
+                                         pds.DateOffset(days=1))
+                                        ])
+    def test_iterate_bounds_with_frequency_and_width(self, values):
+        """Iterate via date with mixed step/width, excludes stop date"""
+        start = values[0]
+        stop = values[1]
+        step = values[2]
+        width = values[3]
+        self.testInst.bounds = (start, stop, step, width)
         dates = []
         time_range = []
         for inst in self.testInst:
             dates.append(inst.date)
             time_range.append((inst.index[0], inst.index[-1]))
-        out = pds.date_range(start, stop, freq='2D').tolist()
+        out = pds.date_range(start, stop - width + pds.DateOffset(days=1),
+                             freq=step).tolist()
         assert np.all(dates == out)
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
             if i < len(time_range) - 1:
-                assert trange[1] <= out[i + 1]
-                assert trange[1] >= out[i]
-                assert trange[1] >= out[i] + pds.DateOffset(days=1)
+                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            else:
+                assert trange[1] < stop
+
+        return
+
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 4), '2D',
+                                         pds.DateOffset(days=2)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 4), '3D',
+                                         pds.DateOffset(days=1)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 4), '1D',
+                                         pds.DateOffset(days=4)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 5), '4D',
+                                         pds.DateOffset(days=1)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 5), '2D',
+                                         pds.DateOffset(days=3)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 5), '3D',
+                                         pds.DateOffset(days=2))])
+    def test_iterate_bounds_with_frequency_and_width_incl(self, values):
+        """Iterate via date with mixed step/width, includes stop date"""
+        start = values[0]
+        stop = values[1]
+        step = values[2]
+        width = values[3]
+        self.testInst.bounds = (start, stop, step, width)
+        dates = []
+        time_range = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+            time_range.append((inst.index[0], inst.index[-1]))
+        ustop = stop - width + pds.DateOffset(days=1)
+        out = pds.date_range(start, ustop, freq=step).tolist()
+        assert np.all(dates == out)
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range) - 1:
+                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            else:
+                assert trange[1] < stop + pds.DateOffset(days=1)
+                assert trange[1] > stop
+
+        return
 
     def test_set_bounds_too_few(self):
         start = dt.datetime(2009, 1, 1)
@@ -1120,6 +1183,120 @@ class TestBasics():
         out = pds.date_range(start[0], stop[0]).tolist()
         out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(dates == out)
+
+    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 3),
+                                          dt.datetime(2009, 1, 12)),
+                                         '2D',
+                                         pds.DateOffset(days=2)),
+                                        ((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 6),
+                                          dt.datetime(2009, 1, 15)),
+                                         '3D',
+                                         pds.DateOffset(days=1)),
+                                        ((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 7),
+                                          dt.datetime(2009, 1, 16)),
+                                         '2D',
+                                         pds.DateOffset(days=4))
+                                        ])
+    def test_iterate_over_bounds_set_by_date_season_step_width(self, values):
+        """Iterate over season, step/width > 1, excludes stop bounds"""
+        starts = values[0]
+        stops = values[1]
+        step = values[2]
+        width = values[3]
+        self.testInst.bounds = (starts, stops, step, width)
+
+        # iterate over bounds via Instrument and collect dates
+        dates = []
+        time_range = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+            time_range.append((inst.index[0], inst.index[-1]))
+
+        # get dates that should be there, manually
+        out = []
+        for start, stop in zip(starts, stops):
+            tdate = stop - width + pds.DateOffset(days=1)
+            out.extend(pds.date_range(start, tdate, freq=step).tolist())
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            # determine which range we are in
+            b_range = 0
+            while out[i] > stops[b_range]:
+                b_range += 1
+            # check loaded range is correct
+            if i < len(time_range) - 1:
+                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            else:
+                assert trange[1] < stops[b_range]
+
+        return
+
+    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 4),
+                                          dt.datetime(2009, 1, 13)),
+                                         '2D',
+                                         pds.DateOffset(days=2)),
+                                        ((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 7),
+                                          dt.datetime(2009, 1, 16)),
+                                         '3D',
+                                         pds.DateOffset(days=1)),
+                                        ((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 6),
+                                          dt.datetime(2009, 1, 15)),
+                                         '2D',
+                                         pds.DateOffset(days=4))
+                                        ])
+    def test_iterate_bounds_set_by_date_season_step_width_incl(self, values):
+        """Iterate over season, step/width > 1, includes stop bounds"""
+        starts = values[0]
+        stops = values[1]
+        step = values[2]
+        width = values[3]
+        self.testInst.bounds = (starts, stops, step, width)
+
+        # iterate over bounds via Instrument and collect dates
+        dates = []
+        time_range = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+            time_range.append((inst.index[0], inst.index[-1]))
+
+        # get dates that should be there, manually
+        out = []
+        for start, stop in zip(starts, stops):
+            tdate = stop - width + pds.DateOffset(days=1)
+            out.extend(pds.date_range(start, tdate, freq=step).tolist())
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            # determine which range we are in
+            b_range = 0
+            while out[i] > stops[b_range]:
+                b_range += 1
+            # check on data range
+            if i < len(time_range) - 1:
+                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            else:
+                # what to do about checking individual stops...
+                assert trange[1] < stops[b_range] + pds.DateOffset(days=1)
+                assert trange[1] > stops[b_range]
+
+        return
 
     def test_iterate_over_bounds_set_by_date_season_extra_time(self):
         start = [dt.datetime(2009, 1, 1, 1, 10),
@@ -1346,6 +1523,7 @@ class TestBasics():
                 assert trange[1] >= out[i] + days_offset
             else:
                 assert trange[1] < stop_date + pds.DateOffset(days=1)
+                assert trange[1] > stop_date
                 
         return
 
@@ -1464,6 +1642,7 @@ class TestBasics():
                 assert trange[1] >= out[i] + days_offset
             else:
                 assert trange[1] < stop_date + pds.DateOffset(days=1)
+                assert trange[1] > stop_date
 
         return
 
@@ -1549,7 +1728,7 @@ class TestBasics():
                                         ])
     def test_prev_fname_with_frequency_and_width_incl(self, values):
         """Test using prev() via fname with non-default frequency and width,
-        won't hit bounds stop date"""
+        includes bounds stop date"""
 
         start = values[0]
         start_date = values[1]
@@ -1579,6 +1758,7 @@ class TestBasics():
                 assert trange[1] >= out[i] + days_offset
             else:
                 assert trange[1] < stop_date + pds.DateOffset(days=1)
+                assert trange[1] > stop_date
 
         return
 
@@ -1612,7 +1792,7 @@ class TestBasicsXarray(TestBasics):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
-                                         num_daily_samples=10,
+                                         num_samples=10,
                                          clean_level='clean',
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 1)
@@ -1634,7 +1814,7 @@ class TestBasics2D(TestBasics):
         re_load(pysat.instruments.pysat_testing2d)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing2d',
-                                         num_daily_samples=50,
+                                         num_samples=50,
                                          clean_level='clean',
                                          update_files=True)
         self.ref_time = dt.datetime(2009, 1, 1)
@@ -1657,7 +1837,7 @@ class TestBasicsShiftedFileDates(TestBasics):
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_daily_samples=10,
+                                         num_samples=10,
                                          clean_level='clean',
                                          update_files=True,
                                          mangle_file_dates=True,
@@ -1681,7 +1861,7 @@ class TestMalformedIndex():
         re_load(pysat.instruments.pysat_testing)
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat', name='testing',
-                                         num_daily_samples=10,
+                                         num_samples=10,
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
@@ -1714,7 +1894,7 @@ class TestMalformedIndexXarray(TestMalformedIndex):
         """Runs before every method to create a clean testing setup."""
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing_xarray',
-                                         num_daily_samples=10,
+                                         num_samples=10,
                                          clean_level='clean',
                                          malformed_index=True,
                                          update_files=True,
