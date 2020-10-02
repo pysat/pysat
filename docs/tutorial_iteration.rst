@@ -28,8 +28,10 @@ iterate over all available data. To control the range, set the instrument bounds
 
    # multi-season season
    vefi.bounds = ([start1, start2], [stop1, stop2])
+
    # continuous season
    vefi.bounds = (start, stop)
+
    # iterate over custom season
    for vefi in vefi:
        print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
@@ -47,11 +49,10 @@ The output is,
    Returning cnofs vefi dc_b data for 05/12/10
    Maximum meridional magnetic perturbation  26.583
 
-So far, the iteration support has only saved a single line of code, the
-.load line. However, this line in the examples above is tied to loading by date.
-What if we wanted to load by file instead? This would require changing the code.
-However, with the abstraction provided by the Instrument iteration, that is no
-longer the case.
+So far, the iteration support has only saved a single line of code.
+What if we wanted to load by file instead? Normally this would require 
+changing the code. However, with the abstraction provided by the Instrument 
+iteration, that is no longer the case.
 
 .. code:: python
 

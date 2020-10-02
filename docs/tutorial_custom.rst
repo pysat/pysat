@@ -2,7 +2,7 @@
 Custom Functions
 ----------------
 
-Science analysis is built upon custom data processing. To simplify this task and
+Science analysis is built upon custom data processing. To simplify this task, and
 enable instrument independent analysis, custom functions may be attached to the
 Instrument object. Each function is run automatically when new data is loaded
 before it is made available in ``inst.data``.
@@ -11,7 +11,7 @@ This feature enables a user to hand an Instrument object to an independent
 routine and ensure any desired customizations required are performed without
 any additional user intervention. This feature enables for the transparent
 modification of a dataset in between its state at rest on disk and when the data
-becomes available for use at ``inst.data``.
+becomes available for use in  ``inst.data``.
 
 .. warning:: Custom arguments and keywords are supported for these methods.
    However, these arguments and keywords are only evaluated initially when the
@@ -19,7 +19,7 @@ becomes available for use at ``inst.data``.
    static or capable of updating themselves from within the custom method itself.
 
 
-**Modify Functions**
+**The Modify Functions**
 
 The instrument object is passed to function in place, there
 is no Instrument copy made in memory. The method is expected to modify the
@@ -46,12 +46,13 @@ any information via the method itself.
            inst['double_mlt'= -2.0 * inst['mlt']
        return
 
-**Add Functions**
+**The Add Functions**
 
 A copy of the Instrument is passed to the method thus any changes made
 directly to the object are lost. The data to be added must be returned via
 'return' in the method and is added to the true Instrument object by pysat.
-Multiple return types are supported.
+
+Multiple return types are supported:
 
 ===============     ===================================
 **Type** 	        **Notes**
@@ -96,7 +97,7 @@ only when using the DataFrame.
 **Attaching Custom Function**
 
 Custom methods must be attached to an Instrument object for pysat
-to automatically apply the method upon ever load.
+to automatically apply the method upon every load.
 
 .. code:: python
 

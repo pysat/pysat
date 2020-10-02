@@ -23,6 +23,7 @@ import shlex
 #sys.path.insert(0, os.path.abspath('.'))
 
 sys.path.insert(0,os.path.abspath('..'))
+sys.path.insert(0,os.path.abspath('/home/signal9/anaconda3/envs/pysatEnv/lib/python3.8/site-packages/pandas'))
 import pysat
 
 

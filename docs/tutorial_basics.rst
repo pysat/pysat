@@ -82,7 +82,7 @@ To create a pysat.Instrument object, select a ``platform``, instrument ``name``,
 and potentially a ``tag`` and ``sat_id``, consistent with
 the desired data to be analyzed, from one the supported instruments.
 
-To work with plasma data from the
+For example if you wanted to work with plasma data from the
 Ion Velocity Meter (IVM) onboard the Defense Meteorological
 Satellite Program (DMSP) constellation, use:
 
@@ -149,30 +149,34 @@ Data is loaded into a pysat.Instrument object, in this case dmsp, using the
 
    # load by year, day of year
    dmsp.load(2001, 1)
-   # load by datetime
+
+   # load by date
    dmsp.load(date=datetime.datetime(2001, 1, 1))
-   # load by filename
+
+   # load by filename from string
    dmsp.load(fname='dms_ut_20010101_12.002.hdf5')
-   # load by filename
+
+   # load by filename in tag
    dmsp.load(fname=dmsp.files[0])
-   # load by filename
+
+   # load by filename in tag and specify date
    dmsp.load(fname=dmsp.files[datetime.datetime(2001, 1, 1)])
 
 When the pysat load routine runs it stores the instrument data into dmsp.data.
-pysat supports the use of two different data structures,
-either a pandas DataFrame_, a highly capable structure with
+pysat supports the use of two different data structures.
+You can either use a pandas DataFrame_, a highly capable structure with
 labeled rows and columns, or an xarray DataSet_ for data sets with
 more dimensions. Either way, the full data structure is available at::
 
    # all data
    dmsp.data
 
-providing full access to the underlying data library functionality. The
+This provides full access to the underlying data library functionality. The
 type of data structure is flagged at the instrument level with the attribute
-``inst.pandas_format``, True if a DataFrame is returned by the corresponding
-instrument module load method.
+``inst.pandas_format``. This is set to True if a DataFrame is returned by the
+corresponding instrument module load method.
 
-In addition, convenience access to the data is also available at
+In addition, convenient access to the data is also available at
 the instrument level.
 
 .. _DataFrame: http://pandas.pydata.org/pandas-docs/stable/dsintro.html#dataframe
@@ -181,14 +185,14 @@ the instrument level.
 
 .. code:: python
 
-    # Convenience access
+    # Convenient access
     dmsp['ti']
     # slicing
     dmsp[0:10, 'ti']
     # slicing by date time
     dmsp[start:stop, 'ti']
 
-    # Convenience assignment
+    # Convenient assignment
     dmsp['ti'] = new_array
     # exploit broadcasting, single value assigned to all times
     dmsp['ti'] = single_value
@@ -197,10 +201,11 @@ the instrument level.
     # slicing by date time
     dmsp[start:stop, 'ti'] = sub_array
 
-See :any:`Instrument` for more.
+See the :any:`Instrument` section for more information.
 
-To load data over a season, pysat provides a convenience function that returns
-an array of dates over a season. The season need not be continuous.
+To load data over a season pysat provides a function, 
+``pysat.utils.time.create_date_range``,  that returns an array of dates
+over a season. The season need not be continuous.
 
 .. code:: python
 
@@ -234,13 +239,13 @@ an array of dates over a season. The season need not be continuous.
     plt.ylabel(dmsp.meta['ti', dmsp.desc_label] + ' (' +
                dmsp.meta['ti', dmsp.units_label] + ')')
 
-Note, the numpy.where may be removed using the convenience access to the
+Note, the np.where may be removed using the convenient access to the
 attached pandas data object.
 
 .. code:: python
 
    idx, = np.where((dmsp['mlat'] < 5) & (dmsp['mlat'] > -5))
-   dmsp.data = dmsp[idx] = dmsp.data.iloc[idx
+   dmsp.data = dmsp[idx] = dmsp.data.iloc[idx]
 
 is equivalent to
 
@@ -308,16 +313,22 @@ data files, like those produced by the Ionospheric Connections Explorer
 
    # all metadata
    dmsp.meta.data
+
    # variable metadata
    dmsp.meta['ti']
+
    # units using standard labels
    dmsp.meta['ti'].units
+
    # units using general labels
    dmsp.meta['ti', dmsp.units_label]
+
    # update units for ti
    dmsp.meta['ti'] = {'units':'new_units'}
+
    # update display name, long_name
    dmsp.meta['ti'] = {'long_name':'Fancy Name'}
+
    # add new meta data
    dmsp.meta['new'] = {dmsp.units_label:'fake',
                        dmsp.name_label:'Display'}
@@ -336,12 +347,14 @@ Data may be assigned to the instrument, with or without metadata.
 
    # assign data alone
    dmsp['new_data'] = new_data
+
    # assign data with metadata
    # the data must be keyed under 'data'
    # all other dictionary inputs are presumed to be metadata
    dmsp['new_data'] = {'data': new_data,
                        dmsp.units_label: new_unit,
                        'new_meta_data': new_value}
+
    # alter assigned metadata
    dmsp.meta['new_data', 'new_meta_data'] = even_newer_value
 

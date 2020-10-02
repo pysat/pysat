@@ -163,10 +163,10 @@ tags, these could be defined under the optional ``init`` function.
 
   platform = 'your_platform_name'
   name = 'name_of_instrument'
-  tags = {'tag1': '', 'tag2': ''}
+  tags = {'tag1': '',
+          'tag2': ''}
   sat_ids = {'': ['']}
-  acknowledgements = ('Ancillary data provided under Radchaai '
-                     +'grant PS31612.E3353A83')
+  acknowledgements = 'Ancillary data provided under Radchaai grant PS31612.E3353A83'
 
   def init(self):
       if self.tag == 'tag1':
@@ -190,7 +190,7 @@ as needed in response to user inputs.
 **list_files**
 
 pysat maintains a list of files to enable data management functionality.
-To get this information pysat expects a module method platform_name.list_files
+To get this information, pysat expects a module method platform_name.list_files
 to return a pandas Series of filenames indexed by time with a method
 signature of:
 
@@ -227,7 +227,7 @@ do not need to do anything to support the directory_format keyword.
 **Pre-Built list_files Methods and Support**
 
 Finding local files is generally similar across data sets thus pysat
-includes a variety of methods to make supporting this functionality easier.
+includes a variety of methods to make support this functionality easier.
 The simplest way to construct a valid list_files method is to use one of these
 included pysat methods.
 
@@ -272,8 +272,8 @@ See pysat.utils.time.create_datetime_index for creating a datetime index for an
 array of irregularly sampled times.
 
 pysat will invoke the list_files method the first time a particular instrument
-is instantiated. After the first instantiation, by default, pysat will not 
-search for instrument files as some missions can produce a large number of
+is instantiated. After the first instantiation, by default pysat will not search
+for instrument files as some missions can produce a large number of
 files which may take time to identify. The list of files associated
 with an Instrument may be updated by adding `update_files=True`.
 
@@ -298,7 +298,7 @@ The load module method signature should appear as:
        return data, meta
 
 - fnames contains a list of filenames with the complete data path that
-  pysat expects the routine to load data for. With most data sets
+  pysat expects the routine to load data for. For most data sets
   the method should return the exact data that is within the file.
   However, pysat is also currently optimized for working with
   data by day. This can present some issues for data sets that are stored
@@ -310,9 +310,8 @@ The load module method signature should appear as:
 - `data` is a pandas DataFrame, column names are the data labels, rows are
   indexed by datetime objects.
 - For multi-dimensional data, an xarray can be
-  used instead. When returning xarray data, a variable at the top-level of the
-  instrument module must be set:
-
+  used instead. When returning xarray data, a variable at the instrument module
+  top-level must be set,
 .. code:: python
 
    pandas_format = False
@@ -321,19 +320,18 @@ The load module method signature should appear as:
   xarray objects this index needs to be named 'Epoch' or 'time'. In a future
   version the supported names for the time index may be reduced. 'Epoch'
   should be used for pandas though wider compatibility is expected.
-- `pysat.utils.create_datetime_index` provides quick generation of an
-  appropriate datetime index for irregularly sampled data sets with gaps
+- `pysat.utils.create_datetime_index` provides for quick generation of an
+  appropriate datetime index for irregularly sampled data set with gaps
 
 - A pysat meta object may be obtained from `pysat.Meta()`. The Meta object
   uses a pandas DataFrame indexed by variable name with columns for
   metadata parameters associated with that variable, including items like
-  'units' and 'long_name'. A variety of parameters are included by default and
-  additional arbitrary columns are allowed. See `pysat.Meta` for more 
-  information on creating the initial metadata.
+  'units' and 'long_name'. A variety of parameters are included by default.
+  Additional arbitrary columns allowed. See `pysat.Meta` for more information on
+  creating the initial metadata.
 - Note that users may opt for a different
   naming scheme for metadata parameters thus the most general code for working
-  with metadata uses the attached labels:
-
+  with metadata uses the attached labels,
 .. code:: python
 
    # update units to meters, 'm' for variable
@@ -348,7 +346,7 @@ The load module method signature should appear as:
 **download**
 
 Download support significantly lowers the hassle in dealing with any dataset.
-To fetch data from the internet the download method should have the signature
+Fetch data from the internet.
 
 .. code:: python
 
@@ -360,16 +358,17 @@ To fetch data from the internet the download method should have the signature
 * user, string for username
 * password, string for password
 
-The routine should download the data and write it to the disk at the data_path.
+Routine should download data and write it to disk.
+
 
 Optional Routines and Support
 -----------------------------
 
 **Custom Keywords in load Method**
 
-If provided, pysat supports the definition and use of keywords for an 
-instrument module so that users may trigger optional features. All custom 
-keywords for an instrument module must be defined in the `load` method.
+pysat supports the definition and use of keywords for an instrument module
+so that users may trigger optional features, if provided. All custom keywords
+for an instrument module must be defined in the `load` method.
 
 .. code:: python
 
@@ -404,7 +403,7 @@ If present, the instrument init method runs once at instrument instantiation.
 inst is a pysat.Instrument() instance. init should modify inst
 in-place as needed; equivalent to a 'modify' custom routine.
 
-Keywords are not supported within the init module method signature, though
+keywords are not supported within the init module method signature, though
 custom keyword support for instruments is available via inst.kwargs.
 
 **default**
@@ -465,11 +464,10 @@ All modules defined in the __init__.py for pysat/instruments are automatically
 tested when pysat code is tested. To support testing all of the required
 routines, additional information is required by pysat.
 
-Below is example code from dmsp_ivm.py. The attributes are set at the top 
-level simply by defining variable names with the proper info. The various 
-satellites within DMSP, F11, F12, F13 are separated out using the sat_id 
-parameter. 'utd' is used as a tag to delineate that the data contains the 
-UTD developed quality flags.
+Example code from dmsp_ivm.py. The attributes are set at the top level simply
+by defining variable names with the proper info. The various satellites within
+DMSP, F11, F12, F13 are separated out using the sat_id parameter. 'utd' is used
+as a tag to delineate that the data contains the UTD developed quality flags.
 
 .. code:: python
 
@@ -491,17 +489,17 @@ UTD developed quality flags.
         # code normally follows, example terminates here
 
 The rationale behind the variable names is explained above under Naming
-Conventions.  What is important here are the `_test_dates`. Each of these points
+Conventions.  What is important here are the _test_dates.  Each of these points
 to a specific date for which the unit tests will attempt to download and load
 data as part of end-to-end testing.  Make sure that the data exists for the
 given date. The tags without test dates will not be tested. The leading
-underscore in `_test_dates` ensures that this information is not added to the
+underscore in _test_dates ensures that this information is not added to the
 instrument's meta attributes, so it will not be present in IO operations.
 
 The standardized pysat tests are available in pysat.tests.instrument_test_class.
 The test collection test_instruments.py imports this class, collects a list of
 all available instruments (including potential tag / sat_id combinations),
-and runs the tests using pytestmark.  By default, pysat assumes that your
+and run the tests using pytestmark.  By default, pysat assumes that your
 instrument has a fully functional download  routine, and will run an end-to-end
 test.  If this is not the case, see the next section.
 
@@ -512,8 +510,8 @@ Special Test Configurations
 Some instruments simply don't have download routines available.  It could be
 that data is not yet publicly available, or it may be a model run that is
 locally generated.  To let the test routines know this is the case, the
-`_test_download` flag is used.  This flag uses the same dictionary
-structure as `_test_dates`.
+:python:`_test_download` flag is used.  This flag uses the same dictionary
+structure as :python:`_test_dates`.
 
 For instance, say we have an instrument team that wants to use pysat to
 manage their data products.  Level 1 data is locally generated by the team,
@@ -537,8 +535,8 @@ This tells the test routines to skip the download / load tests for Level 1 data.
 Instead, the download function for this flag will be tested to see if it has an
 appropriate user warning that downloads are not available.
 
-Note that pysat assumes that this flag is True if no variable is present.  
-Thus specifying only `_test_download = {'': {'Level_1': False}}` has the 
+Note that pysat assumes that this flag is True if no variable is present.  Thus
+specifying only :python:`_test_download = {'': {'Level_1': False}}` has the
 same effect, and Level 2 tests will still be run.
 
 **FTP Access**
@@ -546,9 +544,9 @@ same effect, and Level 2 tests will still be run.
 Another thing to note about testing is that the Travis CI environment used to
 automate the tests is not compatible with FTP downloads.  For this reason,
 HTTPS access is preferred whenever possible.  However, if this is not the case,
-the `_test_download_travis` flag can be used.  This has a similar function, 
-except that it skips the download tests if on Travis CI, but will run those 
-tests if run locally.
+the :python:`_test_download_travis` flag can be used.  This has a similar
+function, except that it skips the download tests if on Travis CI, but will
+run those tests if run locally.
 
 .. code:: python
 
@@ -569,8 +567,8 @@ tag that is False.  The other is True by default.
 Another potential issue is that some instruments have download routines,
 but should not undergo automated download tests because it would require
 the  user to save a password in a potentially public location.  The
-`_password_req` flag is used to skip both the download tests and the 
-download warning message tests, since a functional download routine is 
+:python:`_password_req` flag is used to skip both the download tests and
+the download warning message tests, since a functional download routine is
 present.
 
 .. code:: python
@@ -622,7 +620,7 @@ General
 A general instrument template is included with pysat,
 ``pysat.instruments.templates.template_instrument``,
 that has the full set
-of required and optional methods and docstrings. That may be used as a
+of required and optional methods, and docstrings, that may be used as a
 starting point for adding a new instrument to pysat.
 
 Note that there are general supporting methods for adding an Instrument.

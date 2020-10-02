@@ -23,7 +23,7 @@ could look something like:
   |   |-- instruments
   |   |   |-- __init__.py
   |   |   |-- lib_inst1.py
-  |   |   |-- lib_inst2.py
+  |   |   `-- lib_inst2.py
   |   |-- tests
   |   |   |-- __init__.py
   |   |   `-- test_instruments.py
@@ -44,10 +44,11 @@ and construct a list of instruments to aid in the testing.
     __all__ = ['lib_inst1', 'lib_inst2']
 
 The tests folder contains an empty __init__ file to be compliant with ``pytest``
-and the test_instruments script.  Pysat includes a standard suite of instrument
-tests to run on instruments.  These are imported from the ``instrument_test_class``
-in the main pysat test library.  The ``test_instruments.py`` file can be copied
-directly into the library, updating the instrument library name as indicated.
+and the test_instruments script.  pysat includes a standard suite of instrument
+tests to run on instruments.  These are imported from the 
+``instrument_test_class`` in the main pysat test library.  The 
+``test_instruments.py`` file can be copied directly into the library, updating 
+the instrument library name as indicated.
 
 The ``setup.py`` file should include pysat as a dependency, as well as any
 other packages required by the instruments.
@@ -65,7 +66,7 @@ The structure then could look like:
   |   |-- instruments
   |   |   |-- __init__.py
   |   |   |-- lib_inst1.py
-  |   |   |-- lib_inst2.py
+  |   |   `-- lib_inst2.py
   |   |-- tests
   |   |   |-- __init__.py
   |   |   `-- test_instruments.py
@@ -149,7 +150,7 @@ Testing custom analysis routines
 --------------------------------
 
 What if you are developing analysis routines or instruments with special
-functions?  Pysat includes a series of test instrument objects that can
+functions?  pysat includes a series of test instrument objects that can
 be imported by other packages to test those functions.  For instance,
 `pysatModels <https://github.com/pysat/pysatModels>`_ contains a series of
 routines to collect similar measurements between instruments and models.
@@ -173,7 +174,7 @@ or other profile isntruments.
 
 **pysat_testing2d_xarray:**
 A satellite-like object that returns all of the above plus an imager-like
-dataset, ie, remote data that is a function of x and y.
+dataset, i.e., remote data that is a function of x and y.
 
 **pysat_testmodel:**
 An xarray obejct that returns a 4D object as a function of latitude, longitude,

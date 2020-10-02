@@ -1,7 +1,7 @@
 Orbit Support
 =============
 
-Pysat has functionality to determine orbits on the fly from loaded data.
+pysat has functionality to determine orbits on the fly from loaded data.
 These orbits will span day breaks as needed (generally). To use any of
 these orbit features, information about
 the orbit needs to be provided at initialization. The 'index' is the name of
@@ -19,7 +19,7 @@ polar	       Uses sign changes to delineate orbits
 orbit          Uses any change in value to delineate orbits
 ===========   ================
 
-Changes in universal time are also used to delineate orbits. Pysat compares any
+Changes in universal time are also used to delineate orbits. pysat compares any
 gaps to the supplied orbital period, nominally assumed to be 97 minutes. As
 orbit periods aren't constant, a 100% success rate is not be guaranteed.
 
@@ -36,8 +36,8 @@ must load some data.
 
    ivm.load(date=start)
 
-Orbits may be selected directly from the attached ``ivm.orbit`` class. The data
-for the orbit is stored in ``ivm.data``.
+Orbits may be selected directly from the attached ``ivm.orbits`` class. 
+The data for the orbit is stored in ``ivm.data``.
 
 .. code:: ipython
 
@@ -72,7 +72,7 @@ pysat is checking here if the first orbit for 12/28/2012 actually started on
    2012-12-28 00:41:54.563000    23.999886
    Name: mlt, dtype: float32
 
-Let's go back an orbit.
+You can also go back an orbit.
 
 .. code:: ipython
 
@@ -129,7 +129,7 @@ can skip the iteration and just go for the last orbit of a day,
    2012-12-29 00:40:17.119000    23.997608
    Name: mlt, dtype: float32
 
-Pysat loads the next day of data to see if the last orbit on 12/28/12 extends
+pysat loads the next day of data to see if the last orbit on 12/28/12 extends
 into 12/29/12, which it does. Note that the last orbit of 12/28/12 is the same
 as the first orbit of 12/29/12. Thus, if we ask for the next orbit,
 

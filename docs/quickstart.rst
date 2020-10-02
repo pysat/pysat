@@ -6,7 +6,7 @@ Quick-Start
 
 ----
 
-Pysat will maintain organization of data from various platforms. Upon the first
+pysat will maintain organization of data from various platforms. Upon the first
 
 .. code:: python
 
@@ -26,8 +26,9 @@ To check the currently set data directory,
     print(pysat.data_dir)
 
 To check if pysat and required packages are working, instantiate one of the
-test instruments, and load a day of simulated data. Loading a day of data will
-ensure there is no problem with the underlying pandas installation.
+test instruments. The test instrument will simulate data when using it to
+load data. Loading a day of data will ensure there is no problem with the
+underlying pandas installation.
 
 .. code:: python
 

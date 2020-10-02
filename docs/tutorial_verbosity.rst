@@ -1,10 +1,10 @@
 Verbosity
 ---------
 
-Pysat uses Python's standard
+pysat uses Python's standard
 `logging tools <https://docs.python.org/3/library/logging.html>`_
-to control the verbosity of output. By default, only logger.warning messages
-are shown. For more detailed instrument output, you may change the
+to control the verbosity of output. By default only logger.warning messages
+are shown. For more detailed instrument output you may change the
 logging level.
 
 .. code:: python

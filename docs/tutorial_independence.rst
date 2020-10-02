@@ -3,11 +3,11 @@ Initial Instrument Independence
 
 **Adding Instrument Independence**
 
-pysat features enable the development of instrument independent methods, code
-that can work on many if not all pysat supported datasets. This section
-continues the evolution of the simple DMSP temperature averaging method
-presented earlier towards greater instrument independence as well as
-application to non-DMSP data sets.
+pysat features enable the development of instrument independent methods, 
+code that can work on potentially all pysat supported datasets. This section 
+continues the evolution of the DMSP temperature averaging method presented 
+earlier by moving towards greater instrument independence and application 
+to non-DMSP data sets.
 
 .. code:: python
 
@@ -40,8 +40,9 @@ application to non-DMSP data sets.
        for date in date_array:
 	       inst.load(date=date)
 	           if not inst.empty:
-                   # compute absolute mean using pandas functions and store
-                   mean_val[inst.date] = inst[data_label].abs().mean(skipna=True)
+                       # compute absolute mean using pandas functions and store
+                       mean_val[inst.date] = (inst[data_label].abs()
+                           .mean(skipna=True))
        return mean_val
 
    # instantiate pysat.Instrument object to get access to data
@@ -72,7 +73,7 @@ application to non-DMSP data sets.
 The pysat nano-kernel lets you modify any data set as needed so that you can
 get the daily mean you desire, without having to modify the daily_mean function.
 
-Check the instrument independence using a different instrument. Whatever
+You can check the instrument independence using a different instrument. Whatever
 instrument is supplied may be modified in arbitrary ways by the nano-kernel.
 
 .. note::
@@ -95,8 +96,8 @@ instrument is supplied may be modified in arbitrary ways by the nano-kernel.
    mean_max_dens.plot(title='Absolute Daily Mean of ' + long_name)
    plt.ylabel('Absolute Daily Mean (' + units + ')')
 
-``daily_mean`` now works for any instrument, as long as the data to be averaged is
-1D. This can be fixed.
+``daily_mean`` now works for any instrument, as long as the data to be 
+averaged is 1D. This can be fixed.
 
 
 **Partial Independence from Dimensionality**
@@ -125,7 +126,8 @@ more than 1D datasets.
                data = inst[data_label]
                if isinstance(data.iloc[0], pandas.DataFrame):
                    # 3D data, 2D data at every time
-                   data_panel = pandas.Panel.from_dict(dict([(i, data.iloc[i]) for i in xrange(len(data))]))
+                   data_panel = pandas.Panel.from_dict(
+                       dict([(i, data.iloc[i]) for i in xrange(len(data))]))
                    mean_val[inst.date] = data_panel.abs().mean(axis=0,skipna=True)
                elif isinstance(data.iloc[0], pandas.Series):
                    # 2D data, 1D data for each time
@@ -141,10 +143,10 @@ more than 1D datasets.
 This code works for 1D, 2D, and 3D datasets, regardless of instrument platform,
 with only some minor changes from the initial VEFI specific code.
 In-situ measurements, remote profiles, and remote images. It is true the nested
-if statements aren't the most elegant. Particularly the 3D case. However this
+if statements aren't the most elegant, particularly the 3D case. However this
 code puts the data into an appropriate structure for pandas to align each of
 the profiles/images by their respective indices before performing the average.
-Note that the line to obtain the arithmetic mean is the same in all cases,
+Note that the line to obtain the arithmetic mean is the same in all cases:
 .mean(axis=0, skipna=True). There is an opportunity here for pysat to clean up
 the little mess caused by dimensionality.
 
