@@ -43,7 +43,7 @@ def init(self):
     return
 
 
-def load(fnames, tag=None, sat_id=None, num_daily_samples=None):
+def load(fnames, tag=None, sat_id=None, num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -55,7 +55,7 @@ def load(fnames, tag=None, sat_id=None, num_daily_samples=None):
     sat_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    num_daily_samples : int
+    num_samples : int
         Number of samples per day
 
     Returns
@@ -67,16 +67,16 @@ def load(fnames, tag=None, sat_id=None, num_daily_samples=None):
 
     """
 
-    if num_daily_samples is None:
+    if num_samples is None:
         if sat_id != '':
             estr = ' '.join(('sat_id will no longer be supported',
                              'for setting the number of samples per day.'))
             warnings.warn(estr, DeprecationWarning)
-            num_daily_samples = int(sat_id)
+            num_samples = int(sat_id)
         else:
-            num_daily_samples = 96
+            num_samples = 96
     # create an artifical satellite data set
-    uts, index, dates = mm_test.generate_times(fnames, num_daily_samples,
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='900S')
 
     # Define range of simulated 3D model

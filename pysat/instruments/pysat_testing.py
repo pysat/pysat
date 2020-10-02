@@ -103,7 +103,7 @@ def default(self):
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
          malformed_index=False, mangle_file_dates=False,
-         num_daily_samples=None):
+         num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -136,7 +136,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.
-    num_daily_samples : int
+    num_samples : int
         Number of samples per day
 
     Returns
@@ -152,15 +152,15 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
 
-    if num_daily_samples is None:
+    if num_samples is None:
         if sat_id != '':
             estr = ' '.join(('sat_id will no longer be supported',
                              'for setting the number of samples per day.'))
             warnings.warn(estr, DeprecationWarning)
-            num_daily_samples = int(sat_id)
+            num_samples = int(sat_id)
         else:
-            num_daily_samples = 86400
-    uts, index, dates = mm_test.generate_times(fnames, num_daily_samples,
+            num_samples = 86400
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
 
     # Specify the date tag locally and determine the desired date range

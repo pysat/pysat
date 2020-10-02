@@ -67,7 +67,7 @@ def default(inst):
 
 def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
-         num_daily_samples=None):
+         num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -87,7 +87,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         root_date (default=False)
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
-    num_daily_samples : int
+    num_samples : int
         Number of samples per day
 
     Returns
@@ -102,15 +102,15 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    if num_daily_samples is None:
+    if num_samples is None:
         if sat_id != '':
             estr = ' '.join(('sat_id will no longer be supported',
                              'for setting the number of samples per day.'))
             warnings.warn(estr, DeprecationWarning)
-            num_daily_samples = int(sat_id)
+            num_samples = int(sat_id)
         else:
-            num_daily_samples = 86400
-    uts, index, dates = mm_test.generate_times(fnames, num_daily_samples,
+            num_samples = 86400
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
                                                freq='1S')
 
     if sim_multi_file_right:
