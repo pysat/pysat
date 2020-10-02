@@ -2146,21 +2146,12 @@ class Instrument(object):
                 stops = self._filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
-                temp = []
-                self._iter_list = []
-                for start, stop in zip(starts, stops):
-                    temp = utils.time.create_date_range(start, stop, freq=freq)
-                    # make sure iterations don't go past last day
-                    idx = -1
-                    num = -len(temp)
-                    test_date = temp[idx] + width - pds.DateOffset(days=1)
-                    while test_date > stop and (idx > num):
-                        idx -= 1
-                    idx += 1
-                    if idx < 0:
-                        self._iter_list.extend(temp[:idx])
-                    else:
-                        self._iter_list.extend(temp)
+                # account for width of load. Don't extend past bound.
+                ustops = [stop - width + pds.DateOffset(days=1)
+                          for stop in stops]
+                self._iter_list = utils.time.create_date_range(starts,
+                                                               ustops,
+                                                               freq=freq)
                 # go back to time index
                 self._iter_list = pds.DatetimeIndex(self._iter_list)
 
@@ -2193,6 +2184,9 @@ class Instrument(object):
         elif self._iter_type == 'file':
             # need to convert filenames to dates
             raise NotImplementedError()
+
+        # JUST check against the list
+        # if in self._iter_list, boom. in bounds.
 
         _offs = pds.DateOffset(days=1)
         in_bounds = False
