@@ -97,10 +97,10 @@ For merging, you should:
 Project Style Guidelines
 ------------------------
 
-In general, pysat follows PEP8 and numpydoc guidelines.  Unit and integration
-tests use pytest, linting is done with flake8, and sphinx-build performs
+In general, pysat follows PEP8 and numpydoc guidelines.  Pytest runs the unit
+ and integration tests, flake8 checks for style, and sphinx-build performs
 documentation tests.  However, there are certain additional style elements that
-have been settle on to ensure the project maintains a consistent coding style.
+have been settled on to ensure the project maintains a consistent coding style.
 These include:
 
 * Line breaks should occur before a binary operator (ignoring flake8 W503)
