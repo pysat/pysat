@@ -2279,8 +2279,11 @@ class Instrument(object):
                 # data is already loaded in .data
                 idx, = np.where(self.date == self._iter_list)
                 if len(idx) == 0:
-                    estr = ''.join(('Unable to find current date in ',
-                                    'iteration file list. Out of bounds.'))
+                    estr = ''.join(('Unable to find loaded date ',
+                                    'in the supported iteration list. ',
+                                    'Please check the Instrument bounds, ',
+                                    '`self.bounds` for supported iteration',
+                                    'ranges.'))
                     raise StopIteration(estr)
                 elif idx[-1] >= len(self._iter_list) - 1:
                     # gone to far!
@@ -2319,8 +2322,10 @@ class Instrument(object):
                                 break
                     else:
                         estr = ''.join(('Unable to find loaded filename ',
-                                        'in the iteration filelist, ',
-                                        'self._iter_list'))
+                                        'in the supported iteration list. ',
+                                        'Please check the Instrument bounds, ',
+                                        '`self.bounds` for supported iteration',
+                                        'ranges.'))
                         raise ValueError(estr)
                     fname = self._iter_list[idx + 1]
             else:
@@ -2358,8 +2363,11 @@ class Instrument(object):
                 # some data already loaded in .data
                 idx, = np.where(self._iter_list == self.date)
                 if len(idx) == 0:
-                    estr = ''.join(('Unable to find current date in ',
-                                    'iteration file list. Out of bounds.'))
+                    estr = ''.join(('Unable to find loaded date ',
+                                    'in the supported iteration list. ',
+                                    'Please check the Instrument bounds, ',
+                                    '`self.bounds` for supported iteration',
+                                    'ranges.'))
                     raise StopIteration(estr)
                 elif idx[0] == 0:
                     # too far!
