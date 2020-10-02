@@ -2145,21 +2145,22 @@ class Instrument(object):
                 starts = self._filter_datetime_input(starts)
                 stops = self._filter_datetime_input(stops)
                 freq = self._iter_step
-                _temp = []
+                width = self._iter_width
+                temp = []
                 self._iter_list = []
                 for start, stop in zip(starts, stops):
-                    _temp = utils.time.create_date_range(start, stop, freq=freq)
+                    temp = utils.time.create_date_range(start, stop, freq=freq)
                     # make sure iterations don't go past last day
-                    i = -1
-                    num = -len(_temp)
-                    while _temp[i] + self._iter_width - \
-                             pds.DateOffset(days=1) > stop and (i > num):
-                        i -= 1
-                    i += 1
-                    if i < 0:
-                        self._iter_list.extend(_temp[:i])
+                    idx = -1
+                    num = -len(temp)
+                    test_date = temp[idx] + width - pds.DateOffset(days=1)
+                    while test_date > stop and (idx > num):
+                        idx -= 1
+                    idx += 1
+                    if idx < 0:
+                        self._iter_list.extend(temp[:idx])
                     else:
-                        self._iter_list.extend(_temp)
+                        self._iter_list.extend(temp)
                 # go back to time index
                 self._iter_list = pds.DatetimeIndex(self._iter_list)
 
@@ -2328,7 +2329,7 @@ class Instrument(object):
 
             # load range of files at a time
             # get location for second file. Note a width of 1 loads single file
-            nfid = self.files.get_index(fname) + self._iter_width - 1
+            nfid = self.files.get_index(fname) + width - 1
             self.load(fname=fname, stop_fname=self.files[nfid],
                       verifyPad=verifyPad)
 
@@ -2393,14 +2394,16 @@ class Instrument(object):
                                 break
                     else:
                         estr = ''.join(('Unable to find loaded filename ',
-                                        'in the iteration filelist, ',
-                                        'self._iter_list'))
+                                        'in the supported iteration list. ',
+                                        'Please check the Instrument bounds, ',
+                                        '`self.bounds` for supported iteration',
+                                        'ranges.'))
                         raise ValueError(estr)
                     fname = self._iter_list[idx - 1]
             else:
                 fname = self._iter_list[-1]
 
-            nfid = self.files.get_index(fname) + self._iter_width - 1
+            nfid = self.files.get_index(fname) + width - 1
             self.load(fname=fname, stop_fname=self.files[nfid],
                       verifyPad=verifyPad)
 
