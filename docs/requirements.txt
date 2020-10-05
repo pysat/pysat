@@ -1,5 +1,6 @@
-numpydoc
 ipython
 netCDF4
-xarray
+numpydoc
 pandas
+pytest
+xarray

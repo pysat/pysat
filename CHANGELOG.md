@@ -43,12 +43,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Addressed several Warnings raised by incorrect use of dependent packages
 - Documentation
   - Added info on how to register new instruments
-  - Fixed description of tag and sat_id behaviour in testing instruments
+  - Fixed description of tag and inst_id behaviour in testing instruments
   - Added a tutorial for developers of instrument libraries for pysat
   - Added .zenodo.json file, to improve specification of authors in citation
   - Improved __str__ and __repr__ functions for basic classes
   - Improved docstring readability and consistency
   - Added Travis-CI testing for the documentation
+  - Added a style guide for developers
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3
