@@ -98,7 +98,7 @@ Project Style Guidelines
 ------------------------
 
 In general, pysat follows PEP8 and numpydoc guidelines.  Pytest runs the unit
- and integration tests, flake8 checks for style, and sphinx-build performs
+and integration tests, flake8 checks for style, and sphinx-build performs
 documentation tests.  However, there are certain additional style elements that
 have been settled on to ensure the project maintains a consistent coding style.
 These include:
@@ -107,11 +107,7 @@ These include:
 * Combine long strings using `join`
 * Preferably break long lines on open parentheses rather than using `\`
 * Use no more than 80 characters per line
-* Avoid using Instrument class key attribute names as unrelated variable names:
-  * `platform`
-  * `name`
-  * `tag`
-  * `inst_id`
+* Avoid using Instrument class key attribute names as unrelated variable names: `platform`, `name`, `tag`, and `inst_id`
 * The pysat logger is imported into each sub-module and provides status updates
   at the info and warning levels (as appropriate)
 * Several dependent packages have common nicknames, including:
