@@ -963,6 +963,7 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_set_bounds_with_frequency_and_width(self):
+        """Set date bounds with step/width>1"""
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 12, 26)
         self.testInst.bounds = (start, stop, '10D', pds.DateOffset(days=10))
@@ -1048,6 +1049,178 @@ class TestBasics():
             else:
                 assert trange[1] < stop + pds.DateOffset(days=1)
                 assert trange[1] > stop
+
+        return
+
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 10), 2, 2),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 9), 4, 1),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 11), 1, 3),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 11), 1, 11),
+                                        ])
+    def test_next_date_with_frequency_and_width_incl(self, values):
+        """Test .next() via date step/width>1, includes stop date"""
+        start_date = values[0]
+        stop_date = values[1]
+        self.testInst.bounds = (start_date, stop_date, values[2], values[3])
+        days_offset = pds.DateOffset(days=values[3] - 1)
+
+        # iterate until we run out of bounds
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.next()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+
+        out = pds.date_range(start_date, stop_date - days_offset,
+                             freq=str(values[2]) + 'D').tolist()
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range) - 1:
+                assert trange[1] >= out[i] + days_offset
+            else:
+                assert trange[1] < stop_date + pds.DateOffset(days=1)
+                assert trange[1] > stop_date
+
+        return
+
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 11), 2, 2),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 12), 2, 3),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 13), 3, 2),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 3),  4, 2),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 12), 2, 1)])
+    def test_next_date_with_frequency_and_width(self, values):
+        """Test .next() via date step/width>1, excludes stop date"""
+        start_date = values[0]
+        stop_date = values[1]
+        self.testInst.bounds = (start_date, stop_date, values[2], values[3])
+        days_offset = pds.DateOffset(days=values[3] - 1)
+
+        # iterate until we run out of bounds
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.next()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+
+        out = pds.date_range(start_date, stop_date - days_offset,
+                             freq=str(values[2]) + 'D').tolist()
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range) - 1:
+                assert trange[1] >= out[i] + days_offset
+            else:
+                assert trange[1] < stop_date
+
+        return
+
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 10), 2, 2),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 9), 4, 1),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 11), 1, 3),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 11), 1, 11),
+                                        ])
+    def test_prev_date_with_frequency_and_width_incl(self, values):
+        """Test .prev() via date step/width>1, includes stop date"""
+        start_date = values[0]
+        stop_date = values[1]
+        self.testInst.bounds = (start_date, stop_date, values[2], values[3])
+        days_offset = pds.DateOffset(days=values[3] - 1)
+
+        # iterate until we run out of bounds
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.next()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+
+        out = pds.date_range(start_date, stop_date - days_offset,
+                             freq=str(values[2]) + 'D').tolist()[::-1]
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range) - 1:
+                assert trange[1] >= out[i] + days_offset
+            else:
+                assert trange[1] < stop_date + pds.DateOffset(days=1)
+                assert trange[1] > stop_date
+
+        return
+
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 11), 2, 2),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 12), 2, 3),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 13), 3, 2),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 3),  4, 2),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 12), 2, 1)])
+    def test_prev_date_with_frequency_and_width(self, values):
+        """Test .prev() via date step/width>1, excludes stop date"""
+        start_date = values[0]
+        stop_date = values[1]
+        self.testInst.bounds = (start_date, stop_date, values[2], values[3])
+        days_offset = pds.DateOffset(days=values[3] - 1)
+
+        # iterate until we run out of bounds
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.next()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+
+        out = pds.date_range(start_date, stop_date - days_offset,
+                             freq=str(values[2]) + 'D').tolist()[::-1]
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            assert trange[0] == out[i]
+            if i < len(time_range) - 1:
+                assert trange[1] >= out[i] + days_offset
+            else:
+                assert trange[1] < stop_date
 
         return
 
@@ -1449,6 +1622,7 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_set_bounds_fname_with_frequency_and_width(self):
+        """Set fname bounds with step/width>1"""
         start = '2009-01-01.nofile'
         start_date = dt.datetime(2009, 1, 1)
         stop = '2009-01-03.nofile'
@@ -1479,8 +1653,7 @@ class TestBasics():
                                          dt.datetime(2009, 1, 5),
                                          3, 1)])
     def test_iterate_bounds_fname_with_frequency_and_width(self, values):
-        """Ensure iteration stays within bounds with step/width >1 and doesn't
-        include stop bounds date"""
+        """File iteration in bounds with step/width>1, excludes stop bounds"""
         start = values[0]
         start_date = values[1]
         stop = values[2]
@@ -1528,8 +1701,7 @@ class TestBasics():
                                          dt.datetime(2009, 1, 5),
                                          2, 3)])
     def test_iterate_bounds_fname_with_frequency_and_width_incl(self, values):
-        """Ensure iteration stays within bounds with step/width >1, includes
-        stop bounds date"""
+        """File iteration in bounds with step/width>1, includes stop bounds"""
         start = values[0]
         start_date = values[1]
         stop = values[2]
@@ -1583,8 +1755,7 @@ class TestBasics():
                                          dt.datetime(2009, 1, 12),
                                          2, 1)])
     def test_next_fname_with_frequency_and_width(self, values):
-        """Test using next() via fname with non-default frequency and width,
-        doesn't include stop date"""
+        """Test .next() via fname step/width>1, excludes stop file"""
         start = values[0]
         start_date = values[1]
         stop = values[2]
@@ -1640,8 +1811,7 @@ class TestBasics():
                                          1, 11),
                                         ])
     def test_next_fname_with_frequency_and_width_incl(self, values):
-        """Test using next() via fname with non-default frequency and width,
-        doesn't include stop date"""
+        """Test .next() via fname step/width>1, includes stop file"""
         start = values[0]
         start_date = values[1]
         stop = values[2]
