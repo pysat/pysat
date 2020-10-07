@@ -2316,16 +2316,17 @@ class Instrument(object):
                     raise StopIteration('Outside the set date boundaries.')
                 else:
                     # not going past the last day, safe to move forward
-                    next_date = self._iter_list[idx[0] + 1]
-                    end_date = next_date + self._iter_width
-                    # in bounds, lets load
-                    self.load(date=next_date, end_date=end_date,
-                              verifyPad=verifyPad)
+                    date = self._iter_list[idx[0] + 1]
+                    end_date = date + self._iter_width
             else:
                 # no data currently loaded, start at the beginning
-                date = self._iter_list[0]
-                end_date = date + self._iter_width
-                self.load(date=date, end_date=end_date, verifyPad=verifyPad)
+                if len(self._iter_list) > 0:
+                    date = self._iter_list[0]
+                    end_date = date + self._iter_width
+                else:
+                    raise StopIteration('Outside the set date boundaries.')
+            # perform load
+            self.load(date=date, end_date=end_date, verifyPad=verifyPad)
 
         elif self._iter_type == 'file':
             first = self.files.get_index(self._iter_list[0])
