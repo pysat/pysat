@@ -1292,7 +1292,6 @@ class TestBasics():
             if i < len(time_range) - 1:
                 assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
             else:
-                # what to do about checking individual stops...
                 assert trange[1] < stops[b_range] + pds.DateOffset(days=1)
                 assert trange[1] > stops[b_range]
 
