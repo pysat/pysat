@@ -2272,6 +2272,15 @@ class Instrument(object):
                 friend.load(date=date, end_date=end_date)
                 yield friend
 
+        # Add last loaded data/metadata from friend into the original object
+        # Making copy here to ensure there are no left over references
+        # to the friend object in the loop that would interfere with
+        # garbage collection. Don't want to make a copy of underlying data.
+        friend_data = friend.data
+        friend.data = friend._null_data
+        self.data = friend_data
+        self.meta = friend.meta.copy()
+
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
 
