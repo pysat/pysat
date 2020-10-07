@@ -252,8 +252,9 @@ class TestBasics():
         stop_fname = self.ref_time + pds.DateOffset(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         with pytest.raises(ValueError):
+            check_fname = self.ref_time.strftime('%Y-%m-%d.nofile')
             self.testInst.load(fname=stop_fname,
-                               stop_fname=self.ref_time.strftime('%Y-%m-%d.nofile'))
+                               stop_fname=check_fname)
 
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
@@ -1085,7 +1086,7 @@ class TestBasics():
         assert self.testInst.bounds[1][0] == self.testInst.files[-1]
 
     def test_set_bounds_too_many(self):
-        """Ensure error if too many inputs"""
+        """Ensure error if too many inputs to inst.bounds"""
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 1)
         width = pds.DateOffset(days=1)
@@ -1103,24 +1104,22 @@ class TestBasics():
         """Test error if bounds assignment has stop date before start"""
         start = dt.datetime(2009, 1, 15)
         stop = dt.datetime(2009, 1, 1)
-        with pytest.rasies(Exception):
+        with pytest.raises(Exception):
             self.testInst.bounds = (start, stop)
 
-    def test_set_bounds_by_default(self):
+    def test_set_bounds_by_default_dates(self):
+        """Verify bounds behavior with default date related inputs"""
         start = self.testInst.files.start_date
         stop = self.testInst.files.stop_date
+        full_list = pds.date_range(start, stop).tolist()
         self.testInst.bounds = (None, None)
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list == full_list)
         self.testInst.bounds = None
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list == full_list)
         self.testInst.bounds = (start, None)
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list == full_list)
         self.testInst.bounds = (None, stop)
-        assert np.all(self.testInst._iter_list
-                      == pds.date_range(start, stop).tolist())
+        assert np.all(self.testInst._iter_list == full_list)
 
     def test_set_bounds_by_date_extra_time(self):
         start = dt.datetime(2009, 1, 1, 1, 10)
@@ -1173,7 +1172,7 @@ class TestBasics():
         """Test error if bounds season assignment has stop date before start"""
         start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
         stop = [dt.datetime(2009, 1, 12), dt.datetime(2009, 1, 15)]
-        with pytest.rasies(Exception):
+        with pytest.raises(Exception):
             self.testInst.bounds = (start, stop)
 
     def test_set_bounds_by_date_season_extra_time(self):
@@ -1400,7 +1399,7 @@ class TestBasics():
                           '2009-01-03.nofile', '2009-02-01.nofile',
                           '2009-02-02.nofile', '2009-02-03.nofile'])
 
-    def test_set_bounds_by_fname_season(self):
+    def test_set_bounds_by_fname_season_wrong_order(self):
         """Test for error if stop file before start file, season"""
 
         start = ['2009-01-01.nofile', '2009-02-03.nofile']
@@ -1555,7 +1554,7 @@ class TestBasics():
             else:
                 assert trange[1] < stop_date + pds.DateOffset(days=1)
                 assert trange[1] > stop_date
-                
+
         return
 
     @pytest.mark.parametrize("values", [('2009-01-01.nofile',
@@ -1733,7 +1732,7 @@ class TestBasics():
                 assert trange[1] >= out[i] + days_offset
             else:
                 assert trange[1] < stop_date
-        
+
         return
 
     @pytest.mark.parametrize("values", [('2009-01-01.nofile',
