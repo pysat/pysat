@@ -44,6 +44,10 @@ for method in method_list:
 
 
 class TestInstruments(InstTestClass):
+    """Uses class level setup and teardown so that all tests use the same
+    temporary directory. We do not want to geneate a new tempdir for each test,
+    as the load tests need to be the same as the download tests.
+    """
 
     def setup_class(self):
         """Runs once before the tests to initialize the testing setup."""
@@ -58,13 +62,7 @@ class TestInstruments(InstTestClass):
         self.inst_loc = pysat.instruments
 
     def teardown_class(self):
-        """Runs after every method to clean up previous testing."""
+        """Runs once to clean up testing from this class."""
         pysat.utils.set_data_dir(self.saved_path, store=False)
         self.tempdir.cleanup()
         del self.inst_loc, self.saved_path, self.tempdir
-
-    def setup_method(self):
-        """Runs before every method to create a clean testing setup."""
-
-    def teardown_method(self):
-        """Runs after every method to clean up previous testing."""
