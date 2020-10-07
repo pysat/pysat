@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
 from copy import deepcopy as deepcopy
 import os
 import warnings
