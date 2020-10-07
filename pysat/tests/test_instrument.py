@@ -1085,11 +1085,12 @@ class TestBasics():
         assert self.testInst.bounds[1][0] == self.testInst.files[-1]
 
     def test_set_bounds_too_many(self):
+        """Ensure error if too many inputs"""
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 1)
-        huh = dt.datetime(2009, 1, 1)
+        width = pds.DateOffset(days=1)
         with pytest.raises(ValueError):
-            self.testInst.bounds = [start, stop, huh]
+            self.testInst.bounds = [start, stop, '1D', width, False]
 
     def test_set_bounds_by_date(self):
         start = dt.datetime(2009, 1, 1)
@@ -1097,6 +1098,13 @@ class TestBasics():
         self.testInst.bounds = (start, stop)
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop).tolist())
+
+    def test_set_bounds_by_date_wrong_order(self):
+        """Test error if bounds assignment has stop date before start"""
+        start = dt.datetime(2009, 1, 15)
+        stop = dt.datetime(2009, 1, 1)
+        with pytest.rasies(Exception):
+            self.testInst.bounds = (start, stop)
 
     def test_set_bounds_by_default(self):
         start = self.testInst.files.start_date
@@ -1160,6 +1168,13 @@ class TestBasics():
         out = pds.date_range(start[0], stop[0]).tolist()
         out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(self.testInst._iter_list == out)
+
+    def test_set_bounds_by_date_season_wrong_order(self):
+        """Test error if bounds season assignment has stop date before start"""
+        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
+        stop = [dt.datetime(2009, 1, 12), dt.datetime(2009, 1, 15)]
+        with pytest.rasies(Exception):
+            self.testInst.bounds = (start, stop)
 
     def test_set_bounds_by_date_season_extra_time(self):
         start = [dt.datetime(2009, 1, 1, 1, 10),
@@ -1334,6 +1349,14 @@ class TestBasics():
         out = pds.date_range(start_d, stop_d).tolist()
         assert np.all(dates == out)
 
+    def test_set_bounds_by_fname_wrong_order(self):
+        """Test for error if stop file before start file"""
+        start = '2009-01-13.nofile'
+        stop = '2009-01-01.nofile'
+        with pytest.raises(Exception):
+            self.testInst.bounds = (start, stop)
+        return
+
     def test_iterate_over_bounds_set_by_fname_via_next(self):
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
@@ -1376,6 +1399,15 @@ class TestBasics():
                       == ['2009-01-01.nofile', '2009-01-02.nofile',
                           '2009-01-03.nofile', '2009-02-01.nofile',
                           '2009-02-02.nofile', '2009-02-03.nofile'])
+
+    def test_set_bounds_by_fname_season(self):
+        """Test for error if stop file before start file, season"""
+
+        start = ['2009-01-01.nofile', '2009-02-03.nofile']
+        stop = ['2009-01-03.nofile', '2009-02-01.nofile']
+        with pytest.raises(Exception):
+            self.testInst.bounds = (start, stop)
+        return
 
     def test_iterate_over_bounds_set_by_fname_season(self):
         start = ['2009-01-01.nofile', '2009-02-01.nofile']
