@@ -124,7 +124,8 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
     """
 
     inst.data[epoch_name] = pds.to_datetime(
-        [dt.datetime.utcfromtimestamp(int(np.floor(x * sec_mult)))
+        [dt.datetime.fromtimestamp(int(np.floor(x * sec_mult)),
+                                   tz=dt.timezone.utc)
          for x in inst.data[epoch_name]])
     return
 

@@ -103,7 +103,7 @@ def calc_solar_local_time(inst, lon_name=None, slt_name='slt'):
     for nptime in inst.index.values.astype(int):
         # Numpy times come out in nanoseconds and timestamp converts
         # from seconds
-        dtime = dt.datetime.utcfromtimestamp(nptime * 1.0e-9)
+        dtime = dt.datetime.fromtimestamp(nptime * 1.0e-9, tz=dt.timezone.utc)
         ut_hr.append((dtime.hour * 3600.0 + dtime.minute * 60.0
                       + dtime.second + dtime.microsecond * 1.0e-6) / 3600.0)
     # Calculate solar local time
