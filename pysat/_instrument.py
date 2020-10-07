@@ -2034,6 +2034,9 @@ class Instrument(object):
             # also includes loading window (data width)
             self._iter_step = value[2]
             self._iter_width = value[3]
+        else:
+            raise ValueError('Too many input arguments.')
+
         # pull out start and stop times now that other optional items have
         # been checked out.
         start = value[0]
@@ -2080,10 +2083,12 @@ class Instrument(object):
                     # method allows for inputs like inst.bounds = (start, None)
                     # and bounds will fill the None with actual start or stop
                     # allow for a Nonetype only if length is one
-                    if len(starts) == 1:
-                        if start is None or (stop is None):
-                            # we are good, one of them is None, no error
-                            break
+                    if len(starts) == 1 and (start is None):
+                        # we are good on type change, start is None, no error
+                        break
+                    elif len(stops) == 1 and (stop is None):
+                        # we are good on type change, stop is None, no error
+                        break
                     raise ValueError(' '.join(('Start and stop items must all',
                                                'be of the same type')))
 
@@ -2107,12 +2112,19 @@ class Instrument(object):
                 _temp = []
                 self._iter_list = []
                 for _start, _stop in zip(starts, stops):
+                    # ensure _start before _stop
+                    # Get index of start/stop file from main file list
+                    start_idx = self.files.get_index(_start)
+                    stop_idx = self.files.get_index(_stop)
+                    if stop_idx < start_idx:
+                        estr = ' '.join(('Bounds must be in increasing date',
+                                         'order.', _start, 'occurs after',
+                                         _stop))
+                        raise ValueError(estr)
                     _temp = self.files.get_file_array([_start], [_stop])
                     # downselect based upon step size
                     _temp = _temp[::self._iter_step]
                     # Make sure iterations don't go past last day
-                    # Get index of stop file from main file list
-                    stop_idx = self.files.get_index(_stop)
                     # get index of last in iteration list
                     iter_idx = self.files.get_index(_temp[-1])
                     # don't let loaded data go past stop bound
@@ -2146,6 +2158,17 @@ class Instrument(object):
                 stops = self._filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
+
+                # ensure inputs are in reasonable date order
+                for start, stop in zip(starts, stops):
+                    if start > stop:
+                        estr = ' '.join(('Bounds must be set in increasing',
+                                         'date order.',
+                                         stop.strftime('%d %B %Y'),
+                                         'is later than',
+                                         stop.strftime('%d %B %Y')))
+                        raise ValueError(estr)
+
                 # account for width of load. Don't extend past bound.
                 ustops = [stop - width + pds.DateOffset(days=1)
                           for stop in stops]
