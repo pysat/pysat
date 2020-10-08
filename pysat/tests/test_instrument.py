@@ -1683,16 +1683,14 @@ class TestBasics():
 
         # verify range of loaded data
         for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
             # determine which range we are in
             b_range = 0
             while out[i] > stops[b_range]:
                 b_range += 1
             # check loaded range is correct
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            else:
-                assert trange[1] < stops[b_range]
+            assert trange[0] == out[i]
+            assert trange[1] > out[i] + width - pds.DateOffset(days=1)
+            assert trange[1] < stops[b_range]
 
         return
 
@@ -1739,16 +1737,15 @@ class TestBasics():
 
         # verify range of loaded data
         for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
             # determine which range we are in
             b_range = 0
             while out[i] > stops[b_range]:
                 b_range += 1
             # check on data range
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            else:
-                assert trange[1] < stops[b_range] + pds.DateOffset(days=1)
+            assert trange[0] == out[i]
+            assert trange[1] > out[i] + width - pds.DateOffset(days=1)
+            assert trange[1] < stops[b_range] + pds.DateOffset(days=1)
+            if i == len(time_range) - 1:
                 assert trange[1] > stops[b_range]
 
         return
@@ -1942,10 +1939,8 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + days_offset
-            else:
-                assert trange[1] < stop_date
+            assert trange[1] > out[i] + days_offset
+            assert trange[1] < stop_date
 
         return
 
@@ -1990,10 +1985,9 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + days_offset
-            else:
-                assert trange[1] < stop_date + pds.DateOffset(days=1)
+            assert trange[1] > out[i] + days_offset
+            assert trange[1] < stop_date + pds.DateOffset(days=1)
+            if i == len(time_range) - 1:
                 assert trange[1] > stop_date
 
         return
@@ -2057,8 +2051,6 @@ class TestBasics():
             assert trange[0] == out[i]
             assert trange[1] > out[i] + days_offset
             assert trange[1] < stop_dates[b_range]
-            if i == len(time_range) - 1:
-                assert trange[1] < stop_dates[b_range]
 
         return
 
@@ -2182,10 +2174,8 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + days_offset
-            else:
-                assert trange[1] < stop_date
+            assert trange[1] > out[i] + days_offset
+            assert trange[1] < stop_date
 
         return
 
@@ -2238,10 +2228,9 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + days_offset
-            else:
-                assert trange[1] < stop_date + pds.DateOffset(days=1)
+            assert trange[1] > out[i] + days_offset
+            assert trange[1] < stop_date + pds.DateOffset(days=1)
+            if i == len(time_range) - 1:
                 assert trange[1] > stop_date
 
         return
@@ -2310,8 +2299,6 @@ class TestBasics():
             assert trange[0] == out[i]
             assert trange[1] > out[i] + days_offset
             assert trange[1] < stop_dates[b_range]
-            if i == len(time_range) - 1:
-                assert trange[1] < stop_dates[b_range]
 
         return
 
@@ -2419,8 +2406,7 @@ class TestBasics():
                                          dt.datetime(2009, 1, 12),
                                          2, 1)])
     def test_prev_fname_with_frequency_and_width(self, values):
-        """Test using prev() via fname with non-default frequency and width,
-        won't hit bounds stop date"""
+        """Test prev() fname step/width>1, excludes stop bound"""
         start = values[0]
         start_date = values[1]
         stop = values[2]
@@ -2445,9 +2431,8 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range):
-                assert trange[1] >= out[i] + days_offset
-            else:
+            assert trange[1] > out[i] + days_offset
+            if i == len(time_range) - 1:
                 assert trange[1] < stop_date
 
         return
@@ -2474,8 +2459,7 @@ class TestBasics():
                                          1, 11),
                                         ])
     def test_prev_fname_with_frequency_and_width_incl(self, values):
-        """Test using prev() via fname with non-default frequency and width,
-        includes bounds stop date"""
+        """Test prev() fname step/width>1, includes bounds stop date"""
 
         start = values[0]
         start_date = values[1]
@@ -2501,11 +2485,10 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range):
-                assert trange[1] > out[i] + days_offset
-            else:
-                assert trange[1] < stop_date + pds.DateOffset(days=1)
-                assert trange[1] > stop_date
+            assert trange[1] > out[i] + days_offset
+            assert trange[1] < stop_date + pds.DateOffset(days=1)
+            if i == len(time_range) - 1:
+                assert trange[1] < start_date + pds.DateOffset(days=values[5])
 
         return
 
@@ -2575,7 +2558,7 @@ class TestBasics():
             assert trange[1] > out[i] + days_offset
             assert trange[1] < stop_dates[b_range]
             if i == len(time_range) - 1:
-                assert trange[1] < stop_dates[b_range]
+                assert trange[1] < start_dates[b_range]
 
         return
 
@@ -2653,6 +2636,9 @@ class TestBasics():
             assert trange[0] == out[i]
             assert trange[1] > out[i] + days_offset
             assert trange[1] < stop_dates[b_range] + pds.DateOffset(days=1)
+            if i == len(time_range) - 1:
+                check = start_dates[b_range] + pds.DateOffset(days=width)
+                assert trange[1] < check
 
         return
 
