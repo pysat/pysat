@@ -2340,14 +2340,13 @@ class Instrument(object):
                 else:
                     # step size already accounted for in the list of files
                     # get location of current file in iteration list
-                    if self.files[self._fid] in self._iter_list:
-                        idx = 0
-                        fname = self.files[self._fid]
-                        for i, name in enumerate(self._iter_list):
-                            if name == fname:
-                                idx = i
-                                break
-                    else:
+                    idx = None
+                    fname = self.files[self._fid]
+                    for i, name in enumerate(self._iter_list):
+                        if name == fname:
+                            idx = i
+                            break
+                    if idx is None:
                         estr = ''.join(('Unable to find loaded filename ',
                                         'in the supported iteration list. ',
                                         'Please check the Instrument bounds, ',
