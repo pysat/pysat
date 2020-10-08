@@ -1001,10 +1001,8 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            else:
-                assert trange[1] < stop
+            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            assert trange[1] < stop
 
         return
 
@@ -1044,10 +1042,9 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            else:
-                assert trange[1] < stop + pds.DateOffset(days=1)
+            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            assert trange[1] < stop + pds.DateOffset(days=1)
+            if i == len(time_range) - 1:
                 assert trange[1] > stop
 
         return
@@ -1091,10 +1088,9 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            if i < len(time_range) - 1:
-                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            else:
-                assert trange[1] < stop_date + pds.DateOffset(days=1)
+            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            assert trange[1] < stop_date + pds.DateOffset(days=1)
+            if i == len(time_range) - 1:
                 assert trange[1] > stop_date
 
         return
@@ -1141,9 +1137,7 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
-            # if i < len(time_range) - 1:
             assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            # else:
             assert trange[1] < stop_date
 
         return
@@ -1201,7 +1195,7 @@ class TestBasics():
                 b_range += 1
             # check loaded range is correct
             assert trange[0] == out[i]
-            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            assert trange[1] > out[i] + width - pds.DateOffset(days=1)
             assert trange[1] < stops[b_range] + pds.DateOffset(days=1)
 
         return
@@ -1259,7 +1253,7 @@ class TestBasics():
                 b_range += 1
             # check loaded range is correct
             assert trange[0] == out[i]
-            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
+            assert trange[1] > out[i] + width - pds.DateOffset(days=1)
             assert trange[1] < stops[b_range]
 
         return
@@ -1304,13 +1298,12 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
+            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
             if i == 0:
                 # check first load is at end of bounds
                 assert trange[1] > stop_date
                 assert trange[1] <= stop_date + pds.DateOffset(days=1)
-            elif i < len(time_range) - 1:
-                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            else:
+            elif i == len(time_range) - 1:
                 # ensure last load is at beginning of bounds, plus width
                 assert trange[1] < start_date + width
                 assert trange[0] == start_date
@@ -1359,15 +1352,144 @@ class TestBasics():
         # verify range of loaded data
         for i, trange in enumerate(time_range):
             assert trange[0] == out[i]
+            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
             if i == 0:
                 # check first load is before end of bounds
                 assert trange[1] < stop_date
-            elif i < len(time_range) - 1:
-                assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            else:
+            elif i == len(time_range) - 1:
                 # ensure last load is at beginning of bounds, plus width
                 assert trange[1] < start_date + width
                 assert trange[0] == start_date
+
+        return
+
+    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 4),
+                                          dt.datetime(2009, 1, 13)),
+                                         '2D',
+                                         pds.DateOffset(days=2)),
+                                        ((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 7),
+                                          dt.datetime(2009, 1, 16)),
+                                         '3D',
+                                         pds.DateOffset(days=1)),
+                                        ((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 6),
+                                          dt.datetime(2009, 1, 15)),
+                                         '2D',
+                                         pds.DateOffset(days=4))
+                                        ])
+    def test_prev_date_season_frequency_and_width_incl(self, values):
+        """Test .next() via date season step/width>1, includes stop date"""
+        starts = values[0]
+        stops = values[1]
+        step = values[2]
+        width = values[3]
+        self.testInst.bounds = (starts, stops, step, width)
+
+        # iterate until we run out of bounds
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.prev()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+
+        out = []
+        for start, stop in zip(starts, stops):
+            tdate = stop - width + pds.DateOffset(days=1)
+            out.extend(pds.date_range(start, tdate, freq=step).tolist())
+        out = out[::-1]
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            # determine which range we are in
+            b_range = 0
+            while out[i] > stops[b_range]:
+                b_range += 1
+            # check loaded range is correct
+            assert trange[0] == out[i]
+            assert trange[1] > out[i] + width - pds.DateOffset(days=1)
+            if i == 0:
+                # check first load is before end of bounds
+                assert trange[1] < stops[b_range] + pds.DateOffset(days=1)
+            elif i == len(time_range) - 1:
+                # ensure last load is at beginning of bounds, plus width
+                assert trange[1] < starts[b_range] + width
+                assert trange[0] == starts[b_range]
+
+        return
+
+    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 3),
+                                          dt.datetime(2009, 1, 12)),
+                                         '2D',
+                                         pds.DateOffset(days=2)),
+                                        ((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 6),
+                                          dt.datetime(2009, 1, 15)),
+                                         '3D',
+                                         pds.DateOffset(days=1)),
+                                        ((dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 10)),
+                                         (dt.datetime(2009, 1, 7),
+                                          dt.datetime(2009, 1, 16)),
+                                         '2D',
+                                         pds.DateOffset(days=4))
+                                        ])
+    def test_prev_date_season_frequency_and_width(self, values):
+        """Test .next() via date season step/width>1, excludes stop date"""
+        starts = values[0]
+        stops = values[1]
+        step = values[2]
+        width = values[3]
+        self.testInst.bounds = (starts, stops, step, width)
+
+        # iterate until we run out of bounds
+        dates = []
+        time_range = []
+        try:
+            while True:
+                self.testInst.prev()
+                dates.append(self.testInst.date)
+                time_range.append((self.testInst.index[0],
+                                   self.testInst.index[-1]))
+        except StopIteration:
+            pass
+
+        out = []
+        for start, stop in zip(starts, stops):
+            tdate = stop - width + pds.DateOffset(days=1)
+            out.extend(pds.date_range(start, tdate, freq=step).tolist())
+        out = out[::-1]
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            # determine which range we are in
+            b_range = 0
+            while out[i] > stops[b_range]:
+                b_range += 1
+            # check loaded range is correct
+            assert trange[0] == out[i]
+            assert trange[1] > out[i] + width - pds.DateOffset(days=1)
+            if i == 0:
+                # check first load is before end of bounds
+                assert trange[1] < stops[b_range]
+            elif i == len(time_range) - 1:
+                # ensure last load is at beginning of bounds, plus width
+                assert trange[1] < starts[b_range] + width
+                assert trange[0] == starts[b_range]
 
         return
 
