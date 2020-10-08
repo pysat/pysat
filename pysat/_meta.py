@@ -757,13 +757,17 @@ class Meta(object):
                 # get case preserved string for variable name
                 new_key = self.var_case_name(key)
 
-                # don't need to check if in lower, all variables
-                # are always in the lower metadata
-                meta_row = self.data.loc[new_key]
+                # Don't need to check if in lower, all variables are always in
+                # the lower metadata.
+                #
+                # Assign meta_row using copy to avoid pandas
+                # SettingWithCopyWarning, as suggested in
+                # https://www.dataquest.io/blog/settingwithcopywarning/
+                meta_row = self.data.loc[new_key].copy()
                 if new_key in self.keys_nD():
                     meta_row.at['children'] = self.ho_data[new_key].copy()
                 else:
-                    # Following line issues a pandas SettingWithCopyWarning
+
                     meta_row.at['children'] = None  # empty_meta
 
                 return meta_row
@@ -1067,7 +1071,6 @@ class Meta(object):
                                                 'objects in keys().')))
             for key in other.keys_nD():
                 if key in mdata:
-
                     raise RuntimeError(''.join(('Duplicated keys (variable ',
                                                 'names) across Meta '
                                                 'objects in keys_nD().')))

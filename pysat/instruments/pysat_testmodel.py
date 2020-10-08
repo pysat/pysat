@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 platform = 'pysat'
 name = 'testmodel'
 tags = {'': 'Regular testing data set'}
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
 pandas_format = False
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
@@ -43,7 +43,7 @@ def init(self):
     return
 
 
-def load(fnames, tag=None, sat_id=None, num_samples=None):
+def load(fnames, tag=None, inst_id=None, num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -52,11 +52,10 @@ def load(fnames, tag=None, sat_id=None, num_samples=None):
         List of filenames
     tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+    inst_id : str or NoneType
+        Instrument satellite ID (accepts '')
     num_samples : int
-        Number of samples per day
+        Number of samples
 
     Returns
     -------
@@ -68,11 +67,11 @@ def load(fnames, tag=None, sat_id=None, num_samples=None):
     """
 
     if num_samples is None:
-        if sat_id != '':
-            estr = ' '.join(('sat_id will no longer be supported',
+        if inst_id != '':
+            estr = ' '.join(('inst_id will no longer be supported',
                              'for setting the number of samples per day.'))
             warnings.warn(estr, DeprecationWarning)
-            num_samples = int(sat_id)
+            num_samples = int(inst_id)
         else:
             num_samples = 96
     # create an artifical satellite data set

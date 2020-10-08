@@ -22,7 +22,7 @@ name = 'testing_xarray'
 # dictionary of data 'tags' and corresponding description
 tags = {'': 'Regular testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
 
@@ -65,7 +65,7 @@ def default(inst):
     pass
 
 
-def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
+def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
          num_samples=None):
     """ Loads the test files
@@ -76,9 +76,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         List of filenames
     tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+    inst_id : str or NoneType
+        Instrument satellite ID (accepts '')
     sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
@@ -88,7 +87,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
     num_samples : int
-        Number of samples per day
+        Number of samples
 
     Returns
     -------
@@ -102,12 +101,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
+    
     if num_samples is None:
-        if sat_id != '':
-            estr = ' '.join(('sat_id will no longer be supported',
+        if inst_id != '':
+            estr = ' '.join(('inst_id will no longer be supported',
                              'for setting the number of samples per day.'))
             warnings.warn(estr, DeprecationWarning)
-            num_samples = int(sat_id)
+            num_samples = int(inst_id)
         else:
             num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,

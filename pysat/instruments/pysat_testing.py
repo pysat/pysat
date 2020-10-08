@@ -32,9 +32,9 @@ tags = {'': 'Regular testing data set',
         'non_strict': 'simulate an instrument without strict_time_flag'}
 
 # dictionary of satellite IDs, list of corresponding tags
-# a numeric string can be used in sat_id to change the number of points per day
-sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
-                'no_download']}
+# a numeric string can be used in inst_id to change the number of points per day
+inst_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
+                 'no_download']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'no_download': dt.datetime(2009, 1, 1),
                     'non_strict': dt.datetime(2009, 1, 1)}}
@@ -100,7 +100,7 @@ def default(self):
     pass
 
 
-def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
+def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
          malformed_index=False, mangle_file_dates=False,
          num_samples=None):
@@ -113,7 +113,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     tag : str or NoneType
         Instrument tag (accepts '' or a string to change the behaviour of
         dummy1 for constellation testing)
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
     sim_multi_file_right : boolean
@@ -153,11 +153,11 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     drange = mm_test.define_range()
 
     if num_samples is None:
-        if sat_id != '':
-            estr = ' '.join(('sat_id will no longer be supported',
+        if inst_id != '':
+            estr = ' '.join(('inst_id will no longer be supported',
                              'for setting the number of samples per day.'))
             warnings.warn(estr, DeprecationWarning)
-            num_samples = int(sat_id)
+            num_samples = int(inst_id)
         else:
             num_samples = 86400
     uts, index, dates = mm_test.generate_times(fnames, num_samples,

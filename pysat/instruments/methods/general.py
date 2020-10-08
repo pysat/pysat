@@ -13,7 +13,7 @@ import pysat
 logger = logging.getLogger(__name__)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
                two_digit_year_break=None):
     """Return a Pandas Series of every file for chosen satellite data.
@@ -25,7 +25,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -35,7 +35,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
     supported_tags : dict or NoneType
-        keys are sat_id, each containing a dict keyed by tag
+        keys are inst_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
     fake_daily_files_from_monthly : bool
         Some CDAWeb instrument data files are stored by month, interfering
@@ -76,9 +76,9 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     if format_str is None:
         try:
-            format_str = supported_tags[sat_id][tag]
+            format_str = supported_tags[inst_id][tag]
         except KeyError as kerr:
-            raise ValueError(' '.join(('Unknown sat_id or tag:',
+            raise ValueError(' '.join(('Unknown inst_id or tag:',
                                        str(kerr))))
 
     # Get the series of files
@@ -151,23 +151,23 @@ def remove_leading_text(inst, target=None):
     for prepend_str in target:
 
         if isinstance(inst.data, pds.DataFrame):
-            inst.data.rename(columns=lambda x: x.split(prepend_str)[-1],
-                             inplace=True)
+            inst.data = inst.data.rename(
+                columns=lambda x: x.split(prepend_str)[-1])
         else:
-            map = {}
+            map_keys = {}
             for key in inst.data.variables.keys():
-                map[key] = key.split(prepend_str)[-1]
-            inst.data = inst.data.rename(name_dict=map)
+                map_keys[key] = key.split(prepend_str)[-1]
+            inst.data = inst.data.rename(name_dict=map_keys)
 
-        inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                              inplace=True)
-        orig_keys = inst.meta.keys_nD()
+        inst.meta.data = inst.meta.data.rename(
+            index=lambda x: x.split(prepend_str)[-1])
+        orig_keys = [kk for kk in inst.meta.keys_nD()]
         for keynd in orig_keys:
             if keynd.find(prepend_str) >= 0:
                 new_key = keynd.split(prepend_str)[-1]
                 new_meta = inst.meta.pop(keynd)
-                new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                                     inplace=True)
+                new_meta.data = new_meta.data.rename(
+                    index=lambda x: x.split(prepend_str)[-1])
                 inst.meta[new_key] = new_meta
 
     return
