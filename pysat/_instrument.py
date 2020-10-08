@@ -2418,15 +2418,14 @@ class Instrument(object):
                 if (self._fid - step < first) | (self._fid > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
-                    if self.files[self._fid] in self._iter_list:
-                        # find location of file
-                        idx = 0
-                        fname = self.files[self._fid]
-                        for i, name in enumerate(self._iter_list):
-                            if name == fname:
-                                idx = i
-                                break
-                    else:
+                    # find location of file
+                    idx = None
+                    fname = self.files[self._fid]
+                    for i, name in enumerate(self._iter_list):
+                        if name == fname:
+                            idx = i
+                            break
+                    if idx is None:
                         estr = ''.join(('Unable to find loaded filename ',
                                         'in the supported iteration list. ',
                                         'Please check the Instrument bounds, ',
