@@ -2558,7 +2558,8 @@ class TestBasics():
             assert trange[1] > out[i] + days_offset
             assert trange[1] < stop_dates[b_range]
             if i == len(time_range) - 1:
-                assert trange[1] < start_dates[b_range]
+                check = start_dates[b_range] + pds.DateOffset(days=width)
+                assert trange[1] < check
 
         return
 
