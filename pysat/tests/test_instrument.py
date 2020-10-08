@@ -1383,7 +1383,7 @@ class TestBasics():
                                          pds.DateOffset(days=4))
                                         ])
     def test_prev_date_season_frequency_and_width_incl(self, values):
-        """Test .next() via date season step/width>1, includes stop date"""
+        """Test .prev() via date season step/width>1, includes stop date"""
         starts = values[0]
         stops = values[1]
         step = values[2]
@@ -1448,7 +1448,7 @@ class TestBasics():
                                          pds.DateOffset(days=4))
                                         ])
     def test_prev_date_season_frequency_and_width(self, values):
-        """Test .next() via date season step/width>1, excludes stop date"""
+        """Test .prev() via date season step/width>1, excludes stop date"""
         starts = values[0]
         stops = values[1]
         step = values[2]
@@ -1995,6 +1995,142 @@ class TestBasics():
             else:
                 assert trange[1] < stop_date + pds.DateOffset(days=1)
                 assert trange[1] > stop_date
+
+        return
+
+    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
+                                          '2009-01-11.nofile'),
+                                         (dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 11)),
+                                         ('2009-01-03.nofile',
+                                          '2009-01-13.nofile'),
+                                         (dt.datetime(2009, 1, 3),
+                                          dt.datetime(2009, 1, 13)), 2, 2),
+                                        (('2009-01-01.nofile',
+                                          '2009-01-11.nofile'),
+                                         (dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 11)),
+                                         ('2009-01-04.nofile',
+                                          '2009-01-14.nofile'),
+                                         (dt.datetime(2009, 1, 4),
+                                          dt.datetime(2009, 1, 14)), 2, 3),
+                                        (('2009-01-01.nofile',
+                                          '2009-01-11.nofile'),
+                                         (dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 11)),
+                                         ('2009-01-05.nofile',
+                                          '2009-01-15.nofile'),
+                                         (dt.datetime(2009, 1, 5),
+                                          dt.datetime(2009, 1, 15)), 3, 1)])
+    def test_iterate_fname_season_with_frequency_and_width(self, values):
+        """File season iteration with step/width>1, excludes stop bounds"""
+        starts = values[0]
+        start_dates = values[1]
+        stops = values[2]
+        stop_dates = values[3]
+        step = values[4]
+        width = values[5]
+        freq_str = str(step) + 'D'
+        self.testInst.bounds = (starts, stops, step, width)
+
+        dates = []
+        time_range = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+            time_range.append((inst.index[0], inst.index[-1]))
+        days_offset = pds.DateOffset(days=width - 1)
+
+        # get dates that should be there, manually
+        out = []
+        for start, stop in zip(start_dates, stop_dates):
+            tdate = stop - days_offset
+            out.extend(pds.date_range(start, tdate, freq=freq_str).tolist())
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            # determine which range we are in
+            b_range = 0
+            while out[i] > stop_dates[b_range]:
+                b_range += 1
+            # check on data range
+            assert trange[0] == out[i]
+            assert trange[1] > out[i] + days_offset
+            assert trange[1] < stop_dates[b_range]
+            if i == len(time_range) - 1:
+                assert trange[1] < stop_dates[b_range]
+
+        return
+
+    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
+                                          '2009-01-11.nofile'),
+                                         (dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 11)),
+                                         ('2009-01-04.nofile',
+                                          '2009-01-14.nofile'),
+                                         (dt.datetime(2009, 1, 4),
+                                          dt.datetime(2009, 1, 14)), 2, 2),
+                                        (('2009-01-01.nofile',
+                                          '2009-01-11.nofile'),
+                                         (dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 11)),
+                                         ('2009-01-04.nofile',
+                                          '2009-01-14.nofile'),
+                                         (dt.datetime(2009, 1, 4),
+                                          dt.datetime(2009, 1, 14)), 3, 1),
+                                        (('2009-01-01.nofile',
+                                          '2009-01-11.nofile'),
+                                         (dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 11)),
+                                         ('2009-01-04.nofile',
+                                          '2009-01-14.nofile'),
+                                         (dt.datetime(2009, 1, 4),
+                                          dt.datetime(2009, 1, 14)), 1, 4),
+                                        (('2009-01-01.nofile',
+                                          '2009-01-11.nofile'),
+                                         (dt.datetime(2009, 1, 1),
+                                          dt.datetime(2009, 1, 11)),
+                                         ('2009-01-05.nofile',
+                                          '2009-01-15.nofile'),
+                                         (dt.datetime(2009, 1, 5),
+                                          dt.datetime(2009, 1, 15)), 2, 3)])
+    def test_iterate_fname_season_with_frequency_and_width_incl(self, values):
+        """File iteration in bounds with step/width>1, includes stop bounds"""
+        starts = values[0]
+        start_dates = values[1]
+        stops = values[2]
+        stop_dates = values[3]
+        step = values[4]
+        width = values[5]
+        freq_str = str(step) + 'D'
+        self.testInst.bounds = (starts, stops, step, width)
+
+        dates = []
+        time_range = []
+        for inst in self.testInst:
+            dates.append(inst.date)
+            time_range.append((inst.index[0], inst.index[-1]))
+        days_offset = pds.DateOffset(days=width - 1)
+
+        # get dates that should be there, manually
+        out = []
+        for start, stop in zip(start_dates, stop_dates):
+            tdate = stop - days_offset
+            out.extend(pds.date_range(start, tdate, freq=freq_str).tolist())
+        assert np.all(dates == out)
+
+        # verify range of loaded data
+        for i, trange in enumerate(time_range):
+            # determine which range we are in
+            b_range = 0
+            while out[i] > stop_dates[b_range]:
+                b_range += 1
+            # check on data range
+            assert trange[0] == out[i]
+            assert trange[1] > out[i] + days_offset
+            assert trange[1] < stop_dates[b_range] + pds.DateOffset(days=1)
+            if i == len(time_range) - 1:
+                assert trange[1] > stop_dates[b_range]
 
         return
 
