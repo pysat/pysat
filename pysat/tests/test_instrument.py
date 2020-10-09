@@ -1086,7 +1086,7 @@ class TestBasics():
                 # check loaded range is correct
                 assert trange[0] == out['expected_times'][i]
                 check = out['expected_times'][i] + out['width'] \
-                        - pds.DateOffset(days=1)
+                    - pds.DateOffset(days=1)
                 assert trange[1] > check
                 assert trange[1] < out['stops'][b_range] + pds.DateOffset(
                     days=1)
@@ -1101,7 +1101,7 @@ class TestBasics():
                 assert trange[0] == out['expected_times'][i]
                 # check end against expectations
                 check = out['expected_times'][i] + out['width'] \
-                        - pds.DateOffset(days=1)
+                    - pds.DateOffset(days=1)
                 assert trange[1] > check
                 check = out['stops'][b_range] + pds.DateOffset(days=1)
                 assert trange[1] < check
@@ -1110,8 +1110,8 @@ class TestBasics():
                     assert trange[0] == out['stops'][b_range] - out['width'] \
                            + pds.DateOffset(days=1)
                     assert trange[1] > out['stops'][b_range]
-                    assert trange[1] < out['stops'][b_range] \
-                           + pds.DateOffset(days=1)
+                    check = out['stops'][b_range] + pds.DateOffset(days=1)
+                    assert trange[1] < check
                 elif i == len(out['observed_times']) - 1:
                     # last load at start of bounds
                     assert trange[0] == out['starts'][b_range]
@@ -1147,14 +1147,14 @@ class TestBasics():
                 assert trange[0] == out['expected_times'][i]
                 # check end against expectations
                 check = out['expected_times'][i] + out['width'] \
-                        - pds.DateOffset(days=1)
+                    - pds.DateOffset(days=1)
                 assert trange[1] > check
                 check = out['stops'][b_range] + pds.DateOffset(days=1)
                 assert trange[1] < check
                 if i == 0:
                     # check first load is before end of bounds
                     assert trange[0] < out['stops'][b_range] - out['width'] \
-                           + pds.DateOffset(days=1)
+                        + pds.DateOffset(days=1)
                     assert trange[1] < out['stops'][b_range]
                 elif i == len(out['observed_times']) - 1:
                     # last load at start of bounds
@@ -1242,7 +1242,7 @@ class TestBasics():
                                          dt.datetime(2009, 1, 13), '3D',
                                          pds.DateOffset(days=2)),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3),  '4D',
+                                         dt.datetime(2009, 1, 3), '4D',
                                          pds.DateOffset(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 12), '2D',
@@ -1340,7 +1340,7 @@ class TestBasics():
                                          dt.datetime(2009, 1, 13), '3D',
                                          pds.DateOffset(days=2)),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3),  '4D',
+                                         dt.datetime(2009, 1, 3), '4D',
                                          pds.DateOffset(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 12), '2D',
