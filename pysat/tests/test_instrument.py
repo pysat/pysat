@@ -971,89 +971,30 @@ class TestBasics():
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='10D').tolist())
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3), '2D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '2D',
-                                         pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '3D',
-                                         pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 17), '5D',
-                                         pds.DateOffset(days=1))
-                                        ])
-    def test_iterate_bounds_with_frequency_and_width(self, values):
-        """Iterate via date with mixed step/width, excludes stop date"""
-        start = values[0]
-        stop = values[1]
-        step = values[2]
-        width = values[3]
-        self.testInst.bounds = (start, stop, step, width)
-        dates = []
-        time_range = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-            time_range.append((inst.index[0], inst.index[-1]))
-        out = pds.date_range(start, stop - width + pds.DateOffset(days=1),
-                             freq=step).tolist()
-        assert np.all(dates == out)
-        # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
-            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            assert trange[1] < stop
+    def support_iter_evaluations(self, values, for_loop=False, reverse=False):
+        """Supports testing of .next/.prev via dates/files"""
+        # first, treat with no processing to provide testing as inputs
+        # supplied
+        if len(values) == 4:
+            # testing by date
+            starts = values[0]
+            stops = values[1]
+            step = values[2]
+            width = values[3]
+            self.testInst.bounds = (starts, stops, step, width)
+        elif len(values) == 6:
+            # testing by file
+            start_files = values[0]
+            starts = values[1]
+            stop_files = values[2]
+            stops = values[3]
+            step = values[4]
+            width = values[5]
+            self.testInst.bounds = (start_files, stop_files, step, width)
 
-        return
-
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '2D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '3D',
-                                         pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '1D',
-                                         pds.DateOffset(days=4)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '4D',
-                                         pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '2D',
-                                         pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '3D',
-                                         pds.DateOffset(days=2))])
-    def test_iterate_bounds_with_frequency_and_width_incl(self, values):
-        """Iterate via date with mixed step/width, includes stop date"""
-        start = values[0]
-        stop = values[1]
-        step = values[2]
-        width = values[3]
-        self.testInst.bounds = (start, stop, step, width)
-        dates = []
-        time_range = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-            time_range.append((inst.index[0], inst.index[-1]))
-        ustop = stop - width + pds.DateOffset(days=1)
-        out = pds.date_range(start, ustop, freq=step).tolist()
-        assert np.all(dates == out)
-        # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
-            assert trange[1] >= out[i] + width - pds.DateOffset(days=1)
-            assert trange[1] < stop + pds.DateOffset(days=1)
-            if i == len(time_range) - 1:
-                assert trange[1] > stop
-
-        return
-
-    def support_next_evaluations(self, values, reverse=False):
-        """Supports testing of .next/.prev via dates"""
-        starts = np.asarray([values[0]])
-        stops = np.asarray([values[1]])
+        # create list of dates for consistency of later code
+        starts = np.asarray([starts])
+        stops = np.asarray([stops])
         if len(starts.shape) > 1:
             starts = starts.squeeze().tolist()
             stops = stops.squeeze().tolist()
@@ -1061,25 +1002,37 @@ class TestBasics():
             starts = starts.tolist()
             stops = stops.tolist()
 
-        step = values[2]
-        width = values[3]
-        self.testInst.bounds = (starts, stops, step, width)
-
         # iterate until we run out of bounds
         dates = []
         time_range = []
-        if reverse:
-            iterator = self.testInst.prev
+        if for_loop:
+            # iterate via for loop option
+            for inst in self.testInst:
+                dates.append(inst.date)
+                time_range.append((inst.index[0],
+                                   inst.index[-1]))
         else:
-            iterator = self.testInst.next
-        try:
-            while True:
-                iterator()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
+            # .next/.prev iterations
+            if reverse:
+                iterator = self.testInst.prev
+            else:
+                iterator = self.testInst.next
+            try:
+                while True:
+                    iterator()
+                    dates.append(self.testInst.date)
+                    time_range.append((self.testInst.index[0],
+                                       self.testInst.index[-1]))
+            except StopIteration:
+                # reached the end
+                pass
+
+        # Deal with file or date iteration, make file inputs same as date for
+        # verification purposes.
+        if isinstance(step, int):
+            step = str(step) + 'D'
+        if isinstance(width, int):
+            width = pds.DateOffset(days=width)
 
         out = []
         for start, stop in zip(starts, stops):
@@ -1101,7 +1054,7 @@ class TestBasics():
     def verify_inclusive_iteration(self, out, forward=True):
         """Verify loaded dates for inclusive iteration, forward or backward"""
         if forward:
-            # verify range of loaded data
+            # verify range of loaded data when iterating forward
             for i, trange in enumerate(out['observed_times']):
                 # determine which range we are in
                 b_range = 0
@@ -1115,7 +1068,7 @@ class TestBasics():
                 assert trange[1] < out['stops'][b_range] + pds.DateOffset(
                     days=1)
         else:
-            # verify range of loaded data
+            # verify range of loaded data when going backwards
             for i, trange in enumerate(out['observed_times']):
                 # determine which range we are in
                 b_range = 0
@@ -1127,7 +1080,8 @@ class TestBasics():
                 check = out['expected_times'][i] + out['width'] \
                         - pds.DateOffset(days=1)
                 assert trange[1] > check
-                assert trange[1] < out['stops'][b_range] + pds.DateOffset(days=1)
+                check = out['stops'][b_range] + pds.DateOffset(days=1)
+                assert trange[1] < check
                 if i == 0:
                     # check first load is before end of bounds
                     assert trange[0] == out['stops'][b_range] - out['width'] \
@@ -1140,6 +1094,7 @@ class TestBasics():
                     assert trange[0] == out['starts'][b_range]
                     assert trange[1] > out['starts'][b_range]
                     assert trange[1] < out['starts'][b_range] + out['width']
+
         return
 
     def verify_exclusive_iteration(self, out, forward=True):
@@ -1187,6 +1142,53 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 3), '2D',
+                                         pds.DateOffset(days=2)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 4), '2D',
+                                         pds.DateOffset(days=3)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 5), '3D',
+                                         pds.DateOffset(days=1)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 17), '5D',
+                                         pds.DateOffset(days=1))
+                                        ])
+    def test_iterate_bounds_with_frequency_and_width(self, values):
+        """Iterate via date with mixed step/width, excludes stop date"""
+        out = self.support_iter_evaluations(values, for_loop=True)
+        # verify range of loaded data
+        self.verify_exclusive_iteration(out, forward=True)
+
+        return
+
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 4), '2D',
+                                         pds.DateOffset(days=2)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 4), '3D',
+                                         pds.DateOffset(days=1)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 4), '1D',
+                                         pds.DateOffset(days=4)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 5), '4D',
+                                         pds.DateOffset(days=1)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 5), '2D',
+                                         pds.DateOffset(days=3)),
+                                        (dt.datetime(2009, 1, 1),
+                                         dt.datetime(2009, 1, 5), '3D',
+                                         pds.DateOffset(days=2))])
+    def test_iterate_bounds_with_frequency_and_width_incl(self, values):
+        """Iterate via date with mixed step/width, includes stop date"""
+        out = self.support_iter_evaluations(values, for_loop=True)
+        # verify range of loaded data
+        self.verify_inclusive_iteration(out, forward=True)
+
+        return
+
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 10), '2D',
                                          pds.DateOffset(days=2)),
                                         (dt.datetime(2009, 1, 1),
@@ -1201,7 +1203,8 @@ class TestBasics():
                                         ])
     def test_next_date_with_frequency_and_width_incl(self, values):
         """Test .next() via date step/width>1, includes stop date"""
-        out = self.support_next_evaluations(values)
+        out = self.support_iter_evaluations(values)
+        # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=True)
 
         return
@@ -1223,7 +1226,7 @@ class TestBasics():
                                          pds.DateOffset(days=1))])
     def test_next_date_with_frequency_and_width(self, values):
         """Test .next() via date step/width>1, excludes stop date"""
-        out = self.support_next_evaluations(values)
+        out = self.support_iter_evaluations(values)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=True)
 
@@ -1250,7 +1253,8 @@ class TestBasics():
                                         ])
     def test_next_date_season_frequency_and_width_incl(self, values):
         """Test .next() via date season step/width>1, includes stop date"""
-        out = self.support_next_evaluations(values)
+        out = self.support_iter_evaluations(values)
+        # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=True)
 
         return
@@ -1276,7 +1280,7 @@ class TestBasics():
                                         ])
     def test_next_date_season_frequency_and_width(self, values):
         """Test .next() via date season step/width>1, excludes stop date"""
-        out = self.support_next_evaluations(values)
+        out = self.support_iter_evaluations(values)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=True)
 
@@ -1297,7 +1301,8 @@ class TestBasics():
                                         ])
     def test_prev_date_with_frequency_and_width_incl(self, values):
         """Test .prev() via date step/width>1, includes stop date"""
-        out = self.support_next_evaluations(values, reverse=True)
+        out = self.support_iter_evaluations(values, reverse=True)
+        # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=False)
 
         return
@@ -1319,7 +1324,7 @@ class TestBasics():
                                          pds.DateOffset(days=1))])
     def test_prev_date_with_frequency_and_width(self, values):
         """Test .prev() via date step/width>1, excludes stop date"""
-        out = self.support_next_evaluations(values, reverse=True)
+        out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=False)
 
@@ -1346,7 +1351,7 @@ class TestBasics():
                                         ])
     def test_prev_date_season_frequency_and_width_incl(self, values):
         """Test .prev() via date season step/width>1, includes stop date"""
-        out = self.support_next_evaluations(values, reverse=True)
+        out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=False)
 
@@ -1373,7 +1378,7 @@ class TestBasics():
                                         ])
     def test_prev_date_season_frequency_and_width(self, values):
         """Test .prev() via date season step/width>1, excludes stop date"""
-        out = self.support_next_evaluations(values, reverse=True)
+        out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=False)
 
@@ -1547,36 +1552,10 @@ class TestBasics():
                                         ])
     def test_iterate_over_bounds_set_by_date_season_step_width(self, values):
         """Iterate over season, step/width > 1, excludes stop bounds"""
-        starts = values[0]
-        stops = values[1]
-        step = values[2]
-        width = values[3]
-        self.testInst.bounds = (starts, stops, step, width)
 
-        # iterate over bounds via Instrument and collect dates
-        dates = []
-        time_range = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-            time_range.append((inst.index[0], inst.index[-1]))
-
-        # get dates that should be there, manually
-        out = []
-        for start, stop in zip(starts, stops):
-            tdate = stop - width + pds.DateOffset(days=1)
-            out.extend(pds.date_range(start, tdate, freq=step).tolist())
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values, for_loop=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            # determine which range we are in
-            b_range = 0
-            while out[i] > stops[b_range]:
-                b_range += 1
-            # check loaded range is correct
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + width - pds.DateOffset(days=1)
-            assert trange[1] < stops[b_range]
+        self.verify_exclusive_iteration(out, forward=True)
 
         return
 
@@ -1601,38 +1580,9 @@ class TestBasics():
                                         ])
     def test_iterate_bounds_set_by_date_season_step_width_incl(self, values):
         """Iterate over season, step/width > 1, includes stop bounds"""
-        starts = values[0]
-        stops = values[1]
-        step = values[2]
-        width = values[3]
-        self.testInst.bounds = (starts, stops, step, width)
-
-        # iterate over bounds via Instrument and collect dates
-        dates = []
-        time_range = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-            time_range.append((inst.index[0], inst.index[-1]))
-
-        # get dates that should be there, manually
-        out = []
-        for start, stop in zip(starts, stops):
-            tdate = stop - width + pds.DateOffset(days=1)
-            out.extend(pds.date_range(start, tdate, freq=step).tolist())
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values, for_loop=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            # determine which range we are in
-            b_range = 0
-            while out[i] > stops[b_range]:
-                b_range += 1
-            # check on data range
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + width - pds.DateOffset(days=1)
-            assert trange[1] < stops[b_range] + pds.DateOffset(days=1)
-            if i == len(time_range) - 1:
-                assert trange[1] > stops[b_range]
+        self.verify_inclusive_iteration(out, forward=True)
 
         return
 
@@ -1806,27 +1756,9 @@ class TestBasics():
                                          3, 1)])
     def test_iterate_bounds_fname_with_frequency_and_width(self, values):
         """File iteration in bounds with step/width>1, excludes stop bounds"""
-        start = values[0]
-        start_date = values[1]
-        stop = values[2]
-        stop_date = values[3]
-        self.testInst.bounds = (start, stop, values[4], values[5])
-
-        dates = []
-        time_range = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-            time_range.append((inst.index[0], inst.index[-1]))
-        days_offset = pds.DateOffset(days=values[5] - 1)
-        out = pds.date_range(start_date, stop_date - days_offset,
-                             freq=str(values[4]) + 'D').tolist()
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values, for_loop=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_date
+        self.verify_exclusive_iteration(out, forward=True)
 
         return
 
@@ -1852,29 +1784,9 @@ class TestBasics():
                                          2, 3)])
     def test_iterate_bounds_fname_with_frequency_and_width_incl(self, values):
         """File iteration in bounds with step/width>1, includes stop bounds"""
-        start = values[0]
-        start_date = values[1]
-        stop = values[2]
-        stop_date = values[3]
-        self.testInst.bounds = (start, stop, values[4], values[5])
-
-        dates = []
-        time_range = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-            time_range.append((inst.index[0], inst.index[-1]))
-        days_offset = pds.DateOffset(days=values[5] - 1)
-        out = pds.date_range(start_date, stop_date - days_offset,
-                             freq=str(values[4]) + 'D').tolist()
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values, for_loop=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_date + pds.DateOffset(days=1)
-            if i == len(time_range) - 1:
-                assert trange[1] > stop_date
+        self.verify_inclusive_iteration(out, forward=True)
 
         return
 
@@ -1904,39 +1816,9 @@ class TestBasics():
                                           dt.datetime(2009, 1, 15)), 3, 1)])
     def test_iterate_fname_season_with_frequency_and_width(self, values):
         """File season iteration with step/width>1, excludes stop bounds"""
-        starts = values[0]
-        start_dates = values[1]
-        stops = values[2]
-        stop_dates = values[3]
-        step = values[4]
-        width = values[5]
-        freq_str = str(step) + 'D'
-        self.testInst.bounds = (starts, stops, step, width)
-
-        dates = []
-        time_range = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-            time_range.append((inst.index[0], inst.index[-1]))
-        days_offset = pds.DateOffset(days=width - 1)
-
-        # get dates that should be there, manually
-        out = []
-        for start, stop in zip(start_dates, stop_dates):
-            tdate = stop - days_offset
-            out.extend(pds.date_range(start, tdate, freq=freq_str).tolist())
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values, for_loop=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            # determine which range we are in
-            b_range = 0
-            while out[i] > stop_dates[b_range]:
-                b_range += 1
-            # check on data range
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_dates[b_range]
+        self.verify_exclusive_iteration(out, forward=True)
 
         return
 
@@ -1974,41 +1856,9 @@ class TestBasics():
                                           dt.datetime(2009, 1, 15)), 2, 3)])
     def test_iterate_fname_season_with_frequency_and_width_incl(self, values):
         """File iteration in bounds with step/width>1, includes stop bounds"""
-        starts = values[0]
-        start_dates = values[1]
-        stops = values[2]
-        stop_dates = values[3]
-        step = values[4]
-        width = values[5]
-        freq_str = str(step) + 'D'
-        self.testInst.bounds = (starts, stops, step, width)
-
-        dates = []
-        time_range = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-            time_range.append((inst.index[0], inst.index[-1]))
-        days_offset = pds.DateOffset(days=width - 1)
-
-        # get dates that should be there, manually
-        out = []
-        for start, stop in zip(start_dates, stop_dates):
-            tdate = stop - days_offset
-            out.extend(pds.date_range(start, tdate, freq=freq_str).tolist())
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values, for_loop=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            # determine which range we are in
-            b_range = 0
-            while out[i] > stop_dates[b_range]:
-                b_range += 1
-            # check on data range
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_dates[b_range] + pds.DateOffset(days=1)
-            if i == len(time_range) - 1:
-                assert trange[1] > stop_dates[b_range]
+        self.verify_inclusive_iteration(out, forward=True)
 
         return
 
@@ -2034,34 +1884,9 @@ class TestBasics():
                                          dt.datetime(2009, 1, 12), 2, 1)])
     def test_next_fname_with_frequency_and_width(self, values):
         """Test .next() via fname step/width>1, excludes stop file"""
-        start = values[0]
-        start_date = values[1]
-        stop = values[2]
-        stop_date = values[3]
-        self.testInst.bounds = (start, stop, values[4], values[5])
-        days_offset = pds.DateOffset(days=values[5] - 1)
-
-        # iterate until we run out of bounds
-        dates = []
-        time_range = []
-        try:
-            while True:
-                self.testInst.next()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
-
-        out = pds.date_range(start_date, stop_date - days_offset,
-                             freq=str(values[4]) + 'D').tolist()
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_date
+        self.verify_exclusive_iteration(out, forward=True)
 
         return
 
@@ -2088,36 +1913,9 @@ class TestBasics():
                                         ])
     def test_next_fname_with_frequency_and_width_incl(self, values):
         """Test .next() via fname step/width>1, includes stop file"""
-        start = values[0]
-        start_date = values[1]
-        stop = values[2]
-        stop_date = values[3]
-        self.testInst.bounds = (start, stop, values[4], values[5])
-        days_offset = pds.DateOffset(days=values[5] - 1)
-
-        # iterate until we run out of bounds
-        dates = []
-        time_range = []
-        try:
-            while True:
-                self.testInst.next()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
-
-        out = pds.date_range(start_date, stop_date - days_offset,
-                             freq=str(values[4]) + 'D').tolist()
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_date + pds.DateOffset(days=1)
-            if i == len(time_range) - 1:
-                assert trange[1] > stop_date
+        self.verify_inclusive_iteration(out, forward=True)
 
         return
 
@@ -2147,44 +1945,9 @@ class TestBasics():
                                           dt.datetime(2009, 1, 15)), 3, 1)])
     def test_next_fname_season_with_frequency_and_width(self, values):
         """File next season with step/width>1, excludes stop bounds"""
-        starts = values[0]
-        start_dates = values[1]
-        stops = values[2]
-        stop_dates = values[3]
-        step = values[4]
-        width = values[5]
-        freq_str = str(step) + 'D'
-        days_offset = pds.DateOffset(days=width - 1)
-        self.testInst.bounds = (starts, stops, step, width)
-
-        dates = []
-        time_range = []
-        try:
-            while True:
-                self.testInst.next()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
-
-        # get dates that should be there, manually
-        out = []
-        for start, stop in zip(start_dates, stop_dates):
-            tdate = stop - days_offset
-            out.extend(pds.date_range(start, tdate, freq=freq_str).tolist())
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            # determine which range we are in
-            b_range = 0
-            while out[i] > stop_dates[b_range]:
-                b_range += 1
-            # check on data range
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_dates[b_range]
+        self.verify_exclusive_iteration(out, forward=True)
 
         return
 
@@ -2222,47 +1985,9 @@ class TestBasics():
                                           dt.datetime(2009, 1, 15)), 2, 3)])
     def test_next_fname_season_with_frequency_and_width_incl(self, values):
         """File next season with step/width>1, includes stop bounds"""
-        starts = values[0]
-        start_dates = values[1]
-        stops = values[2]
-        stop_dates = values[3]
-        step = values[4]
-        width = values[5]
-        freq_str = str(step) + 'D'
-        days_offset = pds.DateOffset(days=width - 1)
-
-        self.testInst.bounds = (starts, stops, step, width)
-
-        dates = []
-        time_range = []
-        try:
-            while True:
-                self.testInst.next()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
-
-        # get dates that should be there, manually
-        out = []
-        for start, stop in zip(start_dates, stop_dates):
-            tdate = stop - days_offset
-            out.extend(pds.date_range(start, tdate, freq=freq_str).tolist())
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            # determine which range we are in
-            b_range = 0
-            while out[i] > stop_dates[b_range]:
-                b_range += 1
-            # check on data range
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_dates[b_range] + pds.DateOffset(days=1)
-            if i == len(time_range) - 1:
-                assert trange[1] > stop_dates[b_range]
+        self.verify_inclusive_iteration(out, forward=True)
 
         return
 
@@ -2293,33 +2018,9 @@ class TestBasics():
                                          2, 1)])
     def test_prev_fname_with_frequency_and_width(self, values):
         """Test prev() fname step/width>1, excludes stop bound"""
-        start = values[0]
-        start_date = values[1]
-        stop = values[2]
-        stop_date = values[3]
-        self.testInst.bounds = (start, stop, values[4], values[5])
-        days_offset = pds.DateOffset(days=values[5] - 1)
-
-        dates = []
-        time_range = []
-        try:
-            while True:
-                self.testInst.prev()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
-        # verification dates, reverse order
-        out = pds.date_range(start_date, stop_date - days_offset,
-                             freq=str(values[4]) + 'D').tolist()[::-1]
-        assert np.all(dates == out)
+        out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            if i == len(time_range) - 1:
-                assert trange[1] < stop_date
+        self.verify_exclusive_iteration(out, forward=False)
 
         return
 
@@ -2347,34 +2048,9 @@ class TestBasics():
     def test_prev_fname_with_frequency_and_width_incl(self, values):
         """Test prev() fname step/width>1, includes bounds stop date"""
 
-        start = values[0]
-        start_date = values[1]
-        stop = values[2]
-        stop_date = values[3]
-        self.testInst.bounds = (start, stop, values[4], values[5])
-        days_offset = pds.DateOffset(days=values[5] - 1)
-
-        dates = []
-        time_range = []
-        try:
-            while True:
-                self.testInst.prev()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
-        # verification dates, reverse order
-        out = pds.date_range(start_date, stop_date - days_offset,
-                             freq=str(values[4]) + 'D').tolist()[::-1]
-        assert np.all(dates == out)
+        out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_date + pds.DateOffset(days=1)
-            if i == len(time_range) - 1:
-                assert trange[1] < start_date + pds.DateOffset(days=values[5])
+        self.verify_inclusive_iteration(out, forward=False)
 
         return
 
@@ -2404,48 +2080,9 @@ class TestBasics():
                                           dt.datetime(2009, 1, 15)), 3, 1)])
     def test_prev_fname_season_with_frequency_and_width(self, values):
         """File prev season with step/width>1, excludes stop bounds"""
-        starts = values[0]
-        start_dates = values[1]
-        stops = values[2]
-        stop_dates = values[3]
-        step = values[4]
-        width = values[5]
-        freq_str = str(step) + 'D'
-        days_offset = pds.DateOffset(days=width - 1)
-        self.testInst.bounds = (starts, stops, step, width)
-
-        dates = []
-        time_range = []
-        try:
-            while True:
-                self.testInst.prev()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
-
-        # get dates that should be there, manually
-        out = []
-        for start, stop in zip(start_dates, stop_dates):
-            tdate = stop - days_offset
-            out.extend(pds.date_range(start, tdate, freq=freq_str).tolist())
-        out = out[::-1]
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            # determine which range we are in
-            b_range = 0
-            while out[i] > stop_dates[b_range]:
-                b_range += 1
-            # check on data range
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_dates[b_range]
-            if i == len(time_range) - 1:
-                check = start_dates[b_range] + pds.DateOffset(days=width)
-                assert trange[1] < check
+        self.verify_exclusive_iteration(out, forward=False)
 
         return
 
@@ -2483,49 +2120,9 @@ class TestBasics():
                                           dt.datetime(2009, 1, 15)), 2, 3)])
     def test_prev_fname_season_with_frequency_and_width_incl(self, values):
         """File prev season with step/width>1, includes stop bounds"""
-        starts = values[0]
-        start_dates = values[1]
-        stops = values[2]
-        stop_dates = values[3]
-        step = values[4]
-        width = values[5]
-        freq_str = str(step) + 'D'
-        days_offset = pds.DateOffset(days=width - 1)
-
-        self.testInst.bounds = (starts, stops, step, width)
-
-        dates = []
-        time_range = []
-        try:
-            while True:
-                self.testInst.prev()
-                dates.append(self.testInst.date)
-                time_range.append((self.testInst.index[0],
-                                   self.testInst.index[-1]))
-        except StopIteration:
-            pass
-
-        # get dates that should be there, manually
-        out = []
-        for start, stop in zip(start_dates, stop_dates):
-            tdate = stop - days_offset
-            out.extend(pds.date_range(start, tdate, freq=freq_str).tolist())
-        out = out[::-1]
-        assert np.all(dates == out)
-
+        out = self.support_iter_evaluations(values, reverse=True)
         # verify range of loaded data
-        for i, trange in enumerate(time_range):
-            # determine which range we are in
-            b_range = 0
-            while out[i] > stop_dates[b_range]:
-                b_range += 1
-            # check on data range
-            assert trange[0] == out[i]
-            assert trange[1] > out[i] + days_offset
-            assert trange[1] < stop_dates[b_range] + pds.DateOffset(days=1)
-            if i == len(time_range) - 1:
-                check = start_dates[b_range] + pds.DateOffset(days=width)
-                assert trange[1] < check
+        self.verify_inclusive_iteration(out, forward=False)
 
         return
 
