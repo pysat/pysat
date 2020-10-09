@@ -1142,30 +1142,48 @@ class TestBasics():
                     assert trange[1] < out['starts'][b_range] + out['width']
         return
 
-    def verify_prev_exclusive(self, out):
+    def verify_exclusive_iteration(self, out, forward=True):
+        """Verify loaded dates for exclusive iteration, forward or backward"""
         # verify range of loaded data
-        for i, trange in enumerate(out['observed_times']):
-            # determine which range we are in
-            b_range = 0
-            while out['expected_times'][i] > out['stops'][b_range]:
-                b_range += 1
-            # check start against expectations
-            assert trange[0] == out['expected_times'][i]
-            # check end against expectations
-            check = out['expected_times'][i] + out['width'] \
-                    - pds.DateOffset(days=1)
-            assert trange[1] > check
-            assert trange[1] < out['stops'][b_range] + pds.DateOffset(days=1)
-            if i == 0:
-                # check first load is before end of bounds
-                assert trange[0] < out['stops'][b_range] - out['width'] \
-                    + pds.DateOffset(days=1)
+        if forward:
+            for i, trange in enumerate(out['observed_times']):
+                # determine which range we are in
+                b_range = 0
+                while out['expected_times'][i] > out['stops'][b_range]:
+                    b_range += 1
+                # check loaded range is correct
+                assert trange[0] == out['expected_times'][i]
+                check = out['expected_times'][i] + out['width'] \
+                        - pds.DateOffset(days=1)
+                assert trange[1] > check
                 assert trange[1] < out['stops'][b_range]
-            elif i == len(out['observed_times']) - 1:
-                # last load at start of bounds
-                assert trange[0] == out['starts'][b_range]
-                assert trange[1] > out['starts'][b_range]
-                assert trange[1] < out['starts'][b_range] + out['width']
+
+        else:
+
+            for i, trange in enumerate(out['observed_times']):
+                # determine which range we are in
+                b_range = 0
+                while out['expected_times'][i] > out['stops'][b_range]:
+                    b_range += 1
+                # check start against expectations
+                assert trange[0] == out['expected_times'][i]
+                # check end against expectations
+                check = out['expected_times'][i] + out['width'] \
+                        - pds.DateOffset(days=1)
+                assert trange[1] > check
+                check = out['stops'][b_range] + pds.DateOffset(days=1)
+                assert trange[1] < check
+                if i == 0:
+                    # check first load is before end of bounds
+                    assert trange[0] < out['stops'][b_range] - out['width'] \
+                           + pds.DateOffset(days=1)
+                    assert trange[1] < out['stops'][b_range]
+                elif i == len(out['observed_times']) - 1:
+                    # last load at start of bounds
+                    assert trange[0] == out['starts'][b_range]
+                    assert trange[1] > out['starts'][b_range]
+                    assert trange[1] < out['starts'][b_range] + out['width']
+
         return
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
@@ -1185,15 +1203,6 @@ class TestBasics():
         """Test .next() via date step/width>1, includes stop date"""
         out = self.support_next_evaluations(values)
         self.verify_inclusive_iteration(out, forward=True)
-        # # verify range of loaded data
-        # for i, trange in enumerate(out['observed_times']):
-        #     assert trange[0] == out['expected_times'][i]
-        #     check = out['expected_times'][i] + out['width'] \
-        #             - pds.DateOffset(days=1)
-        #     assert trange[1] > check
-        #     assert trange[1] < out['stops'][0] + pds.DateOffset(days=1)
-        #     if i == len(out['observed_times']) - 1:
-        #         assert trange[1] > out['stops'][0]
 
         return
 
@@ -1216,12 +1225,7 @@ class TestBasics():
         """Test .next() via date step/width>1, excludes stop date"""
         out = self.support_next_evaluations(values)
         # verify range of loaded data
-        for i, trange in enumerate(out['observed_times']):
-            assert trange[0] == out['expected_times'][i]
-            check = out['expected_times'][i] + out['width'] \
-                    - pds.DateOffset(days=1)
-            assert trange[1] > check
-            assert trange[1] < out['stops'][0]
+        self.verify_exclusive_iteration(out, forward=True)
 
         return
 
@@ -1248,17 +1252,6 @@ class TestBasics():
         """Test .next() via date season step/width>1, includes stop date"""
         out = self.support_next_evaluations(values)
         self.verify_inclusive_iteration(out, forward=True)
-        # for i, trange in enumerate(out['observed_times']):
-        #     # determine which range we are in
-        #     b_range = 0
-        #     while out['expected_times'][i] > out['stops'][b_range]:
-        #         b_range += 1
-        #     # check loaded range is correct
-        #     assert trange[0] == out['expected_times'][i]
-        #     check = out['expected_times'][i] + out['width'] \
-        #             - pds.DateOffset(days=1)
-        #     assert trange[1] > check
-        #     assert trange[1] < out['stops'][b_range] + pds.DateOffset(days=1)
 
         return
 
@@ -1284,17 +1277,8 @@ class TestBasics():
     def test_next_date_season_frequency_and_width(self, values):
         """Test .next() via date season step/width>1, excludes stop date"""
         out = self.support_next_evaluations(values)
-        for i, trange in enumerate(out['observed_times']):
-            # determine which range we are in
-            b_range = 0
-            while out['expected_times'][i] > out['stops'][b_range]:
-                b_range += 1
-            # check loaded range is correct
-            assert trange[0] == out['expected_times'][i]
-            check = out['expected_times'][i] + out['width'] \
-                    - pds.DateOffset(days=1)
-            assert trange[1] > check
-            assert trange[1] < out['stops'][b_range]
+        # verify range of loaded data
+        self.verify_exclusive_iteration(out, forward=True)
 
         return
 
@@ -1315,26 +1299,6 @@ class TestBasics():
         """Test .prev() via date step/width>1, includes stop date"""
         out = self.support_next_evaluations(values, reverse=True)
         self.verify_inclusive_iteration(out, forward=False)
-        # # verify range of loaded data
-        # for i, trange in enumerate(out['observed_times']):
-        #     # check start against expectations
-        #     assert trange[0] == out['expected_times'][i]
-        #     # check end against expectations
-        #     check = out['expected_times'][i] + out['width'] \
-        #             - pds.DateOffset(days=1)
-        #     assert trange[1] > check
-        #     assert trange[1] < out['stops'][0] + pds.DateOffset(days=1)
-        #     if i == 0:
-        #         # check first load is at end of bounds
-        #         assert trange[0] == out['stops'][0] - out['width'] \
-        #             + pds.DateOffset(days=1)
-        #         assert trange[1] > out['stops'][0]
-        #         assert trange[1] < out['stops'][0] + pds.DateOffset(days=1)
-        #     elif i == len(out['observed_times']) - 1:
-        #         # last load at start of bounds
-        #         assert trange[0] == out['starts'][0]
-        #         assert trange[1] > out['starts'][0]
-        #         assert trange[1] < out['starts'][0] + out['width']
 
         return
 
@@ -1357,24 +1321,7 @@ class TestBasics():
         """Test .prev() via date step/width>1, excludes stop date"""
         out = self.support_next_evaluations(values, reverse=True)
         # verify range of loaded data
-        for i, trange in enumerate(out['observed_times']):
-            # check start against expectations
-            assert trange[0] == out['expected_times'][i]
-            # check end against expectations
-            check = out['expected_times'][i] + out['width'] \
-                    - pds.DateOffset(days=1)
-            assert trange[1] > check
-            assert trange[1] < out['stops'][0] + pds.DateOffset(days=1)
-            if i == 0:
-                # check first load is before end of bounds
-                assert trange[0] < out['stops'][0] - out['width'] \
-                    + pds.DateOffset(days=1)
-                assert trange[1] < out['stops'][0]
-            elif i == len(out['observed_times']) - 1:
-                # last load at start of bounds
-                assert trange[0] == out['starts'][0]
-                assert trange[1] > out['starts'][0]
-                assert trange[1] < out['starts'][0] + out['width']
+        self.verify_exclusive_iteration(out, forward=False)
 
         return
 
@@ -1402,30 +1349,6 @@ class TestBasics():
         out = self.support_next_evaluations(values, reverse=True)
         # verify range of loaded data
         self.verify_inclusive_iteration(out, forward=False)
-        # for i, trange in enumerate(out['observed_times']):
-        #     # determine which range we are in
-        #     b_range = 0
-        #     while out['expected_times'][i] > out['stops'][b_range]:
-        #         b_range += 1
-        #     # check start against expectations
-        #     assert trange[0] == out['expected_times'][i]
-        #     # check end against expectations
-        #     check = out['expected_times'][i] + out['width'] \
-        #             - pds.DateOffset(days=1)
-        #     assert trange[1] > check
-        #     assert trange[1] < out['stops'][b_range] + pds.DateOffset(days=1)
-        #     if i == 0:
-        #         # check first load is before end of bounds
-        #         assert trange[0] == out['stops'][b_range] - out['width'] \
-        #                + pds.DateOffset(days=1)
-        #         assert trange[1] > out['stops'][b_range]
-        #         assert trange[1] < out['stops'][b_range] \
-        #                + pds.DateOffset(days=1)
-        #     elif i == len(out['observed_times']) - 1:
-        #         # last load at start of bounds
-        #         assert trange[0] == out['starts'][b_range]
-        #         assert trange[1] > out['starts'][b_range]
-        #         assert trange[1] < out['starts'][b_range] + out['width']
 
         return
 
@@ -1452,28 +1375,7 @@ class TestBasics():
         """Test .prev() via date season step/width>1, excludes stop date"""
         out = self.support_next_evaluations(values, reverse=True)
         # verify range of loaded data
-        for i, trange in enumerate(out['observed_times']):
-            # determine which range we are in
-            b_range = 0
-            while out['expected_times'][i] > out['stops'][b_range]:
-                b_range += 1
-            # check start against expectations
-            assert trange[0] == out['expected_times'][i]
-            # check end against expectations
-            check = out['expected_times'][i] + out['width'] \
-                    - pds.DateOffset(days=1)
-            assert trange[1] > check
-            assert trange[1] < out['stops'][b_range] + pds.DateOffset(days=1)
-            if i == 0:
-                # check first load is before end of bounds
-                assert trange[0] < out['stops'][b_range] - out['width'] \
-                    + pds.DateOffset(days=1)
-                assert trange[1] < out['stops'][b_range]
-            elif i == len(out['observed_times']) - 1:
-                # last load at start of bounds
-                assert trange[0] == out['starts'][b_range]
-                assert trange[1] > out['starts'][b_range]
-                assert trange[1] < out['starts'][b_range] + out['width']
+        self.verify_exclusive_iteration(out, forward=False)
 
         return
 
