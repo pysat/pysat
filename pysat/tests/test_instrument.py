@@ -1097,19 +1097,19 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '2D',  
+                                         dt.datetime(2009, 1, 11), '2D',
                                          pds.DateOffset(days=2)),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12), '2D',  
+                                         dt.datetime(2009, 1, 12), '2D',
                                          pds.DateOffset(days=3)),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 13), '3D',  
+                                         dt.datetime(2009, 1, 13), '3D',
                                          pds.DateOffset(days=2)),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3),  '4D',  
+                                         dt.datetime(2009, 1, 3),  '4D',
                                          pds.DateOffset(days=2)),
                                         (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12), '2D',  
+                                         dt.datetime(2009, 1, 12), '2D',
                                          pds.DateOffset(days=1))])
     def test_next_date_with_frequency_and_width(self, values):
         """Test .next() via date step/width>1, excludes stop date"""
