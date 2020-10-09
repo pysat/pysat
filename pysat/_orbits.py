@@ -1,6 +1,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+import datetime as dt
 import functools
 
 import numpy as np
@@ -186,6 +187,24 @@ class Orbits(object):
     def _calcOrbits(self):
         """Prepares data structure for breaking data into orbits. Not intended
         for end user."""
+        # check there isn't an overlapping data set from iteration bounds
+        estr = ' '.join(('Orbit iteration is not currently supported',
+                         'when the pysat.Instrument bounds are',
+                         'configured for loading overlapping',
+                         'data. Please set the Instrument bounds width',
+                         'to be less than or equal to the step size.'))
+        if self.sat._iter_type == 'file':
+            if self.sat._iter_step < self.sat._iter_width:
+                raise ValueError(estr)
+        else:
+            # iterating by date
+            # need to check step (frequency string) against width (DateOffset)
+            step = pds.tseries.frequencies.to_offset(self.sat._iter_step)
+            step = pds.DateOffset(seconds=step.delta.total_seconds())
+            root = dt.datetime(2001, 1, 1)
+            if root + step < root + self.sat._iter_width:
+                raise ValueError(estr)
+
         # if the breaks between orbit have not been defined, define them
         # also, store the data so that grabbing different orbits does not
         # require reloads of whole dataset
