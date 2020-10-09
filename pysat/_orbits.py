@@ -137,7 +137,7 @@ class Orbits(object):
         Returns
         -------
         int or None
-            None if no orbit data. Otherwise, returns orbit number, begining
+            None if no orbit data. Otherwise, returns orbit number, beginning
             with zero. The first and last orbit of a day is somewhat ambiguous.
             The first orbit for day n is generally also the last orbit
             on day n - 1. When iterating forward, the orbit will be labeled
@@ -325,7 +325,7 @@ class Orbits(object):
             orbit_lt_diff = self.sat[self.orbit_index][ind].diff()
 
         # look for time gaps between partial orbits. The full orbital time
-        # period is not required between end of one orbit and begining of next
+        # period is not required between end of one orbit and beginning of next
         # if first orbit is partial.  Also provides another general test of the
         # orbital breaks determined.
         idx, = np.where((orbit_ut_diff / self.orbit_period
@@ -554,14 +554,14 @@ class Orbits(object):
                         self.next()
                     else:
                         # only one complete orbit in file, or less
-                        # check if we are close to begining or end of day
+                        # check if we are close to beginning or end of day
                         date = self.sat.date
                         delta_start = self.sat.index[-1] - date
                         delta_end = (date + pds.DateOffset(days=1)
                                      - self.sat.index[0])
 
                         if delta_start <= self.orbit_period * 1.05:
-                            # near begining
+                            # near beginning
                             # load previous file, then go forward one orbit
                             self.sat.prev()
                             self.next()
@@ -585,10 +585,10 @@ class Orbits(object):
                                 # day.
                                 # In this case, move back again.
                                 # happens when next day doesn't have data
-                                # near begining of the day
+                                # near beginning of the day
                                 self.prev()
                         else:
-                            # not near begining or end, just get the last orbit
+                            # not near beginning or end, just get the last orbit
                             # available (only one)
                             self._getBasicOrbit(orbit=-1)
 
