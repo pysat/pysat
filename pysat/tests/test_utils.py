@@ -1,7 +1,7 @@
 """
 tests the pysat utils area
 """
-from importlib import reload as re_load
+from importlib import reload
 import numpy as np
 import os
 import shutil
@@ -53,9 +53,9 @@ class TestBasics():
         check1 = (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers the change
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat._files = reload(pysat._files)
+        pysat._instrument = reload(pysat._instrument)
+        reload(pysat)
         check2 = (pysat.data_dir == '.')
 
         assert check1 & check2
@@ -66,9 +66,9 @@ class TestBasics():
         assert (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers old settings
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat._files = reload(pysat._files)
+        pysat._instrument = reload(pysat._instrument)
+        reload(pysat)
         assert (pysat.data_dir == self.data_path)
 
     def test_set_data_dir_wrong_path(self):
@@ -106,7 +106,7 @@ class TestCIonly():
         new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
         shutil.move(root, new_root)
 
-        re_load(pysat)
+        reload(pysat)
 
         captured = capsys.readouterr()
         assert captured.out.find("Hi there!") >= 0
