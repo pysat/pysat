@@ -2159,7 +2159,7 @@ class Instrument(object):
                     stops = [self.files.stop_date]
                 # default step size
                 if self._iter_step is None:
-                    self._iter_step = pds.DateOffset(days=1)
+                    self._iter_step = '1D'
                 # default window size
                 if self._iter_width is None:
                     self._iter_width = pds.DateOffset(days=1)
