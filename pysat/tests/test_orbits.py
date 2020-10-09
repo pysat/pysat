@@ -455,6 +455,70 @@ class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
         del self.testInst
 
 
+class TestGeneralOrbitsNonStandardIteration():
+    """Create an iteration window that is larger than step size.
+    Ensure the overlapping data doesn't end up in the orbit iteration."""
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info={'index': 'mlt'},
+                                         update_files=True)
+        self.testInst.bounds = (self.testInst.files.files.index[0],
+                                self.testInst.files.files.index[11],
+                                '2D', pds.DateOffset(days=3))
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst
+
+    def test_no_orbit_overlap_with_overlapping_iteration(self):
+        """Ensure error when overlap in iteration data."""
+        orbit_starts = []
+        orbit_stops = []
+        with pytest.raises(ValueError):
+            for inst in self.testInst.orbits:
+                orbit_starts.append(inst.index[0])
+                orbit_stops.append(inst.index[-1])
+        orbit_starts = pds.Series(orbit_starts)
+        orbit_stops = pds.Series(orbit_stops)
+        assert orbit_starts.is_monotonic_increasing
+        assert orbit_stops.is_monotonic_increasing
+        return
+
+    def test_no_orbit_overlap_with_nonoverlapping_date_iteration(self):
+        """Test no orbit data overlap when overlap in iteration data"""
+        self.testInst.bounds = (self.testInst.files.files.index[0],
+                                self.testInst.files.files.index[11],
+                                '2D', pds.DateOffset(days=2))
+        orbit_starts = []
+        orbit_stops = []
+        for inst in self.testInst.orbits:
+            orbit_starts.append(inst.index[0])
+            orbit_stops.append(inst.index[-1])
+        orbit_starts = pds.Series(orbit_starts)
+        orbit_stops = pds.Series(orbit_stops)
+        assert orbit_starts.is_monotonic_increasing
+        assert orbit_stops.is_monotonic_increasing
+        return
+
+    def test_no_orbit_overlap_with_nonoverlapping_file_iteration(self):
+        """Test no orbit data overlap when no overlap in iteration (file) data
+        """
+        self.testInst.bounds = (self.testInst.files[0], self.testInst.files[11],
+                                2, 2)
+        orbit_starts = []
+        orbit_stops = []
+        for inst in self.testInst.orbits:
+            orbit_starts.append(inst.index[0])
+            orbit_stops.append(inst.index[-1])
+        orbit_starts = pds.Series(orbit_starts)
+        orbit_stops = pds.Series(orbit_stops)
+        assert orbit_starts.is_monotonic_increasing
+        assert orbit_stops.is_monotonic_increasing
+        return
+
+
 class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
 
     def setup(self):
