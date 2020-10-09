@@ -101,7 +101,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    
+
     if num_samples is None:
         if inst_id != '':
             estr = ' '.join(('inst_id will no longer be supported',
