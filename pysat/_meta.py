@@ -18,65 +18,21 @@ class Meta(object):
         DataFrame should be indexed by variable name that contains at minimum
         the standard_name (name), units, and long_name for the data stored in
         the associated pysat Instrument object.
-
-    units_label : str
-        String used to label units in storage. Defaults to 'units'.
-    name_label : str
-        String used to label long_name in storage. Defaults to 'long_name'.
-    notes_label : str
-        String used to label 'notes' in storage. Defaults to 'notes'
-    desc_label : str
-        String used to label variable descriptions in storage.
-        Defaults to 'desc'
-    plot_label : str
-        String used to label variables in plots. Defaults to 'label'
-    axis_label : str
-        Label used for axis on a plot. Defaults to 'axis'
-    scale_label : str
-        string used to label plot scaling type in storage. Defaults to 'scale'
-    min_label : str
-        String used to label typical variable value min limit in storage.
-        Defaults to 'value_min'
-    max_label : str
-        String used to label typical variable value max limit in storage.
-        Defaults to 'value_max'
-    fill_label : str
-        String used to label fill value in storage. Defaults to 'fill' per
-        netCDF4 standard
-    export_nan: list
-         List of labels that should be exported even if their value is nan.
-         By default, metadata with a value of nan will be exluded from export.
-
+    labels : dict
+        Dict where keys are the label attribute names and the values are
+        the label values (default={'units': 'units', 'name': 'long_name',
+                                   'notes': 'notes', 'desc': 'desc',
+                                   'plot': 'plot_label', 'axis': 'axis',
+                                   'scale': 'scale', 'min_val': 'value_min',
+                                   'max_val': 'value_max', 'fill_val': 'fill'})
 
     Attributes
     ----------
     data : pandas.DataFrame
         index is variable standard name, 'units', 'long_name', and other
         defaults are also stored along with additional user provided labels.
-    units_label : str
-        String used to label units in storage. Defaults to 'units'.
-    name_label : str
-        String used to label long_name in storage. Defaults to 'long_name'.
-    notes_label : str
-       String used to label 'notes' in storage. Defaults to 'notes'
-    desc_label : str
-       String used to label variable descriptions in storage.
-       Defaults to 'desc'
-    plot_label : str
-       String used to label variables in plots. Defaults to 'label'
-    axis_label : str
-        Label used for axis on a plot. Defaults to 'axis'
-    scale_label : str
-       string used to label plot scaling type in storage. Defaults to 'scale'
-    min_label : str
-       String used to label typical variable value min limit in storage.
-       Defaults to 'value_min'
-    max_label : str
-       String used to label typical variable value max limit in storage.
-       Defaults to 'value_max'
-    fill_label : str
-        String used to label fill value in storage. Defaults to 'fill' per
-        netCDF4 standard
+    labels : MetaLabels
+        Labels for MetaData attributes
 
     Note
     ----
@@ -111,49 +67,51 @@ class Meta(object):
         # set a couple base units
         # note that other base parameters not set below will
         # be assigned a default value
-        meta['name'] = {'long_name':string, 'units':string}
+        meta['name'] = {'long_name': string, 'units': string}
         # update 'units' to new value
-        meta['name'] = {'units':string}
+        meta['name'] = {'units': string}
         # update 'long_name' to new value
-        meta['name'] = {'long_name':string}
+        meta['name'] = {'long_name': string}
         # attach new info with partial information, 'long_name' set to 'name2'
-        meta['name2'] = {'units':string}
+        meta['name2'] = {'units': string}
         # units are set to '' by default
-        meta['name3'] = {'long_name':string}
+        meta['name3'] = {'long_name': string}
 
         # assigning custom meta parameters
-        meta['name4'] = {'units':string, 'long_name':string
-                         'custom1':string, 'custom2':value}
-        meta['name5'] = {'custom1':string, 'custom3':value}
+        meta['name4'] = {'units': string, 'long_name': string
+                         'custom1': string, 'custom2': value}
+        meta['name5'] = {'custom1': string, 'custom3': value}
 
         # assign multiple variables at once
-        meta[['name1', 'name2']] = {'long_name':[string1, string2],
-                                    'units':[string1, string2],
-                                    'custom10':[string1, string2]}
+        meta[['name1', 'name2']] = {'long_name': [string1, string2],
+                                    'units': [string1, string2],
+                                    'custom10': [string1, string2]}
 
         # assiging metadata for n-Dimensional variables
         meta2 = pysat.Meta()
-        meta2['name41'] = {'long_name':string, 'units':string}
-        meta2['name42'] = {'long_name':string, 'units':string}
-        meta['name4'] = {'meta':meta2}
+        meta2['name41'] = {'long_name': string, 'units': string}
+        meta2['name42'] = {'long_name': string, 'units': string}
+        meta['name4'] = {'meta': meta2}
+
         # or
         meta['name4'] = meta2
         meta['name4'].children['name41']
 
         # mixture of 1D and higher dimensional data
         meta = pysat.Meta()
-        meta['dm'] = {'units':'hey', 'long_name':'boo'}
-        meta['rpa'] = {'units':'crazy', 'long_name':'boo_whoo'}
+        meta['dm'] = {'units': 'hey', 'long_name': 'boo'}
+        meta['rpa'] = {'units': 'crazy', 'long_name': 'boo_whoo'}
         meta2 = pysat.Meta()
-        meta2[['higher', 'lower']] = {'meta':[meta, None],
-                                      'units':[None, 'boo'],
-                                      'long_name':[None, 'boohoo']}
+        meta2[['higher', 'lower']] = {'meta': [meta, None],
+                                      'units': [None, 'boo'],
+                                      'long_name': [None, 'boohoo']}
 
         # assign from another Meta object
         meta[key1] = meta2[key2]
 
         # access fill info for a variable, presuming default label
         meta[key1, 'fill']
+
         # access same info, even if 'fill' not used to label fill values
         meta[key1, meta.fill_label]
 
@@ -163,41 +121,24 @@ class Meta(object):
         # within the meta object are updated
         meta.fill_label = '_FillValue'
         meta.plot_label = 'Special Plot Variable'
+
         # this feature is useful when converting metadata within pysat
         # so that it is consistent with externally imposed file standards
 
     """
 
-    def __init__(self, metadata=None, units_label='units',
-                 name_label='long_name', notes_label='notes',
-                 desc_label='desc', plot_label='label', axis_label='axis',
-                 scale_label='scale', min_label='value_min',
-                 max_label='value_max', fill_label='fill',
-                 export_nan=None):
-
-        if export_nan is None:
-            export_nan = []
+    def __init__(self, metadata=None,
+                 labels={'units': 'units', 'name': 'long_name',
+                         'notes': 'notes', 'desc': 'desc',
+                         'plot': 'plot_label', 'axis': 'axis',
+                         'scale': 'scale', 'min_val': 'value_min',
+                         'max_val': 'value_max', 'fill_val': 'fill'}):
 
         # set mutability of Meta attributes
         self.mutable = True
 
-        # set units and name labels directly
-        self._units_label = units_label
-        self._name_label = name_label
-        self._notes_label = notes_label
-        self._desc_label = desc_label
-        self._plot_label = plot_label
-        self._axis_label = axis_label
-        self._scale_label = scale_label
-        self._min_label = min_label
-        self._max_label = max_label
-        self._fill_label = fill_label
-
-        # by default metadata with a value of nan will not be exported
-        # unless the name is in the _export_nan list. Initialize the list
-        # with the fill label, since it is reasonable to assume that a fill
-        # value of nan would be intended to be exported
-        self._export_nan = [fill_label] + export_nan
+        # Set the labels
+        self.labels = MetaLabels(**labels)
 
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
@@ -215,16 +156,8 @@ class Meta(object):
                                           'type. See other constructors for',
                                           ' alternate inputs.')))
         else:
-            self._data = pds.DataFrame(None, columns=[self._units_label,
-                                                      self._name_label,
-                                                      self._desc_label,
-                                                      self._plot_label,
-                                                      self._axis_label,
-                                                      self._scale_label,
-                                                      self.notes_label,
-                                                      self._min_label,
-                                                      self._max_label,
-                                                      self._fill_label])
+            columns = [mlab for mlab in dir(self.labels) if not callable(mlab)]
+            self._data = pds.DataFrame(None, columns=columns)
 
         # establish attributes intrinsic to object, before user can
         # add any
@@ -332,16 +265,7 @@ class Meta(object):
         other_updated = other.copy()
 
         # Update the Meta labels
-        other_updated.units_label = self.units_label
-        other_updated.name_label = self.name_label
-        other_updated.notes_label = self.notes_label
-        other_updated.desc_label = self.desc_label
-        other_updated.plot_label = self.plot_label
-        other_updated.axis_label = self.axis_label
-        other_updated.scale_label = self.scale_label
-        other_updated.min_label = self.min_label
-        other_updated.max_label = self.max_label
-        other_updated.fill_label = self.fill_label
+        other_updated.labels = self.labels
 
         # Return the updated Meta class object
         return other_updated
@@ -356,16 +280,7 @@ class Meta(object):
 
         """
 
-        self.units_label = other.units_label
-        self.name_label = other.name_label
-        self.notes_label = other.notes_label
-        self.desc_label = other.desc_label
-        self.plot_label = other.plot_label
-        self.axis_label = other.axis_label
-        self.scale_label = other.scale_label
-        self.min_label = other.min_label
-        self.max_label = other.max_label
-        self.fill_label = other.fill_label
+        self.labels = other.labels
         return
 
     def __contains__(self, other):
@@ -405,18 +320,8 @@ class Meta(object):
         """
         nvar = len([kk for kk in self.keys()])
         out_str = ''.join(['Meta(metadata=', self._data.__repr__(),
-                           ', units_label=', self.units_label.__repr__(),
-                           ', name_label=', self.name_label.__repr__(),
-                           ', notes_label=', self.notes_label.__repr__(),
-                           ', desc_label=', self.desc_label.__repr__(),
-                           ', plot_label=', self.plot_label.__repr__(),
-                           ', axis_label=', self.axis_label.__repr__(),
-                           ', scale_label=', self.scale_label.__repr__(),
-                           ', min_label=', self.min_label.__repr__(),
-                           ', max_label=', self.max_label.__repr__(),
-                           ', fill_label=', self.fill_label.__repr__(),
-                           ', export_nan={:})'.format(self._export_nan),
-                           ' -> {:d} Variables'.format(nvar)])
+                           ', labels=', self.labels.__repr__(),
+                           ') -> {:d} Variables'.format(nvar)])
         return out_str
 
     def __str__(self, long_str=True):
@@ -457,11 +362,7 @@ class Meta(object):
         # Print the longer output
         if long_str:
             # Print all the metadata labels
-            if nlabels > 0:
-                ncol = 5
-                out_str += "\nMetadata labels:\n"
-                out_str += core_utils.fmt_output_in_cols(labs, ncols=ncol,
-                                                         max_num=nlabels)
+            out_str += "\n{:s}".format(self.labels.__str__())
 
             # Print a subset of the metadata variables, divided by order
             ncol = 3
@@ -479,8 +380,11 @@ class Meta(object):
 
     def _insert_default_values(self, input_name):
 
-        default_str = ''
-        default_nan = np.NaN
+        default_labels = {'units': '', 'name': '', 'notes': '', 'desc': '',
+                          'plot': '', 'axis': '', 'scale': 'linear',
+                          'min_val': np.nan, 'max_val': np.nan,
+                          'fill_val': np.nan}
+
         labels = [self.units_label, self.name_label, self.notes_label,
                   self.desc_label, self.plot_label, self.axis_label,
                   self.scale_label, self.min_label, self.max_label,
@@ -838,43 +742,43 @@ class Meta(object):
 
     @property
     def units_label(self):
-        return self._units_label
+        return self.labels.units
 
     @property
     def name_label(self):
-        return self._name_label
+        return self.labels.name
 
     @property
     def notes_label(self):
-        return self._notes_label
+        return self.labels.notes
 
     @property
     def desc_label(self):
-        return self._desc_label
+        return self.labels.desc
 
     @property
     def plot_label(self):
-        return self._plot_label
+        return self.labels.plot
 
     @property
     def axis_label(self):
-        return self._axis_label
+        return self.labels.axis
 
     @property
     def scale_label(self):
-        return self._scale_label
+        return self.labels.scale
 
     @property
     def min_label(self):
-        return self._min_label
+        return self.labels.min_val
 
     @property
     def max_label(self):
-        return self._max_label
+        return self.labels.max_val
 
     @property
     def fill_label(self):
-        return self._fill_label
+        return self.labels.fill_val
 
     @units_label.setter
     def units_label(self, new_label):
@@ -1375,3 +1279,153 @@ class Meta(object):
     #     """not implemented yet, load metadata from dict of items/list types
     #     """
     #     pass
+
+
+class MetaLabels(object):
+    """ Stores metadata labels for Instrument instance
+
+    Parameters
+    ----------
+    units : str
+        String used to label units in storage. (default='units')
+    name : str
+        String used to label name in storage. (default='long_name')
+    notes : str
+        String used to label 'notes' in storage. (default='notes')
+    desc : str
+        String used to label variable descriptions in storage.
+        (default='desc')
+    plot : str
+        String used to label variables in plots. (default='label')
+    axis : str
+        Label used for axis on a plot. (default='axis')
+    scale : str
+        string used to label plot scaling type in storage. (default='scale')
+    min_val : str
+        String used to label typical variable value min limit in storage.
+        (default='value_min')
+    max_val : str
+        String used to label typical variable value max limit in storage.
+        (default='value_max')
+    fill_val : str
+        String used to label fill value in storage. (default='fill') per
+        netCDF4 standard
+    export_nan: list
+         List of labels that should be exported even if their value is nan.
+         By default, metadata with a value of nan will be exluded from export.
+
+
+    Attributes
+    ----------
+    data : pandas.DataFrame
+        index is variable standard name, 'units', 'long_name', and other
+        defaults are also stored along with additional user provided labels.
+    units_label : str
+        String used to label units in storage. (default='units'.
+    name_label : str
+        String used to label long_name in storage. (default='long_name'.
+    notes_label : str
+       String used to label 'notes' in storage. (default='notes'
+    desc_label : str
+       String used to label variable descriptions in storage.
+       (default='desc'
+    plot_label : str
+       String used to label variables in plots. (default='label'
+    axis_label : str
+        Label used for axis on a plot. (default='axis'
+    scale_label : str
+       string used to label plot scaling type in storage. (default='scale'
+    min_label : str
+       String used to label typical variable value min limit in storage.
+       (default='value_min'
+    max_label : str
+       String used to label typical variable value max limit in storage.
+       (default='value_max'
+    fill_label : str
+        String used to label fill value in storage. (default='fill' per
+        netCDF4 standard
+
+    Note
+    ----
+    Meta object preserves the case of variables and attributes as it first
+    receives the data. Subsequent calls to set new metadata with the same
+    variable or attribute will use case of first call. Accessing or setting
+    data thereafter is case insensitive. In practice, use is case insensitive
+    but the original case is preserved. Case preseveration is built in to
+    support writing files with a desired case to meet standards.
+
+    Metadata for higher order data objects, those that have
+    multiple products under a single variable name in a pysat.Instrument
+    object, are stored by providing a Meta object under the single name.
+
+    Supports any custom metadata values in addition to the expected metadata
+    attributes (units, name, notes, desc, plot_label, axis, scale, value_min,
+    value_max, and fill). These base attributes may be used to programatically
+    access and set types of metadata regardless of the string values used for
+    the attribute. String values for attributes may need to be changed
+    depending upon the standards of code or files interacting with pysat.
+
+    Meta objects returned as part of pysat loading routines are automatically
+    updated to use the same values of plot_label, units_label, etc. as found
+    on the pysat.Instrument object.
+
+    """
+
+    def __init__(self, units='units', name='long_name', notes='notes',
+                 desc='desc', plot='plot', axis='axis', scale='scale',
+                 min_val='value_min', max_val='value_max', fill_val='fill',
+                 **kwargs):
+        """ Initialize the MetaLabels class
+        """
+
+        # Set the default labels directly
+        self.units = units
+        self.name = name
+        self.notes = notes
+        self.desc = desc
+        self.plot = plot
+        self.axis = axis
+        self.scale = scale
+        self.min_val = min_val
+        self.max_val = max_val
+        self.fill_val = fill_val
+
+        # Set the custom labels directly
+        for custom_label in kwargs.keys():
+            setattr(self, custom_label, kwargs[custom_label])
+
+    def __repr__(self):
+        """String describing MetaData instantiation parameters
+
+        Returns
+        -------
+        out_str : str
+            Simply formatted output string
+
+        """
+        label_str = ', '.join(["{:s}={:}".format(mlab, getattr(self, mlab))
+                               for mlab in dir(self) if not callable(mlab)])
+        out_str = ''.join(['MetaLabels(', label_str, ")"])
+        return out_str
+
+    def __str__(self):
+        """String describing Meta instance, variables, and attributes
+
+        Returns
+        -------
+        out_str : str
+            Nicely formatted output string
+
+        """
+        # Set the printing limits and get the label attributes
+        ncol = 5
+        lab_attrs = [mlab for mlab in dir(self) if not callable(mlab)]
+        nlabels = len(lab_attrs)
+
+        # Print the MetaLabels
+        out_str = "MetaLabels:\n"
+        out_str += "-----------\n"
+        out_str += core_utils.fmt_output_in_cols(lab_atttrs, ncols=ncol,
+                                                 max_num=nlabels)
+
+        return out_str
