@@ -930,6 +930,29 @@ class TestBasics():
     # Test iteration behaviors
     #
     # -------------------------------------------------------------------------
+    def test_list_comprehension(self):
+        """Test list comprehensions for length, uniqueness, post iteration data
+        """
+        self.testInst.bounds = (self.testInst.files.files.index[0],
+                                self.testInst.files.files.index[9])
+        # ensure no data to begin
+        assert self.testInst.empty
+        # perform comprehension and ensure there are as many as there should be
+        insts = [inst for inst in self.testInst]
+        assert len(insts) == 10
+        # get list of dates
+        dates = pds.Series([inst.date for inst in insts])
+        assert dates.is_monotonic_increasing
+        # dates are unique
+        assert np.all(np.unique(dates) == dates.values)
+        # iteration instruments are not the same as original
+        for inst in insts:
+            assert not (inst is self.testInst)
+        # check there is data after iteration
+        assert not self.testInst.empty
+
+        return
+
     def test_left_bounds_with_prev(self):
         """Test if passing bounds raises StopIteration."""
         # load first data
