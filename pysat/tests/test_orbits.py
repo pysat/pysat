@@ -474,16 +474,9 @@ class TestGeneralOrbitsNonStandardIteration():
 
     def test_no_orbit_overlap_with_overlapping_iteration(self):
         """Ensure error when overlap in iteration data."""
-        orbit_starts = []
-        orbit_stops = []
         with pytest.raises(ValueError):
             for inst in self.testInst.orbits:
-                orbit_starts.append(inst.index[0])
-                orbit_stops.append(inst.index[-1])
-        orbit_starts = pds.Series(orbit_starts)
-        orbit_stops = pds.Series(orbit_stops)
-        assert orbit_starts.is_monotonic_increasing
-        assert orbit_stops.is_monotonic_increasing
+                pass
         return
 
     def test_no_orbit_overlap_with_nonoverlapping_date_iteration(self):
