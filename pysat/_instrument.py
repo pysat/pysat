@@ -2367,7 +2367,7 @@ class Instrument(object):
                                     'Please check the Instrument bounds, ',
                                     '`self.bounds` for supported iteration',
                                     'ranges.'))
-                    raise StopIteration(estr)
+                    raise ValueError(estr)
                 elif idx[0] == 0:
                     # too far!
                     raise StopIteration('Outside the set date boundaries.')
