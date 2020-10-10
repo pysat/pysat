@@ -2063,7 +2063,7 @@ class Instrument(object):
             if self._iter_width is None:
                 self._iter_width = pds.DateOffset(days=1)
             if self._iter_start[0] is not None:
-                # check here in case Instrument is initialized with no input
+                # There are files. Use those dates.
                 ustops = [stop - self._iter_width + pds.DateOffset(days=1)
                               for stop in self._iter_stop]
                 ufreq = self._iter_step
