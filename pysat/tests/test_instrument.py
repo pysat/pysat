@@ -84,6 +84,32 @@ class TestBasics():
             self.testInst.load(self.ref_time.year, self.ref_doy,
                                self.ref_time.year)
 
+    def test_basic_instrument_load_mixed_inputs(self):
+        """Ensure mixed load inputs raise ValueError"""
+        with pytest.raises(ValueError):
+            self.testInst.load(self.ref_time.year, self.ref_doy,
+                               date=dt.datetime(2009, 1, 1))
+        with pytest.raises(ValueError):
+            self.testInst.load(self.ref_time.year, self.ref_doy,
+                               end_date=dt.datetime(2009, 1, 1))
+        with pytest.raises(ValueError):
+            self.testInst.load(self.ref_time.year, self.ref_doy,
+                               fname=self.testInst.files[0])
+        with pytest.raises(ValueError):
+            self.testInst.load(self.ref_time.year, self.ref_doy,
+                               stop_fname=self.testInst.files[0])
+        with pytest.raises(ValueError):
+            self.testInst.load(date=dt.datetime(2009, 1, 1),
+                               fname=self.testInst.files[0])
+        with pytest.raises(ValueError):
+            self.testInst.load(date=dt.datetime(2009, 1, 1),
+                               stop_fname=self.testInst.files[0])
+        with pytest.raises(ValueError):
+            self.testInst.load(date=dt.datetime(2009, 1, 1),
+                               fname=self.testInst.files[0],
+                               end_yr=2009, end_doy=1)
+        return
+
     def test_basic_instrument_load_no_input(self):
         """Test .load() loads all data"""
         self.testInst.load()
