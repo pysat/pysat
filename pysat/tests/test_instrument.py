@@ -184,7 +184,7 @@ class TestBasics():
         """
         self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.load(fname=self.testInst.files[1])
-        # set new bounds thst doesn't include this date
+        # set new bounds that doesn't include this date
         self.testInst.bounds = (self.testInst.files[0], self.testInst.files[20],
                                 2, 1)
         with pytest.raises(ValueError):
@@ -195,8 +195,33 @@ class TestBasics():
         """
         self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.load(fname=self.testInst.files[12])
-        # set new bounds thst doesn't include this date
+        # set new bounds that doesn't include this date
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
+                                2, 1)
+        with pytest.raises(ValueError):
+            self.testInst.prev()
+
+    def test_next_load_bad_start_date(self):
+        """Test Error if trying to iterate when on a date not in iteration list
+        """
+        self.ref_time = dt.datetime(2008, 1, 2)
+        self.testInst.load(date=self.ref_time)
+        # set new bounds that doesn't include this date
+        self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
+                                self.ref_time + pds.DateOffset(days=10),
+                                2, 1)
+
+        with pytest.raises(ValueError):
+            self.testInst.next()
+
+    def test_prev_load_bad_start_date(self):
+        """Test Error if trying to iterate when on a date not in iteration list
+        """
+        self.ref_time = dt.datetime(2008, 1, 2)
+        self.testInst.load(date=self.ref_time)
+        # set new bounds that doesn't include this date
+        self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
+                                self.ref_time + pds.DateOffset(days=10),
                                 2, 1)
         with pytest.raises(ValueError):
             self.testInst.prev()
