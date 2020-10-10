@@ -2197,41 +2197,6 @@ class Instrument(object):
 
         return
 
-    def check_date_in_bounds(self, date, raise_error=False):
-        """Ensure date in date range indicated by self.bounds
-
-        Parameters
-        ----------
-        date : dt.datetime
-            Date to be checked
-        raise_error : bool
-            If True, error raised if not in bounds
-
-        Raises
-        ------
-        StopIteration if date out of bounds
-
-        """
-
-        if self._iter_type == 'date':
-            bounds = self.bounds
-        elif self._iter_type == 'file':
-            # need to convert filenames to dates
-            raise NotImplementedError()
-
-        # JUST check against the list
-        # if in self._iter_list, boom. in bounds.
-
-        _offs = pds.DateOffset(days=1)
-        in_bounds = False
-        for sb, eb in zip(bounds[0], bounds[1]):
-            if date >= sb and (date <= eb + _offs):
-                in_bounds = True
-        if not in_bounds and raise_error:
-            raise StopIteration('Outside the set date boundaries.')
-
-        return in_bounds
-
     def __iter__(self):
         """Iterates instrument object by loading subsequent days or files.
 
@@ -2331,11 +2296,8 @@ class Instrument(object):
                     end_date = date + self._iter_width
             else:
                 # no data currently loaded, start at the beginning
-                if len(self._iter_list) > 0:
-                    date = self._iter_list[0]
-                    end_date = date + self._iter_width
-                else:
-                    raise StopIteration('Outside the set date boundaries.')
+                date = self._iter_list[0]
+                end_date = date + self._iter_width
             # perform load
             self.load(date=date, end_date=end_date, verifyPad=verifyPad)
 
