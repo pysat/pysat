@@ -43,10 +43,6 @@ Author name and institution
 
 """
 
-# python 2/3 comptability
-from __future__ import print_function
-from __future__ import absolute_import
-
 import datetime as dt
 import logging
 
@@ -82,46 +78,34 @@ inst_ids = {'': ['']}
 #                     'L2':dt.datetime(2019,1,1),}}
 _test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
 
+# Set Testing flags
+# Dict structure should mirror _test_dates above
+
+# For instruments without download support, set _test_download to False
+# If not set, defaults to True
+# _test_download = {'': {'': False}}
+
+# For instruments using FTP for download, set _test_download_travis to False
+# These tests will still download locally but be skipped on Travis CI
+# If not set, defaults to True
+# _test_download_travis = {'': {'': False}}
+
+# For instruments requiring a user passwrod, set _password_req to True
+# These instruments will not be downloaded as part of tests to preserve password
+# security
+# If not set, defaults to False
+# _password_req = {'': {'': True}}
+
 # Set to False to specify using xarray (not using pandas)
 # Set to True if data will be returned via a pandas DataFrame
 pandas_format = False
 
 
-# not required but recommended
-def clean(inst):
-    """Routine to return PLATFORM/NAME data cleaned to the specified level
+def init(self):
+    """Initializes the Instrument object with instrument specific values.
 
-    Cleaning level is specified in inst.clean_level and pysat
-    will accept user input for several strings. The clean_level is
-    specified at instantiation of the Instrument object.
-
-    'clean' All parameters should be good, suitable for statistical and
-            case studies
-    'dusty' All paramers should generally be good though same may
-            not be great
-    'dirty' There are data areas that have issues, data should be used
-            with caution
-    'none'  No cleaning applied, routine not called in this case.
-
-
-    Parameters
-    -----------
-    inst : pysat.Instrument
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
-
-    """
-
-    return
-
-
-# not required
-def default(self):
-    """Default customization function.
-
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue). Object
-    modified in place.
+    Runs once upon instantiation. Object modified in place.  Use this to set
+    the acknowledgements and references.
 
     Parameters
     ----------
@@ -129,10 +113,18 @@ def default(self):
         This object
 
     """
+    # direct feedback to logging info
+    logger.info(" ".join(("Mission acknowledgements and data restrictions will",
+                          "be here when available.")))
+    # acknowledgements
+    self.acknowledgements = ''
+    # references
+    self.references = ''
 
     return
 
 
+# Required function
 def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
              **kwargs):
     """Placeholder for PLATFORM/NAME downloads.
@@ -169,28 +161,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
     return
 
 
-def init(self):
-    """Initializes the Instrument object with instrument specific values.
-
-    Runs once upon instantiation. Object modified in place. Optional.
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    """
-    # direct feedback to logging info
-    logger.info(" ".join(("Mission acknowledgements and data restrictions will",
-                          "be here when available.")))
-    # acknowledgements
-    self.meta.acknowledgements = ''
-    # references
-    self.meta.references = ''
-
-    return
-
-
+# Required function
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Produce a list of files corresponding to PLATFORM/NAME.
 
@@ -247,39 +218,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
 
-# not required but recommended
-def list_remote_files(tag, inst_id, user=None, password=None):
-    """Return a Pandas Series of every file for chosen remote data.
-
-    This routine is intended to be used by pysat instrument modules supporting
-    a particular NASA CDAWeb dataset.
-
-    Parameters
-    -----------
-    tag : string or NoneType
-        Denotes type of file to load.  Accepted types are <tag strings>.
-        (default=None)
-    inst_id : string or NoneType
-        Specifies the satellite ID for a constellation.  Not used.
-        (default=None)
-    user : string or NoneType
-        Username to be passed along to resource with relevant data.
-        (default=None)
-    password : string or NoneType
-        User password to be passed along to resource with relevant data.
-        (default=None)
-
-    Returns
-    --------
-    pandas.Series
-        A Series formatted for the Files class (pysat._files.Files)
-        containing filenames and indexed by date and time
-
-    """
-
-    return
-
-
+# Required function
 def load(fnames, tag=None, inst_id=None, custom_keyword=None):
     """Loads PLATFORM data into (PANDAS/XARRAY).
 
@@ -347,4 +286,83 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
                                            max_label='ValidMax',
                                            fill_label='FillVal',
                                            pandas_format=pandas_format)
+    return
+
+
+# not required but recommended
+def clean(inst):
+    """Routine to return PLATFORM/NAME data cleaned to the specified level
+
+    Cleaning level is specified in inst.clean_level and pysat
+    will accept user input for several strings. The clean_level is
+    specified at instantiation of the Instrument object.
+
+    'clean' All parameters should be good, suitable for statistical and
+            case studies
+    'dusty' All paramers should generally be good though same may
+            not be great
+    'dirty' There are data areas that have issues, data should be used
+            with caution
+    'none'  No cleaning applied, routine not called in this case.
+
+
+    Parameters
+    -----------
+    inst : pysat.Instrument
+        Instrument class object, whose attribute clean_level is used to return
+        the desired level of data selectivity.
+
+    """
+
+    return
+
+
+# not required but recommended
+def list_remote_files(tag, inst_id, user=None, password=None):
+    """Return a Pandas Series of every file for chosen remote data.
+
+    This routine is intended to be used by pysat instrument modules supporting
+    a particular NASA CDAWeb dataset.
+
+    Parameters
+    -----------
+    tag : string or NoneType
+        Denotes type of file to load.  Accepted types are <tag strings>.
+        (default=None)
+    inst_id : string or NoneType
+        Specifies the satellite ID for a constellation.  Not used.
+        (default=None)
+    user : string or NoneType
+        Username to be passed along to resource with relevant data.
+        (default=None)
+    password : string or NoneType
+        User password to be passed along to resource with relevant data.
+        (default=None)
+
+    Returns
+    --------
+    pandas.Series
+        A Series formatted for the Files class (pysat._files.Files)
+        containing filenames and indexed by date and time
+
+    """
+
+    return
+
+
+# not required
+def default(self):
+    """Default customization function.
+
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue). Object
+    modified in place.
+
+    Parameters
+    ----------
+    self : pysat.Instrument
+        This object
+
+    """
+
     return

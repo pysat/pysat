@@ -36,12 +36,9 @@ Main Features
 
 """
 
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import absolute_import
+import logging
 import os
 
-import logging
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
