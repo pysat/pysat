@@ -2529,6 +2529,15 @@ class TestDataPadding():
     def test_data_padding_bad_load(self):
         """Not allowed to enable data padding when loading all data, load()"""
         with pytest.raises(ValueError):
+            self.testInst.load(date=self.ref_time)
+
+    def test_padding_exceeds_load_window(self):
+        """Ensure error is padding window larger than loading window"""
+        self.testInst = pysat.Instrument(platform='pysat', name='testing',
+                                         clean_level='clean',
+                                         pad={'days': 2},
+                                         update_files=True)
+        with pytest.raises(ValueError):
             self.testInst.load()
 
     def test_yrdoy_data_padding_missing_days(self):
