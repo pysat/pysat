@@ -2064,10 +2064,15 @@ class Instrument(object):
                 self._iter_width = pds.DateOffset(days=1)
             if self._iter_start[0] is not None:
                 # check here in case Instrument is initialized with no input
-                self._iter_list = \
-                    utils.time.create_date_range(self._iter_start,
-                                                 self._iter_stop,
-                                                 freq=self._iter_step)
+                ustops = [stop - self._iter_width + pds.DateOffset(days=1)
+                              for stop in self._iter_stop]
+                ufreq = self._iter_step
+                self._iter_list = utils.time.create_date_range(self._iter_start,
+                                                               ustops,
+                                                               freq=ufreq)
+            else:
+                # instrument has no files
+                self._iter_list  = []
         else:
             # user provided some inputs
             starts = np.asarray([start])
@@ -2286,7 +2291,7 @@ class Instrument(object):
                                     'Please check the Instrument bounds, ',
                                     '`self.bounds` for supported iteration',
                                     'ranges.'))
-                    raise StopIteration(estr)
+                    raise ValueError(estr)
                 elif idx[-1] >= len(self._iter_list) - 1:
                     # gone to far!
                     raise StopIteration('Outside the set date boundaries.')
