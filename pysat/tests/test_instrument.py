@@ -226,6 +226,21 @@ class TestBasics():
         with pytest.raises(ValueError):
             self.testInst.prev()
 
+    def test_next_load_empty_itertion(self):
+        """Ensure empty iteration list handled ok via .next"""
+        self.testInst.bounds = (None, None, '100000D',
+                                pds.DateOffset(days=100000))
+        with pytest.raises(StopIteration):
+            self.testInst.next()
+        return
+
+    def test_prev_load_empty_itertion(self):
+        """Ensure empty iteration list handled ok via .prev"""
+        self.testInst.bounds = (None, None, '100000D',
+                                pds.DateOffset(days=100000))
+        with pytest.raises(StopIteration):
+            self.testInst.prev()
+
     def test_next_fname_load_default(self):
         """Test next day is being loaded (checking object date)."""
         self.ref_time = dt.datetime(2008, 1, 2)
