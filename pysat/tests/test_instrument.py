@@ -235,7 +235,7 @@ class TestBasics():
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
                                 self.ref_time + pds.DateOffset(days=10),
-                                2, 1)
+                                '2D', pds.DateOffset(days=1))
 
         with pytest.raises(ValueError):
             self.testInst.next()
@@ -248,22 +248,22 @@ class TestBasics():
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
                                 self.ref_time + pds.DateOffset(days=10),
-                                2, 1)
+                                '2D', pds.DateOffset(days=1))
         with pytest.raises(ValueError):
             self.testInst.prev()
 
-    def test_next_load_empty_itertion(self):
+    def test_next_load_empty_iteration(self):
         """Ensure empty iteration list handled ok via .next"""
-        self.testInst.bounds = (None, None, '100000D',
-                                pds.DateOffset(days=100000))
+        self.testInst.bounds = (None, None, '10000D',
+                                pds.DateOffset(days=10000))
         with pytest.raises(StopIteration):
             self.testInst.next()
         return
 
-    def test_prev_load_empty_itertion(self):
+    def test_prev_load_empty_iteration(self):
         """Ensure empty iteration list handled ok via .prev"""
-        self.testInst.bounds = (None, None, '100000D',
-                                pds.DateOffset(days=100000))
+        self.testInst.bounds = (None, None, '10000D',
+                                pds.DateOffset(days=10000))
         with pytest.raises(StopIteration):
             self.testInst.prev()
 
@@ -1151,11 +1151,11 @@ class TestBasics():
                     b_range += 1
                 # check loaded range is correct
                 assert trange[0] == out['expected_times'][i]
-                check = out['expected_times'][i] + out['width'] \
-                    - pds.DateOffset(days=1)
+                check = out['expected_times'][i] + out['width']
+                check -= pds.DateOffset(days=1)
                 assert trange[1] > check
-                assert trange[1] < out['stops'][b_range] + pds.DateOffset(
-                    days=1)
+                check = out['stops'][b_range] + pds.DateOffset(days=1)
+                assert trange[1] < check
         else:
             # verify range of loaded data when going backwards
             for i, trange in enumerate(out['observed_times']):
@@ -1166,15 +1166,16 @@ class TestBasics():
                 # check start against expectations
                 assert trange[0] == out['expected_times'][i]
                 # check end against expectations
-                check = out['expected_times'][i] + out['width'] \
-                    - pds.DateOffset(days=1)
+                check = out['expected_times'][i] + out['width']
+                check -= pds.DateOffset(days=1)
                 assert trange[1] > check
                 check = out['stops'][b_range] + pds.DateOffset(days=1)
                 assert trange[1] < check
                 if i == 0:
                     # check first load is before end of bounds
-                    assert trange[0] == out['stops'][b_range] - out['width'] \
-                           + pds.DateOffset(days=1)
+                    check = out['stops'][b_range] - out['width']
+                    check += pds.DateOffset(days=1)
+                    assert trange[0] == check
                     assert trange[1] > out['stops'][b_range]
                     check = out['stops'][b_range] + pds.DateOffset(days=1)
                     assert trange[1] < check
@@ -1197,8 +1198,8 @@ class TestBasics():
                     b_range += 1
                 # check loaded range is correct
                 assert trange[0] == out['expected_times'][i]
-                check = out['expected_times'][i] + out['width'] \
-                        - pds.DateOffset(days=1)
+                check = out['expected_times'][i] + out['width']
+                check -= pds.DateOffset(days=1)
                 assert trange[1] > check
                 assert trange[1] < out['stops'][b_range]
 
@@ -1212,15 +1213,16 @@ class TestBasics():
                 # check start against expectations
                 assert trange[0] == out['expected_times'][i]
                 # check end against expectations
-                check = out['expected_times'][i] + out['width'] \
-                    - pds.DateOffset(days=1)
+                check = out['expected_times'][i] + out['width']
+                check -= pds.DateOffset(days=1)
                 assert trange[1] > check
                 check = out['stops'][b_range] + pds.DateOffset(days=1)
                 assert trange[1] < check
                 if i == 0:
                     # check first load is before end of bounds
-                    assert trange[0] < out['stops'][b_range] - out['width'] \
-                        + pds.DateOffset(days=1)
+                    check = out['stops'][b_range] - out['width']
+                    check += pds.DateOffset(days=1)
+                    assert trange[0] < check
                     assert trange[1] < out['stops'][b_range]
                 elif i == len(out['observed_times']) - 1:
                     # last load at start of bounds
@@ -2595,7 +2597,7 @@ class TestDataPadding():
     def test_data_padding_bad_load(self):
         """Not allowed to enable data padding when loading all data, load()"""
         with pytest.raises(ValueError):
-            self.testInst.load(date=self.ref_time)
+            self.testInst.load()
 
     def test_padding_exceeds_load_window(self):
         """Ensure error is padding window larger than loading window"""
@@ -2604,7 +2606,7 @@ class TestDataPadding():
                                          pad={'days': 2},
                                          update_files=True)
         with pytest.raises(ValueError):
-            self.testInst.load()
+            self.testInst.load(date=self.ref_time)
 
     def test_yrdoy_data_padding_missing_days(self):
         self.testInst.load(2008, 1)
