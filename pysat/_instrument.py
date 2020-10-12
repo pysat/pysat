@@ -2062,14 +2062,14 @@ class Instrument(object):
             if self._iter_start[0] is not None:
                 # There are files. Use those dates.
                 ustops = [stop - self._iter_width + pds.DateOffset(days=1)
-                              for stop in self._iter_stop]
+                          for stop in self._iter_stop]
                 ufreq = self._iter_step
                 self._iter_list = utils.time.create_date_range(self._iter_start,
                                                                ustops,
                                                                freq=ufreq)
             else:
                 # instrument has no files
-                self._iter_list  = []
+                self._iter_list = []
         else:
             # user provided some inputs
             starts = np.asarray([start])
