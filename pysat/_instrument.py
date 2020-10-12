@@ -2291,7 +2291,7 @@ class Instrument(object):
                                     'Please check the Instrument bounds, ',
                                     '`self.bounds` for supported iteration',
                                     'ranges.'))
-                    raise ValueError(estr)
+                    raise StopIteration(estr)
                 elif idx[-1] >= len(self._iter_list) - 1:
                     # gone to far!
                     raise StopIteration('Outside the set date boundaries.')
@@ -2330,7 +2330,7 @@ class Instrument(object):
                                         'Please check the Instrument bounds, ',
                                         '`self.bounds` for supported iteration',
                                         'ranges.'))
-                        raise ValueError(estr)
+                        raise StopIteration(estr)
                     fname = self._iter_list[idx + 1]
             else:
                 # no data loaded yet, start with the first file
@@ -2372,7 +2372,7 @@ class Instrument(object):
                                     'Please check the Instrument bounds, ',
                                     '`self.bounds` for supported iteration',
                                     'ranges.'))
-                    raise ValueError(estr)
+                    raise StopIteration(estr)
                 elif idx[0] == 0:
                     # too far!
                     raise StopIteration('Outside the set date boundaries.')
@@ -2409,7 +2409,7 @@ class Instrument(object):
                                         'Please check the Instrument bounds, ',
                                         '`self.bounds` for supported iteration',
                                         'ranges.'))
-                        raise ValueError(estr)
+                        raise StopIteration(estr)
                     fname = self._iter_list[idx - 1]
             else:
                 fname = self._iter_list[-1]

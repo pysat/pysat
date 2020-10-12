@@ -213,7 +213,7 @@ class TestBasics():
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.testInst.files[0], self.testInst.files[20],
                                 2, 1)
-        with pytest.raises(ValueError):
+        with pytest.raises(StopIteration):
             self.testInst.next()
 
     def test_prev_load_bad_start_file(self):
@@ -224,7 +224,7 @@ class TestBasics():
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
                                 2, 1)
-        with pytest.raises(ValueError):
+        with pytest.raises(StopIteration):
             self.testInst.prev()
 
     def test_next_load_bad_start_date(self):
@@ -237,7 +237,7 @@ class TestBasics():
                                 self.ref_time + pds.DateOffset(days=10),
                                 '2D', pds.DateOffset(days=1))
 
-        with pytest.raises(ValueError):
+        with pytest.raises(StopIteration):
             self.testInst.next()
 
     def test_prev_load_bad_start_date(self):
@@ -249,7 +249,7 @@ class TestBasics():
         self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
                                 self.ref_time + pds.DateOffset(days=10),
                                 '2D', pds.DateOffset(days=1))
-        with pytest.raises(ValueError):
+        with pytest.raises(StopIteration):
             self.testInst.prev()
 
     def test_next_load_empty_iteration(self):
