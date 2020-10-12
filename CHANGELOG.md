@@ -67,6 +67,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed implicit conversion to integers in
     methods.general.convert_timestamp_to_datetime
   - Renamed `sat_id` Instrument keyword argument to `inst_id`
+  - Updated instrument templates
 
 ## [2.2.1] - 2020-07-29
 - Documentation
