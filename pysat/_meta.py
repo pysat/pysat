@@ -1376,6 +1376,33 @@ class MetaLabels(object):
                  min_val='value_min', max_val='value_max', fill_val='fill',
                  **kwargs):
         """ Initialize the MetaLabels class
+
+        Parameters
+        ----------
+        units : str
+            Units label name (default='units')
+        name : str
+            Name label name (default='long_name')
+        notes : str
+            Notes label name (default='notes')
+        desc : str
+            Description label name (default='desc')
+        plot : str
+            Plot label name (default='plot')
+        axis : str
+            Axis label name (default='axis')
+        scale : str
+            Scale label name (default='scale')
+        min_val : str
+            Minimum value label name (default='value_min')
+        max_val : str
+            Maximum value label name (default='value_max')
+        fill_val : str
+            Fill value label name (default='fill')
+        kwargs : dict
+            Dictionary containing optional label attributes, where the keys
+            are the attribute names and the valuess are the label names
+
         """
 
         # Set the default labels directly
@@ -1393,6 +1420,8 @@ class MetaLabels(object):
         # Set the custom labels directly
         for custom_label in kwargs.keys():
             setattr(self, custom_label, kwargs[custom_label])
+
+        return
 
     def __repr__(self):
         """String describing MetaData instantiation parameters
