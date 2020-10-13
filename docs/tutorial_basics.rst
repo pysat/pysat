@@ -69,7 +69,7 @@ Further, the dictionary::
 is keyed by ``tag`` with a description of each type of data
 the ``tag`` parameter selects. The dictionary::
 
-    pysatMadrigall.instruments.dmsp_ivm.inst_ids
+    pysatMadrigal.instruments.dmsp_ivm.inst_ids
 
 indicates which instrument or satellite ids (``inst_id``) support which tag.
 The combination of ``tag`` and ``inst_id`` select the particular dataset
