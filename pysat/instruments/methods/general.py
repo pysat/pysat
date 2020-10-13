@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
                two_digit_year_break=None, delimiter=None):
-    """Return a Pandas Series of every file for chosen satellite data.
+    """Return a Pandas Series of every file for chosen Instrument data.
 
     This routine provides a standard interfacefor pysat instrument modules.
 
@@ -51,7 +51,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     Returns
     --------
-    pysat.Files.from_os : pysat._files.Files
+    out : pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Examples
