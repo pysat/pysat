@@ -142,7 +142,7 @@ functionality.
 
     # instantiate pysat.Instrument
     dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd',
-                            sat_id='f12')
+                            inst_id='f12')
     # attach custom method from above
     dmsp.custom.attach(filter_dmsp, 'modify')
 

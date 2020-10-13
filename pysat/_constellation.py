@@ -70,11 +70,11 @@ class Constellation(object):
         ninst = len(self.instruments)
 
         if ninst > 0:
-            output_str += "\nIndex Platform Name Tag Sat_ID\n"
-            output_str += "------------------------------\n"
+            output_str += "\nIndex Platform Name Tag Inst_ID\n"
+            output_str += "-------------------------------\n"
             for i, inst in enumerate(self.instruments):
                 output_str += "{:d} '{:s}' '{:s}' '{:s}' '{:s}'\n".format(
-                    i, inst.platform, inst.name, inst.tag, inst.sat_id)
+                    i, inst.platform, inst.name, inst.tag, inst.inst_id)
         else:
             output_str += "No loaded Instruments\n"
 

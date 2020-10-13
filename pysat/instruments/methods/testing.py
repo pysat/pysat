@@ -14,7 +14,7 @@ refs = ' '.join(("Russell Stoneback, Jeff Klenzing, Angeline Burrell, Carey",
                  "Zenodo. http://doi.org/10.5281/zenodo.3546270"))
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                file_date_range=None, test_dates=None):
     """Produce a fake list of files spanning three years
 
@@ -22,7 +22,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     ----------
     tag : str
         pysat instrument tag (default=None)
-    sat_id : str
+    inst_id : str
         pysat satellite ID tag (default=None)
     data_path : str
         pysat data path (default=None)
@@ -61,7 +61,7 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
     return pds.Series(names, index=index)
 
 
-def list_remote_files(tag=None, sat_id=None, data_path=None, format_str=None,
+def list_remote_files(tag=None, inst_id=None, data_path=None, format_str=None,
                       start=None, stop=None, test_dates=None):
     """Produce a fake list of files spanning three years and one month to
     simulate new data files on a remote server
@@ -70,7 +70,7 @@ def list_remote_files(tag=None, sat_id=None, data_path=None, format_str=None,
     ----------
     tag : str
         pysat instrument tag (default=None)
-    sat_id : str
+    inst_id : str
         pysat satellite ID tag (default=None)
     data_path : str
         pysat data path (default=None)
@@ -101,12 +101,12 @@ def list_remote_files(tag=None, sat_id=None, data_path=None, format_str=None,
                 - pds.DateOffset(days=1) + pds.DateOffset(months=1))
     file_date_range = pds.date_range(start, stop)
 
-    return list_files(tag=tag, sat_id=sat_id, data_path=data_path,
+    return list_files(tag=tag, inst_id=inst_id, data_path=data_path,
                       format_str=format_str, file_date_range=file_date_range,
                       test_dates=test_dates)
 
 
-def download(date_array, tag, sat_id, data_path=None, user=None,
+def download(date_array, tag, inst_id, data_path=None, user=None,
              password=None):
     """Simple pass function for pysat compatibility for test instruments.
 
@@ -121,7 +121,7 @@ def download(date_array, tag, sat_id, data_path=None, user=None,
     tag : string
         Tag identifier used for particular dataset. This input is provided by
         pysat. (default='')
-    sat_id : string
+    inst_id : string
         Satellite ID string identifier used for particular dataset. This input
         is provided by pysat. (default='')
     data_path : string
@@ -178,7 +178,7 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     return data
 
 
-def generate_times(fnames, sat_id, freq='1S'):
+def generate_times(fnames, inst_id, freq='1S'):
     """Construct list of times for simulated instruments
 
     Parameters
@@ -186,7 +186,7 @@ def generate_times(fnames, sat_id, freq='1S'):
     fnames : list
         List of filenames.  Currently, only the first is used.  Does not
         support multi-file days as of yet.
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
     freq : string
@@ -216,9 +216,9 @@ def generate_times(fnames, sat_id, freq='1S'):
     index = pds.date_range(start=date, end=end_date, freq=freq)
     # Allow numeric string to select first set of data
     try:
-        index = index[0:int(sat_id)]
+        index = index[0:int(inst_id)]
     except ValueError:
-        # non-integer sat_id produces ValueError
+        # non-integer inst_id produces ValueError
         pass
 
     uts = index.hour * 3600 + index.minute * 60 + index.second

@@ -7,7 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
   - custom.attach replaces custom.add
-  - Unit tests are now pytest compatible and use parametrize
+  - Unit tests are now pytest compatible, use parametrize, and have improved
+    messages when failures are encountered
   - Added altitudes to test instruments
   - New flags added to instruments to streamline unit testing:
     `_test_download`, `_test_download_travis`, `_password_req`
@@ -42,12 +43,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Addressed several Warnings raised by incorrect use of dependent packages
 - Documentation
   - Added info on how to register new instruments
-  - Fixed description of tag and sat_id behaviour in testing instruments
+  - Fixed description of tag and inst_id behaviour in testing instruments
   - Added a tutorial for developers of instrument libraries for pysat
   - Added .zenodo.json file, to improve specification of authors in citation
   - Improved __str__ and __repr__ functions for basic classes
   - Improved docstring readability and consistency
   - Added Travis-CI testing for the documentation
+  - Added a style guide for developers
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3
@@ -64,6 +66,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Add tests for acknowledgements and references
   - Removed implicit conversion to integers in
     methods.general.convert_timestamp_to_datetime
+  - Renamed `sat_id` Instrument keyword argument to `inst_id`
+  - Updated instrument templates
 
 ## [2.2.1] - 2020-07-29
 - Documentation

@@ -50,7 +50,7 @@ class Files(object):
 
         # convenient file access
         inst = pysat.Instrument(platform=platform, name=name, tag=tag,
-                                sat_id=sat_id)
+                                inst_id=inst_id)
         # first file
         inst.files[0]
 
@@ -100,7 +100,7 @@ class Files(object):
             (default=False)
         file_format : str or NoneType
             File naming structure in string format.  Variables such as year,
-            month, and sat_id will be filled in as needed using python string
+            month, and inst_id will be filled in as needed using python string
             formatting.  The default file format structure is supplied in the
             instrument list_files routine. (default=None)
         write_to_disk : boolean
@@ -125,7 +125,7 @@ class Files(object):
         # location of stored files
         self.stored_file_name = ''.join((self._sat.platform, '_',
                                          self._sat.name, '_', self._sat.tag,
-                                         '_', self._sat.sat_id,
+                                         '_', self._sat.inst_id,
                                          '_stored_file_info.txt'))
 
         # flag for setting simple organization of files, only
@@ -147,7 +147,7 @@ class Files(object):
                 self.directory_format.format(name=self._sat.name,
                                              platform=self._sat.platform,
                                              tag=self._sat.tag,
-                                             sat_id=self._sat.sat_id)
+                                             inst_id=self._sat.inst_id)
         # ensure we have a path for pysat data directory
         if data_dir == '':
             raise RuntimeError(" ".join(("pysat's data_dir is None. Set a",
@@ -364,15 +364,15 @@ class Files(object):
 
         """
 
-        output_str = '{platform} {name} {tag} {sat_id}'
+        output_str = '{platform} {name} {tag} {inst_id}'
         output_str = output_str.format(platform=self._sat.platform,
                                        name=self._sat.name, tag=self._sat.tag,
-                                       sat_id=self._sat.sat_id)
+                                       inst_id=self._sat.inst_id)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
         output_str = " ".join(output_str.split())
         logger.info(output_str)
 
-        info = self._sat._list_rtn(tag=self._sat.tag, sat_id=self._sat.sat_id,
+        info = self._sat._list_rtn(tag=self._sat.tag, inst_id=self._sat.inst_id,
                                    data_path=self.data_path,
                                    format_str=self.file_format)
         info = self._remove_data_dir_path(info)

@@ -60,11 +60,11 @@ In order this is
 
 * platform
 * name
-* sat_id
+* inst_id
 * tag
 
 The exact usage of these can be tailored to the nature of the mission and data
-products.  In general each combination should point to a unique data file.
+products.  In general, each combination should point to a unique data file.
 Not every data product will need all of these variable names.  Both `sat_id`
 and `tag` can be instantiated as an empty string if unused or used to
 support a 'default' data set if desired. Examples are given below.
@@ -83,14 +83,12 @@ When combined with the platform this forms a unique file in the `instruments`
 directory.  Examples include the EUV instrument on ICON (icon_euv) and the
 Incoherent Scatter Radar at JRO (jro_isr).
 
-**sat_id**
+**inst_id**
 
 In general, this is a unique identifier for a satellite in a constellation of
 identical or similar satellites, or multiple instruments on the same satellite
 with different look directions.  For example, the DMSP satellites carry similar
 instrument suites across multiple spacecraft.  These are labeled as f11-f18.
-
-Note that sat_id will be updated to inst_id in pysat v3.0.
 
 **tag**
 
@@ -101,7 +99,7 @@ different profile products for cosmic_gps data, 'ionprf', 'atmprf', ...).
 **Naming Requirements in Instrument Module**
 
 Each instrument file must include the platform and name as variables at the
-top-code-level of the file.  Additionally, the tags and sat_ids supported by
+top-code-level of the file.  Additionally, the tags and inst_ids supported by
 the module must be stored as dictionaries.
 
 .. code:: python
@@ -112,20 +110,20 @@ the module must be stored as dictionaries.
   tags = {'': 'The standard processing for the data.  Loaded by default',
           'fancy': 'A higher-level processing of the data.'}
 
-  # dictionary keyed by sat_id with a list of supported tags for each key
-  sat_ids = {'A': ['', 'fancy'], 'B': ['', 'fancy'], 'C': ['']}
+  # dictionary keyed by inst_id with a list of supported tags for each key
+  inst_ids = {'A': ['', 'fancy'], 'B': ['', 'fancy'], 'C': ['']}
 
 Note that the possible tags that can be invoked are '' and 'fancy'.  The tags
 dictionary includes a short description for each of these tags.  A blank tag
 will be present by default if the user does not specify a tag.
 
-The supported sat_ids should also be stored in a dictionary.  Each key name 
-here points to a list of the possible tags that can be associated with that
-particular `sat_id`. Note that not all satellites in the example support
+The supported inst_ids should also be stored in a dictionary.  Each key name here
+points to a list of the possible tags that can be associated with that
+particular `inst_id`. Note that not all satellites in the example support
 every level of processing. In this case the 'fancy' processing is available
 for satellites A and B, but not C.
 
-For a dataset that does not need multiple levels of tags and sat_ids, an empty
+For a dataset that does not need multiple levels of tags and inst_ids, an empty
 string can be used. The code below only supports loading a single data set.
 
 .. code:: python
@@ -133,7 +131,7 @@ string can be used. The code below only supports loading a single data set.
   platform = 'your_platform_name'
   name = 'name_of_instrument'
   tags = {'': ''}
-  sat_ids = {'': ['']}
+  inst_ids = {'': ['']}
 
 The DMSP IVM (dmsp_ivm) instrument module is a practical example of
 a pysat instrument that uses all levels of variable names.
@@ -151,7 +149,7 @@ with the data information at the top.
   platform = 'your_platform_name'
   name = 'name_of_instrument'
   tags = {'': ''}
-  sat_ids = {'': ['']}
+  inst_ids = {'': ['']}
   acknowledgements = 'Ancillary data provided under Radchaai grant PS31612.E3353A83'
   references = 'Breq et al, 2013'
 
@@ -163,10 +161,10 @@ tags, these could be defined under the optional ``init`` function.
 
   platform = 'your_platform_name'
   name = 'name_of_instrument'
-  tags = {'tag1': '', 'tag2': ''}
-  sat_ids = {'': ['']}
-  acknowledgements = ('Ancillary data provided under Radchaai '
-                     +'grant PS31612.E3353A83')
+  tags = {'tag1': '',
+          'tag2': ''}
+  inst_ids = {'': ['']}
+  acknowledgements = 'Ancillary data provided under Radchaai grant PS31612.E3353A83'
 
   def init(self):
       if self.tag == 'tag1':
@@ -196,10 +194,10 @@ signature of:
 
 .. code:: python
 
-   def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+   def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
        return pandas.Series(files, index=datetime_index)
 
-sat_id and tag are passed in by pysat to select a specific subset of the
+inst_id and tag are passed in by pysat to select a specific subset of the
 available data. The location on the local filesystem to search for the files
 is passed in data_path. The list_files method must return
 a pandas Series of filenames indexed by datetime objects.
@@ -246,7 +244,7 @@ A complete list_files routine could be as simple as
 
 .. code:: python
 
-   def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+   def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
        if format_str is None:
            # set default string template consistent with files from
            # the data provider that will be supported by the instrument
@@ -294,7 +292,7 @@ The load module method signature should appear as:
 
 .. code:: python
 
-   def load(fnames, tag=None, sat_id=None):
+   def load(fnames, tag=None, inst_id=None):
        return data, meta
 
 - fnames contains a list of filenames with the complete data path that
@@ -304,7 +302,7 @@ The load module method signature should appear as:
   data by day. This can present some issues for data sets that are stored
   by month or by year. See `instruments.methods.nasa_cdaweb.py` for an example
   of returning daily data when stored by month.
-- tag and sat_id specify the data set to be loaded
+- tag and inst_id specify the data set to be loaded
 
 - The load routine should return a tuple with (data, pysat metadata object).
 - `data` is a pandas DataFrame, column names are the data labels, rows are
@@ -373,7 +371,7 @@ keywords for an instrument module must be defined in the `load` method.
 
 .. code:: python
 
-   def load(fnames, tag=None, sat_id=None, custom1=default1, custom2=default2):
+   def load(fnames, tag=None, inst_id=None, custom1=default1, custom2=default2):
        return data, meta
 
 pysat passes any supported custom keywords and values to `load` with every call.
@@ -467,7 +465,7 @@ routines, additional information is required by pysat.
 
 Below is example code from dmsp_ivm.py. The attributes are set at the top 
 level simply by defining variable names with the proper info. The various 
-satellites within DMSP, F11, F12, F13 are separated out using the sat_id 
+satellites within DMSP, F11, F12, F13 are separated out using the inst_id 
 parameter. 'utd' is used as a tag to delineate that the data contains the 
 UTD developed quality flags.
 
@@ -477,7 +475,7 @@ UTD developed quality flags.
    name = 'ivm'
    tags = {'utd': 'UTDallas DMSP data processing',
            '': 'Level 1 data processing'}
-   sat_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
+   inst_ids = {'f11': ['utd', ''], 'f12': ['utd', ''], 'f13': ['utd', ''],
               'f14': ['utd', ''], 'f15': ['utd', ''], 'f16': [''], 'f17': [''],
               'f18': ['']}
    _test_dates = {'f11': {'utd': dt.datetime(1998, 1, 2)},
@@ -487,7 +485,7 @@ UTD developed quality flags.
                   'f15': {'utd': dt.datetime(2017, 12, 30)}}
 
     # support load routine
-    def load(fnames, tag=None, sat_id=None):
+    def load(fnames, tag=None, inst_id=None):
         # code normally follows, example terminates here
 
 The rationale behind the variable names is explained above under Naming
@@ -500,7 +498,7 @@ instrument's meta attributes, so it will not be present in IO operations.
 
 The standardized pysat tests are available in pysat.tests.instrument_test_class.
 The test collection test_instruments.py imports this class, collects a list of
-all available instruments (including potential tag / sat_id combinations),
+all available instruments (including potential tag / inst_id combinations),
 and runs the tests using pytestmark.  By default, pysat assumes that your
 instrument has a fully functional download  routine, and will run an end-to-end
 test.  If this is not the case, see the next section.
@@ -526,7 +524,7 @@ be set up as follows:
    name = 'data'
    tags = {'Level_1': 'Level 1 data, locally generated',
            'Level_2': 'Level 2 data, available via the web'}
-   sat_ids = {'': ['Level_1', 'Level_2']}
+   inst_ids = {'': ['Level_1', 'Level_2']}
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
    _test_download = {'': {'Level_1': False,
@@ -556,7 +554,7 @@ tests if run locally.
    name = 'data'
    tags = {'Level_1': 'Level 1 data, FTP accessible',
            'Level_2': 'Level 2 data, available via the web'}
-   sat_ids = {'': ['Level_1', 'Level_2']}
+   inst_ids = {'': ['Level_1', 'Level_2']}
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
    _test_download_travis = {'': {'Level_1': False}}
@@ -579,7 +577,7 @@ present.
    name = 'data'
    tags = {'Level_1': 'Level 1 data, password protected',
            'Level_2': 'Level 2 data, available via the web'}
-   sat_ids = {'': ['Level_1', 'Level_2']}
+   inst_ids = {'': ['Level_1', 'Level_2']}
    _test_dates = {'': {'Level_1': dt.datetime(2020, 1, 1),
                        'Level_2': dt.datetime(2020, 1, 1)}}
    _password_req = {'': {'Level_1': False}}
@@ -627,6 +625,3 @@ starting point for adding a new instrument to pysat.
 
 Note that there are general supporting methods for adding an Instrument.
 See :ref:`rst_general_data_general` for more.
-
-
-

@@ -39,7 +39,7 @@ up to four parameters
   platform		    General platform instrument is on
   name		        Name of the instrument
   tag		        Label for a subset of total data
-  sat_id		    Label for instrument sub-group
+  inst_id		    Label for instrument sub-group
 ===============     ===================================
 
 
@@ -67,10 +67,10 @@ Further, the dictionary::
 is keyed by ``tag`` with a description of each type of data
 the ``tag`` parameter selects. The dictionary::
 
-    pysat.instruments.dmsp_ivm.sat_ids
+    pysat.instruments.dmsp_ivm.inst_ids
 
-indicates which instrument or satellite ids (``sat_id``) support which tag.
-The combination of ``tag`` and ``sat_id`` select the particular dataset
+indicates which instrument or satellite ids (``inst_id``) support which tag.
+The combination of ``tag`` and ``inst_id`` select the particular dataset
 a pysat.Instrument object will provide and interact with.
 
 
@@ -79,7 +79,7 @@ a pysat.Instrument object will provide and interact with.
 ----
 
 To create a pysat.Instrument object, select a ``platform``, instrument ``name``,
-and potentially a ``tag`` and ``sat_id``, consistent with
+and potentially a ``tag`` and ``inst_id``, consistent with
 the desired data to be analyzed, from one the supported instruments.
 
 For example if you wanted to work with plasma data from the
@@ -88,7 +88,7 @@ Satellite Program (DMSP) constellation, use:
 
 .. code:: python
 
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12')
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12')
 
 Behind the scenes pysat uses a python module named dmsp_ivm that understands
 how to interact with 'utd' data for 'f12'.
@@ -264,9 +264,9 @@ provided at instantiation. The level defaults to 'clean'.
 
 .. code:: python
 
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12',
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12',
                            clean_level=None)
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12',
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12',
                            clean_level='clean')
 
 Four levels of cleaning may be specified,
@@ -362,7 +362,7 @@ Data may be assigned to the instrument, with or without metadata.
 The labels used for identifying metadata may be provided by the user at
 Instrument instantiation and do not need to conform with what is in the file::
 
-   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', sat_id='f12',
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12',
                            clean_level='dirty', units_label='new_units')
    dmsp.load(2001, 1)
    dmsp.meta['ti', 'new_units']
