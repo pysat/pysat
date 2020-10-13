@@ -1631,11 +1631,11 @@ class Instrument(object):
 
         # apply default instrument routine, if data present
         if not self.empty:
-            self._default_rtn(self)
+            self._default_rtn()
 
         # clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
-            self._clean_rtn(self)
+            self._clean_rtn()
 
         # apply custom functions via the nanokernel in self.custom
         if not self.empty:
@@ -2927,7 +2927,7 @@ def _get_supported_keywords(local_func):
     # account for keywords that exist for the standard functions
     pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
                'format_str', 'supported_tags', 'fake_daily_files_from_monthly',
-               'two_digit_year_break', 'delimiter']
+               'two_digit_year_break', 'delimiter', 'start', 'stop']
 
     # insert 'missing' default for 'fnames'
     defaults.insert(0, None)
