@@ -372,7 +372,8 @@ class Files(object):
         output_str = " ".join(output_str.split())
         logger.info(output_str)
 
-        info = self._sat._list_rtn(tag=self._sat.tag, inst_id=self._sat.inst_id,
+        info = self._sat._list_rtn(tag=self._sat.tag,
+                                   inst_id=self._sat.inst_id,
                                    data_path=self.data_path,
                                    format_str=self.file_format)
         info = self._remove_data_dir_path(info)
@@ -545,7 +546,7 @@ class Files(object):
             '1900' will be added for years >= two_digit_year_break
             and '2000' will be added for years < two_digit_year_break.
             If None, then four-digit years are assumed. (default=None)
-        delimiter : string
+        delimiter : string or NoneType
             If set, then filename will be processed using delimiter rather
             than assuming a fixed width (default=None)
 
