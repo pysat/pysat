@@ -686,6 +686,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
         and 'revision'
         Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+    delimiter : string
+        Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
