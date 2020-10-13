@@ -123,7 +123,7 @@ class Instrument(object):
     custom : pysat.Custom
         interface to instrument nano-kernel
     kwargs : dictionary
-        keyword arguments passed to instrument loading routine
+        keyword arguments passed to the standard Instrument routines
 
     Note
     ----
