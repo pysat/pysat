@@ -179,7 +179,7 @@ class Instrument(object):
                  notes_label='notes', desc_label='desc',
                  plot_label='label', axis_label='axis', scale_label='scale',
                  min_label='value_min', max_label='value_max',
-                 fill_label='fill', *arg, **kwargs):
+                 fill_label='fill', **kwargs):
 
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
@@ -235,11 +235,13 @@ class Instrument(object):
                 self.directory_format = self.directory_format(tag, inst_id)
             except TypeError:
                 pass
+
         # assign the file format string, if provided by user
         # enables user to temporarily put in a new string template for files
         # that may not match the standard names obtained from download routine
         if file_format is not None:
             self.file_format = file_format
+
         # check to make sure value is reasonable
         if self.file_format is not None:
             # check if it is an iterable string.  If it isn't formatted
@@ -259,6 +261,7 @@ class Instrument(object):
         else:
             self._null_data = xr.Dataset(None)
             self._data_library = xr.Dataset
+
         # assign null data for user selected data type
         self.data = self._null_data.copy()
 
@@ -286,6 +289,7 @@ class Instrument(object):
 
         # function processing class, processes data on load
         self.custom = pysat.Custom()
+
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
         self._next_data = self._null_data.copy()
@@ -308,6 +312,47 @@ class Instrument(object):
         else:
             estr = 'pad must be a dictionary or a pandas.DateOffset instance.'
             raise ValueError(estr)
+
+        # Store kwargs, passed to standard routines first
+        self.kwargs = {}
+        saved_keys = []
+        partial_func = ['_list_rtn', '_download_rtn', '_default_rtn']
+        for fkey in ['_list_rtn', '_load_rtn', '_default_rtn',
+                     '_download_rtn', '_list_remote_rtn']:
+            func = getattr(self, fkey)
+
+            # first, check if keywords are  valid
+            good_kwargs = _check_if_keywords_supported(func, **kwargs)
+
+            # get and apply default values for custom keywords
+            default_keywords = _get_supported_keywords(func)
+
+            # store user supplied keywords
+            self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
+
+            # Add in defaults if not already present
+            for dkey in default_keywords.keys():
+                if dkey not in good_kwargs:
+                    self.kwargs[fkey][dkey] = default_keywords[dkey]
+
+            # Store the saved keys
+            saved_keys.extend([gkey for gkey in self.kwargs[fkey].keys()])
+
+            # If the function can't access this dict, use partial
+            if fkey in partial_func:
+                pfunc = functools.partial(func, **self.kwargs[fkey])
+                setattr(self, fkey, pfunc)
+                del self.kwargs[fkey]
+
+        # Test for user supplied keys that are not used
+        missing_keys = []
+        for custom_key in kwargs:
+            if custom_key not in saved_keys:
+                missing_keys.append(custom_key)
+
+        if len(missing_keys) > 0:
+            raise ValueError('unknown keyword{:s} supplied: {:}'.format(
+                '' if len(missing_keys) == 1 else 's', missing_keys))
 
         # instantiate Files class
         manual_org = False if manual_org is None else manual_org
@@ -350,20 +395,8 @@ class Instrument(object):
         # will occur
         self._export_meta_post_processing = None
 
-        # store kwargs, passed to load routine
-        # first, check if keywords are  valid
-        _check_if_keywords_supported(self._load_rtn, **kwargs)
-        # get and apply default values for custom keywords
-        default_keywords = _get_supported_keywords(self._load_rtn)
-        # store user supplied keywords
-        self.kwargs = kwargs
-        # add in defaults if not already present
-        for key in default_keywords.keys():
-            if key not in self.kwargs:
-                self.kwargs[key] = default_keywords[key]
-
-        # run instrument init function, a basic pass function is used
-        # if user doesn't supply the init function
+        # Run instrument init function, a basic pass function is used if the
+        # user doesn't supply the init function
         self._init_rtn(self)
 
         # store base attributes, used in particular by Meta class
@@ -945,6 +978,7 @@ class Instrument(object):
         self._init_rtn = self._pass_func
         self._download_rtn = self._pass_func
         self._list_remote_rtn = self._pass_func
+
         # default params
         self.directory_format = None
         self.file_format = None
@@ -1092,7 +1126,7 @@ class Instrument(object):
         output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
         output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
         output_str += 'Keyword Arguments Passed to load(): '
-        output_str += "{:s}\n".format(self.kwargs.__str__())
+        output_str += "{:s}\n".format(self.kwargs['_load_rtn'].__str__())
         output_str += "{:s}\n".format(self.custom.__str__())
 
         # Print out the orbit settings
@@ -1231,7 +1265,7 @@ class Instrument(object):
             try:
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                              inst_id=self.inst_id,
-                                             **self.kwargs)
+                                             **self.kwargs['_load_rtn'])
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
                 mdata.accept_default_labels(self)
@@ -1645,7 +1679,8 @@ class Instrument(object):
         """
 
         return self._list_remote_rtn(self.tag, self.inst_id,
-                                     start=start, stop=stop)
+                                     start=start, stop=stop,
+                                     **self.kwargs['_list_remote_rtn'])
 
     def remote_date_range(self, start=None, stop=None):
         """Returns fist and last date for remote data.  Default behaviour is
@@ -2827,7 +2862,7 @@ class Instrument(object):
 #
 
 
-def _get_supported_keywords(load_func):
+def _get_supported_keywords(local_func):
     """Return a dict of supported keywords
 
     Intended to be used on the supporting instrument
@@ -2836,12 +2871,12 @@ def _get_supported_keywords(load_func):
 
     Parameters
     ----------
-    load_func: Python method or functools.partial
+    local_func : Python method or functools.partial
         Method used to load data within pysat
 
     Returns
     -------
-    out_dict
+    out_dict : dict
         dict of supported keywords and default values
 
 
@@ -2855,11 +2890,12 @@ def _get_supported_keywords(load_func):
     """
 
     # check if partial function
-    if isinstance(load_func, functools.partial):
+    if isinstance(local_func, functools.partial):
         # get keyword arguments already applied to function
-        existing_kws = load_func.keywords
+        existing_kws = local_func.keywords
+
         # pull out python function portion
-        load_func = load_func.func
+        local_func = local_func.func
     else:
         existing_kws = None
 
@@ -2867,9 +2903,9 @@ def _get_supported_keywords(load_func):
     # https://stackoverflow.com/questions/196960/
     # can-you-list-the-keyword-arguments-a-function-receives
     if sys.version_info.major == 2:
-        args, varargs, varkw, defaults = inspect.getargspec(load_func)
+        args, varargs, varkw, defaults = inspect.getargspec(local_func)
     else:
-        sig = inspect.getfullargspec(load_func)
+        sig = inspect.getfullargspec(local_func)
         # args are first
         args = sig.args
         # default values
@@ -2887,19 +2923,26 @@ def _get_supported_keywords(load_func):
         defaults = temp
 
     pop_list = []
-    # account for keywords that exist for every load function
-    pre_kws = ['fnames', 'inst_id', 'tag']
+
+    # account for keywords that exist for the standard functions
+    pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
+               'format_str', 'supported_tags', 'fake_daily_files_from_monthly',
+               'two_digit_year_break', 'delimiter']
+
     # insert 'missing' default for 'fnames'
     defaults.insert(0, None)
+
     # account for keywords already set since input was a partial function
     if existing_kws is not None:
         # keywords
         pre_kws.extend(existing_kws.keys())
+
     # remove pre-existing keywords from output
     # first identify locations
     for i, arg in enumerate(args):
         if arg in pre_kws:
             pop_list.append(i)
+
     # remove identified locations
     # go backwards so we don't mess with the location of data we
     # are trying to remove
@@ -2920,25 +2963,25 @@ def _check_if_keywords_supported(func, **kwargs):
 
     Parameters
     ----------
-    func: method
+    func : method
         Method to be checked against
     **kwargs : keyword args
         keyword arguments dictionary
 
-    Raises
+    Returns
     -------
-    ValueError
-        Error raised if keyword is not supported
+    good_keys : list
+        List of keyword arguements appropriate for this function
 
     """
 
     # get dict of supported keywords and values
     supp = _get_supported_keywords(func)
+
     # check if kwargs are in list
-    for name in kwargs.keys():
-        if name not in supp:
-            estr = ' '.join((name, 'is not a supported keyword by pysat or',
-                             'by the underlying supporting load routine.',
-                             'Please double check the keyword inputs.'))
-            raise ValueError(estr)
-    return
+    good_keys = []
+    for custom_key in kwargs.keys():
+        if custom_key in supp:
+            good_keys.append(custom_key)
+
+    return good_keys
