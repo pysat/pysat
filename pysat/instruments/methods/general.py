@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
-               two_digit_year_break=None):
+               two_digit_year_break=None, delimiter=None):
     """Return a Pandas Series of every file for chosen satellite data.
 
     This routine provides a standard interfacefor pysat instrument modules.
@@ -46,6 +46,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         If filenames only store two digits for the year, then
         '1900' will be added for years >= two_digit_year_break
         and '2000' will be added for years < two_digit_year_break.
+    delimiter : string
+        Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     --------
@@ -83,7 +85,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     # Get the series of files
     out = pysat.Files.from_os(data_path=data_path, format_str=format_str,
-                              two_digit_year_break=two_digit_year_break)
+                              two_digit_year_break=two_digit_year_break,
+                              delimiter=delimiter)
 
     # If the data is monthly, pad the series
     # TODO: take file frequency as an input to allow e.g., weekly files
