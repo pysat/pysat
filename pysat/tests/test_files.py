@@ -3,7 +3,7 @@ tests the pysat meta object and code
 """
 import datetime as dt
 import glob
-from importlib import reload as re_load
+from importlib import reload
 import numpy as np
 import os
 import time
@@ -73,7 +73,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                 time.sleep(timeout)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
     if format_str is None:
@@ -100,12 +100,12 @@ class TestNoDataDir():
         self.saved_data_path = pysat.data_dir
 
         pysat.data_dir = ''
-        re_load(pysat._files)
+        reload(pysat._files)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.data_dir = self.saved_data_path
-        re_load(pysat._files)
+        reload(pysat._files)
 
     def test_no_data_dir(self):
         with pytest.raises(Exception):
@@ -339,7 +339,7 @@ class TestBasics():
         pysat.instruments.pysat_testing.list_files = list_files
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         assert(inst.files.files.empty)
 
     def test_instrument_has_files(self):
@@ -358,7 +358,7 @@ class TestBasics():
         pysat.instruments.pysat_testing.list_files = list_files
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         assert (np.all(inst.files.files.index == dates))
 
 
@@ -383,7 +383,7 @@ class TestInstrumentWithFiles():
 
         # create a test instrument, make sure it is getting files from
         # filesystem
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         pysat.instruments.pysat_testing.list_files = list_files
         # create a bunch of files by year and doy
         self.testInst = \
@@ -410,8 +410,8 @@ class TestInstrumentWithFiles():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         del self.testInst
-        re_load(pysat.instruments.pysat_testing)
-        re_load(pysat.instruments)
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list, no files
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
@@ -575,8 +575,8 @@ class TestInstrumentWithFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         # add new files
@@ -588,9 +588,9 @@ class TestInstrumentWithFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
+                             inst_id='hello',
                              directory_format=''.join(('pysat_testing_',
-                                                       '{tag}_{sat_id}')),
+                                                       '{tag}_{inst_id}')),
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
 
@@ -698,7 +698,7 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
                         time.sleep(timeout)
 
 
-def list_versioned_files(tag=None, sat_id=None, data_path=None,
+def list_versioned_files(tag=None, inst_id=None, data_path=None,
                          format_str=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
@@ -733,7 +733,7 @@ class TestInstrumentWithVersionedFiles():
 
         # create a test instrument, make sure it is getting files from
         # filesystem
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         pysat.instruments.pysat_testing.list_files = list_versioned_files
         # create a bunch of files by year and doy
         self.testInst = \
@@ -760,8 +760,8 @@ class TestInstrumentWithVersionedFiles():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         del self.testInst
-        re_load(pysat.instruments.pysat_testing)
-        re_load(pysat.instruments)
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list, no files
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
@@ -894,8 +894,8 @@ class TestInstrumentWithVersionedFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         # add new files
@@ -907,8 +907,8 @@ class TestInstrumentWithVersionedFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
 

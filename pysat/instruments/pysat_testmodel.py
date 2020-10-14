@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 platform = 'pysat'
 name = 'testmodel'
 tags = {'': 'Regular testing data set'}
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
 pandas_format = False
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
@@ -42,7 +42,7 @@ def init(self):
     return
 
 
-def load(fnames, tag=None, sat_id=None):
+def load(fnames, tag=None, inst_id=None):
     """ Loads the test files
 
     Parameters
@@ -51,7 +51,7 @@ def load(fnames, tag=None, sat_id=None):
         List of filenames
     tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
     Returns
@@ -64,7 +64,7 @@ def load(fnames, tag=None, sat_id=None):
     """
 
     # create an artifical satellite data set
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='900S')
+    uts, index, date = mm_test.generate_times(fnames, inst_id, freq='900S')
 
     # Define range of simulated 3D model
     latitude = np.linspace(-50, 50, 21)

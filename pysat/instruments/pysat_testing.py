@@ -31,9 +31,9 @@ tags = {'': 'Regular testing data set',
         'non_strict': 'simulate an instrument without strict_time_flag'}
 
 # dictionary of satellite IDs, list of corresponding tags
-# a numeric string can be used in sat_id to change the number of points per day
-sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
-                'no_download']}
+# a numeric string can be used in inst_id to change the number of points per day
+inst_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
+                 'no_download']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'no_download': dt.datetime(2009, 1, 1),
                     'non_strict': dt.datetime(2009, 1, 1)}}
@@ -99,7 +99,7 @@ def default(self):
     pass
 
 
-def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
+def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
          malformed_index=False, mangle_file_dates=False):
     """ Loads the test files
@@ -111,7 +111,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     tag : str or NoneType
         Instrument tag (accepts '' or a string to change the behaviour of
         dummy1 for constellation testing)
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
     sim_multi_file_right : boolean
@@ -147,7 +147,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='1S')
+    uts, index, date = mm_test.generate_times(fnames, inst_id, freq='1S')
 
     # Specify the date tag locally and determine the desired date range
     pds_offset = pds.DateOffset(hours=12)

@@ -50,22 +50,45 @@ class Constellation(object):
 
         return self.instruments.__getitem__(*args, **kwargs)
 
+    def __repr__(self):
+        """ Print the basic Constellation properties
+
+        """
+
+        out_str = "Constellation(instruments={:}) -> {:d} Instruments".format(
+            self.instruments, len(self.instruments))
+        return out_str
+
     def __str__(self):
-        """
-        Print names of instruments within constellation.
+        """ Print names of instruments within constellation
 
         """
 
-        output_str = '\npysat Constellation object:\n'
+        output_str = 'pysat Constellation object:\n'
+        output_str += '---------------------------\n'
 
-        for instr in self.instruments:
-            output_str += instr.name + '\n'
+        ninst = len(self.instruments)
+
+        if ninst > 0:
+            output_str += "\nIndex Platform Name Tag Inst_ID\n"
+            output_str += "-------------------------------\n"
+            for i, inst in enumerate(self.instruments):
+                output_str += "{:d} '{:s}' '{:s}' '{:s}' '{:s}'\n".format(
+                    i, inst.platform, inst.name, inst.tag, inst.inst_id)
+        else:
+            output_str += "No loaded Instruments\n"
 
         return output_str
 
     def set_bounds(self, start, stop):
-        """
-        Sets boundaries for all instruments in constellation
+        """ Sets boundaries for all instruments in constellation
+
+        Parameters
+        ----------
+        start : dt.datetime
+            Starting time for Instrument bounds attribute
+        stop : dt.datetime
+            Ending time for Instrument bounds attribute
 
         """
 

@@ -100,7 +100,7 @@ def register(module_names, overwrite=False):
     module using
     ::
 
-        inst = pysat.Instrument(platform, name, tag=tag, sat_id=sat_id)
+        inst = pysat.Instrument(platform, name, tag=tag, inst_id=inst_id)
 
     Parameters
     ----------
@@ -169,7 +169,7 @@ def register(module_names, overwrite=False):
 
         class Foo(object):
             pass
-        validate.package = Foo()
+        validate.inst_loc = Foo()
         # parse string to get package part and instrument module part
         parse = module_name.split('.')
         # module name without package
@@ -177,7 +177,7 @@ def register(module_names, overwrite=False):
         # the package preamble
         pack_part = parse[:-1]
         # assign package info to Test class
-        validate.package.__name__ = '.'.join(pack_part)
+        validate.inst_loc.__name__ = '.'.join(pack_part)
         # run tests
         validate.test_modules_standard(mod_part)
         validate.test_standard_function_presence(mod_part)

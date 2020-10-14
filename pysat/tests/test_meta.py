@@ -14,94 +14,118 @@ import pysat.tests.test_utils
 
 class TestBasics():
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        self.meta = pysat.Meta()
+        """Runs before every method to create a clean testing setup
+        """
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
+        self.meta = self.testInst.meta
+        self.dval = None
+        self.stime = [2009, 1]
+        self.out = None
+        self.default_name = ['long_name', 'axis', 'label']
+        self.default_nan = ['fill', 'value_min', 'value_max']
+        self.default_val = {'notes': '', 'units': '', 'desc': '',
+                            'scale': 'linear'}
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        del self.testInst
-        del self.meta
+        """Runs after every method to clean up previous testing
+        """
+        del self.testInst, self.meta, self.out, self.stime
+        del self.default_name, self.default_nan, self.default_val, self.dval
+
+    def check_meta_settings(self):
+        """ Test the Meta settings for a specified value
+        """
+        # Test the Meta data for the data value, self.dval
+        for lkey in self.default_name:
+            assert self.meta[self.dval, lkey] == self.dval
+
+        for lkey in self.default_nan:
+            assert np.isnan(self.meta[self.dval, lkey])
+
+        for lkey in self.default_val.keys():
+            assert self.meta[self.dval, lkey] == self.default_val[lkey]
+
+        assert 'children' not in self.meta.data.columns
+        assert self.dval not in self.meta.keys_nD()
 
     def test_meta_repr(self):
-        output = self.meta.__repr__()
-        assert isinstance(output, str)
-        assert output.find('pysat.MetaData') >= 0
-
-    def test_meta_repr_in_instrument(self):
-        output = self.testInst.meta.__repr__()
-        assert isinstance(output, str)
-        assert output.find('pysat.MetaData') >= 0
+        """ Test the Meta repr function
+        """
+        self.out = self.meta.__repr__()
+        assert isinstance(self.out, str)
+        assert self.out.find('Meta(') >= 0
 
     def test_setting_nonpandas_metadata(self):
+        """ Test meta initialization with bad metadata
+        """
         with pytest.raises(ValueError):
             self.meta = pysat.Meta(metadata='Not a Panda')
 
-    def test_inst_data_assign_meta_default(self):
-        self.testInst.load(2009, 1)
-        self.testInst['help'] = self.testInst['mlt']
+    @pytest.mark.parametrize("labels,vals",
+                             [([], []),
+                              (['units', 'long_name'], ['V', 'Longgggg']),
+                              (['fill'], [-999])])
+    def test_inst_data_assign_meta(self, labels, vals):
+        """ Test Meta initialization with data
+        """
+        # Initialize the instrument
+        self.testInst.load(*self.stime)
+        self.dval = 'test_inst_data_assign_meta'
 
-        assert self.testInst.meta['help', 'long_name'] == 'help'
-        assert self.testInst.meta['help', 'axis'] == 'help'
-        assert self.testInst.meta['help', 'label'] == 'help'
-        assert self.testInst.meta['help', 'notes'] == ''
-        assert np.isnan(self.testInst.meta['help', 'fill'])
-        assert np.isnan(self.testInst.meta['help', 'value_min'])
-        assert np.isnan(self.testInst.meta['help', 'value_max'])
-        assert self.testInst.meta['help', 'units'] == ''
-        assert self.testInst.meta['help', 'desc'] == ''
-        assert self.testInst.meta['help', 'scale'] == 'linear'
+        # Update the testing data and set the new data dictionary
+        set_dict = {'data': self.testInst['mlt']}
+        for i, slabel in enumerate(labels):
+            if slabel in self.default_name:
+                self.default_name.pop(self.default_name.index(slabel))
+            elif slabel in self.default_nan:
+                self.default_nan.pop(self.default_nan.index(slabel))
+            self.default_val[slabel] = vals[i]
+            set_dict[slabel] = vals[i]
 
-    def test_inst_data_assign_meta(self):
-        self.testInst.load(2009, 1)
-        self.testInst['help'] = {'data': self.testInst['mlt'],
-                                 'units': 'V',
-                                 'long_name': 'The Doors'}
-        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        assert self.testInst.meta['help', 'axis'] == 'help'
-        assert self.testInst.meta['help', 'label'] == 'help'
-        assert self.testInst.meta['help', 'notes'] == ''
-        assert np.isnan(self.testInst.meta['help', 'fill'])
-        assert np.isnan(self.testInst.meta['help', 'value_min'])
-        assert np.isnan(self.testInst.meta['help', 'value_max'])
-        assert self.testInst.meta['help', 'units'] == 'V'
-        assert self.testInst.meta['help', 'desc'] == ''
-        assert self.testInst.meta['help', 'scale'] == 'linear'
+        # Initialize the Meta data
+        self.testInst[self.dval] = set_dict
+        self.meta = self.testInst.meta
 
-    def test_inst_data_assign_meta_empty_list(self):
-        self.testInst.load(2009, 1)
-        self.testInst['help'] = {'data': self.testInst['mlt'],
-                                 'units': [],
-                                 'long_name': 'The Doors'}
-        assert self.testInst.meta['help', 'units'] == ''
+        # Test the Meta settings
+        self.check_meta_settings()
 
-    def test_inst_data_assign_meta_string_list(self):
-        self.testInst.load(2009, 1)
-        self.testInst['help'] = {'data': self.testInst['mlt'],
-                                 'units': ['A', 'B'],
-                                 'long_name': 'The Doors'}
-        assert self.testInst.meta['help', 'units'] == 'A\n\nB'
+    @pytest.mark.parametrize("mlabel,slist", [("units", []),
+                                              ("notes", ['A', 'B'])])
+    def test_inst_data_assign_meta_string_list(self, mlabel, slist):
+        """ Test string assignment to meta with a list of strings
+        """
+        # Initialize the Meta Data
+        self.testInst.load(*self.stime)
+        self.dval = 'test_inst_data_assign_meta_string_list'
+        self.testInst[self.dval] = {'data': self.testInst['mlt'],
+                                    mlabel: slist}
+        self.meta = self.testInst.meta
+
+        # Update the testing data
+        self.default_val[mlabel] = '\n\n'.join(slist)
+
+        # Test the Meta settings
+        self.check_meta_settings()
 
     def test_inst_data_assign_meta_then_data(self):
-        self.testInst.load(2009, 1)
-        self.testInst['help'] = {'data': self.testInst['mlt'],
-                                 'units': 'V',
-                                 'long_name': 'The Doors'}
-        self.testInst['help'] = self.testInst['mlt']
-        assert self.testInst.meta['help', 'long_name'] == 'The Doors'
-        assert self.testInst.meta['help', 'axis'] == 'help'
-        assert self.testInst.meta['help', 'label'] == 'help'
-        assert self.testInst.meta['help', 'notes'] == ''
-        assert np.isnan(self.testInst.meta['help', 'fill'])
-        assert np.isnan(self.testInst.meta['help', 'value_min'])
-        assert np.isnan(self.testInst.meta['help', 'value_max'])
-        assert self.testInst.meta['help', 'units'] == 'V'
-        assert self.testInst.meta['help', 'desc'] == ''
-        assert self.testInst.meta['help', 'scale'] == 'linear'
+        """ Test meta assignment when data updated after metadata
+        """
+        # Initialize the Meta data
+        self.dval = 'test_inst_data_assign_meta_then_data'
+        self.testInst.load(*self.stime)
+        self.testInst[self.dval] = {'data': self.testInst['mlt'], 'units': 'V'}
+        self.testInst[self.dval] = self.testInst['mlt']
+        self.meta = self.testInst.meta
+
+        # Update the testing data
+        self.default_val['units'] = 'V'
+
+        # Test the Meta settings
+        self.check_meta_settings()
 
     def test_inst_ho_data_assign_no_meta_default(self):
-        self.testInst.load(2009, 1)
+        self.testInst.load(*self.stime)
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
@@ -115,7 +139,7 @@ class TestBasics():
         assert self.testInst.meta['help']['children'].has_attr('desc')
 
     def test_inst_ho_data_assign_meta_default(self):
-        self.testInst.load(2009, 1)
+        self.testInst.load(*self.stime)
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
@@ -133,7 +157,7 @@ class TestBasics():
         assert self.testInst.meta['help']['children'].has_attr('desc')
 
     def test_inst_ho_data_assign_meta(self):
-        self.testInst.load(2009, 1)
+        self.testInst.load(*self.stime)
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
@@ -161,7 +185,7 @@ class TestBasics():
                                                       'desc'] == 'nothing'
 
     def test_inst_ho_data_assign_meta_then_data(self):
-        self.testInst.load(2009, 1)
+        self.testInst.load(*self.stime)
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
@@ -190,7 +214,7 @@ class TestBasics():
                                                       'desc'] == 'nothing'
 
     def test_inst_ho_data_assign_meta_different_labels(self):
-        self.testInst.load(2009, 1)
+        self.testInst.load(*self.stime)
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
@@ -218,26 +242,26 @@ class TestBasics():
                                                       'desc'] == 'nothing'
 
     def test_inst_assign_from_meta(self):
-        self.testInst.load(2009, 1)
-        self.testInst['help'] = self.testInst['mlt']
-        self.testInst['help2'] = self.testInst['mlt']
-        self.testInst.meta['help2'] = self.testInst.meta['help']
+        """Test Meta assignment form another meta object
+        """
+        # Assign new meta data
+        self.dval = "test_inst_assing_from_meta"
+        self.testInst.load(*self.stime)
+        self.testInst['new_data'] = self.testInst['mlt']
+        self.testInst[self.dval] = self.testInst['mlt']
+        self.testInst.meta[self.dval] = self.testInst.meta['new_data']
+        self.meta = self.testInst.meta
 
-        assert self.testInst.meta['help2', 'long_name'] == 'help'
-        assert self.testInst.meta['help2', 'axis'] == 'help'
-        assert self.testInst.meta['help2', 'label'] == 'help'
-        assert self.testInst.meta['help2', 'notes'] == ''
-        assert np.isnan(self.testInst.meta['help2', 'fill'])
-        assert np.isnan(self.testInst.meta['help2', 'value_min'])
-        assert np.isnan(self.testInst.meta['help2', 'value_max'])
-        assert self.testInst.meta['help2', 'units'] == ''
-        assert self.testInst.meta['help2', 'desc'] == ''
-        assert self.testInst.meta['help2', 'scale'] == 'linear'
-        assert 'children' not in self.testInst.meta.data.columns
-        assert 'help2' not in self.testInst.meta.keys_nD()
+        # Update testing info
+        for skey in self.default_name:
+            self.default_val[skey] = 'new_data'
+        self.default_name = []
+
+        # Test the Meta settings
+        self.check_meta_settings()
 
     def test_inst_assign_from_meta_w_ho(self):
-        self.testInst.load(2009, 1)
+        self.testInst.load(*self.stime)
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
@@ -268,7 +292,7 @@ class TestBasics():
         assert 'children' not in self.testInst.meta.data.columns
 
     def test_inst_assign_from_meta_w_ho_then_update(self):
-        self.testInst.load(2009, 1)
+        self.testInst.load(*self.stime)
         frame = pds.DataFrame({'dummy_frame1': np.arange(10),
                                'dummy_frame2': np.arange(10)},
                               columns=['dummy_frame1', 'dummy_frame2'])
@@ -313,25 +337,40 @@ class TestBasics():
                                                        'axis'] == 'Reeves'
         assert 'children' not in self.testInst.meta.data.columns
 
-    def test_repr_call_runs(self):
-        self.testInst.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
-        output = self.testInst.meta.__str__()
-        assert output.find('hi') >= 0
+    def test_str_call_runs_long_standard(self):
+        """ Test long string output with custom meta data
+        """
+        self.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
+        output = self.meta.__str__()
+        assert output.find('pysat Meta object') >= 0
+        assert output.find('hi') > 0
+        assert output.find('Standard Metadata variables') > 0
+        assert output.find('ND Metadata variables') < 0
 
-    def test_repr_call_runs_with_higher_order_data(self):
-        self.meta['param1'] = {'units': 'blank', 'long_name': u'parameter1',
-                               'custom1': 14, 'custom2': np.NaN,
-                               'custom3': 14.5, 'custom4': u'hello'}
-        self.testInst.meta['param0'] = {'units': 'basic',
-                                        'long_name': 'parameter0',
-                                        self.testInst.meta.fill_label: '10',
-                                        'CUSTOM4': 143}
-        self.testInst.meta['kiwi'] = self.meta
-        output = self.testInst.meta.__str__()
-        assert output.find('param0') >= 0
+    def test_str_call_runs_short(self):
+        """ Test short string output with custom meta data
+        """
+        self.meta['hi'] = {'units': 'yoyo', 'long_name': 'hello'}
+        output = self.testInst.meta.__str__(long_str=False)
+        assert output.find('pysat Meta object') >= 0
+        assert output.find('hi') < 0
+        assert output.find('Metadata variables') < 0
+
+    def test_str_call_runs_with_higher_order_data(self):
+        """ Test string output with higher order data
+        """
+        ho_meta = pysat.Meta()
+        ho_meta['param1'] = {'units': 'blank', 'long_name': 'parameter1',
+                             'custom1': 14, 'custom2': np.nan,
+                             'custom3': 14.5, 'custom4': 'hello'}
+        ho_meta['param0'] = {'units': 'basic', 'long_name': 'parameter0',
+                             self.meta.fill_label: '10', 'CUSTOM4': 143}
+        self.meta['kiwi'] = ho_meta
+        output = self.meta.__str__()
+        assert output.find('pysat Meta object') >= 0
         assert output.find('kiwi') >= 0
-        assert output.find('Metadata for kiwi') >= 0
-        assert output.find('Metadata for kiwi') < output.find('param1')
+        assert output.find('ND Metadata variables') >= 0
+        assert output.find('Standard Metadata variables') < 0
 
     def test_basic_pops(self):
 
@@ -1161,20 +1200,28 @@ class TestBasics():
         assert 'extra_check' in f['test_nan_variable'].ncattrs()
 
 
-class TestBasicsImmuatble(TestBasics):
+class TestBasicsImmutable(TestBasics):
     def setup(self):
-        """Runs before every method to create a clean testing setup."""
-        self.meta = pysat.Meta()
-        # disable mutability
-        self.meta.mutable = False
+        """Runs before every method to create a clean testing setup
+        """
 
-        # Instrument object
+        # Instrument object and disable mutability
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
-        # pre-load data to ensure mutable set to false
-        self.testInst.load(2009, 1)
+        self.meta = self.testInst.meta
+        self.meta.mutable = False
+
+        # Assign remaining values
+        self.dval = None
+        self.stime = [2009, 1]
+        self.out = None
+        self.default_name = ['long_name', 'axis', 'label']
+        self.default_nan = ['fill', 'value_min', 'value_max']
+        self.default_val = {'notes': '', 'units': '', 'desc': '',
+                            'scale': 'linear'}
 
     def teardown(self):
-        """Runs after every method to clean up previous testing."""
-        del self.testInst
-        del self.meta
+        """Runs after every method to clean up previous testing
+        """
+        del self.testInst, self.meta, self.out, self.stime
+        del self.default_name, self.default_nan, self.default_val, self.dval
