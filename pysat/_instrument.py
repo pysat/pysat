@@ -170,7 +170,7 @@ class Instrument(object):
     """
 
     def __init__(self, platform=None, name=None, tag=None, inst_id=None,
-                 clean_level='clean', update_files=None, pad=None,
+                 clean_level='clean', update_files=False, pad=None,
                  orbit_info=None, inst_module=None, multi_file_day=None,
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
@@ -190,6 +190,7 @@ class Instrument(object):
             if isinstance(platform, str) and isinstance(name, str):
                 self.platform = platform.lower()
                 self.name = name.lower()
+
                 # look to module for instrument functions and defaults
                 self._assign_funcs(by_name=True)
             elif (platform is None) and (name is None):
@@ -201,18 +202,18 @@ class Instrument(object):
                 raise ValueError(' '.join(('Inputs platform and name must both',
                                            'be strings, or both None.')))
         else:
-            # user has provided a module
-            try:
-                # platform and name are expected to be part of module
-                self.name = inst_module.name.lower()
-                self.platform = inst_module.platform.lower()
-            except AttributeError as err:
-                raise AttributeError(' '.join((str(err), '\n',
-                                               'A name and platform attribute',
-                                               'for the instrument is',
-                                               'required if supplying routine',
-                                               'module directly.')))
-            # look to module for instrument functions and defaults
+            # user has provided a module, assign platform and name here
+            for iattr in ['platform', 'name']:
+                if hasattr(inst_module, iattr):
+                    setattr(self, iattr, getattr(inst_module, iattr).lower())
+                else:
+                    raise AttributeError(''.join(['Supplied module ',
+                                                  inst_module.__repr__(),
+                                                  'is missing required ',
+                                                  'attribute: ', iattr]))
+
+            # Look to supplied module for instrument functions and non-default
+            # attribute values
             self._assign_funcs(inst_module=inst_module)
 
         # more reasonable defaults for optional parameters
@@ -222,19 +223,17 @@ class Instrument(object):
         # assign strict_time_flag
         self.strict_time_flag = strict_time_flag
 
-        # assign directory format information, how pysat looks in
+        # assign directory format information, which tells pysat how to look in
         # sub-directories for files
-        # assign_func sets some instrument defaults, direct info rules all
         if directory_format is not None:
+            # assign_func sets some instrument defaults, direct info rules all
             self.directory_format = directory_format.lower()
-        # value not provided by user, check if there is a value provided by
-        # instrument module
         elif self.directory_format is not None:
-            try:
-                # check if it is a function
+            # value not provided by user, check if there is a value provided by
+            # the instrument module, which may be provided as the desired
+            # string or a method dependent on tag and inst_id
+            if callable(self.directory_format):
                 self.directory_format = self.directory_format(tag, inst_id)
-            except TypeError:
-                pass
 
         # assign the file format string, if provided by user
         # enables user to temporarily put in a new string template for files
@@ -316,9 +315,9 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         saved_keys = []
-        partial_func = ['_list_rtn', '_download_rtn', '_default_rtn']
-        for fkey in ['_list_rtn', '_load_rtn', '_default_rtn',
-                     '_download_rtn', '_list_remote_rtn']:
+        partial_func = ['_list_files_rtn', '_download_rtn', '_default_rtn']
+        for fkey in ['_list_files_rtn', '_load_rtn', '_default_rtn',
+                     '_download_rtn', '_list_remote_files_rtn']:
             func = getattr(self, fkey)
 
             # first, check if keywords are  valid
@@ -991,13 +990,13 @@ class Instrument(object):
         # Declare the standard Instrument methods and attributes
         inst_methods = {'required': ['load', 'list_files', 'download', 'init',
                                      'clean'],
-                        'optional': ['default', 'list_remote_rtn']}
+                        'optional': ['default', 'list_remote_files']}
         inst_attrs = {"directory_format": None, "file_format": None,
                       "multi_file_day": False, "orbit_info": None,
                       "pandas_format": True}
 
         # set method defaults
-        for mname in flatten([val for val in inst_methods.values()]):
+        for mname in [mm for val in inst_methods.values() for mm in val]:
             local_name = "_{:s}_rtn".format(mname)
             setattr(self, local_name, self._pass_func)
 
@@ -1071,7 +1070,7 @@ class Instrument(object):
             else:
                 missing.append(iattr)
 
-        if len(missing > 0):
+        if len(missing) > 0:
             logger.debug(''.join(['These Instrument attributes kept their ',
                                   'default  values: {:}'.format(missing)]))
 
@@ -1645,11 +1644,11 @@ class Instrument(object):
 
         # apply default instrument routine, if data present
         if not self.empty:
-            self._default_rtn()
+            self._default_rtn(self)
 
         # clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
-            self._clean_rtn()
+            self._clean_rtn(self)
 
         # apply custom functions via the nanokernel in self.custom
         if not self.empty:
@@ -1691,10 +1690,12 @@ class Instrument(object):
             pandas Series of filenames indexed by date and time
 
         """
+        # Set the routine kwargs
+        kwargs = self.kwargs['_list_remote_files_rtn']
+        kwargs["start"] =  start
+        kwargs["stop"] = stop
 
-        return self._list_remote_rtn(self.tag, self.inst_id,
-                                     start=start, stop=stop,
-                                     **self.kwargs['_list_remote_rtn'])
+        return self._list_remote_files_rtn(self.tag, self.inst_id,  **kwargs)
 
     def remote_date_range(self, start=None, stop=None):
         """Returns fist and last date for remote data.  Default behaviour is

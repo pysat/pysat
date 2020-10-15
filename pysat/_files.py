@@ -356,7 +356,7 @@ class Files(object):
     def refresh(self):
         """Update list of files, if there are changes.
 
-        Calls underlying list_rtn for the particular science instrument.
+        Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
         pysat_data_dir/platform/name/tag/,
         where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
@@ -372,10 +372,10 @@ class Files(object):
         output_str = " ".join(output_str.split())
         logger.info(output_str)
 
-        info = self._sat._list_rtn(tag=self._sat.tag,
-                                   inst_id=self._sat.inst_id,
-                                   data_path=self.data_path,
-                                   format_str=self.file_format)
+        info = self._sat._list_files_rtn(tag=self._sat.tag,
+                                         inst_id=self._sat.inst_id,
+                                         data_path=self.data_path,
+                                         format_str=self.file_format)
         info = self._remove_data_dir_path(info)
         if not info.empty:
             if self.ignore_empty_files:

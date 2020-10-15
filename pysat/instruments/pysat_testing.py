@@ -73,7 +73,8 @@ def init(self):
         # set list files routine to desired date range
         # attach to the instrument object
         fdr = self.kwargs['_load_rtn']['file_date_range']
-        self._list_rtn = functools.partial(list_files, file_date_range=fdr)
+        self._list_files_rtn = functools.partial(list_files,
+                                                 file_date_range=fdr)
         self.files.refresh()
 
     # mess with file dates if kwarg option present
