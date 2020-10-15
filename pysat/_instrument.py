@@ -208,7 +208,7 @@ class Instrument(object):
                     setattr(self, iattr, getattr(inst_module, iattr).lower())
                 else:
                     raise AttributeError(''.join(['Supplied module ',
-                                                  inst_module.__repr__(),
+                                                  "{:}".format(inst_module),
                                                   'is missing required ',
                                                   'attribute: ', iattr]))
 
@@ -843,7 +843,7 @@ class Instrument(object):
         # update normal metadata parameters in a single go
         # case must always be preserved in Meta object
         new_fdict = {}
-        for kfey in fdict:
+        for fkey in fdict:
             case_old = self.meta.var_case_name(fkey)
             new_fdict[case_old] = fdict[fkey]
         self.meta.data.rename(index=new_fdict, inplace=True)
