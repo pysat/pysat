@@ -968,49 +968,67 @@ class Instrument(object):
         pass
 
     def _assign_funcs(self, by_name=False, inst_module=None):
-        """Assign all external science instrument methods to Instrument object.
-        """
-        # set defaults
-        self._list_rtn = self._pass_func
-        self._load_rtn = self._pass_func
-        self._default_rtn = self._pass_func
-        self._clean_rtn = self._pass_func
-        self._init_rtn = self._pass_func
-        self._download_rtn = self._pass_func
-        self._list_remote_rtn = self._pass_func
+        """Assign all external science instrument methods to Instrument object
 
-        # default params
-        self.directory_format = None
-        self.file_format = None
-        self.multi_file_day = False
-        self.orbit_info = None
-        self.pandas_format = True
+        Parameters
+        ----------
+        by_name : boolean
+            If True, uses self.platform and self.name to load the Instrument,
+            if False uses inst_module. (default=False)
+        inst_module : module or NoneType
+            Instrument module or None, if not specified (default=None)
+
+        Raises
+        ------
+        KeyError
+            If unknown platform or name supplied
+        ImportError
+            If there was an error importing the instrument module
+        AttributeError
+            If a required Instrument method is missing
+
+        """
+        # Declare the standard Instrument methods and attributes
+        inst_methods = {'required': ['load', 'list_files', 'download', 'init',
+                                     'clean'],
+                        'optional': ['default', 'list_remote_rtn']}
+        inst_attrs = {"directory_format": None, "file_format": None,
+                      "multi_file_day": False, "orbit_info": None,
+                      "pandas_format": True}
+
+        # set method defaults
+        for mname in flatten([val for val in inst_methods.values()]):
+            local_name = "_{:s}_rtn".format(mname)
+            setattr(self, local_name, self._pass_func)
+
+        # set attribute defaults
+        for iattr in inst_attrs.keys():
+            setattr(self, iattr, inst_attrs[iattr])
 
         if by_name:
             # pysat platform is reserved for modules within pysat.instruments
             if self.platform == 'pysat':
                 # look within pysat
-                inst = \
-                    importlib.import_module(''.join(('.', self.platform, '_',
-                                                     self.name)),
-                                            package='pysat.instruments')
+                inst = importlib.import_module(
+                    ''.join(('.', self.platform, '_', self.name)),
+                    package='pysat.instruments')
             else:
-                # not a native pysat.Instrument
-                # first, get the supporting instrument module from
-                # the pysat registry
-                try:
-                    mod = user_modules[self.platform][self.name]
-                except KeyError as kerr:
-                    estr = ''.join(('unknown platform or name supplied to user',
-                                    ' modules: {:} or {:} not in {:}'))
-                    estr = estr.format(self.platform, self.name,
-                                       user_modules.__repr__())
-                    logger.error(estr)
-                    raise KeyError(kerr)
-                # import registered module
-                # though modules are checked to ensure they may be imported
-                # when registered, something may have changed on the system
-                # since it was originally checked.
+                # Not a native pysat.Instrument.  First, get the supporting
+                # instrument module from the pysat registry
+                if self.platform not in user_modules.keys():
+                    raise KeyError('unknown platform supplied: {:}'.format(
+                        self.platform))
+
+                if self.name not in user_modules[self.platform].keys():
+                    raise KeyError(''.join(['unknown name supplied: ',
+                                            self.name, ' not assigned to the ',
+                                            self.platform, ' platform']))
+
+                mod = user_modules[self.platform][self.name]
+
+                # Import the registered module.  Though modules are checked to
+                # ensure they may be imported when registered, something may
+                # have changed on the system since it was originally checked.
                 try:
                     inst = importlib.import_module(mod)
                 except ImportError as ierr:
@@ -1027,49 +1045,35 @@ class Instrument(object):
             # no module or name info, default pass functions assigned
             return
 
-        try:
-            self._load_rtn = inst.load
-            self._list_rtn = inst.list_files
-            self._download_rtn = inst.download
-        except AttributeError as err:
-            raise AttributeError("\n".join((str(err), '\n',
-                                            'A load, file_list, and download',
-                                            'routine are required for every',
-                                            'instrument.')))
-        try:
-            self._default_rtn = inst.default
-        except AttributeError:
-            pass
-        try:
-            self._init_rtn = inst.init
-        except AttributeError:
-            pass
-        try:
-            self._clean_rtn = inst.clean
-        except AttributeError:
-            pass
-        try:
-            self._list_remote_rtn = inst.list_remote_files
-        except AttributeError:
-            pass
+        # Assign the Instrument methods
+        missing = []
+
+        for mstat in inst_methods.keys():
+            for mname in inst_methods[mstat]:
+                if hasattr(inst, mname):
+                    local_name = '_{:s}_rtn'.format(mname)
+                    setattr(self, local_name, getattr(inst, mname))
+                else:
+                    missing.append(mname)
+                    if mstat == "required":
+                        raise AttributeError(
+                            "".join(['A `', mname, '` routine is required',
+                                     ' for every Instrument']))
+
+        if len(missing) > 0:
+            logger.debug('Missing Instrument methods: {:}'.format(missing))
 
         # look for instrument default parameters
-        try:
-            self.directory_format = inst.directory_format
-        except AttributeError:
-            pass
-        try:
-            self.multi_file_day = inst.multi_file_day
-        except AttributeError:
-            pass
-        try:
-            self.orbit_info = inst.orbit_info
-        except AttributeError:
-            pass
-        try:
-            self.pandas_format = inst.pandas_format
-        except AttributeError:
-            pass
+        missing = list()
+        for iattr in inst_attrs.keys():
+            if hasattr(inst, iattr):
+                setattr(self, iattr, getattr(inst, iattr))
+            else:
+                missing.append(iattr)
+
+        if len(missing > 0):
+            logger.debug(''.join(['These Instrument attributes kept their ',
+                                  'default  values: {:}'.format(missing)]))
 
         # Check for download flags for tests
         try:
@@ -1081,6 +1085,7 @@ class Instrument(object):
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
             self._test_download = True
+
         try:
             # Used for tests which require FTP access
             # Assume we test download routines on travis unless specified
@@ -1090,6 +1095,7 @@ class Instrument(object):
         except (AttributeError, KeyError):
             # Either flags are not specified, or this combo is not
             self._test_download_travis = True
+
         try:
             # Used for tests which require password access
             # Assume password not required unless specified otherwise
@@ -1404,20 +1410,23 @@ class Instrument(object):
 
         Parameters
         ----------
-        yr : integer
-            year for desired data
-        doy : integer
-            day of year
-        date : datetime object
-            date to load
+        yr : integer or NoneType
+            year for desired data (default=None)
+        doy : integer or NoneType
+            day of year (default=None)
+        date : datetime object or NoneType
+            date to load or NoneType (default=None)
         fname : 'string'
-            filename to be loaded
+            filename to be loaded (default=None)
         verifyPad : boolean
-            if True, padding data not removed (debug purposes)
+            if True, padding data not removed for debugging (default=False)
 
-        Returns
-        --------
-        Void.  Data is added to self.data
+        Raises
+        ------
+        TypeError
+            For incomplete or incorrect input
+        ValueError
+            For input incompatible with Instrument set-up
 
         Note
         ----
@@ -1430,68 +1439,73 @@ class Instrument(object):
         # set options used by loading routine based upon user input
         if date is not None:
             # ensure date portion from user is only year, month, day
-            self._set_load_parameters(date=date,
-                                      fid=None)
-            # increment
+            self._set_load_parameters(date=date, fid=None)
+
+            # increment by a day
             inc = pds.DateOffset(days=1)
             curr = self._filter_datetime_input(date)
         elif (yr is not None) & (doy is not None):
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
             self._set_load_parameters(date=date, fid=None)
-            # increment
+
+            # increment by a day
             inc = pds.DateOffset(days=1)
             curr = self.date
         elif fname is not None:
             # date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
+
             # increment one file at a time
             inc = 1
             curr = self._fid.copy()
         elif fid is not None:
             self._set_load_parameters(date=None, fid=fid)
+
             # increment one file at a time
             inc = 1
             curr = fid
         else:
-            estr = 'Must supply a yr,doy pair, or datetime object, or filename'
-            estr = '{:s} to load data from.'.format(estr)
-            raise TypeError(estr)
+            raise TypeError(''.join(['Must supply a yr,doy pair, a datetime ',
+                                     'object, or a filename to load data.']))
 
         self.orbits._reset()
+
         # if pad  or multi_file_day is true, need to have a three day/file load
         loop_pad = self.pad if self.pad is not None \
             else pds.DateOffset(seconds=0)
+
         if (self.pad is not None) | self.multi_file_day:
             if self._empty(self._next_data) & self._empty(self._prev_data):
                 # data has not already been loaded for previous and next days
                 # load data for all three
                 logger.info('Initializing three day/file window')
+
                 # using current date or fid
                 self._prev_data, self._prev_meta = self._load_prev()
                 self._curr_data, self._curr_meta = \
                     self._load_data(date=self.date, fid=self._fid)
                 self._next_data, self._next_meta = self._load_next()
             else:
-                # moving forward in time
                 if self._next_data_track == curr:
+                    # moving forward in time
                     del self._prev_data
                     self._prev_data = self._curr_data
                     self._prev_meta = self._curr_meta
                     self._curr_data = self._next_data
                     self._curr_meta = self._next_meta
                     self._next_data, self._next_meta = self._load_next()
-                # moving backward in time
-                elif self._prev_data_track == curr:
+                elif self._prev_data_track == cur:
+                    # moving backward in time
                     del self._next_data
                     self._next_data = self._curr_data
                     self._next_meta = self._curr_meta
                     self._curr_data = self._prev_data
                     self._curr_meta = self._prev_meta
                     self._prev_data, self._prev_meta = self._load_prev()
-                # jumped in time/or switched from filebased to date based
-                # access
                 else:
+                    # jumped in time/or switched from filebased to date based
+                    # access
                     del self._prev_data
                     del self._curr_data
                     del self._next_data
