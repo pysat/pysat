@@ -1498,7 +1498,7 @@ class Instrument(object):
                     self._curr_data = self._next_data
                     self._curr_meta = self._next_meta
                     self._next_data, self._next_meta = self._load_next()
-                elif self._prev_data_track == cur:
+                elif self._prev_data_track == curr:
                     # moving backward in time
                     del self._next_data
                     self._next_data = self._curr_data
