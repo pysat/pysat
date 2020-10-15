@@ -1724,16 +1724,12 @@ class Instrument(object):
         files = self.remote_file_list(start=start, stop=stop)
         return [files.index[0], files.index[-1]]
 
-    def download_updated_files(self, user=None, password=None, **kwargs):
+    def download_updated_files(self, **kwargs):
         """Grabs a list of remote files, compares to local, then downloads new
         files.
 
         Parameters
         ----------
-        user : string
-            username, if required by instrument data archive
-        password : string
-            password, if required by instrument data archive
         **kwargs : dict
             Dictionary of keywords that may be options for specific instruments
 
@@ -1775,11 +1771,10 @@ class Instrument(object):
         logger.info(' '.join(('Found {} files that'.format(len(new_dates)),
                               'are new or updated.')))
         # download date for dates in new_dates (also includes new names)
-        self.download(user=user, password=password, date_array=new_dates,
-                      **kwargs)
+        self.download(date_array=new_dates, **kwargs)
 
-    def download(self, start=None, stop=None, freq='D', user=None,
-                 password=None, date_array=None, **kwargs):
+    def download(self, start=None, stop=None, freq='D', date_array=None,
+                 **kwargs):
         """Download data for given Instrument object from start to stop.
 
         Parameters
@@ -1791,10 +1786,6 @@ class Instrument(object):
         freq : string
             Stepsize between dates for season, 'D' for daily, 'M' monthly
             (see pandas)
-        user : string
-            username, if required by instrument data archive
-        password : string
-            password, if required by instrument data archive
         date_array : list-like
             Sequence of dates to download date for. Takes precendence over
             start and stop inputs
@@ -1836,19 +1827,14 @@ class Instrument(object):
             stop = self._filter_datetime_input(stop)
             date_array = utils.time.create_date_range(start, stop, freq=freq)
 
-        if user is None:
-            self._download_rtn(date_array,
-                               tag=self.tag,
-                               inst_id=self.inst_id,
-                               data_path=self.files.data_path,
-                               **kwargs)
-        else:
-            self._download_rtn(date_array,
-                               tag=self.tag,
-                               inst_id=self.inst_id,
-                               data_path=self.files.data_path,
-                               user=user,
-                               password=password, **kwargs)
+        # Add necessary kwargs to the optional kwargs
+        kwargs['tag'] = self.tag
+        kwargs['inst_id'] = self.inst_id
+        kwargs['data_path'] = self.files.data_path
+
+        # Download the data
+        self._download_rtn(date_array, **kwargs)
+
         # get current file date range
         first_date = self.files.start_date
         last_date = self.files.stop_date
@@ -2942,7 +2928,7 @@ def _get_supported_keywords(local_func):
     # account for keywords that exist for the standard functions
     pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
                'format_str', 'supported_tags', 'fake_daily_files_from_monthly',
-               'two_digit_year_break', 'delimiter', 'start', 'stop']
+               'two_digit_year_break', 'delimiter', 'start', 'stop', 'freq']
 
     # insert 'missing' default for 'fnames'
     n_args = len(args) - len(defaults)
