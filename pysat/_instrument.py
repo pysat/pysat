@@ -2088,7 +2088,7 @@ class Instrument(object):
                 self.load(fname=self._iter_list[-1], verifyPad=verifyPad)
 
     def _get_var_type_code(self, coltype):
-        '''Determines the two-character type code for a given variable type
+        """Determines the two-character type code for a given variable type
 
         Parameters
         ----------
@@ -2098,7 +2098,7 @@ class Instrument(object):
         Returns
         -------
         str
-            The variable type code for the given type'''
+            The variable type code for the given type"""
 
         if type(coltype) is np.dtype:
             var_type = coltype.kind + str(coltype.itemsize)
@@ -2129,14 +2129,14 @@ class Instrument(object):
             else:
                 raise TypeError('Unknown Variable Type' + str(coltype))
 
-    def _get_data_info(self, data, file_format):
+    def _get_data_info(self, data, netcdf_format):
         """Support file writing by determining data type and other options
 
         Parameters
         ----------
         data : pandas object
             Data to be written
-        file_format : str
+        netcdf_format : str
             String indicating netCDF3 or netCDF4
 
         Returns
@@ -2145,8 +2145,8 @@ class Instrument(object):
         """
         # get type of data
         data_type = data.dtype
-        # check if older file_format
-        if file_format != 'NETCDF4':
+        # check if older netcdf_format
+        if netcdf_format != 'NETCDF4':
             old_format = True
         else:
             old_format = False
@@ -2267,8 +2267,7 @@ class Instrument(object):
         return mdata_dict
 
     def generic_meta_translator(self, input_meta):
-        '''Translates the metadate contained in an object into a dictionary
-        suitable for export.
+        """Translates the metadata contained in an object into a dictionary
 
         Parameters
         ----------
@@ -2279,7 +2278,9 @@ class Instrument(object):
         -------
         dict
             A dictionary of the metadata for each variable of an output file
-            e.g. netcdf4'''
+            e.g. netcdf4
+
+        """
         export_dict = {}
         if self._meta_translation_table is not None:
             # Create a translation table for the actual values of the meta
@@ -2400,7 +2401,7 @@ class Instrument(object):
         if export_nan is None:
             export_nan = self.meta._export_nan
 
-        file_format = 'NETCDF4'
+        netcdf_format = 'NETCDF4'
         # base_instrument used to define the standard attributes attached
         # to the instrument object. Any additional attributes added
         # to the main input Instrument will be written to the netCDF4
@@ -2440,16 +2441,18 @@ class Instrument(object):
                                        'results in a loss of metadata. Please',
                                        'make the names unique.')))
 
-        # general process for writing data is this
-        # first, take care of the EPOCH information
-        # second, iterate over the variable colums in Instrument.data
-        # check the type of data
-        # if 1D column, do simple write (type is not an object)
-        # if it is an object, then check if writing strings, if not strings,
-        # then if column is a Series of Frames, write as 2D variables
-        # metadata must be filtered before writing to netCDF4, string variables
-        # can't have a fill value
-        with netCDF4.Dataset(fname, mode='w', format=file_format) as out_data:
+        # General process for writing data:
+        # 1) take care of the EPOCH information,
+        # 2) iterate over the variable colums in Instrument.data and check
+        #    the type of data,
+        #    - if 1D column:
+        #      A) do simple write (type is not an object)
+        #      B) if it is an object, then check if writing strings
+        #      C) if not strings, write object
+        #    - if column is a Series of Frames, write as 2D variables
+        # 3) metadata must be filtered before writing to netCDF4, since
+        #    string variables can't have a fill value
+        with netCDF4.Dataset(fname, mode='w', format=netcdf_format) as out_data:
             # number of items, yeah
             num = len(self.index)
             # write out the datetime index
@@ -2517,13 +2520,11 @@ class Instrument(object):
                 else:
                     # use variable names used by user when working with data
                     case_key = key
-                data, coltype, datetime_flag = self._get_data_info(self[key],
-                                                                   file_format)
+                data, coltype, datetime_flag = self._get_data_info(
+                    self[key], netcdf_format)
                 # operate on data based upon type
                 if self[key].dtype != np.dtype('O'):
                     # not an object, normal basic 1D data
-                    # print(key, coltype, file_format)
-
                     cdfkey = out_data.createVariable(case_key,
                                                      coltype,
                                                      dimensions=(epoch_name),
@@ -2654,7 +2655,7 @@ class Instrument(object):
                                 # main variable heading
                                 idx = self[key].iloc[good_data_loc][col]
                                 data, coltype, _ = \
-                                    self._get_data_info(idx, file_format)
+                                    self._get_data_info(idx, netcdf_format)
                                 cdfkey = \
                                     out_data.createVariable('_'.join((case_key,
                                                                       col)),
@@ -2702,7 +2703,7 @@ class Instrument(object):
                                 # series
                                 idx = self[key].iloc[good_data_loc]
                                 data, coltype, _ = \
-                                    self._get_data_info(idx, file_format)
+                                    self._get_data_info(idx, netcdf_format)
                                 cdfkey = \
                                     out_data.createVariable(case_key + '_data',
                                                             coltype,
@@ -2745,7 +2746,7 @@ class Instrument(object):
                         idx = good_data_loc
                         data, coltype, datetime_flag = \
                             self._get_data_info(self[key].iloc[idx].index,
-                                                file_format)
+                                                netcdf_format)
                         # create dimension variable for to store index in
                         # netCDF4
                         cdfkey = out_data.createVariable(case_key, coltype,
