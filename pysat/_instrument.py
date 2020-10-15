@@ -2930,7 +2930,9 @@ def _get_supported_keywords(local_func):
                'two_digit_year_break', 'delimiter', 'start', 'stop']
 
     # insert 'missing' default for 'fnames'
-    defaults.insert(0, None)
+    n_args = len(args) - len(defaults)
+    for i in range(0, n_args):
+        defaults.insert(0, None)
 
     # account for keywords already set since input was a partial function
     if existing_kws is not None:
