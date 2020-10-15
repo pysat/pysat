@@ -50,11 +50,10 @@ import pysat
 
 logger = logging.getLogger(__name__)
 
-# the platform and name strings associated with this instrument
-# need to be defined at the top level
-# these attributes will be copied over to the Instrument object by pysat
-# the strings used here should also be used to name this file
-# platform_name.py
+# The platform and name strings associated with this instrument need to be
+# defined at the top level.  These attributes will be copied over to the
+# Instrument object by pysat.  The strings used here should also be used to
+# name this file platform_name.py
 platform = ''
 name = ''
 
@@ -63,11 +62,10 @@ tags = {'': 'description 1',  # this is the default
         'tag_string': 'description 2'}
 
 # Let pysat know if there are multiple satellite platforms supported
-# by these routines
-# define a dictionary keyed by satellite ID, each with a list of
-# corresponding tags
-# inst_ids = {'a':['L1', 'L0'], 'b':['L1', 'L2'], 'c':['L1', 'L3']}
-inst_ids = {'': ['']}
+# by these routines.  Define a dictionary keyed by instrument ID, each with a
+# list of corresponding tags.  For example:
+# inst_ids = {'a': ['tag1', 'tag2'], 'b': ['tag2', 'tag3']}
+inst_ids = {'': ['', 'tag_string']}
 
 # Define good days to download data for when pysat undergoes testing.
 # format is outer dictionary has inst_id as the key
@@ -76,7 +74,8 @@ inst_ids = {'': ['']}
 #                     'L1':dt.datetime(2019,1,1)},
 #                'b':{'L1':dt.datetime(2019,1,1),
 #                     'L2':dt.datetime(2019,1,1),}}
-_test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2019, 1, 1),
+                    'tag_string': dt.datetime(2019, 1, 2)}}
 
 # Set Testing flags
 # Dict structure should mirror _test_dates above
@@ -101,26 +100,23 @@ _test_dates = {'': {'': dt.datetime(2019, 1, 1)}}
 pandas_format = False
 
 
+# Required function
 def init(self):
     """Initializes the Instrument object with instrument specific values.
 
     Runs once upon instantiation. Object modified in place.  Use this to set
     the acknowledgements and references.
 
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
     """
-    # direct feedback to logging info
-    logger.info(" ".join(("Mission acknowledgements and data restrictions will",
-                          "be here when available.")))
-    # acknowledgements
-    self.acknowledgements = ''
-    # references
-    self.references = ''
 
+    # Required attribute: acknowledgements
+    self.acknowledgements = 'This would go in the Acknowledgements section'
+
+    # Required attribute: references
+    self.references = 'These are the instrument references'
+
+    # direct feedback to logging info
+    logger.info(self.acknowledgements)
     return
 
 
@@ -145,11 +141,11 @@ def download(date_array, tag, inst_id, data_path=None, user=None, password=None,
         is provided by pysat. (default='')
     data_path : string
         Path to directory to download data to. (default=None)
-    user : string
+    user : string (OPTIONAL)
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for dowloads this routine here must
         error if user not supplied. (default=None)
-    password : string
+    password : string (OPTIONAL)
         Password for data download. (default=None)
     custom_keywords : placeholder
         Additional keywords supplied by user when invoking the download
@@ -289,14 +285,16 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
     return
 
 
-# not required but recommended
-def clean(inst):
+# Required function
+def clean(self):
     """Routine to return PLATFORM/NAME data cleaned to the specified level
 
     Cleaning level is specified in inst.clean_level and pysat
     will accept user input for several strings. The clean_level is
     specified at instantiation of the Instrument object.
 
+    Note
+    ----
     'clean' All parameters should be good, suitable for statistical and
             case studies
     'dusty' All paramers should generally be good though same may
@@ -304,13 +302,6 @@ def clean(inst):
     'dirty' There are data areas that have issues, data should be used
             with caution
     'none'  No cleaning applied, routine not called in this case.
-
-
-    Parameters
-    -----------
-    inst : pysat.Instrument
-        Instrument class object, whose attribute clean_level is used to return
-        the desired level of data selectivity.
 
     """
 
