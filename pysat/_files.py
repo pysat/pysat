@@ -369,7 +369,7 @@ class Files(object):
                                        name=self._sat.name, tag=self._sat.tag,
                                        inst_id=self._sat.inst_id)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
-        output_str = " ".join(output_str.split())
+        output_str = " ".join(output_str.split())  # Remove duplicate whitespace
         logger.info(output_str)
 
         info = self._sat._list_files_rtn(tag=self._sat.tag,
