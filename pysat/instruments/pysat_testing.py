@@ -87,14 +87,18 @@ def init(self):
 def default(self):
     """Default customization function.
 
+    Note
+    ----
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue).
 
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
+    """
 
+    pass
+
+
+def clean(self):
+    """Cleaning function
     """
 
     pass
