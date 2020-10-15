@@ -1697,10 +1697,10 @@ class Instrument(object):
         """
         # Set the routine kwargs
         kwargs = self.kwargs['_list_remote_files_rtn']
-        kwargs["start"] =  start
+        kwargs["start"] = start
         kwargs["stop"] = stop
 
-        return self._list_remote_files_rtn(self.tag, self.inst_id,  **kwargs)
+        return self._list_remote_files_rtn(self.tag, self.inst_id, **kwargs)
 
     def remote_date_range(self, start=None, stop=None):
         """Returns fist and last date for remote data.  Default behaviour is
