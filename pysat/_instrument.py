@@ -680,26 +680,26 @@ class Instrument(object):
             # attach metadata
             self.meta[key] = new
 
-    def rename(self, names, lowercase_data_labels=False):
+    def rename(self, var_names, lowercase_data_labels=False):
         """Renames variable within both data and metadata.
 
         Parameters
         ----------
-        names : dict or other map
-            Existing names are keys, values are new names
+        var_names : dict or other map
+            Existing var_names are keys, values are new var_names
         lowercase_data_labels : boolean
             If True, the labels applied to inst.data
             are forced to lowercase. The supplied case
-            in names is retained within inst.meta.
+            in var_names is retained within inst.meta.
 
         Examples
         --------
         ..
 
             # standard renaming
-            new_names = {'old_name': 'new_name',
+            new_var_names = {'old_name': 'new_name',
                          'old_name2':, 'new_name2'}
-            inst.rename(new_names)
+            inst.rename(new_var_names)
 
         If using a pandas DataFrame as the underlying data object,
         to rename higher-order variables supply a modified dictionary.
@@ -710,17 +710,17 @@ class Instrument(object):
             # applies to higher-order datasets
             # that are loaded into pandas
             # general example
-            new_names = {'old_name': 'new_name',
+            new_var_names = {'old_name': 'new_name',
                          'old_name2':, 'new_name2',
                          'col_name': {'old_ho_name': 'new_ho_name'}}
-            inst.rename(new_names)
+            inst.rename(new_var_names)
 
             # specific example
             inst = pysat.Instrument('pysat', 'testing2D')
             inst.load(2009, 1)
-            names = {'uts': 'pysat_uts',
+            var_names = {'uts': 'pysat_uts',
                      'profiles': {'density': 'pysat_density'}}
-            inst.rename(names)
+            inst.rename(var_names)
 
         pysat supports differing case for variable labels across the
         data and metadata objects attached to an Instrument. Since
@@ -733,9 +733,9 @@ class Instrument(object):
             # example with lowercase_data_labels
             inst = pysat.Instrument('pysat', 'testing2D')
             inst.load(2009, 1)
-            names = {'uts': 'Pysat_UTS',
+            var_names = {'uts': 'Pysat_UTS',
                      'profiles': {'density': 'PYSAT_density'}}
-            inst.rename(names, lowercase_data_labels=True)
+            inst.rename(var_names, lowercase_data_labels=True)
 
             # note that 'Pysat_UTS' was applied to data as 'pysat_uts'
             print(inst['pysat_uts'])
@@ -755,27 +755,27 @@ class Instrument(object):
         """
 
         if self.pandas_format:
-            # check for standard rename variables as well as
+            # Check for standard rename variables as well as
             # renaming for higher order variables
-            # filtered old names
-            fdict = {}
-            # higher order names
-            hdict = {}
+            fdict = {}  # filtered old variable names
+            hdict = {}  # higher order variable names
+
             # keys for existing higher order data labels
             ho_keys = [a for a in self.meta.keys_nD()]
             lo_keys = [a for a in self.meta.keys()]
+
             # iterate, collect normal variables
             # rename higher order variables
-            for key in names:
+            for vkey in var_names:
                 # original name, new name
-                oname, nname = key, names[key]
+                oname, nname = vkey, var_names[vkey]
                 if oname not in ho_keys:
                     if oname in lo_keys:
-                        # within low order (standard) variable keys
+                        # within low order (standard) variable name keys
                         # may be renamed directly
                         fdict[oname] = nname
                     else:
-                        # not in standard or higher order keys
+                        # not in standard or higher order variable name keys
                         estr = ' '.join((oname, ' is not',
                                          'a known variable.'))
                         raise ValueError(estr)
@@ -798,11 +798,12 @@ class Instrument(object):
                             gdict[label] = nname[label].lower()
                         else:
                             gdict = hdict
-                        # change names for frame at each time
+                        # change variables for frame at each time
                         for i in np.arange(len(self.index)):
                             # within data itself
                             self[i, oname].rename(columns=gdict,
                                                   inplace=True)
+
                         # change metadata, once per variable only
                         # hdict used as it retains user provided case
                         self.meta.ho_data[oname].data.rename(hdict,
@@ -812,15 +813,17 @@ class Instrument(object):
                     else:
                         # changing the outer 'column' label
                         fdict[oname] = nname
+
             # rename regular variables, single go
             # check for lower case data labels first
             if lowercase_data_labels:
                 gdict = {}
-                for key in fdict:
-                    gdict[key] = fdict[key].lower()
+                for fkey in fdict:
+                    gdict[fkey] = fdict[fkey].lower()
             else:
                 gdict = fdict
-            # change names for attached data object
+
+            # change variable names for attached data object
             self.data.rename(columns=gdict, inplace=True)
 
         else:
@@ -828,20 +831,21 @@ class Instrument(object):
             # account for lowercase data labels first
             if lowercase_data_labels:
                 gdict = {}
-                for key in names:
-                    gdict[key] = names[key].lower()
+                for vkey in var_names:
+                    gdict[vkey] = var_names[vkey].lower()
             else:
-                gdict = names
+                gdict = var_names
             self.data = self.data.rename(gdict)
+
             # set up dictionary for renaming metadata variables
-            fdict = names
+            fdict = var_names
 
         # update normal metadata parameters in a single go
         # case must always be preserved in Meta object
         new_fdict = {}
-        for key in fdict:
-            case_old = self.meta.var_case_name(key)
-            new_fdict[case_old] = fdict[key]
+        for kfey in fdict:
+            case_old = self.meta.var_case_name(fkey)
+            new_fdict[case_old] = fdict[fkey]
         self.meta.data.rename(index=new_fdict, inplace=True)
 
         return
@@ -1644,7 +1648,8 @@ class Instrument(object):
 
         # apply default instrument routine, if data present
         if not self.empty:
-            self._default_rtn(self)
+            # Does not require self as input, as it is a partial func
+            self._default_rtn()
 
         # clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
