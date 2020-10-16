@@ -1186,8 +1186,9 @@ class Instrument(object):
         output_str += '---------------\n'
         output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
         output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
-        output_str += 'Keyword Arguments Passed to load(): '
-        output_str += "{:s}\n".format(self.kwargs['_load_rtn'].__str__())
+        if '_load_rtn' in self.kwargs.keys():
+            output_str += 'Keyword Arguments Passed to load(): '
+            output_str += "{:s}\n".format(self.kwargs['_load_rtn'].__str__())
         output_str += "{:s}\n".format(self.custom.__str__())
 
         # Print out the orbit settings
@@ -1324,9 +1325,14 @@ class Instrument(object):
         if len(fname) > 0:
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             try:
+                if '_load_rtn' in self.kwargs.keys():
+                    load_kwargs = self.kwargs['_load_rtn']
+                else:
+                    load_kwargs = {}
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
                                              inst_id=self.inst_id,
-                                             **self.kwargs['_load_rtn'])
+                                             **load_kwargs)
+
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
                 mdata.accept_default_labels(self)
