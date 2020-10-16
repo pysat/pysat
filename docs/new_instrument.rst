@@ -32,8 +32,8 @@ part of pysat's user instrument registry using the following syntax:
   registry.register('my.package.myInstrument')
 
   # register all instrument sub-modules
-  import my.package
-  registry.register_from_module(my.package)
+  import my_package
+  registry.register_from_module(my_package.instruments)
 
 After registry the instrument module name is stored in the user's home 
 directory under :code:`~.pysat/user_modules.txt`. The instrument may then 
