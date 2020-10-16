@@ -101,5 +101,25 @@ the bounds, the loop will start on the first day of data and end on the last day
    mean_dB.plot(title='Absolute Daily Mean of ' + variable_str)
    plt.ylabel('Absolute Daily Mean ('+ units_str +')')
 
+pysat iteration also supports loading more than a single day/file of data
+at a time as well as stepping through the data in daily increments larger
+than a single day. Assignment of the data step size and width is also
+set via the bounds attribute.
+
+.. code:: python
+   # set a season with an expanded load range and increased step size
+   # sets a data width of 2 days via the pandas DateOffset
+   # sets a data step size of 2 days via the pandas frequency string, '2D'
+   vefi.bounds = (starts, stops, '2D', pds.DateOffset(days=2))
+
+   # similarly, iteration over files is supported
+   # file width is 2 files
+   # file step size is 2 files
+   vefi.bounds = (start_files, stop_files, 2, 2)
+
+Note that when iterating over date limits the limits are applied to the dates
+associated with the files themselves and do not necessarily apply to the
+datetimes associated with the data within the files.
+
 The abstraction provided by the iteration support is also used for the next
 section on orbit data.

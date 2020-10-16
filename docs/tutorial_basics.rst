@@ -172,6 +172,37 @@ type of data structure is flagged at the instrument level with the attribute
 ``inst.pandas_format``, True if a DataFrame is returned by the corresponding
 instrument module load method.
 
+pysat also supports loading data from a range of files/file dates.
+
+.. code:: python
+
+   # load by year, day of year from 2001, 1 up to but not including 2001, 3
+   dmsp.load(2001, 1, yr2=2001, doy2=3)
+   # the following load commands are equivalent
+   dmsp.load(2001, 1, yr2=2001, doy2=2)
+   dmsp.load(2001, 1)
+   # load by datetimes
+   dmsp.load(date=datetime.datetime(2001, 1, 1),
+             date2=datetime.datetime(2001, 1, 3))
+   # load by filename, from fname up to and including fname2
+   dmsp.load(fname='dms_ut_20010101_12.002.hdf5',
+             fname2='dms_ut_20010102_12.002.hdf5')
+   # load by filenames
+   dmsp.load(fname=dmsp.files[0], fname2=dmsp.files[1])
+   # load by filename. Includes data from 2001, 1 up to 2001, 3
+   dmsp.load(fname=dmsp.files[datetime.datetime(2001, 1, 1)],
+             fname2=dmsp.files[datetime.datetime(2001, 1, 2)])
+
+For small size data sets, such as space weather indices, pysat also supports
+loading all data at once.
+
+.. code:: python
+
+   # F10.7 data
+   f107 = pysat.Instrument(platform='sw', name='f107')
+   # Load all F10.7 solar flux data, from beginning to end.
+   f107.load()
+
 In addition, convenience access to the data is also available at
 the instrument level.
 
