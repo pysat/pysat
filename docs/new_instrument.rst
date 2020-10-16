@@ -65,7 +65,7 @@ In order this is:
 
 The exact usage of these can be tailored to the nature of the mission and data
 products.  In general, each combination should point to a unique data file.
-Not every data product will need all of these variable names.  Both `sat_id`
+Not every data product will need all of these variable names.  Both `inst_id`
 and `tag` can be instantiated as an empty string if unused or used to
 support a 'default' data set if desired. Examples are given below.
 
