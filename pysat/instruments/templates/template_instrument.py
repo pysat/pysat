@@ -116,6 +116,7 @@ _password_req = {'': {'': True, 'tag_string': False}}
 # Instrument methods: routines that are attached to the pysat.Instrument
 # as class methods
 
+
 # Required method
 def init(self):
     """Initializes the Instrument object with instrument specific values.
@@ -173,8 +174,10 @@ def default(self):
 
     return
 
+# ----------------------------------------------------------------------------
 # Instrument functions: routines that are attached to the pysat.Instrument
 # as function attributes
+
 
 # Required function
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
