@@ -82,7 +82,7 @@ To create a pysat.Instrument object, select a ``platform``, instrument ``name``,
 and potentially a ``tag`` and ``inst_id``, consistent with
 the desired data to be analyzed, from one the supported instruments.
 
-For example if you wanted to work with plasma data from the
+For example, if you wanted to work with plasma data from the
 Ion Velocity Meter (IVM) onboard the Defense Meteorological
 Satellite Program (DMSP) constellation, use:
 
