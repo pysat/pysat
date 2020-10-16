@@ -7,6 +7,7 @@ import importlib
 import inspect
 import os
 import sys
+import types
 import warnings
 
 import netCDF4
@@ -315,9 +316,10 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         saved_keys = []
-        partial_func = ['_list_files_rtn', '_download_rtn', '_default_rtn']
+        partial_func = ['_list_files_rtn', '_download_rtn', '_default_rtn',
+                        '_clean_rtn']
         for fkey in ['_list_files_rtn', '_load_rtn', '_default_rtn',
-                     '_download_rtn', '_list_remote_files_rtn']:
+                     '_download_rtn', '_list_remote_files_rtn', '_clean_rtn']:
             func = getattr(self, fkey)
 
             # first, check if keywords are  valid
@@ -334,13 +336,21 @@ class Instrument(object):
                 if dkey not in good_kwargs:
                     self.kwargs[fkey][dkey] = default_keywords[dkey]
 
-            # Store the saved keys
-            saved_keys.extend([gkey for gkey in self.kwargs[fkey].keys()])
+            # Determine the number of kwargs in this function
+            fkwargs = [gkey for gkey in self.kwargs[fkey].keys()]
 
-            # If the function can't access this dict, use partial
-            if fkey in partial_func:
-                pfunc = functools.partial(func, **self.kwargs[fkey])
-                setattr(self, fkey, pfunc)
+            # Only save the kwargs if they exist and have not been assigned
+            # through partial
+            if len(fkwargs) > 0:
+                # Store the saved keys
+                saved_keys.extend(fkwargs)
+
+                # If the function can't access this dict, use partial
+                if fkey in partial_func:
+                    pfunc = functools.partial(func, **self.kwargs[fkey])
+                    setattr(self, fkey, pfunc)
+                    del self.kwargs[fkey]
+            else:
                 del self.kwargs[fkey]
 
         # Test for user supplied keys that are not used
@@ -396,7 +406,7 @@ class Instrument(object):
 
         # Run instrument init function, a basic pass function is used if the
         # user doesn't supply the init function
-        self._init_rtn(self)
+        self._init_rtn()
 
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
@@ -967,11 +977,13 @@ class Instrument(object):
                 dim = self.index.name
             return xr.concat(data, dim=dim, *args, **kwargs)
 
-    def _pass_func(*args, **kwargs):
+    def _pass_method(*args, **kwargs):
+        """ Default method for updateable Instrument methods
+        """
         pass
 
     def _assign_funcs(self, by_name=False, inst_module=None):
-        """Assign all external science instrument methods to Instrument object
+        """Assign all external instrument attributes to the Instrument object
 
         Parameters
         ----------
@@ -990,24 +1002,49 @@ class Instrument(object):
         AttributeError
             If a required Instrument method is missing
 
+        Note
+        ----
+        methods
+            init, default, and clean
+        functions
+            load, list_files, download, and list_remote_files
+        attributes
+            directory_format, file_format, multi_file_day, orbit_info,
+            pandas_format, _download_test, _download_test_travis, and
+            _password_req
+
         """
         # Declare the standard Instrument methods and attributes
-        inst_methods = {'required': ['load', 'list_files', 'download', 'init',
-                                     'clean'],
-                        'optional': ['default', 'list_remote_files']}
+        inst_methods = {'required': ['init', 'clean'],
+                        'optional': ['default']}
+        inst_funcs = {'required': ['load', 'list_files', 'download'],
+                      'optional': ['list_remote_files']}
         inst_attrs = {"directory_format": None, "file_format": None,
                       "multi_file_day": False, "orbit_info": None,
                       "pandas_format": True}
+        test_attrs = {'_test_download': True, '_test_download_travis': True,
+                      '_password_req': False}
 
         # set method defaults
         for mname in [mm for val in inst_methods.values() for mm in val]:
             local_name = "_{:s}_rtn".format(mname)
-            setattr(self, local_name, self._pass_func)
+            setattr(self, local_name, self._pass_method)
+
+        # set function defaults
+        for mname in [mm for val in inst_funcs.values() for mm in val]:
+            local_name = "_{:s}_rtn".format(mname)
+            setattr(self, local_name, _pass_func)
 
         # set attribute defaults
         for iattr in inst_attrs.keys():
             setattr(self, iattr, inst_attrs[iattr])
 
+        # set test defaults
+        for iattr in test_attrs.keys():
+            setattr(self, iattr, test_attrs[iattr])
+
+        # Get the instrument module information, returning with defaults
+        # if none is supplied
         if by_name:
             # pysat platform is reserved for modules within pysat.instruments
             if self.platform == 'pysat':
@@ -1040,7 +1077,6 @@ class Instrument(object):
                     estr = estr.format(self.platform, self.name)
                     logger.error(estr)
                     raise ImportError(ierr)
-
         elif inst_module is not None:
             # user supplied an object with relevant instrument routines
             inst = inst_module
@@ -1049,10 +1085,31 @@ class Instrument(object):
             return
 
         # Assign the Instrument methods
-        missing = []
-
+        missing = list()
         for mstat in inst_methods.keys():
             for mname in inst_methods[mstat]:
+                if hasattr(inst, mname):
+                    local_name = '_{:s}_rtn'.format(mname)
+                    # Remote functions are not attached as methods unless
+                    # cast that way, specifically
+                    # https://stackoverflow.com/questions/972/
+                    #         adding-a-method-to-an-existing-object-instance
+                    local_method = types.MethodType(getattr(inst, mname), self)
+                    setattr(self, local_name, local_method)
+                else:
+                    missing.append(mname)
+                    if mstat == "required":
+                        raise AttributeError(
+                            "".join(['A `', mname, '` method is required',
+                                     ' for every Instrument']))
+
+        if len(missing) > 0:
+            logger.debug('Missing Instrument methods: {:}'.format(missing))
+
+        # Assign the Instrument functions
+        missing = list()
+        for mstat in inst_funcs.keys():
+            for mname in inst_funcs[mstat]:
                 if hasattr(inst, mname):
                     local_name = '_{:s}_rtn'.format(mname)
                     setattr(self, local_name, getattr(inst, mname))
@@ -1060,7 +1117,7 @@ class Instrument(object):
                     missing.append(mname)
                     if mstat == "required":
                         raise AttributeError(
-                            "".join(['A `', mname, '` routine is required',
+                            "".join(['A `', mname, '` function is required',
                                      ' for every Instrument']))
 
         if len(missing) > 0:
@@ -1079,34 +1136,29 @@ class Instrument(object):
                                   'default  values: {:}'.format(missing)]))
 
         # Check for download flags for tests
-        try:
-            # Used for instruments without download access
-            # Assume we test download routines regardless of env unless
-            # specified otherwise
-            self._test_download = \
-                inst._test_download[self.inst_id][self.tag]
-        except (AttributeError, KeyError):
-            # Either flags are not specified, or this combo is not
-            self._test_download = True
+        missing = list()
+        for iattr in test_attrs.keys():
+            # Check and see if this instrument has the desired test flag
+            if hasattr(inst, iattr):
+                local_attr = getattr(inst, iattr)
 
-        try:
-            # Used for tests which require FTP access
-            # Assume we test download routines on travis unless specified
-            # otherwise
-            self._test_download_travis = \
-                inst._test_download_travis[self.inst_id][self.tag]
-        except (AttributeError, KeyError):
-            # Either flags are not specified, or this combo is not
-            self._test_download_travis = True
+                # Test to see that this attribute is set for the desired
+                # inst_id and tag
+                if self.inst_id in local_attr.keys():
+                    if self.tag in local_attr[self.inst_id].keys():
+                        # Update the test attribute value
+                        setattr(self, iattr, local_attr[self.inst_id][self.tag])
+                    else:
+                        missing.append(iattr)
+                else:
+                    missing.append(iattr)
+            else:
+                missing.append(iattr)
 
-        try:
-            # Used for tests which require password access
-            # Assume password not required unless specified otherwise
-            self._password_req = \
-                inst._password_req[self.inst_id][self.tag]
-        except (AttributeError, KeyError):
-            # Either flags are not specified, or this combo is not
-            self._password_req = False
+        if len(missing) > 0:
+            logger.debug(''.join(['These Instrument test attributes kept their',
+                                  ' default  values: {:}'.format(missing)]))
+        return
 
     def __repr__(self):
         """ Print the basic Instrument properties"""
@@ -1653,7 +1705,7 @@ class Instrument(object):
 
         # clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
-            self._clean_rtn(self)
+            self._clean_rtn()
 
         # apply custom functions via the nanokernel in self.custom
         if not self.empty:
@@ -1695,11 +1747,17 @@ class Instrument(object):
             pandas Series of filenames indexed by date and time
 
         """
-        # Set the routine kwargs
-        kwargs = self.kwargs['_list_remote_files_rtn']
+        # Set the user-supplied kwargs
+        if '_list_remote_files_rtn' in self.kwargs.keys():
+            kwargs = self.kwargs['_list_remote_files_rtn']
+        else:
+            kwargs = {}
+
+        # Add the function kwargs
         kwargs["start"] = start
         kwargs["stop"] = stop
 
+        # Return the function call
         return self._list_remote_files_rtn(self.tag, self.inst_id, **kwargs)
 
     def remote_date_range(self, start=None, stop=None):
@@ -2895,6 +2953,9 @@ def _get_supported_keywords(local_func):
         the functools.partial instantiation.
 
     """
+    # account for keywords that are treated by Instrument as args
+    pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
+               'format_str', 'supported_tags', 'start', 'stop', 'freq']
 
     # check if partial function
     if isinstance(local_func, functools.partial):
@@ -2904,65 +2965,42 @@ def _get_supported_keywords(local_func):
         # pull out python function portion
         local_func = local_func.func
     else:
-        existing_kws = None
+        existing_kws = {}
 
+    # account for keywords already set since input was a partial function
+    pre_kws.extend(existing_kws.keys())
+
+    # Get the lists of arguements and defaults
+    # The args and kwargs are both in the args list, and args are placed first
+    #
     # modified from code on
     # https://stackoverflow.com/questions/196960/
     # can-you-list-the-keyword-arguments-a-function-receives
-    if sys.version_info.major == 2:
-        args, varargs, varkw, defaults = inspect.getargspec(local_func)
+    sig = inspect.getfullargspec(local_func)
+    func_args = list(sig.args)
+
+    # Recast the function defaults as a list instead of NoneType or tuple.
+    # inspect returns func_defaults=None when there are no defaults
+    if sig.defaults is None:
+        func_defaults = []
     else:
-        sig = inspect.getfullargspec(local_func)
-        # args are first
-        args = sig.args
-        # default values
-        defaults = sig.defaults
-    # deal with special cases for defaults
-    # we get defaults=None when the empty pysat.Instrument() is created
-    if defaults is None:
-        defaults = []
-    else:
-        # standard case
-        # make defaults a list
-        temp = []
-        for item in defaults:
-            temp.append(item)
-        defaults = temp
+        func_defaults = [dval for dval in sig.defaults]
 
-    pop_list = []
-
-    # account for keywords that exist for the standard functions
-    pre_kws = ['fnames', 'inst_id', 'tag', 'date_array', 'data_path',
-               'format_str', 'supported_tags', 'fake_daily_files_from_monthly',
-               'two_digit_year_break', 'delimiter', 'start', 'stop', 'freq']
-
-    # insert 'missing' default for 'fnames'
-    n_args = len(args) - len(defaults)
-    for i in range(0, n_args):
-        defaults.insert(0, None)
-
-    # account for keywords already set since input was a partial function
-    if existing_kws is not None:
-        # keywords
-        pre_kws.extend(existing_kws.keys())
+    # Remove arguments from the start of the func_args list
+    while len(func_args) > len(func_defaults):
+        func_args.pop(0)
 
     # remove pre-existing keywords from output
     # first identify locations
-    for i, arg in enumerate(args):
-        if arg in pre_kws:
-            pop_list.append(i)
+    pop_list = [i for i, arg in enumerate(func_args) if arg in pre_kws]
 
-    # remove identified locations
-    # go backwards so we don't mess with the location of data we
-    # are trying to remove
-    if len(pop_list) > 0:
-        for pop in pop_list[::-1]:
-            args.pop(pop)
-            defaults.pop(pop)
+    # Remove pre-selected by cycling backwards through the list of indices
+    for i in pop_list[::-1]:
+        func_args.pop(i)
+        func_defaults.pop(i)
 
-    out_dict = {}
-    for arg, defa in zip(args, defaults):
-        out_dict[arg] = defa
+    # Create the output dict
+    out_dict = {akey: func_defaults[i] for i, akey in enumerate(func_args)}
 
     return out_dict
 
@@ -2988,9 +3026,12 @@ def _check_if_keywords_supported(func, **kwargs):
     supp = _get_supported_keywords(func)
 
     # check if kwargs are in list
-    good_keys = []
-    for custom_key in kwargs.keys():
-        if custom_key in supp:
-            good_keys.append(custom_key)
+    good_keys = [ckey for ckey in kwargs.keys() if ckey in supp]
 
     return good_keys
+
+
+def _pass_func(*args, **kwargs):
+    """ Default function for updateable Instrument methods
+    """
+    pass
