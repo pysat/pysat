@@ -620,7 +620,7 @@ General
 A general instrument template is included with pysat,
 ``pysat.instruments.templates.template_instrument``,
 that has the full set
-of required and optional methods and docstrings. That may be used as a
+of required and optional methods and docstrings, which may be used as a
 starting point for adding a new instrument to pysat.
 
 Note that there are general supporting methods for adding an Instrument.
