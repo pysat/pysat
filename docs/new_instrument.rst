@@ -56,7 +56,7 @@ Naming Conventions
 ------------------
 
 pysat uses a hierarchy of named variables to define each specific data product.
-In order this is
+In order this is:
 
 * platform
 * name
