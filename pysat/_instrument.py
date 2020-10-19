@@ -316,19 +316,20 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         saved_keys = []
-        partial_func = ['_list_files_rtn', '_download_rtn', '_default_rtn',
-                        '_clean_rtn']
-        for fkey in ['_list_files_rtn', '_load_rtn', '_default_rtn',
-                     '_download_rtn', '_list_remote_files_rtn', '_clean_rtn']:
-            func = getattr(self, fkey)
+        partial_func = ['list_files', 'download', 'default', 'clean']
+        for fkey in ['list_files', 'load', 'default', 'download',
+                     'list_remote_files', 'clean']:
+            func_name = _kwargs_keys_to_func_name(fkey)
+            func = getattr(self, func_name)
 
-            # first, check if keywords are  valid
-            good_kwargs = _check_if_keywords_supported(func, **kwargs)
+            # get dict of supported keywords and values
+            default_kwargs = _get_supported_keywords(func)
 
-            # get and apply default values for custom keywords
-            default_keywords = _get_supported_keywords(func)
+            # check if kwargs are in list
+            good_kwargs = [ckey for ckey in kwargs.keys()
+                           if ckey in default_kwargs]
 
-            # store user supplied keywords
+            # store appropriate user supplied keywords for this function
             self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
 
             # Add in defaults if not already present
@@ -348,7 +349,7 @@ class Instrument(object):
                 # If the function can't access this dict, use partial
                 if fkey in partial_func:
                     pfunc = functools.partial(func, **self.kwargs[fkey])
-                    setattr(self, fkey, pfunc)
+                    setattr(self, func_name, pfunc)
                     del self.kwargs[fkey]
             else:
                 del self.kwargs[fkey]
@@ -1027,12 +1028,12 @@ class Instrument(object):
 
         # set method defaults
         for mname in [mm for val in inst_methods.values() for mm in val]:
-            local_name = "_{:s}_rtn".format(mname)
+            local_name = _kwargs_keys_to_func_name(mname)
             setattr(self, local_name, self._pass_method)
 
         # set function defaults
         for mname in [mm for val in inst_funcs.values() for mm in val]:
-            local_name = "_{:s}_rtn".format(mname)
+            local_name = _kwargs_keys_to_func_name(mname)
             setattr(self, local_name, _pass_func)
 
         # set attribute defaults
@@ -1089,7 +1090,7 @@ class Instrument(object):
         for mstat in inst_methods.keys():
             for mname in inst_methods[mstat]:
                 if hasattr(inst, mname):
-                    local_name = '_{:s}_rtn'.format(mname)
+                    local_name = _kwargs_keys_to_func_name(mname)
                     # Remote functions are not attached as methods unless
                     # cast that way, specifically
                     # https://stackoverflow.com/questions/972/
@@ -1111,7 +1112,7 @@ class Instrument(object):
         for mstat in inst_funcs.keys():
             for mname in inst_funcs[mstat]:
                 if hasattr(inst, mname):
-                    local_name = '_{:s}_rtn'.format(mname)
+                    local_name = _kwargs_keys_to_func_name(mname)
                     setattr(self, local_name, getattr(inst, mname))
                 else:
                     missing.append(mname)
@@ -1325,8 +1326,8 @@ class Instrument(object):
         if len(fname) > 0:
             load_fname = [os.path.join(self.files.data_path, f) for f in fname]
             try:
-                if '_load_rtn' in self.kwargs.keys():
-                    load_kwargs = self.kwargs['_load_rtn']
+                if 'load' in self.kwargs.keys():
+                    load_kwargs = self.kwargs['load']
                 else:
                     load_kwargs = {}
                 data, mdata = self._load_rtn(load_fname, tag=self.tag,
@@ -1754,8 +1755,8 @@ class Instrument(object):
 
         """
         # Set the user-supplied kwargs
-        if '_list_remote_files_rtn' in self.kwargs.keys():
-            kwargs = self.kwargs['_list_remote_files_rtn']
+        if 'list_remote_files' in self.kwargs.keys():
+            kwargs = self.kwargs['list_remote_files']
         else:
             kwargs = {}
 
@@ -2926,11 +2927,31 @@ class Instrument(object):
             out_data.setncatts(adict)
         return
 
+
 #
 # ----------------------------------------------
 #   Utilities supporting the Instrument Object
 # ----------------------------------------------
 #
+
+
+def _kwargs_keys_to_func_name(kwargs_key):
+    """ Convert from self.kwargs key name to the function/method name
+
+    Parameters
+    ----------
+    kwargs_key : str
+        Key from self.kwargs dictionary
+
+    Returns
+    -------
+    func_name : str
+        Name of method or function associated with the input key
+
+    """
+
+    func_name = '_{:s}_rtn'.format(kwargs_key)
+    return func_name
 
 
 def _get_supported_keywords(local_func):
@@ -3009,32 +3030,6 @@ def _get_supported_keywords(local_func):
     out_dict = {akey: func_defaults[i] for i, akey in enumerate(func_args)}
 
     return out_dict
-
-
-def _check_if_keywords_supported(func, **kwargs):
-    """Checks if keywords supported by function
-
-    Parameters
-    ----------
-    func : method
-        Method to be checked against
-    **kwargs : keyword args
-        keyword arguments dictionary
-
-    Returns
-    -------
-    good_keys : list
-        List of keyword arguements appropriate for this function
-
-    """
-
-    # get dict of supported keywords and values
-    supp = _get_supported_keywords(func)
-
-    # check if kwargs are in list
-    good_keys = [ckey for ckey in kwargs.keys() if ckey in supp]
-
-    return good_keys
 
 
 def _pass_func(*args, **kwargs):
