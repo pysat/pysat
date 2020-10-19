@@ -2236,7 +2236,7 @@ class Instrument(object):
                     if start > stop:
                         estr = ' '.join(('Bounds must be set in increasing',
                                          'date order.',
-                                         stop.strftime('%d %B %Y'),
+                                         start.strftime('%d %B %Y'),
                                          'is later than',
                                          stop.strftime('%d %B %Y')))
                         raise ValueError(estr)
