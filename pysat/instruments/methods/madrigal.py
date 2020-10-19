@@ -88,9 +88,11 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     file_meta = filed['Metadata']['Data Parameters']
     # load up what is offered into pysat.Meta
     meta = pysat.Meta()
-    meta.info = {'acknowledgements': "See 'meta.Experiment_Notes' for " +
-                 "instrument specific acknowledgements\n" + cedar_rules(),
-                 'references': "See 'meta.Experiment_Notes' for references"}
+    meta.acknowledgements = "".join(("See 'meta.Experiment_Notes' for ",
+                                     "instrument specific acknowledgements\n",
+                                     cedar_rules()))
+    meta.references = "See 'meta.Experiment_Notes' for references"
+
     labels = []
     for item in file_meta:
         # handle difference in string output between python 2 and 3
@@ -113,6 +115,16 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     for key in filed['Metadata']:
         if key != 'Data Parameters':
             setattr(meta, key.replace(' ', '_'), filed['Metadata'][key][:])
+
+    # update formatting of madrigal added information
+    # netcdf4 doesn't recommend compound data types
+    mad_vars = [('Experiment_Parameters', ': '),
+                ('Independent_Spatial_Parameters', ': '),
+                ('Experiment_Notes', '')]
+    for mad_var in mad_vars:
+        temp = [mad_var[1].join(snip) for snip in getattr(meta, mad_var[0])]
+        setattr(meta, mad_var[0], temp)
+
     # data into frame, with labels from metadata
     data = pds.DataFrame.from_records(file_data, columns=labels)
     # lowercase variable names
