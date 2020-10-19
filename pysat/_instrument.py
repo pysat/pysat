@@ -1186,9 +1186,9 @@ class Instrument(object):
         output_str += '---------------\n'
         output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
         output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
-        if '_load_rtn' in self.kwargs.keys():
-            output_str += 'Keyword Arguments Passed to load(): '
-            output_str += "{:s}\n".format(self.kwargs['_load_rtn'].__str__())
+        for routine in self.kwargs.keys():
+            output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
+            output_str += "{:s}\n".format(self.kwargs[routine].__str__())
         output_str += "{:s}\n".format(self.custom.__str__())
 
         # Print out the orbit settings
