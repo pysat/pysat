@@ -1203,23 +1203,23 @@ class Instrument(object):
 
     def _load_data(self, date=None, fid=None, inc=None):
         """
-        Load data for an instrument on given date or fid, dependng upon input.
+        Load data for an instrument on given date or fid, depending upon input.
 
         Parameters
         ----------
-        date : (dt.datetime.date object or NoneType)
-            file date
-        fid : (int or NoneType)
-            filename index value
+        date : dt.datetime or NoneType
+            file date (default=None)
+        fid : int or NoneType
+            filename index value (default=None)
         inc : pds.DateOffset or int
             Increment of files or dates to load, starting from the
-            root date or fid
+            root date or fid (default=None)
 
         Returns
         --------
-        data : (pds.DataFrame or xr.Dataset)
+        data : pds.DataFrame or xr.Dataset
             pysat data
-        meta : (pysat.Meta)
+        meta : pysat.Meta
             pysat meta data
         """
 
@@ -1381,32 +1381,35 @@ class Instrument(object):
         ----------
         yr : integer
             Year for desired data. pysat will load all files with an
-            associated date between yr, doy and yr, doy + 1
+            associated date between yr, doy and yr, doy + 1 (default=None)
         doy : integer
             Day of year for desired data. Must be present with yr input.
+            (default=None)
         end_yr : integer
             Used when loading a range of dates, from yr, doy to end_yr, end_doy
             based upon the dates associated with the Instrument's files. Date
             range is inclusive for yr, doy but exclusive for end_yr, end_doy.
+            (default=None)
         end_doy : integer
             Used when loading a range of dates, from yr, doy to end_yr, end_doy
             based upon the dates associated with the Instrument's files. Date
             range is inclusive for yr, doy but exclusive for end_yr, end_doy.
+            (default=None)
         date : dt.datetime
             Date to load data for. pysat will load all files with an associated
-            date between date and date + 1 day
+            date between date and date + 1 day (default=None)
         end_date : dt.datetime
             Used when loading a range of data from `date` to `end_date` based
             upon the dates associated with the Instrument's files. Date range
-            is inclusive for date but exclusive for end_date.
+            is inclusive for date but exclusive for end_date. (default=None)
         fname : 'string'
-            Filename to be loaded
+            Filename to be loaded (default=None)
         stop_fname : 'string'
             Used when loading a range of filenames from `fname` to `stop_fname`,
-            inclusive.
+            inclusive. (default=None)
         verifyPad : boolean
             if True, padding data not removed (debug purposes). Padding
-            parameters are provided at Instrument instantiation.
+            parameters are provided at Instrument instantiation. (default=False)
 
         Note
         ----
@@ -1966,20 +1969,21 @@ class Instrument(object):
 
         Parameters
         ----------
-        start : datetime object, filename, or None (default)
+        start : datetime object, filename, or None
             start of iteration, if None uses first data date.
-            list-like collection also accepted.
-        stop :  datetime object, filename, or None (default)
+            list-like collection also accepted. (default=None)
+        stop :  datetime object, filename, or None
             stop of iteration, inclusive. If None uses last data date.
-            list-like collection also accepted.
+            list-like collection also accepted. (default=None)
         step : str, int, or None
             Step size used when iterating from start to stop. Use a
             Pandas frequency string ('3D', '1M') when setting bounds by date,
             an integer when setting bounds by file. Defaults to a single
-            day (file).
+            day/file (default='1D', 1).
         width : pandas.DateOffset, int, or None
             Data window used when loading data within iteration. Defaults to a
-            single day (file) if not assigned.
+            single day/file if not assigned. (default=pds.DateOffset(days=1),
+            1)
 
         Note
         ----
@@ -2022,6 +2026,61 @@ class Instrument(object):
 
     @bounds.setter
     def bounds(self, value=None):
+        """Sets the self.bounds property.
+
+        Parameters
+        ----------
+        start (value[0]) : datetime object, filename, or None
+            start of iteration, if None uses first data date.
+            list-like collection also accepted. (default=None)
+        stop  (value[1]):  datetime object, filename, or None
+            stop of iteration, inclusive. If None uses last data date.
+            list-like collection also accepted. (default=None)
+        step  (value[2]): str, int, or None
+            Step size used when iterating from start to stop. Use a
+            Pandas frequency string ('3D', '1M') when setting bounds by date,
+            an integer when setting bounds by file. Defaults to a single
+            day/file (default='1D', 1).
+        width (value[3]): pandas.DateOffset, int, or None
+            Data window used when loading data within iteration. Defaults to a
+            single day/file if not assigned. (default=pds.DateOffset(days=1),
+            1)
+
+        Note
+        ----
+        Both start and stop must be the same type (date, or filename) or None.
+        Only the year, month, and day are used for date inputs.
+
+        Examples
+        --------
+        ::
+            import datetime as dt
+            import pandas as pds
+            import pysat
+
+            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
+            start = dt.datetime(2009,1,1)
+            stop = dt.datetime(2009,1,31)
+            # Defaults to stepping by a single day and a data loading window
+            # of one day/file.
+            inst.bounds = (start, stop)
+
+            # Set bounds by file. Iterates a file at a time.
+            inst.bounds = ('filename1', 'filename2')
+
+            # Create a more complicated season, multiple start and stop dates.
+            start2 = dt.datetetime(2010,1,1)
+            stop2 = dt.datetime(2010,2,14)
+            inst.bounds = ([start, start2], [stop, stop2])
+
+            # Iterate via a non-standard step size of two days.
+            inst.bounds = ([start, start2], [stop, stop2], '2D')
+
+            # Load more than a single day/file at a time when iterating
+            inst.bounds = ([start, start2], [stop, stop2], '2D',
+                           pds.DateOffset(days=3))
+
+        """
         if value is None:
             # user wants defaults
             value = (None, None, None, None)
@@ -2093,9 +2152,9 @@ class Instrument(object):
                 check1 = not isinstance(lstart, etype)
                 check2 = not isinstance(lstart, base)
                 if check1 or check2:
-                    # method allows for inputs like inst.bounds = (start, None)
-                    # and bounds will fill the None with actual start or stop
-                    # allow for a Nonetype only if length is one
+                    # Method allows for inputs like inst.bounds = (start, None)
+                    # and bounds will fill the None with actual start or stop.
+                    # Allow for a Nonetype only if length is one.
                     if len(starts) == 1 and (start is None):
                         # we are good on type change, start is None, no error
                         break
@@ -2265,6 +2324,12 @@ class Instrument(object):
         Bounds of iteration and iteration type (day/file) are set by
         `bounds` attribute.
 
+        Parameters
+        ----------
+        verifyPad : bool
+            Passed to `self.load()`. If True, then padded data within
+            the load method will be retained. (default=False)
+
         Note
         ----
         If there were no previous calls to load then the
@@ -2346,6 +2411,12 @@ class Instrument(object):
 
         Bounds of iteration and iteration type (day/file)
         are set by `bounds` attribute.
+
+        Parameters
+        ----------
+        verifyPad : bool
+            Passed to `self.load()`. If True, then padded data within
+            the load method will be retained. (default=False)
 
         Note
         ----
