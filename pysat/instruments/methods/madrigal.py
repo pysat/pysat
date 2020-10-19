@@ -116,8 +116,8 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
         if key != 'Data Parameters':
             setattr(meta, key.replace(' ', '_'), filed['Metadata'][key][:])
 
-    # update formatting of madrigal added information
-    # netcdf4 doesn't recommend compound data types
+    # Update formatting of madrigal experiment information since
+    # netcdf4 doesn't recommend compound data types.
     mad_vars = [('Experiment_Parameters', ': '),
                 ('Independent_Spatial_Parameters', ': '),
                 ('Experiment_Notes', '')]
