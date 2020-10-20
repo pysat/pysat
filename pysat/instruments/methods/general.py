@@ -48,6 +48,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         and '2000' will be added for years < two_digit_year_break.
     delimiter : string
         Delimiter string upon which files will be split (e.g., '.')
+        If not provided, filenames will be parsed presuming a fixed width format.
 
     Returns
     --------
