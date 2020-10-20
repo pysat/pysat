@@ -1583,7 +1583,8 @@ class Instrument(object):
         ----
         For pandas, sort=False is passed along to the underlying
         pandas.concat method. If sort is supplied as a keyword, the
-        user provided value is used instead.
+        user provided value is used instead.  Recall that sort orders the
+        data columns, not the data values or the index.
 
         For xarray, dim=Instrument.index.name is passed along to xarray.concat
         except if the user includes a value for dim as a keyword argument.
