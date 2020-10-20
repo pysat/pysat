@@ -254,60 +254,64 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
 
-    def test_concat_data(self):
-        # data set #2
+    @pytest.mark.parametrize("prepend, sort_dim_toggle",
+                             [(True, True), (True, False), (False, False)])
+    def test_concat_data(self, prepend, sort_dim_toggle):
+        """ Test Instrument data concatonation
+        """
+        # Load a data set to concatonate
         self.testInst.load(self.ref_time.year, self.ref_doy + 1)
         data2 = self.testInst.data
         len2 = len(self.testInst.index)
+
+        # Load a different data set into the instrument
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        # data set #1
-        data1 = self.testInst.data
         len1 = len(self.testInst.index)
 
-        # concat together
-        self.testInst.data = self.testInst.concat_data([data1, data2])
-        # basic test for concatenation
+        # Set the keyword arguments
+        kwargs = {'prepend': prepend}
+        if sort_dim_toggle:
+            if self.testInst.pandas_format:
+                kwargs['sort'] = True
+            else:
+                kwargs['dim'] = 'Epoch2'
+                data2 = data2.rename({xarray_epoch_name: 'Epoch2'})
+                self.testInst.data = self.testInst.data.rename(
+                    {xarray_epoch_name: 'Epoch2'})
+
+        # Concat together
+        self.testInst.concat_data(data2, **kwargs)
+
+        if sort_dim_toggle and not self.testInst.pandas_format:
+            # Rename to the standard epoch name
+            self.testInst.data = self.testInst.data.rename(
+                {'Epoch2': xarray_epoch_name})
+
+        # Basic test for concatenation
         self.out = len(self.testInst.index)
         assert (self.out == len1 + len2)
 
-        if self.testInst.pandas_format:
-            # test concat from above
-            assert (self.testInst[0:len1, :] == data1.values[:, :]).all().all()
-            assert (self.testInst[len1:, :] == data2.values[:, :]).all().all()
-            # concat together with sort=True
-            # pandas only feature
-            self.testInst.data = self.testInst.concat_data([data1, data2],
-                                                           sort=True)
-            # test for concatenation
-            self.out = len(self.testInst.index)
-            assert (self.out == len1 + len2)
-            assert np.all(self.testInst[0:len1, data1.columns] == data1.values)
-            assert np.all(self.testInst[len1:, data2.columns] == data2.values)
+        ordered = True
+        if ((not self.testInst.pandas_format and prepend)
+            or (self.testInst.pandas_format and prepend
+                and not sort_dim_toggle)):
+            ordered = False
+
+        # Detailed test for concatonation through index
+        if prepend:
+            assert np.all(self.testInst.index[:len1]
+                          > self.testInst.index[len1:])
         else:
+            assert np.all(self.testInst.index[:len1]
+                          < self.testInst.index[len1:])
 
-            # first, check for concat just before if else
-            assert np.all(self.testInst[0:len1, :] == data1.to_array()[:, :])
-            assert np.all(self.testInst[len1:, :] == data2.to_array()[:, :])
-
-            # concat together while also specifying a different concatentation
-            # dimension
-            # xarray specific functionality
-            # change name of main dim to support test for dim keyword
-            data1 = data1.rename({xarray_epoch_name: 'Epoch2'})
-            data2 = data2.rename({xarray_epoch_name: 'Epoch2'})
-
-            # concat together
-            self.testInst.data = self.testInst.concat_data(
-                [data1, data2], dim='Epoch2').rename({'Epoch2':
-                                                      xarray_epoch_name})
-            # test for concatenation
-            # Instrument.data must have a 'Epoch' index
-            self.out = len(self.testInst.index)
-            assert (self.out == len1 + len2)
-            assert (self.testInst[0:len1, :]
-                    == data1.to_array()[:, :]).all().all()
-            assert (self.testInst[len1:, :]
-                    == data2.to_array()[:, :]).all().all()
+        if self.testInst.pandas_format:
+            if sort_dim_toggle:
+                assert np.all(self.testInst.data.columns ==
+                              np.sort(data2.columns))
+            else:
+                assert np.all(self.testInst.data.columns == data2.columns)
+            
 
     # -------------------------------------------------------------------------
     #
