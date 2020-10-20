@@ -547,8 +547,9 @@ class Files(object):
             and '2000' will be added for years < two_digit_year_break.
             If None, then four-digit years are assumed. (default=None)
         delimiter : string or NoneType
-            If set, then filename will be processed using delimiter rather
-            than assuming a fixed width (default=None)
+            Delimiter string upon which files will be split (e.g., '.'). If
+            None, filenames will be parsed presuming a fixed width format.
+            (default=None)
 
         Note
         ----
