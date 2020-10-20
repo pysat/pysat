@@ -301,8 +301,8 @@ class TestBasics():
 
         if self.testInst.pandas_format:
             if sort_dim_toggle:
-                assert np.all(self.testInst.data.columns ==
-                              np.sort(data2.columns))
+                assert np.all(self.testInst.data.columns
+                              == np.sort(data2.columns))
             else:
                 assert np.all(self.testInst.data.columns == data2.columns)
 
