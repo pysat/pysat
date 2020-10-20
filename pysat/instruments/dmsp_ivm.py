@@ -133,6 +133,10 @@ def init(self):
     """
 
     logger.info(mad_meth.cedar_rules())
+    self.acknowledgements = "".join(("See 'self.Experiment_Notes' for ",
+                                     "instrument specific acknowledgements\n",
+                                     mad_meth.cedar_rules()))
+    self.references = "See 'self.Experiment_Notes' for references"
     return
 
 
