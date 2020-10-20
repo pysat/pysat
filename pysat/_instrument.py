@@ -333,9 +333,9 @@ class Instrument(object):
             self.kwargs[fkey] = {gkey: kwargs[gkey] for gkey in good_kwargs}
 
             # Add in defaults if not already present
-            for dkey in default_keywords.keys():
+            for dkey in default_kwargs.keys():
                 if dkey not in good_kwargs:
-                    self.kwargs[fkey][dkey] = default_keywords[dkey]
+                    self.kwargs[fkey][dkey] = default_kwargs[dkey]
 
             # Determine the number of kwargs in this function
             fkwargs = [gkey for gkey in self.kwargs[fkey].keys()]
