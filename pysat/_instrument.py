@@ -412,6 +412,69 @@ class Instrument(object):
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
+    def __repr__(self):
+        """ Print the basic Instrument properties"""
+        out_str = "".join(["Instrument(platform='", self.platform, "', name='",
+                           self.name, "', inst_id='", self.inst_id,
+                           "', clean_level='", self.clean_level,
+                           "', pad={:}, orbit_info=".format(self.pad),
+                           "{:}, **{:})".format(self.orbit_info, self.kwargs)])
+
+        return out_str
+
+    def __str__(self):
+        """ Descriptively print the basic Instrument properties"""
+
+        # Get the basic Instrument properties
+        output_str = 'pysat Instrument object\n'
+        output_str += '-----------------------\n'
+        output_str += "Platform: '{:s}'\n".format(self.platform)
+        output_str += "Name: '{:s}'\n".format(self.name)
+        output_str += "Tag: '{:s}'\n".format(self.tag)
+        output_str += "Instrument id: '{:s}'\n".format(self.inst_id)
+
+        # Print out the data processing information
+        output_str += '\nData Processing\n'
+        output_str += '---------------\n'
+        output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
+        output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
+        for routine in self.kwargs.keys():
+            output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
+            output_str += "{:s}\n".format(self.kwargs[routine].__str__())
+        output_str += "{:s}\n".format(self.custom.__str__())
+
+        # Print out the orbit settings
+        if self.orbits.orbit_index is not None:
+            output_str += '{:s}\n'.format(self.orbits.__str__())
+
+        # Print the local file information
+        output_str += self.files.__str__()
+
+        # Display loaded data
+        output_str += '\n\nLoaded Data Statistics\n'
+        output_str += '----------------------\n'
+        if not self.empty:
+            num_vars = len(self.variables)
+
+            output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
+            output_str += 'DOY: {:03d}\n'.format(self.doy)
+            output_str += 'Time range: '
+            output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
+            output_str += ' --- '
+            output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
+            output_str += 'Number of Times: {:d}\n'.format(len(self.index))
+            output_str += 'Number of variables: {:d}\n'.format(num_vars)
+
+            output_str += '\nVariable Names:\n'
+            output_str += utils._core.fmt_output_in_cols(self.variables)
+
+            # Print the short version of the metadata
+            output_str += '\n{:s}'.format(self.meta.__str__(long_str=False))
+        else:
+            output_str += 'No loaded data.\n'
+
+        return output_str
+
     def __getitem__(self, key):
         """
         Convenience notation for accessing data; inst['name'] is inst.data.name
@@ -938,18 +1001,18 @@ class Instrument(object):
 
         return copy.deepcopy(self)
 
-    def concat_data(self, data, *args, **kwargs):
-        """Concats data1 and data2 for xarray or pandas as needed
+    def concat_data(self, new_data, prepend=False, **kwargs):
+        """Concats new_data to self.data for xarray or pandas as needed
 
         Parameters
         ----------
-        data : pandas or xarray
-           Data to be appended to data already within the Instrument object
-
-        Returns
-        -------
-        void
-            Instrument.data modified in place.
+        new_data : pds.DataFrame, xr.Dataset, or list of such objects
+            New data objects to be concatonated
+        prepend : boolean
+            If True, assign new data before existing data; if False append new
+            data (default=False)
+        **kwargs : dict
+            Optional keyword arguments passed to pds.concat or xr.concat 
 
         Note
         ----
@@ -957,26 +1020,34 @@ class Instrument(object):
         pandas.concat method. If sort is supplied as a keyword, the
         user provided value is used instead.
 
-        For xarray, dim='Epoch' is passed along to xarray.concat
-        except if the user includes a value for dim as a
-        keyword argument.
+        For xarray, dim=Instrument.index.name is passed along to xarray.concat
+        except if the user includes a value for dim as a keyword argument.
 
         """
+        # Order the data to be concatonated in a list
+        if not isinstance(new_data, list):
+            new_data = [new_data]
 
-        if self.pandas_format:
-            if 'sort' in kwargs:
-                sort = kwargs['sort']
-                _ = kwargs.pop('sort')
-            else:
-                sort = False
-            return pds.concat(data, sort=sort, *args, **kwargs)
+        if prepend:
+            new_data.append(self.data)
         else:
-            if 'dim' in kwargs:
-                dim = kwargs['dim']
-                _ = kwargs.pop('dim')
-            else:
-                dim = self.index.name
-            return xr.concat(data, dim=dim, *args, **kwargs)
+            new_data.insert(0, self.data)
+
+        # Retrieve the appropriate concatonation function
+        if self.pandas_format:
+            # Specifically do not sort unless otherwise specified
+            if 'sort' not in kwargs:
+                kwargs['sort'] = False
+            concat_func = pds.concat
+        else:
+            # Specify the dimension, if not otherwise specified
+            if 'dim' not in kwargs:
+                kwargs['dim'] = self.index.name
+            concat_func = xr.concat
+
+        # Assign the concatonated data to the instrument
+        self.data = concat_func(new_data, **kwargs)
+        return 
 
     def _pass_method(*args, **kwargs):
         """ Default method for updateable Instrument methods
@@ -1160,69 +1231,6 @@ class Instrument(object):
             logger.debug(''.join(['These Instrument test attributes kept their',
                                   ' default  values: {:}'.format(missing)]))
         return
-
-    def __repr__(self):
-        """ Print the basic Instrument properties"""
-        out_str = "".join(["Instrument(platform='", self.platform, "', name='",
-                           self.name, "', inst_id='", self.inst_id,
-                           "', clean_level='", self.clean_level,
-                           "', pad={:}, orbit_info=".format(self.pad),
-                           "{:}, **{:})".format(self.orbit_info, self.kwargs)])
-
-        return out_str
-
-    def __str__(self):
-        """ Descriptively print the basic Instrument properties"""
-
-        # Get the basic Instrument properties
-        output_str = 'pysat Instrument object\n'
-        output_str += '-----------------------\n'
-        output_str += "Platform: '{:s}'\n".format(self.platform)
-        output_str += "Name: '{:s}'\n".format(self.name)
-        output_str += "Tag: '{:s}'\n".format(self.tag)
-        output_str += "Instrument id: '{:s}'\n".format(self.inst_id)
-
-        # Print out the data processing information
-        output_str += '\nData Processing\n'
-        output_str += '---------------\n'
-        output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
-        output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
-        for routine in self.kwargs.keys():
-            output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
-            output_str += "{:s}\n".format(self.kwargs[routine].__str__())
-        output_str += "{:s}\n".format(self.custom.__str__())
-
-        # Print out the orbit settings
-        if self.orbits.orbit_index is not None:
-            output_str += '{:s}\n'.format(self.orbits.__str__())
-
-        # Print the local file information
-        output_str += self.files.__str__()
-
-        # Display loaded data
-        output_str += '\n\nLoaded Data Statistics\n'
-        output_str += '----------------------\n'
-        if not self.empty:
-            num_vars = len(self.variables)
-
-            output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
-            output_str += 'DOY: {:03d}\n'.format(self.doy)
-            output_str += 'Time range: '
-            output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
-            output_str += ' --- '
-            output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
-            output_str += 'Number of Times: {:d}\n'.format(len(self.index))
-            output_str += 'Number of variables: {:d}\n'.format(num_vars)
-
-            output_str += '\nVariable Names:\n'
-            output_str += utils._core.fmt_output_in_cols(self.variables)
-
-            # Print the short version of the metadata
-            output_str += '\n{:s}'.format(self.meta.__str__(long_str=False))
-        else:
-            output_str += 'No loaded data.\n'
-
-        return output_str
 
     def _filter_datetime_input(self, date):
         """
@@ -1642,7 +1650,7 @@ class Instrument(object):
                 if not self.empty:
                     if (self.index[-1] == temp_time):
                         self.data = self[:-1]
-                    self.data = self.concat_data([self.data, stored_data])
+                    self.concat_data(stored_data, prepend=False)
                 else:
                     self.data = stored_data
 
@@ -1657,7 +1665,7 @@ class Instrument(object):
                 if not self.empty:
                     if (self.index[0] == temp_time):
                         self.data = self[1:]
-                    self.data = self.concat_data([stored_data, self.data])
+                    self.concat_data(stored_data, prepend=True)
                 else:
                     self.data = stored_data
 
