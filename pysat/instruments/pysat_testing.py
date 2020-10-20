@@ -69,16 +69,16 @@ def init(self):
     self.references = mm_test.refs
 
     # work on file index if keyword present
-    if self.kwargs['_load_rtn']['file_date_range'] is not None:
+    if self.kwargs['load']['file_date_range'] is not None:
         # set list files routine to desired date range
         # attach to the instrument object
-        fdr = self.kwargs['_load_rtn']['file_date_range']
+        fdr = self.kwargs['load']['file_date_range']
         self._list_files_rtn = functools.partial(list_files,
                                                  file_date_range=fdr)
         self.files.refresh()
 
     # mess with file dates if kwarg option present
-    if self.kwargs['_load_rtn']['mangle_file_dates']:
+    if self.kwargs['load']['mangle_file_dates']:
         self.files.files.index = \
             self.files.files.index + pds.DateOffset(minutes=5)
     return
