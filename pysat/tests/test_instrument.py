@@ -291,12 +291,6 @@ class TestBasics():
         self.out = len(self.testInst.index)
         assert (self.out == len1 + len2)
 
-        ordered = True
-        if ((not self.testInst.pandas_format and prepend)
-            or (self.testInst.pandas_format and prepend
-                and not sort_dim_toggle)):
-            ordered = False
-
         # Detailed test for concatonation through index
         if prepend:
             assert np.all(self.testInst.index[:len1]
@@ -311,7 +305,6 @@ class TestBasics():
                               np.sort(data2.columns))
             else:
                 assert np.all(self.testInst.data.columns == data2.columns)
-            
 
     # -------------------------------------------------------------------------
     #
