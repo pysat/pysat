@@ -88,10 +88,6 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     file_meta = filed['Metadata']['Data Parameters']
     # load up what is offered into pysat.Meta
     meta = pysat.Meta()
-    meta.acknowledgements = "".join(("See 'meta.Experiment_Notes' for ",
-                                     "instrument specific acknowledgements\n",
-                                     cedar_rules()))
-    meta.references = "See 'meta.Experiment_Notes' for references"
 
     labels = []
     for item in file_meta:
@@ -121,9 +117,16 @@ def load(fnames, tag=None, sat_id=None, xarray_coords=[]):
     mad_vars = [('Experiment_Parameters', ': '),
                 ('Independent_Spatial_Parameters', ': '),
                 ('Experiment_Notes', '')]
-    for mad_var in mad_vars:
-        temp = [mad_var[1].join(snip) for snip in getattr(meta, mad_var[0])]
-        setattr(meta, mad_var[0], temp)
+    if sys.version_info.major < 3:
+        for mad_var in mad_vars:
+            temp = [mad_var[1].join(snip) for snip in getattr(meta, mad_var[0])]
+            setattr(meta, mad_var[0], temp)
+    else:
+        for mad_var in mad_vars:
+            snips = [[snip.decode('UTF-8') for snip in items] for items in
+                     getattr(meta, mad_var[0])]
+            snips = [mad_var[1].join(snip) for snip in snips]
+            setattr(meta, mad_var[0], snips)
 
     # data into frame, with labels from metadata
     data = pds.DataFrame.from_records(file_data, columns=labels)
