@@ -197,6 +197,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
         and 'revision'
         Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+    delimiter : string
+        Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
@@ -232,15 +234,16 @@ def parse_delimited_filenames(files, format_str, delimiter):
     # so apply delimiter breakdown to the string blocks as a guide
     pblock = []
     parsed_block = [snip.split(delimiter) for snip in snips]
-    for _ in parsed_block:
-        if _ != ['', '']:
-            if _[0] == '':
-                _ = _[1:]
-            if _[-1] == '':
-                _ = _[:-1]
-            pblock.extend(_)
+    for block in parsed_block:
+        if block != ['', '']:
+            if block[0] == '':
+                block = block[1:]
+            if block[-1] == '':
+                block = block[:-1]
+            pblock.extend(block)
         pblock.append('')
     parsed_block = pblock[:-1]
+
     # need to parse out dates for datetime index
     for temp in files:
         split_name = temp.split(delimiter)
@@ -262,8 +265,10 @@ def parse_delimited_filenames(files, format_str, delimiter):
             stored[key] = np.array(stored[key])
         if len(stored[key]) == 0:
             stored[key] = None
+
     # include files in output
     stored['files'] = files
+
     # include format string as convenience for later functions
     stored['format_str'] = format_str
 

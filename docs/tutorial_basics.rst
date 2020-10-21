@@ -1,5 +1,5 @@
 Basics
-------
+======
 
 The core functionality of pysat is exposed through the pysat.Instrument object.
 The intent of the Instrument object is to offer a single interface for
@@ -24,9 +24,8 @@ upon the first import,
 .. note:: A data directory must be set before any pysat.Instruments may be used
    or an error will be raised.
 
-**Basic Instrument Discovery**
-
-----
+Basic Instrument Discovery
+--------------------------
 
 Support for each instrument in pysat is enabled by a suite of methods that
 interact with the particular files for that dataset and supply the data within
@@ -53,71 +52,95 @@ is available via help,
 
 Each instrument listed will support one or more data sets for analysis. The
 submodules are named with the convention platform_name. To get
-a description of an instrument, along with the supported datasets, use help
-again,
+a description of an instrument from a pysat package, you can use a searching
+function.  This example uses the ``pysatMadrigal`` package.
 
 .. code:: python
 
-   help(pysat.instruments.dmsp_ivm)
+   import pysatMadrigal as pysatMad
+   mad_inst = pysat.utils.generate_instrument_list(pysatMad.instruments)
+   print(mad_inst['names'])
+
 
 Further, the dictionary::
 
-    pysat.instruments.dmsp_ivm.tags
+    pysatMadrigal.instruments.dmsp_ivm.tags
 
 is keyed by ``tag`` with a description of each type of data
 the ``tag`` parameter selects. The dictionary::
 
-    pysat.instruments.dmsp_ivm.inst_ids
+    pysatMadrigal.instruments.dmsp_ivm.inst_ids
 
 indicates which instrument or satellite ids (``inst_id``) support which tag.
 The combination of ``tag`` and ``inst_id`` select the particular dataset
 a pysat.Instrument object will provide and interact with.
 
 
-**Instantiation**
+Instantiation
+-------------
 
-----
+To create a pysat.Instrument object, select a ``platform`` and instrument
+``name`` or an ``inst_module`` along side (potentially) a ``tag`` and
+``inst_id``, consistent with the desired data from a supported instrument.
 
-To create a pysat.Instrument object, select a ``platform``, instrument ``name``,
-and potentially a ``tag`` and ``inst_id``, consistent with
-the desired data to be analyzed, from one the supported instruments.
+To work with plasma velocity data from the Ion Velocity Meter (IVM) onboard the
+Defense Meteorological Satellite Program (DMSP) constellation (specifically, the
+F12 spacecraft), use:
 
-To work with plasma data from the
-Ion Velocity Meter (IVM) onboard the Defense Meteorological
-Satellite Program (DMSP) constellation, use:
+.. code:: python
+
+   import pysatMadrigal as pysatMad
+   dmsp = pysat.Instrument(inst_module=pysatMad.instruments.dmsp_ivm, tag='utd', inst_id='f12')
+
+Behind the scenes pysat uses a python module named dmsp_ivm that understands
+how to interact with 'utd' data for 'f12'.
+
+If you have previously registered the instruments in ``pysatMadrigal``, you
+can specify the desired Instrument using the ``platform`` and ``name`` keywords.
 
 .. code:: python
 
    dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12')
 
-Behind the scenes pysat uses a python module named dmsp_ivm that understands
-how to interact with 'utd' data for 'f12'.
-
-
-**Download**
-
-----
-
-Let's download some data. DMSP data is hosted by the `Madrigal database
+You can also specify the specific keyword arguements needed for the standard
+``pysat`` methods.  DMSP data is hosted by the `Madrigal database
 <http://cedar.openmadrigal.org/openmadrigal/>`_, a community resource for
 geospace data. The proper process for downloading DMSP and other Madrigal data
 is built into the open source
-tool `madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_, which
-is invoked appropriately by pysat within the dmsp_ivm module. To get DMSP
-data specifically all we have to do is invoke the ``.download()`` method
-attached to the DMSP object. Madrigal requires that users provide their name
-and email address as their username and password.
+tool `madrigalWeb <http://cedar.openmadrigal.org/docs/name/rr_python.html>`_,
+which is invoked appropriately by ``pysat`` within the
+``pysatMadrigal.instruments.dmsp_ivm`` sub-module. Madrigal requires that users
+provide their name and email address as their username and password.
 
 .. code:: python
 
    # set user and password for Madrigal
-   user = 'Firstname+Lastname'
+   username = 'Firstname+Lastname'
    password = 'email@address.com'
+
+   # Initalize the instrument, passing the username and password to the
+   # standard routines that need it
+   dmsp = pysat.Instrument(platform='dmsp', name='ivm', tag='utd', inst_id='f12', user=username, password=password)
+
+Download
+--------
+
+Let's download some data. To get DMSP data specifically all we have to do is
+invoke the ``.download()`` method attached to the DMSP object. If the username
+and password have't been provided to the instrument already, be sure to
+include them here.
+
+.. code:: python
+
+
+   import datetime as dt
+
    # define date range to download data
    start = dt.datetime(2001, 1, 1)
    stop = dt.datetime(2001, 1, 2)
-   # download data to local system
-   dmsp.download(start, stop, user=user, password=password)
+   
+   # download data, assuming username and password were not set
+   dmsp.download(start, stop, user=username, password=password)
 
 The data is downloaded to pysat_data_dir/platform/name/tag/, in this case
 pysat_data_dir/dmsp/ivm/utd/. At the end of the download, pysat
@@ -131,16 +154,15 @@ the local system is fully up to date compared to the data source. The command,
     dmsp.download_updated_files()
 
 will obtain the full set of files present on the server and compare the
-version and revision numbers for the server files with those on the local system.
-Any files missing or out of date on the local system are downloaded from the
-server. This command downloads, as needed, the entire dataset.
+version and revision numbers for the server files with those on the local
+system.  Any files missing or out of date on the local system are downloaded
+from the server. This command downloads, as needed, the entire dataset.
 
 .. note:: Science data servers may not have the same reliability and
    bandwidth as commercial providers
 
-**Load Data**
-
-----
+Load Data
+---------
 
 Data is loaded into a pysat.Instrument object, in this case dmsp, using the
 ``.load`` method using year, day of year; date; or filename.
@@ -200,16 +222,17 @@ the instrument level.
 See :any:`Instrument` for more.
 
 To load data over a season, pysat provides a convenience function that returns
-an array of dates over a season. The season need not be continuous.
+an array of dates over a specfied period of time. This time period does not
+need to be continuous (e.g., load both the vernal and autumnal equinoxes).
 
 .. code:: python
 
     import matplotlib.pyplot as plt
     import numpy as np
-    import pandas
+    import pandas as pds
 
     # create empty series to hold result
-    mean_ti = pandas.Series()
+    mean_ti = pds.Series()
 
     # get list of dates between start and stop
     start = dt.datetime(2001, 1, 1)
@@ -231,8 +254,8 @@ an array of dates over a season. The season need not be continuous.
 
     # plot the result using pandas functionality
     mean_ti.plot(title='Mean Ion Temperature near Magnetic Equator')
-    plt.ylabel(dmsp.meta['ti', dmsp.desc_label] + ' (' +
-               dmsp.meta['ti', dmsp.units_label] + ')')
+    plt.ylabel(dmsp.meta['ti', dmsp.meta.name_label] + ' (' +
+               dmsp.meta['ti', dmsp.meta.units_label] + ')')
 
 Note, the numpy.where may be removed using the convenience access to the
 attached pandas data object.
@@ -249,9 +272,8 @@ is equivalent to
    dmsp.data = vefi[(dmsp['mlat'] < 5) & (dmsp['mlat'] > -5)]
 
 
-**Clean Data**
-
------
+Clean Data
+----------
 
 Before data is available in .data it passes through an instrument specific
 cleaning routine. The amount of cleaning is set by the clean_level keyword,
@@ -279,9 +301,8 @@ The user provided cleaning level is stored on the Instrument object at
 ``dmsp.clean_level``. The details of the cleaning will generally vary greatly
 between instruments.
 
-**Metadata**
-
-----
+Metadata
+--------
 
 Metadata is also stored along with the main science data. pysat presumes
 a minimum default set of metadata that may be arbitrarily expanded.

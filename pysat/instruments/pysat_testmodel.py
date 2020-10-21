@@ -42,6 +42,13 @@ def init(self):
     return
 
 
+def clean(self):
+    """Cleaning function
+    """
+
+    pass
+
+
 def load(fnames, tag=None, inst_id=None):
     """ Loads the test files
 

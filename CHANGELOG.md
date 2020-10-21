@@ -17,6 +17,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Use of start / stop notation in remote_file_list
   - Added variable rename method to Instrument object (#91)
   - Migrated file methods to pysat.utils.files (#336)
+  - Allow the Instrument object to be initialized with optional kwargs for any
+    of the standard methods (not just load).
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -57,6 +59,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed coupling of two_digit_year_break keyword to underlying method in
     methods.general.list_files
   - Fixed additional file date range for monthly data with gaps
+  - Removed unused input arguments
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
