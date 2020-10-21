@@ -1566,7 +1566,8 @@ class Instrument(object):
         # set options used by loading routine based upon user input
         if (yr is not None) & (doy is not None):
             # verify arguments make sense, in context
-            _check_load_arguments_none(fname, stop_fname, date, end_date)
+            _check_load_arguments_none(fname, stop_fname, date, end_date,
+                                       raise_error=True)
             # convert yr/doy to a date
             date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
             self._set_load_parameters(date=date, fid=None)
@@ -1589,7 +1590,7 @@ class Instrument(object):
         elif date is not None:
             # verify arguments make sense, in context
             _check_load_arguments_none(fname, stop_fname, yr, doy, end_yr,
-                                       end_doy)
+                                       end_doy, raise_error=True)
             # ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
             date = self._filter_datetime_input(date)
@@ -1605,7 +1606,8 @@ class Instrument(object):
 
         elif fname is not None:
             # verify arguments make sense, in context
-            _check_load_arguments_none(yr, doy, end_yr, end_doy, date, end_date)
+            _check_load_arguments_none(yr, doy, end_yr, end_doy, date, end_date,
+                                       raise_error=True)
             # date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
