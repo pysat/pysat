@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.2] - 2020-10-19
+- Bug Fix
+   - Updated madrigal methods to simplify compound data types and enable
+     creation of netCDF4 files using `self.to_netcdf4()`.
+
 ## [2.2.1] - 2020-07-29
 - Documentation
    - Improved organization of documentation on ReadTheDocs
