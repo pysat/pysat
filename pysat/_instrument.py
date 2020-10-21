@@ -3493,9 +3493,8 @@ def _pass_func(*args, **kwargs):
 def _check_load_arguments_none(*args, raise_error=False):
     """Ensure all arguments are None.
 
-    Used to support .load method checks
-    that arguments that should be None are None, while
-    also keeping the .load method reable.
+    Used to support .load method checks that arguments that should be
+    None are None, while also keeping the .load method readable.
 
     Parameters
     ----------
