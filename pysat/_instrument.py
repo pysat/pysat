@@ -1630,8 +1630,8 @@ class Instrument(object):
                 self.load_step = 0
             curr = self._fid.copy()
 
-        elif _check_load_arguments_none(yr, doy, end_yr, end_doy, date, end_date,
-                                        fname):
+        elif _check_load_arguments_none(yr, doy, end_yr, end_doy, date,
+                                        end_date, fname, stop_fname):
             # empty call, treat as if all data requested
             if self.multi_file_day:
                 estr = ''.join(('`load()` is not supported with multi_file_day',
@@ -1651,7 +1651,6 @@ class Instrument(object):
         else:
             estr = 'Unknown or incomplete input combination.'
             raise TypeError(estr)
-
 
         self.orbits._reset()
 
@@ -3501,7 +3500,7 @@ def _check_load_arguments_none(*args, raise_error=False):
     *args : mixed
         Variables that are to checked to ensure None
     raise_error : bool
-        If True, an error is raise if all args aren't None (default=False)
+        If True, an error is raised if all args aren't None (default=False)
 
     Raises
     ------
