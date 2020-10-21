@@ -1512,9 +1512,8 @@ class Instrument(object):
                 # increment one file at a time
                 self.load_step = 0
             curr = self._fid.copy()
-        elif (yr is None) and (doy is None) and (end_yr is None) and \
-                (end_doy is None) and (date is None) and \
-                (end_date is None) and (fname is None):
+        elif np.all([it is None for it in [yr, doy, end_yr, end_doy, date,
+                                           end_date, fname]]):
             # empty call, treat as if all data requested
             if self.multi_file_day:
                 estr = ''.join(('`load()` is not supported with multi_file_day',
@@ -3381,7 +3380,7 @@ def _check_if_keywords_supported(func, **kwargs):
     return
 
 
-def _check_load_arguments_none(*args):
+def _check_load_arguments_none(*args, raise_error=False):
     """Ensure all arguments are None.
 
     Used to support .load method checks
@@ -3392,14 +3391,30 @@ def _check_load_arguments_none(*args):
     ----------
     *args : mixed
         Variables that are to checked to ensure None
+    raise_error : bool
+        If True, an error is raise if all args aren't None (default=False)
+
+    Raises
+    ------
+    ValueError
+        If all args aren't None and raise_error is True
+
+    Returns
+    -------
+    bool
+        True, if all args are None
 
     """
 
+    all_none = True
     for arg in args:
         if arg is not None:
-            estr = ''.join(('An inconsistent set of inputs have been ',
-                            'supplied as input. Please double-check that ',
-                            'only date, filename, or year/day of year ',
-                            'combinations are provided.'))
-            raise ValueError(estr)
-    return
+            all_none = False
+            if raise_error:
+                estr = ''.join(('An inconsistent set of inputs have been ',
+                                'supplied as input. Please double-check that ',
+                                'only date, filename, or year/day of year ',
+                                'combinations are provided.'))
+                raise ValueError(estr)
+
+    return all_none
