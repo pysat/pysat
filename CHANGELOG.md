@@ -21,6 +21,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added support for iterating over a dataset a with a loaded data width and 
     stepsize larger than a single day/file
   - Added check for inconsistent inputs when loading data via Instrument
+  - Allow the Instrument object to be initialized with optional kwargs for any
+    of the standard methods (not just load).
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -66,6 +68,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     methods.general.list_files
   - Fixed additional file date range for monthly data with gaps
   - Corrected iteration over Instrument within list comprehension
+  - Removed unused input arguments
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
