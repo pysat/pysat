@@ -19,12 +19,13 @@ class Meta(object):
         the standard_name (name), units, and long_name for the data stored in
         the associated pysat Instrument object.
     labels : dict
-        Dict where keys are the label attribute names and the values are
-        the label values (default={'units': 'units', 'name': 'long_name',
-                                   'notes': 'notes', 'desc': 'desc',
-                                   'plot': 'plot_label', 'axis': 'axis',
-                                   'scale': 'scale', 'min_val': 'value_min',
-                                   'max_val': 'value_max', 'fill_val': 'fill'})
+        Dict where keys are the label attribute names and the values are tuples
+        that have the label values and value types in that order.
+        (default={'units': ('units', str), 'name': ('long_name', str),
+                  'notes': ('notes', str), 'desc': ('desc', str),
+                  'plot': ('plot_label', str), 'axis': ('axis', str),
+                  'scale': ('scale', str), 'min_val': ('value_min', float),
+                  'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Attributes
     ----------
@@ -127,12 +128,17 @@ class Meta(object):
 
     """
 
+    # -----------------------------------------------------------------------
+    # Define the magic methods
+
     def __init__(self, metadata=None,
-                 labels={'units': 'units', 'name': 'long_name',
-                         'notes': 'notes', 'desc': 'desc',
-                         'plot': 'plot_label', 'axis': 'axis',
-                         'scale': 'scale', 'min_val': 'value_min',
-                         'max_val': 'value_max', 'fill_val': 'fill'}):
+                 labels={'units': ('units', str), 'name': ('long_name', str),
+                         'notes': ('notes', str), 'desc': ('desc', str),
+                         'plot': ('plot_label', str), 'axis': ('axis', str),
+                         'scale': ('scale', str),
+                         'min_val': ('value_min', float),
+                         'max_val': ('value_max', float),
+                         'fill_val': ('fill', float)}):
 
         # set mutability of Meta attributes
         self.mutable = True
@@ -162,152 +168,6 @@ class Meta(object):
         # establish attributes intrinsic to object, before user can
         # add any
         self._base_attr = dir(self)
-
-    @property
-    def ho_data(self):
-        return self._ho_data
-
-    @property
-    def data(self):
-        return self._data
-
-    @data.setter
-    def data(self, new_frame):
-        self._data = new_frame
-        # self.keys = self._data.columns.lower()
-
-    @ho_data.setter
-    def ho_data(self, new_dict):
-        self._ho_data = new_dict
-
-    @property
-    def empty(self):
-        """Return boolean True if there is no metadata"""
-
-        # only need to check on lower data since lower data
-        # is set when higher metadata assigned
-        if self.data.empty:
-            return True
-        else:
-            return False
-
-    def merge(self, other):
-        """Adds metadata variables to self that are in other but not in self.
-
-        Parameters
-        ----------
-        other : pysat.Meta
-
-        """
-
-        for key in other.keys():
-            if key not in self:
-                # copies over both lower and higher dimensional data
-                self[key] = other[key]
-        return
-
-    def drop(self, names):
-        """Drops variables (names) from metadata.
-
-        Parameters
-        ----------
-        names : list-like
-            List of string specifying the variable names to drop
-
-        """
-
-        # drop lower dimension data
-        self.data = self._data.drop(names, axis=0)
-
-        # drop higher dimension data
-        for name in names:
-            if name in self._ho_data:
-                _ = self._ho_data.pop(name)
-        return
-
-    def keep(self, keep_names):
-        """Keeps variables (keep_names) while dropping other parameters
-
-        Parameters
-        ----------
-        keep_names : list-like
-            variables to keep
-
-        """
-        # Create a list of variable names to keep
-        keep_names = [self.var_case_name(name) for name in keep_names]
-
-        # Get a list of current variable names
-        current_names = self._data.index
-
-        # Build a list of variable names to drop
-        drop_names = [name for name in current_names if name not in keep_names]
-
-        # Drop names not specified in keep_names list
-        self.drop(drop_names)
-        return
-
-    def apply_default_labels(self, other):
-        """Applies labels for default meta labels from self onto other.
-
-        Parameters
-        ----------
-        other : Meta
-            Meta object to have default labels applied
-
-        Returns
-        -------
-        other_updated : Meta
-            Meta object with the default labels applied
-
-        """
-        # Create a copy of other, to avoid altering in place
-        other_updated = other.copy()
-
-        # Update the Meta labels
-        other_updated.labels = self.labels
-
-        # Return the updated Meta class object
-        return other_updated
-
-    def accept_default_labels(self, other):
-        """Applies labels for default meta labels from other onto self.
-
-        Parameters
-        ----------
-        other : Meta
-            Meta object to take default labels from
-
-        """
-
-        self.labels = other.labels
-        return
-
-    def __contains__(self, other):
-        """case insensitive check for variable name
-
-        Parameters
-        ----------
-        other : Meta
-            Meta object from which the default labels are obtained
-
-        Returns
-        -------
-        does_contain : boolean
-            True if input Meta class contains the default labels, False if it
-            does not
-
-        """
-        does_contain = False
-
-        if other.lower() in [i.lower() for i in self.keys()]:
-            does_contain = True
-
-        if not does_contain:
-            if other.lower() in [i.lower() for i in self.keys_nD()]:
-                does_contain = True
-
-        return does_contain
 
     def __repr__(self):
         """String describing MetaData instantiation parameters
@@ -377,22 +237,6 @@ class Meta(object):
                                                          max_num=max_num)
 
         return out_str
-
-    def _insert_default_values(self, input_name):
-
-        default_labels = {'units': '', 'name': '', 'notes': '', 'desc': '',
-                          'plot': '', 'axis': '', 'scale': 'linear',
-                          'min_val': np.nan, 'max_val': np.nan,
-                          'fill_val': np.nan}
-
-        labels = [self.units_label, self.name_label, self.notes_label,
-                  self.desc_label, self.plot_label, self.axis_label,
-                  self.scale_label, self.min_label, self.max_label,
-                  self.fill_label]
-        defaults = [default_str, input_name, default_str, default_str,
-                    input_name, input_name, 'linear', default_nan,
-                    default_nan, default_nan]
-        self._data.loc[input_name, labels] = defaults
 
     def __setattr__(self, name, value):
         """Conditionally sets attributes based on self.mutable flag
@@ -678,8 +522,191 @@ class Meta(object):
             raise NotImplementedError("No way to handle MetaData key {}".format(
                 key.__repr__()))
 
-    def _label_setter(self, new_label, current_label, attr_label,
-                      default=np.nan, use_names_default=False):
+    # QUESTION: DOES THIS NEED TO CHANGE???
+    def __contains__(self, other):
+        """case insensitive check for variable name
+
+        Parameters
+        ----------
+        other : Meta
+            Meta object from which the default labels are obtained
+
+        Returns
+        -------
+        does_contain : boolean
+            True if input Meta class contains the default labels, False if it
+            does not
+
+        """
+        does_contain = False
+
+        if other.lower() in [i.lower() for i in self.keys()]:
+            does_contain = True
+
+        if not does_contain:
+            if other.lower() in [i.lower() for i in self.keys_nD()]:
+                does_contain = True
+
+        return does_contain
+
+    def __eq__(self, other_meta):
+        """ Check equality between Meta instances
+
+        Parameters
+        ----------
+        other_meta : Meta
+            A second Meta class object
+
+        Returns
+        -------
+        bool
+            True if equal, False if not equal
+
+        Note
+        ----
+        Good for testing.
+
+        Checks if variable names, attribute names, and metadata values
+        are all equal between to Meta objects. Note that this comparison
+        treats np.NaN == np.NaN as True.
+
+        Name comparison is case-sensitive.
+
+        """
+
+        if isinstance(other_meta, Meta):
+            # check first if variables and attributes are the same
+            # quick check on length
+            keys1 = [i for i in self.keys()]
+            keys2 = [i for i in other_meta.keys()]
+
+            try:
+                pysat.utils._core.test_list_equal
+            if len(keys1) != len(keys2):
+                return False
+
+            # now iterate over each of the keys in the first one
+            # don't need to iterate over second one, if all of the first
+            # in the second we are good. No more or less items in second from
+            # check earlier.
+            for key in keys1:
+                if key not in keys2:
+                    return False
+
+            # do same checks on attributes
+            attrs1 = [i for i in self.attrs()]
+            attrs2 = [i for i in other_meta.attrs()]
+            if len(attrs1) != len(attrs2):
+                return False
+
+            for attr in attrs1:
+                if attr not in attrs2:
+                    return False
+
+            # now check the values of all elements now that we know all
+            # variable and attribute names are the same
+            for key in self.keys():
+                for attr in self.attrs():
+                    if not (self[key, attr] == other_meta[key, attr]):
+                        # np.nan is not equal to anything
+                        # if both values are NaN, ok in my book
+                        try:
+                            if not (np.isnan(self[key, attr])
+                                    and np.isnan(other_meta[key, attr])):
+                                # one or both are not NaN and they aren't equal
+                                # test failed
+                                return False
+                        except TypeError:
+                            # comparison above gets unhappy with string inputs
+                            return False
+
+            # check through higher order products
+            # in the same manner as code above
+            keys1 = [i for i in self.keys_nD()]
+            keys2 = [i for i in other_meta.keys_nD()]
+            if len(keys1) != len(keys2):
+                return False
+
+            for key in keys1:
+                if key not in keys2:
+                    return False
+
+            # do same check on all sub variables within each nD key
+            for key in self.keys_nD():
+                keys1 = [i for i in self[key].children.keys()]
+                keys2 = [i for i in other_meta[key].children.keys()]
+                if len(keys1) != len(keys2):
+                    return False
+
+                for key_check in keys1:
+                    if key_check not in keys2:
+                        return False
+
+                # check if attributes are the same
+                attrs1 = [i for i in self[key].children.attrs()]
+                attrs2 = [i for i in other_meta[key].children.attrs()]
+                if len(attrs1) != len(attrs2):
+                    return False
+
+                for attr in attrs1:
+                    if attr not in attrs2:
+                        return False
+
+                # now time to check if all elements are individually equal
+                for key2 in self[key].children.keys():
+                    for attr in self[key].children.attrs():
+                        if not (self[key].children[key2, attr]
+                                == other_meta[key].children[key2, attr]):
+                            try:
+                                nan_self = np.isnan(self[key].children[key2,
+                                                                       attr])
+                                nan_other = np.isnan(other_meta[key].children[
+                                    key2, attr])
+                                if not (nan_self and nan_other):
+                                    return False
+                            except TypeError:
+                                # comparison above gets unhappy with string
+                                # inputs
+                                return False
+            # if we made it this far, things are good
+            return True
+        else:
+            # wasn't even the correct class
+            return False
+
+    # -----------------------------------------------------------------------
+    # Define the hidden methods
+
+    def _insert_default_values(self, data_var):
+        """Set the default label values for a data variable
+
+        Parameters
+        ----------
+        data_var : str
+            Name of the data variable
+
+        Note
+        ----
+        Sets NaN for all float values, -1 for all int values, and '' for all
+        str values except for 'scale', which defaults to 'linear', and None
+        for any othere data type.
+
+        """
+        # Cycle through each label type to create a list off label names
+        # and label default values
+        labels = list()
+        default_vals = list()
+        for lattr in self.labels.label_type.keys():
+            labels.append(getattr(self.labels, lattr))
+            default_vals.append(self.labels.default_values_from_attr(lattr))
+
+        # Assign the default values to the DataFrame for this data variable
+        self._data.loc[data_var, labels] = default_vals
+
+        return
+
+    def _label_setter(self, new_label, current_label, attr_label, default_type,
+                      use_names_default=False):
         """Generalized setter of default meta attributes
 
         Parameters
@@ -687,10 +714,13 @@ class Meta(object):
         new_label : str
             New label to use in the Meta object
         current_label : str
-            The hidden attribute to be updated that actually stores metadata
-        default : float
-            Default setting to use for label if there is no attribute
-            value (default=np.nan)
+            The current label for the hidden attribute that is to be updated
+            and stores the metadata
+        attr_label : str
+            The attribute label for the hidden attribute that is to be updated
+            and stores the metadata
+        default_type : type
+            Type of value to be stored
         use_names_default : bool
             if True, MetaData variable names are used as the default
             value for the specified Meta attributes settings (default=False)
@@ -711,75 +741,160 @@ class Meta(object):
         """
 
         if new_label not in self.attrs():
-            # new label not in metadata, including case
-            # update existing label, if present
+            # New label not in metadata
             if current_label in self.attrs():
-                # old label exists and has expected case
+                # Current label exists and has expected case
                 self.data.loc[:, new_label] = self.data.loc[:, current_label]
                 self.data = self.data.drop(current_label, axis=1)
             else:
                 if self.has_attr(current_label):
-                    # there is something like label, wrong case though
+                    # There is a similar label with different capitalization
                     current_label = self.attr_case_name(current_label)
-                    self.data.loc[:, new_label] = \
-                        self.data.loc[:, current_label]
+                    self.data.loc[:, new_label] = self.data.loc[:,
+                                                                current_label]
                     self.data = self.data.drop(current_label, axis=1)
                 else:
-                    # there is no existing label
-                    # setting for the first time
+                    # There is no existing label, setting for the first time
                     if use_names_default:
                         self.data[new_label] = self.data.index
                     else:
-                        self.data[new_label] = default
-            # check higher order structures as well
-            # recursively change labels here
+                        default_val = self.labels.default_values_from_type(
+                            default_type)
+                        self.data[new_label] = default_val
+
+            # Check higher order structures and recursively change labels
             for key in self.keys_nD():
                 setattr(self.ho_data[key], attr_label, new_label)
 
-        # now update 'hidden' attribute value
-        # current_label = new_label
+        # Update the 'hidden' attribute value: current_label -> new_label
         setattr(self, ''.join(('_', attr_label)), new_label)
 
-    @property
-    def units_label(self):
-        return self.labels.units
+        return
+
+    # -----------------------------------------------------------------------
+    # Define the public methods and properties
 
     @property
-    def name_label(self):
-        return self.labels.name
+    def ho_data(self):
+        return self._ho_data
 
     @property
-    def notes_label(self):
-        return self.labels.notes
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, new_frame):
+        self._data = new_frame
+
+    @ho_data.setter
+    def ho_data(self, new_dict):
+        self._ho_data = new_dict
 
     @property
-    def desc_label(self):
-        return self.labels.desc
+    def empty(self):
+        """Return boolean True if there is no metadata
+        """
 
-    @property
-    def plot_label(self):
-        return self.labels.plot
+        # only need to check on lower data since lower data
+        # is set when higher metadata assigned
+        if self.data.empty:
+            return True
+        else:
+            return False
 
-    @property
-    def axis_label(self):
-        return self.labels.axis
+    def merge(self, other):
+        """Adds metadata variables to self that are in other but not in self.
 
-    @property
-    def scale_label(self):
-        return self.labels.scale
+        Parameters
+        ----------
+        other : pysat.Meta
 
-    @property
-    def min_label(self):
-        return self.labels.min_val
+        """
 
-    @property
-    def max_label(self):
-        return self.labels.max_val
+        for key in other.keys():
+            if key not in self:
+                # copies over both lower and higher dimensional data
+                self[key] = other[key]
+        return
 
-    @property
-    def fill_label(self):
-        return self.labels.fill_val
+    def drop(self, names):
+        """Drops variables (names) from metadata.
 
+        Parameters
+        ----------
+        names : list-like
+            List of string specifying the variable names to drop
+
+        """
+
+        # drop lower dimension data
+        self.data = self._data.drop(names, axis=0)
+
+        # drop higher dimension data
+        for name in names:
+            if name in self._ho_data:
+                _ = self._ho_data.pop(name)
+        return
+
+    def keep(self, keep_names):
+        """Keeps variables (keep_names) while dropping other parameters
+
+        Parameters
+        ----------
+        keep_names : list-like
+            variables to keep
+
+        """
+        # Create a list of variable names to keep
+        keep_names = [self.var_case_name(name) for name in keep_names]
+
+        # Get a list of current variable names
+        current_names = self._data.index
+
+        # Build a list of variable names to drop
+        drop_names = [name for name in current_names if name not in keep_names]
+
+        # Drop names not specified in keep_names list
+        self.drop(drop_names)
+        return
+
+    def apply_meta_labels(self, other_meta):
+        """Applies the existing meta labels from self onto different MetaData
+
+        Parameters
+        ----------
+        other_meta : Meta
+            Meta object to have default labels applied
+
+        Returns
+        -------
+        other_updated : Meta
+            Meta object with the default labels applied
+
+        """
+        # Create a copy of other, to avoid altering in place
+        other_updated = other_meta.copy()
+
+        # Update the Meta labels
+        other_updated.labels = self.labels
+
+        # Return the updated Meta class object
+        return other_updated
+
+    def accept_default_labels(self, other):
+        """Applies labels for default meta labels from other onto self.
+
+        Parameters
+        ----------
+        other : Meta
+            Meta object to take default labels from
+
+        """
+
+        self.labels = other.labels
+        return
+
+    # HERE
     @units_label.setter
     def units_label(self, new_label):
         self._label_setter(new_label, self._units_label, 'units_label', '')
@@ -873,17 +988,15 @@ class Meta(object):
         """Yields metadata products stored for each variable name"""
 
         for dcol in self.data.columns:
-            yield dcol
+            yield dco
 
-    def has_attr(self, name):
-        """Returns boolean indicating presence of given attribute name
-
-        Case-insensitive check
+    def hasattr_case_neutral(self, attr_name):
+        """Case-insensitive check for attribute names in this class
 
         Parameters
         ----------
-        name : str
-            name of variable to get stored case form
+        attr_name : str
+            name of attribute to find
 
         Returns
         -------
@@ -994,12 +1107,12 @@ class Meta(object):
         """Deep copy of the meta object."""
         return deepcopy(self)
 
-    def pop(self, name):
+    def pop(self, label_name):
         """Remove and return metadata about variable
 
         Parameters
         ----------
-        name : str
+        label_name : str
             Meta key for a data variable
 
         Returns
@@ -1009,9 +1122,9 @@ class Meta(object):
 
         """
         # check if present
-        if name in self:
+        if label_name in self:
             # get case preserved name for variable
-            new_name = self.var_case_name(name)
+            new_name = self.var_case_name(label_name)
 
             # check if 1D or nD
             if new_name in self.keys():
@@ -1084,129 +1197,6 @@ class Meta(object):
                                         'Instrument object.'))
                         raise RuntimeError(rerr)
         return
-
-    def __eq__(self, other):
-        """
-        Check equality between Meta instances
-
-        Parameters
-        ----------
-        other : Meta
-            A second Meta class object
-
-        Returns
-        -------
-        bool
-            True if equal, False if not equal
-
-        Note
-        ----
-        Good for testing.
-
-        Checks if variable names, attribute names, and metadata values
-        are all equal between to Meta objects. Note that this comparison
-        treats np.NaN == np.NaN as True.
-
-        Name comparison is case-sensitive.
-
-        """
-
-        if isinstance(other, Meta):
-            # check first if variables and attributes are the same
-            # quick check on length
-            keys1 = [i for i in self.keys()]
-            keys2 = [i for i in other.keys()]
-            if len(keys1) != len(keys2):
-                return False
-
-            # now iterate over each of the keys in the first one
-            # don't need to iterate over second one, if all of the first
-            # in the second we are good. No more or less items in second from
-            # check earlier.
-            for key in keys1:
-                if key not in keys2:
-                    return False
-
-            # do same checks on attributes
-            attrs1 = [i for i in self.attrs()]
-            attrs2 = [i for i in other.attrs()]
-            if len(attrs1) != len(attrs2):
-                return False
-
-            for attr in attrs1:
-                if attr not in attrs2:
-                    return False
-
-            # now check the values of all elements now that we know all
-            # variable and attribute names are the same
-            for key in self.keys():
-                for attr in self.attrs():
-                    if not (self[key, attr] == other[key, attr]):
-                        # np.nan is not equal to anything
-                        # if both values are NaN, ok in my book
-                        try:
-                            if not (np.isnan(self[key, attr])
-                                    and np.isnan(other[key, attr])):
-                                # one or both are not NaN and they aren't equal
-                                # test failed
-                                return False
-                        except TypeError:
-                            # comparison above gets unhappy with string inputs
-                            return False
-
-            # check through higher order products
-            # in the same manner as code above
-            keys1 = [i for i in self.keys_nD()]
-            keys2 = [i for i in other.keys_nD()]
-            if len(keys1) != len(keys2):
-                return False
-
-            for key in keys1:
-                if key not in keys2:
-                    return False
-
-            # do same check on all sub variables within each nD key
-            for key in self.keys_nD():
-                keys1 = [i for i in self[key].children.keys()]
-                keys2 = [i for i in other[key].children.keys()]
-                if len(keys1) != len(keys2):
-                    return False
-
-                for key_check in keys1:
-                    if key_check not in keys2:
-                        return False
-
-                # check if attributes are the same
-                attrs1 = [i for i in self[key].children.attrs()]
-                attrs2 = [i for i in other[key].children.attrs()]
-                if len(attrs1) != len(attrs2):
-                    return False
-
-                for attr in attrs1:
-                    if attr not in attrs2:
-                        return False
-
-                # now time to check if all elements are individually equal
-                for key2 in self[key].children.keys():
-                    for attr in self[key].children.attrs():
-                        if not (self[key].children[key2, attr]
-                                == other[key].children[key2, attr]):
-                            try:
-                                nan_self = np.isnan(self[key].children[key2,
-                                                                       attr])
-                                nan_other = np.isnan(other[key].children[key2,
-                                                                         attr])
-                                if not (nan_self and nan_other):
-                                    return False
-                            except TypeError:
-                                # comparison above gets unhappy with string
-                                # inputs
-                                return False
-            # if we made it this far, things are good
-            return True
-        else:
-            # wasn't even the correct class
-            return False
 
     @classmethod
     def from_csv(cls, name=None, col_names=None, sep=None, **kwargs):
@@ -1371,55 +1361,68 @@ class MetaLabels(object):
 
     """
 
-    def __init__(self, units='units', name='long_name', notes='notes',
-                 desc='desc', plot='plot', axis='axis', scale='scale',
-                 min_val='value_min', max_val='value_max', fill_val='fill',
-                 **kwargs):
+    def __init__(self, units=('units', str), name=('long_name', str),
+                 notes=('notes', str), desc=('desc', str), plot=('plot', str),
+                 axis=('axis', str), scale=('scale', str),
+                 min_val=('value_min', float), max_val=('value_max', float),
+                 fill_val=('fill', float), **kwargs):
         """ Initialize the MetaLabels class
 
         Parameters
         ----------
-        units : str
-            Units label name (default='units')
-        name : str
-            Name label name (default='long_name')
-        notes : str
-            Notes label name (default='notes')
-        desc : str
-            Description label name (default='desc')
-        plot : str
-            Plot label name (default='plot')
-        axis : str
-            Axis label name (default='axis')
-        scale : str
-            Scale label name (default='scale')
-        min_val : str
-            Minimum value label name (default='value_min')
-        max_val : str
-            Maximum value label name (default='value_max')
-        fill_val : str
-            Fill value label name (default='fill')
+        units : tuple
+            Units label name and value type (default=('units', str))
+        name : tuple
+            Name label name and value type (default=('long_name', str))
+        notes : tuple
+            Notes label name and value type (default=('notes', str))
+        desc : tuple
+            Description label name and value type (default=('desc', str))
+        plot : tuple
+            Plot label name and value type (default=('plot', str))
+        axis : tuple
+            Axis label name and value type (default=('axis', str))
+        scale : tuple
+            Scale label name and value type (default=('scale', str))
+        min_val : tuple
+            Minimum value label name and value type
+            (default=('value_min', float))
+        max_val : tuple
+            Maximum value label name and value type
+            (default=('value_max', float))
+        fill_val : tuple
+            Fill value label name and value type (default=('fill', float))
         kwargs : dict
             Dictionary containing optional label attributes, where the keys
-            are the attribute names and the valuess are the label names
+            are the attribute names and the values are tuples containing the
+            label name and value type
 
         """
 
-        # Set the default labels directly
-        self.units = units
-        self.name = name
-        self.notes = notes
-        self.desc = desc
-        self.plot = plot
-        self.axis = axis
-        self.scale = scale
-        self.min_val = min_val
-        self.max_val = max_val
-        self.fill_val = fill_val
+        # Initialize a dictionary of label types, whose keys are the label
+        # attributes
+        self.label_type = {'units': units[1], 'name': name[1],
+                           'notes': notes[1], 'desc': desc[1], 'plot': plot[1],
+                           'axis': axis[1], 'scale': scale[1],
+                           'min_val': min_val[1], 'max_val': max_val[1],
+                           'fill_val': fill_val[1]}
 
-        # Set the custom labels directly
+        # Set the default labels and types
+        self.units = units[0]
+        self.name = name[0]
+        self.notes = notes[0]
+        self.desc = desc[0]
+        self.plot = plot[0]
+        self.axis = axis[0]
+        self.scale = scale[0]
+        self.min_val = min_val[0]
+        self.max_val = max_val[0]
+        self.fill_val = fill_val[0]
+
+        # Set the custom labels and label types
         for custom_label in kwargs.keys():
-            setattr(self, custom_label, kwargs[custom_label])
+            setattr(self, custom_label, kwargs[custom_label][0])
+            self.label_type[custom_label] = kwargs[custom_label][1]
 
         return
 
@@ -1458,3 +1461,68 @@ class MetaLabels(object):
                                                  max_num=nlabels)
 
         return out_str
+
+    def default_values_from_type(self, val_type):
+        """ Return the default values for each label based on their type
+
+        Parameters
+        ----------
+        val_type : type
+            Variable type for the value to be assigned to a MetaLabel
+
+        Returns
+        -------
+        default_val : str, float, int, NoneType
+            Sets NaN for all float values, -1 for all int values, and '' for
+            all str values except for 'scale', which defaults to 'linear', and
+            None for any othere data type
+
+        """
+
+        # Assign the default value
+        if issubclass(val_type, str):
+            default_val = ''
+        elif isinstance(val_type, float):
+            default_val = np.nan
+        elif isinstance(val_type, int):
+            default_val = -1
+        else:
+            default_val = None
+
+        return default_val
+
+    def default_values_from_attr(self, attr_name):
+        """ Return the default values for each label based on their type
+
+        Parameters
+        ----------
+        attr_name : str
+            Label attribute name (e.g., max_val)
+
+        Returns
+        -------
+        default_val : str, float, int, NoneType
+            Sets NaN for all float values, -1 for all int values, and '' for
+            all str values except for 'scale', which defaults to 'linear', and
+            None for any othere data type
+
+        Raises
+        ------
+        ValueError
+            For unknown attr_name
+
+        """
+
+        # Test the input parameter
+        if attr_name not in self.label_type.keys():
+            raise ValueError('uknown label attribute {:}'.format(attr_name))
+
+        # Assign the default value
+        if attr_name == 'scale':
+            default_val = 'linear'
+        else:
+            default_val = self.default_value_from_type(
+                self.label_type[attr_name])
+
+        return default_val
+
