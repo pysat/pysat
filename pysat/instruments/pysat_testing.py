@@ -2,16 +2,18 @@
 """
 Produces fake instrument data for testing.
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 import pandas as pds
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
+
+logger = logging.getLogger(__name__)
 
 # pysat required parameters
 platform = 'pysat'
@@ -24,12 +26,18 @@ tags = {'': 'Regular testing data set',
         'descend': 'Descending Integers from 0 testing data set',
         'plus10': 'Ascending Integers from 10 testing data set',
         'fives': 'All 5s testing data set',
-        'mlt_offset': 'dummy1 is offset by five from regular testing set'}
+        'mlt_offset': 'dummy1 is offset by five from regular testing set',
+        'no_download': 'simulate an instrument without download support',
+        'non_strict': 'simulate an instrument without strict_time_flag'}
 
 # dictionary of satellite IDs, list of corresponding tags
-# a numeric string can be used in sat_id to change the number of points per day
-sat_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+# a numeric string can be used in inst_id to change the number of points per day
+inst_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
+                 'no_download']}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1),
+                    'no_download': dt.datetime(2009, 1, 1),
+                    'non_strict': dt.datetime(2009, 1, 1)}}
+_test_download = {'': {'no_download': False}}
 
 
 def init(self):
@@ -47,54 +55,56 @@ def init(self):
     ----------
     inst : pysat.Instrument
         This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
+    file_date_range : pds.date_range
+        Optional keyword argument that specifies the range of dates for which
+        test files will be created
+    mangle_file_dates : bool
+        If True, the loaded file list time index is shifted by 5-minutes.
 
     """
 
     self.new_thing = True
+    logger.info(mm_test.ackn_str)
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
 
     # work on file index if keyword present
-    if self.kwargs['file_date_range'] is not None:
+    if self.kwargs['load']['file_date_range'] is not None:
         # set list files routine to desired date range
         # attach to the instrument object
-        fdr = self.kwargs['file_date_range']
-        self._list_rtn = functools.partial(list_files, file_date_range=fdr)
+        fdr = self.kwargs['load']['file_date_range']
+        self._list_files_rtn = functools.partial(list_files,
+                                                 file_date_range=fdr)
         self.files.refresh()
 
     # mess with file dates if kwarg option present
-    if self.kwargs['mangle_file_dates']:
+    if self.kwargs['load']['mangle_file_dates']:
         self.files.files.index = \
             self.files.files.index + pds.DateOffset(minutes=5)
+    return
 
 
 def default(self):
     """Default customization function.
 
+    Note
+    ----
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue).
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
 
     """
 
     pass
 
 
-def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
+def clean(self):
+    """Cleaning function
+    """
+
+    pass
+
+
+def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
          malformed_index=False, mangle_file_dates=False):
     """ Loads the test files
@@ -106,7 +116,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     tag : str or NoneType
         Instrument tag (accepts '' or a string to change the behaviour of
         dummy1 for constellation testing)
-    sat_id : str or NoneType
+    inst_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
     sim_multi_file_right : boolean
@@ -119,11 +129,13 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
         Optional central date, uses _test_dates if not specified.
         (default=None)
     file_date_range : pds.date_range or NoneType
+        Range of dates for files or None, if this optional arguement is not
+    file_date_range : pds.date_range or NoneType
         Range of dates for files or None, if this optional argument is not
         used. Shift actually performed by the init function.
         (default=None)
-    malformed_index : bool (default=False)
-        If True, time index for simulation will be non-unique and non-monotonic
+    malformed_index : boolean
+        If True, time index will be non-unique and non-monotonic (default=False)
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.
@@ -140,7 +152,7 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='1S')
+    uts, index, date = mm_test.generate_times(fnames, inst_id, freq='1S')
 
     # Specify the date tag locally and determine the desired date range
     pds_offset = pds.DateOffset(hours=12)
@@ -213,7 +225,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     data['int32_dummy'] = np.ones(len(data), dtype=np.int32)
     data['int64_dummy'] = np.ones(len(data), dtype=np.int64)
 
-    if malformed_index:
+    # Activate for testing malformed_index, and for instrument_test_class
+    if malformed_index or tag == 'non_strict':
         index = index.tolist()
         # nonmonotonic
         index[0:3], index[3:6] = index[3:6], index[0:3]

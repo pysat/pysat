@@ -5,6 +5,7 @@ import datetime as dt
 import glob
 import numpy as np
 import os
+import warnings
 
 import pandas as pds
 import pytest
@@ -12,8 +13,9 @@ import tempfile
 
 import pysat
 import pysat.instruments.pysat_testing
+from pysat.utils import files as futils
 
-from importlib import reload as re_load
+from importlib import reload
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -68,7 +70,7 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
                 f.write(content)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None):
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
     if format_str is None:
@@ -95,12 +97,12 @@ class TestNoDataDir():
         self.saved_data_path = pysat.data_dir
 
         pysat.data_dir = ''
-        re_load(pysat._files)
+        reload(pysat._files)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         pysat.data_dir = self.saved_data_path
-        re_load(pysat._files)
+        reload(pysat._files)
 
     def test_no_data_dir(self):
         with pytest.raises(Exception):
@@ -113,6 +115,8 @@ class TestBasics():
 
     def setup(self):
         """Runs before every method to create a clean testing setup."""
+        self.out = ''
+
         # store current pysat directory
         self.data_path = pysat.data_dir
 
@@ -131,7 +135,22 @@ class TestBasics():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         pysat.utils.set_data_dir(self.data_path, store=False)
-        del self.testInst
+        del self.testInst, self.out
+
+    def test_basic_repr(self):
+        """The repr output will match the str output"""
+        self.out = self.testInst.files.__repr__()
+        assert isinstance(self.out, str)
+        assert self.out.find("Local files") > 0
+
+    def test_basic_str(self):
+        """Check for lines from each decision point in str"""
+        self.out = self.testInst.files.__str__()
+        assert isinstance(self.out, str)
+        # Test basic file output
+        assert self.out.find('Number of files') > 0
+        # Test no files
+        assert self.out.find('Date Range') > 0
 
     def test_parse_delimited_filename(self):
         """Check ability to parse delimited files"""
@@ -139,8 +158,8 @@ class TestBasics():
         # filenames is added to routine travis end-to-end testing
         fname = ''.join(('test_{year:4d}_{month:2d}_{day:2d}_{hour:2d}',
                          '_{minute:2d}_{second:2d}_{version:2s}_r02.cdf'))
-        year = np.ones(6)*2009
-        month = np.ones(6)*12
+        year = np.ones(6) * 2009
+        month = np.ones(6) * 12
         day = np.array([12, 15, 17, 19, 22, 24])
         hour = np.array([8, 10, 6, 18, 3, 23])
         minute = np.array([8, 10, 6, 18, 3, 59])
@@ -154,8 +173,7 @@ class TestBasics():
                                           minute=minute[i], second=second[i],
                                           version=version[i]))
 
-        file_dict = pysat._files.parse_delimited_filenames(file_list, fname,
-                                                           '_')
+        file_dict = futils.parse_delimited_filenames(file_list, fname, '_')
         assert np.all(file_dict['year'] == year)
         assert np.all(file_dict['month'] == month)
         assert np.all(file_dict['day'] == day)
@@ -177,14 +195,11 @@ class TestBasics():
                                                         '{day:03d}_stuff.',
                                                         'pysat_testing_file')))
         # check overall length
-        check1 = len(files) == (365 + 366)
+        assert len(files) == (365 + 366)
         # check specific dates
-        check2 = pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        check3 = pds.to_datetime(files.index[365]) == \
-            dt.datetime(2008, 12, 31)
-        check4 = pds.to_datetime(files.index[-1]) == \
-            dt.datetime(2009, 12, 31)
-        assert(check1 & check2 & check3 & check4)
+        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
+        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
+        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
     def test_year_doy_files_no_gap_in_name_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
@@ -201,14 +216,11 @@ class TestBasics():
                                                         'stuff.pysat_testing_',
                                                         'file')))
         # check overall length
-        check1 = len(files) == (365 + 366)
+        assert len(files) == (365 + 366)
         # check specific dates
-        check2 = pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        check3 = pds.to_datetime(files.index[365]) == \
-            dt.datetime(2008, 12, 31)
-        check4 = pds.to_datetime(files.index[-1]) == \
-            dt.datetime(2009, 12, 31)
-        assert(check1 & check2 & check3 & check4)
+        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
+        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
+        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
     def test_year_month_day_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
@@ -226,14 +238,11 @@ class TestBasics():
                                                         '{month:02d}.pysat_',
                                                         'testing_file')))
         # check overall length
-        check1 = len(files) == (365 + 366)
+        assert len(files) == (365 + 366)
         # check specific dates
-        check2 = pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        check3 = pds.to_datetime(files.index[365]) == \
-            dt.datetime(2008, 12, 31)
-        check4 = pds.to_datetime(files.index[-1]) == \
-            dt.datetime(2009, 12, 31)
-        assert(check1 & check2 & check3 & check4)
+        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
+        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
+        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
     def test_year_month_day_hour_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
@@ -253,14 +262,11 @@ class TestBasics():
                                                         '{hour:02d}.pysat_',
                                                         'testing_file')))
         # check overall length
-        check1 = len(files) == (365+366)*4-3
+        assert len(files) == (365 + 366) * 4 - 3
         # check specific dates
-        check2 = pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        check3 = pds.to_datetime(files.index[1460]) == \
-            dt.datetime(2008, 12, 31)
-        check4 = pds.to_datetime(files.index[-1]) == \
-            dt.datetime(2009, 12, 31)
-        assert(check1 & check2 & check3 & check4)
+        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
+        assert pds.to_datetime(files.index[1460]) == dt.datetime(2008, 12, 31)
+        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
     def test_year_month_day_hour_minute_files_direct_call_to_from_os(self):
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
@@ -276,17 +282,14 @@ class TestBasics():
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
                                     format_str=root_fname)
         # check overall length
-        check1 = len(files) == 145
+        assert len(files) == 145
         # check specific dates
-        check2 = pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        check3 = pds.to_datetime(files.index[1]) == \
-            dt.datetime(2008, 1, 1, 0, 30)
-        check4 = pds.to_datetime(files.index[10]) == \
-            dt.datetime(2008, 1, 1, 5, 0)
-        check5 = pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 4)
-        assert(check1 & check2 & check3 & check4 & check5)
+        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
+        assert pds.to_datetime(files.index[1]) == dt.datetime(2008, 1, 1, 0, 30)
+        assert pds.to_datetime(files.index[10]) == dt.datetime(2008, 1, 1, 5, 0)
+        assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 4)
 
-    def test_year_month_day_hour_minute_second_files_direct_call_to_from_os(self):
+    def test_year_month_day_hour_minute_second_files_direct_call_from_os(self):
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
                               'stuff_{month:02d}_{hour:02d}_{minute:02d}_',
                               '{second:02d}.pysat_testing_file'))
@@ -299,14 +302,12 @@ class TestBasics():
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
                                     format_str=root_fname)
         # check overall length
-        check1 = len(files) == 5761
+        assert len(files) == 5761
         # check specific dates
-        check2 = pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        check3 = pds.to_datetime(files.index[1]) == \
-            dt.datetime(2008, 1, 1, 0, 0, 30)
-        check4 = pds.to_datetime(files.index[-1]) == \
-            dt.datetime(2008, 1, 3)
-        assert(check1 & check2 & check3 & check4)
+        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
+        assert (pds.to_datetime(files.index[1])
+                == dt.datetime(2008, 1, 1, 0, 0, 30))
+        assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 3)
 
     def test_year_month_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
@@ -323,14 +324,11 @@ class TestBasics():
                                                         'stuff_{month:02d}.',
                                                         'pysat_testing_file')))
         # check overall length
-        check1 = len(files) == 24
+        assert len(files) == 24
         # check specific dates
-        check2 = pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        check3 = pds.to_datetime(files.index[11]) == \
-            dt.datetime(2008, 12, 1)
-        check4 = pds.to_datetime(files.index[-1]) == \
-            dt.datetime(2009, 12, 1)
-        assert(check1 & check2 & check3 & check4)
+        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
+        assert pds.to_datetime(files.index[11]) == dt.datetime(2008, 12, 1)
+        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 1)
 
     def test_instrument_has_no_files(self):
         import pysat.instruments.pysat_testing
@@ -338,7 +336,7 @@ class TestBasics():
         pysat.instruments.pysat_testing.list_files = list_files
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         assert(inst.files.files.empty)
 
     def test_instrument_has_files(self):
@@ -357,7 +355,7 @@ class TestBasics():
         pysat.instruments.pysat_testing.list_files = list_files
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         assert (np.all(inst.files.files.index == dates))
 
 
@@ -382,7 +380,7 @@ class TestInstrumentWithFiles():
 
         # create a test instrument, make sure it is getting files from
         # filesystem
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         pysat.instruments.pysat_testing.list_files = list_files
         # create a bunch of files by year and doy
         self.testInst = \
@@ -409,8 +407,8 @@ class TestInstrumentWithFiles():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         del self.testInst
-        re_load(pysat.instruments.pysat_testing)
-        re_load(pysat.instruments)
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list, no files
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
@@ -538,8 +536,8 @@ class TestInstrumentWithFiles():
                      root_fname=self.root_fname)
         dates2 = pysat.utils.time.create_date_range(start, stop, freq='100min')
         new_files2 = self.testInst.files.get_new()
-        assert (np.all(new_files.index == dates) &
-                np.all(new_files2.index == dates2))
+        assert np.all(new_files.index == dates)
+        assert np.all(new_files2.index == dates2)
 
     def test_get_new_files_after_deleting_files_and_adding_files(self):
         # create new files and make sure that new files are captured
@@ -574,8 +572,8 @@ class TestInstrumentWithFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         # add new files
@@ -587,16 +585,16 @@ class TestInstrumentWithFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
+                             inst_id='hello',
                              directory_format=''.join(('pysat_testing_',
-                                                       '{tag}_{sat_id}')),
+                                                       '{tag}_{inst_id}')),
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
 
         # get new files
         new_files = self.testInst.files.get_new()
-        assert (np.all(self.testInst.files.files.index == dates) &
-                np.all(new_files.index == dates))
+        assert np.all(self.testInst.files.files.index == dates)
+        assert np.all(new_files.index == dates)
 
     def test_files_non_standard_file_format_template(self):
         # create new files and make sure that new files are captured
@@ -692,11 +690,10 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
                                                        second=date.second,
                                                        version=version,
                                                        revision=revision))
-                with open(fname, 'w') as f:
-                    pass
+                open(fname, 'w')
 
 
-def list_versioned_files(tag=None, sat_id=None, data_path=None,
+def list_versioned_files(tag=None, inst_id=None, data_path=None,
                          format_str=None):
     """Return a Pandas Series of every file for chosen satellite data"""
 
@@ -731,7 +728,7 @@ class TestInstrumentWithVersionedFiles():
 
         # create a test instrument, make sure it is getting files from
         # filesystem
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         pysat.instruments.pysat_testing.list_files = list_versioned_files
         # create a bunch of files by year and doy
         self.testInst = \
@@ -758,8 +755,8 @@ class TestInstrumentWithVersionedFiles():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         del self.testInst
-        re_load(pysat.instruments.pysat_testing)
-        re_load(pysat.instruments)
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list, no files
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
@@ -852,8 +849,8 @@ class TestInstrumentWithVersionedFiles():
                                root_fname=self.root_fname)
         dates2 = pysat.utils.time.create_date_range(start, stop, freq='100min')
         new_files2 = self.testInst.files.get_new()
-        assert (np.all(new_files.index == dates) &
-                np.all(new_files2.index == dates2))
+        assert np.all(new_files.index == dates)
+        assert np.all(new_files2.index == dates2)
 
     def test_get_new_files_after_deleting_files_and_adding_files(self):
         # create new files and make sure that new files are captured
@@ -892,8 +889,8 @@ class TestInstrumentWithVersionedFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         # add new files
@@ -905,15 +902,15 @@ class TestInstrumentWithVersionedFiles():
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             sat_id='hello',
-                             directory_format='pysat_testing_{tag}_{sat_id}',
+                             inst_id='hello',
+                             directory_format='pysat_testing_{tag}_{inst_id}',
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
 
         # get new files
         new_files = self.testInst.files.get_new()
-        assert (np.all(self.testInst.files.files.index == dates) &
-                np.all(new_files.index == dates))
+        assert np.all(self.testInst.files.files.index == dates)
+        assert np.all(new_files.index == dates)
 
     def test_files_non_standard_file_format_template(self):
         # create new files and make sure that new files are captured
@@ -972,6 +969,65 @@ class TestInstrumentWithVersionedFiles():
         assert (np.all(self.testInst.files.files.index == dates))
 
 
-class TestInstrumentWithVersionedFilesNoFileListStorage(TestInstrumentWithVersionedFiles):
+class TestDeprecation():
 
-    temporary_file_list = True
+    def setup(self):
+        """Runs before every method to create a clean testing setup"""
+        warnings.simplefilter("always")
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing"""
+
+    def test_deprecation_warning_process_parsed_filenames(self):
+        """Test if _files.process_parsed_filenames is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            try:
+                pysat._files.process_parsed_filenames({})
+            except KeyError:
+                # Inputting empty dict will produce KeyError
+                pass
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_parse_fixed_width_filenames(self):
+        """Test if _files.parse_fixed_width_filenames is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            # Empty input produces empty output
+            pysat._files.parse_fixed_width_filenames([], '')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_parse_delimited_filenames(self):
+        """Test if _files.parse_delimited_filenames is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            # Empty input produces empty output
+            pysat._files.parse_delimited_filenames([], '', '')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_construct_searchstring_from_format(self):
+        """Test if _files.construct_searchstring_from_format is deprecated"""
+
+        with warnings.catch_warnings(record=True) as war:
+            # Empty input produces empty output
+            pysat._files.construct_searchstring_from_format('')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning
+
+    def test_deprecation_warning_search_local_system_formatted_filename(self):
+        """Test if _files.search_local_system_formatted_filename is deprecated
+        """
+
+        with warnings.catch_warnings(record=True) as war:
+            # Empty input produces empty output
+            pysat._files.search_local_system_formatted_filename('', '')
+
+        assert len(war) >= 1
+        assert war[0].category == DeprecationWarning

@@ -2,10 +2,10 @@
 """
 Produces fake instrument data for testing.
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 import xarray as xr
@@ -13,12 +13,14 @@ import xarray as xr
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
+logger = logging.getLogger(__name__)
+
 platform = 'pysat'
 name = 'testing2d_xarray'
 
 pandas_format = False
 tags = {'': 'Regular testing data set'}
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 
 epoch_name = u'time'
@@ -34,59 +36,54 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
+    logger.info(mm_test.ackn_str)
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
+    return
 
 
-def default(inst):
+def default(self):
     """Default customization function.
 
+    Note
+    ----
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue).
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
 
     """
 
     pass
 
 
-def load(fnames, tag=None, sat_id=None, malformed_index=False):
+def clean(self):
+    """Cleaning function
+    """
+
+    pass
+
+
+def load(fnames, tag=None, inst_id=None, malformed_index=False):
     """ Loads the test files
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : (str or NoneType)
+    inst_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    malformed_index : bool (False)
+    malformed_index : bool False
         If True, the time index will be non-unique and non-monotonic.
-
     Returns
     -------
-    data : (xr.Dataset)
+    data : xr.Dataset
         Testing data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Metadataxs
 
     """
@@ -95,7 +92,7 @@ def load(fnames, tag=None, sat_id=None, malformed_index=False):
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
     # Using 100s frequency for compatibility with seasonal analysis unit tests
-    uts, index, date = mm_test.generate_times(fnames, sat_id, freq='100S')
+    uts, index, date = mm_test.generate_times(fnames, inst_id, freq='100S')
 
     if malformed_index:
         index = index.tolist()

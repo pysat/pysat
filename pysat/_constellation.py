@@ -5,7 +5,9 @@ class Constellation(object):
     """Manage and analyze data from multiple pysat Instruments.
 
     Created as part of a Spring 2018 UTDesign project.
+
     """
+
     def __init__(self, instruments=None, name=None):
         """
         Constructs a Constellation given a list of instruments or the name of
@@ -23,6 +25,7 @@ class Constellation(object):
         ----
         The name and instruments parameters should not both be set.
         If neither is given, an empty constellation will be created.
+
         """
 
         if instruments and name:
@@ -42,24 +45,53 @@ class Constellation(object):
     def __getitem__(self, *args, **kwargs):
         """
         Look up a member Instrument by index.
+
         """
+
         return self.instruments.__getitem__(*args, **kwargs)
 
-    def __str__(self):
-        """
-        Print names of instruments within constellation.
-        """
-        output_str = '\npysat Constellation object:\n'
+    def __repr__(self):
+        """ Print the basic Constellation properties
 
-        for instr in self.instruments:
-            output_str += instr.name + '\n'
+        """
+
+        out_str = "Constellation(instruments={:}) -> {:d} Instruments".format(
+            self.instruments, len(self.instruments))
+        return out_str
+
+    def __str__(self):
+        """ Print names of instruments within constellation
+
+        """
+
+        output_str = 'pysat Constellation object:\n'
+        output_str += '---------------------------\n'
+
+        ninst = len(self.instruments)
+
+        if ninst > 0:
+            output_str += "\nIndex Platform Name Tag Inst_ID\n"
+            output_str += "-------------------------------\n"
+            for i, inst in enumerate(self.instruments):
+                output_str += "{:d} '{:s}' '{:s}' '{:s}' '{:s}'\n".format(
+                    i, inst.platform, inst.name, inst.tag, inst.inst_id)
+        else:
+            output_str += "No loaded Instruments\n"
 
         return output_str
 
     def set_bounds(self, start, stop):
+        """ Sets boundaries for all instruments in constellation
+
+        Parameters
+        ----------
+        start : dt.datetime
+            Starting time for Instrument bounds attribute
+        stop : dt.datetime
+            Ending time for Instrument bounds attribute
+
         """
-        Sets boundaries for all instruments in constellation
-        """
+
         for instrument in self.instruments:
             instrument.bounds = (start, stop)
 
@@ -82,18 +114,19 @@ class Constellation(object):
                 name of function or function object to be added to queue
 
             kind : {'add, 'modify', 'pass'}
-                add
+                - add
                     Adds data returned from fuction to instrument object.
-                modify
+                - modify
                     pysat instrument object supplied to routine. Any and all
                     changes to object are retained.
-                pass
+                - pass
                     A copy of pysat object is passed to function. No
                     data is accepted from return.
 
             at_pos : string or int
                 insert at position. (default, insert at end).
-            args : extra arguments
+            args
+                extra arguments
 
         Note
         ----
@@ -109,6 +142,7 @@ class Constellation(object):
         - pandas Series, .name required
 
         - (string/list of strings, numpy array/list of arrays)
+
         """
 
         for instrument in self.instruments:
@@ -122,17 +156,18 @@ class Constellation(object):
         reproduced here.)
 
         Parameters
-        ---------
+        ----------
         yr : integer
             Year for desired data
         doy : integer
             day of year
         data : datetime object
             date to load
-        fname : 'string'
+        fname : string
             filename to be loaded
         verifyPad : boolean
             if true, padding data not removed (debug purposes)
+
         """
 
         for instrument in self.instruments:

@@ -1,0 +1,7 @@
+numpy
+scipy
+pandas
+xarray
+netCDF4
+pytest-cov
+pytest-ordering

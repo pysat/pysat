@@ -2,10 +2,9 @@
 """Provides generalized routines for integrating instruments into pysat.
 """
 
-from __future__ import absolute_import, division, print_function
-
 import datetime as dt
 import logging
+import numpy as np
 import pandas as pds
 
 import pysat
@@ -14,19 +13,19 @@ import pysat
 logger = logging.getLogger(__name__)
 
 
-def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
+def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
-               two_digit_year_break=None):
-    """Return a Pandas Series of every file for chosen satellite data.
+               two_digit_year_break=None, delimiter=None):
+    """Return a Pandas Series of every file for chosen Instrument data.
 
     This routine provides a standard interfacefor pysat instrument modules.
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : string or NoneType
+    inst_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
     data_path : string or NoneType
@@ -36,21 +35,25 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
         User specified file format.  If None is specified, the default
         formats associated with the supplied tags are used. (default=None)
     supported_tags : dict or NoneType
-        keys are sat_id, each containing a dict keyed by tag
+        keys are inst_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
     fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month, interfering
-        with pysat's functionality of loading by day. This flag, when true,
-        appends daily dates to monthly files internally. These dates are
-        used by load routine in this module to provide data by day.
-    two_digit_year_break : int
-        If filenames only store two digits for the year, then
-        '1900' will be added for years >= two_digit_year_break
-        and '2000' will be added for years < two_digit_year_break.
+        Some instrument data files are stored by month, interfering with daily
+        file loading assumed by pysat. If True, this flag appends daily dates
+        to monthly files internally. These dates are used by load routine in
+        this module to provide data by day. (default=False)
+    two_digit_year_break : int or NoneType
+        If filenames only store two digits for the year, then '1900' will be
+        added for years >= two_digit_year_break and '2000' will be added for
+        years < two_digit_year_break. If None, then four-digit years are
+        assumed. (default=None)
+    delimiter : string or NoneType
+        Delimiter string upon which files will be split (e.g., '.'). If None,
+        filenames will be parsed presuming a fixed width format. (default=None)
 
     Returns
-    --------
-    pysat.Files.from_os : pysat._files.Files
+    -------
+    out : pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Examples
@@ -69,28 +72,46 @@ def list_files(tag=None, sat_id=None, data_path=None, format_str=None,
 
     """
 
-    if data_path is not None:
-        if format_str is None:
-            try:
-                format_str = supported_tags[sat_id][tag]
-            except KeyError as estr:
-                raise ValueError(' '.join(('Unknown sat_id or tag:',
-                                           str(estr))))
-        out = pysat.Files.from_os(data_path=data_path,
-                                  format_str=format_str)
-
-        if (not out.empty) and fake_daily_files_from_monthly:
-            out.loc[out.index[-1] + pds.DateOffset(months=1)
-                    - pds.DateOffset(days=1)] = out.iloc[-1]
-            out = out.asfreq('D', 'pad')
-            out = out + '_' + out.index.strftime('%Y-%m-%d')
-            return out
-
-        return out
-    else:
+    # Test the input
+    if data_path is None:
         estr = ''.join(('A directory must be passed to the loading routine ',
                         'for <Instrument Code>'))
         raise ValueError(estr)
+
+    if format_str is None:
+        try:
+            format_str = supported_tags[inst_id][tag]
+        except KeyError as kerr:
+            raise ValueError(' '.join(('Unknown inst_id or tag:',
+                                       str(kerr))))
+
+    # Get the series of files
+    out = pysat.Files.from_os(data_path=data_path, format_str=format_str,
+                              two_digit_year_break=two_digit_year_break,
+                              delimiter=delimiter)
+
+    # If the data is monthly, pad the series
+    # TODO: take file frequency as an input to allow e.g., weekly files
+    if (not out.empty) and fake_daily_files_from_monthly:
+        emonth = out.index[-1]
+        out.loc[out.index[-1] + pds.DateOffset(months=1)
+                - pds.DateOffset(days=1)] = out.iloc[-1]
+        new_out = out.asfreq('D')
+
+        for i, out_month in enumerate(out.index):
+            if(out_month.month == emonth.month
+               and out_month.year == emonth.year):
+                out_month = emonth
+
+            mrange = pds.date_range(start=out_month, periods=2, freq='MS')
+            irange = pds.date_range(*mrange.values, freq="D").values[:-1]
+            new_out[irange] = out.loc[out_month]
+
+        # Assign the non-NaN files to out and add days to the filenames
+        out = new_out.dropna()
+        out = out + '_' + out.index.strftime('%Y-%m-%d')
+
+    return out
 
 
 def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
@@ -107,9 +128,9 @@ def convert_timestamp_to_datetime(inst, sec_mult=1.0, epoch_name='Epoch'):
 
     """
 
-    inst.data[epoch_name] = \
-        pds.to_datetime([dt.datetime.utcfromtimestamp(x * sec_mult)
-                         for x in inst.data[epoch_name]])
+    inst.data[epoch_name] = pds.to_datetime(
+        [dt.datetime.utcfromtimestamp(int(np.floor(x * sec_mult)))
+         for x in inst.data[epoch_name]])
     return
 
 
@@ -121,15 +142,7 @@ def remove_leading_text(inst, target=None):
     inst : pysat.Instrument
         associated pysat.Instrument object
     target : str or list of strings
-        Leading string to remove. If none supplied,
-        ICON project standards are used to identify and remove
-        leading text
-
-    Returns
-    -------
-    None
-        Modifies Instrument object in place
-
+        Leading string to remove. If none supplied, returns unmodified
 
     """
 
@@ -143,23 +156,23 @@ def remove_leading_text(inst, target=None):
     for prepend_str in target:
 
         if isinstance(inst.data, pds.DataFrame):
-            inst.data.rename(columns=lambda x: x.split(prepend_str)[-1],
-                             inplace=True)
+            inst.data = inst.data.rename(
+                columns=lambda x: x.split(prepend_str)[-1])
         else:
-            map = {}
+            map_keys = {}
             for key in inst.data.variables.keys():
-                map[key] = key.split(prepend_str)[-1]
-            inst.data = inst.data.rename(name_dict=map)
+                map_keys[key] = key.split(prepend_str)[-1]
+            inst.data = inst.data.rename(name_dict=map_keys)
 
-        inst.meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                              inplace=True)
-        orig_keys = inst.meta.keys_nD()
+        inst.meta.data = inst.meta.data.rename(
+            index=lambda x: x.split(prepend_str)[-1])
+        orig_keys = [kk for kk in inst.meta.keys_nD()]
         for keynd in orig_keys:
             if keynd.find(prepend_str) >= 0:
                 new_key = keynd.split(prepend_str)[-1]
                 new_meta = inst.meta.pop(keynd)
-                new_meta.data.rename(index=lambda x: x.split(prepend_str)[-1],
-                                     inplace=True)
+                new_meta.data = new_meta.data.rename(
+                    index=lambda x: x.split(prepend_str)[-1])
                 inst.meta[new_key] = new_meta
 
     return

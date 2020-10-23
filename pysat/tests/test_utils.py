@@ -1,19 +1,19 @@
 """
 tests the pysat utils area
 """
+from importlib import reload
 import numpy as np
 import os
-import pytest
+import shutil
 import tempfile
 
-import pysat
+import pytest
 
-from importlib import reload as re_load
+import pysat
 
 
 # ----------------------------------
 # test netCDF export file support
-
 def prep_dir(inst=None):
 
     if inst is None:
@@ -53,9 +53,9 @@ class TestBasics():
         check1 = (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers the change
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat._files = reload(pysat._files)
+        pysat._instrument = reload(pysat._instrument)
+        reload(pysat)
         check2 = (pysat.data_dir == '.')
 
         assert check1 & check2
@@ -66,9 +66,9 @@ class TestBasics():
         assert (pysat.data_dir == '.')
 
         # Check if next load of pysat remembers old settings
-        pysat._files = re_load(pysat._files)
-        pysat._instrument = re_load(pysat._instrument)
-        re_load(pysat)
+        pysat._files = reload(pysat._files)
+        pysat._instrument = reload(pysat._instrument)
+        reload(pysat)
         assert (pysat.data_dir == self.data_path)
 
     def test_set_data_dir_wrong_path(self):
@@ -81,29 +81,47 @@ class TestBasics():
             pysat.utils.set_data_dir('/fake/directory/path', store=False)
         assert str(excinfo.value).find('does not lead to a valid dir') >= 0
 
-    def test_initial_pysat_load(self):
-        import shutil
-        saved = False
-        try:
-            root = os.path.join(os.getenv('HOME'), '.pysat')
-            new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
-            shutil.move(root, new_root)
-            saved = True
-        except:
-            pass
 
-        re_load(pysat)
+class TestCIonly():
+    """Tests where we mess with local settings.
+    These only run in CI environments such as Travis and Appveyor to avoid
+    breaking an end user's setup
+    """
 
-        try:
-            if saved:
-                # remove directory, trying to be careful
-                os.remove(os.path.join(root, 'data_path.txt'))
-                os.rmdir(root)
-                shutil.move(new_root, root)
-        except:
-            pass
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.ci_env = (os.environ.get('TRAVIS') == 'true')
+        if not self.ci_env:
+            pytest.skip("Skipping local tests to avoid breaking user setup")
 
-        assert True
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.ci_env
+
+    def test_initial_pysat_load(self, capsys):
+        """Ensure inital load routines work"""
+
+        # Move settings directory to simulate first load after install
+        root = os.path.join(os.getenv('HOME'), '.pysat')
+        new_root = os.path.join(os.getenv('HOME'), '.saved_pysat')
+        shutil.move(root, new_root)
+
+        reload(pysat)
+
+        captured = capsys.readouterr()
+        assert captured.out.find("Hi there!") >= 0
+
+        # Make sure user files are blank
+        with open(os.path.join(root, 'data_path.txt'), 'r') as f:
+            dir_list = f.readlines()
+            assert len(dir_list) == 1
+            assert dir_list[0].find('/home/travis/build/pysatData') >= 0
+        with open(os.path.join(root, 'user_modules.txt'), 'r') as f:
+            assert len(f.readlines()) == 0
+
+        # Move settings back
+        shutil.rmtree(root)
+        shutil.move(new_root, root)
 
 
 class TestScaleUnits():
@@ -216,7 +234,7 @@ class TestBasicNetCDF4():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing',
-                                         sat_id='100',
+                                         inst_id='100',
                                          clean_level='clean')
         self.testInst.pandas_format = True
 
@@ -460,7 +478,7 @@ class TestBasicNetCDF4xarray():
 
         self.testInst = pysat.Instrument(platform='pysat',
                                          name='testing2d_xarray',
-                                         sat_id='100',
+                                         inst_id='100',
                                          clean_level='clean')
         self.testInst.pandas_format = False
 
@@ -504,3 +522,118 @@ class TestBasicNetCDF4xarray():
             loaded_inst, meta = pysat.utils.load_netcdf4(outfile,
                                                          epoch_name='time',
                                                          pandas_format=True)
+
+
+class TestFmtCols():
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # store current pysat directory
+        self.in_str = np.arange(0, 40, 1).astype(str)
+        self.in_kwargs = {"ncols": 5, "max_num": 40, "lpad": None}
+        self.out_str = None
+        self.filler_row = -1
+        self.ncols = None
+        self.nrows = None
+        self.lpad = len(self.in_str[-1]) + 1
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.in_str, self.in_kwargs, self.out_str, self.filler_row
+        del self.ncols, self.nrows, self.lpad
+
+    def test_output(self):
+        """ Test for the expected number of rows, columns, and fillers
+        """
+        if self.out_str is None and self.ncols is None and self.nrows is None:
+            return
+
+        # Test the number of rows
+        out_rows = self.out_str.split('\n')[:-1]
+        assert len(out_rows) == self.nrows
+
+        # Test the number of columns
+        for i, row in enumerate(out_rows):
+            split_row = row.split()
+
+            # Test for filler ellipses and standard row length
+            if i == self.filler_row:
+                assert '...' in split_row
+                if i > 0:
+                    assert len(split_row) == 1
+                    assert len(row) == self.lpad * self.ncols
+            else:
+                assert len(row) == self.lpad * len(split_row)
+
+                if i == len(out_rows) - 1:
+                    assert len(split_row) <= self.ncols
+                else:
+                    assert len(split_row) == self.ncols
+
+        return
+
+    def test_neg_ncols(self):
+        """ Test the output if the column number is negative
+        """
+        self.in_kwargs['ncols'] = -5
+        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
+                                                            **self.in_kwargs)
+        assert len(self.out_str) == 0
+
+    @pytest.mark.parametrize("key,val,raise_type",
+                             [("ncols", 0, ZeroDivisionError),
+                              ("max_num", -10, ValueError)])
+    def test_fmt_raises(self, key, val, raise_type):
+        self.in_kwargs[key] = val
+        with pytest.raises(raise_type):
+            pysat.utils._core.fmt_output_in_cols(self.in_str, **self.in_kwargs)
+
+    @pytest.mark.parametrize("ncol", [(3), (5), (10)])
+    def test_ncols(self, ncol):
+        """ Test the output for different number of columns
+        """
+        # Set the input
+        self.in_kwargs['ncols'] = ncol
+
+        # Set the comparison values
+        self.ncols = ncol
+        self.nrows = int(np.ceil(self.in_kwargs['max_num'] / ncol))
+
+        # Get and test the output
+        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
+                                                            **self.in_kwargs)
+        self.test_output()
+
+    @pytest.mark.parametrize("max_num,filler,nrow", [(0, 0, 1), (1, 0, 1),
+                                                     (10, 1, 3), (50, -1, 8)])
+    def test_max_num(self, max_num, filler, nrow):
+        """ Test the output for the maximum number of values
+        """
+        # Set the input
+        self.in_kwargs['max_num'] = max_num
+
+        # Set the comparison values
+        self.filler_row = filler
+        self.ncols = self.in_kwargs['ncols']
+        self.nrows = nrow
+
+        # Get and test the output
+        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
+                                                            **self.in_kwargs)
+        self.test_output()
+
+    @pytest.mark.parametrize("in_pad", [5, 30])
+    def test_lpad(self, in_pad):
+        """ Test the output for different number of columns
+        """
+        # Set the input
+        self.in_kwargs['lpad'] = in_pad
+        self.ncols = self.in_kwargs['ncols']
+        self.nrows = int(np.ceil(self.in_kwargs['max_num'] / self.ncols))
+
+        # Set the comparison values
+        self.lpad = in_pad
+
+        # Get and test the output
+        self.out_str = pysat.utils._core.fmt_output_in_cols(self.in_str,
+                                                            **self.in_kwargs)
+        self.test_output()

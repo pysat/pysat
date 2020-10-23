@@ -1,9 +1,23 @@
+os: linux
 language: python
 dist: xenial
-matrix:
+jobs:
   include:
-    - python: 3.6
-    - python: 3.7
+    - name: 'docs'
+      python: '3.6'
+      script: 
+        - sphinx-build -E -b html docs dist/docs
+        - sphinx-build -b linkcheck docs dist/docs
+    - name: '3.6 with flake8'
+      python: '3.6'
+      script: pytest --flake8 --cov=pysat/
+    - python: '3.7'
+      script: pytest --cov=pysat/
+    - python: '3.8'
+      script: pytest --cov=pysat/
+  allow_failures:
+    - name: 'docs'
+      python: '3.6'
 
 services: xvfb
 cache: pip
@@ -27,21 +41,15 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   # Create conda test environment
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy pandas xarray requests beautifulsoup4 lxml netCDF4 pytest-cov pytest-ordering future
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - conda activate test-environment
-  # Dependencies not available through conda, install through pip
-  - pip install pysatCDF >/dev/null
-  # Get latest coveralls from pip, not conda
-  - pip install coveralls
-  - pip install pytest-flake8
+  - while read requirement; do conda install --yes $requirement; done < requirements.txt
+  # Get dependencies not provided by conda from pip (testing dependencies)
+  - pip install -r test_requirements.txt
   # set up data directory
   - mkdir /home/travis/build/pysatData
   # install pysat
   - python setup.py install
-
-# command to run tests
-script:
- - pytest -vs --flake8 --cov=pysat/
 
 after_success:
  - coveralls --rcfile=setup.cfg

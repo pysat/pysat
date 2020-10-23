@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
 import numpy as np
 import pandas as pds
 import xarray as xr
@@ -37,8 +34,8 @@ class Custom(object):
 
     Note
     ----
-    User should interact with Custom through pysat.Instrument instance's
-    attribute, instrument.custom
+    User should interact with Custom through `pysat.Instrument` instance's
+    attribute, `instrument.custom`
 
     """
 
@@ -49,6 +46,24 @@ class Custom(object):
         self._kind = []
         self._args = []
         self._kwargs = []
+
+    def __repr__(self):
+        out_str = "Custom -> {:d} functions applied".format(
+            len(self._functions))
+        return out_str
+
+    def __str__(self):
+        num_funcs = len(self._functions)
+        out_str = "Custom Functions: {:d} applied\n".format(num_funcs)
+        if num_funcs > 0:
+            for i, func in enumerate(self._functions):
+                out_str += "    {:d}: {:}\n".format(i, func.__repr__())
+                if len(self._args[i]) > 0:
+                    out_str += "     : Args={:}\n".format(self._args[i])
+                if len(self._kwargs[i]) > 0:
+                    out_str += "     : Kwargs={:}\n".format(self._kwargs[i])
+
+        return out_str
 
     def attach(self, function, kind='modify', at_pos='end', args=[],
                kwargs={}):
@@ -62,13 +77,13 @@ class Custom(object):
         function : string or function object
             name of function or function object to be added to queue
         kind : {'add', 'modify', 'pass}
-            add
+            - add
                 Adds data returned from function to instrument object.
                 A copy of pysat instrument object supplied to routine.
-            modify
+            - modify
                 pysat instrument object supplied to routine. Any and all
                 changes to object are retained.
-            pass
+            - pass
                 A copy of pysat object is passed to function. No
                 data is accepted from return.
             (default='modify')
@@ -257,7 +272,3 @@ class Custom(object):
         self._args = []
         self._kwargs = []
         self._kind = []
-
-#################################################
-# END CUSTOM CLASS ##############################
-#################################################

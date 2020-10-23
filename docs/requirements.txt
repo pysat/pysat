@@ -1,2 +1,6 @@
-numpydoc
 ipython
+netCDF4
+numpydoc
+pandas
+pytest
+xarray

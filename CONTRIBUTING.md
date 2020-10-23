@@ -6,13 +6,13 @@ appreciated!  Pysat is a community-driven project and welcomes both feedback and
 contributions.
 
 Short version
-=============
+-------------
 
 * Submit bug reports and feature requests at `GitHub <https://github.com/rstoneback/pysat/issues>`_
 * Make pull requests to the ``develop`` branch
 
 Bug reports
-===========
+-----------
 
 When `reporting a bug <https://github.com/rstoneback/pysat/issues>`_ please
 include:
@@ -22,7 +22,7 @@ include:
 * Detailed steps to reproduce the bug
 
 Feature requests and feedback
-=============================
+-----------------------------
 
 The best way to send feedback is to file an issue at
 `GitHub <https://github.com/rstoneback/pysat/issues>`_.
@@ -35,7 +35,7 @@ If you are proposing a feature:
   are welcome :)
 
 Development
-===========
+-----------
 
 To set up `pysat` for local development:
 
@@ -64,13 +64,15 @@ To set up `pysat` for local development:
 
 5. Update/add documentation (in ``docs``), if relevant
 
-5. Commit your changes and push your branch to GitHub::
+6. Add your name to the .zenodo.json file as an author
+
+7. Commit your changes and push your branch to GitHub::
 
     git add .
     git commit -m "Brief description of your changes"
     git push origin name-of-your-bugfix-or-feature
 
-6. Submit a pull request through the GitHub website. Pull requests should be
+8. Submit a pull request through the GitHub website. Pull requests should be
    made to the ``develop`` branch.
 
 Pull Request Guidelines
@@ -91,3 +93,32 @@ For merging, you should:
        Travis to run the tests for each change you add in the pull request.
        Because testing here will delay tests by other developers, please ensure
        that the code passes all tests on your local system first.
+
+Project Style Guidelines
+------------------------
+
+In general, pysat follows PEP8 and numpydoc guidelines.  Pytest runs the unit
+and integration tests, flake8 checks for style, and sphinx-build performs
+documentation tests.  However, there are certain additional style elements that
+have been settled on to ensure the project maintains a consistent coding style.
+These include:
+
+* Line breaks should occur before a binary operator (ignoring flake8 W503)
+* Combine long strings using `join`
+* Preferably break long lines on open parentheses rather than using `\`
+* Use no more than 80 characters per line
+* Avoid using Instrument class key attribute names as unrelated variable names: `platform`, `name`, `tag`, and `inst_id`
+* The pysat logger is imported into each sub-module and provides status updates
+  at the info and warning levels (as appropriate)
+* Several dependent packages have common nicknames, including:
+  * `import datetime as dt`
+  * `import numpy as np`
+  * `import pandas as pds`
+  * `import xarray as xr`
+* All classes should have `__repr__` and `__str__` functions
+* Docstrings use `Note` instead of `Notes`
+* Try to avoid creating a try/except statement where except passes
+* Use setup and teardown in test classes
+* Use pytest parametrize in test classes when appropriate
+* Provide testing class methods with informative failure statements and
+  descriptive, one-line docstrings

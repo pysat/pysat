@@ -2,10 +2,10 @@
 """
 Produces fake instrument data for testing.
 """
-from __future__ import print_function
-from __future__ import absolute_import
+
 import datetime as dt
 import functools
+import logging
 import numpy as np
 
 import xarray
@@ -13,13 +13,15 @@ import xarray
 import pysat
 from pysat.instruments.methods import testing as mm_test
 
+logger = logging.getLogger(__name__)
+
 # pysat required parameters
 platform = 'pysat'
 name = 'testing_xarray'
 # dictionary of data 'tags' and corresponding description
 tags = {'': 'Regular testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
-sat_ids = {'': ['']}
+inst_ids = {'': ['']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
 pandas_format = False
 
@@ -36,60 +38,56 @@ def init(self):
     self : pysat.Instrument
         This object
 
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
-
     """
 
     self.new_thing = True
+    logger.info(mm_test.ackn_str)
+    self.acknowledgements = mm_test.ackn_str
+    self.references = mm_test.refs
+    return
 
 
-def default(inst):
+def default(self):
     """Default customization function.
 
+    Note
+    ----
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue).
-
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
-
-    Returns
-    --------
-    Void : (NoneType)
-        Object modified in place.
-
 
     """
 
     pass
 
 
-def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
+def clean(self):
+    """Cleaning function
+    """
+
+    pass
+
+
+def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
          **kwargs):
     """ Loads the test files
 
     Parameters
     ----------
-    fnames : (list)
+    fnames : list
         List of filenames
-    tag : (str or NoneType)
+    tag : str or NoneType
         Instrument tag (accepts '')
-    sat_id : (str or NoneType)
+    inst_id : str or NoneType
         Instrument satellite ID (accepts '' or a number (i.e., '10'), which
         specifies the number of data points to include in the test instrument)
-    sim_multi_file_right : (boolean)
+    sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
-    sim_multi_file_left : (boolean)
+    sim_multi_file_left : boolean
         Adjusts date range to be 12 hours in the past or twelve hours before
         root_date (default=False)
-    malformed_index : (boolean)
+    malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
     kwargs : dict
         Additional unspecified keywords supplied to pysat.Instrument upon
@@ -97,9 +95,9 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
 
     Returns
     -------
-    data : (xr.Dataset)
+    data : xr.Dataset
         Testing data
-    meta : (pysat.Meta)
+    meta : pysat.Meta
         Metadata
 
     """
@@ -107,7 +105,8 @@ def load(fnames, tag=None, sat_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, sat_id=sat_id, freq='1S')
+    uts, index, date = mm_test.generate_times(fnames, inst_id=inst_id,
+                                              freq='1S')
 
     if sim_multi_file_right:
         root_date = dt.datetime(2009, 1, 1, 12)

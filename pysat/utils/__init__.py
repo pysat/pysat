@@ -9,5 +9,6 @@ of formats, loading of files, and user-supplied info
 for the pysat data directory structure.
 """
 
-from pysat.utils import coords, time, registry
+from pysat.utils import coords, files, time, registry
 from pysat.utils._core import set_data_dir, scale_units, load_netcdf4
+from pysat.utils._core import generate_instrument_list

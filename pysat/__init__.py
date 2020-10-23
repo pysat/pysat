@@ -36,12 +36,9 @@ Main Features
 
 """
 
-# -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import absolute_import
+import logging
 import os
 
-import logging
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(name)s %(levelname)s: %(message)s')
@@ -79,20 +76,29 @@ if not os.path.isdir(pysat_dir):
     # user modules file
     with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
         f.write('')
-        user_modules = []
+        user_modules = {}
 
 else:
     # load up stored data path
     with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
         data_dir = f.readline()
+
     # load up stored user modules
-    user_modules = []
+    user_modules = {}
     modules_file = os.path.join(pysat_dir, 'user_modules.txt')
     if os.path.exists(modules_file):
-        with open(modules_file, 'r') as f:
-            for _ in f:
-                if _ != '' and (_ is not None):
-                    user_modules.append(_.strip())
+        with open(modules_file, 'r') as fopen:
+            for line in fopen:
+                if line != '' and (line is not None):
+                    # remove trailing whitespace
+                    line = line.strip()
+                    # stored as platform, name, module string
+                    platform, name, inst_module = line.split(' ')
+                    # dict of dicts, keyed by platform then name
+                    if platform not in user_modules:
+                        user_modules[platform] = {}
+                    # store instrument module string
+                    user_modules[platform][name] = inst_module
     else:
         # write user modules file
         with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:

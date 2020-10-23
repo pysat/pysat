@@ -32,8 +32,8 @@ def getyrdoy(date):
     try:
         doy = date.toordinal() - dt.datetime(date.year, 1, 1).toordinal() + 1
     except AttributeError:
-        raise AttributeError("Must supply a pandas datetime object or " +
-                             "equivalent")
+        raise AttributeError(' '.join(("Must supply a pandas datetime object",
+                                       "or equivalent")))
     else:
         return date.year, doy
 
@@ -50,14 +50,14 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
         String containing month digits
     str_day : string
         String containing day of month digits
-    str_hr : string ('0')
-        String containing the hour of day
-    str_min : string ('0')
-        String containing the minutes of hour
-    str_sec : string ('0')
-        String containing the seconds of minute
-    century : int (2000)
-        Century, only used if str_yr is a 2-digit year
+    str_hr : string
+        String containing the hour of day (default='0')
+    str_min : string
+        String containing the minutes of hour (default='0')
+    str_sec : string
+        String containing the seconds of minute (default='0')
+    century : int
+        Century, only used if str_yr is a 2-digit year (default=2000)
 
     Returns
     -------
@@ -78,16 +78,16 @@ def calc_freq(index):
 
     Parameters
     ----------
-    index : (array-like)
+    index : array-like
         Datetime list, array, or Index
 
     Returns
     -------
-    freq : (str)
+    freq : str
        Frequency string as described in Pandas Offset Aliases
 
-    Notes
-    -----
+    Note
+    ----
     Calculates the minimum time difference and sets that as the frequency.
 
     To reduce the amount of calculations done, the returned frequency is
@@ -195,20 +195,20 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     uts_del = uts.copy().astype(float)
     # determine where there are changes in year and month that need to be
     # accounted for
-    _, idx = np.unique(year*100.+month, return_index=True)
+    _, idx = np.unique((year * 100. + month), return_index=True)
     # create another index array for faster algorithm below
     idx2 = np.hstack((idx, len(year) + 1))
     # computes UTC seconds offset for each unique set of year and month
     for _idx, _idx2 in zip(idx[1:], idx2[2:]):
-        temp = (dt.datetime(year[_idx], month[_idx], 1) -
-                dt.datetime(year[0], month[0], 1))
+        temp = (dt.datetime(year[_idx], month[_idx], 1)
+                - dt.datetime(year[0], month[0], 1))
         uts_del[_idx:_idx2] += temp.total_seconds()
 
     # add in UTC seconds for days, ignores existence of leap seconds
     uts_del += (day - 1) * 86400
     # add in seconds since unix epoch to first day
-    uts_del += (dt.datetime(year[0], month[0], 1) -
-                dt.datetime(1970, 1, 1)).total_seconds()
+    uts_del += (dt.datetime(year[0], month[0], 1)
+                - dt.datetime(1970, 1, 1)).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)
