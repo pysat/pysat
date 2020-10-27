@@ -1691,7 +1691,7 @@ class Instrument(object):
         return self._filter_datetime_input(dt.datetime.today())
 
     def tomorrow(self):
-        """Returns tomorrow's date, with no hour, minute, second, etc.
+        """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
 
         Returns
         -------
@@ -1703,7 +1703,7 @@ class Instrument(object):
         return self.today() + pds.DateOffset(days=1)
 
     def yesterday(self):
-        """Returns yesterday's date, with no hour, minute, second, etc.
+        """Returns yesterday's date (UTC), with no hour, minute, second, etc.
 
         Returns
         -------
