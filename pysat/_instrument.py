@@ -1477,7 +1477,7 @@ class Instrument(object):
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False):
-        """Load instrument data into Instrument object .data.
+        """Load instrument data into Instrument.data object.
 
         Parameters
         ----------
@@ -1530,6 +1530,10 @@ class Instrument(object):
         A mixed combination of `.load()` keywords such as `yr` and `date` are
         not allowed.
 
+Note
+-----
+`end` kwargs have exclusive ranges (stop before the condition is reached), while `stop` kwargs have inclusive ranges (stop once the condition is reached).
+
         Examples
         --------
         ::
@@ -1569,14 +1573,13 @@ class Instrument(object):
             _check_load_arguments_none(fname, stop_fname, date, end_date,
                                        raise_error=True)
             # convert yr/doy to a date
-            date = dt.datetime(yr, 1, 1) + pds.DateOffset(days=(doy - 1))
+            date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy), "%Y %j")
             self._set_load_parameters(date=date, fid=None)
 
             # increment end by a day if none supplied
-            if (end_yr is not None) & (end_doy is not None):
-                _temp = (end_doy - 1)
-                end_date = dt.datetime(end_yr, 1, 1)
-                end_date += pds.DateOffset(days=_temp)
+            if (end_yr is not None) and (end_doy is not None):
+                end_date = dt.datetime.strptime(
+                    "{:.0f} {:.0f}".format(end_yr, end_doy), "%Y %j")
                 self.load_step = end_date - date
             elif (end_yr is not None) or (end_doy is not None):
                 estr = ''.join(('Both end_yr and end_doy must be set, ',
@@ -1677,8 +1680,8 @@ class Instrument(object):
                                 'is planned for the future.'))
                 logger.warning(wstr)
 
-        if (self.pad is not None) | self.multi_file_day:
-            if self._empty(self._next_data) & self._empty(self._prev_data):
+        if (self.pad is not None) or self.multi_file_day:
+            if self._empty(self._next_data) and self._empty(self._prev_data):
                 # data has not already been loaded for previous and next days
                 # load data for all three
                 logger.info('Initializing three day/file window')
@@ -2118,8 +2121,8 @@ class Instrument(object):
             import pysat
 
             inst = pysat.Instrument(platform=platform, name=name, tag=tag)
-            start = dt.datetime(2009,1,1)
-            stop = dt.datetime(2009,1,31)
+            start = dt.datetime(2009, 1, 1)
+            stop = dt.datetime(2009, 1, 31)
             # Defaults to stepping by a single day and a data loading window
             # of one day/file.
             inst.bounds = (start, stop)

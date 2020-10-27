@@ -492,11 +492,11 @@ class Files(object):
             start: array_like or single string
                 filenames for start of returned filelist
             stop: array_like or single string
-                filenames inclusive stop of list
+                filenames inclusive of the ending of list provided by the stop time
 
         Returns
         -------
-            list of filenames between and including start and stop over all
+            list of filenames between and including start and stop times over all
             intervals.
 
         """
