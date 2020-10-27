@@ -2412,12 +2412,12 @@ Note
                 # With the copy, behavior is as expected. Making a copy
                 # of an empty object is going to be faster than a full one.
                 self.data = self._null_data
-                friend = self.copy()
+                local_inst = self.copy()
                 # load range of files
                 # get location for second file, width of 1 loads only one file
                 nfid = self.files.get_index(fname) + width - 1
-                friend.load(fname=fname, stop_fname=self.files[nfid])
-                yield friend
+                local_inst.load(fname=fname, stop_fname=self.files[nfid])
+                yield local_inst
 
         elif self._iter_type == 'date':
             # iterate over dates
@@ -2425,21 +2425,21 @@ Note
             for date in self._iter_list:
                 # do copy trick, starting with null data in object
                 self.data = self._null_data
-                friend = self.copy()
+                local_inst = self.copy()
                 # user specified range of dates
                 end_date = date + self._iter_width
                 # load range of dates
-                friend.load(date=date, end_date=end_date)
-                yield friend
+                local_inst.load(date=date, end_date=end_date)
+                yield local_inst
 
-        # Add last loaded data/metadata from friend into the original object
+        # Add last loaded data/metadata from local_inst into the original object
         # Making copy here to ensure there are no left over references
-        # to the friend object in the loop that would interfere with
+        # to the local_inst object in the loop that would interfere with
         # garbage collection. Don't want to make a copy of underlying data.
-        friend_data = friend.data
-        friend.data = friend._null_data
-        self.data = friend_data
-        self.meta = friend.meta.copy()
+        local_inst_data = local_inst.data
+        local_inst.data = local_inst._null_data
+        self.data = local_inst_data
+        self.meta = local_inst.meta.copy()
 
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
