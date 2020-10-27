@@ -2304,31 +2304,31 @@ Note
                 if self._iter_width is None:
                     self._iter_width = 1
 
-                _temp = []
+                itemp = []
                 self._iter_list = []
-                for _start, _stop in zip(starts, stops):
-                    # ensure _start before _stop
+                for istart, istop in zip(starts, stops):
+                    # ensure istart before istop
                     # Get index of start/stop file from main file list
-                    start_idx = self.files.get_index(_start)
-                    stop_idx = self.files.get_index(_stop)
+                    start_idx = self.files.get_index(istart)
+                    stop_idx = self.files.get_index(istop)
                     if stop_idx < start_idx:
                         estr = ' '.join(('Bounds must be in increasing date',
-                                         'order.', _start, 'occurs after',
-                                         _stop))
+                                         'order.', istart, 'occurs after',
+                                         istop))
                         raise ValueError(estr)
-                    _temp = self.files.get_file_array([_start], [_stop])
+                    itemp = self.files.get_file_array([istart], [istop])
                     # downselect based upon step size
-                    _temp = _temp[::self._iter_step]
+                    itemp = itemp[::self._iter_step]
                     # Make sure iterations don't go past last day
                     # get index of last in iteration list
-                    iter_idx = self.files.get_index(_temp[-1])
+                    iter_idx = self.files.get_index(itemp[-1])
                     # don't let loaded data go past stop bound
                     if iter_idx + self._iter_width - 1 > stop_idx:
                         i = np.ceil((self._iter_width - 1) / self._iter_step)
                         i = -int(i)
-                        self._iter_list.extend(_temp[:i])
+                        self._iter_list.extend(itemp[:i])
                     else:
-                        self._iter_list.extend(_temp)
+                        self._iter_list.extend(itemp)
 
             elif isinstance(starts[0], dt.datetime) or isinstance(stops[0],
                                                                   dt.datetime):
