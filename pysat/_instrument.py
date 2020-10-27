@@ -725,7 +725,7 @@ class Instrument(object):
                 # Assigning basic variables
 
                 if isinstance(in_data, xr.DataArray):
-                    # Ff xarray input, take as is
+                    # If xarray input, take as is
                     self.data[key] = in_data
                 elif len(np.shape(in_data)) == 1:
                     # If not an xarray input, but still iterable, then we
@@ -1679,7 +1679,7 @@ class Instrument(object):
         return
 
     def today(self):
-        """Returns today's date, with no hour, minute, second, etc.
+        """Returns today's date (UTC), with no hour, minute, second, etc.
 
         Returns
         -------
