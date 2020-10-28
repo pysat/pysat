@@ -1571,6 +1571,11 @@ class Instrument(object):
 
         # set options used by loading routine based upon user input
         if (yr is not None) and (doy is not None):
+            if doy < 1 or (doy > 366):
+                estr = ''.join(('Day of year (doy) is only valid between and ',
+                                'including 1-366.'))
+                raise ValueError(estr)
+
             # verify arguments make sense, in context
             _check_load_arguments_none(fname, stop_fname, date, end_date,
                                        raise_error=True)
@@ -1579,8 +1584,11 @@ class Instrument(object):
                                         "%Y %j")
             self._set_load_parameters(date=date, fid=None)
 
-            # increment end by a day if none supplied
             if (end_yr is not None) and (end_doy is not None):
+                if end_doy < 1 or (end_doy > 366):
+                    estr = ''.join(('Day of year (end_doy) is only valid ',
+                                    'between and including 1-366.'))
+                    raise ValueError(estr)
                 end_date = dt.datetime.strptime(
                     "{:.0f} {:.0f}".format(end_yr, end_doy), "%Y %j")
                 self.load_step = end_date - date
@@ -1589,6 +1597,7 @@ class Instrument(object):
                                 'or neither.'))
                 raise ValueError(estr)
             else:
+                # increment end by a day if none supplied
                 self.load_step = pds.DateOffset(days=1)
 
             curr = self.date
@@ -1667,8 +1676,8 @@ class Instrument(object):
         # check for constiency between loading range and data padding, if any
         if self.pad is not None:
             if self._load_by_date:
-                _tdate = dt.datetime(2009, 1, 1)
-                if _tdate + self.load_step < _tdate + loop_pad:
+                tdate = dt.datetime(2009, 1, 1)
+                if tdate + self.load_step < tdate + loop_pad:
                     estr = ''.join(('Data padding window must be shorter than ',
                                     'data loading window. Load a greater ',
                                     'range of data or shorten the padding.'))
