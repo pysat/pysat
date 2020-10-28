@@ -2,6 +2,8 @@ numpy
 scipy
 pandas
 xarray
+dask
+toolz
 netCDF4
 pytest-cov
 pytest-ordering
