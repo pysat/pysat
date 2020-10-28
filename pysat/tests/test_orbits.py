@@ -475,8 +475,7 @@ class TestGeneralOrbitsNonStandardIteration():
     def test_no_orbit_overlap_with_overlapping_iteration(self):
         """Ensure error when overlap in iteration data."""
         with pytest.raises(ValueError):
-            for inst in self.testInst.orbits:
-                pass
+            self.testInst.orbits.next()
         return
 
     def test_no_orbit_overlap_with_nonoverlapping_date_iteration(self):

@@ -1570,7 +1570,7 @@ class Instrument(object):
         """
 
         # set options used by loading routine based upon user input
-        if (yr is not None) & (doy is not None):
+        if (yr is not None) and (doy is not None):
             # verify arguments make sense, in context
             _check_load_arguments_none(fname, stop_fname, date, end_date,
                                        raise_error=True)
