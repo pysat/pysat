@@ -75,22 +75,32 @@ class TestBasics():
 
     def test_basic_instrument_load_yr_no_doy(self):
         """Ensure doy required if yr present"""
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as err:
             self.testInst.load(self.ref_time.year)
+
+        estr = 'Unknown or incomplete input combination.'
+        assert str(err).find(estr) >= 0
+
+        return
 
     def test_basic_instrument_load_yr_no_end_doy(self):
         """Ensure end_doy required if end_yr present"""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, self.ref_doy,
                                self.ref_time.year)
+        estr = 'Both end_yr and end_doy must be set'
+        assert str(err).find(estr) >= 0
 
-    @pytest.mark.parametrize("input", [{'year': 2009, 'doy': 1,
+        return
+
+
+    @pytest.mark.parametrize("input", [{'yr': 2009, 'doy': 1,
                                         'date': dt.datetime(2009, 1, 1)},
-                                       {'year': 2009, 'doy': 1,
+                                       {'yr': 2009, 'doy': 1,
                                         'end_date': dt.datetime(2009, 1, 1)},
-                                       {'year': 2009, 'doy': 1,
+                                       {'yr': 2009, 'doy': 1,
                                         'fname': 'dummy_str.nofile'},
-                                       {'year': 2009, 'doy': 1,
+                                       {'yr': 2009, 'doy': 1,
                                         'stop_fname': 'dummy_str.nofile'},
                                        {'date': dt.datetime(2009, 1, 1),
                                         'fname': 'dummy_str.nofile'},
@@ -104,7 +114,7 @@ class TestBasics():
         with pytest.raises(ValueError) as err:
             self.testInst.load(**input)
         estr = 'An inconsistent set of inputs have been'
-        assert str(err).find(estr) == 0
+        assert str(err).find(estr) >= 0
         return
 
     def test_basic_instrument_load_no_input(self):
@@ -114,6 +124,7 @@ class TestBasics():
         assert (self.testInst.index[-1] >= self.testInst.files.stop_date)
         assert (self.testInst.index[-1] <= self.testInst.files.stop_date
                 + pds.DateOffset(days=1))
+        return
 
     def test_basic_instrument_load_by_file_and_multifile(self):
         """Ensure multi_file_day has to be False when loading by filename"""
@@ -123,8 +134,12 @@ class TestBasics():
                                     clean_level='clean',
                                     update_files=True,
                                     multi_file_day=True)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             self.out.load(fname=self.out.files[0])
+        estr = "have multi_file_day and load by file"
+        assert str(err).find(estr) >= 0
+
+        return
 
     def test_basic_instrument_load_and_multifile(self):
         """Ensure .load() only runs when multi_file_day is False"""
@@ -134,8 +149,12 @@ class TestBasics():
                                     clean_level='clean',
                                     update_files=True,
                                     multi_file_day=True)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             self.out.load()
+        estr = '`load()` is not supported with multi_file_day'
+        assert str(err).find(estr) >= 0
+
+        return
 
     def test_basic_instrument_load_by_date(self):
         """Test loading by date"""
@@ -205,37 +224,46 @@ class TestBasics():
     def test_next_load_bad_start_file(self):
         """Test Error if trying to iterate when on a file not in iteration list
         """
-        self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.load(fname=self.testInst.files[1])
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.testInst.files[0], self.testInst.files[20],
                                 2, 1)
-        with pytest.raises(StopIteration):
+        with pytest.raises(StopIteration) as err:
             self.testInst.next()
+        estr = 'Unable to find loaded filename '
+        assert str(err).find(estr) >= 0
+
+        return
 
     def test_prev_load_bad_start_file(self):
         """Test Error if trying to iterate when on a file not in iteration list
         """
-        self.ref_time = dt.datetime(2008, 1, 1)
         self.testInst.load(fname=self.testInst.files[12])
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.testInst.files[9], self.testInst.files[20],
                                 2, 1)
-        with pytest.raises(StopIteration):
+        with pytest.raises(StopIteration) as err:
             self.testInst.prev()
+        estr = 'Unable to find loaded filename '
+        assert str(err).find(estr) >= 0
+
+        return
 
     def test_next_load_bad_start_date(self):
         """Test Error if trying to iterate when on a date not in iteration list
         """
-        self.ref_time = dt.datetime(2008, 1, 2)
         self.testInst.load(date=self.ref_time)
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
                                 self.ref_time + pds.DateOffset(days=10),
                                 '2D', pds.DateOffset(days=1))
 
-        with pytest.raises(StopIteration):
+        with pytest.raises(StopIteration) as err:
             self.testInst.next()
+        estr = 'Unable to find loaded date '
+        assert str(err).find(estr) >= 0
+
+        return
 
     def test_prev_load_bad_start_date(self):
         """Test Error if trying to iterate when on a date not in iteration list
@@ -246,23 +274,34 @@ class TestBasics():
         self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
                                 self.ref_time + pds.DateOffset(days=10),
                                 '2D', pds.DateOffset(days=1))
-        with pytest.raises(StopIteration):
+        with pytest.raises(StopIteration) as err:
             self.testInst.prev()
+        estr = 'Unable to find loaded date '
+        assert str(err).find(estr) >= 0
+
+        return
 
     def test_next_load_empty_iteration(self):
         """Ensure empty iteration list handled ok via .next"""
         self.testInst.bounds = (None, None, '10000D',
                                 pds.DateOffset(days=10000))
-        with pytest.raises(StopIteration):
+        with pytest.raises(StopIteration) as err:
             self.testInst.next()
+        estr = 'File list is empty. '
+        assert str(err).find(estr) >= 0
+
         return
 
     def test_prev_load_empty_iteration(self):
         """Ensure empty iteration list handled ok via .prev"""
         self.testInst.bounds = (None, None, '10000D',
                                 pds.DateOffset(days=10000))
-        with pytest.raises(StopIteration):
+        with pytest.raises(StopIteration) as err:
             self.testInst.prev()
+        estr = 'File list is empty. '
+        assert str(err).find(estr) >= 0
+
+        return
 
     def test_next_fname_load_default(self):
         """Test next day is being loaded (checking object date)."""
@@ -315,10 +354,12 @@ class TestBasics():
         """Test error raised if fnames out of temporal order"""
         stop_fname = self.ref_time + pds.DateOffset(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             check_fname = self.ref_time.strftime('%Y-%m-%d.nofile')
             self.testInst.load(fname=stop_fname,
                                stop_fname=check_fname)
+        estr = '`stop_fname` must occur at a later date '
+        assert str(err).find(estr) >= 0
 
     def test_next_filename_load_default(self):
         """Test next day is being loaded (checking object date)."""
@@ -357,24 +398,26 @@ class TestBasics():
         assert self.out[0] == self.ref_time
         assert self.out[-1] == stop
 
-    def test_download_updated_files(self, caplog):
-        with caplog.at_level(logging.INFO, logger='pysat'):
-            self.testInst.download_updated_files()
-        # Perform a local search
-        assert "files locally" in caplog.text
-        # New files are found
-        assert "that are new or updated" in caplog.text
-        # download new files
-        assert "Downloading data to" in caplog.text
-        # Update local file list
-        assert "Updating pysat file list" in caplog.text
+    @pytest.mark.parametrize("file_bounds, non_default",
+                             [(False, False), (True, False), (False, True),
+                              (True, True)])
+    def test_download_updated_files(self, caplog, file_bounds, non_default):
+        """Test download_updated_files and default bounds are updated"""
+        if file_bounds:
+            if non_default:
+                # set bounds to second and second to last file
+                self.testInst.bounds = (self.testInst.files[1],
+                                        self.testInst.files[-2])
+            else:
+                # set bounds to first and last file
+                self.testInst.bounds = (self.testInst.files[0],
+                                        self.testInst.files[-1])
+        else:
+            if non_default:
+                # set bounds to first and first date
+                self.testInst.bounds = (self.testInst.files.start_date,
+                                        self.testInst.files.start_date)
 
-    def test_download_updated_files_file_bounds_default(self, caplog):
-        """Ensure that Instrument bound are updated, post download, when
-        bounds are set as first and last file."""
-        # set bounds to first and last file
-        self.testInst.bounds = (self.testInst.files[0], self.testInst.files[-1])
-        # now download files
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download_updated_files()
         # Perform a local search
@@ -385,8 +428,14 @@ class TestBasics():
         assert "Downloading data to" in caplog.text
         # Update local file list
         assert "Updating pysat file list" in caplog.text
-        # default bounds update
-        assert "Updating instrument object bounds by file" in caplog.text
+        if non_default:
+            assert "Updating instrument object bounds " not in caplog.text
+        else:
+            text = caplog.text
+            if file_bounds:
+                assert "Updating instrument object bounds by file" in text
+            else:
+                assert "Updating instrument object bounds by date" in text
 
     def test_download_recent_data(self, caplog):
         with caplog.at_level(logging.INFO, logger='pysat'):
@@ -1511,8 +1560,10 @@ class TestBasics():
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 1)
         width = pds.DateOffset(days=1)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             self.testInst.bounds = [start, stop, '1D', width, False]
+        estr = 'Too many input arguments.'
+        assert str(err).find(estr) >= 0
 
     def test_set_bounds_by_date(self):
         start = dt.datetime(2009, 1, 1)
@@ -1525,8 +1576,10 @@ class TestBasics():
         """Test error if bounds assignment has stop date before start"""
         start = dt.datetime(2009, 1, 15)
         stop = dt.datetime(2009, 1, 1)
-        with pytest.raises(Exception):
+        with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
+        estr = 'Bounds must be set in increasing'
+        assert str(err).find(estr) >= 0
 
     def test_set_bounds_by_default_dates(self):
         """Verify bounds behavior with default date related inputs"""
@@ -1593,8 +1646,10 @@ class TestBasics():
         """Test error if bounds season assignment has stop date before start"""
         start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
         stop = [dt.datetime(2009, 1, 12), dt.datetime(2009, 1, 15)]
-        with pytest.raises(Exception):
+        with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
+        estr = 'Bounds must be set in increasing'
+        assert str(err).find(estr) >= 0
 
     def test_set_bounds_by_date_season_extra_time(self):
         start = [dt.datetime(2009, 1, 1, 1, 10),
@@ -1715,8 +1770,10 @@ class TestBasics():
         """Test for error if stop file before start file"""
         start = '2009-01-13.nofile'
         stop = '2009-01-01.nofile'
-        with pytest.raises(Exception):
+        with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
+        estr = 'Bounds must be in increasing date'
+        assert str(err).find(estr) >= 0
         return
 
     def test_iterate_over_bounds_set_by_fname_via_next(self):
@@ -1767,8 +1824,10 @@ class TestBasics():
 
         start = ['2009-01-01.nofile', '2009-02-03.nofile']
         stop = ['2009-01-03.nofile', '2009-02-01.nofile']
-        with pytest.raises(Exception):
+        with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
+        estr = 'Bounds must be in increasing date'
+        assert str(err).find(estr) >= 0
         return
 
     def test_iterate_over_bounds_set_by_fname_season(self):
@@ -2220,17 +2279,21 @@ class TestBasics():
         assert isinstance(null, pysat.Instrument)
 
     def test_incorrect_creation_empty_instrument_object(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             # both name and platform should be empty
             _ = pysat.Instrument(platform='cnofs')
+        estr = 'Inputs platform and name must both'
+        assert str(err).find(estr) >= 0
 
     def test_supplying_instrument_module_requires_name_and_platform(self):
         class Dummy:
             pass
         Dummy.name = 'help'
 
-        with pytest.raises(AttributeError):
+        with pytest.raises(AttributeError) as err:
             _ = pysat.Instrument(inst_module=Dummy)
+        estr = 'Supplied module '
+        assert str(err).find(estr) >= 0
 
 
 # -----------------------------------------------------------------------------
@@ -2331,8 +2394,10 @@ class TestMalformedIndex():
     #
     # -------------------------------------------------------------------------
     def test_ensure_unique_index(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, self.ref_doy)
+        estr = 'Loaded data is not unique.'
+        assert str(err).find(estr) > 0
 
 
 # -----------------------------------------------------------------------------
@@ -2585,16 +2650,21 @@ class TestDataPadding():
                 + pds.DateOffset(minutes=5))
 
     def test_data_padding_bad_instantiation(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             pysat.Instrument(platform='pysat', name='testing',
                              clean_level='clean',
                              pad=2,
                              update_files=True)
+        estr = 'pad must be a dictionary or a pandas.DateOffset instance.'
+        assert str(err).find(estr) >= 0
 
     def test_data_padding_bad_load(self):
         """Not allowed to enable data padding when loading all data, load()"""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             self.testInst.load()
+        estr = '`load()` is not supported with data padding'
+        print(str(err))
+        assert str(err).find(estr) >= 0
 
     def test_padding_exceeds_load_window(self):
         """Ensure error is padding window larger than loading window"""
@@ -2602,30 +2672,46 @@ class TestDataPadding():
                                          clean_level='clean',
                                          pad={'days': 2},
                                          update_files=True)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as err:
             self.testInst.load(date=self.ref_time)
+        estr = 'Data padding window must be shorter than '
+        assert str(err).find(estr) >= 0
 
-    def test_yrdoy_data_padding_missing_days(self):
-        self.testInst.load(2008, 1)
-        # test load
-        # self.testInst.load(2008, 0)
-        # reset buffer data
-        self.testInst.load(2008, -5)
-        # test load, prev day empty, current and next has data
-        self.testInst.load(2008, 1)
-        # reset
-        self.testInst.load(2008, -4)
-        # etc
-        self.testInst.load(2008, 2)
-        self.testInst.load(2008, -3)
-        self.testInst.load(2008, 3)
-        # switch to missing data on the right
-        self.testInst.load(2010, 365)
-        self.testInst.load(2010, 360)
-        self.testInst.load(2010, 366)
-        self.testInst.load(2010, 360)
-        self.testInst.load(2010, 367)
-        assert True
+    def test_yrdoy_data_padding_missing_earlier_days(self):
+        """Test padding feature operates when there are missing prev days"""
+        yr, doy = pysat.utils.time.getyrdoy(self.testInst.files.start_date)
+        self.testInst.load(yr, doy, verifyPad=True)
+        assert self.testInst.index[0] == self.testInst.date
+        assert self.testInst.index[-1] > self.testInst.date \
+               + pds.DateOffset(days=1)
+
+        self.testInst.load(yr, doy)
+        assert self.testInst.index[0] == self.testInst.date
+        assert self.testInst.index[-1] < self.testInst.date \
+               + pds.DateOffset(days=1)
+
+    def test_yrdoy_data_padding_missing_later_days(self):
+        """Test padding feature operates when there are missing later days"""
+        yr, doy = pysat.utils.time.getyrdoy(self.testInst.files.stop_date)
+        self.testInst.load(yr, doy, verifyPad=True)
+        assert self.testInst.index[0] < self.testInst.date
+        assert self.testInst.index[-1] < self.testInst.date \
+               + pds.DateOffset(days=1)
+
+        self.testInst.load(yr, doy)
+        assert self.testInst.index[0] == self.testInst.date
+        assert self.testInst.index[-1] < self.testInst.date \
+               + pds.DateOffset(days=1)
+
+    def test_yrdoy_data_padding_missing_earlier_and_later_days(self):
+        """Test padding feature operates when missing earlier/later days"""
+        # reduce available files
+        self.testInst.file.files = self.testInst.file.files[0:1]
+        yr, doy = pysat.utils.time.getyrdoy(self.testInst.files.start_date)
+        self.testInst.load(yr, doy, verifyPad=True)
+        assert self.testInst.index[0] == self.testInst.date
+        assert self.testInst.index[-1] < self.testInst.date \
+               + pds.DateOffset(days=1)
 
     def test_data_padding_next(self):
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
