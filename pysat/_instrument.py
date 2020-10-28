@@ -1530,9 +1530,11 @@ class Instrument(object):
         A mixed combination of `.load()` keywords such as `yr` and `date` are
         not allowed.
 
-Note
------
-`end` kwargs have exclusive ranges (stop before the condition is reached), while `stop` kwargs have inclusive ranges (stop once the condition is reached).
+        Note
+        -----
+            `end` kwargs have exclusive ranges (stop before the condition is
+            reached), while `stop` kwargs have inclusive ranges (stop once the
+            condition is reached).
 
         Examples
         --------
@@ -1573,7 +1575,8 @@ Note
             _check_load_arguments_none(fname, stop_fname, date, end_date,
                                        raise_error=True)
             # convert yr/doy to a date
-            date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy), "%Y %j")
+            date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy),
+                                        "%Y %j")
             self._set_load_parameters(date=date, fid=None)
 
             # increment end by a day if none supplied
