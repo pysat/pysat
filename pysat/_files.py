@@ -492,12 +492,13 @@ class Files(object):
             start: array_like or single string
                 filenames for start of returned filelist
             stop: array_like or single string
-                filenames inclusive of the ending of list provided by the stop time
+                filenames inclusive of the ending of list provided by the stop
+                time
 
         Returns
         -------
-            list of filenames between and including start and stop times over all
-            intervals.
+            list of filenames between and including start and stop times over
+            all intervals.
 
         """
         if hasattr(start, '__iter__') & hasattr(stop, '__iter__'):
