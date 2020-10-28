@@ -84,30 +84,27 @@ class TestBasics():
             self.testInst.load(self.ref_time.year, self.ref_doy,
                                self.ref_time.year)
 
-    def test_basic_instrument_load_mixed_inputs(self):
+    @pytest.mark.parametrize("input", [{'year': 2009, 'doy': 1,
+                                        'date': dt.datetime(2009, 1, 1)},
+                                       {'year': 2009, 'doy': 1,
+                                        'end_date': dt.datetime(2009, 1, 1)},
+                                       {'year': 2009, 'doy': 1,
+                                        'fname': 'dummy_str.nofile'},
+                                       {'year': 2009, 'doy': 1,
+                                        'stop_fname': 'dummy_str.nofile'},
+                                       {'date': dt.datetime(2009, 1, 1),
+                                        'fname': 'dummy_str.nofile'},
+                                       {'date': dt.datetime(2009, 1, 1),
+                                        'stop_fname': 'dummy_str.nofile'},
+                                       {'date': dt.datetime(2009, 1, 1),
+                                        'fname': 'dummy_str.nofile',
+                                        'end_yr': 2009, 'end_doy': 1}])
+    def test_basic_instrument_load_mixed_inputs(self, input):
         """Ensure mixed load inputs raise ValueError"""
-        with pytest.raises(ValueError):
-            self.testInst.load(self.ref_time.year, self.ref_doy,
-                               date=dt.datetime(2009, 1, 1))
-        with pytest.raises(ValueError):
-            self.testInst.load(self.ref_time.year, self.ref_doy,
-                               end_date=dt.datetime(2009, 1, 1))
-        with pytest.raises(ValueError):
-            self.testInst.load(self.ref_time.year, self.ref_doy,
-                               fname=self.testInst.files[0])
-        with pytest.raises(ValueError):
-            self.testInst.load(self.ref_time.year, self.ref_doy,
-                               stop_fname=self.testInst.files[0])
-        with pytest.raises(ValueError):
-            self.testInst.load(date=dt.datetime(2009, 1, 1),
-                               fname=self.testInst.files[0])
-        with pytest.raises(ValueError):
-            self.testInst.load(date=dt.datetime(2009, 1, 1),
-                               stop_fname=self.testInst.files[0])
-        with pytest.raises(ValueError):
-            self.testInst.load(date=dt.datetime(2009, 1, 1),
-                               fname=self.testInst.files[0],
-                               end_yr=2009, end_doy=1)
+        with pytest.raises(ValueError) as err:
+            self.testInst.load(**input)
+        estr = 'An inconsistent set of inputs have been'
+        assert str(err).find(estr) == 0
         return
 
     def test_basic_instrument_load_no_input(self):
@@ -2611,7 +2608,7 @@ class TestDataPadding():
     def test_yrdoy_data_padding_missing_days(self):
         self.testInst.load(2008, 1)
         # test load
-        self.testInst.load(2008, 0)
+        # self.testInst.load(2008, 0)
         # reset buffer data
         self.testInst.load(2008, -5)
         # test load, prev day empty, current and next has data
