@@ -26,6 +26,10 @@ class Meta(object):
                   'plot': ('plot_label', str), 'axis': ('axis', str),
                   'scale': ('scale', str), 'min_val': ('value_min', float),
                   'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+    export_nan : list
+        List of labels that should be exported even if their value is nan. By
+        default, metadata with a value of nan will be exluded from export.
+        (default=[])
 
     Attributes
     ----------
@@ -138,10 +142,16 @@ class Meta(object):
                          'scale': ('scale', str),
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}):
+                         'fill_val': ('fill', float)}, export_nan=[]):
 
-        # set mutability of Meta attributes
+        # Set mutability of Meta attributes.  This flag must be set before
+        # anything else, or `__setattr__` breaks.
         self.mutable = True
+
+        # Set the NaN export list
+        self._export_nan = export_nan
+        if self._export_nan is None:
+            self._export_nan = []
 
         # Set the labels
         self.labels = MetaLabels(**labels)
