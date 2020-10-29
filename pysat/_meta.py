@@ -162,7 +162,8 @@ class Meta(object):
                                           'type. See other constructors for',
                                           ' alternate inputs.')))
         else:
-            columns = [mlab for mlab in dir(self.labels) if not callable(mlab)]
+            columns = [getattr(self.labels, mlab)
+                       for mlab in self.labels.label_type.keys()]
             self._data = pds.DataFrame(None, columns=columns)
 
         # establish attributes intrinsic to object, before user can
@@ -290,12 +291,12 @@ class Meta(object):
         else:
             super(Meta, self).__setattr__(name, value)
 
-    def __setitem__(self, names, input_data):
+    def __setitem__(self, data_vars, input_data):
         """Convenience method for adding metadata.
 
         Parameters
         ----------
-        names : str, list
+        data_vars : str, list
             Data variable names for the input metadata
         input_data : dict, pds.Series, or Meta
             Input metadata to be assigned
@@ -303,63 +304,66 @@ class Meta(object):
         """
 
         if isinstance(input_data, dict):
-            # if not passed an iterable, make it one
-            if isinstance(names, str):
-                names = [names]
+            # If not passed an iterable, make it one
+            if isinstance(data_vars, str):
+                data_vars = [data_vars]
                 for key in input_data:
                     input_data[key] = [input_data[key]]
-            elif isinstance(names, slice) and (names.step is None):
-                # Check for instrument[indx,:] or instrument[idx] usage
-                names = list(self.data.keys())
+            elif isinstance(data_vars, slice) and (data_vars.step is None):
+                # Check for use of instrument[indx, :] or instrument[idx]
+                data_vars = [dkey for dkey in self.data.keys()]
 
-            # Make sure the variable names are in good shape.  The Meta
-            # object is case insensitive, but case preserving.  Convert given
-            # names into ones Meta has already seen.  If new, then input names
+            # Make sure the variable names are in good shape.  The Meta object
+            # is case insensitive, but case preserving. Convert given data_vars
+            # into ones Meta has already seen. If new, then input names
             # become the standard
-            names = [self.var_case_name(name) for name in names]
-            for name in names:
-                if name not in self:
-                    self._insert_default_values(name)
-            # check if input dict empty
-            if input_data.keys() == []:
-                # Meta wasn't actually assigned by user.  This is an empty call
-                # and we can head out - we've assigned defaults if first data.
+            data_vars = [self.var_case_name(var) for var in data_vars]
+            for var in data_vars:
+                if var not in self:
+                    self._insert_default_values(var)
+
+            # Check if input dict empty.  If so, no metadata was assigned by
+            # the user.  This is an empty call and we can head out,
+            # since defaults have been assigned
+            if len(input_data.keys()) == 0:
                 return
+
             # Perform some checks on the data and make sure number of inputs
             # matches number of metadata inputs.
-            for key in input_data:
-                if len(names) != len(input_data[key]):
-                    raise ValueError(''.join(('Length of names and inputs',
+            for dkey in input_data:
+                if len(data_vars) != len(input_data[dkey]):
+                    raise ValueError(''.join(('Length of data_vars and inputs',
                                               ' must be equal.')))
+
             # Make sure the attribute names are in good shape.  Check the
             # attribute's name against existing attribute names.  If the
             # attribute name exists somewhere, then the case of the existing
             # attribute will be enforced upon new data by default for
             # consistency.
-            keys = [i for i in input_data]
-            for name in keys:
-                new_name = self.attr_case_name(name)
-                if new_name != name:
-                    input_data[new_name] = input_data.pop(name)
+            input_keys = [ikey for ikey in input_data]
+            for iname in input_keys:
+                new_name = self.attr_case_name(iname)
+                if new_name != iname:
+                    input_data[new_name] = input_data.pop(iname)
 
             # time to actually add the metadata
-            for key in input_data:
-                if key not in ['children', 'meta']:
-                    for i, name in enumerate(names):
-                        to_be_set = input_data[key][i]
+            for ikey in input_data:
+                if ikey not in ['children', 'meta']:
+                    for i, var in enumerate(data_vars):
+                        to_be_set = input_data[ikey][i]
                         if hasattr(to_be_set, '__iter__') and \
                                 not isinstance(to_be_set, str):
-                            # we have some list-like object
-                            # can only store a single element
+                            # We have some list-like object that can only
+                            # store a single element
                             if len(to_be_set) == 0:
-                                # empty list, ensure there is something
+                                # Empty list, ensure there is something to set
                                 to_be_set = ['']
                             if isinstance(to_be_set[0], str) or \
                                     isinstance(to_be_set, bytes):
                                 if isinstance(to_be_set, bytes):
                                     to_be_set = to_be_set.decode("utf-8")
 
-                                self._data.loc[name, key] = '\n\n'.join(
+                                self._data.loc[var, ikey] = '\n\n'.join(
                                     to_be_set)
                             else:
                                 warnings.warn(' '.join(('Array elements are',
@@ -367,13 +371,13 @@ class Meta(object):
                                                         'Dropping input :',
                                                         key)))
                         else:
-                            self._data.loc[name, key] = to_be_set
+                            self._data.loc[var, ikey] = to_be_set
                 else:
                     # key is 'meta' or 'children'
                     # process higher order stuff. Meta inputs could be part of
                     # larger multiple parameter assignment
                     # so not all names may actually have 'meta' to add
-                    for j, (item, val) in enumerate(zip(names,
+                    for j, (item, val) in enumerate(zip(data_vars,
                                                         input_data['meta'])):
                         if val is not None:
                             # assign meta data, recursive call....
@@ -388,21 +392,21 @@ class Meta(object):
                 child = in_dict.pop('children')
                 if child is not None:
                     # if not child.data.empty:
-                    self.ho_data[names] = child
+                    self.ho_data[data_vars] = child
 
             # remaining items are simply assigned
-            self[names] = in_dict
+            self[data_vars] = in_dict
 
         elif isinstance(input_data, Meta):
             # dealing with higher order data set
-            # names is only a single name here (by choice for support)
-            if (names in self._ho_data) and (input_data.empty):
+            # data_vars is only a single name here (by choice for support)
+            if (data_vars in self._ho_data) and (input_data.empty):
                 # no actual metadata provided and there is already some
                 # higher order metadata in self
                 return
 
-            # get Meta approved variable names
-            new_item_name = self.var_case_name(names)
+            # get Meta approved variable data_vars
+            new_item_name = self.var_case_name(data_vars)
 
             # Ensure that Meta labels of object to be assigned are
             # consistent with self.  input_data accepts self's labels
@@ -948,7 +952,7 @@ class Meta(object):
         """Yields metadata products stored for each variable name"""
 
         for dcol in self.data.columns:
-            yield dco
+            yield dcol
 
     def hasattr_case_neutral(self, attr_name):
         """Case-insensitive check for attribute names in this class
@@ -970,7 +974,7 @@ class Meta(object):
         """
         has_name = False
 
-        if name.lower() in [dcol.lower() for dcol in self.data.columns]:
+        if attr_name.lower() in [dcol.lower() for dcol in self.data.columns]:
             has_name = True
 
         return has_name
@@ -1395,8 +1399,9 @@ class MetaLabels(object):
             Simply formatted output string
 
         """
-        label_str = ', '.join(["{:s}={:}".format(mlab, getattr(self, mlab))
-                               for mlab in dir(self) if not callable(mlab)])
+        label_str = ', '.join(["{:s}={:} {:}".format(mlab, getattr(self, mlab),
+                                                     self.label_type[mlab])
+                               for mlab in self.label_type.keys()])
         out_str = ''.join(['MetaLabels(', label_str, ")"])
         return out_str
 
@@ -1411,13 +1416,13 @@ class MetaLabels(object):
         """
         # Set the printing limits and get the label attributes
         ncol = 5
-        lab_attrs = [mlab for mlab in dir(self) if not callable(mlab)]
+        lab_attrs = [mlab for mlab in self.label_type.keys()]
         nlabels = len(lab_attrs)
 
         # Print the MetaLabels
         out_str = "MetaLabels:\n"
         out_str += "-----------\n"
-        out_str += core_utils.fmt_output_in_cols(lab_atttrs, ncols=ncol,
+        out_str += core_utils.fmt_output_in_cols(lab_attrs, ncols=ncol,
                                                  max_num=nlabels)
 
         return out_str
@@ -1442,9 +1447,9 @@ class MetaLabels(object):
         # Assign the default value
         if issubclass(val_type, str):
             default_val = ''
-        elif isinstance(val_type, float):
+        elif val_type is float:
             default_val = np.nan
-        elif isinstance(val_type, int):
+        elif val_type is int:
             default_val = -1
         else:
             default_val = None
