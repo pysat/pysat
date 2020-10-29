@@ -94,7 +94,7 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize('end_doy', [0, 367, 1000, -1, -10000])
-    def test_basic_instrument_load_yr_bad_doy(self, end_doy):
+    def test_basic_instrument_load_yr_bad_end_doy(self, end_doy):
         """Ensure end_doy keyword in valid range"""
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, 1, end_yr=self.ref_time.year,
@@ -113,7 +113,6 @@ class TestBasics():
         assert str(err).find(estr) >= 0
 
         return
-
 
     @pytest.mark.parametrize("input", [{'yr': 2009, 'doy': 1,
                                         'date': dt.datetime(2009, 1, 1)},
