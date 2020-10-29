@@ -149,11 +149,9 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     # higher rate time signal (for scalar >= 2)
     # this time signal used for 2D profiles associated with each time in main
     # DataFrame
-    high_rate_template = pds.date_range(dates[0],
-                                        dates[0] + pds.DateOffset(hours=0,
-                                                                  minutes=1,
-                                                                  seconds=39),
-                                        freq='2S')
+    num_profiles = 50 if num_samples >= 50 else num_samples
+    end_date = dates[0] + pds.DateOffset(seconds=2*num_profiles - 1)
+    high_rate_template = pds.date_range(dates[0], end_date, freq='2S')
 
     # create a few simulated profiles
     # DataFrame at each time with mixed variables
@@ -163,16 +161,16 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     # Serie at each time, numeric data only
     series_profiles = []
     # frame indexed by date times
-    frame = pds.DataFrame({'density': data.loc[data.index[0:50],
+    frame = pds.DataFrame({'density': data.loc[data.index[0:num_profiles],
                                                'mlt'].values.copy(),
-                           'dummy_str': ['test'] * 50,
-                           'dummy_ustr': [u'test'] * 50},
-                          index=data.index[0:50],
+                           'dummy_str': ['test'] * num_profiles,
+                           'dummy_ustr': [u'test'] * num_profiles},
+                          index=data.index[0:num_profiles],
                           columns=['density', 'dummy_str', 'dummy_ustr'])
     # frame indexed by float
-    dd = np.arange(50) * 1.2
-    ff = np.arange(50) / 50.
-    ii = np.arange(50) * 0.5
+    dd = np.arange(num_profiles) * 1.2
+    ff = np.arange(num_profiles) / num_profiles
+    ii = np.arange(num_profiles) * 0.5
     frame_alt = pds.DataFrame({'density': dd, 'fraction': ff},
                               index=ii,
                               columns=['density', 'fraction'])
