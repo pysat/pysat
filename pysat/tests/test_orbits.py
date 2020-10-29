@@ -482,7 +482,7 @@ class TestGeneralOrbitsNonStandardIteration():
             self.testInst.orbits.next()
         return
 
-    @pytest.mark.parametrize("bounds", ['by_date', 'by_file'])
+    @pytest.mark.parametrize("bounds_type", ['by_date', 'by_file'])
     def test_no_orbit_overlap_with_nonoverlapping_iteration(self, bounds_type):
         """Test no orbit data overlap when overlap in iteration data"""
 
