@@ -1,8 +1,10 @@
+import copy
 import datetime as dt
 import importlib
+import netCDF4
 import numpy as np
 import os
-
+import pandas as pds
 import xarray as xr
 
 import pysat
@@ -140,13 +142,14 @@ def scale_units(out_unit, in_unit):
 
 
 def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
-                 epoch_name='Epoch', units_label='units',
-                 name_label='long_name', notes_label='notes',
-                 desc_label='desc', plot_label='label', axis_label='axis',
-                 scale_label='scale', min_label='value_min',
-                 max_label='value_max', fill_label='fill',
-                 pandas_format=True):
-    # unix_time=False, **kwargs):
+                 epoch_name='Epoch', pandas_format=True,
+                 labels={'units': ('units', str), 'name': ('long_name', str),
+                         'notes': ('notes', str), 'desc': ('desc', str),
+                         'plot': ('plot_label', str), 'axis': ('axis', str),
+                         'scale': ('scale', str),
+                         'min_val': ('value_min', float),
+                         'max_val': ('value_max', float),
+                         'fill_val': ('fill', float)}):
     """Load netCDF-3/4 file produced by pysat.
 
     Parameters
@@ -161,26 +164,17 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         (default=None)
     epoch_name : string
         (default='Epoch')
-    units_label : string
-        keyword for unit information (default='units')
-    name_label : string
-        keyword for informative name label (default='long_name')
-    notes_label : string
-        keyword for file notes (default='notes')
-    desc_label : string
-        keyword for data descriptions (default='desc')
-    plot_label : string
-        keyword for name to use on plot labels (default='label')
-    axis_label : string
-        keyword for axis labels (default='axis')
-    scale_label : string
-        keyword for plot scaling (default='scale')
-    min_label : string
-        keyword for minimum in allowable value range (default='value_min')
-    max_label : string
-        keyword for maximum in allowable value range (defualt='value_max')
-    fill_label : string
-        keyword for fill values (default='fill')
+    pandas_format : bool
+        keyword for pandas DataFrame (True) or xarray Dataset (False)
+        (default=False)
+    labels : dict
+        Dict where keys are the label attribute names and the values are tuples
+        that have the label values and value types in that order.
+        (default={'units': ('units', str), 'name': ('long_name', str),
+                  'notes': ('notes', str), 'desc': ('desc', str),
+                  'plot': ('plot_label', str), 'axis': ('axis', str),
+                  'scale': ('scale', str), 'min_val': ('value_min', float),
+                  'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Returns
     --------
@@ -190,11 +184,6 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
         Meta data
 
     """
-
-    import copy
-    import netCDF4
-    import pandas as pds
-    import pysat
 
     if fnames is None:
         raise ValueError("Must supply a filename/list of filenames")
@@ -211,16 +200,7 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
     running_store = []
     two_d_keys = []
     two_d_dims = []
-    mdata = pysat.Meta(units_label=units_label,
-                       name_label=name_label,
-                       notes_label=notes_label,
-                       desc_label=desc_label,
-                       plot_label=plot_label,
-                       axis_label=axis_label,
-                       scale_label=scale_label,
-                       min_label=min_label,
-                       max_label=max_label,
-                       fill_label=fill_label)
+    mdata = pysat.Meta(labels=labels)
 
     if pandas_format:
         for fname in fnames:
@@ -292,31 +272,22 @@ def load_netcdf4(fnames=None, strict_meta=False, file_format=None,
                         index_key_name = obj_key
                         # if the object index uses UNIX time, process into
                         # datetime index
-                        if (data.variables[obj_key].getncattr(name_label)
-                                == epoch_name):
+                        if data.variables[obj_key].getncattr(
+                                mdata.labels.name) == epoch_name:
                             # name to be used in DataFrame index
                             index_name = epoch_name
                             time_index_flag = True
                         else:
                             time_index_flag = False
                             # label to be used in DataFrame index
-                            index_name = \
-                                data.variables[obj_key].getncattr(name_label)
+                            index_name = data.variables[obj_key].getncattr(
+                                mdata.labels.name)
                     else:
                         # dimension is not itself a variable
                         index_key_name = None
 
                     # iterate over the variables and grab metadata
-                    dim_meta_data = pysat.Meta(units_label=units_label,
-                                               name_label=name_label,
-                                               notes_label=notes_label,
-                                               desc_label=desc_label,
-                                               plot_label=plot_label,
-                                               axis_label=axis_label,
-                                               scale_label=scale_label,
-                                               min_label=min_label,
-                                               max_label=max_label,
-                                               fill_label=fill_label)
+                    dim_meta_data = pysat.Meta(labels=labels)
 
                     for key, clean_key in zip(obj_var_keys, clean_var_keys):
                         # store attributes in metadata, exept for dim name
