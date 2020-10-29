@@ -83,6 +83,27 @@ class TestBasics():
 
         return
 
+    @pytest.mark.parametrize('doy', [0, 367, 1000, -1, -10000])
+    def test_basic_instrument_load_yr_bad_doy(self, doy):
+        """Ensure doy load keyword in valid range"""
+        with pytest.raises(ValueError) as err:
+            self.testInst.load(self.ref_time.year, doy)
+        estr = 'Day of year (doy) is only valid between and '
+        assert str(err).find(estr) >= 0
+
+        return
+
+    @pytest.mark.parametrize('end_doy', [0, 367, 1000, -1, -10000])
+    def test_basic_instrument_load_yr_bad_doy(self, end_doy):
+        """Ensure end_doy keyword in valid range"""
+        with pytest.raises(ValueError) as err:
+            self.testInst.load(self.ref_time.year, 1, end_yr=self.ref_time.year,
+                               end_doy=end_doy)
+        estr = 'Day of year (end_doy) is only valid between and '
+        assert str(err).find(estr) >= 0
+
+        return
+
     def test_basic_instrument_load_yr_no_end_doy(self):
         """Ensure end_doy required if end_yr present"""
         with pytest.raises(ValueError) as err:
@@ -2662,8 +2683,10 @@ class TestDataPadding():
         """Not allowed to enable data padding when loading all data, load()"""
         with pytest.raises(ValueError) as err:
             self.testInst.load()
-        estr = '`load()` is not supported with data padding'
-        print(str(err))
+        if self.testInst.multi_file_day:
+            estr = '`load()` is not supported with multi_file_day'
+        else:
+            estr = '`load()` is not supported with data padding'
         assert str(err).find(estr) >= 0
 
     def test_padding_exceeds_load_window(self):
@@ -2706,7 +2729,7 @@ class TestDataPadding():
     def test_yrdoy_data_padding_missing_earlier_and_later_days(self):
         """Test padding feature operates when missing earlier/later days"""
         # reduce available files
-        self.testInst.file.files = self.testInst.file.files[0:1]
+        self.testInst.files.files = self.testInst.files.files[0:1]
         yr, doy = pysat.utils.time.getyrdoy(self.testInst.files.start_date)
         self.testInst.load(yr, doy, verifyPad=True)
         assert self.testInst.index[0] == self.testInst.date
