@@ -150,7 +150,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     # this time signal used for 2D profiles associated with each time in main
     # DataFrame
     num_profiles = 50 if num_samples >= 50 else num_samples
-    end_date = dates[0] + pds.DateOffset(seconds=2*num_profiles - 1)
+    end_date = dates[0] + pds.DateOffset(seconds=2 * num_profiles - 1)
     high_rate_template = pds.date_range(dates[0], end_date, freq='2S')
 
     # create a few simulated profiles
