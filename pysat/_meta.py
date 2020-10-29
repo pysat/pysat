@@ -445,48 +445,55 @@ class Meta(object):
         key : str, tuple, or list
             A single variable name, a tuple, or a list
 
+        Raises
+        ------
+        KeyError
+            If a properly formatted key is not present
+        NotImplementedError
+            If the input is not one of the allowed data types
+
         Examples
         --------
         ::
 
             meta['name']
-
-            meta[ 'name1', 'units' ]
-
-            meta[[ 'name1', 'name2'], 'units']
-
+            meta['name1', 'units']
+            meta[['name1', 'name2'], 'units']
             meta[:, 'units']
 
-            for higher order data
-
-            meta[ 'name1', 'subvar', 'units' ]
-
-            meta[ 'name1', ('units', 'scale') ]
+            # for higher order data
+            meta['name1', 'subvar', 'units']
+            meta['name1', ('units', 'scale')]
 
         """
-        # if key is a tuple, looking at index, column access pattern
-
-        def match_name(func, name, names):
-            """Applies func on name(s) depending on name type"""
-            if isinstance(name, str):
-                return func(name)
-            elif isinstance(name, slice):
-                return [func(nn) for nn in names[name]]
+        # Define a local convenience function
+        def match_name(func, var_name, index_or_column):
+            """Applies func on input variables(s) depending on variable type
+            """
+            if isinstance(var_name, str):
+                # If variable is a string, use it as input
+                return func(var_name)
+            elif isinstance(var_name, slice):
+                # If variable is a slice, use it to select data from the
+                # supplied index or column input
+                return [func(var) for var in index_or_column[var_name]]
             else:
-                # assume iterable
-                return [func(nn) for nn in name]
+                # Otherwise, assume the variable iterable input
+                return [func(var) for var in var_name]
 
+        # Access desired metadata based on key data type
         if isinstance(key, tuple):
-            # if tuple length is 2, index, column
+            # If key is a tuple, looking at index, column access pattern
             if len(key) == 2:
+                # If tuple length is 2, index, column
                 new_index = match_name(self.var_case_name, key[0],
                                        self.data.index)
                 new_name = match_name(self.attr_case_name, key[1],
                                       self.data.columns)
                 return self.data.loc[new_index, new_name]
 
-            # if tuple length is 3, index, child_index, column
             elif len(key) == 3:
+                # If tuple length is 3, index, child_index, column
                 new_index = self.var_case_name(key[0])
                 new_child_index = self.var_case_name(key[1])
                 new_name = self.attr_case_name(key[2])
@@ -494,12 +501,13 @@ class Meta(object):
                                                         new_name]
 
         elif isinstance(key, list):
+            # If key is a list, selection works as-is
             return self[key, :]
 
         elif isinstance(key, str):
-            # ensure variable is present somewhere
+            # If key is a string, treatment varies based on metadata dimension
             if key in self:
-                # get case preserved string for variable name
+                # Get case preserved string for variable name
                 new_key = self.var_case_name(key)
 
                 # Don't need to check if in lower, all variables are always in
@@ -512,15 +520,15 @@ class Meta(object):
                 if new_key in self.keys_nD():
                     meta_row.at['children'] = self.ho_data[new_key].copy()
                 else:
-
-                    meta_row.at['children'] = None  # empty_meta
+                    meta_row.at['children'] = None  # Return empty meta instance
 
                 return meta_row
             else:
                 raise KeyError('Key not found in MetaData')
         else:
-            raise NotImplementedError("No way to handle MetaData key {}".format(
-                key.__repr__()))
+            raise NotImplementedError("".join(["No way to handle MetaData key ",
+                                               "{}; ".format(key.__repr__()),
+                                               "expected tuple, list, or str"]))
 
     # QUESTION: DOES THIS NEED TO CHANGE???
     def __contains__(self, other):
