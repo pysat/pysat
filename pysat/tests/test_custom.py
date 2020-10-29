@@ -251,8 +251,8 @@ class TestBasics():
 
         self.testInst.custom.attach(custom1, 'add')
         self.testInst.load(2009, 1)
-        assert self.testInst.meta['doubleMLT'].units == 'hours1'
-        assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLT'
+        assert self.testInst.meta[('doubleMLT', 'units')] == 'hours1'
+        assert self.testInst.meta[('doubleMLT', 'long_name')] == 'doubleMLT'
         assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
 
