@@ -175,11 +175,13 @@ class Instrument(object):
                  manual_org=None, directory_format=None, file_format=None,
                  temporary_file_list=False, strict_time_flag=True,
                  ignore_empty_files=False,
-                 units_label='units', name_label='long_name',
-                 notes_label='notes', desc_label='desc',
-                 plot_label='label', axis_label='axis', scale_label='scale',
-                 min_label='value_min', max_label='value_max',
-                 fill_label='fill', *arg, **kwargs):
+                 labels={'units': ('units', str), 'name': ('long_name', str),
+                         'notes': ('notes', str), 'desc': ('desc', str),
+                         'plot': ('plot_label', str), 'axis': ('axis', str),
+                         'scale': ('scale', str),
+                         'min_val': ('value_min', float),
+                         'max_val': ('value_max', float),
+                         'fill_val': ('fill', float)}, **kwargs):
 
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
@@ -262,27 +264,11 @@ class Instrument(object):
         # assign null data for user selected data type
         self.data = self._null_data.copy()
 
-        # create Meta instance with appropriate labels
-        self.units_label = units_label
-        self.name_label = name_label
-        self.notes_label = notes_label
-        self.desc_label = desc_label
-        self.plot_label = plot_label
-        self.axis_label = axis_label
-        self.scale_label = scale_label
-        self.min_label = min_label
-        self.max_label = max_label
-        self.fill_label = fill_label
-        self.meta = pysat.Meta(units_label=self.units_label,
-                               name_label=self.name_label,
-                               notes_label=self.notes_label,
-                               desc_label=self.desc_label,
-                               plot_label=self.plot_label,
-                               axis_label=self.axis_label,
-                               scale_label=self.scale_label,
-                               min_label=self.min_label,
-                               max_label=self.max_label,
-                               fill_label=self.fill_label)
+        # Create Meta instance with appropriate labels.  Meta class methos will
+        # use Instrument definition of MetaLabels over the Metadata declaration
+        self.meta_labels = labels
+        self.labels = pysat.MetaLabels(**labels)
+        self.meta = pysat.Meta(labels=self.meta_labels)
 
         # function processing class, processes data on load
         self.custom = pysat.Custom()
@@ -510,6 +496,8 @@ class Instrument(object):
 
         """
 
+        raise RuntimeError('hi!')
+
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
         if self.pandas_format:
@@ -548,16 +536,7 @@ class Instrument(object):
                         # subvariables.  Meta can filter out empty metadata as
                         # needed, the check above reduces the need to create
                         # Meta instances
-                        ho_meta = pysat.Meta(units_label=self.units_label,
-                                             name_label=self.name_label,
-                                             notes_label=self.notes_label,
-                                             desc_label=self.desc_label,
-                                             plot_label=self.plot_label,
-                                             axis_label=self.axis_label,
-                                             scale_label=self.scale_label,
-                                             fill_label=self.fill_label,
-                                             min_label=self.min_label,
-                                             max_label=self.max_label)
+                        ho_meta = pysat.Meta(labels=self.meta_labels)
                         ho_meta[in_data[0].columns] = {}
                         self.meta[key] = ho_meta
 
@@ -595,6 +574,8 @@ class Instrument(object):
                     indict[epoch_name] = self.index[indict[epoch_name]]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
+                
+                raise RuntimeError('TEST2')
                 return
             elif isinstance(key, str):
                 # assigning basic variable
@@ -1239,30 +1220,12 @@ class Instrument(object):
             except pds.errors.OutOfBoundsDatetime:
                 bad_datetime = True
                 data = self._null_data.copy()
-                mdata = pysat.Meta(units_label=self.units_label,
-                                   name_label=self.name_label,
-                                   notes_label=self.notes_label,
-                                   desc_label=self.desc_label,
-                                   plot_label=self.plot_label,
-                                   axis_label=self.axis_label,
-                                   scale_label=self.scale_label,
-                                   min_label=self.min_label,
-                                   max_label=self.max_label,
-                                   fill_label=self.fill_label)
+                mdata = pysat.Meta(labels=self.meta_labels)
 
         else:
             bad_datetime = False
             data = self._null_data.copy()
-            mdata = pysat.Meta(units_label=self.units_label,
-                               name_label=self.name_label,
-                               notes_label=self.notes_label,
-                               desc_label=self.desc_label,
-                               plot_label=self.plot_label,
-                               axis_label=self.axis_label,
-                               scale_label=self.scale_label,
-                               min_label=self.min_label,
-                               max_label=self.max_label,
-                               fill_label=self.fill_label)
+            mdata = pysat.Meta(labels=self.meta_labels)
 
         output_str = '{platform} {name} {tag} {inst_id}'
         output_str = output_str.format(platform=self.platform,
@@ -2378,16 +2341,16 @@ class Instrument(object):
         if self._meta_translation_table is None:
             # didn't find a translation table, using the strings
             # attached to the supplied pysat.Instrument object
-            export_name_labels = [self.name_label]
-            export_units_labels = [self.units_label]
-            export_desc_labels = [self.desc_label]
-            export_notes_labels = [self.notes_label]
+            export_name_labels = [self.meta_labels['name'][0]]
+            export_units_labels = [self.meta_labels['units'][0]]
+            export_desc_labels = [self.meta_labels['desc'][0]]
+            export_notes_labels = [self.meta_labels['notes'][0]]
         else:
             # user supplied labels in translation table
-            export_name_labels = self._meta_translation_table['name_label']
-            export_units_labels = self._meta_translation_table['units_label']
-            export_desc_labels = self._meta_translation_table['desc_label']
-            export_notes_labels = self._meta_translation_table['notes_label']
+            export_name_labels = self._meta_translation_table['name']
+            export_units_labels = self._meta_translation_table['units']
+            export_desc_labels = self._meta_translation_table['desc']
+            export_notes_labels = self._meta_translation_table['notes']
             logger.info(' '.join(('Using Metadata Translation Table:',
                                   str(self._meta_translation_table))))
         # Apply instrument specific post-processing to the export_meta
