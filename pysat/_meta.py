@@ -587,9 +587,6 @@ class Meta(object):
             # quick check on length
             keys1 = [i for i in self.keys()]
             keys2 = [i for i in other_meta.keys()]
-
-            try:
-                pysat.utils._core.test_list_equal
             if len(keys1) != len(keys2):
                 return False
 
@@ -902,51 +899,6 @@ class Meta(object):
         self.labels = other.labels
         return
 
-    # HERE
-    @units_label.setter
-    def units_label(self, new_label):
-        self._label_setter(new_label, self._units_label, 'units_label', '')
-
-    @name_label.setter
-    def name_label(self, new_label):
-        self._label_setter(new_label, self._name_label, 'name_label',
-                           use_names_default=True)
-
-    @notes_label.setter
-    def notes_label(self, new_label):
-        self._label_setter(new_label, self._notes_label, 'notes_label', '')
-
-    @desc_label.setter
-    def desc_label(self, new_label):
-        self._label_setter(new_label, self._desc_label, 'desc_label', '')
-
-    @plot_label.setter
-    def plot_label(self, new_label):
-        self._label_setter(new_label, self._plot_label, 'plot_label',
-                           use_names_default=True)
-
-    @axis_label.setter
-    def axis_label(self, new_label):
-        self._label_setter(new_label, self._axis_label, 'axis_label',
-                           use_names_default=True)
-
-    @scale_label.setter
-    def scale_label(self, new_label):
-        self._label_setter(new_label, self._scale_label, 'scale_label',
-                           'linear')
-
-    @min_label.setter
-    def min_label(self, new_label):
-        self._label_setter(new_label, self._min_label, 'min_label', np.NaN)
-
-    @max_label.setter
-    def max_label(self, new_label):
-        self._label_setter(new_label, self._max_label, 'max_label', np.NaN)
-
-    @fill_label.setter
-    def fill_label(self, new_label):
-        self._label_setter(new_label, self._fill_label, 'fill_label', np.NaN)
-
     def var_case_name(self, name):
         """Provides stored name (case preserved) for case insensitive input
 
@@ -1207,14 +1159,14 @@ class Meta(object):
         return
 
     @classmethod
-    def from_csv(cls, name=None, col_names=None, sep=None, **kwargs):
+    def from_csv(cls, filename=None, col_names=None, sep=None, **kwargs):
         """Create instrument metadata object from csv.
 
         Parameters
         ----------
-        name : string
-            absolute filename for csv file or name of file
-            stored in pandas instruments location
+        filename : string
+            absolute filename for csv file or name of file stored in pandas
+            instruments location
         col_names : list-like collection of strings
             column names in csv and resultant meta object
         sep : string
@@ -1237,34 +1189,34 @@ class Meta(object):
         if sep is None:
             sep = ','
 
-        if name is None:
-            raise ValueError('Must supply an instrument name or file path.')
-        elif not isinstance(name, str):
-            raise ValueError('keyword name must be related to a string')
-        elif not os.path.isfile(name):
+        if filename is None:
+            raise ValueError('Must supply an instrument module or file path.')
+        elif not isinstance(filename, str):
+            raise ValueError('Keyword name must be related to a string')
+        elif not os.path.isfile(filename):
             # Not a real file, assume input is a pysat instrument name
             # and look in the standard pysat location.
-            test = os.path.join(pysat.__path__[0], 'instruments', name)
-            if os.path.isfile(test):
-                name = test
+            testfile = os.path.join(pysat.__path__[0], 'instruments', filename)
+            if os.path.isfile(testfile):
+                filename = testfile
             else:
-                # trying to form an absolute path for success
-                test = os.path.abspath(name)
-                if not os.path.isfile(test):
+                # Try to form an absolute path, if the relative path failed
+                testfile = os.path.abspath(filename)
+                if not os.path.isfile(testfile):
                     raise ValueError("Unable to create valid file path.")
                 else:
-                    # success
-                    name = test
+                    filename = testfile
 
-        mdata = pds.read_csv(name, names=col_names, sep=sep, **kwargs)
+        mdata = pds.read_csv(filename, names=col_names, sep=sep, **kwargs)
 
         if not mdata.empty:
-            # make sure the data name is the index
+            # Make sure the data name is the index
             mdata.index = mdata['name']
             del mdata['name']
             return cls(metadata=mdata)
         else:
-            raise ValueError('Unable to retrieve information from ' + name)
+            raise ValueError(''.join(['Unable to retrieve information from ',
+                                      filename]))
 
     # TODO
     # @classmethod
@@ -1529,7 +1481,7 @@ class MetaLabels(object):
         if attr_name == 'scale':
             default_val = 'linear'
         else:
-            default_val = self.default_value_from_type(
+            default_val = self.default_values_from_type(
                 self.label_type[attr_name])
 
         return default_val
