@@ -496,8 +496,6 @@ class Instrument(object):
 
         """
 
-        raise RuntimeError('hi!')
-
         # add data to main pandas.DataFrame, depending upon the input
         # aka slice, and a name
         if self.pandas_format:
@@ -575,7 +573,6 @@ class Instrument(object):
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
                 
-                raise RuntimeError('TEST2')
                 return
             elif isinstance(key, str):
                 # assigning basic variable
