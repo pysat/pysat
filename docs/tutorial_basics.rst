@@ -247,7 +247,8 @@ loading all data at once.
 .. code:: python
 
    # F10.7 data
-   f107 = pysat.Instrument(platform='sw', name='f107')
+   import pysatSpaceWeather
+   f107 = pysat.Instrument(inst_module=pysatSpaceWeather.instruments.sw_f107)
    # Load all F10.7 solar flux data, from beginning to end.
    f107.load()
 
