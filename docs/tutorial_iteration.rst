@@ -21,9 +21,13 @@ The seasonal analysis loop is commonly repeated in data analysis:
 
    # Iterate over dates, load data for each date, and determine maximum
    # magnetic perturbation for the day.
+   out_str = ''.join(('Maximum meridional magnetic perturbation: ',
+                      '{max:3.2f} {units}'))
    for date in date_array:
        vefi.load(date=date)
-       print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
+       print(out_str.format(max=vefi['dB_mer'].max(),
+                            units=vefi.meta['dB_mer', 'units']))
+
 
 Iteration support is built into the Instrument object to support this and
 similar cases. The whole of a data set may be iterated over on a daily basis
@@ -33,8 +37,11 @@ using
 
    # Iterate over dates, load data for each date, and determine maximum
    # magnetic perturbation for the day.
+   out_str = ''.join(('Maximum meridional magnetic perturbation: ',
+                      '{max:3.2f} {units}'))
    for vefi in vefi:
-       print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
+       print(out_str.format(max=vefi['dB_mer'].max(),
+                            units=vefi.meta['dB_mer', 'units']))
 
 Each loop of the python for iteration initiates a vefi.load() for the next date,
 starting with the first available date. By default the instrument instance will
@@ -48,18 +55,21 @@ iterate over all available data. To control the range, set the instrument bounds
    vefi.bounds = (start, stop)
 
    # iterate over custom season
+   out_str = ''.join(('Maximum meridional magnetic perturbation: ',
+                      '{max:3.2f} {units}'))
    for vefi in vefi:
-       print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
+       print(out_str.format(max=vefi['dB_mer'].max(),
+                            units=vefi.meta['dB_mer', 'units']))
 
 The output is,
 
 .. code:: ipython
 
-   Maximum meridional magnetic perturbation  30.790764
-   Maximum meridional magnetic perturbation  33.982582
-   Maximum meridional magnetic perturbation  29.935713
-   Maximum meridional magnetic perturbation  29.628178
-   Maximum meridional magnetic perturbation  21.67319
+   Maximum meridional magnetic perturbation: 30.79 nT
+   Maximum meridional magnetic perturbation: 33.98 nT
+   Maximum meridional magnetic perturbation: 29.94 nT
+   Maximum meridional magnetic perturbation: 29.63 nT
+   Maximum meridional magnetic perturbation: 21.67 nT
 
 Non-continuous seasons are also supported.
 
@@ -77,8 +87,11 @@ Non-continuous seasons are also supported.
    pysat.logger.setLevel(pysat.logging.INFO)
 
    # iterate over custom season
+   out_str = ''.join(('Maximum meridional magnetic perturbation: ',
+                      '{max:3.2f} {units}'))
    for vefi in vefi:
-       print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
+       print(out_str.format(max=vefi['dB_mer'].max(),
+                            units=vefi.meta['dB_mer', 'units']))
 
    # Set pysat logging back to standard of only printing information for
    # warnings.
@@ -90,13 +103,13 @@ The output is,
 .. code:: ipython
 
    pysat INFO: Returning cnofs vefi dc_b data for 01 January 2010
-   Maximum meridional magnetic perturbation  30.790764
+   Maximum meridional magnetic perturbation: 30.79 nT
    pysat INFO: Returning cnofs vefi dc_b data for 02 January 2010
-   Maximum meridional magnetic perturbation  33.982582
+   Maximum meridional magnetic perturbation: 33.98 nT
    pysat INFO: Returning cnofs vefi dc_b data for 04 January 2010
-   Maximum meridional magnetic perturbation  29.628178
+   Maximum meridional magnetic perturbation: 29.63 nT
    pysat INFO: Returning cnofs vefi dc_b data for 05 January 2010
-   Maximum meridional magnetic perturbation  21.67319
+   Maximum meridional magnetic perturbation: 21.67 nT
 
 So far, the iteration support has only saved a single line of code, the
 .load line. However, this line in the examples above is tied to loading by date.
@@ -108,7 +121,8 @@ longer the case.
 
    vefi.bounds(vefi.files[0], vefi.files[5])
    for vefi in vefi:
-       print('Maximum meridional magnetic perturbation ', vefi['dB_mer'].max())
+       print(out_str.format(max=vefi['dB_mer'].max(),
+                            units=vefi.meta['dB_mer', 'units']))
 
 For VEFI there is only one file per day so there is no practical difference
 between the previous example. However, for instruments that have more than one
