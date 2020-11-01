@@ -709,9 +709,8 @@ class Orbits(object):
                             # orbit, grab the first one
                             final_val = self.sat.index[0] \
                                 - pds.DateOffset(microseconds=1)
-                            self.sat.data = self.sat.concat_data(
-                                [temp_orbit_data[:final_val],
-                                 self.sat.data])
+                            self.sat.concat_data(temp_orbit_data[:final_val],
+                                                 prepend=True)
                             self._getBasicOrbit(orbit=1)
                         else:
                             # no data, go back a day and grab the last orbit.
@@ -750,10 +749,10 @@ class Orbits(object):
                     if pad_next:
                         # orbit went across day break, stick old orbit onto new
                         # data and grab second orbit (first is old)
-                        self.sat.data = self.sat.concat_data(
-                            [temp_orbit_data[:self.sat.index[0]
-                                             - pds.DateOffset(microseconds=1)],
-                             self.sat.data])
+                        self.sat.concat_data(
+                            temp_orbit_data[:self.sat.index[0]
+                                            - pds.DateOffset(microseconds=1)],
+                            prepend=True)
 
                         # select second orbit of combined data
                         self._getBasicOrbit(orbit=2)
@@ -862,9 +861,7 @@ class Orbits(object):
                         self.sat.prev()
                         # combine this next day orbit with previous last orbit
                         if not self.sat.empty:
-                            self.sat.data = \
-                                self.sat.concat_data([self.sat.data,
-                                                      temp_orbit_data])
+                            self.sat.concat_data(temp_orbit_data, prepend=False)
                             # select first orbit of combined data
                             self._getBasicOrbit(orbit=-1)
                         else:
@@ -908,8 +905,7 @@ class Orbits(object):
                             load_prev = False
 
                     if load_prev:
-                        self.sat.data = self.sat.concat_data([self.sat.data,
-                                                              temp_orbit_data])
+                        self.sat.concat_data(temp_orbit_data, prepend=False)
                         # select second to last orbit of combined data
                         self._getBasicOrbit(orbit=-2)
                     else:
