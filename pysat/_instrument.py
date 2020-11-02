@@ -1559,7 +1559,7 @@ class Instrument(object):
         """
 
         return (self._iter_start, self._iter_stop, self._iter_step,
-               self._iter_width)
+                self._iter_width)
 
     @bounds.setter
     def bounds(self, value=None):
