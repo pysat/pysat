@@ -2672,7 +2672,7 @@ class TestDataPadding():
                              clean_level='clean',
                              pad=2,
                              update_files=True)
-        estr = 'pad must be a dictionary or a pandas.DateOffset instance.'
+        estr = 'pad must be a dict, NoneType, or pandas.DateOffset instance.'
         assert str(err).find(estr) >= 0
 
     def test_data_padding_bad_load(self):
