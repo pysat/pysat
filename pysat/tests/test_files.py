@@ -1054,8 +1054,8 @@ class TestFilesRaceCondition():
         """Runs after every method to clean up previous testing."""
         remove_files(self.testInst)
         del self.testInst
-        re_load(pysat.instruments.pysat_testing)
-        re_load(pysat.instruments)
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
         # make sure everything about instrument state is restored
         # restore original file list, no files
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
@@ -1064,7 +1064,8 @@ class TestFilesRaceCondition():
                          temporary_file_list=self.temporary_file_list)
         pysat.utils.set_data_dir(self.data_path, store=False)
 
-# This needs to be replaced or expanded based on the tests that portalocker uses.
+# TODO: This needs to be replaced or expanded based on the tests that
+# portalocker uses
     def test_race_condition(self):
         from multiprocessing import Pool
         processes = 5
