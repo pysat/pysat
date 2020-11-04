@@ -1024,7 +1024,7 @@ class TestFilesRaceCondition():
 
         # create a test instrument, make sure it is getting files from
         # filesystem
-        re_load(pysat.instruments.pysat_testing)
+        reload(pysat.instruments.pysat_testing)
         pysat.instruments.pysat_testing.list_files = list_versioned_files
         # create a bunch of files by year and doy
         self.testInst = \
