@@ -1064,6 +1064,7 @@ class TestFilesRaceCondition():
                          temporary_file_list=self.temporary_file_list)
         pysat.utils.set_data_dir(self.data_path, store=False)
 
+# This needs to be replaced or expanded based on the tests that portalocker uses.
     def test_race_condition(self):
         from multiprocessing import Pool
         processes = 5
