@@ -976,45 +976,50 @@ class Instrument(object):
 
         return copy.deepcopy(self)
 
-    def concat_data(self, data, *args, **kwargs):
-        """Concats data1 and data2 for xarray or pandas as needed
-
+    def concat_data(self, new_data, prepend=False, **kwargs):
+        """Concats new_data to self.data for xarray or pandas as needed
         Parameters
         ----------
-        data : pandas or xarray
-           Data to be appended to data already within the Instrument object
-
-        Returns
-        -------
-        void
-            Instrument.data modified in place.
-
+        new_data : pds.DataFrame, xr.Dataset, or list of such objects
+            New data objects to be concatonated
+        prepend : boolean
+            If True, assign new data before existing data; if False append new
+            data (default=False)
+        **kwargs : dict
+            Optional keyword arguments passed to pds.concat or xr.concat
         Note
         ----
         For pandas, sort=False is passed along to the underlying
         pandas.concat method. If sort is supplied as a keyword, the
-        user provided value is used instead.
-
-        For xarray, dim='Epoch' is passed along to xarray.concat
-        except if the user includes a value for dim as a
-        keyword argument.
-
+        user provided value is used instead.  Recall that sort orders the
+        data columns, not the data values or the index.
+        For xarray, dim=Instrument.index.name is passed along to xarray.concat
+        except if the user includes a value for dim as a keyword argument.
         """
+        # Order the data to be concatonated in a list
+        if not isinstance(new_data, list):
+            new_data = [new_data]
 
-        if self.pandas_format:
-            if 'sort' in kwargs:
-                sort = kwargs['sort']
-                _ = kwargs.pop('sort')
-            else:
-                sort = False
-            return pds.concat(data, sort=sort, *args, **kwargs)
+        if prepend:
+            new_data.append(self.data)
         else:
-            if 'dim' in kwargs:
-                dim = kwargs['dim']
-                _ = kwargs.pop('dim')
-            else:
-                dim = self.index.name
-            return xr.concat(data, dim=dim, *args, **kwargs)
+            new_data.insert(0, self.data)
+
+        # Retrieve the appropriate concatonation function
+        if self.pandas_format:
+            # Specifically do not sort unless otherwise specified
+            if 'sort' not in kwargs:
+                kwargs['sort'] = False
+            concat_func = pds.concat
+        else:
+            # Specify the dimension, if not otherwise specified
+            if 'dim' not in kwargs:
+                kwargs['dim'] = self.index.name
+            concat_func = xr.concat
+
+        # Assign the concatonated data to the instrument
+        self.data = concat_func(new_data, **kwargs)
+        return
 
     def _pass_method(*args, **kwargs):
         """ Default method for updateable Instrument methods
@@ -1873,7 +1878,7 @@ class Instrument(object):
                 if not self.empty:
                     if self.index[-1] == temp_time:
                         self.data = self[:-1]
-                    self.data = self.concat_data([self.data, stored_data])
+                    self.concat_data(stored_data, prepend=False)
                 else:
                     self.data = stored_data
 
@@ -1888,7 +1893,7 @@ class Instrument(object):
                 if not self.empty:
                     if (self.index[0] == temp_time):
                         self.data = self[1:]
-                    self.data = self.concat_data([stored_data, self.data])
+                    self.concat_data(stored_data, prepend=True)
                 else:
                     self.data = stored_data
 
