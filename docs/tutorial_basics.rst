@@ -172,13 +172,13 @@ Data is loaded into a pysat.Instrument object, in this case dmsp, using the
    # load by year, day of year
    dmsp.load(2001, 1)
    # load by datetime
-   dmsp.load(date=datetime.datetime(2001, 1, 1))
+   dmsp.load(date=dt.datetime(2001, 1, 1))
    # load by filename
    dmsp.load(fname='dms_ut_20010101_12.002.hdf5')
    # load by filename
    dmsp.load(fname=dmsp.files[0])
    # load by filename
-   dmsp.load(fname=dmsp.files[datetime.datetime(2001, 1, 1)])
+   dmsp.load(fname=dmsp.files[dt.datetime(2001, 1, 1)])
 
 When the pysat load routine runs it stores the instrument data into dmsp.data.
 pysat supports the use of two different data structures,
@@ -214,13 +214,13 @@ Loading data using datetimes.
 .. code:: python
 
    # load by datetimes
-   dmsp.load(date=datetime.datetime(2001, 1, 1),
-             end_date=datetime.datetime(2001, 1, 3))
+   dmsp.load(date=dt.datetime(2001, 1, 1),
+             end_date=dt.datetime(2001, 1, 3))
 
    # the following two load commands are equivalent
-   dmsp.load(date=datetime.datetime(2001, 1, 1),
-             end_date=datetime.datetime(2001, 1, 2))
-   dmsp.load(date=datetime.datetime(2001, 1, 1))
+   dmsp.load(date=dt.datetime(2001, 1, 1),
+             end_date=dt.datetime(2001, 1, 2))
+   dmsp.load(date=dt.datetime(2001, 1, 1))
 
 Loading data using filenames.
 
@@ -238,8 +238,8 @@ Loading data using filenames.
 
    # load by filenames. Includes data from 2001, 1 up to but not
    # including 2001, 3
-   dmsp.load(fname=dmsp.files[datetime.datetime(2001, 1, 1)],
-             stop_fname=dmsp.files[datetime.datetime(2001, 1, 2)])
+   dmsp.load(fname=dmsp.files[dt.datetime(2001, 1, 1)],
+             stop_fname=dmsp.files[dt.datetime(2001, 1, 2)])
 
 For small size data sets, such as space weather indices, pysat also supports
 loading all data at once.
