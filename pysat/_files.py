@@ -501,13 +501,13 @@ class Files(object):
             all intervals.
 
         """
-        if hasattr(start, '__iter__') & hasattr(stop, '__iter__'):
+        if hasattr(start, '__iter__') and hasattr(stop, '__iter__'):
             files = []
             for (sta, stp) in zip(start, stop):
                 id1 = self.get_index(sta)
                 id2 = self.get_index(stp)
                 files.extend(self.files.iloc[id1:(id2 + 1)])
-        elif hasattr(start, '__iter__') | hasattr(stop, '__iter__'):
+        elif hasattr(start, '__iter__') or hasattr(stop, '__iter__'):
             estr = 'Either both or none of the inputs need to be iterable'
             raise ValueError(estr)
         else:
