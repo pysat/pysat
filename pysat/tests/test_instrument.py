@@ -1185,6 +1185,7 @@ class TestBasics():
         """Test setting bounds with non-default step"""
         start = self.ref_time
         stop = self.ref_time + pds.DateOffset(days=14)
+        stop = stop.to_pydatetime()
         self.testInst.bounds = (start, stop, 'M')
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='M').tolist())
@@ -1193,6 +1194,7 @@ class TestBasics():
         """Test iterating bounds with non-default step"""
         start = self.ref_time
         stop = self.ref_time + pds.DateOffset(days=15)
+        stop = stop.to_pydatetime()
         self.testInst.bounds = (start, stop, '2D')
         dates = []
         for inst in self.testInst:
@@ -1203,7 +1205,8 @@ class TestBasics():
     def test_set_bounds_with_frequency_and_width(self):
         """Set date bounds with step/width>1"""
         start = self.ref_time
-        stop = self.ref_time + pds.DateOffset(days=25)
+        stop = self.ref_time + pds.DateOffset(months=11, days=25)
+        stop = stop.to_pydatetime()
         self.testInst.bounds = (start, stop, '10D', pds.DateOffset(days=10))
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='10D').tolist())
