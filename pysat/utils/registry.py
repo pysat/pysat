@@ -57,8 +57,8 @@ def load_saved_modules():
     """
 
     saved_modules = {}
-    fpath = os.path.join(pysat.pysat_dir, 'user_modules.txt')
-    with open(fpath, 'r') as fopen:
+    user_modules_file = os.path.join(pysat.pysat_dir, 'user_modules.txt')
+    with pysat.utils.NetworkLock(user_modules_file, 'r') as fopen:
         for line in fopen:
             if line != '' and (line is not None):
                 # remove trailing whitespace
@@ -75,7 +75,7 @@ def load_saved_modules():
 
 
 def store():
-    """Store registered pysat.Instrument user modules to disk"""
+    """Rewrite user_modules.txt based on current listing"""
 
     with open(os.path.join(pysat.pysat_dir, 'user_modules.txt'), 'w') as fopen:
         for platform in pysat.user_modules:
@@ -87,6 +87,10 @@ def store():
                 out = ' '.join((platform, name, inst_mod, '\n'))
                 # store
                 fopen.write(out)
+
+        # in case of network file system
+        fopen.flush()
+        os.fsync(fopen.fileno())
 
 
 def register(module_names, overwrite=False):
