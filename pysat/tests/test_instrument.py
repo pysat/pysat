@@ -38,6 +38,86 @@ class TestBasics():
         """Runs after every method to clean up previous testing."""
         del self.testInst, self.out, self.ref_time, self.ref_doy
 
+    def support_iter_evaluations(self, values, for_loop=False, reverse=False):
+        """Supports testing of .next/.prev via dates/files"""
+        # first, treat with no processing to provide testing as inputs
+        # supplied
+        if len(values) == 4:
+            # testing by date
+            starts = values[0]
+            stops = values[1]
+            step = values[2]
+            width = values[3]
+            self.testInst.bounds = (starts, stops, step, width)
+        elif len(values) == 6:
+            # testing by file
+            start_files = values[0]
+            starts = values[1]
+            stop_files = values[2]
+            stops = values[3]
+            step = values[4]
+            width = values[5]
+            self.testInst.bounds = (start_files, stop_files, step, width)
+
+        # create list of dates for consistency of later code
+        starts = np.asarray([starts])
+        stops = np.asarray([stops])
+        if len(starts.shape) > 1:
+            starts = starts.squeeze().tolist()
+            stops = stops.squeeze().tolist()
+        else:
+            starts = starts.tolist()
+            stops = stops.tolist()
+
+        # iterate until we run out of bounds
+        dates = []
+        time_range = []
+        if for_loop:
+            # iterate via for loop option
+            for inst in self.testInst:
+                dates.append(inst.date)
+                time_range.append((inst.index[0],
+                                   inst.index[-1]))
+        else:
+            # .next/.prev iterations
+            if reverse:
+                iterator = self.testInst.prev
+            else:
+                iterator = self.testInst.next
+            try:
+                while True:
+                    iterator()
+                    dates.append(self.testInst.date)
+                    time_range.append((self.testInst.index[0],
+                                       self.testInst.index[-1]))
+            except StopIteration:
+                # reached the end
+                pass
+
+        # Deal with file or date iteration, make file inputs same as date for
+        # verification purposes.
+        if isinstance(step, int):
+            step = str(step) + 'D'
+        if isinstance(width, int):
+            width = pds.DateOffset(days=width)
+
+        out = []
+        for start, stop in zip(starts, stops):
+            tdate = stop - width + pds.DateOffset(days=1)
+            out.extend(pds.date_range(start, tdate, freq=step).tolist())
+        if reverse:
+            out = out[::-1]
+        assert np.all(dates == out)
+
+        output = {}
+        output['expected_times'] = out
+        output['observed_times'] = time_range
+        output['starts'] = starts
+        output['stops'] = stops
+        output['width'] = width
+        output['step'] = step
+        return output
+
     # -------------------------------------------------------------------------
     #
     # Test basic loads, by date, filename, file id, as well as prev/next
@@ -1102,15 +1182,17 @@ class TestBasics():
             self.testInst.next()
 
     def test_set_bounds_with_frequency(self):
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2010, 1, 15)
+        """Test setting bounds with non-default step"""
+        start = self.ref_time
+        stop = self.ref_time + pds.DateOffset(days=14)
         self.testInst.bounds = (start, stop, 'M')
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='M').tolist())
 
     def test_iterate_bounds_with_frequency(self):
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2009, 1, 16)
+        """Test iterating bounds with non-default step"""
+        start = self.ref_time
+        stop = self.ref_time + pds.DateOffset(days=15)
         self.testInst.bounds = (start, stop, '2D')
         dates = []
         for inst in self.testInst:
@@ -1120,91 +1202,11 @@ class TestBasics():
 
     def test_set_bounds_with_frequency_and_width(self):
         """Set date bounds with step/width>1"""
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2009, 12, 26)
+        start = self.ref_time
+        stop = self.ref_time + pds.DateOffset(days=25)
         self.testInst.bounds = (start, stop, '10D', pds.DateOffset(days=10))
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='10D').tolist())
-
-    def support_iter_evaluations(self, values, for_loop=False, reverse=False):
-        """Supports testing of .next/.prev via dates/files"""
-        # first, treat with no processing to provide testing as inputs
-        # supplied
-        if len(values) == 4:
-            # testing by date
-            starts = values[0]
-            stops = values[1]
-            step = values[2]
-            width = values[3]
-            self.testInst.bounds = (starts, stops, step, width)
-        elif len(values) == 6:
-            # testing by file
-            start_files = values[0]
-            starts = values[1]
-            stop_files = values[2]
-            stops = values[3]
-            step = values[4]
-            width = values[5]
-            self.testInst.bounds = (start_files, stop_files, step, width)
-
-        # create list of dates for consistency of later code
-        starts = np.asarray([starts])
-        stops = np.asarray([stops])
-        if len(starts.shape) > 1:
-            starts = starts.squeeze().tolist()
-            stops = stops.squeeze().tolist()
-        else:
-            starts = starts.tolist()
-            stops = stops.tolist()
-
-        # iterate until we run out of bounds
-        dates = []
-        time_range = []
-        if for_loop:
-            # iterate via for loop option
-            for inst in self.testInst:
-                dates.append(inst.date)
-                time_range.append((inst.index[0],
-                                   inst.index[-1]))
-        else:
-            # .next/.prev iterations
-            if reverse:
-                iterator = self.testInst.prev
-            else:
-                iterator = self.testInst.next
-            try:
-                while True:
-                    iterator()
-                    dates.append(self.testInst.date)
-                    time_range.append((self.testInst.index[0],
-                                       self.testInst.index[-1]))
-            except StopIteration:
-                # reached the end
-                pass
-
-        # Deal with file or date iteration, make file inputs same as date for
-        # verification purposes.
-        if isinstance(step, int):
-            step = str(step) + 'D'
-        if isinstance(width, int):
-            width = pds.DateOffset(days=width)
-
-        out = []
-        for start, stop in zip(starts, stops):
-            tdate = stop - width + pds.DateOffset(days=1)
-            out.extend(pds.date_range(start, tdate, freq=step).tolist())
-        if reverse:
-            out = out[::-1]
-        assert np.all(dates == out)
-
-        output = {}
-        output['expected_times'] = out
-        output['observed_times'] = time_range
-        output['starts'] = starts
-        output['stops'] = stops
-        output['width'] = width
-        output['step'] = step
-        return output
 
     def verify_inclusive_iteration(self, out, forward=True):
         """Verify loaded dates for inclusive iteration, forward or backward"""
@@ -1552,6 +1554,7 @@ class TestBasics():
             self.testInst.bounds = [start, '2009-01-01.nofile']
 
     def test_set_bounds_wrong_type(self):
+        """Test Exception when setting bounds with inconsistent types"""
         start = dt.datetime(2009, 1, 1)
         with pytest.raises(ValueError):
             self.testInst.bounds = [start, 1]
@@ -1586,6 +1589,7 @@ class TestBasics():
         assert str(err).find(estr) >= 0
 
     def test_set_bounds_by_date(self):
+        """Test setting bounds with datetimes over simple range"""
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 15)
         self.testInst.bounds = (start, stop)
@@ -1624,19 +1628,13 @@ class TestBasics():
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop).tolist())
 
-    def test_iterate_over_bounds_set_by_date(self):
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2009, 1, 15)
-        self.testInst.bounds = (start, stop)
-        dates = []
-        for inst in self.testInst:
-            dates.append(inst.date)
-        out = pds.date_range(start, stop).tolist()
-        assert np.all(dates == out)
-
-    def test_iterate_over_bounds_set_by_end_date(self):
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2010, 12, 31)
+    @pytest.mark.parametrize("start,stop", [(dt.datetime(2008, 1, 1),
+                                             dt.datetime(2010, 12, 31)),
+                                            (dt.datetime(2009, 1, 1),
+                                             dt.datetime(2009, 1, 15))
+                                            ])
+    def test_iterate_over_bounds_set_by_date(self, start, stop):
+        """Test iterating over bounds via single date range"""
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -1851,6 +1849,7 @@ class TestBasics():
         return
 
     def test_iterate_over_bounds_set_by_fname_season(self):
+        """Test set bounds using multiple filenames"""
         start = ['2009-01-01.nofile', '2009-02-01.nofile']
         stop = ['2009-01-15.nofile', '2009-02-15.nofile']
         start_d = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
@@ -1864,6 +1863,7 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_set_bounds_fname_with_frequency(self):
+        """Test set bounds using filenames and non-default step"""
         start = '2009-01-01.nofile'
         start_date = dt.datetime(2009, 1, 1)
         stop = '2009-01-03.nofile'
@@ -1878,6 +1878,7 @@ class TestBasics():
         assert np.all(date_list == out)
 
     def test_iterate_bounds_fname_with_frequency(self):
+        """Test iterate over bounds using filenames and non-default step"""
         start = '2009-01-01.nofile'
         start_date = dt.datetime(2009, 1, 1)
         stop = '2009-01-03.nofile'
@@ -2294,11 +2295,12 @@ class TestBasics():
         return
 
     def test_creating_empty_instrument_object(self):
+        """Ensure empty Instrument instantiation runs"""
         null = pysat.Instrument()
-
         assert isinstance(null, pysat.Instrument)
 
     def test_incorrect_creation_empty_instrument_object(self):
+        """Ensure instantiation with missing name errors"""
         with pytest.raises(ValueError) as err:
             # both name and platform should be empty
             _ = pysat.Instrument(platform='cnofs')
@@ -2306,6 +2308,7 @@ class TestBasics():
         assert str(err).find(estr) >= 0
 
     def test_supplying_instrument_module_requires_name_and_platform(self):
+        """Ensure instantiation via inst_module with missing name errors"""
         class Dummy:
             pass
         Dummy.name = 'help'
@@ -2414,6 +2417,7 @@ class TestMalformedIndex():
     #
     # -------------------------------------------------------------------------
     def test_ensure_unique_index(self):
+        """Ensure that if Instrument index not-unique error is raised"""
         with pytest.raises(ValueError) as err:
             self.testInst.load(self.ref_time.year, self.ref_doy)
         estr = 'Loaded data is not unique.'
@@ -2470,6 +2474,7 @@ class TestDataPaddingbyFile():
         del self.testInst, self.rawInst, self.delta
 
     def test_fname_data_padding(self):
+        """Test data padding loading by filename"""
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[1])
         self.delta = pds.DateOffset(minutes=5)
@@ -2477,6 +2482,7 @@ class TestDataPaddingbyFile():
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
     def test_fname_data_padding_next(self):
+        """Test data padding loading by filename when using next"""
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[2])
@@ -2485,7 +2491,8 @@ class TestDataPaddingbyFile():
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
     def test_fname_data_padding_multi_next(self):
-        """This also tests that _prev_data and _next_data cacheing"""
+        """Test data padding loading by filename when using next multiple times
+        """
         self.testInst.load(fname=self.testInst.files[1])
         self.testInst.next()
         self.testInst.next(verifyPad=True)
@@ -2495,6 +2502,7 @@ class TestDataPaddingbyFile():
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
     def test_fname_data_padding_prev(self):
+        """Test data padding loading by filename when using prev"""
         self.testInst.load(fname=self.testInst.files[2], verifyPad=True)
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[1])
@@ -2503,7 +2511,8 @@ class TestDataPaddingbyFile():
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
     def test_fname_data_padding_multi_prev(self):
-        """This also tests that _prev_data and _next_data cacheing"""
+        """Test data padding loading by filename when using prev multiple times
+        """
         self.testInst.load(fname=self.testInst.files[10])
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
@@ -2513,6 +2522,7 @@ class TestDataPaddingbyFile():
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
     def test_fname_data_padding_jump(self):
+        """Test data padding by filename after loading non-consecutive file"""
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.testInst.load(fname=self.testInst.files[10], verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[10])
@@ -2521,16 +2531,19 @@ class TestDataPaddingbyFile():
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
     def test_fname_data_padding_uniqueness(self):
+        """Ensure uniqueness data padding when loading by file"""
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         assert (self.testInst.index.is_unique)
 
     def test_fname_data_padding_all_samples_present(self):
+        """Ensure all samples present when padding and loading by file"""
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.delta = pds.date_range(self.testInst.index[0],
                                     self.testInst.index[-1], freq='S')
         assert (np.all(self.testInst.index == self.delta))
 
     def test_fname_data_padding_removal(self):
+        """Ensure padded samples nominally dropped, loading by file."""
         self.testInst.load(fname=self.testInst.files[1])
         self.rawInst.load(fname=self.testInst.files[1])
         assert self.testInst.index[0] == self.rawInst.index[0]
@@ -2670,6 +2683,7 @@ class TestDataPadding():
                 + pds.DateOffset(minutes=5))
 
     def test_data_padding_bad_instantiation(self):
+        """Ensure error when padding input type incorrect"""
         with pytest.raises(ValueError) as err:
             pysat.Instrument(platform='pysat', name='testing',
                              clean_level='clean',
