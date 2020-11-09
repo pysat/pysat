@@ -81,6 +81,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     methods.general.convert_timestamp_to_datetime
   - Renamed `sat_id` Instrument keyword argument to `inst_id`
   - Updated instrument templates
+  - Simplified internal logic in Instrument class
+  - Updated Instrument.concat_func to behave as described in the docstring
 
 ## [2.2.1] - 2020-07-29
 - Documentation

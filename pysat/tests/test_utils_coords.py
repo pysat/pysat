@@ -84,7 +84,7 @@ class TestLonSLT():
         """
 
         self.py_inst = pysat.Instrument(platform='pysat', name=name,
-                                        inst_id='1')
+                                        num_samples=1)
         self.py_inst.load(date=self.inst_time)
 
         coords.calc_solar_local_time(self.py_inst, lon_name="longitude",
