@@ -189,7 +189,8 @@ class Orbits(object):
                          'when the pysat.Instrument bounds are',
                          'configured for loading overlapping',
                          'data. Please set the Instrument bounds width',
-                         'to be less than or equal to the step size.'))
+                         'to be less than or equal to the bounds step ',
+                         'increment. See `pysat.Instrument.bounds` for more.'))
         if self.sat._iter_type == 'file':
             if self.sat._iter_step < self.sat._iter_width:
                 raise ValueError(estr)
