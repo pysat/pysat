@@ -472,9 +472,7 @@ class TestGeneralOrbitsNonStandardIteration():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        del self.testInst
-        del self.orbit_starts
-        del self.orbit_stops
+        del self.testInst, self.orbit_starts, self.orbit_stops
 
     def test_no_orbit_overlap_with_overlapping_iteration(self):
         """Ensure error when overlap in iteration data."""
