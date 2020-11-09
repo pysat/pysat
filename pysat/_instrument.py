@@ -2596,7 +2596,7 @@ class Instrument(object):
             step = self._iter_step
             width = self._iter_width
             if self._fid is not None:
-                if (self._fid - step < first) | (self._fid > last):
+                if (self._fid - step < first) or (self._fid > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
                     # find location of file
@@ -3512,7 +3512,7 @@ def _check_load_arguments_none(*args, raise_error=False):
 
     Parameters
     ----------
-    *args : mixed
+    *args : iterable object
         Variables that are to checked to ensure None
     raise_error : bool
         If True, an error is raised if all args aren't None (default=False)
