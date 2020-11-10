@@ -1260,7 +1260,7 @@ class MetaLabels(object):
         String used to label variable descriptions in storage.
         (default='desc')
     plot : str
-        String used to label variables in plots. (default='label')
+        String used to label variables in plots. (default='plot')
     axis : str
         Label used for axis on a plot. (default='axis')
     scale : str
@@ -1294,7 +1294,7 @@ class MetaLabels(object):
        String used to label variable descriptions in storage.
        (default='desc'
     plot_label : str
-       String used to label variables in plots. (default='label'
+       String used to label variables in plots. (default='plot'
     axis_label : str
         Label used for axis on a plot. (default='axis'
     scale_label : str
@@ -1500,4 +1500,3 @@ class MetaLabels(object):
                 self.label_type[attr_name])
 
         return default_val
-
