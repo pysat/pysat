@@ -23,7 +23,7 @@ class Meta(object):
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
                   'notes': ('notes', str), 'desc': ('desc', str),
-                  'plot': ('plot_label', str), 'axis': ('axis', str),
+                  'plot': ('plot', str), 'axis': ('axis', str),
                   'scale': ('scale', str), 'min_val': ('value_min', float),
                   'max_val': ('value_max', float), 'fill_val': ('fill', float)})
     export_nan : list
@@ -53,15 +53,15 @@ class Meta(object):
     object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, name, notes, desc, plot_label, axis, scale, value_min,
+    attributes (units, name, notes, desc, plot, axis, scale, value_min,
     value_max, and fill). These base attributes may be used to programatically
     access and set types of metadata regardless of the string values used for
     the attribute. String values for attributes may need to be changed
     depending upon the standards of code or files interacting with pysat.
 
     Meta objects returned as part of pysat loading routines are automatically
-    updated to use the same values of plot_label, units_label, etc. as found
-    on the pysat.Instrument object.
+    updated to use the same values of plot, units, etc. as found in the
+    pysat.Instrument object.
 
     Examples
     --------
@@ -138,7 +138,7 @@ class Meta(object):
     def __init__(self, metadata=None,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot_label', str), 'axis': ('axis', str),
+                         'plot': ('plot', str), 'axis': ('axis', str),
                          'scale': ('scale', str),
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
@@ -706,9 +706,9 @@ class Meta(object):
 
         Note
         ----
-        Sets NaN for all float values, -1 for all int values, and '' for all
-        str values except for 'scale', which defaults to 'linear', and None
-        for any othere data type.
+        Sets NaN for all float values, -1 for all int values, 'data_var' for
+        names and plot labels, 'linear' for the scale label, '' for all
+        other str values, and None for any othere data type.
 
         """
         # Cycle through each label type to create a list off label names
@@ -717,7 +717,11 @@ class Meta(object):
         default_vals = list()
         for lattr in self.labels.label_type.keys():
             labels.append(getattr(self.labels, lattr))
-            default_vals.append(self.labels.default_values_from_attr(lattr))
+
+            if lattr in ['name', 'plot', 'axis']:
+                default_vals.append(data_var)
+            else:
+                default_vals.append(self.labels.default_values_from_attr(lattr))
 
         # Assign the default values to the DataFrame for this data variable
         self._data.loc[data_var, labels] = default_vals
@@ -1285,29 +1289,29 @@ class MetaLabels(object):
         index is variable standard name, 'units', 'long_name', and other
         defaults are also stored along with additional user provided labels.
     units_label : str
-        String used to label units in storage. (default='units'.
+        String used to label units in storage. (default='units')
     name_label : str
-        String used to label long_name in storage. (default='long_name'.
+        String used to label long_name in storage. (default='long_name')
     notes_label : str
-       String used to label 'notes' in storage. (default='notes'
+       String used to label 'notes' in storage. (default='notes')
     desc_label : str
        String used to label variable descriptions in storage.
-       (default='desc'
+       (default='desc')
     plot_label : str
-       String used to label variables in plots. (default='plot'
+       String used to label variables in plots. (default='plot')
     axis_label : str
-        Label used for axis on a plot. (default='axis'
+        Label used for axis on a plot. (default='axis')
     scale_label : str
-       string used to label plot scaling type in storage. (default='scale'
+       string used to label plot scaling type in storage. (default='scale')
     min_label : str
        String used to label typical variable value min limit in storage.
-       (default='value_min'
+       (default='value_min')
     max_label : str
        String used to label typical variable value max limit in storage.
-       (default='value_max'
+       (default='value_max')
     fill_label : str
-        String used to label fill value in storage. (default='fill' per
-        netCDF4 standard
+        String used to label fill value in storage. The default follows the
+        netCDF4 standards (default='fill')
 
     Note
     ----
@@ -1330,8 +1334,8 @@ class MetaLabels(object):
     depending upon the standards of code or files interacting with pysat.
 
     Meta objects returned as part of pysat loading routines are automatically
-    updated to use the same values of plot_label, units_label, etc. as found
-    on the pysat.Instrument object.
+    updated to use the same values of plot, units, etc. as found in the
+    pysat.Instrument object.
 
     """
 
