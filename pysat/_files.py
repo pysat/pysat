@@ -356,7 +356,7 @@ class Files(object):
     def refresh(self):
         """Update list of files, if there are changes.
 
-        Calls underlying list_rtn for the particular science instrument.
+        Calls underlying list_files_rtn for the particular science instrument.
         Typically, these routines search in the pysat provided path,
         pysat_data_dir/platform/name/tag/,
         where pysat_data_dir is set by pysat.utils.set_data_dir(path=path).
@@ -369,12 +369,13 @@ class Files(object):
                                        name=self._sat.name, tag=self._sat.tag,
                                        inst_id=self._sat.inst_id)
         output_str = " ".join(("pysat is searching for", output_str, "files."))
-        output_str = " ".join(output_str.split())
+        output_str = " ".join(output_str.split())  # Remove duplicate whitespace
         logger.info(output_str)
 
-        info = self._sat._list_rtn(tag=self._sat.tag, inst_id=self._sat.inst_id,
-                                   data_path=self.data_path,
-                                   format_str=self.file_format)
+        info = self._sat._list_files_rtn(tag=self._sat.tag,
+                                         inst_id=self._sat.inst_id,
+                                         data_path=self.data_path,
+                                         format_str=self.file_format)
         info = self._remove_data_dir_path(info)
         if not info.empty:
             if self.ignore_empty_files:
@@ -545,9 +546,10 @@ class Files(object):
             '1900' will be added for years >= two_digit_year_break
             and '2000' will be added for years < two_digit_year_break.
             If None, then four-digit years are assumed. (default=None)
-        delimiter : string
-            If set, then filename will be processed using delimiter rather
-            than assuming a fixed width (default=None)
+        delimiter : string or NoneType
+            Delimiter string upon which files will be split (e.g., '.'). If
+            None, filenames will be parsed presuming a fixed width format.
+            (default=None)
 
         Note
         ----
@@ -686,6 +688,8 @@ def parse_delimited_filenames(files, format_str, delimiter):
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
         and 'revision'
         Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+    delimiter : string
+        Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------

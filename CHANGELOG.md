@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-08-28
+## [3.0.0] - 2020-09-17
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -17,6 +17,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Use of start / stop notation in remote_file_list
   - Added variable rename method to Instrument object (#91)
   - Migrated file methods to pysat.utils.files (#336)
+  - Added file locking for thread-safe behavior (#304)
+  - Allow the Instrument object to be initialized with optional kwargs for any
+    of the standard methods (not just load).
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -57,6 +60,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed coupling of two_digit_year_break keyword to underlying method in
     methods.general.list_files
   - Fixed additional file date range for monthly data with gaps
+  - Removed unused input arguments
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility

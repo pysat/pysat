@@ -69,15 +69,16 @@ def init(self):
     self.references = mm_test.refs
 
     # work on file index if keyword present
-    if self.kwargs['file_date_range'] is not None:
+    if self.kwargs['load']['file_date_range'] is not None:
         # set list files routine to desired date range
         # attach to the instrument object
-        fdr = self.kwargs['file_date_range']
-        self._list_rtn = functools.partial(list_files, file_date_range=fdr)
+        fdr = self.kwargs['load']['file_date_range']
+        self._list_files_rtn = functools.partial(list_files,
+                                                 file_date_range=fdr)
         self.files.refresh()
 
     # mess with file dates if kwarg option present
-    if self.kwargs['mangle_file_dates']:
+    if self.kwargs['load']['mangle_file_dates']:
         self.files.files.index = \
             self.files.files.index + pds.DateOffset(minutes=5)
     return
@@ -86,14 +87,18 @@ def init(self):
 def default(self):
     """Default customization function.
 
+    Note
+    ----
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue).
 
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
+    """
 
+    pass
+
+
+def clean(self):
+    """Cleaning function
     """
 
     pass

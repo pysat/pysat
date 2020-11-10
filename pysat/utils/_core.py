@@ -5,6 +5,7 @@ import netCDF4
 import numpy as np
 import os
 import pandas as pds
+from portalocker import Lock
 import xarray as xr
 
 import pysat
@@ -30,9 +31,11 @@ def set_data_dir(path=None, store=True):
 
     if os.path.isdir(path):
         if store:
-            with open(os.path.join(os.path.expanduser('~'), '.pysat',
-                                   'data_path.txt'), 'w') as f:
-                f.write(path)
+            data_path_file = os.path.join(os.path.expanduser('~'),
+                                          '.pysat', 'data_path.txt')
+            with NetworkLock(data_path_file, 'w') as fout:
+                fout.write(path)
+
         pysat.data_dir = path
         pysat._files = importlib.reload(pysat._files)
         pysat._instrument = importlib.reload(pysat._instrument)
@@ -555,3 +558,27 @@ def generate_instrument_list(inst_loc):
               'no_download': instrument_no_download}
 
     return output
+
+
+class NetworkLock(Lock):
+    def __init__(self, *args, **kwargs):
+        """Lock manager compatible with networked file systems
+        """
+
+        super(NetworkLock, self).__init__(timeout=pysat.file_timeout, *args,
+                                          **kwargs)
+
+    def release(self):
+        """Releases the Lock so the file system
+
+        From portalocker docs:
+          On some networked filesystems it might be needed to force
+          a `os.fsync()` before closing the file so it's
+          actually written before another client reads the file.
+
+        """
+
+        self.fh.flush()
+        os.fsync(self.fh.fileno())
+
+        super(NetworkLock, self).release()
