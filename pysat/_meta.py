@@ -748,15 +748,6 @@ class Meta(object):
             if True, MetaData variable names are used as the default
             value for the specified Meta attributes settings (default=False)
 
-        Examples
-        --------
-        :
-
-            @name_label.setter
-            def name_label(self, new_label):
-                self._label_setter(new_label, self._name_label,
-                                    use_names_default=True)
-
         Note
         ----
         Not intended for end user
@@ -770,7 +761,7 @@ class Meta(object):
                 self.data.loc[:, new_label] = self.data.loc[:, current_label]
                 self.data = self.data.drop(current_label, axis=1)
             else:
-                if self.has_attr(current_label):
+                if self.hasattr_case_neutral(current_label):
                     # There is a similar label with different capitalization
                     current_label = self.attr_case_name(current_label)
                     self.data.loc[:, new_label] = self.data.loc[:,
@@ -816,6 +807,12 @@ class Meta(object):
     @property
     def empty(self):
         """Return boolean True if there is no metadata
+
+        Returns
+        -------
+        bool
+            Returns True if there is no data, and False if there is data
+
         """
 
         # only need to check on lower data since lower data
@@ -856,7 +853,7 @@ class Meta(object):
         # drop higher dimension data
         for name in names:
             if name in self._ho_data:
-                _ = self._ho_data.pop(name)
+                self._ho_data.pop(name)
         return
 
     def keep(self, keep_names):
@@ -1068,7 +1065,8 @@ class Meta(object):
                                                 'objects in keys_nD().')))
 
         # make sure labels between the two objects are the same
-        other_updated = self.apply_default_labels(other)
+        other_updated = other.copy()
+        other_updated.labels = self.labels
 
         # concat 1D metadata in data frames to copy of
         # current metadata
@@ -1201,7 +1199,7 @@ class Meta(object):
         req_names = ['name', 'long_name', 'units']
         if col_names is None:
             col_names = req_names
-        elif not all([i in col_names for i in req_names]):
+        elif not all([rname in col_names for rname in req_names]):
             raise ValueError('col_names must include name, long_name, units.')
 
         if sep is None:
@@ -1425,8 +1423,9 @@ class MetaLabels(object):
 
         """
         # Set the printing limits and get the label attributes
-        ncol = 5
-        lab_attrs = [mlab for mlab in self.label_type.keys()]
+        ncol = 3
+        lab_attrs = ["{:s}->{:s}".format(mlab, getattr(self, mlab))
+                     for mlab in self.label_type.keys()]
         nlabels = len(lab_attrs)
 
         # Print the MetaLabels
