@@ -123,9 +123,9 @@ class Meta(object):
 
         # change a label used by Meta object
         # note that all instances of fill_label
-        # within the meta object are updated
-        meta.fill_label = '_FillValue'
-        meta.plot_label = 'Special Plot Variable'
+        # within the meta object are NOT updated FIX??
+        meta.labels.fill_val = '_FillValue'
+        meta.labels.plot = 'Special Plot Variable'
 
         # this feature is useful when converting metadata within pysat
         # so that it is consistent with externally imposed file standards
@@ -1254,62 +1254,58 @@ class MetaLabels(object):
 
     Parameters
     ----------
-    units : str
-        String used to label units in storage. (default='units')
-    name : str
-        String used to label name in storage. (default='long_name')
-    notes : str
-        String used to label 'notes' in storage. (default='notes')
-    desc : str
-        String used to label variable descriptions in storage.
-        (default='desc')
-    plot : str
-        String used to label variables in plots. (default='plot')
-    axis : str
-        Label used for axis on a plot. (default='axis')
-    scale : str
-        string used to label plot scaling type in storage. (default='scale')
-    min_val : str
-        String used to label typical variable value min limit in storage.
-        (default='value_min')
-    max_val : str
-        String used to label typical variable value max limit in storage.
-        (default='value_max')
-    fill_val : str
-        String used to label fill value in storage. (default='fill') per
-        netCDF4 standard
-    export_nan: list
-         List of labels that should be exported even if their value is nan.
-         By default, metadata with a value of nan will be exluded from export.
-
+    units : tuple
+        Units label name and value type (default=('units', str))
+    name : tuple
+        Name label name and value type (default=('long_name', str))
+    notes : tuple
+        Notes label name and value type (default=('notes', str))
+    desc : tuple
+        Description label name and value type (default=('desc', str))
+    plot : tuple
+        Plot label name and value type (default=('plot', str))
+    axis : tuple
+        Axis label name and value type (default=('axis', str))
+    scale : tuple
+        Scale label name and value type (default=('scale', str))
+    min_val : tuple
+        Minimum value label name and value type (default=('value_min', float))
+    max_val : tuple
+        Maximum value label name and value type (default=('value_max', float))
+    fill_val : tuple
+        Fill value label name and value type (default=('fill', float))
+    kwargs : dict
+        Dictionary containing optional label attributes, where the keys are the
+        attribute names and the values are tuples containing the label name and
+        value type
 
     Attributes
     ----------
     data : pandas.DataFrame
         index is variable standard name, 'units', 'long_name', and other
         defaults are also stored along with additional user provided labels.
-    units_label : str
+    units : str
         String used to label units in storage. (default='units')
-    name_label : str
+    name : str
         String used to label long_name in storage. (default='long_name')
-    notes_label : str
+    notes : str
        String used to label 'notes' in storage. (default='notes')
-    desc_label : str
+    desc : str
        String used to label variable descriptions in storage.
        (default='desc')
-    plot_label : str
+    plot : str
        String used to label variables in plots. (default='plot')
-    axis_label : str
+    axis : str
         Label used for axis on a plot. (default='axis')
-    scale_label : str
+    scale : str
        string used to label plot scaling type in storage. (default='scale')
-    min_label : str
+    min_val : str
        String used to label typical variable value min limit in storage.
        (default='value_min')
-    max_label : str
+    max_val : str
        String used to label typical variable value max limit in storage.
        (default='value_max')
-    fill_label : str
+    fill_val : str
         String used to label fill value in storage. The default follows the
         netCDF4 standards (default='fill')
 
@@ -1327,7 +1323,7 @@ class MetaLabels(object):
     object, are stored by providing a Meta object under the single name.
 
     Supports any custom metadata values in addition to the expected metadata
-    attributes (units, name, notes, desc, plot_label, axis, scale, value_min,
+    attributes (units, name, notes, desc, plot, axis, scale, value_min,
     value_max, and fill). These base attributes may be used to programatically
     access and set types of metadata regardless of the string values used for
     the attribute. String values for attributes may need to be changed
