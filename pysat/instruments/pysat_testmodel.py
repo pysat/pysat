@@ -103,7 +103,7 @@ meta['uts'] = {'units': 's',
                'custom': False}
 meta['slt'] = {'units': 'hours',
                'long_name': 'Solar Local Time',
-               'label': 'SLT',
+               'plot': 'Solar Local Times',
                'axis': 'SLT',
                'desc': 'Solar Local Time',
                'value_min': 0.0,
