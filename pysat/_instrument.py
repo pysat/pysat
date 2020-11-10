@@ -1513,8 +1513,8 @@ class Instrument(object):
 
         # check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.variables] = {self.name_label: self.variables,
-                                         self.units_label:
+            self.meta[self.variables] = {self.labels.name: self.variables,
+                                         self.labels.units:
                                          [''] * len(self.variables)}
 
         # if loading by file set the yr, doy, and date
