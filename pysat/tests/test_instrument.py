@@ -356,6 +356,14 @@ class TestBasics():
         self.testInst._base_attr
         assert '_base_attr' in dir(self.testInst)
 
+    def test_inst_attributes_not_overridden(self):
+        """Test that custom Instrument attributes are not overwritten upon load
+        """
+        greeting = '... listen!'
+        self.testInst.hei = greeting
+        self.testInst.load(date=self.ref_time)
+        assert self.testInst.hei == greeting
+
     # -------------------------------------------------------------------------
     #
     # test textual representations
