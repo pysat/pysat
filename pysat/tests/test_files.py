@@ -3,8 +3,10 @@ tests the pysat meta object and code
 """
 import datetime as dt
 import glob
+from importlib import reload
 import numpy as np
 import os
+import time
 import warnings
 
 import pandas as pds
@@ -14,8 +16,7 @@ import tempfile
 import pysat
 import pysat.instruments.pysat_testing
 from pysat.utils import files as futils
-
-from importlib import reload
+from pysat.utils import NetworkLock
 
 
 def create_dir(inst=None, temporary_file_list=False):
@@ -33,7 +34,7 @@ def create_dir(inst=None, temporary_file_list=False):
 
 
 def remove_files(inst=None):
-    # remove any files
+    # remove any files like pysat_testing_junk_
     temp_dir = inst.files.data_path
     for the_file in os.listdir(temp_dir):
         if (the_file[0:13] == 'pysat_testing') & \
@@ -45,7 +46,7 @@ def remove_files(inst=None):
 
 # create year doy file set
 def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
-                 content=None):
+                 content=None, timeout=None):
 
     if freq is None:
         freq = '1D'
@@ -65,9 +66,11 @@ def create_files(inst, start, stop, freq=None, use_doy=True, root_fname=None,
         fname = os.path.join(inst.files.data_path, root_fname.format(year=yr,
                              day=doy, month=date.month, hour=date.hour,
                              minute=date.minute, second=date.second))
-        with open(fname, 'w') as f:
+        with NetworkLock(fname, 'w') as fout:
             if content is not None:
-                f.write(content)
+                fout.write(content)
+            if timeout is not None:
+                time.sleep(timeout)
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None):
@@ -655,7 +658,7 @@ class TestInstrumentWithFilesNoFileListStorage(TestInstrumentWithFiles):
 
 # create year doy file set with multiple versions
 def create_versioned_files(inst, start=None, stop=None, freq='1D',
-                           use_doy=True, root_fname=None):
+                           use_doy=True, root_fname=None, timeout=None):
     # create a bunch of files
     if start is None:
         start = dt.datetime(2009, 1, 1)
@@ -690,7 +693,9 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
                                                        second=date.second,
                                                        version=version,
                                                        revision=revision))
-                open(fname, 'w')
+                with NetworkLock(fname, 'w'):
+                    if timeout is not None:
+                        time.sleep(timeout)
 
 
 def list_versioned_files(tag=None, inst_id=None, data_path=None,
@@ -967,6 +972,109 @@ class TestInstrumentWithVersionedFiles():
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         assert (np.all(self.testInst.files.files.index == dates))
+
+
+def create_instrument(j):
+    """This function must be in the top level to be picklable
+
+    update_files should update the file list in .pysat
+    """
+    root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
+                          '_{day:03d}{hour:02d}{minute:02d}',
+                          '{second:02d}_stuff_{version:02d}_',
+                          '{revision:03d}.pysat_testing_file'))
+
+    testInst = \
+        pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                         clean_level='clean',
+                         update_files=True,
+                         temporary_file_list=False)
+
+    start = dt.datetime(2007, 12, 30)
+    stop = dt.datetime(2007, 12, 31)
+    create_versioned_files(testInst, start, stop,
+                           freq='1D', use_doy=False,
+                           root_fname=root_fname,
+                           timeout=0.5)
+
+    testInst = \
+        pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                         clean_level='clean',
+                         update_files=True,
+                         temporary_file_list=False)
+
+    print('initial files created in {}:'.format(testInst.files.data_path))
+
+    return 'instrument {}'.format(j)
+
+
+class TestFilesRaceCondition():
+
+    temporary_file_list = False
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        # store current pysat directory
+        self.data_path = pysat.data_dir
+        # create temporary directory
+        dir_name = tempfile.gettempdir()
+        pysat.utils.set_data_dir(dir_name, store=False)
+        # create testing directory
+        create_dir(temporary_file_list=self.temporary_file_list)
+
+        # create a test instrument, make sure it is getting files from
+        # filesystem
+        reload(pysat.instruments.pysat_testing)
+        pysat.instruments.pysat_testing.list_files = list_versioned_files
+        # create a bunch of files by year and doy
+        self.testInst = \
+            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                             clean_level='clean',
+                             temporary_file_list=self.temporary_file_list)
+
+        self.root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
+                                   '_{day:03d}{hour:02d}{minute:02d}',
+                                   '{second:02d}_stuff_{version:02d}_',
+                                   '{revision:03d}.pysat_testing_file'))
+        start = dt.datetime(2007, 12, 30)
+        stop = dt.datetime(2008, 12, 31)
+        create_versioned_files(self.testInst, start, stop, freq='1D',
+                               use_doy=False, root_fname=self.root_fname)
+
+        self.testInst = \
+            pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                             clean_level='clean',
+                             update_files=True,
+                             temporary_file_list=self.temporary_file_list)
+
+        print(' '.join(('initial files created in ',
+                        self.testInst.files.data_path)))
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        remove_files(self.testInst)
+        del self.testInst
+        reload(pysat.instruments.pysat_testing)
+        reload(pysat.instruments)
+        # make sure everything about instrument state is restored
+        # restore original file list, no files
+        pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
+                         clean_level='clean',
+                         update_files=True,
+                         temporary_file_list=self.temporary_file_list)
+        pysat.utils.set_data_dir(self.data_path, store=False)
+
+# TODO: This needs to be replaced or expanded based on the tests that
+# portalocker uses
+    def test_race_condition(self):
+        from multiprocessing import Pool
+        processes = 5
+        p = Pool(processes)
+        pysat.file_timeout = 1
+
+        print('beginning tests with file_timeout {}'.format(pysat.file_timeout))
+        result = p.map(create_instrument, range(processes))
+        print(result)
 
 
 class TestDeprecation():

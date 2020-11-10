@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-08-28
+## [3.0.0] - 2020-09-17
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -21,6 +21,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added support for iterating over a dataset a with a loaded data width and 
     stepsize larger than a single day/file
   - Added check for inconsistent inputs when loading data via Instrument
+  - Added file locking for thread-safe behavior (#304)
   - Allow the Instrument object to be initialized with optional kwargs for any
     of the standard methods (not just load).
 - Deprecations

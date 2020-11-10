@@ -5,5 +5,6 @@ xarray
 dask
 toolz
 netCDF4
+portalocker
 pytest-cov
 pytest-ordering

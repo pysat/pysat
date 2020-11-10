@@ -20,7 +20,7 @@ with codecs.open(os.path.join(here, version_filename)) as version_file:
 # packages to be installed
 # starting with packages common across all setups
 install_requires = ['numpy>=1.12', 'scipy', 'pandas>=0.23', 'xarray',
-                    'netCDF4', 'dask', 'toolz']
+                    'netCDF4', 'portalocker', 'dask', 'toolz']
 
 # flag, True if on readthedocs
 on_rtd = os.environ.get('READTHEDOCS') == 'True'

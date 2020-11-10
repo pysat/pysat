@@ -2067,7 +2067,7 @@ class Instrument(object):
             step = self._iter_step
             width = self._iter_width
             if self._fid is not None:
-                if (self._fid - step < first) | (self._fid > last):
+                if (self._fid - step < first) or (self._fid > last):
                     raise StopIteration('Outside the set file boundaries.')
                 else:
                     # find location of file
@@ -2882,7 +2882,9 @@ class Instrument(object):
             Sequence of dates to download date for. Takes precedence over
             start and stop inputs
         **kwargs : dict
-            Dictionary of keywords that may be options for specific instruments
+            Dictionary of keywords that may be options for specific instruments.
+            The keyword arguments 'user' and 'password' are expected for remote
+            databases requiring sign in or registration.
 
         Note
         ----
@@ -3600,7 +3602,7 @@ def _check_load_arguments_none(*args, raise_error=False):
 
     Parameters
     ----------
-    *args : mixed
+    *args : iterable object
         Variables that are to checked to ensure None
     raise_error : bool
         If True, an error is raised if all args aren't None (default=False)
