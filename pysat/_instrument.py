@@ -76,29 +76,14 @@ class Instrument(object):
         if True, the list of files found will be checked to
         ensure the filesizes are greater than zero. Empty files are
         removed from the stored list of files.
-    units_label : str
-        String used to label units in storage. Defaults to 'units'.
-    name_label : str
-        String used to label long_name in storage. Defaults to 'name'.
-    notes_label : str
-       label to use for notes in storage. Defaults to 'notes'
-    desc_label : str
-       label to use for variable descriptions in storage. Defaults to 'desc'
-    plot_label : str
-       label to use to label variables in plots. Defaults to 'label'
-    axis_label : str
-        label to use for axis on a plot. Defaults to 'axis'
-    scale_label : str
-       label to use for plot scaling type in storage. Defaults to 'scale'
-    min_label : str
-       label to use for typical variable value min limit in storage.
-       Defaults to 'value_min'
-    max_label : str
-       label to use for typical variable value max limit in storage.
-       Defaults to 'value_max'
-    fill_label : str
-        label to use for fill values. Defaults to 'fill' but some
-        implementations will use 'FillVal'
+    labels : dict
+        Dict where keys are the label attribute names and the values are tuples
+        that have the label values and value types in that order.
+        (default={'units': ('units', str), 'name': ('long_name', str),
+                  'notes': ('notes', str), 'desc': ('desc', str),
+                  'plot': ('plot', str), 'axis': ('axis', str),
+                  'scale': ('scale', str), 'min_val': ('value_min', float),
+                  'max_val': ('value_max', float), 'fill_val': ('fill', float)})
 
     Attributes
     ----------
@@ -116,6 +101,10 @@ class Instrument(object):
         day of year for loaded data
     files : pysat.Files
         interface to instrument files
+    labels : pysat.MetaLabels
+        Class containing Meta data labels
+    meta_labels : dict
+        Dict containing defaults for new Meta data labels
     meta : pysat.Meta
         interface to instrument metadata, similar to netCDF 1.6
     orbits : pysat.Orbits
@@ -127,11 +116,10 @@ class Instrument(object):
 
     Note
     ----
-    Pysat attempts to load the module platform_name.py located in
-    the pysat/instruments directory. This module provides the underlying
-    functionality to download, load, and clean instrument data.
-    Alternatively, the module may be supplied directly
-    using keyword inst_module.
+    Pysat attempts to load the module platform_name.py located in the
+    pysat/instruments directory. This module provides the underlying
+    functionality to download, load, and clean instrument data. Alternatively,
+    the module may be supplied directly using keyword inst_module.
 
     Examples
     --------
@@ -177,7 +165,7 @@ class Instrument(object):
                  ignore_empty_files=False,
                  labels={'units': ('units', str), 'name': ('long_name', str),
                          'notes': ('notes', str), 'desc': ('desc', str),
-                         'plot': ('plot_label', str), 'axis': ('axis', str),
+                         'plot': ('plot', str), 'axis': ('axis', str),
                          'scale': ('scale', str),
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
