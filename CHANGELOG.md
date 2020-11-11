@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.2] - 2020-07-29
+## [2.2.2] - 2020-12-31
 - Documentation
    - Updated guidance on numpy version for installation
 
