@@ -35,7 +35,7 @@ To use Anaconda's tools for creating a suitable virtual environment, for Python
 
     conda create -n virt_env_name python=2.7
     conda activate virt_env_name
-    conda install numpy -c conda
+    conda install 'numpy<1.19' -c conda
 and for Python 3
 
 .. code:: bash
