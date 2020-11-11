@@ -42,7 +42,7 @@ and for Python 3
 
     conda create -n virt_env_name python=3
     conda activate virt_env_name
-    conda install numpy -c conda
+    conda install 'numpy<1.19' -c conda
 
 **pysat**
 
