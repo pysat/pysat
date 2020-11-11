@@ -2226,7 +2226,7 @@ class Instrument(object):
             # number of items, yeah
             num = len(self.index)
             # write out the datetime index
-            out_data.createDimension(epoch_name, num)
+            out_data.createDimension(epoch_name, None)
             cdfkey = out_data.createVariable(epoch_name, 'i8',
                                              dimensions=(epoch_name),
                                              zlib=zlib,
