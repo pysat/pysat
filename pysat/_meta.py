@@ -544,13 +544,12 @@ class Meta(object):
                                                "{}; ".format(key.__repr__()),
                                                "expected tuple, list, or str"]))
 
-    # QUESTION: DOES THIS NEED TO CHANGE???
-    def __contains__(self, other):
+    def __contains__(self, data_var):
         """case insensitive check for variable name
 
         Parameters
         ----------
-        other : str
+        data_var : str
             Variable name to check if present within the Meta object.
 
         Returns
@@ -562,11 +561,11 @@ class Meta(object):
         """
         does_contain = False
 
-        if other.lower() in [i.lower() for i in self.keys()]:
+        if data_var.lower() in [ikey.lower() for ikey in self.keys()]:
             does_contain = True
 
         if not does_contain:
-            if other.lower() in [i.lower() for i in self.keys_nD()]:
+            if data_var.lower() in [ikey.lower() for ikey in self.keys_nD()]:
                 does_contain = True
 
         return does_contain
