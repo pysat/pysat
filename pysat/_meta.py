@@ -550,8 +550,8 @@ class Meta(object):
 
         Parameters
         ----------
-        other : Meta
-            Meta object from which the default labels are obtained
+        other : str
+            Variable name to check if present within the Meta object.
 
         Returns
         -------
