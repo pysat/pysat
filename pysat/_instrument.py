@@ -258,8 +258,8 @@ class Instrument(object):
         # Create Meta instance with appropriate labels.  Meta class methos will
         # use Instrument definition of MetaLabels over the Metadata declaration
         self.meta_labels = labels
-        self.labels = pysat.MetaLabels(**labels)
         self.meta = pysat.Meta(labels=self.meta_labels)
+        self.labels = pysat.MetaLabels(metadata=self.meta, **labels)
 
         # function processing class, processes data on load
         self.custom = pysat.Custom()

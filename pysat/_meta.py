@@ -154,7 +154,7 @@ class Meta(object):
             self._export_nan = []
 
         # Set the labels
-        self.labels = MetaLabels(**labels)
+        self.labels = MetaLabels(metadata=self, **labels)
 
         # init higher order (nD) data structure container, a dict
         self._ho_data = {}
@@ -268,6 +268,7 @@ class Meta(object):
         method from https://stackoverflow.com/a/15751135
 
         """
+        print("TEST", name)
 
         # mutable handled explicitly to avoid recursion
         if name != 'mutable':
@@ -277,7 +278,8 @@ class Meta(object):
             if isinstance(propobj, property):
                 # check if the property is settable
                 if propobj.fset is None:
-                    raise AttributeError(''.join("can't set attribute - ",
+                    raise AttributeError(''.join("can't set attribute  ",
+                                                 name, " to ", value, ", ",
                                                  "property has no fset"))
 
                 # make mutable in case fset needs it to be
@@ -295,7 +297,8 @@ class Meta(object):
                     # use Object to avoid recursion
                     super(Meta, self).__setattr__(name, value)
                 else:
-                    raise AttributeError(''.join(("cannot set attribute - ",
+                    raise AttributeError(''.join(("cannot set attribute ",
+                                                  name, " to ", value, ", ",
                                                   "object's attributes are",
                                                   "immutable")))
         else:
@@ -777,7 +780,11 @@ class Meta(object):
 
             # Check higher order structures and recursively change labels
             for key in self.keys_nD():
+                # Recursion isn't working, need to update children
+                self.ho_data[key].labels.metadata = self.ho_data[key]
                 setattr(self.ho_data[key], attr_label, new_label)
+                
+                print("HI!", key, attr_label, new_label, ":", type(self.ho_data[key]), self.ho_data[key].labels, self.ho_data[key].data.columns, [type(self[key].children[kk]) for kk in self[key].children.keys()])
 
         # Update the 'hidden' attribute value: current_label -> new_label
         setattr(self, ''.join(('_', attr_label)), new_label)
@@ -786,21 +793,37 @@ class Meta(object):
 
     # -----------------------------------------------------------------------
     # Define the public methods and properties
-
-    @property
-    def ho_data(self):
-        return self._ho_data
-
+    
     @property
     def data(self):
         return self._data
 
     @data.setter
     def data(self, new_frame):
+        """ Set the data property
+
+        Paramters
+        ---------
+        new_frame : pds.DataFrame
+            Data frame containing the metadata, with label names as columns
+
+        """
         self._data = new_frame
+
+    @property
+    def ho_data(self):
+        return self._ho_data
 
     @ho_data.setter
     def ho_data(self, new_dict):
+        """ Set the higher order data property
+
+        Paramters
+        ---------
+        new_dict : dict
+            Dict containing the higher order data
+
+        """
         self._ho_data = new_dict
 
     @property
@@ -1332,7 +1355,7 @@ class MetaLabels(object):
 
     """
 
-    def __init__(self, units=('units', str), name=('long_name', str),
+    def __init__(self, metadata=None, units=('units', str), name=('long_name', str),
                  notes=('notes', str), desc=('desc', str), plot=('plot', str),
                  axis=('axis', str), scale=('scale', str),
                  min_val=('value_min', float), max_val=('value_max', float),
@@ -1369,6 +1392,8 @@ class MetaLabels(object):
             label name and value type
 
         """
+        # Initialize the coupled metadata
+        self.meta = metadata
 
         # Initialize a dictionary of label types, whose keys are the label
         # attributes
@@ -1396,6 +1421,24 @@ class MetaLabels(object):
             self.label_type[custom_label] = kwargs[custom_label][1]
 
         return
+
+    def __setattr__(self, name, value):
+        print("FUN!", name)
+        # Get old attribute value for reference
+        if hasattr(self, name):
+            old_value = getattr(self, name)
+        else:
+            old_value = None
+        
+        # Use Object to avoid recursion
+        super(MetaLabels, self).__setattr__(name, value)
+
+        # Before setting the attribute, see if upstream changes are needed
+        if old_value is not None and name not in ['label_type', 'meta']:
+            if hasattr(self, 'meta') and hasattr(self.meta, 'data'):
+                self.meta._label_setter(value, getattr(self, name), name,
+                                        self.label_type[name],
+                                        use_names_default=True)
 
     def __repr__(self):
         """String describing MetaData instantiation parameters
