@@ -805,9 +805,9 @@ class TestBasics():
 
     @pytest.mark.parametrize("bad_key,bad_val,err_msg",
                              [("col_names", [], "col_names must include"),
-                              ("name", None, "Must provide an instrument"),
-                              ("name", 5, "keyword name must be related"),
-                              ("name", 'fake_inst',
+                              ("filename", None, "Must provide an instrument"),
+                              ("filename", 5, "keyword name must be related"),
+                              ("filename", 'fake_inst',
                                "keyword name must be related")])
     def test_meta_csv_load_w_errors(self, bad_key, bad_val, err_msg):
         name = os.path.join(pysat.__path__[0], 'tests', 'cindi_ivm_meta.txt')
@@ -905,17 +905,28 @@ class TestBasics():
         assert (self.meta['new2'].Units == 'hey2')
         assert (self.meta['new2'].Long_Name == 'boo2')
 
-    def test_change_Units_and_Name_case_w_ho(self):
+    def test_case_change_of_meta_labels_w_ho(self):
+        """ Test changing case of meta labels after initialization with HO data
+        """
+        # Set the initial labels
         self.meta_labels = {'units': ('units', str), 'name': ('long_Name', str)}
         self.meta = pysat.Meta(labels=self.meta_labels)
         meta2 = pysat.Meta(labels=self.meta_labels)
+
+        # Set meta data values
         meta2['new21'] = {'units': 'hey2', 'long_name': 'boo2'}
         self.meta['new'] = {'units': 'hey', 'long_name': 'boo'}
         self.meta['new2'] = meta2
+
+        # Change the label name
         self.meta.labels.units = 'Units'
         self.meta.labels.name = 'Long_Name'
+
+        # Evaluate the results in the main data
         assert (self.meta['new'].Units == 'hey')
         assert (self.meta['new'].Long_Name == 'boo')
+
+        # Evaluate the results in the higher order data
         assert (self.meta['new2'].children['new21'].Units == 'hey2')
         assert (self.meta['new2'].children['new21'].Long_Name == 'boo2')
 
@@ -1239,6 +1250,8 @@ class TestBasicsImmutable(TestBasics):
                                          clean_level='clean')
         self.meta = self.testInst.meta
         self.meta.mutable = False
+        self.meta_labels = {'units': ('Units', str),
+                            'name': ('Long_Name', str)}
 
         # Assign remaining values
         self.dval = None
@@ -1252,5 +1265,5 @@ class TestBasicsImmutable(TestBasics):
     def teardown(self):
         """Runs after every method to clean up previous testing
         """
-        del self.testInst, self.meta, self.out, self.stime
+        del self.testInst, self.meta, self.out, self.stime, self.meta_labels
         del self.default_name, self.default_nan, self.default_val, self.dval
