@@ -2,7 +2,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.2] - 2020-10-19
+## [2.2.2] - 2020-12-31
+- Documentation
+   - Updated guidance on numpy version for installation
 - Bug Fix
    - Updated madrigal methods to simplify compound data types and enable
      creation of netCDF4 files using `self.to_netcdf4()`.
