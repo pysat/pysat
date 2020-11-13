@@ -84,6 +84,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Simplified internal logic in Instrument class
   - Updated Instrument.concat_func to behave as described in the docstring
 
+## [2.2.2] - 2020-12-31
+ - New Features
+    - netCDF4 files produced using `to_netcdf4()` now have an unlimited
+      time dimension
+ - Documentation
+    - Updated guidance on numpy version for installation
+
 ## [2.2.1] - 2020-07-29
 - Documentation
    - Improved organization of documentation on ReadTheDocs

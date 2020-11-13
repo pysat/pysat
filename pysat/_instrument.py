@@ -2957,7 +2957,8 @@ class Instrument(object):
 
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
                    zlib=False, complevel=4, shuffle=True,
-                   preserve_meta_case=False, export_nan=None):
+                   preserve_meta_case=False, export_nan=None,
+                   unlimited_time=True):
         """Stores loaded data into a netCDF4 file.
 
         Parameters
@@ -2994,6 +2995,9 @@ class Instrument(object):
              included will be written to the file. If not listed
              and a value is NaN then that attribute simply won't be included in
              the netCDF4 file.
+        unlimited_time : bool
+             If True, then the main epoch dimension will be set to 'unlimited'
+             within the netCDF4 file. (default=True)
 
         Note
         ----
@@ -3081,7 +3085,10 @@ class Instrument(object):
             num = len(self.index)
 
             # write out the datetime index
-            out_data.createDimension(epoch_name, num)
+            if unlimited_time:
+                out_data.createDimension(epoch_name, None)
+            else:
+                out_data.createDimension(epoch_name, num)
             cdfkey = out_data.createVariable(epoch_name, 'i8',
                                              dimensions=(epoch_name),
                                              zlib=zlib,

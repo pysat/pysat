@@ -251,13 +251,16 @@ class TestBasicNetCDF4():
         with pytest.raises(ValueError):
             pysat.utils.load_netcdf4(fnames=None)
 
-    def test_basic_write_and_read_netcdf4_default_format(self):
+    @pytest.mark.parametrize('unlimited', [True, False])
+    def test_basic_write_and_read_netcdf4_default_format(self, unlimited):
+        """Test writing and loading netcdf4 file, with/out unlimited time dim
+        """
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
-        self.testInst.to_netcdf4(outfile)
+        self.testInst.to_netcdf4(outfile, unlimited_time=unlimited)
 
         loaded_inst, meta = pysat.utils.load_netcdf4(outfile)
         self.testInst.data = \
