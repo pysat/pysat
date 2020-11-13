@@ -1114,7 +1114,7 @@ class Instrument(object):
             root date or fid (default=None)
 
         Returns
-        --------
+        -------
         data : pds.DataFrame or xr.Dataset
             pysat data
         meta : pysat.Meta
