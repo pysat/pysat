@@ -455,6 +455,54 @@ class TestGeneralOrbitsMLTxarray(TestGeneralOrbitsMLT):
         del self.testInst
 
 
+class TestGeneralOrbitsNonStandardIteration():
+    """Create an iteration window that is larger than step size.
+    Ensure the overlapping data doesn't end up in the orbit iteration."""
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         orbit_info={'index': 'mlt'},
+                                         update_files=True)
+        self.testInst.bounds = (self.testInst.files.files.index[0],
+                                self.testInst.files.files.index[11],
+                                '2D', pds.DateOffset(days=3))
+        self.orbit_starts = []
+        self.orbit_stops = []
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.testInst, self.orbit_starts, self.orbit_stops
+
+    def test_no_orbit_overlap_with_overlapping_iteration(self):
+        """Ensure error when overlap in iteration data."""
+        with pytest.raises(ValueError):
+            self.testInst.orbits.next()
+        return
+
+    @pytest.mark.parametrize("bounds_type", ['by_date', 'by_file'])
+    def test_no_orbit_overlap_with_nonoverlapping_iteration(self, bounds_type):
+        """Test no orbit data overlap when overlap in iteration data"""
+
+        if bounds_type == 'by_date':
+            bounds = (self.testInst.files.files.index[0],
+                      self.testInst.files.files.index[11],
+                      '2D', pds.DateOffset(days=2))
+        elif bounds_type == 'by_file':
+            bounds = (self.testInst.files[0], self.testInst.files[11], 2, 2)
+
+        self.testInst.bounds = bounds
+
+        for inst in self.testInst.orbits:
+            self.orbit_starts.append(inst.index[0])
+            self.orbit_stops.append(inst.index[-1])
+        self.orbit_starts = pds.Series(self.orbit_starts)
+        self.orbit_stops = pds.Series(self.orbit_stops)
+        assert self.orbit_starts.is_monotonic_increasing
+        assert self.orbit_stops.is_monotonic_increasing
+        return
+
+
 class TestGeneralOrbitsLong(TestGeneralOrbitsMLT):
 
     def setup(self):

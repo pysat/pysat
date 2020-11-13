@@ -17,6 +17,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Use of start / stop notation in remote_file_list
   - Added variable rename method to Instrument object (#91)
   - Migrated file methods to pysat.utils.files (#336)
+  - Added support for loading more than one day/file (#56)
+  - Added support for iterating over a dataset a with a loaded data width and 
+    stepsize larger than a single day/file
+  - Added check for inconsistent inputs when loading data via Instrument
   - Added file locking for thread-safe behavior (#304)
   - Allow the Instrument object to be initialized with optional kwargs for any
     of the standard methods (not just load).
@@ -44,6 +48,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed utils.coords.local_horizontal_to_global_geo
   - Deprecation Warnings for methods in `pysat._files`
   - Addressed several Warnings raised by incorrect use of dependent packages
+  - Deprecated use of inst_id for number of simulated samples for test
+    instruments
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
@@ -53,6 +59,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improved docstring readability and consistency
   - Added Travis-CI testing for the documentation
   - Added a style guide for developers
+  - Adopted standard for bounds. `stop` is an inclusive bound, `end` is 
+    exclusive
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
   - Improved string handling robustness when writing netCDF4 files in Python 3
@@ -60,6 +68,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed coupling of two_digit_year_break keyword to underlying method in
     methods.general.list_files
   - Fixed additional file date range for monthly data with gaps
+  - Corrected iteration over Instrument within list comprehension
   - Removed unused input arguments
 - Maintenance
   - nose dependency removed from unit tests
@@ -72,6 +81,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
     methods.general.convert_timestamp_to_datetime
   - Renamed `sat_id` Instrument keyword argument to `inst_id`
   - Updated instrument templates
+  - Simplified internal logic in Instrument class
+  - Updated Instrument.concat_func to behave as described in the docstring
 
 ## [2.2.1] - 2020-07-29
 - Documentation
