@@ -80,6 +80,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
         # version is required to remove duplicate datetimes
         if stored['revision'] is None:
             stored['revision'] = np.zeros(len(files))
+        if stored['cycle'] is None:
+            stored['cycle'] = np.zeros(len(files))
 
         index = create_datetime_index(year=stored['year'],
                                       month=stored['month'],
@@ -96,7 +98,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             # keep the highest version/revision combo
             version = pds.Series(stored['version'], index=index)
             revision = pds.Series(stored['revision'], index=index)
-            revive = version * 100000. + revision
+            cycle = pds.Series(stored['cycle'], index=index)
+            revive = version * 100000. + revision + cycle * 1e-5
             frame = pds.DataFrame({'files': files, 'revive': revive,
                                    'time': index}, index=index)
             frame = frame.sort_values(by=['time', 'revive'],
@@ -136,7 +139,7 @@ def parse_fixed_width_filenames(files, format_str):
 
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
-                    'version', 'revision']
+                    'version', 'revision', 'cycle']
     stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
     if len(files) == 0:
@@ -213,7 +216,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
-                    'version', 'revision']
+                    'version', 'revision', 'cycle']
     stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
     # exit early if there are no files
