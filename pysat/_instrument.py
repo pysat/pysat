@@ -2073,8 +2073,8 @@ class Instrument(object):
             if date not in local_files:
                 new_dates.append(date)
 
-        # Now compare filenames between common dates as it may be a new version
-        # or revision.  This will have a problem with filenames that are
+        # Now compare filenames between common dates as it may be a new version,
+        # revision, or cycle.  This will have a problem with filenames that are
         # faking daily data from monthly.
         for date in local_files.index:
             if date in remote_files.index:
