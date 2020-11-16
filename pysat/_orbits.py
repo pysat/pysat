@@ -578,8 +578,8 @@ class Orbits(object):
                                      - self.sat.index[0])
 
                         if delta_start <= self.orbit_period * 1.05:
-                            # near beginning
-                            # load previous file, then go forward one orbit
+                            # We are near the beginning. Load the
+                            # previous file, then go forward one orbit
                             self.sat.prev()
                             self.next()
                             if self.sat.index[-1] < date + delta_start:

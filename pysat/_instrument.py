@@ -417,6 +417,69 @@ class Instrument(object):
         # store base attributes, used in particular by Meta class
         self._base_attr = dir(self)
 
+    def __repr__(self):
+        """ Print the basic Instrument properties"""
+        out_str = "".join(["Instrument(platform='", self.platform, "', name='",
+                           self.name, "', inst_id='", self.inst_id,
+                           "', clean_level='", self.clean_level,
+                           "', pad={:}, orbit_info=".format(self.pad),
+                           "{:}, **{:})".format(self.orbit_info, self.kwargs)])
+
+        return out_str
+
+    def __str__(self):
+        """ Descriptively print the basic Instrument properties"""
+
+        # Get the basic Instrument properties
+        output_str = 'pysat Instrument object\n'
+        output_str += '-----------------------\n'
+        output_str += "Platform: '{:s}'\n".format(self.platform)
+        output_str += "Name: '{:s}'\n".format(self.name)
+        output_str += "Tag: '{:s}'\n".format(self.tag)
+        output_str += "Instrument id: '{:s}'\n".format(self.inst_id)
+
+        # Print out the data processing information
+        output_str += '\nData Processing\n'
+        output_str += '---------------\n'
+        output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
+        output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
+        for routine in self.kwargs.keys():
+            output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
+            output_str += "{:s}\n".format(self.kwargs[routine].__str__())
+        output_str += "{:s}\n".format(self.custom.__str__())
+
+        # Print out the orbit settings
+        if self.orbits.orbit_index is not None:
+            output_str += '{:s}\n'.format(self.orbits.__str__())
+
+        # Print the local file information
+        output_str += self.files.__str__()
+
+        # Display loaded data
+        output_str += '\n\nLoaded Data Statistics\n'
+        output_str += '----------------------\n'
+        if not self.empty:
+            num_vars = len(self.variables)
+
+            output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
+            output_str += 'DOY: {:03d}\n'.format(self.doy)
+            output_str += 'Time range: '
+            output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
+            output_str += ' --- '
+            output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
+            output_str += 'Number of Times: {:d}\n'.format(len(self.index))
+            output_str += 'Number of variables: {:d}\n'.format(num_vars)
+
+            output_str += '\nVariable Names:\n'
+            output_str += utils._core.fmt_output_in_cols(self.variables)
+
+            # Print the short version of the metadata
+            output_str += '\n{:s}'.format(self.meta.__str__(long_str=False))
+        else:
+            output_str += 'No loaded data.\n'
+
+        return output_str
+
     def __getitem__(self, key):
         """
         Convenience notation for accessing data; inst['name'] is inst.data.name
@@ -707,191 +770,70 @@ class Instrument(object):
             # Attach metadata
             self.meta[key] = new
 
-    def rename(self, var_names, lowercase_data_labels=False):
-        """Renames variable within both data and metadata.
+        return
 
-        Parameters
-        ----------
-        var_names : dict or other map
-            Existing var_names are keys, values are new var_names
-        lowercase_data_labels : boolean
-            If True, the labels applied to inst.data
-            are forced to lowercase. The supplied case
-            in var_names is retained within inst.meta.
+    def __iter__(self):
+        """Iterates instrument object by loading subsequent days or files.
+
+        Note
+        ----
+        Limits of iteration, and iteration type (date/file)
+        set by `bounds` attribute.
+
+        Default bounds are the first and last dates from files on local system.
 
         Examples
         --------
-        ..
+        ::
 
-            # standard renaming
-            new_var_names = {'old_name': 'new_name',
-                         'old_name2':, 'new_name2'}
-            inst.rename(new_var_names)
-
-        If using a pandas DataFrame as the underlying data object,
-        to rename higher-order variables supply a modified dictionary.
-        Note that this rename will be invoked individually for all
-        times in the dataset.
-        ..
-
-            # applies to higher-order datasets
-            # that are loaded into pandas
-            # general example
-            new_var_names = {'old_name': 'new_name',
-                         'old_name2':, 'new_name2',
-                         'col_name': {'old_ho_name': 'new_ho_name'}}
-            inst.rename(new_var_names)
-
-            # specific example
-            inst = pysat.Instrument('pysat', 'testing2D')
-            inst.load(2009, 1)
-            var_names = {'uts': 'pysat_uts',
-                     'profiles': {'density': 'pysat_density'}}
-            inst.rename(var_names)
-
-        pysat supports differing case for variable labels across the
-        data and metadata objects attached to an Instrument. Since
-        metadata is case-preserving (on assignment) but case-insensitive,
-        the labels used for data are always valid for metadata. This
-        feature may be used to provide friendlier variable names within
-        pysat while also maintaining external format compatibility
-        when writing files.
-        ..
-            # example with lowercase_data_labels
-            inst = pysat.Instrument('pysat', 'testing2D')
-            inst.load(2009, 1)
-            var_names = {'uts': 'Pysat_UTS',
-                     'profiles': {'density': 'PYSAT_density'}}
-            inst.rename(var_names, lowercase_data_labels=True)
-
-            # note that 'Pysat_UTS' was applied to data as 'pysat_uts'
-            print(inst['pysat_uts'])
-
-            # case is retained within inst.meta, though
-            # data access to meta is case insensitive
-            print('True meta variable name is ', inst.meta['pysat_uts'].name)
-
-            # Note that the labels in meta may be used when creating a file
-            # thus 'Pysat_UTS' would be found in the resulting file
-            inst.to_netcdf4('./test.nc', preserve_meta_case=True)
-
-            # load in file and check
-            raw = netCDF4.Dataset('./test.nc')
-            print(raw.variables['Pysat_UTS'])
+            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
+            start = dt.datetime(2009, 1, 1)
+            stop = dt.datetime(2009, 1, 31)
+            inst.bounds = (start, stop)
+            for inst in inst:
+                print('Another day loaded', inst.date)
 
         """
 
-        if self.pandas_format:
-            # Check for standard rename variables as well as
-            # renaming for higher order variables
-            fdict = {}  # filtered old variable names
-            hdict = {}  # higher order variable names
+        if self._iter_type == 'file':
+            width = self._iter_width
+            for fname in self._iter_list:
+                # Without a copy, a = [inst for inst in inst] leads to
+                # every item being the last day loaded.
+                # With the copy, behavior is as expected. Making a copy
+                # of an empty object is going to be faster than a full one.
+                self.data = self._null_data
+                local_inst = self.copy()
+                # load range of files
+                # get location for second file, width of 1 loads only one file
+                nfid = self.files.get_index(fname) + width - 1
+                local_inst.load(fname=fname, stop_fname=self.files[nfid])
+                yield local_inst
 
-            # keys for existing higher order data labels
-            ho_keys = [a for a in self.meta.keys_nD()]
-            lo_keys = [a for a in self.meta.keys()]
+        elif self._iter_type == 'date':
+            # iterate over dates
+            # list of dates generated whenever bounds are set
+            for date in self._iter_list:
+                # do copy trick, starting with null data in object
+                self.data = self._null_data
+                local_inst = self.copy()
+                # user specified range of dates
+                end_date = date + self._iter_width
+                # load range of dates
+                local_inst.load(date=date, end_date=end_date)
+                yield local_inst
 
-            # iterate, collect normal variables
-            # rename higher order variables
-            for vkey in var_names:
-                # original name, new name
-                oname, nname = vkey, var_names[vkey]
-                if oname not in ho_keys:
-                    if oname in lo_keys:
-                        # within low order (standard) variable name keys
-                        # may be renamed directly
-                        fdict[oname] = nname
-                    else:
-                        # not in standard or higher order variable name keys
-                        estr = ' '.join((oname, ' is not',
-                                         'a known variable.'))
-                        raise ValueError(estr)
-                else:
-                    # variable name is in higher order list
-                    if isinstance(nname, dict):
-                        # changing a variable name within
-                        # higher order object
-                        label = [k for k in nname.keys()][0]
-                        hdict[label] = nname[label]
-                        # ensure variable is there
-                        if label not in self.meta[oname]['children']:
-                            estr = ''.join((label, ' is not a known ',
-                                            'higher-order variable under ',
-                                            oname, '.'))
-                            raise ValueError(estr)
-                        # check for lowercase flag
-                        if lowercase_data_labels:
-                            gdict = {}
-                            gdict[label] = nname[label].lower()
-                        else:
-                            gdict = hdict
-                        # change variables for frame at each time
-                        for i in np.arange(len(self.index)):
-                            # within data itself
-                            self[i, oname].rename(columns=gdict,
-                                                  inplace=True)
+        # Add last loaded data/metadata from local_inst into the original object
+        # Making copy here to ensure there are no left over references
+        # to the local_inst object in the loop that would interfere with
+        # garbage collection. Don't want to make a copy of underlying data.
+        local_inst_data = local_inst.data
+        local_inst.data = local_inst._null_data
+        self.data = local_inst_data
+        self.meta = local_inst.meta.copy()
 
-                        # change metadata, once per variable only
-                        # hdict used as it retains user provided case
-                        self.meta.ho_data[oname].data.rename(hdict,
-                                                             inplace=True)
-                        # clear out dict for next loop
-                        hdict.pop(label)
-                    else:
-                        # changing the outer 'column' label
-                        fdict[oname] = nname
-
-            # rename regular variables, single go
-            # check for lower case data labels first
-            if lowercase_data_labels:
-                gdict = {}
-                for fkey in fdict:
-                    gdict[fkey] = fdict[fkey].lower()
-            else:
-                gdict = fdict
-
-            # change variable names for attached data object
-            self.data.rename(columns=gdict, inplace=True)
-
-        else:
-            # xarray renaming
-            # account for lowercase data labels first
-            if lowercase_data_labels:
-                gdict = {}
-                for vkey in var_names:
-                    gdict[vkey] = var_names[vkey].lower()
-            else:
-                gdict = var_names
-            self.data = self.data.rename(gdict)
-
-            # set up dictionary for renaming metadata variables
-            fdict = var_names
-
-        # update normal metadata parameters in a single go
-        # case must always be preserved in Meta object
-        new_fdict = {}
-        for fkey in fdict:
-            case_old = self.meta.var_case_name(fkey)
-            new_fdict[case_old] = fdict[fkey]
-        self.meta.data.rename(index=new_fdict, inplace=True)
-
-        return
-
-    @property
-    def empty(self):
-        """Boolean flag reflecting lack of data.
-
-        True if there is no Instrument data."""
-
-        if self.pandas_format:
-            return self.data.empty
-        else:
-            if 'time' in self.data.indexes:
-                return len(self.data.indexes['time']) == 0
-            elif 'Epoch' in self.data.indexes:
-                return len(self.data.indexes['Epoch']) == 0
-            else:
-                return True
+    # -----------------------------------------------------------------------
+    # Define all hidden methods
 
     def _empty(self, data=None):
         """Boolean flag reflecting lack of data
@@ -920,21 +862,6 @@ class Instrument(object):
             else:
                 return True
 
-    @property
-    def date(self):
-        """Date for loaded data."""
-        return self._date
-
-    @date.setter
-    def date(self, new):
-        """Date for loaded data."""
-        self._date = self._filter_datetime_input(new)
-
-    @property
-    def index(self):
-        """Returns time index of loaded data."""
-        return self._index()
-
     def _index(self, data=None):
         """Returns time index of loaded data
 
@@ -961,65 +888,6 @@ class Instrument(object):
                 return data.indexes['Epoch']
             else:
                 return pds.Index([])
-
-    @property
-    def variables(self):
-        """Returns list of variables within loaded data."""
-
-        if self.pandas_format:
-            return self.data.columns
-        else:
-            return list(self.data.variables.keys())
-
-    def copy(self):
-        """Deep copy of the entire Instrument object."""
-
-        return copy.deepcopy(self)
-
-    def concat_data(self, new_data, prepend=False, **kwargs):
-        """Concats new_data to self.data for xarray or pandas as needed
-        Parameters
-        ----------
-        new_data : pds.DataFrame, xr.Dataset, or list of such objects
-            New data objects to be concatonated
-        prepend : boolean
-            If True, assign new data before existing data; if False append new
-            data (default=False)
-        **kwargs : dict
-            Optional keyword arguments passed to pds.concat or xr.concat
-        Note
-        ----
-        For pandas, sort=False is passed along to the underlying
-        pandas.concat method. If sort is supplied as a keyword, the
-        user provided value is used instead.  Recall that sort orders the
-        data columns, not the data values or the index.
-        For xarray, dim=Instrument.index.name is passed along to xarray.concat
-        except if the user includes a value for dim as a keyword argument.
-        """
-        # Order the data to be concatonated in a list
-        if not isinstance(new_data, list):
-            new_data = [new_data]
-
-        if prepend:
-            new_data.append(self.data)
-        else:
-            new_data.insert(0, self.data)
-
-        # Retrieve the appropriate concatonation function
-        if self.pandas_format:
-            # Specifically do not sort unless otherwise specified
-            if 'sort' not in kwargs:
-                kwargs['sort'] = False
-            concat_func = pds.concat
-        else:
-            # Specify the dimension, if not otherwise specified
-            if 'dim' not in kwargs:
-                kwargs['dim'] = self.index.name
-            concat_func = xr.concat
-
-        # Assign the concatonated data to the instrument
-        self.data = concat_func(new_data, **kwargs)
-        return
 
     def _pass_method(*args, **kwargs):
         """ Default method for updateable Instrument methods
@@ -1205,69 +1073,6 @@ class Instrument(object):
                                   ' default  values: {:}'.format(missing)]))
         return
 
-    def __repr__(self):
-        """ Print the basic Instrument properties"""
-        out_str = "".join(["Instrument(platform='", self.platform, "', name='",
-                           self.name, "', inst_id='", self.inst_id,
-                           "', clean_level='", self.clean_level,
-                           "', pad={:}, orbit_info=".format(self.pad),
-                           "{:}, **{:})".format(self.orbit_info, self.kwargs)])
-
-        return out_str
-
-    def __str__(self):
-        """ Descriptively print the basic Instrument properties"""
-
-        # Get the basic Instrument properties
-        output_str = 'pysat Instrument object\n'
-        output_str += '-----------------------\n'
-        output_str += "Platform: '{:s}'\n".format(self.platform)
-        output_str += "Name: '{:s}'\n".format(self.name)
-        output_str += "Tag: '{:s}'\n".format(self.tag)
-        output_str += "Instrument id: '{:s}'\n".format(self.inst_id)
-
-        # Print out the data processing information
-        output_str += '\nData Processing\n'
-        output_str += '---------------\n'
-        output_str += "Cleaning Level: '{:s}'\n".format(self.clean_level)
-        output_str += 'Data Padding: {:s}\n'.format(self.pad.__str__())
-        for routine in self.kwargs.keys():
-            output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
-            output_str += "{:s}\n".format(self.kwargs[routine].__str__())
-        output_str += "{:s}\n".format(self.custom.__str__())
-
-        # Print out the orbit settings
-        if self.orbits.orbit_index is not None:
-            output_str += '{:s}\n'.format(self.orbits.__str__())
-
-        # Print the local file information
-        output_str += self.files.__str__()
-
-        # Display loaded data
-        output_str += '\n\nLoaded Data Statistics\n'
-        output_str += '----------------------\n'
-        if not self.empty:
-            num_vars = len(self.variables)
-
-            output_str += 'Date: ' + self.date.strftime('%d %B %Y') + '\n'
-            output_str += 'DOY: {:03d}\n'.format(self.doy)
-            output_str += 'Time range: '
-            output_str += self.index[0].strftime('%d %B %Y %H:%M:%S')
-            output_str += ' --- '
-            output_str += self.index[-1].strftime('%d %B %Y %H:%M:%S\n')
-            output_str += 'Number of Times: {:d}\n'.format(len(self.index))
-            output_str += 'Number of variables: {:d}\n'.format(num_vars)
-
-            output_str += '\nVariable Names:\n'
-            output_str += utils._core.fmt_output_in_cols(self.variables)
-
-            # Print the short version of the metadata
-            output_str += '\n{:s}'.format(self.meta.__str__(long_str=False))
-        else:
-            output_str += 'No loaded data.\n'
-
-        return output_str
-
     def _filter_datetime_input(self, date):
         """
         Returns datetime that only includes year, month, and day.
@@ -1294,54 +1099,6 @@ class Instrument(object):
             else:
                 return dt.datetime(date.year, date.month, date.day)
 
-    def today(self):
-        """Returns today's date, with no hour, minute, second, etc.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        datetime
-            Today's date
-
-        """
-
-        return self._filter_datetime_input(dt.datetime.today())
-
-    def tomorrow(self):
-        """Returns tomorrow's date, with no hour, minute, second, etc.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        datetime
-            Tomorrow's date
-
-        """
-
-        return self.today() + pds.DateOffset(days=1)
-
-    def yesterday(self):
-        """Returns yesterday's date, with no hour, minute, second, etc.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        datetime
-            Yesterday's date
-
-        """
-
-        return self.today() - pds.DateOffset(days=1)
-
     def _load_data(self, date=None, fid=None, inc=None):
         """
         Load data for an instrument on given date or fid, depending upon input.
@@ -1357,7 +1114,7 @@ class Instrument(object):
             root date or fid (default=None)
 
         Returns
-        --------
+        -------
         data : pds.DataFrame or xr.Dataset
             pysat data
         meta : pysat.Meta
@@ -1549,6 +1306,1028 @@ class Instrument(object):
             self.yr = None
             self.doy = None
             self._load_by_date = False
+
+    def _get_var_type_code(self, coltype):
+        """Determines the two-character type code for a given variable type
+
+        Parameters
+        ----------
+        coltype : type or np.dtype
+            The type of the variable
+
+        Returns
+        -------
+        str
+            The variable type code for the given type
+
+        Raises
+        ------
+        TypeError
+            When coltype is unknown
+
+        Note
+        ----
+        Understands np.dtype, numpy int, uint, and float varients, and
+        str subclasses
+
+        """
+        var_types = {np.int64: 'i8', np.int32: 'i4', np.int16: 'i2',
+                     np.int8: 'i1', np.uint64: 'u8', np.uint32: 'u4',
+                     np.uint16: 'u2', np.uint8: 'u1', np.float64: 'f8',
+                     np.float32: 'f4'}
+
+        if type(coltype) is np.dtype:
+            var_type = coltype.kind + str(coltype.itemsize)
+            return var_type
+        else:
+            if coltype in var_types.keys():
+                return var_types[coltype]
+            elif issubclass(coltype, str):
+                return 'S1'
+            else:
+                raise TypeError('Unknown Variable Type' + str(coltype))
+
+    def _get_data_info(self, data, netcdf_format):
+        """Support file writing by determining data type and other options
+
+        Parameters
+        ----------
+        data : pandas object
+            Data to be written
+        netcdf_format : str
+            String indicating netCDF3 or netCDF4
+
+        Returns
+        -------
+        data : pandas object
+            Data that was supplied, reformatted if necessary
+        data_type : type
+            Type for data values
+        datetime_flag : bool
+            True if data is np.datetime64, False otherwise
+
+        """
+        # get type of data
+        data_type = data.dtype
+
+        # check if older netcdf_format
+        if netcdf_format != 'NETCDF4':
+            old_format = True
+        else:
+            old_format = False
+
+        # Check for object type
+        if data_type != np.dtype('O'):
+            # Simple data, not an object
+
+            if (data_type == np.int64) and old_format:
+                # No 64bit ints in netCDF3
+                data = data.astype(np.int32)
+                data_type = np.int32
+
+            if data_type == np.dtype('<M8[ns]'):
+                if not old_format:
+                    data_type = np.int64
+                else:
+                    data_type = np.float
+                datetime_flag = True
+            else:
+                datetime_flag = False
+        else:
+            # dealing with a more complicated object
+            # iterate over elements until we hit something that is something,
+            # and not NaN
+            data_type = type(data.iloc[0])
+            for i in np.arange(len(data)):
+                if len(data.iloc[i]) > 0:
+                    data_type = type(data.iloc[i])
+                    if not isinstance(data_type, np.float):
+                        break
+            datetime_flag = False
+
+        return data, data_type, datetime_flag
+
+    def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False,
+                                 export_nan=None):
+        """Filter metadata properties to be consistent with netCDF4.
+
+        Parameters
+        ----------
+        mdata_dict : dict
+            Dictionary equivalent to Meta object info
+        coltype : type
+            Type provided by _get_data_info
+        remove : bool
+            Removes FillValue and associated parameters disallowed for strings
+            (default=False)
+        export_nan : list or NoneType
+            Metadata parameters allowed to be NaN (default=None)
+
+        Returns
+        -------
+        dict
+            Modified as needed for netCDf4
+
+        Note
+        ----
+        Remove forced to True if coltype consistent with a string type
+
+        Metadata values that are NaN and not listed in export_nan are
+        filtered out.
+
+        """
+
+        # remove any metadata with a value of nan not present in export_nan
+        filtered_dict = mdata_dict.copy()
+        for key, value in mdata_dict.items():
+            try:
+                if np.isnan(value):
+                    if key not in export_nan:
+                        filtered_dict.pop(key)
+            except TypeError:
+                # if typerror thrown, it's not nan
+                pass
+        mdata_dict = filtered_dict
+
+        # Coerce boolean types to integers
+        for key in mdata_dict:
+            if type(mdata_dict[key]) == bool:
+                mdata_dict[key] = int(mdata_dict[key])
+        if (coltype == str):
+            remove = True
+            warnings.warn('FillValue is not an acceptable '
+                          'parameter for strings - it will be removed')
+
+        # Make sure _FillValue is the same type as the data
+        if '_FillValue' in mdata_dict.keys():
+            if remove:
+                mdata_dict.pop('_FillValue')
+            else:
+                if not np.can_cast(mdata_dict['_FillValue'], coltype):
+                    if 'FieldNam' in mdata_dict:
+                        estr = ' '.join(('FillValue for {a:s} ({b:s}) cannot',
+                                         'be safely casted to {c:s} Casting',
+                                         'anyways. This may result in',
+                                         'unexpected behavior'))
+                        estr.format(a=mdata_dict['FieldNam'],
+                                    b=str(mdata_dict['_FillValue']),
+                                    c=coltype)
+                        warnings.warn(estr)
+                    else:
+                        estr = ' '.join(('FillValue {a:s} cannot be safely',
+                                         'casted to {b:s}. Casting anyways.',
+                                         'This may result in unexpected',
+                                         'behavior'))
+                        estr.format(a=str(mdata_dict['_FillValue']),
+                                    b=coltype)
+
+                mdata_dict['_FillValue'] = np.array(
+                    mdata_dict['_FillValue']).astype(coltype)
+
+        # Make sure FillValue is the same type as the data
+        if 'FillVal' in mdata_dict.keys():
+            if remove:
+                mdata_dict.pop('FillVal')
+            else:
+                mdata_dict['FillVal'] = np.array(
+                    mdata_dict['FillVal']).astype(coltype)
+
+        return mdata_dict
+
+    # -----------------------------------------------------------------------
+    # Define all accessible methods
+
+    @property
+    def bounds(self):
+        """Boundaries for iterating over instrument object by date or file.
+
+        Parameters
+        ----------
+        start : datetime object, filename, or None
+            start of iteration, if None uses first data date.
+            list-like collection also accepted. (default=None)
+        stop :  datetime object, filename, or None
+            stop of iteration, inclusive. If None uses last data date.
+            list-like collection also accepted. (default=None)
+        step : str, int, or None
+            Step size used when iterating from start to stop. Use a
+            Pandas frequency string ('3D', '1M') when setting bounds by date,
+            an integer when setting bounds by file. Defaults to a single
+            day/file (default='1D', 1).
+        width : pandas.DateOffset, int, or None
+            Data window used when loading data within iteration. Defaults to a
+            single day/file if not assigned. (default=pds.DateOffset(days=1),
+            1)
+
+        Note
+        ----
+        Both start and stop must be the same type (date, or filename) or None.
+        Only the year, month, and day are used for date inputs.
+
+        Examples
+        --------
+        ::
+            import datetime as dt
+            import pandas as pds
+            import pysat
+
+            inst = pysat.Instrument(platform=platform,
+                                    name=name,
+                                    tag=tag)
+            start = dt.datetime(2009, 1, 1)
+            stop = dt.datetime(2009, 1, 31)
+
+            # Defaults to stepping by a single day and a data loading window
+            # of one day/file.
+            inst.bounds = (start, stop)
+
+            # Set bounds by file. Iterates a file at a time.
+            inst.bounds = ('filename1', 'filename2')
+
+            # Create a more complicated season, multiple start and stop dates.
+            start2 = dt.datetetime(2010,1,1)
+            stop2 = dt.datetime(2010,2,14)
+            inst.bounds = ([start, start2], [stop, stop2])
+
+            # Iterate via a non-standard step size of two days.
+            inst.bounds = ([start, start2], [stop, stop2], '2D')
+
+            # Load more than a single day/file at a time when iterating
+            inst.bounds = ([start, start2], [stop, stop2], '2D',
+                           pds.DateOffset(days=3))
+
+        """
+
+        return (self._iter_start, self._iter_stop, self._iter_step,
+                self._iter_width)
+
+    @bounds.setter
+    def bounds(self, value=None):
+        """Sets the self.bounds property.
+
+        Parameters
+        ----------
+        start (value[0]) : datetime object, filename, or None
+            start of iteration, if None uses first data date.
+            list-like collection also accepted. (default=None)
+        stop  (value[1]):  datetime object, filename, or None
+            stop of iteration, inclusive. If None uses last data date.
+            list-like collection also accepted. (default=None)
+        step  (value[2]): str, int, or None
+            Step size used when iterating from start to stop. Use a
+            Pandas frequency string ('3D', '1M') when setting bounds by date,
+            an integer when setting bounds by file. Defaults to a single
+            day/file (default='1D', 1).
+        width (value[3]): pandas.DateOffset, int, or None
+            Data window used when loading data within iteration. Defaults to a
+            single day/file if not assigned. (default=pds.DateOffset(days=1),
+            1)
+
+        Note
+        ----
+        Both start and stop must be the same type (date, or filename) or None.
+        Only the year, month, and day are used for date inputs.
+
+        Examples
+        --------
+        ::
+            import datetime as dt
+            import pandas as pds
+            import pysat
+
+            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
+            start = dt.datetime(2009,1,1)
+            stop = dt.datetime(2009,1,31)
+            # Defaults to stepping by a single day and a data loading window
+            # of one day/file.
+            inst.bounds = (start, stop)
+
+            # Set bounds by file. Iterates a file at a time.
+            inst.bounds = ('filename1', 'filename2')
+
+            # Create a more complicated season, multiple start and stop dates.
+            start2 = dt.datetetime(2010,1,1)
+            stop2 = dt.datetime(2010,2,14)
+            inst.bounds = ([start, start2], [stop, stop2])
+
+            # Iterate via a non-standard step size of two days.
+            inst.bounds = ([start, start2], [stop, stop2], '2D')
+
+            # Load more than a single day/file at a time when iterating
+            inst.bounds = ([start, start2], [stop, stop2], '2D',
+                           pds.DateOffset(days=3))
+
+        """
+        if value is None:
+            # user wants defaults
+            value = (None, None, None, None)
+
+        if len(value) < 2:
+            raise ValueError(' '.join(('Must supply both a start and stop',
+                                       'date/file. Supply None if you want the',
+                                       'first/last possible.')))
+        elif len(value) == 2:
+            # includes start and stop only
+            self._iter_step = None
+            self._iter_width = None
+        elif len(value) == 3:
+            # also includes step size
+            self._iter_step = value[2]
+            self._iter_width = None
+        elif len(value) == 4:
+            # also includes loading window (data width)
+            self._iter_step = value[2]
+            self._iter_width = value[3]
+        else:
+            raise ValueError('Too many input arguments.')
+
+        # pull out start and stop times now that other optional items have
+        # been checked out.
+        start = value[0]
+        stop = value[1]
+
+        if (start is None) and (stop is None):
+            # set default using first and last file date
+            self._iter_start = [self.files.start_date]
+            self._iter_stop = [self.files.stop_date]
+            self._iter_type = 'date'
+            if self._iter_step is None:
+                self._iter_step = '1D'
+            if self._iter_width is None:
+                self._iter_width = pds.DateOffset(days=1)
+            if self._iter_start[0] is not None:
+                # There are files. Use those dates.
+                ustops = [stop - self._iter_width + pds.DateOffset(days=1)
+                          for stop in self._iter_stop]
+                ufreq = self._iter_step
+                self._iter_list = utils.time.create_date_range(self._iter_start,
+                                                               ustops,
+                                                               freq=ufreq)
+            else:
+                # instrument has no files
+                self._iter_list = []
+        else:
+            # user provided some inputs
+            starts = np.asarray([start])
+            stops = np.asarray([stop])
+            # ensure consistency if list-like already
+            if len(starts.shape) > 1:
+                starts = starts[0]
+            if len(stops.shape) > 1:
+                stops = stops[0]
+
+            # check equal number of elements
+            if len(starts) != len(stops):
+                estr = ' '.join(('Both start and stop must have the same',
+                                 'number of elements'))
+                raise ValueError(estr)
+
+            # check everything is the same type
+            base = type(starts[0])
+            for lstart, lstop in zip(starts, stops):
+                etype = type(lstop)
+                check1 = not isinstance(lstart, etype)
+                check2 = not isinstance(lstart, base)
+                if check1 or check2:
+                    # Method allows for inputs like inst.bounds = (start, None)
+                    # and bounds will fill the None with actual start or stop.
+                    # Allow for a Nonetype only if length is one.
+                    if len(starts) == 1 and (start is None):
+                        # we are good on type change, start is None, no error
+                        break
+                    elif len(stops) == 1 and (stop is None):
+                        # we are good on type change, stop is None, no error
+                        break
+                    raise ValueError(' '.join(('Start and stop items must all',
+                                               'be of the same type')))
+
+            # set bounds based upon passed data type
+            if isinstance(starts[0], str) or isinstance(stops[0], str):
+                # one of the inputs is a string
+                self._iter_type = 'file'
+                # could be (string, None) or (None, string)
+                # replace None with first/last, as appropriate
+                if starts[0] is None:
+                    starts = [self.files[0]]
+                if stops[0] is None:
+                    stops = [self.files[-1]]
+                # default step size
+                if self._iter_step is None:
+                    self._iter_step = 1
+                # default window size
+                if self._iter_width is None:
+                    self._iter_width = 1
+
+                self._iter_list = []
+                for istart, istop in zip(starts, stops):
+                    # ensure istart before istop
+                    # Get index of start/stop file from main file list
+                    start_idx = self.files.get_index(istart)
+                    stop_idx = self.files.get_index(istop)
+                    if stop_idx < start_idx:
+                        estr = ' '.join(('Bounds must be in increasing date',
+                                         'order.', istart, 'occurs after',
+                                         istop))
+                        raise ValueError(estr)
+                    itemp = self.files.get_file_array([istart], [istop])
+                    # downselect based upon step size
+                    itemp = itemp[::self._iter_step]
+                    # Make sure iterations don't go past last day
+                    # get index of last in iteration list
+                    iter_idx = self.files.get_index(itemp[-1])
+                    # don't let loaded data go past stop bound
+                    if iter_idx + self._iter_width - 1 > stop_idx:
+                        i = np.ceil((self._iter_width - 1) / self._iter_step)
+                        i = -int(i)
+                        self._iter_list.extend(itemp[:i])
+                    else:
+                        self._iter_list.extend(itemp)
+
+            elif isinstance(starts[0], dt.datetime) or isinstance(stops[0],
+                                                                  dt.datetime):
+                # one of the inputs is a date
+                self._iter_type = 'date'
+
+                if starts[0] is None:
+                    # start and stop dates on self.files already filtered
+                    # to include only year, month, and day
+                    starts = [self.files.start_date]
+                if stops[0] is None:
+                    stops = [self.files.stop_date]
+                # default step size
+                if self._iter_step is None:
+                    self._iter_step = '1D'
+                # default window size
+                if self._iter_width is None:
+                    self._iter_width = pds.DateOffset(days=1)
+
+                # create list-like of dates for iteration
+                starts = self._filter_datetime_input(starts)
+                stops = self._filter_datetime_input(stops)
+                freq = self._iter_step
+                width = self._iter_width
+
+                # ensure inputs are in reasonable date order
+                for start, stop in zip(starts, stops):
+                    if start > stop:
+                        estr = ' '.join(('Bounds must be set in increasing',
+                                         'date order.',
+                                         start.strftime('%d %B %Y'),
+                                         'is later than',
+                                         stop.strftime('%d %B %Y')))
+                        raise ValueError(estr)
+
+                # account for width of load. Don't extend past bound.
+                ustops = [stop - width + pds.DateOffset(days=1)
+                          for stop in stops]
+                self._iter_list = utils.time.create_date_range(starts,
+                                                               ustops,
+                                                               freq=freq)
+                # go back to time index
+                self._iter_list = pds.DatetimeIndex(self._iter_list)
+
+            else:
+                raise ValueError(' '.join(('Input is not a known type, string',
+                                           'or datetime')))
+            self._iter_start = starts
+            self._iter_stop = stops
+
+        return
+
+    @property
+    def empty(self):
+        """Boolean flag reflecting lack of data.
+
+        True if there is no Instrument data."""
+
+        if self.pandas_format:
+            return self.data.empty
+        else:
+            if 'time' in self.data.indexes:
+                return len(self.data.indexes['time']) == 0
+            elif 'Epoch' in self.data.indexes:
+                return len(self.data.indexes['Epoch']) == 0
+            else:
+                return True
+
+    @property
+    def date(self):
+        """Date for loaded data."""
+        return self._date
+
+    @date.setter
+    def date(self, new):
+        """Date for loaded data."""
+        self._date = self._filter_datetime_input(new)
+
+    @property
+    def index(self):
+        """Returns time index of loaded data."""
+        return self._index()
+
+    @property
+    def variables(self):
+        """Returns list of variables within loaded data."""
+
+        if self.pandas_format:
+            return self.data.columns
+        else:
+            return list(self.data.variables.keys())
+
+    def copy(self):
+        """Deep copy of the entire Instrument object."""
+
+        return copy.deepcopy(self)
+
+    def concat_data(self, new_data, prepend=False, **kwargs):
+        """Concats new_data to self.data for xarray or pandas as needed
+
+        Parameters
+        ----------
+        new_data : pds.DataFrame, xr.Dataset, or list of such objects
+            New data objects to be concatonated
+        prepend : boolean
+            If True, assign new data before existing data; if False append new
+            data (default=False)
+        **kwargs : dict
+            Optional keyword arguments passed to pds.concat or xr.concat
+
+        Note
+        ----
+        For pandas, sort=False is passed along to the underlying
+        pandas.concat method. If sort is supplied as a keyword, the
+        user provided value is used instead.  Recall that sort orders the
+        data columns, not the data values or the index.
+
+        For xarray, dim=Instrument.index.name is passed along to xarray.concat
+        except if the user includes a value for dim as a keyword argument.
+
+        """
+        # Order the data to be concatonated in a list
+        if not isinstance(new_data, list):
+            new_data = [new_data]
+
+        if prepend:
+            new_data.append(self.data)
+        else:
+            new_data.insert(0, self.data)
+
+        # Retrieve the appropriate concatonation function
+        if self.pandas_format:
+            # Specifically do not sort unless otherwise specified
+            if 'sort' not in kwargs:
+                kwargs['sort'] = False
+            concat_func = pds.concat
+        else:
+            # Specify the dimension, if not otherwise specified
+            if 'dim' not in kwargs:
+                kwargs['dim'] = self.index.name
+            concat_func = xr.concat
+
+        # Assign the concatonated data to the instrument
+        self.data = concat_func(new_data, **kwargs)
+        return
+
+    def today(self):
+        """Returns today's date (UTC), with no hour, minute, second, etc.
+
+        Returns
+        -------
+        datetime
+            Today's date
+
+        """
+
+        return self._filter_datetime_input(dt.datetime.today())
+
+    def tomorrow(self):
+        """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
+
+        Returns
+        -------
+        datetime
+            Tomorrow's date
+
+        """
+
+        return self.today() + pds.DateOffset(days=1)
+
+    def yesterday(self):
+        """Returns yesterday's date (UTC), with no hour, minute, second, etc.
+
+        Returns
+        -------
+        datetime
+            Yesterday's date
+
+        """
+
+        return self.today() - pds.DateOffset(days=1)
+
+    def next(self, verifyPad=False):
+        """Manually iterate through the data loaded in Instrument object.
+
+        Bounds of iteration and iteration type (day/file) are set by
+        `bounds` attribute.
+
+        Parameters
+        ----------
+        verifyPad : bool
+            Passed to `self.load()`. If True, then padded data within
+            the load method will be retained. (default=False)
+
+        Note
+        ----
+        If there were no previous calls to load then the
+        first day(default)/file will be loaded.
+
+        """
+
+        # make sure we can iterate
+        if len(self._iter_list) == 0:
+            # nothing to potentially iterate over
+            raise StopIteration(''.join(('File list is empty. ',
+                                         'Nothing to be done.')))
+
+        if self._iter_type == 'date':
+            if self.date is not None:
+                # data is already loaded in .data
+                idx, = np.where(self.date == self._iter_list)
+                if len(idx) == 0:
+                    estr = ''.join(('Unable to find loaded date ',
+                                    'in the supported iteration list. ',
+                                    'Please check the Instrument bounds, ',
+                                    '`self.bounds` for supported iteration',
+                                    'ranges.'))
+                    raise StopIteration(estr)
+                elif idx[-1] >= len(self._iter_list) - 1:
+                    # gone to far!
+                    raise StopIteration('Outside the set date boundaries.')
+                else:
+                    # not going past the last day, safe to move forward
+                    date = self._iter_list[idx[0] + 1]
+                    end_date = date + self._iter_width
+            else:
+                # no data currently loaded, start at the beginning
+                date = self._iter_list[0]
+                end_date = date + self._iter_width
+            # perform load
+            self.load(date=date, end_date=end_date, verifyPad=verifyPad)
+
+        elif self._iter_type == 'file':
+            first = self.files.get_index(self._iter_list[0])
+            last = self.files.get_index(self._iter_list[-1])
+            step = self._iter_step
+            width = self._iter_width
+            if self._fid is not None:
+                # data already loaded in .data
+                if (self._fid < first) | (self._fid + step > last):
+                    raise StopIteration('Outside the set file boundaries.')
+                else:
+                    # step size already accounted for in the list of files
+                    # get location of current file in iteration list
+                    idx = None
+                    fname = self.files[self._fid]
+                    for i, name in enumerate(self._iter_list):
+                        if name == fname:
+                            idx = i
+                            break
+                    if idx is None:
+                        estr = ''.join(('Unable to find loaded filename ',
+                                        'in the supported iteration list. ',
+                                        'Please check the Instrument bounds, ',
+                                        '`self.bounds` for supported iteration',
+                                        'ranges.'))
+                        raise StopIteration(estr)
+                    fname = self._iter_list[idx + 1]
+            else:
+                # no data loaded yet, start with the first file
+                fname = self._iter_list[0]
+
+            # load range of files at a time
+            # get location for second file. Note a width of 1 loads single file
+            nfid = self.files.get_index(fname) + width - 1
+            self.load(fname=fname, stop_fname=self.files[nfid],
+                      verifyPad=verifyPad)
+
+        return
+
+    def prev(self, verifyPad=False):
+        """Manually iterate backwards through the data in Instrument object.
+
+        Bounds of iteration and iteration type (day/file)
+        are set by `bounds` attribute.
+
+        Parameters
+        ----------
+        verifyPad : bool
+            Passed to `self.load()`. If True, then padded data within
+            the load method will be retained. (default=False)
+
+        Note
+        ----
+        If there were no previous calls to load then the
+        first day(default)/file will be loaded.
+
+        """
+        # make sure we can iterate
+        if len(self._iter_list) == 0:
+            # nothing to potentially iterate over
+            raise StopIteration(''.join(('File list is empty. ',
+                                         'Nothing to be done.')))
+
+        if self._iter_type == 'date':
+            if self.date is not None:
+                # some data already loaded in .data
+                idx, = np.where(self._iter_list == self.date)
+                if len(idx) == 0:
+                    estr = ''.join(('Unable to find loaded date ',
+                                    'in the supported iteration list. ',
+                                    'Please check the Instrument bounds, ',
+                                    '`self.bounds` for supported iteration',
+                                    'ranges.'))
+                    raise StopIteration(estr)
+                elif idx[0] == 0:
+                    # too far!
+                    raise StopIteration('Outside the set date boundaries.')
+                else:
+                    # not on first day, safe to move backward
+                    date = self._iter_list[idx[0] - 1]
+                    end_date = self._iter_list[idx[0] - 1] + self._iter_width
+                    self.load(date=date, end_date=end_date, verifyPad=verifyPad)
+            else:
+                # no data currently loaded, start at the end
+                end_date = self._iter_list[-1] + self._iter_width
+                date = self._iter_list[-1]
+                self.load(date=date, end_date=end_date, verifyPad=verifyPad)
+
+        elif self._iter_type == 'file':
+            first = self.files.get_index(self._iter_list[0])
+            last = self.files.get_index(self._iter_list[-1])
+            step = self._iter_step
+            width = self._iter_width
+            if self._fid is not None:
+                if (self._fid - step < first) or (self._fid > last):
+                    raise StopIteration('Outside the set file boundaries.')
+                else:
+                    # find location of file
+                    idx = None
+                    fname = self.files[self._fid]
+                    for i, name in enumerate(self._iter_list):
+                        if name == fname:
+                            idx = i
+                            break
+                    if idx is None:
+                        estr = ''.join(('Unable to find loaded filename ',
+                                        'in the supported iteration list. ',
+                                        'Please check the Instrument bounds, ',
+                                        '`self.bounds` for supported iteration',
+                                        'ranges.'))
+                        raise StopIteration(estr)
+                    fname = self._iter_list[idx - 1]
+            else:
+                fname = self._iter_list[-1]
+
+            nfid = self.files.get_index(fname) + width - 1
+            self.load(fname=fname, stop_fname=self.files[nfid],
+                      verifyPad=verifyPad)
+
+        return
+
+    def rename(self, var_names, lowercase_data_labels=False):
+        """Renames variable within both data and metadata.
+
+        Parameters
+        ----------
+        var_names : dict or other map
+            Existing var_names are keys, values are new var_names
+        lowercase_data_labels : bool
+            If True, the labels applied to inst.data are forced to lowercase.
+            The supplied case in var_names is retained within inst.meta.
+
+        Examples
+        --------
+        ..
+
+            # standard renaming
+            new_var_names = {'old_name': 'new_name',
+                         'old_name2':, 'new_name2'}
+            inst.rename(new_var_names)
+
+        If using a pandas DataFrame as the underlying data object,
+        to rename higher-order variables supply a modified dictionary.
+        Note that this rename will be invoked individually for all
+        times in the dataset.
+        ..
+
+            # applies to higher-order datasets
+            # that are loaded into pandas
+            # general example
+            new_var_names = {'old_name': 'new_name',
+                             'old_name2':, 'new_name2',
+                             'col_name': {'old_ho_name': 'new_ho_name'}}
+            inst.rename(new_var_names)
+
+            # specific example
+            inst = pysat.Instrument('pysat', 'testing2D')
+            inst.load(2009, 1)
+            var_names = {'uts': 'pysat_uts',
+                     'profiles': {'density': 'pysat_density'}}
+            inst.rename(var_names)
+
+        pysat supports differing case for variable labels across the
+        data and metadata objects attached to an Instrument. Since
+        metadata is case-preserving (on assignment) but case-insensitive,
+        the labels used for data are always valid for metadata. This
+        feature may be used to provide friendlier variable names within
+        pysat while also maintaining external format compatibility
+        when writing files.
+        ..
+            # example with lowercase_data_labels
+            inst = pysat.Instrument('pysat', 'testing2D')
+            inst.load(2009, 1)
+            var_names = {'uts': 'Pysat_UTS',
+                     'profiles': {'density': 'PYSAT_density'}}
+            inst.rename(var_names, lowercase_data_labels=True)
+
+            # note that 'Pysat_UTS' was applied to data as 'pysat_uts'
+            print(inst['pysat_uts'])
+
+            # case is retained within inst.meta, though
+            # data access to meta is case insensitive
+            print('True meta variable name is ', inst.meta['pysat_uts'].name)
+
+            # Note that the labels in meta may be used when creating a file
+            # thus 'Pysat_UTS' would be found in the resulting file
+            inst.to_netcdf4('./test.nc', preserve_meta_case=True)
+
+            # load in file and check
+            raw = netCDF4.Dataset('./test.nc')
+            print(raw.variables['Pysat_UTS'])
+
+        """
+
+        if self.pandas_format:
+            # Check for standard rename variables as well as
+            # renaming for higher order variables
+            fdict = {}  # filtered old variable names
+            hdict = {}  # higher order variable names
+
+            # keys for existing higher order data labels
+            ho_keys = [a for a in self.meta.keys_nD()]
+            lo_keys = [a for a in self.meta.keys()]
+
+            # iterate, collect normal variables
+            # rename higher order variables
+            for vkey in var_names:
+                # original name, new name
+                oname, nname = vkey, var_names[vkey]
+                if oname not in ho_keys:
+                    if oname in lo_keys:
+                        # within low order (standard) variable name keys
+                        # may be renamed directly
+                        fdict[oname] = nname
+                    else:
+                        # not in standard or higher order variable name keys
+                        estr = ' '.join((oname, ' is not',
+                                         'a known variable.'))
+                        raise ValueError(estr)
+                else:
+                    # variable name is in higher order list
+                    if isinstance(nname, dict):
+                        # changing a variable name within
+                        # higher order object
+                        label = [k for k in nname.keys()][0]
+                        hdict[label] = nname[label]
+                        # ensure variable is there
+                        if label not in self.meta[oname]['children']:
+                            estr = ''.join((label, ' is not a known ',
+                                            'higher-order variable under ',
+                                            oname, '.'))
+                            raise ValueError(estr)
+                        # check for lowercase flag
+                        if lowercase_data_labels:
+                            gdict = {}
+                            gdict[label] = nname[label].lower()
+                        else:
+                            gdict = hdict
+                        # change variables for frame at each time
+                        for i in np.arange(len(self.index)):
+                            # within data itself
+                            self[i, oname].rename(columns=gdict,
+                                                  inplace=True)
+
+                        # change metadata, once per variable only
+                        # hdict used as it retains user provided case
+                        self.meta.ho_data[oname].data.rename(hdict,
+                                                             inplace=True)
+                        # clear out dict for next loop
+                        hdict.pop(label)
+                    else:
+                        # changing the outer 'column' label
+                        fdict[oname] = nname
+
+            # rename regular variables, single go
+            # check for lower case data labels first
+            if lowercase_data_labels:
+                gdict = {}
+                for fkey in fdict:
+                    gdict[fkey] = fdict[fkey].lower()
+            else:
+                gdict = fdict
+
+            # change variable names for attached data object
+            self.data.rename(columns=gdict, inplace=True)
+
+        else:
+            # xarray renaming
+            # account for lowercase data labels first
+            if lowercase_data_labels:
+                gdict = {}
+                for vkey in var_names:
+                    gdict[vkey] = var_names[vkey].lower()
+            else:
+                gdict = var_names
+            self.data = self.data.rename(gdict)
+
+            # set up dictionary for renaming metadata variables
+            fdict = var_names
+
+        # update normal metadata parameters in a single go
+        # case must always be preserved in Meta object
+        new_fdict = {}
+        for fkey in fdict:
+            case_old = self.meta.var_case_name(fkey)
+            new_fdict[case_old] = fdict[fkey]
+        self.meta.data.rename(index=new_fdict, inplace=True)
+
+        return
+
+    def generic_meta_translator(self, input_meta):
+        """Translates the metadata contained in an object into a dictionary
+
+        Parameters
+        ----------
+        input_meta : Meta
+            The metadata object to translate
+
+        Returns
+        -------
+        dict
+            A dictionary of the metadata for each variable of an output file
+            e.g. netcdf4
+
+        """
+        export_dict = {}
+        if self._meta_translation_table is not None:
+            # Create a translation table for the actual values of the meta
+            # labels. The instrument specific translation table only stores the
+            # names of the attributes that hold the various meta labels
+            translation_table = {}
+            for key in self._meta_translation_table:
+                translation_table[getattr(self, key)] = \
+                    self._meta_translation_table[key]
+        else:
+            translation_table = None
+        # First Order Data
+        for key in input_meta.data.index:
+            if translation_table is None:
+                export_dict[key] = input_meta.data.loc[key].to_dict()
+            else:
+                # Translate each key if a translation is provided
+                export_dict[key] = {}
+                meta_dict = input_meta.data.loc[key].to_dict()
+                for orig_key in meta_dict:
+                    if orig_key in translation_table:
+                        for translated_key in translation_table[orig_key]:
+                            export_dict[key][translated_key] = \
+                                meta_dict[orig_key]
+                    else:
+                        export_dict[key][orig_key] = meta_dict[orig_key]
+
+        # Higher Order Data
+        for key in input_meta.ho_data:
+            if key not in export_dict:
+                export_dict[key] = {}
+            for ho_key in input_meta.ho_data[key].data.index:
+                new_key = '_'.join((key, ho_key))
+                if translation_table is None:
+                    export_dict[new_key] = \
+                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
+                else:
+                    # Translate each key if a translation is provided
+                    export_dict[new_key] = {}
+                    meta_dict = \
+                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
+                    for orig_key in meta_dict:
+                        if orig_key in translation_table:
+                            for translated_key in translation_table[orig_key]:
+                                export_dict[new_key][translated_key] = \
+                                    meta_dict[orig_key]
+                        else:
+                            export_dict[new_key][orig_key] = \
+                                meta_dict[orig_key]
+        return export_dict
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
              end_date=None, fname=None, stop_fname=None, verifyPad=False):
@@ -2175,776 +2954,6 @@ class Instrument(object):
                                    curr_bound[2], curr_bound[3])
 
         return
-
-    @property
-    def bounds(self):
-        """Boundaries for iterating over instrument object by date or file.
-
-        Parameters
-        ----------
-        start : datetime object, filename, or None
-            start of iteration, if None uses first data date.
-            list-like collection also accepted. (default=None)
-        stop :  datetime object, filename, or None
-            stop of iteration, inclusive. If None uses last data date.
-            list-like collection also accepted. (default=None)
-        step : str, int, or None
-            Step size used when iterating from start to stop. Use a
-            Pandas frequency string ('3D', '1M') when setting bounds by date,
-            an integer when setting bounds by file. Defaults to a single
-            day/file (default='1D', 1).
-        width : pandas.DateOffset, int, or None
-            Data window used when loading data within iteration. Defaults to a
-            single day/file if not assigned. (default=pds.DateOffset(days=1),
-            1)
-
-        Note
-        ----
-        Both start and stop must be the same type (date, or filename) or None.
-        Only the year, month, and day are used for date inputs.
-
-        Examples
-        --------
-        ::
-            import datetime as dt
-            import pandas as pds
-            import pysat
-
-            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
-            start = dt.datetime(2009, 1, 1)
-            stop = dt.datetime(2009, 1, 31)
-            # Defaults to stepping by a single day and a data loading window
-            # of one day/file.
-            inst.bounds = (start, stop)
-
-            # Set bounds by file. Iterates a file at a time.
-            inst.bounds = ('filename1', 'filename2')
-
-            # Create a more complicated season, multiple start and stop dates.
-            start2 = dt.datetetime(2010,1,1)
-            stop2 = dt.datetime(2010,2,14)
-            inst.bounds = ([start, start2], [stop, stop2])
-
-            # Iterate via a non-standard step size of two days.
-            inst.bounds = ([start, start2], [stop, stop2], '2D')
-
-            # Load more than a single day/file at a time when iterating
-            inst.bounds = ([start, start2], [stop, stop2], '2D',
-                           pds.DateOffset(days=3))
-
-        """
-        out = (self._iter_start, self._iter_stop, self._iter_step,
-               self._iter_width)
-        return out
-
-    @bounds.setter
-    def bounds(self, value=None):
-        """Sets the self.bounds property.
-
-        Parameters
-        ----------
-        start (value[0]) : datetime object, filename, or None
-            start of iteration, if None uses first data date.
-            list-like collection also accepted. (default=None)
-        stop  (value[1]):  datetime object, filename, or None
-            stop of iteration, inclusive. If None uses last data date.
-            list-like collection also accepted. (default=None)
-        step  (value[2]): str, int, or None
-            Step size used when iterating from start to stop. Use a
-            Pandas frequency string ('3D', '1M') when setting bounds by date,
-            an integer when setting bounds by file. Defaults to a single
-            day/file (default='1D', 1).
-        width (value[3]): pandas.DateOffset, int, or None
-            Data window used when loading data within iteration. Defaults to a
-            single day/file if not assigned. (default=pds.DateOffset(days=1),
-            1)
-
-        Note
-        ----
-        Both start and stop must be the same type (date, or filename) or None.
-        Only the year, month, and day are used for date inputs.
-
-        Examples
-        --------
-        ::
-            import datetime as dt
-            import pandas as pds
-            import pysat
-
-            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
-            start = dt.datetime(2009,1,1)
-            stop = dt.datetime(2009,1,31)
-            # Defaults to stepping by a single day and a data loading window
-            # of one day/file.
-            inst.bounds = (start, stop)
-
-            # Set bounds by file. Iterates a file at a time.
-            inst.bounds = ('filename1', 'filename2')
-
-            # Create a more complicated season, multiple start and stop dates.
-            start2 = dt.datetetime(2010,1,1)
-            stop2 = dt.datetime(2010,2,14)
-            inst.bounds = ([start, start2], [stop, stop2])
-
-            # Iterate via a non-standard step size of two days.
-            inst.bounds = ([start, start2], [stop, stop2], '2D')
-
-            # Load more than a single day/file at a time when iterating
-            inst.bounds = ([start, start2], [stop, stop2], '2D',
-                           pds.DateOffset(days=3))
-
-        """
-        if value is None:
-            # user wants defaults
-            value = (None, None, None, None)
-
-        if len(value) < 2:
-            raise ValueError(' '.join(('Must supply both a start and stop',
-                                       'date/file. Supply None if you want the',
-                                       'first/last possible.')))
-        elif len(value) == 2:
-            # includes start and stop only
-            self._iter_step = None
-            self._iter_width = None
-        elif len(value) == 3:
-            # also includes step size
-            self._iter_step = value[2]
-            self._iter_width = None
-        elif len(value) == 4:
-            # also includes loading window (data width)
-            self._iter_step = value[2]
-            self._iter_width = value[3]
-        else:
-            raise ValueError('Too many input arguments.')
-
-        # pull out start and stop times now that other optional items have
-        # been checked out.
-        start = value[0]
-        stop = value[1]
-
-        if (start is None) and (stop is None):
-            # set default using first and last file date
-            self._iter_start = [self.files.start_date]
-            self._iter_stop = [self.files.stop_date]
-            self._iter_type = 'date'
-            if self._iter_step is None:
-                self._iter_step = '1D'
-            if self._iter_width is None:
-                self._iter_width = pds.DateOffset(days=1)
-            if self._iter_start[0] is not None:
-                # There are files. Use those dates.
-                ustops = [stop - self._iter_width + pds.DateOffset(days=1)
-                          for stop in self._iter_stop]
-                ufreq = self._iter_step
-                self._iter_list = utils.time.create_date_range(self._iter_start,
-                                                               ustops,
-                                                               freq=ufreq)
-            else:
-                # instrument has no files
-                self._iter_list = []
-        else:
-            # user provided some inputs
-            starts = np.asarray([start])
-            stops = np.asarray([stop])
-            # ensure consistency if list-like already
-            if len(starts.shape) > 1:
-                starts = starts[0]
-            if len(stops.shape) > 1:
-                stops = stops[0]
-
-            # check equal number of elements
-            if len(starts) != len(stops):
-                estr = ' '.join(('Both start and stop must have the same',
-                                 'number of elements'))
-                raise ValueError(estr)
-
-            # check everything is the same type
-            base = type(starts[0])
-            for lstart, lstop in zip(starts, stops):
-                etype = type(lstop)
-                check1 = not isinstance(lstart, etype)
-                check2 = not isinstance(lstart, base)
-                if check1 or check2:
-                    # Method allows for inputs like inst.bounds = (start, None)
-                    # and bounds will fill the None with actual start or stop.
-                    # Allow for a Nonetype only if length is one.
-                    if len(starts) == 1 and (start is None):
-                        # we are good on type change, start is None, no error
-                        break
-                    elif len(stops) == 1 and (stop is None):
-                        # we are good on type change, stop is None, no error
-                        break
-                    raise ValueError(' '.join(('Start and stop items must all',
-                                               'be of the same type')))
-
-            # set bounds based upon passed data type
-            if isinstance(starts[0], str) or isinstance(stops[0], str):
-                # one of the inputs is a string
-                self._iter_type = 'file'
-                # could be (string, None) or (None, string)
-                # replace None with first/last, as appropriate
-                if starts[0] is None:
-                    starts = [self.files[0]]
-                if stops[0] is None:
-                    stops = [self.files[-1]]
-                # default step size
-                if self._iter_step is None:
-                    self._iter_step = 1
-                # default window size
-                if self._iter_width is None:
-                    self._iter_width = 1
-
-                itemp = []
-                self._iter_list = []
-                for istart, istop in zip(starts, stops):
-                    # ensure istart before istop
-                    # Get index of start/stop file from main file list
-                    start_idx = self.files.get_index(istart)
-                    stop_idx = self.files.get_index(istop)
-                    if stop_idx < start_idx:
-                        estr = ' '.join(('Bounds must be in increasing date',
-                                         'order.', istart, 'occurs after',
-                                         istop))
-                        raise ValueError(estr)
-                    itemp = self.files.get_file_array([istart], [istop])
-                    # downselect based upon step size
-                    itemp = itemp[::self._iter_step]
-                    # Make sure iterations don't go past last day
-                    # get index of last in iteration list
-                    iter_idx = self.files.get_index(itemp[-1])
-                    # don't let loaded data go past stop bound
-                    if iter_idx + self._iter_width - 1 > stop_idx:
-                        i = np.ceil((self._iter_width - 1) / self._iter_step)
-                        i = -int(i)
-                        self._iter_list.extend(itemp[:i])
-                    else:
-                        self._iter_list.extend(itemp)
-
-            elif isinstance(starts[0], dt.datetime) or isinstance(stops[0],
-                                                                  dt.datetime):
-                # one of the inputs is a date
-                self._iter_type = 'date'
-
-                if starts[0] is None:
-                    # start and stop dates on self.files already filtered
-                    # to include only year, month, and day
-                    starts = [self.files.start_date]
-                if stops[0] is None:
-                    stops = [self.files.stop_date]
-                # default step size
-                if self._iter_step is None:
-                    self._iter_step = '1D'
-                # default window size
-                if self._iter_width is None:
-                    self._iter_width = pds.DateOffset(days=1)
-
-                # create list-like of dates for iteration
-                starts = self._filter_datetime_input(starts)
-                stops = self._filter_datetime_input(stops)
-                freq = self._iter_step
-                width = self._iter_width
-
-                # ensure inputs are in reasonable date order
-                for start, stop in zip(starts, stops):
-                    if start > stop:
-                        estr = ' '.join(('Bounds must be set in increasing',
-                                         'date order.',
-                                         start.strftime('%d %B %Y'),
-                                         'is later than',
-                                         stop.strftime('%d %B %Y')))
-                        raise ValueError(estr)
-
-                # account for width of load. Don't extend past bound.
-                ustops = [stop - width + pds.DateOffset(days=1)
-                          for stop in stops]
-                self._iter_list = utils.time.create_date_range(starts,
-                                                               ustops,
-                                                               freq=freq)
-                # go back to time index
-                self._iter_list = pds.DatetimeIndex(self._iter_list)
-
-            else:
-                raise ValueError(' '.join(('Input is not a known type, string',
-                                           'or datetime')))
-            self._iter_start = starts
-            self._iter_stop = stops
-
-        return
-
-    def __iter__(self):
-        """Iterates instrument object by loading subsequent days or files.
-
-        Note
-        ----
-        Limits of iteration, and iteration type (date/file)
-        set by `bounds` attribute.
-
-        Default bounds are the first and last dates from files on local system.
-
-        Examples
-        --------
-        ::
-
-            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
-            start = dt.datetime(2009, 1, 1)
-            stop = dt.datetime(2009, 1, 31)
-            inst.bounds = (start, stop)
-            for inst in inst:
-                print('Another day loaded', inst.date)
-
-        """
-
-        if self._iter_type == 'file':
-            width = self._iter_width
-            for fname in self._iter_list:
-                # Without a copy, a = [inst for inst in inst] leads to
-                # every item being the last day loaded.
-                # With the copy, behavior is as expected. Making a copy
-                # of an empty object is going to be faster than a full one.
-                self.data = self._null_data
-                local_inst = self.copy()
-                # load range of files
-                # get location for second file, width of 1 loads only one file
-                nfid = self.files.get_index(fname) + width - 1
-                local_inst.load(fname=fname, stop_fname=self.files[nfid])
-                yield local_inst
-
-        elif self._iter_type == 'date':
-            # iterate over dates
-            # list of dates generated whenever bounds are set
-            for date in self._iter_list:
-                # do copy trick, starting with null data in object
-                self.data = self._null_data
-                local_inst = self.copy()
-                # user specified range of dates
-                end_date = date + self._iter_width
-                # load range of dates
-                local_inst.load(date=date, end_date=end_date)
-                yield local_inst
-
-        # Add last loaded data/metadata from local_inst into the original object
-        # Making copy here to ensure there are no left over references
-        # to the local_inst object in the loop that would interfere with
-        # garbage collection. Don't want to make a copy of underlying data.
-        local_inst_data = local_inst.data
-        local_inst.data = local_inst._null_data
-        self.data = local_inst_data
-        self.meta = local_inst.meta.copy()
-
-    def next(self, verifyPad=False):
-        """Manually iterate through the data loaded in Instrument object.
-
-        Bounds of iteration and iteration type (day/file) are set by
-        `bounds` attribute.
-
-        Parameters
-        ----------
-        verifyPad : bool
-            Passed to `self.load()`. If True, then padded data within
-            the load method will be retained. (default=False)
-
-        Note
-        ----
-        If there were no previous calls to load then the
-        first day(default)/file will be loaded.
-
-        """
-
-        # make sure we can iterate
-        if len(self._iter_list) == 0:
-            # nothing to potentially iterate over
-            raise StopIteration(''.join(('File list is empty. ',
-                                         'Nothing to be done.')))
-
-        if self._iter_type == 'date':
-            if self.date is not None:
-                # data is already loaded in .data
-                idx, = np.where(self.date == self._iter_list)
-                if len(idx) == 0:
-                    estr = ''.join(('Unable to find loaded date ',
-                                    'in the supported iteration list. ',
-                                    'Please check the Instrument bounds, ',
-                                    '`self.bounds` for supported iteration',
-                                    'ranges.'))
-                    raise StopIteration(estr)
-                elif idx[-1] >= len(self._iter_list) - 1:
-                    # gone to far!
-                    raise StopIteration('Outside the set date boundaries.')
-                else:
-                    # not going past the last day, safe to move forward
-                    date = self._iter_list[idx[0] + 1]
-                    end_date = date + self._iter_width
-            else:
-                # no data currently loaded, start at the beginning
-                date = self._iter_list[0]
-                end_date = date + self._iter_width
-            # perform load
-            self.load(date=date, end_date=end_date, verifyPad=verifyPad)
-
-        elif self._iter_type == 'file':
-            first = self.files.get_index(self._iter_list[0])
-            last = self.files.get_index(self._iter_list[-1])
-            step = self._iter_step
-            width = self._iter_width
-            if self._fid is not None:
-                # data already loaded in .data
-                if (self._fid < first) | (self._fid + step > last):
-                    raise StopIteration('Outside the set file boundaries.')
-                else:
-                    # step size already accounted for in the list of files
-                    # get location of current file in iteration list
-                    idx = None
-                    fname = self.files[self._fid]
-                    for i, name in enumerate(self._iter_list):
-                        if name == fname:
-                            idx = i
-                            break
-                    if idx is None:
-                        estr = ''.join(('Unable to find loaded filename ',
-                                        'in the supported iteration list. ',
-                                        'Please check the Instrument bounds, ',
-                                        '`self.bounds` for supported iteration',
-                                        'ranges.'))
-                        raise StopIteration(estr)
-                    fname = self._iter_list[idx + 1]
-            else:
-                # no data loaded yet, start with the first file
-                fname = self._iter_list[0]
-
-            # load range of files at a time
-            # get location for second file. Note a width of 1 loads single file
-            nfid = self.files.get_index(fname) + width - 1
-            self.load(fname=fname, stop_fname=self.files[nfid],
-                      verifyPad=verifyPad)
-
-        return
-
-    def prev(self, verifyPad=False):
-        """Manually iterate backwards through the data in Instrument object.
-
-        Bounds of iteration and iteration type (day/file)
-        are set by `bounds` attribute.
-
-        Parameters
-        ----------
-        verifyPad : bool
-            Passed to `self.load()`. If True, then padded data within
-            the load method will be retained. (default=False)
-
-        Note
-        ----
-        If there were no previous calls to load then the
-        first day(default)/file will be loaded.
-
-        """
-        # make sure we can iterate
-        if len(self._iter_list) == 0:
-            # nothing to potentially iterate over
-            raise StopIteration(''.join(('File list is empty. ',
-                                         'Nothing to be done.')))
-
-        if self._iter_type == 'date':
-            if self.date is not None:
-                # some data already loaded in .data
-                idx, = np.where(self._iter_list == self.date)
-                if len(idx) == 0:
-                    estr = ''.join(('Unable to find loaded date ',
-                                    'in the supported iteration list. ',
-                                    'Please check the Instrument bounds, ',
-                                    '`self.bounds` for supported iteration',
-                                    'ranges.'))
-                    raise StopIteration(estr)
-                elif idx[0] == 0:
-                    # too far!
-                    raise StopIteration('Outside the set date boundaries.')
-                else:
-                    # not on first day, safe to move backward
-                    date = self._iter_list[idx[0] - 1]
-                    end_date = self._iter_list[idx[0] - 1] + self._iter_width
-                    self.load(date=date, end_date=end_date, verifyPad=verifyPad)
-            else:
-                # no data currently loaded, start at the end
-                end_date = self._iter_list[-1] + self._iter_width
-                date = self._iter_list[-1]
-                self.load(date=date, end_date=end_date, verifyPad=verifyPad)
-
-        elif self._iter_type == 'file':
-            first = self.files.get_index(self._iter_list[0])
-            last = self.files.get_index(self._iter_list[-1])
-            step = self._iter_step
-            width = self._iter_width
-            if self._fid is not None:
-                if (self._fid - step < first) or (self._fid > last):
-                    raise StopIteration('Outside the set file boundaries.')
-                else:
-                    # find location of file
-                    idx = None
-                    fname = self.files[self._fid]
-                    for i, name in enumerate(self._iter_list):
-                        if name == fname:
-                            idx = i
-                            break
-                    if idx is None:
-                        estr = ''.join(('Unable to find loaded filename ',
-                                        'in the supported iteration list. ',
-                                        'Please check the Instrument bounds, ',
-                                        '`self.bounds` for supported iteration',
-                                        'ranges.'))
-                        raise StopIteration(estr)
-                    fname = self._iter_list[idx - 1]
-            else:
-                fname = self._iter_list[-1]
-
-            nfid = self.files.get_index(fname) + width - 1
-            self.load(fname=fname, stop_fname=self.files[nfid],
-                      verifyPad=verifyPad)
-
-        return
-
-    def _get_var_type_code(self, coltype):
-        """Determines the two-character type code for a given variable type
-
-        Parameters
-        ----------
-        coltype : type or np.dtype
-            The type of the variable
-
-        Returns
-        -------
-        str
-            The variable type code for the given type"""
-
-        if type(coltype) is np.dtype:
-            var_type = coltype.kind + str(coltype.itemsize)
-            return var_type
-        else:
-            if coltype is np.int64:
-                return 'i8'
-            elif coltype is np.int32:
-                return 'i4'
-            elif coltype is np.int16:
-                return 'i2'
-            elif coltype is np.int8:
-                return 'i1'
-            elif coltype is np.uint64:
-                return 'u8'
-            elif coltype is np.uint32:
-                return 'u4'
-            elif coltype is np.uint16:
-                return 'u2'
-            elif coltype is np.uint8:
-                return 'u1'
-            elif coltype is np.float64:
-                return 'f8'
-            elif coltype is np.float32:
-                return 'f4'
-            elif issubclass(coltype, str):
-                return 'S1'
-            else:
-                raise TypeError('Unknown Variable Type' + str(coltype))
-
-    def _get_data_info(self, data, netcdf_format):
-        """Support file writing by determining data type and other options
-
-        Parameters
-        ----------
-        data : pandas object
-            Data to be written
-        netcdf_format : str
-            String indicating netCDF3 or netCDF4
-
-        Returns
-        -------
-        data_flag, datetime_flag, old_format
-        """
-        # get type of data
-        data_type = data.dtype
-        # check if older netcdf_format
-        if netcdf_format != 'NETCDF4':
-            old_format = True
-        else:
-            old_format = False
-        # check for object type
-        if data_type != np.dtype('O'):
-            # simple data, not an object
-
-            # no 64bit ints in netCDF3
-            if (data_type == np.int64) & old_format:
-                data = data.astype(np.int32)
-                data_type = np.int32
-
-            if data_type == np.dtype('<M8[ns]'):
-                if not old_format:
-                    data_type = np.int64
-                else:
-                    data_type = np.float
-                datetime_flag = True
-            else:
-                datetime_flag = False
-        else:
-            # dealing with a more complicated object
-            # iterate over elements until we hit something that is something,
-            # and not NaN
-            data_type = type(data.iloc[0])
-            for i in np.arange(len(data)):
-                if len(data.iloc[i]) > 0:
-                    data_type = type(data.iloc[i])
-                    if not isinstance(data_type, np.float):
-                        break
-            datetime_flag = False
-
-        return data, data_type, datetime_flag
-
-    def _filter_netcdf4_metadata(self, mdata_dict, coltype, remove=False,
-                                 export_nan=None):
-        """Filter metadata properties to be consistent with netCDF4.
-
-        Parameters
-        ----------
-        mdata_dict : dict
-            Dictionary equivalent to Meta object info
-        coltype : type
-            Type provided by _get_data_info
-        remove : boolean (False)
-            Removes FillValue and associated parameters disallowed for strings
-        export_nan : list or None
-            Metadata parameters allowed to be NaN
-
-        Returns
-        -------
-        dict
-            Modified as needed for netCDf4
-
-        Note
-        ----
-        remove forced to True if coltype consistent with a string type
-
-        Metadata values that are NaN and not listed in export_nan are
-         filtered out.
-
-        """
-
-        # remove any metadata with a value of nan not present in
-        # export_nan
-        filtered_dict = mdata_dict.copy()
-        for key, value in mdata_dict.items():
-            try:
-                if np.isnan(value):
-                    if key not in export_nan:
-                        filtered_dict.pop(key)
-            except TypeError:
-                # if typerror thrown, it's not nan
-                pass
-        mdata_dict = filtered_dict
-
-        # Coerce boolean types to integers
-        for key in mdata_dict:
-            if type(mdata_dict[key]) == bool:
-                mdata_dict[key] = int(mdata_dict[key])
-        if (coltype == str):
-            remove = True
-            warnings.warn('FillValue is not an acceptable '
-                          'parameter for strings - it will be removed')
-
-        if u'_FillValue' in mdata_dict.keys():
-            # make sure _FillValue is the same type as the data
-            if remove:
-                mdata_dict.pop('_FillValue')
-            else:
-                if not np.can_cast(mdata_dict['_FillValue'], coltype):
-                    if 'FieldNam' in mdata_dict:
-                        estr = ' '.join(('FillValue for {a:s} ({b:s}) cannot',
-                                         'be safely casted to {c:s} Casting',
-                                         'anyways. This may result in',
-                                         'unexpected behavior'))
-                        estr.format(a=mdata_dict['FieldNam'],
-                                    b=str(mdata_dict['_FillValue']),
-                                    c=coltype)
-                        warnings.warn(estr)
-                    else:
-                        estr = ' '.join(('FillValue {a:s} cannot be safely',
-                                         'casted to {b:s}. Casting anyways.',
-                                         'This may result in unexpected',
-                                         'behavior'))
-                        estr.format(a=str(mdata_dict['_FillValue']),
-                                    b=coltype)
-
-                mdata_dict['_FillValue'] = \
-                    np.array(mdata_dict['_FillValue']).astype(coltype)
-        if u'FillVal' in mdata_dict.keys():
-            # make sure _FillValue is the same type as the data
-            if remove:
-                mdata_dict.pop('FillVal')
-            else:
-                mdata_dict['FillVal'] = \
-                    np.array(mdata_dict['FillVal']).astype(coltype)
-        return mdata_dict
-
-    def generic_meta_translator(self, input_meta):
-        """Translates the metadata contained in an object into a dictionary
-
-        Parameters
-        ----------
-        input_meta : Meta
-            The metadata object to translate
-
-        Returns
-        -------
-        dict
-            A dictionary of the metadata for each variable of an output file
-            e.g. netcdf4
-
-        """
-        export_dict = {}
-        if self._meta_translation_table is not None:
-            # Create a translation table for the actual values of the meta
-            # labels. The instrument specific translation table only stores the
-            # names of the attributes that hold the various meta labels
-            translation_table = {}
-            for key in self._meta_translation_table:
-                translation_table[getattr(self, key)] = \
-                    self._meta_translation_table[key]
-        else:
-            translation_table = None
-        # First Order Data
-        for key in input_meta.data.index:
-            if translation_table is None:
-                export_dict[key] = input_meta.data.loc[key].to_dict()
-            else:
-                # Translate each key if a translation is provided
-                export_dict[key] = {}
-                meta_dict = input_meta.data.loc[key].to_dict()
-                for orig_key in meta_dict:
-                    if orig_key in translation_table:
-                        for translated_key in translation_table[orig_key]:
-                            export_dict[key][translated_key] = \
-                                meta_dict[orig_key]
-                    else:
-                        export_dict[key][orig_key] = meta_dict[orig_key]
-
-        # Higher Order Data
-        for key in input_meta.ho_data:
-            if key not in export_dict:
-                export_dict[key] = {}
-            for ho_key in input_meta.ho_data[key].data.index:
-                new_key = '_'.join((key, ho_key))
-                if translation_table is None:
-                    export_dict[new_key] = \
-                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
-                else:
-                    # Translate each key if a translation is provided
-                    export_dict[new_key] = {}
-                    meta_dict = \
-                        input_meta.ho_data[key].data.loc[ho_key].to_dict()
-                    for orig_key in meta_dict:
-                        if orig_key in translation_table:
-                            for translated_key in translation_table[orig_key]:
-                                export_dict[new_key][translated_key] = \
-                                    meta_dict[orig_key]
-                        else:
-                            export_dict[new_key][orig_key] = \
-                                meta_dict[orig_key]
-        return export_dict
 
     def to_netcdf4(self, fname=None, base_instrument=None, epoch_name='Epoch',
                    zlib=False, complevel=4, shuffle=True,
