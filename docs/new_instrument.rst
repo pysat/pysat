@@ -234,7 +234,7 @@ in ``pysat.instruments.methods.general.list_files`` that may find broad use.
 include time information in the filename and utilize a constant field width
 or a consistent delimiter. The location and format of the time information is
 specified using standard python formatting and keywords year, month, day, hour,
-minute, second. Additionally, both version, revision, and cycle keywords
+minute, second. Additionally, version, revision, and cycle keywords
 are supported. When present, the from_os constructor will filter down the
 file list to the latest version/revision/cycle combination.
 
