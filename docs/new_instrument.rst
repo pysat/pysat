@@ -234,9 +234,9 @@ in ``pysat.instruments.methods.general.list_files`` that may find broad use.
 include time information in the filename and utilize a constant field width
 or a consistent delimiter. The location and format of the time information is
 specified using standard python formatting and keywords year, month, day, hour,
-minute, second. Additionally, both version and revision keywords
+minute, second. Additionally, both version, revision, and cycle keywords
 are supported. When present, the from_os constructor will filter down the
-file list to the latest version and revision combination.
+file list to the latest version/revision/cycle combination.
 
 A complete list_files routine could be as simple as
 
@@ -250,7 +250,7 @@ A complete list_files routine could be as simple as
            # template string below works for CINDI IVM data that looks like
            # 'cindi-2009310-ivm-v02.hdf'
            # format_str supported keywords: year, month, day,
-           # hour, minute, second, version, and revision
+           # hour, minute, second, version, revision, and cycle
            format_str = 'cindi-{year:4d}{day:03d}-ivm-v{version:02d}.hdf'
        return pysat.Files.from_os(data_path=data_path, format_str=format_str)
 
