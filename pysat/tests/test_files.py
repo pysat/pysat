@@ -38,7 +38,7 @@ def remove_files(inst=None):
     temp_dir = inst.files.data_path
     for the_file in os.listdir(temp_dir):
         if (the_file[0:13] == 'pysat_testing') \
-                & (the_file[-19:] == '.pysat_testing_file'):
+               and (the_file[-19:] == '.pysat_testing_file'):
             file_path = os.path.join(temp_dir, the_file)
             if os.path.isfile(file_path):
                 os.unlink(file_path)
