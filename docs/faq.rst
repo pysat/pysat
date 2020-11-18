@@ -18,7 +18,7 @@ pysat makes it simple to add instruments.  Templates are included for the
 NASA CDAWeb and Madrigal databases.  Check out info about adding an
 nstrument here: `<https://pysat.readthedocs.io/en/latest/new_instrument.html#>`_
 and make sure to read the guidelines for pull requests here:
-`<https://github.com/rstoneback/pysat/blob/master/CONTRIBUTING.md>`_
+`<https://github.com/pysat/pysat/blob/master/CONTRIBUTING.md>`_
 
 Got a question?  Add it to the wiki FAQ:
-`<https://github.com/rstoneback/pysat/wiki/FAQ>`_
+`<https://github.com/pysat/pysat/wiki/FAQ>`_

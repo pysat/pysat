@@ -8,13 +8,13 @@ contributions.
 Short version
 -------------
 
-* Submit bug reports and feature requests at `GitHub <https://github.com/rstoneback/pysat/issues>`_
+* Submit bug reports and feature requests at `GitHub <https://github.com/pysat/pysat/issues>`_
 * Make pull requests to the ``develop`` branch
 
 Bug reports
 -----------
 
-When `reporting a bug <https://github.com/rstoneback/pysat/issues>`_ please
+When `reporting a bug <https://github.com/pysat/pysat/issues>`_ please
 include:
 
 * Your operating system name and version
@@ -25,7 +25,7 @@ Feature requests and feedback
 -----------------------------
 
 The best way to send feedback is to file an issue at
-`GitHub <https://github.com/rstoneback/pysat/issues>`_.
+`GitHub <https://github.com/pysat/pysat/issues>`_.
 
 If you are proposing a feature:
 
@@ -39,7 +39,7 @@ Development
 
 To set up `pysat` for local development:
 
-1. `Fork pysat on GitHub <https://github.com/rstoneback/pysat/fork>`_.
+1. `Fork pysat on GitHub <https://github.com/pysat/pysat/fork>`_.
 2. Clone your fork locally::
 
     git clone git@github.com:your_name_here/pysat.git
@@ -54,7 +54,7 @@ To set up `pysat` for local development:
    for the OMNI HRO data are tested in ``pysat/tests/test_omni_hro.py``.  If no
    test file exists, then you should create one.  This testing uses pytest,
    which will run tests on any python file in the test directory that starts
-   with ``test``.  Classes must begin with ``Test``, and methods must begin 
+   with ``test``.  Classes must begin with ``Test``, and methods must begin
    with ``test`` as well.
 
 4. When you're done making changes, run all the checks to ensure that nothing
