@@ -129,7 +129,7 @@ def parse_fixed_width_filenames(files, format_str):
 
     Returns
     -------
-    OrderedDict
+    stored : OrderedDict
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
         'revision', 'cycle'
@@ -205,7 +205,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     Returns
     -------
-    OrderedDict
+    stored : OrderedDict
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
         'revision', 'cycle'
