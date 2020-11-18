@@ -255,7 +255,7 @@ loading all data at once.
 In addition, convenience access to the data is also available at
 the instrument level.
 
-.. _DataFrame: http://pandas.pydata.org/pandas-docs/stable/dsintro.html#dataframe
+.. _DataFrame: https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
 .. _DataSet: http://xarray.pydata.org/en/v0.11.3/generated/xarray.Dataset.html
 
