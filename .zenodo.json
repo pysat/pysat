@@ -1,0 +1,58 @@
+{
+    "creators": [
+      {
+        "affiliation": "University of Texas at Dallas", 
+        "name": "Russell Stoneback",
+        "orcid": "0000-0001-7216-4336"  
+      }, 
+      {
+        "affiliation": "Goddard Space Flight Center",
+        "name": "Jeff Klenzing",
+        "orcid": "0000-0001-8321-6074"
+      }, 
+      {
+        "affiliation": "U.S. Naval Research Laboratory", 
+        "name": "Angeline Burrell",
+        "orcid": "0000-0001-8875-9326"
+      }, 
+      {
+        "name": "Carey Spence",
+        "orcid": "0000-0001-8340-5625"
+      }, 
+      {
+        "name": "Asher Pembroke"
+      }, 
+      {
+        "affiliation": "University of Texas at Dallas", 
+        "name": "Matthew Depew"
+      }, 
+      {
+        "name": "NHargrave"
+      }, 
+      {
+        "affiliation": "Catholic University of America, Goddard Space Flight Center",
+        "name": "Jonathon Smith",
+        "orcid": "0000-0002-8191-4765"
+      }, 
+      {
+        "name": "vvonbose"
+      }, 
+      {
+        "affiliation": "Predictive Science", 
+        "name": "Asher Pembroke"
+      }, 
+      {
+        "name": "Gayatri"
+      }, 
+      {
+        "affiliation": "@olist", 
+        "name": "Silvio Leite",
+        "orcid": "0000-0003-1707-7963"  
+      }
+    ], 
+    "access_right": "open", 
+    "resource_type": {
+      "type": "software", 
+      "title": "Software"
+    }
+}
