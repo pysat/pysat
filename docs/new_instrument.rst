@@ -1,5 +1,5 @@
+.. _rst_new_inst:
 
-=======================
 Adding a New Instrument
 =======================
 
