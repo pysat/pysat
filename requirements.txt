@@ -1,10 +1,8 @@
-numpy
+numpy>=1.12
 scipy
-pandas
+pandas>=0.23
 xarray
 dask
 toolz
 netCDF4
 portalocker
-pytest-cov
-pytest-ordering
