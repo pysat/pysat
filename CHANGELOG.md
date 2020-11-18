@@ -18,7 +18,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added variable rename method to Instrument object (#91)
   - Migrated file methods to pysat.utils.files (#336)
   - Added support for loading more than one day/file (#56)
-  - Added support for iterating over a dataset a with a loaded data width and 
+  - Added support for iterating over a dataset a with a loaded data width and
     stepsize larger than a single day/file
   - Added check for inconsistent inputs when loading data via Instrument
   - Added file locking for thread-safe behavior (#304)
@@ -59,7 +59,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improved docstring readability and consistency
   - Added Travis-CI testing for the documentation
   - Added a style guide for developers
-  - Adopted standard for bounds. `stop` is an inclusive bound, `end` is 
+  - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
     exclusive
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
@@ -83,6 +83,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Updated instrument templates
   - Simplified internal logic in Instrument class
   - Updated Instrument.concat_func to behave as described in the docstring
+  - Moved setup metadata to setup.cfg
 
 ## [2.2.1] - 2020-07-29
 - Documentation
