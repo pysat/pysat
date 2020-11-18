@@ -153,8 +153,8 @@ the local system is fully up to date compared to the data source. The command,
 
     dmsp.download_updated_files()
 
-will obtain the full set of files present on the server and compare the
-version and revision numbers for the server files with those on the local
+will obtain the full set of files present on the server and compare the version,
+revision, and cycle numbers for the server files with those on the local
 system.  Any files missing or out of date on the local system are downloaded
 from the server. This command downloads, as needed, the entire dataset.
 

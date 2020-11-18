@@ -185,6 +185,7 @@ class TestBasics():
         assert np.all(file_dict['day'] == day)
         assert np.all(file_dict['version'] == version)
         assert (file_dict['revision'] is None)
+        assert (file_dict['cycle'] is None)
 
     def test_year_doy_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
@@ -668,34 +669,37 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
 
     versions = np.array([1, 2])
     revisions = np.array([0, 1])
+    cycles = np.array([0, 1])
 
     if root_fname is None:
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}_',
                               '{day:03d}{hour:02d}{minute:02d}{second:02d}_',
-                              'stuff_{version:02d}_{revision:03d}.pysat_',
-                              'testing_file'))
+                              'stuff_{version:02d}_{revision:03d}_{cycle:02d}',
+                              '.pysat_testing_file'))
     # create empty file
     for date in dates:
         for version in versions:
             for revision in revisions:
-                yr, doy = pysat.utils.time.getyrdoy(date)
-                if use_doy:
-                    doy = doy
-                else:
-                    doy = date.day
+                for cycle in cycles:
+                    yr, doy = pysat.utils.time.getyrdoy(date)
+                    if use_doy:
+                        doy = doy
+                    else:
+                        doy = date.day
 
-                fname = os.path.join(inst.files.data_path,
-                                     root_fname.format(year=yr,
-                                                       day=doy,
-                                                       month=date.month,
-                                                       hour=date.hour,
-                                                       minute=date.minute,
-                                                       second=date.second,
-                                                       version=version,
-                                                       revision=revision))
-                with NetworkLock(fname, 'w'):
-                    if timeout is not None:
-                        time.sleep(timeout)
+                    fname = os.path.join(inst.files.data_path,
+                                         root_fname.format(year=yr,
+                                                           day=doy,
+                                                           month=date.month,
+                                                           hour=date.hour,
+                                                           minute=date.minute,
+                                                           second=date.second,
+                                                           version=version,
+                                                           revision=revision,
+                                                           cycle=cycle))
+                    with NetworkLock(fname, 'w'):
+                        if timeout is not None:
+                            time.sleep(timeout)
 
 
 def list_versioned_files(tag=None, inst_id=None, data_path=None,
@@ -705,8 +709,8 @@ def list_versioned_files(tag=None, inst_id=None, data_path=None,
     if format_str is None:
         format_str = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}_',
                               '{day:03d}{hour:02d}{minute:02d}{second:02d}_',
-                              'stuff_{version:02d}_{revision:03d}.pysat_',
-                              'testing_file'))
+                              'stuff_{version:02d}_{revision:03d}_{cycle:02d}',
+                              '.pysat_testing_file'))
     if tag is not None:
         if tag == '':
             return pysat.Files.from_os(data_path=data_path,
@@ -744,7 +748,8 @@ class TestInstrumentWithVersionedFiles():
         self.root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
                                    '_{day:03d}{hour:02d}{minute:02d}',
                                    '{second:02d}_stuff_{version:02d}_',
-                                   '{revision:03d}.pysat_testing_file'))
+                                   '{revision:03d}_{cycle:02d}',
+                                   '.pysat_testing_file'))
         start = dt.datetime(2007, 12, 31)
         stop = dt.datetime(2008, 1, 10)
         create_versioned_files(self.testInst, start, stop, freq='100min',
@@ -923,25 +928,21 @@ class TestInstrumentWithVersionedFiles():
         stop = dt.datetime(2008, 1, 15)
         dates = pysat.utils.time.create_date_range(start, stop, freq='1D')
 
+        file_format = ''.join(('pysat_testing_unique_{version:02d}_',
+                               '{revision:03d}_{cycle:02d}_{year:04d}',
+                               '_g_{day:03d}_st.pysat_testing_file'))
+
         # clear out old files, create new ones
         remove_files(self.testInst)
         create_versioned_files(self.testInst, start, stop, freq='1D',
                                use_doy=False,
-                               root_fname=''.join(('pysat_testing_unique_',
-                                                   '{version:02d}_',
-                                                   '{revision:03d}_{year:04d}',
-                                                   '_g_{day:03d}_st.pysat_',
-                                                   'testing_file')))
+                               root_fname=file_format)
 
         pysat.instruments.pysat_testing.list_files = list_versioned_files
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
                              clean_level='clean',
-                             file_format=''.join(('pysat_testing_unique_',
-                                                  '{version:02d}_',
-                                                  '{revision:03d}_{year:04d}_',
-                                                  'g_{day:03d}_st.pysat_',
-                                                  'testing_file')),
+                             file_format=file_format,
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         assert (np.all(self.testInst.files.files.index == dates))
@@ -952,23 +953,19 @@ class TestInstrumentWithVersionedFiles():
         stop = dt.datetime(2008, 1, 15)
         dates = pysat.utils.time.create_date_range(start, stop, freq='1D')
 
+        file_format = ''.join(('pysat_testing_unique_{version:02d}_',
+                               '{revision:03d}_{cycle:02d}_{year:04d}',
+                               '_g_{day:03d}_st.pysat_testing_file'))
+
         # clear out old files, create new ones
         remove_files(self.testInst)
         create_versioned_files(self.testInst, start, stop, freq='1D',
-                               use_doy=False,
-                               root_fname=''.join(('pysat_testing_unique_',
-                                                   '{version:02d}_',
-                                                   '{revision:03d}_{year:04d}',
-                                                   '_g_{day:03d}_st.pysat_',
-                                                   'testing_file')))
+                               use_doy=False, root_fname=file_format)
 
         pysat.instruments.pysat_testing.list_files = list_files
         self.testInst = \
             pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
-                             clean_level='clean',
-                             file_format=''.join(('pysat_testing_unique_??_',
-                                                  '???_{year:04d}_g_{day:03d}',
-                                                  '_st.pysat_testing_file')),
+                             clean_level='clean', file_format=file_format,
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
         assert (np.all(self.testInst.files.files.index == dates))
@@ -982,7 +979,7 @@ def create_instrument(j):
     root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
                           '_{day:03d}{hour:02d}{minute:02d}',
                           '{second:02d}_stuff_{version:02d}_',
-                          '{revision:03d}.pysat_testing_file'))
+                          '{revision:03d}_{cycle:02d}.pysat_testing_file'))
 
     testInst = \
         pysat.Instrument(inst_module=pysat.instruments.pysat_testing,
@@ -1035,7 +1032,8 @@ class TestFilesRaceCondition():
         self.root_fname = ''.join(('pysat_testing_junk_{year:04d}_{month:02d}',
                                    '_{day:03d}{hour:02d}{minute:02d}',
                                    '{second:02d}_stuff_{version:02d}_',
-                                   '{revision:03d}.pysat_testing_file'))
+                                   '{revision:03d}_{cycle:02d}',
+                                   '.pysat_testing_file'))
         start = dt.datetime(2007, 12, 30)
         stop = dt.datetime(2008, 12, 31)
         create_versioned_files(self.testInst, start, stop, freq='1D',

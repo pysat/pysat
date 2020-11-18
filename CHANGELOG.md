@@ -18,12 +18,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Added variable rename method to Instrument object (#91)
   - Migrated file methods to pysat.utils.files (#336)
   - Added support for loading more than one day/file (#56)
-  - Added support for iterating over a dataset a with a loaded data width and 
+  - Added support for iterating over a dataset a with a loaded data width and
     stepsize larger than a single day/file
   - Added check for inconsistent inputs when loading data via Instrument
   - Added file locking for thread-safe behavior (#304)
   - Allow the Instrument object to be initialized with optional kwargs for any
     of the standard methods (not just load).
+  - Added support for 'cycle' in addition to 'version' and 'revision' for
+    filename conventions.
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
@@ -59,7 +61,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Improved docstring readability and consistency
   - Added Travis-CI testing for the documentation
   - Added a style guide for developers
-  - Adopted standard for bounds. `stop` is an inclusive bound, `end` is 
+  - Adopted standard for bounds. `stop` is an inclusive bound, `end` is
     exclusive
 - Bug Fix
   - Fixed custom instrument attribute persistence upon load
