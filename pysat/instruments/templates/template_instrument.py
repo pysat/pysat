@@ -44,11 +44,15 @@ Author name and institution
 """
 
 import datetime as dt
-import logging
 
 import pysat
 
-logger = logging.getLogger(__name__)
+# Assign the pysat logger to the local log commands, as these functions will
+# all be executed within pysat.  If this is the only instance pysat is used,
+# consider omitting the pysat import and logger assignment and replacing it
+# with:
+# from pysat import logger
+logger = pysat.logger
 
 # ----------------------------------------------------------------------------
 # Instrument attributes:
