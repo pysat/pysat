@@ -5,7 +5,7 @@ jobs:
   include:
     - name: 'docs'
       python: '3.6'
-      script: 
+      script:
         - sphinx-build -E -b html docs dist/docs
         - sphinx-build -b linkcheck docs dist/docs
     - name: '3.6 with flake8'
@@ -15,9 +15,6 @@ jobs:
       script: pytest --cov=pysat/
     - python: '3.8'
       script: pytest --cov=pysat/
-  allow_failures:
-    - name: 'docs'
-      python: '3.6'
 
 services: xvfb
 cache: pip

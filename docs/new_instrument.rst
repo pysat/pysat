@@ -1,5 +1,5 @@
+.. _rst_new_inst:
 
-=======================
 Adding a New Instrument
 =======================
 
@@ -274,6 +274,7 @@ files which may take time to identify. The list of files associated
 with an Instrument may be updated by adding `update_files=True`.
 
 .. code:: python
+
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
 The output provided by the list_files function that has been pulled into pysat
