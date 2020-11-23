@@ -30,33 +30,33 @@ class TestGetYearDay():
 
 class TestParseDate():
 
-    def test_parse_date_2_digit_year(self):
-        """Test the ability to parse a str to produce a pandas datetime"""
+    @pytest.mark.parametrize("yr, mo, dy, cen, ref_dtime",
+                             [("14", "10", "31", 2000,
+                               dt.datetime(2014, 10, 31,
+                                           tzinfo=dt.timezone.utc)),
+                              ("94", "10", "31", 1800,
+                               dt.datetime(1894, 10, 31,
+                                           tzinfo=dt.timezone.utc)),
+                              ("94", "10", "31", 1900,
+                               dt.datetime(1994, 10, 31,
+                                           tzinfo=dt.timezone.utc)),
+                              ("1994", "10", "31", 2000,
+                               dt.datetime(1994, 10, 31,
+                                           tzinfo=dt.timezone.utc))])
+    def test_parse_date_success(self, yr, mo, dy, cen, ref_dtime):
+        """Test the ability to parse a str to get a valid datetime
+        """
 
-        date = pytime.parse_date('14', '10', '31')
+        date = pytime.parse_date(yr, mo, dy, century=cen)
 
-        assert date == dt.datetime(2014, 10, 31)
-
-    def test_parse_date_2_digit_year_last_century(self):
-        """Test the ability to parse a str to produce a pandas datetime
-        pre-2000"""
-
-        date = pytime.parse_date('94', '10', '31', century=1900)
-
-        assert date == dt.datetime(1994, 10, 31)
-
-    def test_parse_date_4_digit_year(self):
-        """Test the ability to parse a str to produce a pandas datetime"""
-
-        date = pytime.parse_date('1994', '10', '31')
-
-        assert date == dt.datetime(1994, 10, 31)
+        assert date == ref_dtime
 
     def test_parse_date_bad_input(self):
-        """Test the ability to identify a non-physical date"""
+        """Test raises ValueError when identifying a date before the space age
+        """
 
         with pytest.raises(ValueError):
-            _ = pytime.parse_date('194', '15', '31')
+            pytime.parse_date('194', '15', '31')
 
 
 class TestCalcFreq():
@@ -166,3 +166,59 @@ class TestCreateDatetimeIndex():
         assert dates[0] == dt.datetime(2012, 1, 1)
         assert dates[-1] == dt.datetime(2012, 1, 1)
         assert len(dates) == 4
+
+class TestSetTimezone():
+
+    def setup(self):
+        """Runs before every method to create a clean testing setup."""
+        self.ttime = dt.datetime(2010, 1, 1)
+        self.timezone = None
+
+    def teardown(self):
+        """Runs after every method to clean up previous testing."""
+        del self.ttime, self.timezone
+        
+    def update_test_time(self):
+        """ Update the test time using the timezone attribute
+        """
+        if self.timezone is not None:
+            self.timezone = self.timezone.upper()
+
+            if self.timezone == "UTC":
+                self.ttime = self.ttime.astimezone(tz=dt.timezone.utc)
+            else:
+                tzone = dt.timezone(dt.timedelta(hours=int(self.timezone)))
+                self.ttime = self.ttime.astimezone(tz=tzone)
+
+        return
+
+    @pytest.mark.parametrize("in_tz, naive_is_utc",
+                             [(None, True), ("UTC", True), ("UTC", False),
+                              ("2", True), ("2", False)])
+    def test_set_timezone_to_utc_success(self, in_tz, naive_is_utc):
+        """Test successful setting of UTC datetime data
+        """
+
+        # Set the input time and get the utc_time
+        self.timezone = in_tz
+        self.update_test_time()
+        utc_time = pytime.set_timezone_to_utc(self.ttime, naive_is_utc)
+
+        # Assert that the output is a datetime object
+        assert isinstance(utc_time, dt.datetime)
+
+        # Assert that the output is aware
+        assert utc_time.tzinfo is not None
+        assert utc_time.tzinfo.utcoffset is not None
+
+        # Assert that the output timezone is UTC
+        assert utc_time.tzinfo.utcoffset(utc_time).total_seconds() == 0.0
+
+    def test_set_timezone_to_utc_failure(self):
+        """Test raises TypeError if input type is naive and needs to be aware
+        """
+
+        with pytest.raises(TypeError) as terr:
+            pytime.set_timezone_to_utc(self.ttime, naive_is_utc=False)
+
+        assert "datetime input is naive" in str(terr.value)
