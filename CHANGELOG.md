@@ -72,6 +72,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed additional file date range for monthly data with gaps
   - Corrected iteration over Instrument within list comprehension
   - Removed unused input arguments
+  - Corrects Instrument today, yesterday, and tomorrow methods by implementing
+    aware datetimes
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
