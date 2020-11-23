@@ -35,7 +35,7 @@ name = 'pandas'
 tags = {'': 'netCDF4'}
 # dictionary of satellite IDs, list of corresponding tags
 inst_ids = {'': ['']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)}}
 
 
 def init(self):

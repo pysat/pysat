@@ -22,7 +22,7 @@ name = 'testing2d_xarray'
 pandas_format = False
 tags = {'': 'Regular testing data set'}
 inst_ids = {'': ['']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)}}
 
 epoch_name = u'time'
 
@@ -123,7 +123,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     # figure out how far in time from the root start
     # use that info to create a signal that is continuous from that start
     # going to presume there are 5820 seconds per orbit (97 minute period)
-    time_delta = dates[0] - dt.datetime(2009, 1, 1)
+    time_delta = dates[0] - dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
 
     # mlt runs 0-24 each orbit.
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,

@@ -47,8 +47,8 @@ class Orbits(object):
         info = {'index':'longitude', 'kind':'longitude'}
         vefi = pysat.Instrument(platform='cnofs', name='vefi', tag='dc_b',
                                 clean_level=None, orbit_info=info)
-        start = dt.datetime(2009,1,1)
-        stop = dt.datetime(2009,1,10)
+        start = dt.datetime(2009, 1, 1)
+        stop = dt.datetime(2009, 1, 10)
         vefi.load(date=start)
         vefi.bounds(start, stop)
 
@@ -199,7 +199,7 @@ class Orbits(object):
             # need to check step (frequency string) against width (DateOffset)
             step = pds.tseries.frequencies.to_offset(self.sat._iter_step)
             step = pds.DateOffset(seconds=step.delta.total_seconds())
-            root = dt.datetime(2001, 1, 1)
+            root = dt.datetime(2001, 1, 1, tzinfo=dt.timezone.utc)
             if root + step < root + self.sat._iter_width:
                 raise ValueError(estr)
 

@@ -35,9 +35,11 @@ tags = {'': 'Regular testing data set',
 # a numeric string can be used in inst_id to change the number of points per day
 inst_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
                  'no_download']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1),
-                    'no_download': dt.datetime(2009, 1, 1),
-                    'non_strict': dt.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                    'no_download': dt.datetime(2009, 1, 1,
+                                               tzinfo=dt.timezone.utc),
+                    'non_strict': dt.datetime(2009, 1, 1,
+                                              tzinfo=dt.timezone.utc)}}
 _test_download = {'': {'no_download': False}}
 
 

@@ -21,7 +21,7 @@ name = 'testmodel'
 tags = {'': 'Regular testing data set'}
 inst_ids = {'': ['']}
 pandas_format = False
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)}}
 
 
 def init(self):

@@ -558,7 +558,7 @@ def generate_instrument_list(inst_loc):
                 # other tests.  This will be caught later by
                 # InstTestClass.test_instrument_test_dates
                 info = {}
-                info[''] = {'': dt.datetime(2009, 1, 1)}
+                info[''] = {'': dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)}
                 module._test_dates = info
             for inst_id in info.keys():
                 for tag in info[inst_id].keys():

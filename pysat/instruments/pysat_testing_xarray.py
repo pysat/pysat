@@ -23,7 +23,7 @@ name = 'testing_xarray'
 tags = {'': 'Regular testing data set'}
 # dictionary of satellite IDs, list of corresponding tags
 inst_ids = {'': ['']}
-_test_dates = {'': {'': dt.datetime(2009, 1, 1)}}
+_test_dates = {'': {'': dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)}}
 pandas_format = False
 
 epoch_name = u'time'
@@ -117,11 +117,11 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                                                freq='1S')
 
     if sim_multi_file_right:
-        root_date = dt.datetime(2009, 1, 1, 12)
+        root_date = dt.datetime(2009, 1, 1, 12, tzinfo=dt.timezone.utc)
     elif sim_multi_file_left:
-        root_date = dt.datetime(2008, 12, 31, 12)
+        root_date = dt.datetime(2008, 12, 31, 12, tzinfo=dt.timezone.utc)
     else:
-        root_date = dt.datetime(2009, 1, 1)
+        root_date = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
 
     if malformed_index:
         index = index.tolist()
@@ -167,7 +167,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     data['altitude'] = ((epoch_name), altitude)
 
     # fake orbit number
-    fake_delta = dates[0] - dt.datetime(2008, 1, 1)
+    fake_delta = dates[0] - dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
     orbit_num = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                            uts, period=iperiod['lt'],
                                            cyclic=False)

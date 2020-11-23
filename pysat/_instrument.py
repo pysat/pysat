@@ -1095,9 +1095,11 @@ class Instrument(object):
             return date
         else:
             if hasattr(date, '__iter__'):
-                return [dt.datetime(da.year, da.month, da.day) for da in date]
+                return [dt.datetime(da.year, da.month, da.day,
+                                    tzinfo=dt.timezone.utc) for da in date]
             else:
-                return dt.datetime(date.year, date.month, date.day)
+                return dt.datetime(date.year, date.month, date.day,
+                                   tzinfo=dt.timezone.utc)
 
     def _load_data(self, date=None, fid=None, inc=None):
         """
@@ -1596,8 +1598,8 @@ class Instrument(object):
             import pysat
 
             inst = pysat.Instrument(platform=platform, name=name, tag=tag)
-            start = dt.datetime(2009,1,1)
-            stop = dt.datetime(2009,1,31)
+            start = dt.datetime(2009, 1, 1)
+            stop = dt.datetime(2009, 1, 31)
             # Defaults to stepping by a single day and a data loading window
             # of one day/file.
             inst.bounds = (start, stop)
@@ -1606,8 +1608,8 @@ class Instrument(object):
             inst.bounds = ('filename1', 'filename2')
 
             # Create a more complicated season, multiple start and stop dates.
-            start2 = dt.datetetime(2010,1,1)
-            stop2 = dt.datetime(2010,2,14)
+            start2 = dt.datetetime(2010, 1, 1)
+            stop2 = dt.datetime(2010, 2, 14)
             inst.bounds = ([start, start2], [stop, stop2])
 
             # Iterate via a non-standard step size of two days.
@@ -1894,11 +1896,13 @@ class Instrument(object):
         Returns
         -------
         datetime
-            Today's date
+            Today's date in UTC
 
         """
+        ttime = utils.time.set_timezone_to_utc(dt.datetime.utcnow(),
+                                               naive_is_utc=True)
 
-        return self._filter_datetime_input(dt.datetime.today())
+        return self._filter_datetime_input(ttime)
 
     def tomorrow(self):
         """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -1910,7 +1914,7 @@ class Instrument(object):
 
         """
 
-        return self.today() + pds.DateOffset(days=1)
+        return self.today() + dt.timedelta(days=1)
 
     def yesterday(self):
         """Returns yesterday's date (UTC), with no hour, minute, second, etc.
@@ -1922,7 +1926,7 @@ class Instrument(object):
 
         """
 
-        return self.today() - pds.DateOffset(days=1)
+        return self.today() - dt.timedelta(days=1)
 
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
@@ -2530,7 +2534,7 @@ class Instrument(object):
         # check for constiency between loading range and data padding, if any
         if self.pad is not None:
             if self._load_by_date:
-                tdate = dt.datetime(2009, 1, 1)
+                tdate = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
                 if tdate + self.load_step < tdate + loop_pad:
                     estr = ''.join(('Data padding window must be shorter than ',
                                     'data loading window. Load a greater ',
@@ -2701,7 +2705,8 @@ class Instrument(object):
                 temp = first_time
             else:
                 temp = self.index[0]
-            self.date = dt.datetime(temp.year, temp.month, temp.day)
+            self.date = dt.datetime(temp.year, temp.month, temp.day,
+                                    tzinfo=dt.timezone.utc)
             self.yr, self.doy = utils.time.getyrdoy(self.date)
 
         # ensure data is unique and monotonic

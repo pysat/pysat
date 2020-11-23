@@ -87,12 +87,13 @@ orbit_info = None
 # Define good days to download data for when pysat undergoes testing.
 # format is outer dictionary has inst_id as the key
 # each inst_id has a dictionary of test dates keyed by tag string
-# _test_dates = {'a':{'tag1': dt.datetime(2019,1,1),
-#                     'tag2': dt.datetime(2019,1,1)},
-#                'b':{'tag2': dt.datetime(2019,1,1),
-#                     'tag3': dt.datetime(2019,1,1),}}
-_test_dates = {'': {'': dt.datetime(2019, 1, 1),
-                    'tag_string': dt.datetime(2019, 1, 2)}}
+# _test_dates = {'a':{'tag1': dt.datetime(2019, 1, 1, tzinfo=dt.timezone.utc),
+#                     'tag2': dt.datetime(2019, 1, 1, tzinfo=dt.timezone.utc)},
+#                'b':{'tag2': dt.datetime(2019, 1, 1, tzinfo=dt.timezone.utc),
+#                     'tag3': dt.datetime(2019, 1, 1, tzinfo=dt.timezone.utc)}}
+_test_dates = {'': {'': dt.datetime(2019, 1, 1, tzinfo=dt.timezone.utc),
+                    'tag_string': dt.datetime(2019, 1, 2,
+                                              tzinfo=dt.timezone.utc)}}
 
 # Set Testing flags
 # Dict structure should mirror _test_dates above

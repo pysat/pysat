@@ -216,7 +216,7 @@ def generate_times(fnames, num, freq='1S'):
         yr = int(parts[0])
         month = int(parts[1])
         day = int(parts[2][0:2])
-        date = dt.datetime(yr, month, day)
+        date = dt.datetime(yr, month, day, tzinfo=dt.timezone.utc)
         dates.append(date)
 
         # Create one day of data at desired frequency
