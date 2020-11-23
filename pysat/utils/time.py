@@ -64,11 +64,15 @@ def parse_date(str_yr, str_mo, str_day, str_hr='0', str_min='0', str_sec='0',
     out_date : dt.datetime
         datetime object
 
+    Note
+    ----
+    Assumes the input date and time values are in UTC
+
     """
 
     yr = int(str_yr) + century if len(str_yr) == 2 else int(str_yr)
     out_date = dt.datetime(yr, int(str_mo), int(str_day), int(str_hr),
-                           int(str_min), int(str_sec))
+                           int(str_min), int(str_sec), tzinfo=dt.timezone.utc)
 
     return out_date
 
@@ -128,21 +132,39 @@ def create_date_range(start, stop, freq='D'):
     """
     Return array of datetime objects using input frequency from start to stop
 
-    Supports single datetime object or list, tuple, ndarray of start and
-    stop dates.
+    Parameters
+    ----------
+    start : dt.datetime or iterable
+        Start time in UTC.  May be a single datetime object or a list, tuple,
+        numpy array, or other iterable object.
+    stop : dt.datetime or iterable
+        Stop times in UTC corresponding to each start time (inclusive).  Must
+        be a single object if start is, or an interable of the same length as
+        start.
+    freq : str
+        A string indicating a pandas date_range code, such as 'D' for daily,
+        'M' for monthly, or 'S' for every second. (default='D')
 
-    freq codes correspond to pandas date_range codes, D daily, M monthly,
-    S secondly
+    Returns
+    -------
+    season : pds.DatetimeIndex
+        A pandas DatetimeIndex containing the specified range of datetimes at
+        the specified frequency.
 
+    Note
+    ----
+    Use iterable start and stop to create an output with gaps
+        
     """
 
+    # Rely on pandas to throw errors for bad datetime inputs
     if hasattr(start, '__iter__'):
-        # missing check for datetime
         season = pds.date_range(start[0], stop[0], freq=freq)
         for (sta, stp) in zip(start[1:], stop[1:]):
             season = season.append(pds.date_range(sta, stp, freq=freq))
     else:
         season = pds.date_range(start, stop, freq=freq)
+
     return season
 
 
@@ -212,3 +234,40 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
     return pds.to_datetime(uts_del)
+
+
+def set_timezone_to_utc(in_time, naive_is_utc=False):
+    """ Add the UTC timezone to an existing datetime timestamp
+
+    Parameters
+    ----------
+    in_time : dt.datetime
+        Datetime object that may need to be updated
+    naive_is_utc : bool
+        Declare that naive datetime objects are in UTC (default=False)
+
+    Returns
+    -------
+    out_time : dt.datime
+        Datetime object in UTC
+
+    Raises
+    ------
+    TypeError
+        If the input is naive and the naive_is_utc flag is False
+
+    """
+
+    # Ensure that naive timestamps are only set to UTC if the user specifies
+    # this is true.  If tzinfo is not None, it will have a utcoffset method.
+    if in_time.tzinfo is None or in_time.utcoffset() is None:
+        if naive_is_utc:
+            out_time = in_time.astimezone(tz=dt.timezone.utc)
+        else:
+            raise TypeError('datetime input is naive and may not be in UTC')
+    else:
+        out_time = in_time.astimezone(tz=dt.timezone.utc)
+
+    return out_time
+        
+        
