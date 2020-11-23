@@ -30,7 +30,7 @@ class TestBasics():
                                          num_samples=10,
                                          clean_level='clean',
                                          update_files=True)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         self.ref_doy = 1
         self.out = None
 
@@ -129,7 +129,8 @@ class TestBasics():
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_basic_instrument_load_two_days(self):
@@ -139,7 +140,8 @@ class TestBasics():
                            self.ref_time.year, self.ref_doy + 2)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
         assert (self.out >= self.ref_time + pds.DateOffset(days=1))
@@ -195,18 +197,25 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize("input", [{'yr': 2009, 'doy': 1,
-                                        'date': dt.datetime(2009, 1, 1)},
+                                        'date': dt.datetime(
+                                            2009, 1, 1,
+                                            tzinfo=dt.timezone.utc)},
                                        {'yr': 2009, 'doy': 1,
-                                        'end_date': dt.datetime(2009, 1, 1)},
+                                        'end_date': dt.datetime(
+                                            2009, 1, 1,
+                                            tzinfo=dt.timezone.utc)},
                                        {'yr': 2009, 'doy': 1,
                                         'fname': 'dummy_str.nofile'},
                                        {'yr': 2009, 'doy': 1,
                                         'stop_fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
+                                       {'date': dt.datetime(
+                                           2009, 1, 1, tzinfo=dt.timezone.utc),
                                         'fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
+                                       {'date': dt.datetime(
+                                           2009, 1, 1, tzinfo=dt.timezone.utc),
                                         'stop_fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(2009, 1, 1),
+                                       {'date': dt.datetime(
+                                           2009, 1, 1, tzinfo=dt.timezone.utc),
                                         'fname': 'dummy_str.nofile',
                                         'end_yr': 2009, 'end_doy': 1}])
     def test_basic_instrument_load_mixed_inputs(self, input):
@@ -261,7 +270,8 @@ class TestBasics():
         self.testInst.load(date=self.ref_time)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_basic_instrument_load_by_dates(self):
@@ -270,7 +280,8 @@ class TestBasics():
         self.testInst.load(date=self.ref_time, end_date=end_date)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
         assert (self.out >= self.ref_time + pds.DateOffset(days=1))
@@ -279,10 +290,12 @@ class TestBasics():
     def test_basic_instrument_load_by_date_with_extra_time(self):
         """Ensure .load(date=date) only uses year, month, day portion of date"""
         # put in a date that has more than year, month, day
-        self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1))
+        self.testInst.load(date=dt.datetime(2009, 1, 1, 1, 1, 1,
+                                            tzinfo=dt.timezone.utc))
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_basic_instrument_load_data(self):
@@ -293,32 +306,35 @@ class TestBasics():
 
     def test_basic_instrument_load_leap_year(self):
         """Test if the correct day is being loaded (Leap-Year)."""
-        self.ref_time = dt.datetime(2008, 12, 31)
+        self.ref_time = dt.datetime(2008, 12, 31, tzinfo=dt.timezone.utc)
         self.ref_doy = 366
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_next_load_default(self):
         """Test if first day is loaded by default when first invoking .next.
         """
-        self.ref_time = dt.datetime(2008, 1, 1)
+        self.ref_time = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
         self.testInst.next()
         self.out = self.testInst.index[0]
         assert self.out == self.ref_time
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_prev_load_default(self):
         """Test if last day is loaded by default when first invoking .prev.
         """
-        self.ref_time = dt.datetime(2010, 12, 31)
+        self.ref_time = dt.datetime(2010, 12, 31, tzinfo=dt.timezone.utc)
         self.testInst.prev()
         self.out = self.testInst.index[0]
         assert self.out == self.ref_time
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_next_load_bad_start_file(self):
@@ -368,7 +384,7 @@ class TestBasics():
     def test_prev_load_bad_start_date(self):
         """Test Error if trying to iterate when on a date not in iteration list
         """
-        self.ref_time = dt.datetime(2008, 1, 2)
+        self.ref_time = dt.datetime(2008, 1, 2, tzinfo=dt.timezone.utc)
         self.testInst.load(date=self.ref_time)
         # set new bounds that doesn't include this date
         self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
@@ -405,32 +421,35 @@ class TestBasics():
 
     def test_next_fname_load_default(self):
         """Test next day is being loaded (checking object date)."""
-        self.ref_time = dt.datetime(2008, 1, 2)
+        self.ref_time = dt.datetime(2008, 1, 2, tzinfo=dt.timezone.utc)
         self.testInst.load(fname=self.testInst.files[0])
         self.testInst.next()
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_prev_fname_load_default(self):
         """Test prev day is loaded when invoking .prev."""
-        self.ref_time = dt.datetime(2008, 1, 3)
+        self.ref_time = dt.datetime(2008, 1, 3, tzinfo=dt.timezone.utc)
         self.testInst.load(fname=self.testInst.files[3])
         self.testInst.prev()
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_basic_fname_instrument_load(self):
         """Test loading by filename from attached .files.
         """
-        self.ref_time = dt.datetime(2008, 1, 1)
+        self.ref_time = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
         self.testInst.load(fname=self.testInst.files[0])
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_filename_load(self):
@@ -467,7 +486,8 @@ class TestBasics():
         self.testInst.next()
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time + dt.timedelta(days=1))
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_prev_filename_load_default(self):
@@ -476,7 +496,8 @@ class TestBasics():
         self.testInst.prev()
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time - dt.timedelta(days=1))
-        self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
+        self.out = dt.datetime(self.out.year, self.out.month, self.out.day,
+                               tzinfo=dt.timezone.utc)
         assert (self.out == self.testInst.date)
 
     def test_list_files(self):
@@ -553,23 +574,23 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_today_yesterday_and_tomorrow(self):
-        self.ref_time = dt.datetime.now()
+        self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
-                               self.ref_time.day)
+                               self.ref_time.day, tzinfo=dt.timezone.utc)
         assert self.out == self.testInst.today()
         assert self.out - pds.DateOffset(days=1) == self.testInst.yesterday()
         assert self.out + pds.DateOffset(days=1) == self.testInst.tomorrow()
 
     def test_filter_datetime(self):
-        self.ref_time = dt.datetime.now()
+        self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
-                               self.ref_time.day)
+                               self.ref_time.day, tzinfo=dt.timezone.utc)
         assert self.out == self.testInst._filter_datetime_input(self.ref_time)
 
     def test_filtered_date_attribute(self):
-        self.ref_time = dt.datetime.now()
+        self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
-                               self.ref_time.day)
+                               self.ref_time.day, tzinfo=dt.timezone.utc)
         self.testInst.date = self.ref_time
         assert self.out == self.testInst.date
 
@@ -785,7 +806,7 @@ class TestBasics():
         import pysat.instruments.pysat_testing as test
         self.out = pysat.Instrument(inst_module=test, tag='',
                                     clean_level='clean')
-        self.ref_time = dt.datetime(2009, 2, 1)
+        self.ref_time = dt.datetime(2009, 2, 1, tzinfo=dt.timezone.utc)
         self.ref_doy = 32
         self.out.load(self.ref_time.year, self.ref_doy)
         assert self.out.date == self.ref_time
@@ -858,7 +879,7 @@ class TestBasics():
 
     def test_data_access_by_datetime_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        self.out = dt.datetime(2009, 1, 1, 0, 0, 0)
+        self.out = dt.datetime(2009, 1, 1, 0, 0, 0, tzinfo=dt.timezone.utc)
         assert np.all(self.testInst[self.out, 'uts']
                       == self.testInst.data['uts'].values[0])
 
@@ -867,7 +888,7 @@ class TestBasics():
         time_step = (self.testInst.index[1]
                      - self.testInst.index[0]).value / 1.E9
         offset = pds.DateOffset(seconds=(10 * time_step))
-        start = dt.datetime(2009, 1, 1, 0, 0, 0)
+        start = dt.datetime(2009, 1, 1, 0, 0, 0, tzinfo=dt.timezone.utc)
         stop = start + offset
         assert np.all(self.testInst[start:stop, 'uts']
                       == self.testInst.data['uts'].values[0:11])
@@ -967,7 +988,8 @@ class TestBasics():
     def test_setting_partial_data_by_datetime_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
-        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0), 'doubleMLT'] = 0
+        self.testInst[dt.datetime(2009, 1, 1, 0, 0, 0, tzinfo=dt.timezone.utc),
+                      'doubleMLT'] = 0
         assert np.all(self.testInst[0, 'doubleMLT']
                       == 2. * self.testInst[0, 'mlt'])
         assert np.all(self.testInst[0, 'doubleMLT'] == 0)
@@ -978,7 +1000,7 @@ class TestBasics():
         time_step = (self.testInst.index[1]
                      - self.testInst.index[0]).value / 1.E9
         offset = pds.DateOffset(seconds=(10 * time_step))
-        start = dt.datetime(2009, 1, 1, 0, 0, 0)
+        start = dt.datetime(2009, 1, 1, 0, 0, 0, tzinfo=dt.timezone.utc)
         stop = start + offset
         self.testInst[start:stop, 'doubleMLT'] = 0
         assert np.all(self.testInst[11:, 'doubleMLT']
@@ -1300,18 +1322,26 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3), '2D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '2D',
-                                         pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '3D',
-                                         pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 17), '5D',
-                                         pds.DateOffset(days=1))
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 3,
+                                                     tzinfo=dt.timezone.utc),
+                                         '2D', pds.DateOffset(days=2)),
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 4,
+                                                     tzinfo=dt.timezone.utc),
+                                         '2D', pds.DateOffset(days=3)),
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 5,
+                                                     tzinfo=dt.timezone.utc),
+                                         '3D', pds.DateOffset(days=1)),
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 17,
+                                                     tzinfo=dt.timezone.utc),
+                                         '5D', pds.DateOffset(days=1))
                                         ])
     def test_iterate_bounds_with_frequency_and_width(self, values):
         """Iterate via date with mixed step/width, excludes stop date"""
@@ -1321,23 +1351,35 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '2D',
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 4,
+                                                     tzinfo=dt.timezone.utc), '2D',
                                          pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '3D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 4,
+                                                     tzinfo=dt.timezone.utc), '3D',
                                          pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 4), '1D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 4,
+                                                     tzinfo=dt.timezone.utc), '1D',
                                          pds.DateOffset(days=4)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '4D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 5,
+                                                     tzinfo=dt.timezone.utc), '4D',
                                          pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '2D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 5,
+                                                     tzinfo=dt.timezone.utc), '2D',
                                          pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 5), '3D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 5,
+                                                     tzinfo=dt.timezone.utc), '3D',
                                          pds.DateOffset(days=2))])
     def test_iterate_bounds_with_frequency_and_width_incl(self, values):
         """Iterate via date with mixed step/width, includes stop date"""
@@ -1347,17 +1389,25 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 10), '2D',
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 10,
+                                                     tzinfo=dt.timezone.utc), '2D',
                                          pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 9), '4D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 9,
+                                                     tzinfo=dt.timezone.utc), '4D',
                                          pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '1D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 11,
+                                                     tzinfo=dt.timezone.utc), '1D',
                                          pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '1D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 11,
+                                                     tzinfo=dt.timezone.utc), '1D',
                                          pds.DateOffset(days=11)),
                                         ])
     def test_next_date_with_frequency_and_width_incl(self, values):
@@ -1368,20 +1418,30 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '2D',
+    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 11,
+                                                     tzinfo=dt.timezone.utc), '2D',
                                          pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12), '2D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 12,
+                                                     tzinfo=dt.timezone.utc), '2D',
                                          pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 13), '3D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 13,
+                                                     tzinfo=dt.timezone.utc), '3D',
                                          pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3), '4D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 3,
+                                                     tzinfo=dt.timezone.utc), '4D',
                                          pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12), '2D',
+                                        (dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                         dt.datetime(2009, 1, 12,
+                                                     tzinfo=dt.timezone.utc), '2D',
                                          pds.DateOffset(days=1))])
     def test_next_date_with_frequency_and_width(self, values):
         """Test .next() via date step/width>1, excludes stop date"""
@@ -1391,22 +1451,34 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 13)),
+    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 10,
+                                                     tzinfo=dt.timezone.utc)),
+                                         (dt.datetime(2009, 1, 4,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 13,
+                                                     tzinfo=dt.timezone.utc)),
                                          '2D',
                                          pds.DateOffset(days=2)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
+                                        ((dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 10,
+                                                     tzinfo=dt.timezone.utc)),
+                                         (dt.datetime(2009, 1, 7,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 16,
+                                                     tzinfo=dt.timezone.utc)),
                                          '3D',
                                          pds.DateOffset(days=1)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
+                                        ((dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 10,
+                                                     tzinfo=dt.timezone.utc)),
+                                         (dt.datetime(2009, 1, 6,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 15,
+                                                     tzinfo=dt.timezone.utc)),
                                          '2D',
                                          pds.DateOffset(days=4))
                                         ])
@@ -1418,22 +1490,34 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 12)),
+    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 10,
+                                                     tzinfo=dt.timezone.utc)),
+                                         (dt.datetime(2009, 1, 3,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 12,
+                                                     tzinfo=dt.timezone.utc)),
                                          '2D',
                                          pds.DateOffset(days=2)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
+                                        ((dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 10,
+                                                     tzinfo=dt.timezone.utc)),
+                                         (dt.datetime(2009, 1, 6,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 15,
+                                                     tzinfo=dt.timezone.utc)),
                                          '3D',
                                          pds.DateOffset(days=1)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
+                                        ((dt.datetime(2009, 1, 1,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 10,
+                                                     tzinfo=dt.timezone.utc)),
+                                         (dt.datetime(2009, 1, 7,
+                                                     tzinfo=dt.timezone.utc),
+                                          dt.datetime(2009, 1, 16,
+                                                     tzinfo=dt.timezone.utc)),
                                          '2D',
                                          pds.DateOffset(days=4))
                                         ])

@@ -2334,7 +2334,8 @@ class Instrument(object):
         return export_dict
 
     def load(self, yr=None, doy=None, end_yr=None, end_doy=None, date=None,
-             end_date=None, fname=None, stop_fname=None, verifyPad=False):
+             end_date=None, fname=None, stop_fname=None, verifyPad=False,
+             date_is_utc=False):
         """Load instrument data into Instrument.data object.
 
         Parameters
@@ -2368,8 +2369,12 @@ class Instrument(object):
             Used when loading a range of filenames from `fname` to `stop_fname`,
             inclusive. (default=None)
         verifyPad : bool
-            if True, padding data not removed for debugging. Padding
+            If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
+        date_is_utc : bool
+            If True, treats naive datetime input as UTC, if False, requires
+            aware datetime input from `date` and `end_date` if they are used.
+            (default=False)
 
         Raises
         ------
@@ -2438,8 +2443,8 @@ class Instrument(object):
             _check_load_arguments_none(fname, stop_fname, date, end_date,
                                        raise_error=True)
             # convert yr/doy to a date
-            date = dt.datetime.strptime("{:.0f} {:.0f}".format(yr, doy),
-                                        "%Y %j")
+            date = utils.set_timezone_to_utc(dt.datetime.strptime(
+                "{:.0f} {:.0f}".format(yr, doy), "%Y %j"), True)
             self._set_load_parameters(date=date, fid=None)
 
             if (end_yr is not None) and (end_doy is not None):
@@ -2447,8 +2452,8 @@ class Instrument(object):
                     estr = ''.join(('Day of year (end_doy) is only valid ',
                                     'between and including 1-366.'))
                     raise ValueError(estr)
-                end_date = dt.datetime.strptime(
-                    "{:.0f} {:.0f}".format(end_yr, end_doy), "%Y %j")
+                end_date = utils.set_timezone_to_utc(dt.datetime.strptime(
+                    "{:.0f} {:.0f}".format(end_yr, end_doy), "%Y %j"), True)
                 self.load_step = end_date - date
             elif (end_yr is not None) or (end_doy is not None):
                 estr = ''.join(('Both end_yr and end_doy must be set, ',
@@ -2464,6 +2469,10 @@ class Instrument(object):
             # verify arguments make sense, in context
             _check_load_arguments_none(fname, stop_fname, yr, doy, end_yr,
                                        end_doy, raise_error=True)
+
+            # Make sure the timezone is specified
+            date = utils.set_timezone_to_utc(date, date_is_utc)
+
             # ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
             date = self._filter_datetime_input(date)
@@ -2471,6 +2480,7 @@ class Instrument(object):
             # increment
             if end_date is not None:
                 # support loading a range of dates
+                end_date = utils.set_timezone_to_utc(end_date, date_is_utc)
                 self.load_step = end_date - date
             else:
                 # defaults to single day load

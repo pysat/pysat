@@ -293,10 +293,10 @@ class Files(object):
         # if not, do nothing
         stored_files = self._load()
         if len(stored_files) != len(self.files):
-            # # of items is different, things are new
+            # Number of items are different, things are new
             new_flag = True
         elif len(stored_files) == len(self.files):
-            # # of items equal, check specifically for equality
+            # Number of items are equal, check specifically for equality
             if stored_files.eq(self.files).all():
                 new_flag = False
             else:
@@ -304,7 +304,6 @@ class Files(object):
                 new_flag = True
 
         if new_flag:
-
             if self.write_to_disk:
                 stored_files.to_csv(os.path.join(self.home_path,
                                                  'previous_' + name),
@@ -380,15 +379,18 @@ class Files(object):
         if not info.empty:
             if self.ignore_empty_files:
                 self._filter_empty_files()
-            logger.info('Found {ll:d} files locally.'.format(ll=len(info)))
+            logger.info('Found {:d} local files'.format(len(info)))
         else:
-            estr = "Unable to find any files that match the supplied template."
-            estr += " If you have the necessary files please check pysat "
-            estr += "settings and file locations (e.g. pysat.pysat_dir)."
+            estr = "".join(["Unable to find any files that match the supplied ",
+                            "template. If you have the necessary files please ",
+                            "check pysat settings and file locations (e.g. ",
+                            "pysat.pysat_dir)."])
             logger.warning(estr)
-        # attach to object
+
+        # Attach the information to the object
         self._attach_files(info)
-        # store - to disk, if enabled
+
+        # Store refreshed data to disk, if enabled
         self._store()
 
     def get_new(self):
