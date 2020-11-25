@@ -75,7 +75,7 @@ list_files = functools.partial(mm_gen.list_files,
 
 # support download routine
 basic_tag = {'dir': '/pub/LEVEL.2/EUV',
-             'remote_fname': 'Data/' + fname}
+             'remote_fname': ''.join(('ZIP/', fname[:-2], 'ZIP'))}
 download_tags = {'': {'': basic_tag}}
 download = functools.partial(mm_icon.ssl_download, supported_tags=download_tags)
 
