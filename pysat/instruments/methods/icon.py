@@ -116,10 +116,12 @@ def list_remote_files(tag, inst_id, user=None, password=None,
                       year=None, month=None, day=None,
                       start=None, stop=None):
     """Return a Pandas Series of every file for chosen remote data.
+
     This routine is intended to be used by pysat instrument modules supporting
     a particular UC-Berkeley SSL dataset related to ICON.
+
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
@@ -142,7 +144,7 @@ def list_remote_files(tag, inst_id, user=None, password=None,
         (default=None)
 
     Returns
-    --------
+    -------
     pandas.Series
         A Series formatted for the Files class (pysat._files.Files)
         containing filenames and indexed by date and time
