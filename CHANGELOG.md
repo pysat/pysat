@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Bug Fix
    - Updated madrigal methods to simplify compound data types and enable
      creation of netCDF4 files using `self.to_netcdf4()`.
+   - Updated ICON support for latest file organization on SSL servers
 
 ## [2.2.1] - 2020-07-29
 - Documentation
