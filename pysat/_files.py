@@ -341,8 +341,17 @@ class Files(object):
 
         if os.path.isfile(fname) and (os.path.getsize(fname) > 0):
             if self.write_to_disk:
-                return pds.read_csv(fname, index_col=0, parse_dates=True,
-                                    squeeze=True, header=None)
+                fseries = pds.read_csv(fname, index_col=0, parse_dates=True,
+                                       squeeze=True, header=None)
+                if fseries.index.tz is None:
+                    warnings.warn(' '.join(["{:s} uses old time".format(fname),
+                                            "formatting, recommend updating",
+                                            "file information by initializing",
+                                            "pysat Instrument with",
+                                            "update_file=True"]),
+                                  DeprecationWarning, stacklevel=2)
+                    fseries.index = fseries.index.tz_localize(dt.timezone.utc)
+                return fseries
             else:
                 # grab files from memory
                 if prev_version:
