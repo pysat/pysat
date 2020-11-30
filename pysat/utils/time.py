@@ -262,7 +262,7 @@ def set_timezone_to_utc(in_time, naive_is_utc=False):
     # this is true.  If tzinfo is not None, it will have a utcoffset method.
     if in_time.tzinfo is None or in_time.utcoffset() is None:
         if naive_is_utc:
-            out_time = in_time.astimezone(tz=dt.timezone.utc)
+            out_time = in_time.replace(tzinfo=dt.timezone.utc)
         else:
             raise TypeError('datetime input is naive and may not be in UTC')
     else:
