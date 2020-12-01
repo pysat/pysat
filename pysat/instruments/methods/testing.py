@@ -220,14 +220,16 @@ def generate_times(fnames, num, freq='1S'):
         dates.append(date)
 
         # Create one day of data at desired frequency
-        end_date = date + pds.DateOffset(seconds=86399)
+        end_date = date + dt.timedelta(seconds=86399)
         index = pds.date_range(start=date, end=end_date, freq=freq)
         index = index[0:num]
         indices.extend(index)
         uts.extend(index.hour * 3600 + index.minute * 60 + index.second
                    + 86400. * loop)
+
     # combine index times together
     index = pds.DatetimeIndex(indices)
+
     # make UTS an array
     uts = np.array(uts)
 
