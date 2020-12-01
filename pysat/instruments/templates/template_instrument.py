@@ -64,7 +64,7 @@ logger = pysat.logger
 platform = ''
 name = ''
 
-# dictionary of data 'tags' and corresponding description
+# Dictionary of data 'tags' and corresponding description
 tags = {'': 'description 1',  # this is the default
         'tag_string': 'description 2'}
 
@@ -323,8 +323,6 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
 
     """
 
-    global pandas_format
-
     # netCDF4 files, particularly those produced
     # by pysat can be loaded using a pysat provided
     # function
@@ -345,7 +343,7 @@ def load(fnames, tag=None, inst_id=None, custom_keyword=None):
                                            max_label='ValidMax',
                                            fill_label='FillVal',
                                            pandas_format=pandas_format)
-    return
+    return data, mdata
 
 
 # Recommended function
