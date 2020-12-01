@@ -76,8 +76,7 @@ class TestBasics():
             # iterate via for loop option
             for inst in self.testInst:
                 dates.append(inst.date)
-                time_range.append((inst.index[0],
-                                   inst.index[-1]))
+                time_range.append((inst.index[0], inst.index[-1]))
         else:
             # .next/.prev iterations
             if reverse:
@@ -104,9 +103,11 @@ class TestBasics():
         out = []
         for start, stop in zip(starts, stops):
             tdate = stop - width + pds.DateOffset(days=1)
-            out.extend(pds.date_range(start, tdate, freq=step).tolist())
+            out.extend([tt.to_pydatetime() for tt in
+                        pds.date_range(start, tdate, freq=step)])
         if reverse:
             out = out[::-1]
+
         assert np.all(dates == out)
 
         output = {}
@@ -196,28 +197,27 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("input", [{'yr': 2009, 'doy': 1,
-                                        'date': dt.datetime(
-                                            2009, 1, 1,
-                                            tzinfo=dt.timezone.utc)},
-                                       {'yr': 2009, 'doy': 1,
-                                        'end_date': dt.datetime(
-                                            2009, 1, 1,
-                                            tzinfo=dt.timezone.utc)},
-                                       {'yr': 2009, 'doy': 1,
-                                        'fname': 'dummy_str.nofile'},
-                                       {'yr': 2009, 'doy': 1,
-                                        'stop_fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(
-                                           2009, 1, 1, tzinfo=dt.timezone.utc),
-                                        'fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(
-                                           2009, 1, 1, tzinfo=dt.timezone.utc),
-                                        'stop_fname': 'dummy_str.nofile'},
-                                       {'date': dt.datetime(
-                                           2009, 1, 1, tzinfo=dt.timezone.utc),
-                                        'fname': 'dummy_str.nofile',
-                                        'end_yr': 2009, 'end_doy': 1}])
+    @pytest.mark.parametrize("input",
+                             [{'yr': 2009, 'doy': 1,
+                               'date': dt.datetime(2009, 1, 1,
+                                                   tzinfo=dt.timezone.utc)},
+                              {'yr': 2009, 'doy': 1,
+                               'end_date': dt.datetime(2009, 1, 1,
+                                                       tzinfo=dt.timezone.utc)},
+                              {'yr': 2009, 'doy': 1,
+                               'fname': 'dummy_str.nofile'},
+                              {'yr': 2009, 'doy': 1,
+                               'stop_fname': 'dummy_str.nofile'},
+                              {'date': dt.datetime(2009, 1, 1,
+                                                   tzinfo=dt.timezone.utc),
+                               'fname': 'dummy_str.nofile'},
+                              {'date': dt.datetime(2009, 1, 1,
+                                                   tzinfo=dt.timezone.utc),
+                               'stop_fname': 'dummy_str.nofile'},
+                              {'date': dt.datetime(2009, 1, 1,
+                                                   tzinfo=dt.timezone.utc),
+                               'fname': 'dummy_str.nofile',
+                               'end_yr': 2009, 'end_doy': 1}])
     def test_basic_instrument_load_mixed_inputs(self, input):
         """Ensure mixed load inputs raise ValueError"""
         with pytest.raises(ValueError) as err:
@@ -542,7 +542,7 @@ class TestBasics():
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download_updated_files()
         # Perform a local search
-        assert "files locally" in caplog.text
+        assert "local files" in caplog.text
         # New files are found
         assert "that are new or updated" in caplog.text
         # download new files
@@ -1166,19 +1166,25 @@ class TestBasics():
         """
         self.testInst.bounds = (self.testInst.files.files.index[0],
                                 self.testInst.files.files.index[9])
+
         # ensure no data to begin
         assert self.testInst.empty
+
         # perform comprehension and ensure there are as many as there should be
         insts = [inst for inst in self.testInst]
         assert len(insts) == 10
+
         # get list of dates
         dates = pds.Series([inst.date for inst in insts])
         assert dates.is_monotonic_increasing
+
         # dates are unique
         assert np.all(np.unique(dates) == dates.values)
+
         # iteration instruments are not the same as original
         for inst in insts:
             assert not (inst is self.testInst)
+
         # check there is data after iteration
         assert not self.testInst.empty
 
@@ -1322,27 +1328,19 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 3,
-                                                     tzinfo=dt.timezone.utc),
-                                         '2D', pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 4,
-                                                     tzinfo=dt.timezone.utc),
-                                         '2D', pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 5,
-                                                     tzinfo=dt.timezone.utc),
-                                         '3D', pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 17,
-                                                     tzinfo=dt.timezone.utc),
-                                         '5D', pds.DateOffset(days=1))
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [(dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=3)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                               '3D', pds.DateOffset(days=1)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 17, tzinfo=dt.timezone.utc),
+                               '5D', pds.DateOffset(days=1))])
     def test_iterate_bounds_with_frequency_and_width(self, values):
         """Iterate via date with mixed step/width, excludes stop date"""
         out = self.support_iter_evaluations(values, for_loop=True)
@@ -1351,36 +1349,25 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 4,
-                                                     tzinfo=dt.timezone.utc), '2D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 4,
-                                                     tzinfo=dt.timezone.utc), '3D',
-                                         pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 4,
-                                                     tzinfo=dt.timezone.utc), '1D',
-                                         pds.DateOffset(days=4)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 5,
-                                                     tzinfo=dt.timezone.utc), '4D',
-                                         pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 5,
-                                                     tzinfo=dt.timezone.utc), '2D',
-                                         pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 5,
-                                                     tzinfo=dt.timezone.utc), '3D',
-                                         pds.DateOffset(days=2))])
+    @pytest.mark.parametrize("values",
+                             [(dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                               '3D', pds.DateOffset(days=1)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                               '1D', pds.DateOffset(days=4)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                               '4D', pds.DateOffset(days=1)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=3)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                               '3D', pds.DateOffset(days=2))])
     def test_iterate_bounds_with_frequency_and_width_incl(self, values):
         """Iterate via date with mixed step/width, includes stop date"""
         out = self.support_iter_evaluations(values, for_loop=True)
@@ -1389,27 +1376,19 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 10,
-                                                     tzinfo=dt.timezone.utc), '2D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 9,
-                                                     tzinfo=dt.timezone.utc), '4D',
-                                         pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 11,
-                                                     tzinfo=dt.timezone.utc), '1D',
-                                         pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 11,
-                                                     tzinfo=dt.timezone.utc), '1D',
-                                         pds.DateOffset(days=11)),
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [(dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 10, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 9, tzinfo=dt.timezone.utc),
+                               '4D', pds.DateOffset(days=1)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               '1D', pds.DateOffset(days=3)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               '1D', pds.DateOffset(days=11))])
     def test_next_date_with_frequency_and_width_incl(self, values):
         """Test .next() via date step/width>1, includes stop date"""
         out = self.support_iter_evaluations(values)
@@ -1418,31 +1397,22 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 11,
-                                                     tzinfo=dt.timezone.utc), '2D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 12,
-                                                     tzinfo=dt.timezone.utc), '2D',
-                                         pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 13,
-                                                     tzinfo=dt.timezone.utc), '3D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 3,
-                                                     tzinfo=dt.timezone.utc), '4D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                         dt.datetime(2009, 1, 12,
-                                                     tzinfo=dt.timezone.utc), '2D',
-                                         pds.DateOffset(days=1))])
+    @pytest.mark.parametrize("values",
+                             [(dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 12, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=3)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 13, tzinfo=dt.timezone.utc),
+                               '3D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                               '4D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 12, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=1))])
     def test_next_date_with_frequency_and_width(self, values):
         """Test .next() via date step/width>1, excludes stop date"""
         out = self.support_iter_evaluations(values)
@@ -1451,37 +1421,28 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 10,
-                                                     tzinfo=dt.timezone.utc)),
-                                         (dt.datetime(2009, 1, 4,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 13,
-                                                     tzinfo=dt.timezone.utc)),
-                                         '2D',
-                                         pds.DateOffset(days=2)),
-                                        ((dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 10,
-                                                     tzinfo=dt.timezone.utc)),
-                                         (dt.datetime(2009, 1, 7,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 16,
-                                                     tzinfo=dt.timezone.utc)),
-                                         '3D',
-                                         pds.DateOffset(days=1)),
-                                        ((dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 10,
-                                                     tzinfo=dt.timezone.utc)),
-                                         (dt.datetime(2009, 1, 6,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 15,
-                                                     tzinfo=dt.timezone.utc)),
-                                         '2D',
-                                         pds.DateOffset(days=4))
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 13,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=2)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 7, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 16,
+                                            tzinfo=dt.timezone.utc)),
+                               '3D', pds.DateOffset(days=1)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 6, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=4))])
     def test_next_date_season_frequency_and_width_incl(self, values):
         """Test .next() via date season step/width>1, includes stop date"""
         out = self.support_iter_evaluations(values)
@@ -1490,37 +1451,28 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 10,
-                                                     tzinfo=dt.timezone.utc)),
-                                         (dt.datetime(2009, 1, 3,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 12,
-                                                     tzinfo=dt.timezone.utc)),
-                                         '2D',
-                                         pds.DateOffset(days=2)),
-                                        ((dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 10,
-                                                     tzinfo=dt.timezone.utc)),
-                                         (dt.datetime(2009, 1, 6,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 15,
-                                                     tzinfo=dt.timezone.utc)),
-                                         '3D',
-                                         pds.DateOffset(days=1)),
-                                        ((dt.datetime(2009, 1, 1,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 10,
-                                                     tzinfo=dt.timezone.utc)),
-                                         (dt.datetime(2009, 1, 7,
-                                                     tzinfo=dt.timezone.utc),
-                                          dt.datetime(2009, 1, 16,
-                                                     tzinfo=dt.timezone.utc)),
-                                         '2D',
-                                         pds.DateOffset(days=4))
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 12,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=2)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 6, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)),
+                               '3D', pds.DateOffset(days=1)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 7, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 16,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=4))])
     def test_next_date_season_frequency_and_width(self, values):
         """Test .next() via date season step/width>1, excludes stop date"""
         out = self.support_iter_evaluations(values)
@@ -1529,19 +1481,19 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 10), '2D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 9), '4D',
-                                         pds.DateOffset(days=1)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '1D',
-                                         pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '1D',
-                                         pds.DateOffset(days=11)),
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [(dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 10, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 9, tzinfo=dt.timezone.utc),
+                               '4D', pds.DateOffset(days=1)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               '1D', pds.DateOffset(days=3)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               '1D', pds.DateOffset(days=11))])
     def test_prev_date_with_frequency_and_width_incl(self, values):
         """Test .prev() via date step/width>1, includes stop date"""
         out = self.support_iter_evaluations(values, reverse=True)
@@ -1550,21 +1502,22 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 11), '2D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12), '2D',
-                                         pds.DateOffset(days=3)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 13), '3D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 3), '4D',
-                                         pds.DateOffset(days=2)),
-                                        (dt.datetime(2009, 1, 1),
-                                         dt.datetime(2009, 1, 12), '2D',
-                                         pds.DateOffset(days=1))])
+    @pytest.mark.parametrize("values",
+                             [(dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 12, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=3)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 13, tzinfo=dt.timezone.utc),
+                               '3D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                               '4D', pds.DateOffset(days=2)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 12, tzinfo=dt.timezone.utc),
+                               '2D', pds.DateOffset(days=1))])
     def test_prev_date_with_frequency_and_width(self, values):
         """Test .prev() via date step/width>1, excludes stop date"""
         out = self.support_iter_evaluations(values, reverse=True)
@@ -1573,25 +1526,28 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 13)),
-                                         '2D',
-                                         pds.DateOffset(days=2)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
-                                         '3D',
-                                         pds.DateOffset(days=1)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
-                                         '2D',
-                                         pds.DateOffset(days=4))
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 13,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=2)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 7, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 16,
+                                            tzinfo=dt.timezone.utc)),
+                               '3D', pds.DateOffset(days=1)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 6, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=4))])
     def test_prev_date_season_frequency_and_width_incl(self, values):
         """Test .prev() via date season step/width>1, includes stop date"""
         out = self.support_iter_evaluations(values, reverse=True)
@@ -1600,58 +1556,63 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 12)),
-                                         '2D',
-                                         pds.DateOffset(days=2)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
-                                         '3D',
-                                         pds.DateOffset(days=1)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
-                                         '2D',
-                                         pds.DateOffset(days=4))
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 12,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=2)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 6, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)),
+                               '3D', pds.DateOffset(days=1)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 7, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 16,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=4))])
     def test_prev_date_season_frequency_and_width(self, values):
         """Test .prev() via date season step/width>1, excludes stop date"""
         out = self.support_iter_evaluations(values, reverse=True)
+
         # verify range of loaded data
         self.verify_exclusive_iteration(out, forward=False)
 
         return
 
     def test_set_bounds_too_few(self):
-        start = dt.datetime(2009, 1, 1)
+        start = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         with pytest.raises(ValueError):
             self.testInst.bounds = [start]
 
     def test_set_bounds_mixed(self):
-        start = dt.datetime(2009, 1, 1)
+        start = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         with pytest.raises(ValueError):
             self.testInst.bounds = [start, '2009-01-01.nofile']
 
     def test_set_bounds_wrong_type(self):
         """Test Exception when setting bounds with inconsistent types"""
-        start = dt.datetime(2009, 1, 1)
+        start = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         with pytest.raises(ValueError):
             self.testInst.bounds = [start, 1]
 
     def test_set_bounds_mixed_iterable(self):
-        start = [dt.datetime(2009, 1, 1)] * 2
+        start = [dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)] * 2
         with pytest.raises(ValueError):
             self.testInst.bounds = [start, '2009-01-01.nofile']
 
     def test_set_bounds_mixed_iterabless(self):
-        start = [dt.datetime(2009, 1, 1)] * 2
+        start = [dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)] * 2
         with pytest.raises(ValueError):
-            self.testInst.bounds = [start, [dt.datetime(2009, 1, 1),
+            self.testInst.bounds = [start, [dt.datetime(2009, 1, 1,
+                                                        tzinfo=dt.timezone.utc),
                                             '2009-01-01.nofile']]
 
     def test_set_bounds_string_default_start(self):
@@ -1664,8 +1625,8 @@ class TestBasics():
 
     def test_set_bounds_too_many(self):
         """Ensure error if too many inputs to inst.bounds"""
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2009, 1, 1)
+        start = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         width = pds.DateOffset(days=1)
         with pytest.raises(ValueError) as err:
             self.testInst.bounds = [start, stop, '1D', width, False]
@@ -1674,16 +1635,16 @@ class TestBasics():
 
     def test_set_bounds_by_date(self):
         """Test setting bounds with datetimes over simple range"""
-        start = dt.datetime(2009, 1, 1)
-        stop = dt.datetime(2009, 1, 15)
+        start = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc)
         self.testInst.bounds = (start, stop)
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop).tolist())
 
     def test_set_bounds_by_date_wrong_order(self):
         """Test error if bounds assignment has stop date before start"""
-        start = dt.datetime(2009, 1, 15)
-        stop = dt.datetime(2009, 1, 1)
+        start = dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
         estr = 'Bounds must be set in increasing'
@@ -1704,19 +1665,21 @@ class TestBasics():
         assert np.all(self.testInst._iter_list == full_list)
 
     def test_set_bounds_by_date_extra_time(self):
-        start = dt.datetime(2009, 1, 1, 1, 10)
-        stop = dt.datetime(2009, 1, 15, 1, 10)
+        start = dt.datetime(2009, 1, 1, 1, 10, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 1, 15, 1, 10, tzinfo=dt.timezone.utc)
         self.testInst.bounds = (start, stop)
         start = self.testInst._filter_datetime_input(start)
         stop = self.testInst._filter_datetime_input(stop)
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop).tolist())
 
-    @pytest.mark.parametrize("start,stop", [(dt.datetime(2008, 1, 1),
-                                             dt.datetime(2010, 12, 31)),
-                                            (dt.datetime(2009, 1, 1),
-                                             dt.datetime(2009, 1, 15))
-                                            ])
+    @pytest.mark.parametrize("start,stop",
+                             [(dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2010, 12, 31,
+                                           tzinfo=dt.timezone.utc)),
+                              (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               dt.datetime(2009, 1, 15,
+                                           tzinfo=dt.timezone.utc))])
     def test_iterate_over_bounds_set_by_date(self, start, stop):
         """Test iterating over bounds via single date range"""
         self.testInst.bounds = (start, stop)
@@ -1737,8 +1700,10 @@ class TestBasics():
         assert np.all(dates == out)
 
     def test_set_bounds_by_date_season(self):
-        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
-        stop = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
+        start = [dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                 dt.datetime(2009, 2, 1, tzinfo=dt.timezone.utc)]
+        stop = [dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc),
+                dt.datetime(2009, 2, 15, tzinfo=dt.timezone.utc)]
         self.testInst.bounds = (start, stop)
         out = pds.date_range(start[0], stop[0]).tolist()
         out.extend(pds.date_range(start[1], stop[1]).tolist())
@@ -1746,18 +1711,20 @@ class TestBasics():
 
     def test_set_bounds_by_date_season_wrong_order(self):
         """Test error if bounds season assignment has stop date before start"""
-        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
-        stop = [dt.datetime(2009, 1, 12), dt.datetime(2009, 1, 15)]
+        start = [dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                 dt.datetime(2009, 2, 1, tzinfo=dt.timezone.utc)]
+        stop = [dt.datetime(2009, 1, 12, tzinfo=dt.timezone.utc),
+                dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc)]
         with pytest.raises(Exception) as err:
             self.testInst.bounds = (start, stop)
         estr = 'Bounds must be set in increasing'
         assert str(err).find(estr) >= 0
 
     def test_set_bounds_by_date_season_extra_time(self):
-        start = [dt.datetime(2009, 1, 1, 1, 10),
-                 dt.datetime(2009, 2, 1, 1, 10)]
-        stop = [dt.datetime(2009, 1, 15, 1, 10),
-                dt.datetime(2009, 2, 15, 1, 10)]
+        start = [dt.datetime(2009, 1, 1, 1, 10, tzinfo=dt.timezone.utc),
+                 dt.datetime(2009, 2, 1, 1, 10, tzinfo=dt.timezone.utc)]
+        stop = [dt.datetime(2009, 1, 15, 1, 10, tzinfo=dt.timezone.utc),
+                dt.datetime(2009, 2, 15, 1, 10, tzinfo=dt.timezone.utc)]
         self.testInst.bounds = (start, stop)
         start = self.testInst._filter_datetime_input(start)
         stop = self.testInst._filter_datetime_input(stop)
@@ -1766,8 +1733,10 @@ class TestBasics():
         assert np.all(self.testInst._iter_list == out)
 
     def test_iterate_over_bounds_set_by_date_season(self):
-        start = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
-        stop = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
+        start = [dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                 dt.datetime(2009, 2, 1, tzinfo=dt.timezone.utc)]
+        stop = [dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc),
+                dt.datetime(2009, 2, 15, tzinfo=dt.timezone.utc)]
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -1776,25 +1745,28 @@ class TestBasics():
         out.extend(pds.date_range(start[1], stop[1]).tolist())
         assert np.all(dates == out)
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 12)),
-                                         '2D',
-                                         pds.DateOffset(days=2)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
-                                         '3D',
-                                         pds.DateOffset(days=1)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
-                                         '2D',
-                                         pds.DateOffset(days=4))
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 12,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=2)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 6, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)),
+                               '3D', pds.DateOffset(days=1)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 7, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 16,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=4))])
     def test_iterate_over_bounds_set_by_date_season_step_width(self, values):
         """Iterate over season, step/width > 1, excludes stop bounds"""
 
@@ -1804,25 +1776,28 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 13)),
-                                         '2D',
-                                         pds.DateOffset(days=2)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 7),
-                                          dt.datetime(2009, 1, 16)),
-                                         '3D',
-                                         pds.DateOffset(days=1)),
-                                        ((dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 10)),
-                                         (dt.datetime(2009, 1, 6),
-                                          dt.datetime(2009, 1, 15)),
-                                         '2D',
-                                         pds.DateOffset(days=4))
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 13,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=2)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 7, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 16,
+                                            tzinfo=dt.timezone.utc)),
+                               '3D', pds.DateOffset(days=1)),
+                              ((dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 10,
+                                            tzinfo=dt.timezone.utc)),
+                               (dt.datetime(2009, 1, 6, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)),
+                               '2D', pds.DateOffset(days=4))])
     def test_iterate_bounds_set_by_date_season_step_width_incl(self, values):
         """Iterate over season, step/width > 1, includes stop bounds"""
         out = self.support_iter_evaluations(values, for_loop=True)
@@ -1832,10 +1807,10 @@ class TestBasics():
         return
 
     def test_iterate_over_bounds_set_by_date_season_extra_time(self):
-        start = [dt.datetime(2009, 1, 1, 1, 10),
-                 dt.datetime(2009, 2, 1, 1, 10)]
-        stop = [dt.datetime(2009, 1, 15, 1, 10),
-                dt.datetime(2009, 2, 15, 1, 10)]
+        start = [dt.datetime(2009, 1, 1, 1, 10, tzinfo=dt.timezone.utc),
+                 dt.datetime(2009, 2, 1, 1, 10, tzinfo=dt.timezone.utc)]
+        stop = [dt.datetime(2009, 1, 15, 1, 10, tzinfo=dt.timezone.utc),
+                dt.datetime(2009, 2, 15, 1, 10, tzinfo=dt.timezone.utc)]
         self.testInst.bounds = (start, stop)
         # filter
         start = self.testInst._filter_datetime_input(start)
@@ -1859,8 +1834,8 @@ class TestBasics():
     def test_iterate_over_bounds_set_by_fname(self):
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
-        start_d = dt.datetime(2009, 1, 1)
-        stop_d = dt.datetime(2009, 1, 15)
+        start_d = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
+        stop_d = dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc)
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -1881,8 +1856,8 @@ class TestBasics():
     def test_iterate_over_bounds_set_by_fname_via_next(self):
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
-        start_d = dt.datetime(2009, 1, 1)
-        stop_d = dt.datetime(2009, 1, 15)
+        start_d = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
+        stop_d = dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc)
         self.testInst.bounds = (start, stop)
         dates = []
         loop_next = True
@@ -1898,8 +1873,8 @@ class TestBasics():
     def test_iterate_over_bounds_set_by_fname_via_prev(self):
         start = '2009-01-01.nofile'
         stop = '2009-01-15.nofile'
-        start_d = dt.datetime(2009, 1, 1)
-        stop_d = dt.datetime(2009, 1, 15)
+        start_d = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
+        stop_d = dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc)
         self.testInst.bounds = (start, stop)
         dates = []
         loop = True
@@ -1936,8 +1911,10 @@ class TestBasics():
         """Test set bounds using multiple filenames"""
         start = ['2009-01-01.nofile', '2009-02-01.nofile']
         stop = ['2009-01-15.nofile', '2009-02-15.nofile']
-        start_d = [dt.datetime(2009, 1, 1), dt.datetime(2009, 2, 1)]
-        stop_d = [dt.datetime(2009, 1, 15), dt.datetime(2009, 2, 15)]
+        start_d = [dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                   dt.datetime(2009, 2, 1, tzinfo=dt.timezone.utc)]
+        stop_d = [dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc),
+                  dt.datetime(2009, 2, 15, tzinfo=dt.timezone.utc)]
         self.testInst.bounds = (start, stop)
         dates = []
         for inst in self.testInst:
@@ -1949,24 +1926,24 @@ class TestBasics():
     def test_set_bounds_fname_with_frequency(self):
         """Test set bounds using filenames and non-default step"""
         start = '2009-01-01.nofile'
-        start_date = dt.datetime(2009, 1, 1)
+        start_date = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         stop = '2009-01-03.nofile'
-        stop_date = dt.datetime(2009, 1, 3)
+        stop_date = dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc)
         self.testInst.bounds = (start, stop, 2)
         out = pds.date_range(start_date, stop_date, freq='2D').tolist()
-        # convert filenames in list to a date
-        date_list = []
-        for item in self.testInst._iter_list:
+
+        # Evaluate each filename date
+        for i, item in enumerate(self.testInst._iter_list):
             snip = item.split('.')[0]
-            date_list.append(dt.datetime.strptime(snip, '%Y-%m-%d'))
-        assert np.all(date_list == out)
+            ref_snip = out[i].strftime('%Y-%m-%d')
+            assert snip == ref_snip
 
     def test_iterate_bounds_fname_with_frequency(self):
         """Test iterate over bounds using filenames and non-default step"""
         start = '2009-01-01.nofile'
-        start_date = dt.datetime(2009, 1, 1)
+        start_date = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         stop = '2009-01-03.nofile'
-        stop_date = dt.datetime(2009, 1, 3)
+        stop_date = dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc)
         self.testInst.bounds = (start, stop, 2)
 
         dates = []
@@ -1978,34 +1955,35 @@ class TestBasics():
     def test_set_bounds_fname_with_frequency_and_width(self):
         """Set fname bounds with step/width>1"""
         start = '2009-01-01.nofile'
-        start_date = dt.datetime(2009, 1, 1)
+        start_date = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         stop = '2009-01-03.nofile'
-        stop_date = dt.datetime(2009, 1, 3)
+        stop_date = dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc)
         self.testInst.bounds = (start, stop, 2, 2)
         out = pds.date_range(start_date, stop_date - pds.DateOffset(days=1),
                              freq='2D').tolist()
         # convert filenames in list to a date
         date_list = []
-        for item in self.testInst._iter_list:
+        for i, item in enumerate(self.testInst._iter_list):
             snip = item.split('.')[0]
-            date_list.append(dt.datetime.strptime(snip, '%Y-%m-%d'))
-        assert np.all(date_list == out)
+            ref_snip = out[i].strftime('%Y-%m-%d')
+            assert snip == ref_snip
 
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-03.nofile',
-                                         dt.datetime(2009, 1, 3),
-                                         2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4),
-                                         2, 3),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-05.nofile',
-                                         dt.datetime(2009, 1, 5),
-                                         3, 1)])
+    @pytest.mark.parametrize("values",
+                             [('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-03.nofile',
+                               dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                               2, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-04.nofile',
+                               dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                               2, 3),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-05.nofile',
+                               dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                               3, 1)])
     def test_iterate_bounds_fname_with_frequency_and_width(self, values):
         """File iteration in bounds with step/width>1, excludes stop bounds"""
         out = self.support_iter_evaluations(values, for_loop=True)
@@ -2014,26 +1992,27 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4),
-                                         2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4),
-                                         3, 1),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-04.nofile',
-                                         dt.datetime(2009, 1, 4),
-                                         1, 4),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-05.nofile',
-                                         dt.datetime(2009, 1, 5),
-                                         2, 3)])
+    @pytest.mark.parametrize("values",
+                             [('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-04.nofile',
+                               dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                               2, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-04.nofile',
+                               dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                               3, 1),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-04.nofile',
+                               dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                               1, 4),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-05.nofile',
+                               dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                               2, 3)])
     def test_iterate_bounds_fname_with_frequency_and_width_incl(self, values):
         """File iteration in bounds with step/width>1, includes stop bounds"""
         out = self.support_iter_evaluations(values, for_loop=True)
@@ -2042,30 +2021,31 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-03.nofile',
-                                          '2009-01-13.nofile'),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 13)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 3),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 3, 1)])
+    @pytest.mark.parametrize("values",
+                             [(('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-03.nofile', '2009-01-13.nofile'),
+                               (dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 13,
+                                            tzinfo=dt.timezone.utc)), 2, 2),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 2, 3),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-05.nofile', '2009-01-15.nofile'),
+                               (dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)), 3, 1)])
     def test_iterate_fname_season_with_frequency_and_width(self, values):
         """File season iteration with step/width>1, excludes stop bounds"""
         out = self.support_iter_evaluations(values, for_loop=True)
@@ -2074,38 +2054,39 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 3, 1),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 1, 4),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 2, 3)])
+    @pytest.mark.parametrize("values",
+                             [(('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 2, 2),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 3, 1),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 1, 4),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-05.nofile', '2009-01-15.nofile'),
+                               (dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)), 2, 3)])
     def test_iterate_fname_season_with_frequency_and_width_incl(self, values):
         """File iteration in bounds with step/width>1, includes stop bounds"""
         out = self.support_iter_evaluations(values, for_loop=True)
@@ -2114,26 +2095,32 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11), 2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-12.nofile',
-                                         dt.datetime(2009, 1, 12), 2, 3),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-13.nofile',
-                                         dt.datetime(2009, 1, 13), 3, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-03.nofile',
-                                         dt.datetime(2009, 1, 3), 4, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-12.nofile',
-                                         dt.datetime(2009, 1, 12), 2, 1)])
+    @pytest.mark.parametrize("values",
+                             [('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-11.nofile',
+                               dt.datetime(2009, 1, 11,
+                                           tzinfo=dt.timezone.utc), 2, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-12.nofile',
+                               dt.datetime(2009, 1, 12,
+                                           tzinfo=dt.timezone.utc), 2, 3),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-13.nofile',
+                               dt.datetime(2009, 1, 13,
+                                           tzinfo=dt.timezone.utc), 3, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-03.nofile',
+                               dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                               4, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-12.nofile',
+                               dt.datetime(2009, 1, 12,
+                                           tzinfo=dt.timezone.utc), 2, 1)])
     def test_next_fname_with_frequency_and_width(self, values):
         """Test .next() via fname step/width>1, excludes stop file"""
         out = self.support_iter_evaluations(values)
@@ -2142,27 +2129,27 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 10),
-                                         2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-09.nofile',
-                                         dt.datetime(2009, 1, 9),
-                                         4, 1),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11),
-                                         1, 3),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11),
-                                         1, 11),
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-11.nofile',
+                               dt.datetime(2009, 1, 10, tzinfo=dt.timezone.utc),
+                               2, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-09.nofile',
+                               dt.datetime(2009, 1, 9, tzinfo=dt.timezone.utc),
+                               4, 1),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-11.nofile',
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               1, 3),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-11.nofile',
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               1, 11)])
     def test_next_fname_with_frequency_and_width_incl(self, values):
         """Test .next() via fname step/width>1, includes stop file"""
         out = self.support_iter_evaluations(values)
@@ -2171,30 +2158,31 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-03.nofile',
-                                          '2009-01-13.nofile'),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 13)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 3),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 3, 1)])
+    @pytest.mark.parametrize("values",
+                             [(('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-03.nofile', '2009-01-13.nofile'),
+                               (dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 13,
+                                            tzinfo=dt.timezone.utc)), 2, 2),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 2, 3),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-05.nofile', '2009-01-15.nofile'),
+                               (dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)), 3, 1)])
     def test_next_fname_season_with_frequency_and_width(self, values):
         """File next season with step/width>1, excludes stop bounds"""
         out = self.support_iter_evaluations(values)
@@ -2203,38 +2191,39 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 3, 1),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 1, 4),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 2, 3)])
+    @pytest.mark.parametrize("values",
+                             [(('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 2, 2),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 3, 1),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 1, 4),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-05.nofile', '2009-01-15.nofile'),
+                               (dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)), 2, 3)])
     def test_next_fname_season_with_frequency_and_width_incl(self, values):
         """File next season with step/width>1, includes stop bounds"""
         out = self.support_iter_evaluations(values)
@@ -2243,31 +2232,32 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11),
-                                         2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-12.nofile',
-                                         dt.datetime(2009, 1, 12),
-                                         2, 3),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-13.nofile',
-                                         dt.datetime(2009, 1, 13),
-                                         3, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-03.nofile',
-                                         dt.datetime(2009, 1, 3),
-                                         4, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-12.nofile',
-                                         dt.datetime(2009, 1, 12),
-                                         2, 1)])
+    @pytest.mark.parametrize("values",
+                             [('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-11.nofile',
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               2, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-12.nofile',
+                               dt.datetime(2009, 1, 12, tzinfo=dt.timezone.utc),
+                               2, 3),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-13.nofile',
+                               dt.datetime(2009, 1, 13, tzinfo=dt.timezone.utc),
+                               3, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-03.nofile',
+                               dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                               4, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-12.nofile',
+                               dt.datetime(2009, 1, 12, tzinfo=dt.timezone.utc),
+                               2, 1)])
     def test_prev_fname_with_frequency_and_width(self, values):
         """Test prev() fname step/width>1, excludes stop bound"""
         out = self.support_iter_evaluations(values, reverse=True)
@@ -2276,27 +2266,27 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 10),
-                                         2, 2),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-09.nofile',
-                                         dt.datetime(2009, 1, 9),
-                                         4, 1),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11),
-                                         1, 3),
-                                        ('2009-01-01.nofile',
-                                         dt.datetime(2009, 1, 1),
-                                         '2009-01-11.nofile',
-                                         dt.datetime(2009, 1, 11),
-                                         1, 11),
-                                        ])
+    @pytest.mark.parametrize("values",
+                             [('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-11.nofile',
+                               dt.datetime(2009, 1, 10, tzinfo=dt.timezone.utc),
+                               2, 2),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-09.nofile',
+                               dt.datetime(2009, 1, 9, tzinfo=dt.timezone.utc),
+                               4, 1),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-11.nofile',
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               1, 3),
+                              ('2009-01-01.nofile',
+                               dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                               '2009-01-11.nofile',
+                               dt.datetime(2009, 1, 11, tzinfo=dt.timezone.utc),
+                               1, 11)])
     def test_prev_fname_with_frequency_and_width_incl(self, values):
         """Test prev() fname step/width>1, includes bounds stop date"""
 
@@ -2306,30 +2296,31 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-03.nofile',
-                                          '2009-01-13.nofile'),
-                                         (dt.datetime(2009, 1, 3),
-                                          dt.datetime(2009, 1, 13)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 3),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 3, 1)])
+    @pytest.mark.parametrize("values",
+                             [(('2009-01-01.nofile',  '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-03.nofile', '2009-01-13.nofile'),
+                               (dt.datetime(2009, 1, 3, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 13,
+                                            tzinfo=dt.timezone.utc)), 2, 2),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 2, 3),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-05.nofile', '2009-01-15.nofile'),
+                               (dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)), 3, 1)])
     def test_prev_fname_season_with_frequency_and_width(self, values):
         """File prev season with step/width>1, excludes stop bounds"""
         out = self.support_iter_evaluations(values, reverse=True)
@@ -2338,38 +2329,39 @@ class TestBasics():
 
         return
 
-    @pytest.mark.parametrize("values", [(('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 2, 2),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 3, 1),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-04.nofile',
-                                          '2009-01-14.nofile'),
-                                         (dt.datetime(2009, 1, 4),
-                                          dt.datetime(2009, 1, 14)), 1, 4),
-                                        (('2009-01-01.nofile',
-                                          '2009-01-11.nofile'),
-                                         (dt.datetime(2009, 1, 1),
-                                          dt.datetime(2009, 1, 11)),
-                                         ('2009-01-05.nofile',
-                                          '2009-01-15.nofile'),
-                                         (dt.datetime(2009, 1, 5),
-                                          dt.datetime(2009, 1, 15)), 2, 3)])
+    @pytest.mark.parametrize("values",
+                             [(('2009-01-01.nofile',  '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 2, 2),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 3, 1),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-04.nofile', '2009-01-14.nofile'),
+                               (dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 14,
+                                            tzinfo=dt.timezone.utc)), 1, 4),
+                              (('2009-01-01.nofile', '2009-01-11.nofile'),
+                               (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 11,
+                                            tzinfo=dt.timezone.utc)),
+                               ('2009-01-05.nofile', '2009-01-15.nofile'),
+                               (dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc),
+                                dt.datetime(2009, 1, 15,
+                                            tzinfo=dt.timezone.utc)), 2, 3)])
     def test_prev_fname_season_with_frequency_and_width_incl(self, values):
         """File prev season with step/width>1, includes stop bounds"""
         out = self.support_iter_evaluations(values, reverse=True)
@@ -2417,7 +2409,7 @@ class TestBasicsXarray(TestBasics):
                                          num_samples=10,
                                          clean_level='clean',
                                          update_files=True)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         self.ref_doy = 1
         self.out = None
 
@@ -2439,7 +2431,7 @@ class TestBasics2D(TestBasics):
                                          num_samples=50,
                                          clean_level='clean',
                                          update_files=True)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         self.ref_doy = 1
         self.out = None
 
@@ -2464,7 +2456,7 @@ class TestBasicsShiftedFileDates(TestBasics):
                                          update_files=True,
                                          mangle_file_dates=True,
                                          strict_time_flag=True)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         self.ref_doy = 1
         self.out = None
 
@@ -2488,7 +2480,7 @@ class TestMalformedIndex():
                                          malformed_index=True,
                                          update_files=True,
                                          strict_time_flag=True)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         self.ref_doy = 1
 
     def teardown(self):
@@ -2524,7 +2516,7 @@ class TestMalformedIndexXarray(TestMalformedIndex):
                                          malformed_index=True,
                                          update_files=True,
                                          strict_time_flag=True)
-        self.ref_time = dt.datetime(2009, 1, 1)
+        self.ref_time = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         self.ref_doy = 1
 
     def teardown(self):
@@ -2740,7 +2732,7 @@ class TestDataPadding():
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          update_files=True)
-        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_time = dt.datetime(2009, 1, 2, tzinfo=dt.timezone.utc)
         self.ref_doy = 2
 
     def teardown(self):
@@ -2914,7 +2906,7 @@ class TestDataPaddingXarray(TestDataPadding):
                                          clean_level='clean',
                                          pad={'minutes': 5},
                                          update_files=True)
-        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_time = dt.datetime(2009, 1, 2, tzinfo=dt.timezone.utc)
         self.ref_doy = 2
 
     def teardown(self):
@@ -2932,7 +2924,7 @@ class TestMultiFileRightDataPaddingBasics(TestDataPadding):
                                          sim_multi_file_right=True,
                                          pad={'minutes': 5},
                                          multi_file_day=True)
-        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_time = dt.datetime(2009, 1, 2, tzinfo=dt.timezone.utc)
         self.ref_doy = 2
 
     def teardown(self):
@@ -2951,7 +2943,7 @@ class TestMultiFileRightDataPaddingBasicsXarray(TestDataPadding):
                                          sim_multi_file_right=True,
                                          pad={'minutes': 5},
                                          multi_file_day=True)
-        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_time = dt.datetime(2009, 1, 2, tzinfo=dt.timezone.utc)
         self.ref_doy = 2
 
     def teardown(self):
@@ -2970,7 +2962,7 @@ class TestMultiFileLeftDataPaddingBasics(TestDataPadding):
                                          sim_multi_file_left=True,
                                          pad={'minutes': 5},
                                          multi_file_day=True)
-        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_time = dt.datetime(2009, 1, 2, tzinfo=dt.timezone.utc)
         self.ref_doy = 2
 
     def teardown(self):
@@ -2989,7 +2981,7 @@ class TestMultiFileLeftDataPaddingBasicsXarray(TestDataPadding):
                                          sim_multi_file_left=True,
                                          pad={'minutes': 5},
                                          multi_file_day=True)
-        self.ref_time = dt.datetime(2009, 1, 2)
+        self.ref_time = dt.datetime(2009, 1, 2, tzinfo=dt.timezone.utc)
         self.ref_doy = 2
 
     def teardown(self):
@@ -3026,7 +3018,7 @@ class TestInstListGeneration():
             assert 'broken_inst' not in dict['inst_module'].__name__
 
     def test_for_missing_test_date(self):
-        """Check that instruments without _test_dates are still added to the list
+        """Check that instruments without _test_dates are still included
         """
         del self.test_library.pysat_testing._test_dates
         # If an instrument does not have the _test_dates attribute, it should
