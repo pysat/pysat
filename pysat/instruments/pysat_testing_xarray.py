@@ -130,8 +130,9 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         # non unique
         index[6:9] = [index[6]] * 3
 
-    data = xarray.Dataset({'uts': ((epoch_name), index)},
-                          coords={epoch_name: index})
+    data = xarray.Dataset({'uts': ((epoch_name), index.tolist())},
+                          coords={epoch_name: index.tolist()})
+    
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = dates[0] - root_date
