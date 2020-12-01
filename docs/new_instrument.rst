@@ -609,7 +609,7 @@ generally be put in the `init` function of each instrument.
 
         self.acknowledgements = acknowledgements_string
         self.references = references_string
-	logger.info(self.acknowledgements)
+        logger.info(self.acknowledgements)
 
         return
 
