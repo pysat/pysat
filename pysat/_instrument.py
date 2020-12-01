@@ -1662,9 +1662,8 @@ class Instrument(object):
                 ustops = [stop - self._iter_width + pds.DateOffset(days=1)
                           for stop in self._iter_stop]
                 ufreq = self._iter_step
-                self._iter_list = utils.time.create_date_range(self._iter_start,
-                                                               ustops,
-                                                               freq=ufreq)
+                self._iter_list = utils.time.create_date_range(
+                    self._iter_start, ustops, freq=ufreq)
             else:
                 # instrument has no files
                 self._iter_list = []
@@ -1782,12 +1781,11 @@ class Instrument(object):
                 # account for width of load. Don't extend past bound.
                 ustops = [stop - width + pds.DateOffset(days=1)
                           for stop in stops]
-                self._iter_list = utils.time.create_date_range(starts,
-                                                               ustops,
-                                                               freq=freq)
+                self._iter_list = utils.time.create_date_range(
+                    starts, ustops, freq=freq).tolist()
+
                 # go back to time index
                 self._iter_list = pds.DatetimeIndex(self._iter_list)
-
             else:
                 raise ValueError(' '.join(('Input is not a known type, string',
                                            'or datetime')))
@@ -2443,7 +2441,7 @@ class Instrument(object):
             _check_load_arguments_none(fname, stop_fname, date, end_date,
                                        raise_error=True)
             # convert yr/doy to a date
-            date = utils.set_timezone_to_utc(dt.datetime.strptime(
+            date = utils.time.set_timezone_to_utc(dt.datetime.strptime(
                 "{:.0f} {:.0f}".format(yr, doy), "%Y %j"), True)
             self._set_load_parameters(date=date, fid=None)
 
@@ -2452,7 +2450,7 @@ class Instrument(object):
                     estr = ''.join(('Day of year (end_doy) is only valid ',
                                     'between and including 1-366.'))
                     raise ValueError(estr)
-                end_date = utils.set_timezone_to_utc(dt.datetime.strptime(
+                end_date = utils.time.set_timezone_to_utc(dt.datetime.strptime(
                     "{:.0f} {:.0f}".format(end_yr, end_doy), "%Y %j"), True)
                 self.load_step = end_date - date
             elif (end_yr is not None) or (end_doy is not None):
@@ -2471,7 +2469,7 @@ class Instrument(object):
                                        end_doy, raise_error=True)
 
             # Make sure the timezone is specified
-            date = utils.set_timezone_to_utc(date, date_is_utc)
+            date = utils.time.set_timezone_to_utc(date, date_is_utc)
 
             # ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
@@ -2480,7 +2478,7 @@ class Instrument(object):
             # increment
             if end_date is not None:
                 # support loading a range of dates
-                end_date = utils.set_timezone_to_utc(end_date, date_is_utc)
+                end_date = utils.time.set_timezone_to_utc(end_date, date_is_utc)
                 self.load_step = end_date - date
             else:
                 # defaults to single day load
