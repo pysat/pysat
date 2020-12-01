@@ -189,8 +189,8 @@ class TestBasics():
 
     def test_year_doy_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2009, 12, 31)
+        start = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='1D')
         # use from_os function to get pandas Series of files and dates
         files = pysat.Files.from_os(data_path=self.testInst.files.data_path,
@@ -200,15 +200,16 @@ class TestBasics():
                                                         'pysat_testing_file')))
         # check overall length
         assert len(files) == (365 + 366)
-        # check specific dates
+
+        # check specific dates, which are naive
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
     def test_year_doy_files_no_gap_in_name_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2009, 12, 31)
+        start = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='1D',
                      root_fname=''.join(('pysat_testing_junk_{year:04d}',
                                          '{day:03d}_stuff.pysat_testing_',
@@ -221,15 +222,16 @@ class TestBasics():
                                                         'file')))
         # check overall length
         assert len(files) == (365 + 366)
-        # check specific dates
+
+        # Check specific dates, which are naive
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
     def test_year_month_day_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2009, 12, 31)
+        start = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='1D', use_doy=False,
                      root_fname=''.join(('pysat_testing_junk_{year:04d}_gold_',
                                          '{day:03d}_stuff_{month:02d}.pysat_',
@@ -243,15 +245,16 @@ class TestBasics():
                                                         'testing_file')))
         # check overall length
         assert len(files) == (365 + 366)
-        # check specific dates
+
+        # check specific dates, which are naive
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
     def test_year_month_day_hour_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2009, 12, 31)
+        start = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='6h',
                      use_doy=False,
                      root_fname=''.join(('pysat_testing_junk_{year:04d}_gold_',
@@ -267,7 +270,8 @@ class TestBasics():
                                                         'testing_file')))
         # check overall length
         assert len(files) == (365 + 366) * 4 - 3
-        # check specific dates
+
+        # check specific dates, which are naive
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[1460]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
@@ -277,8 +281,8 @@ class TestBasics():
                               'stuff_{month:02d}_{hour:02d}{minute:02d}.',
                               'pysat_testing_file'))
         # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2008, 1, 4)
+        start = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 4, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='30min',
                      use_doy=False,
                      root_fname=root_fname)
@@ -287,7 +291,8 @@ class TestBasics():
                                     format_str=root_fname)
         # check overall length
         assert len(files) == 145
-        # check specific dates
+
+        # check specific dates, which are naive
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[1]) == dt.datetime(2008, 1, 1, 0, 30)
         assert pds.to_datetime(files.index[10]) == dt.datetime(2008, 1, 1, 5, 0)
@@ -298,8 +303,8 @@ class TestBasics():
                               'stuff_{month:02d}_{hour:02d}_{minute:02d}_',
                               '{second:02d}.pysat_testing_file'))
         # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2008, 1, 3)
+        start = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 3, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='30s',
                      use_doy=False, root_fname=root_fname)
         # use from_os function to get pandas Series of files and dates
@@ -307,16 +312,19 @@ class TestBasics():
                                     format_str=root_fname)
         # check overall length
         assert len(files) == 5761
-        # check specific dates
+
+        # Check specific dates, which are naive
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert (pds.to_datetime(files.index[1])
-                == dt.datetime(2008, 1, 1, 0, 0, 30))
+        assert pds.to_datetime(
+            files.index[1]) == dt.datetime(2008, 1, 1, 0, 0, 30)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 3)
 
     def test_year_month_files_direct_call_to_from_os(self):
+        """test creation of file list with month/year using from_os
+        """
         # create a bunch of files by year and doy
-        start = dt.datetime(2008, 1, 1)
-        stop = dt.datetime(2009, 12, 31)
+        start = dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='1MS',
                      root_fname=''.join(('pysat_testing_junk_{year:04d}_gold_',
                                          'stuff_{month:02d}.pysat_testing_',
@@ -329,7 +337,8 @@ class TestBasics():
                                                         'pysat_testing_file')))
         # check overall length
         assert len(files) == 24
-        # check specific dates
+
+        # Check specific dates, which are naive
         assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
         assert pds.to_datetime(files.index[11]) == dt.datetime(2008, 12, 1)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 1)
@@ -350,8 +359,8 @@ class TestBasics():
                               'stuff_{month:02d}_{hour:02d}_{minute:02d}_'
                               '{second:02d}.pysat_testing_file'))
         # create a bunch of files by year and doy
-        start = dt.datetime(2007, 12, 31)
-        stop = dt.datetime(2008, 1, 10)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False, root_fname=root_fname)
         # create the same range of dates
@@ -360,7 +369,7 @@ class TestBasics():
         inst = pysat.Instrument(platform='pysat', name='testing',
                                 update_files=True)
         reload(pysat.instruments.pysat_testing)
-        assert (np.all(inst.files.files.index == dates))
+        assert np.all(inst.files.files.index == dates)
 
 
 class TestBasicsNoFileListStorage(TestBasics):
@@ -396,8 +405,8 @@ class TestInstrumentWithFiles():
                                    '{day:03d}_stuff_{month:02d}_{hour:02d}_',
                                    '{minute:02d}_{second:02d}.pysat_testing_',
                                    'file'))
-        start = dt.datetime(2007, 12, 31)
-        stop = dt.datetime(2008, 1, 10)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False, root_fname=self.root_fname)
 
@@ -423,13 +432,13 @@ class TestInstrumentWithFiles():
 
     def test_refresh(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 10)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
                      root_fname=self.root_fname)
-        start = dt.datetime(2007, 12, 31)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
@@ -441,8 +450,8 @@ class TestInstrumentWithFiles():
         assert len(self.testInst.files.files) == 0
 
         # create new files with content and make sure they are captured
-        start = dt.datetime(2007, 12, 31)
-        stop = dt.datetime(2008, 1, 10)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
                      root_fname=self.root_fname,
@@ -463,8 +472,8 @@ class TestInstrumentWithFiles():
         assert len(self.testInst.files.files) == 0
 
         # create new files with content and make sure they are captured
-        start = dt.datetime(2007, 12, 31)
-        stop = dt.datetime(2008, 1, 10)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
                      root_fname=self.root_fname,
@@ -474,16 +483,16 @@ class TestInstrumentWithFiles():
         assert (np.all(self.testInst.files.files.index == dates))
 
     def test_refresh_on_unchanged_files(self):
-        start = dt.datetime(2007, 12, 31)
-        stop = dt.datetime(2008, 1, 10)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
 
     def test_get_new_files_after_refresh(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
@@ -496,8 +505,8 @@ class TestInstrumentWithFiles():
 
     def test_get_new_files_after_multiple_refreshes(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
@@ -511,8 +520,8 @@ class TestInstrumentWithFiles():
 
     def test_get_new_files_after_adding_files(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
@@ -523,8 +532,8 @@ class TestInstrumentWithFiles():
 
     def test_get_new_files_after_adding_files_and_adding_file(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
@@ -532,8 +541,8 @@ class TestInstrumentWithFiles():
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         new_files = self.testInst.files.get_new()
 
-        start = dt.datetime(2008, 1, 15)
-        stop = dt.datetime(2008, 1, 18)
+        start = dt.datetime(2008, 1, 15, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 18, tzinfo=dt.timezone.utc)
 
         create_files(self.testInst, start, stop, freq='100min',
                      use_doy=False,
@@ -545,8 +554,8 @@ class TestInstrumentWithFiles():
 
     def test_get_new_files_after_deleting_files_and_adding_files(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
 
         # remove files, same number as will be added
@@ -569,8 +578,8 @@ class TestInstrumentWithFiles():
 
     def test_files_non_standard_pysat_directory(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 15)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 15, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
 
         self.testInst = \
@@ -602,8 +611,8 @@ class TestInstrumentWithFiles():
 
     def test_files_non_standard_file_format_template(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 15)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 15, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='1D')
 
         # clear out old files, create new ones
@@ -662,9 +671,9 @@ def create_versioned_files(inst, start=None, stop=None, freq='1D',
                            use_doy=True, root_fname=None, timeout=None):
     # create a bunch of files
     if start is None:
-        start = dt.datetime(2009, 1, 1)
+        start = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
     if stop is None:
-        stop = dt.datetime(2013, 12, 31)
+        stop = dt.datetime(2013, 12, 31, tzinfo=dt.timezone.utc)
     dates = pysat.utils.time.create_date_range(start, stop, freq=freq)
 
     versions = np.array([1, 2])
@@ -750,8 +759,8 @@ class TestInstrumentWithVersionedFiles():
                                    '{second:02d}_stuff_{version:02d}_',
                                    '{revision:03d}_{cycle:02d}',
                                    '.pysat_testing_file'))
-        start = dt.datetime(2007, 12, 31)
-        stop = dt.datetime(2008, 1, 10)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
         create_versioned_files(self.testInst, start, stop, freq='100min',
                                use_doy=False, root_fname=self.root_fname)
 
@@ -778,13 +787,13 @@ class TestInstrumentWithVersionedFiles():
     def test_refresh(self):
         # create new files and make sure that new files are captured
         # files slready exist from 2007, 12, 31 through to 10th
-        start = dt.datetime(2008, 1, 10)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
         create_versioned_files(self.testInst, start, stop, freq='100min',
                                use_doy=False,
                                root_fname=self.root_fname)
         # create list of dates for all files that should be there
-        start = dt.datetime(2007, 12, 31)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         # update instrument file list
         self.testInst.files.refresh()
@@ -792,16 +801,16 @@ class TestInstrumentWithVersionedFiles():
 
     def test_refresh_on_unchanged_files(self):
 
-        start = dt.datetime(2007, 12, 31)
-        stop = dt.datetime(2008, 1, 10)
+        start = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 10, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
 
     def test_get_new_files_after_refresh(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_versioned_files(self.testInst, start, stop, freq='100min',
                                use_doy=False,
@@ -814,8 +823,8 @@ class TestInstrumentWithVersionedFiles():
 
     def test_get_new_files_after_multiple_refreshes(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_versioned_files(self.testInst, start, stop, freq='100min',
                                use_doy=False,
@@ -830,8 +839,8 @@ class TestInstrumentWithVersionedFiles():
 
     def test_get_new_files_after_adding_files(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_versioned_files(self.testInst, start, stop, freq='100min',
                                use_doy=False,
@@ -842,8 +851,8 @@ class TestInstrumentWithVersionedFiles():
 
     def test_get_new_files_after_adding_files_and_adding_file(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
 
         create_versioned_files(self.testInst, start, stop, freq='100min',
                                use_doy=False,
@@ -851,8 +860,8 @@ class TestInstrumentWithVersionedFiles():
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         new_files = self.testInst.files.get_new()
 
-        start = dt.datetime(2008, 1, 15)
-        stop = dt.datetime(2008, 1, 18)
+        start = dt.datetime(2008, 1, 15, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 18, tzinfo=dt.timezone.utc)
 
         create_versioned_files(self.testInst, start, stop, freq='100min',
                                use_doy=False,
@@ -864,8 +873,8 @@ class TestInstrumentWithVersionedFiles():
 
     def test_get_new_files_after_deleting_files_and_adding_files(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 12)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 12, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         # remove files, same number as will be added
         to_be_removed = len(dates)
@@ -892,8 +901,8 @@ class TestInstrumentWithVersionedFiles():
 
     def test_files_non_standard_pysat_directory(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 15)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 15, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
         pysat.instruments.pysat_testing.list_files = list_versioned_files
         self.testInst = \
@@ -924,8 +933,8 @@ class TestInstrumentWithVersionedFiles():
 
     def test_files_non_standard_file_format_template(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 15)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 15, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='1D')
 
         file_format = ''.join(('pysat_testing_unique_{version:02d}_',
@@ -949,8 +958,8 @@ class TestInstrumentWithVersionedFiles():
 
     def test_files_when_duplicates_forced(self):
         # create new files and make sure that new files are captured
-        start = dt.datetime(2008, 1, 11)
-        stop = dt.datetime(2008, 1, 15)
+        start = dt.datetime(2008, 1, 11, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 1, 15, tzinfo=dt.timezone.utc)
         dates = pysat.utils.time.create_date_range(start, stop, freq='1D')
 
         file_format = ''.join(('pysat_testing_unique_{version:02d}_',
@@ -968,6 +977,8 @@ class TestInstrumentWithVersionedFiles():
                              clean_level='clean', file_format=file_format,
                              update_files=True,
                              temporary_file_list=self.temporary_file_list)
+
+        print("TEST", dates, self.testInst.files.files.index)
         assert (np.all(self.testInst.files.files.index == dates))
 
 
@@ -987,8 +998,8 @@ def create_instrument(j):
                          update_files=True,
                          temporary_file_list=False)
 
-    start = dt.datetime(2007, 12, 30)
-    stop = dt.datetime(2007, 12, 31)
+    start = dt.datetime(2007, 12, 30, tzinfo=dt.timezone.utc)
+    stop = dt.datetime(2007, 12, 31, tzinfo=dt.timezone.utc)
     create_versioned_files(testInst, start, stop,
                            freq='1D', use_doy=False,
                            root_fname=root_fname,
@@ -1034,8 +1045,8 @@ class TestFilesRaceCondition():
                                    '{second:02d}_stuff_{version:02d}_',
                                    '{revision:03d}_{cycle:02d}',
                                    '.pysat_testing_file'))
-        start = dt.datetime(2007, 12, 30)
-        stop = dt.datetime(2008, 12, 31)
+        start = dt.datetime(2007, 12, 30, tzinfo=dt.timezone.utc)
+        stop = dt.datetime(2008, 12, 31, tzinfo=dt.timezone.utc)
         create_versioned_files(self.testInst, start, stop, freq='1D',
                                use_doy=False, root_fname=self.root_fname)
 
