@@ -882,12 +882,21 @@ class Instrument(object):
         if self.pandas_format:
             return data.index
         else:
-            if 'time' in data.indexes:
-                return data.indexes['time']
-            elif 'Epoch' in data.indexes:
-                return data.indexes['Epoch']
-            else:
+            # Determine whether there is a known key for the time index
+            index_key = None
+            for ikey in ['time', 'Epoch']:
+                if ikey in data.indexes:
+                    index_key = 'time'
+                    break
+
+            if index_key is None:
+                # There is no data, return an empty index
                 return pds.Index([])
+            else:
+                # XArray does not currently maintain the timezone information
+                dindex = [utils.time.set_timezone_to_utc(tt, naive_is_utc=True)
+                          for tt in data.indexes[index_key]]
+                return pds.DatetimeIndex(dindex)
 
     def _pass_method(*args, **kwargs):
         """ Default method for updateable Instrument methods
