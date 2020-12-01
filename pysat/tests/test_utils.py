@@ -257,13 +257,18 @@ class TestBasicNetCDF4():
     def test_load_netcdf4_empty_filenames(self):
         pysat.utils.load_netcdf4(fnames=None)
 
-    def test_basic_write_and_read_netcdf4_default_format(self):
+    def test_basic_write_and_read_netcdf4_unimited_time(self):
+        """Test reading and writing netcdf4, unlimited time dimension"""
+        self.test_basic_write_and_read_netcdf4_default_format(unlimited=True)
+        return
+
+    def test_basic_write_and_read_netcdf4_default_format(self, unlimited=False):
         # create a bunch of files by year and doy
         prep_dir(self.testInst)
         outfile = os.path.join(self.testInst.files.data_path,
                                'pysat_test_ncdf.nc')
         self.testInst.load(2009, 1)
-        self.testInst.to_netcdf4(outfile)
+        self.testInst.to_netcdf4(outfile, unlimited_time=unlimited)
 
         loaded_inst, meta = \
             pysat.utils.load_netcdf4(outfile,

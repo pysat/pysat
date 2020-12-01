@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.2] - 2020-11-23
+- New Features
+   - netCDF4 files produced using `to_netcdf4()` now have an unlimited
+     time dimension
+- Documentation
+   - Updated guidance on numpy version for installation
+- Bug Fix
+   - Updated madrigal methods to simplify compound data types and enable
+     creation of netCDF4 files using `self.to_netcdf4()`.
+   - Updated ICON support for latest file organization on SSL servers
+
 ## [2.2.1] - 2020-07-29
 - Documentation
    - Improved organization of documentation on ReadTheDocs

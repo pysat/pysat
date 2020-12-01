@@ -98,14 +98,13 @@ def clean(inst):
     will accept user input for several strings. The clean_level is
     specified at instantiation of the Instrument object.
 
-    'clean' All parameters should be good, suitable for statistical and
-            case studies
-    'dusty' All paramers should generally be good though same may
-            not be great
-    'dirty' There are data areas that have issues, data should be used
-            with caution
-    'none'  No cleaning applied, routine not called in this case.
-
+        'clean' : All parameters should be good, suitable for statistical and \
+                  case studies
+        'dusty' : All paramers should generally be good though same may \
+                  not be great
+        'dirty' : There are data areas that have issues, data should be used \
+                  with caution
+        'none'  : No cleaning applied, routine not called in this case.
 
     Parameters
     -----------
@@ -351,7 +350,7 @@ def load(fnames, tag=None, sat_id=None, custom_keyword=None):
                                            scale_label='ScaleTyp',
                                            min_label='ValidMin',
                                            max_label='ValidMax',
-                                           fill_label='FillVal'
+                                           fill_label='FillVal',
                                            pandas_format=pandas_format)
     # Some variables may need modification.  For example, pysat requires a
     # variable in the index named 'time' for xarray objects.  These can be set

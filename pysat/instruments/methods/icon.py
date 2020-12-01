@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """Provides non-instrument specific routines for ICON data"""
 
-from __future__ import absolute_import, division, print_function
-
 import fnmatch
 import ftplib
 import logging
 import numpy as np
 import os
+import shutil
+from zipfile import ZipFile
 
 import pysat
-import pysat._files as pfiles
+import pysat._files as futils
 
 
 logger = logging.getLogger(__name__)
@@ -121,30 +121,30 @@ def list_remote_files(tag, sat_id, user=None, password=None,
     a particular UC-Berkeley SSL dataset related to ICON.
 
     Parameters
-    -----------
-    tag : (string or NoneType)
+    ----------
+    tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
-    sat_id : (string or NoneType)
+    sat_id : string or NoneType
         Specifies the satellite ID for a constellation.  Not used.
         (default=None)
-    user : (string or NoneType)
+    user : string or NoneType
         Username to be passed along to resource with relevant data.
         (default=None)
-    password : (string or NoneType)
+    password : string or NoneType
         User password to be passed along to resource with relevant data.
         (default=None)
-    start : (dt.datetime or NoneType)
+    start : dt.datetime or NoneType
         Starting time for file list. A None value will start with the first
         file found.
         (default=None)
-    stop : (dt.datetime or NoneType)
+    stop : dt.datetime or NoneType
         Ending time for the file list.  A None value will stop with the last
         file found.
         (default=None)
 
     Returns
-    --------
+    -------
     pandas.Series
         A Series formatted for the Files class (pysat._files.Files)
         containing filenames and indexed by date and time
@@ -245,13 +245,13 @@ def list_remote_files(tag, sat_id, user=None, password=None,
 
     # we now have a list of all files in the instrument data directories
     # need to whittle list down to the versions and revisions most appropriate
-    search_dict = pysat._files.construct_searchstring_from_format(remote_fname)
+    search_dict = futils.construct_searchstring_from_format(remote_fname)
     search_str = '*/' + search_dict['search_string']
     remote_files = fnmatch.filter(day_file_list, search_str)
 
     # pull out date information from the files
-    stored = pfiles.parse_fixed_width_filenames(remote_files, remote_fname)
-    output = pfiles.process_parsed_filenames(stored)
+    stored = futils.parse_fixed_width_filenames(remote_files, remote_fname)
+    output = futils.process_parsed_filenames(stored)
     # return information, limited to start and stop dates
     return output[start:stop]
 
@@ -265,34 +265,30 @@ def ssl_download(date_array, tag, sat_id, data_path=None,
     date_array : array-like
         list of datetimes to download data for. The sequence of dates need not
         be contiguous.
-    tag : string ('')
+    tag : string
         Tag identifier used for particular dataset. This input is provided by
-        pysat.
-    sat_id : string  ('')
+        pysat. (default='')
+    sat_id : string
         Satellite ID string identifier used for particular dataset. This input
-        is provided by pysat.
-    data_path : string (None)
-        Path to directory to download data to.
-    user : string (None)
+        is provided by pysat. (default='')
+    data_path : string
+        Path to directory to download data to. (default=None)
+    user : string
         User string input used for download. Provided by user and passed via
         pysat. If an account is required for downloads this routine here must
-        error if user not supplied.
-    password : string (None)
-        Password for data download.
+        error if user not supplied. (default=None)
+    password : string
+        Password for data download. (default=None)
     **kwargs : dict
         Additional keywords supplied by user when invoking the download
         routine attached to a pysat.Instrument object are passed to this
         routine via kwargs.
 
-    Returns
-    --------
-    Void : (NoneType)
-        Downloads data to disk.
-
     """
 
     # get a list of remote files
-    remote_files = list_remote_files(tag, sat_id, supported_tags=supported_tags,
+    remote_files = list_remote_files(tag, sat_id,
+                                     supported_tags=supported_tags,
                                      start=date_array[0], stop=date_array[-1])
 
     # connect to CDAWeb default port
@@ -315,6 +311,18 @@ def ssl_download(date_array, tag, sat_id, data_path=None,
                 ftp.retrbinary('RETR ' + fname,
                                open(saved_local_fname, 'wb').write)
                 logger.info('Finished.')
+                # If zipped files are stored remotely, unzip them locally and
+                # delete the downloaded zip
+                if fname.find('ZIP') > 0:
+                    with ZipFile(saved_local_fname, 'r') as zipObj:
+                        for member in zipObj.namelist():
+                            if member.find('.NC') > 0:
+                                outpath = os.path.join(data_path,
+                                                       os.path.basename(member))
+                                with zipObj.open(member) as source:
+                                    with open(outpath, 'wb') as target:
+                                        shutil.copyfileobj(source, target)
+                    os.remove(saved_local_fname)
             except ftplib.error_perm as exception:
                 if str(exception.args[0]).split(" ", 1)[0] != '550':
                     raise

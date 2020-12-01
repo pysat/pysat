@@ -76,7 +76,7 @@ NASA CDAWeb Instrument
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pysat.instruments.templates.template_cdaweb_instrument
-   :members: __doc__, init, default, load, list_files, list_remote_files, download, clean
+   :members: __doc__, default, load, list_files, list_remote_files, download, clean
 
 netCDF Pandas
 ^^^^^^^^^^^^^

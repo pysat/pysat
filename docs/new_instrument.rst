@@ -211,6 +211,7 @@ with an Instrument may be updated by adding `update_files=True` at
 instantiation.
 
 .. code:: python
+
    inst = pysat.Instrument(platform=platform, name=name, update_files=True)
 
 The output provided by the list_files function that has been pulled into pysat
@@ -248,6 +249,7 @@ The load module method signature should appear as:
 - For multi-dimensional data, an xarray can be
   used instead. When returning xarray data, a variable at the instrument module
   top-level must be set,
+
 .. code:: python
 
    pandas_format = False
@@ -268,6 +270,7 @@ The load module method signature should appear as:
 - Note that users may opt for a different
   naming scheme for metadata parameters thus the most general code for working
   with metadata uses the attached labels,
+
 .. code:: python
 
    # update units to meters, 'm' for variable
