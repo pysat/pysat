@@ -85,6 +85,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Updated instrument templates
   - Simplified internal logic in Instrument class
   - Updated Instrument.concat_func to behave as described in the docstring
+  - Moved setup metadata to setup.cfg
 
 ## [2.2.2] - 2020-12-31
  - New Features
