@@ -154,7 +154,7 @@ def create_date_range(start, stop, freq='D'):
     Note
     ----
     Use iterable start and stop to create an output with gaps
-        
+
     """
 
     # Rely on pandas to throw errors for bad datetime inputs
@@ -269,5 +269,3 @@ def set_timezone_to_utc(in_time, naive_is_utc=False):
         out_time = in_time.astimezone(tz=dt.timezone.utc)
 
     return out_time
-        
-        

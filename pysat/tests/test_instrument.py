@@ -1964,7 +1964,6 @@ class TestBasics():
         out = pds.date_range(start_date, stop_date - pds.DateOffset(days=1),
                              freq='2D').tolist()
         # convert filenames in list to a date
-        date_list = []
         for i, item in enumerate(self.testInst._iter_list):
             snip = item.split('.')[0]
             ref_snip = out[i].strftime('%Y-%m-%d')
@@ -2299,7 +2298,7 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize("values",
-                             [(('2009-01-01.nofile',  '2009-01-11.nofile'),
+                             [(('2009-01-01.nofile', '2009-01-11.nofile'),
                                (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
                                 dt.datetime(2009, 1, 11,
                                             tzinfo=dt.timezone.utc)),
@@ -2332,7 +2331,7 @@ class TestBasics():
         return
 
     @pytest.mark.parametrize("values",
-                             [(('2009-01-01.nofile',  '2009-01-11.nofile'),
+                             [(('2009-01-01.nofile', '2009-01-11.nofile'),
                                (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
                                 dt.datetime(2009, 1, 11,
                                             tzinfo=dt.timezone.utc)),

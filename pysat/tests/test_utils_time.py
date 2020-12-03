@@ -167,6 +167,7 @@ class TestCreateDatetimeIndex():
         assert dates[-1] == dt.datetime(2012, 1, 1)
         assert len(dates) == 4
 
+
 class TestSetTimezone():
 
     def setup(self):
@@ -177,7 +178,7 @@ class TestSetTimezone():
     def teardown(self):
         """Runs after every method to clean up previous testing."""
         del self.ttime, self.timezone
-        
+
     def update_test_time(self):
         """ Update the test time using the timezone attribute
         """
