@@ -842,17 +842,17 @@ class TestBasics():
     # -------------------------------------------------------------------------
     def test_basic_data_access_by_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst['uts'] == self.testInst.data['uts'])
+        assert np.all(self.testInst['mlt'] == self.testInst.data['mlt'])
 
     def test_basic_data_access_by_name_list(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[['uts', 'mlt']]
-                      == self.testInst.data[['uts', 'mlt']])
+        assert np.all(self.testInst[['longitude', 'mlt']]
+                      == self.testInst.data[['longitude', 'mlt']])
 
     def test_data_access_by_row_slicing_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[0:10, 'uts']
-                      == self.testInst.data['uts'].values[0:10])
+        assert np.all(self.testInst[0:10, 'mlt']
+                      == self.testInst.data['mlt'].values[0:10])
 
     def test_data_access_by_row_slicing_and_name_slicing(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -863,25 +863,25 @@ class TestBasics():
 
     def test_data_access_by_row_slicing_w_ndarray_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[np.arange(0, 10), 'uts']
-                      == self.testInst.data['uts'].values[0:10])
+        assert np.all(self.testInst[np.arange(0, 10), 'mlt']
+                      == self.testInst.data['mlt'].values[0:10])
 
     def test_data_access_by_row_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
-        assert np.all(self.testInst[0, 'uts']
-                      == self.testInst.data['uts'].values[0])
+        assert np.all(self.testInst[0, 'mlt']
+                      == self.testInst.data['mlt'].values[0])
 
     def test_data_access_by_row_index(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = np.arange(10)
-        assert np.all(self.testInst[self.out]['uts']
-                      == self.testInst.data['uts'].values[self.out])
+        assert np.all(self.testInst[self.out]['mlt']
+                      == self.testInst.data['mlt'].values[self.out])
 
     def test_data_access_by_datetime_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
         self.out = dt.datetime(2009, 1, 1, 0, 0, 0, tzinfo=dt.timezone.utc)
-        assert np.all(self.testInst[self.out, 'uts']
-                      == self.testInst.data['uts'].values[0])
+        assert np.all(self.testInst[self.out, 'mlt']
+                      == self.testInst.data['mlt'].values[0])
 
     def test_data_access_by_datetime_slicing_and_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -890,8 +890,8 @@ class TestBasics():
         offset = pds.DateOffset(seconds=(10 * time_step))
         start = dt.datetime(2009, 1, 1, 0, 0, 0, tzinfo=dt.timezone.utc)
         stop = start + offset
-        assert np.all(self.testInst[start:stop, 'uts']
-                      == self.testInst.data['uts'].values[0:11])
+        assert np.all(self.testInst[start:stop, 'mlt']
+                      == self.testInst.data['mlt'].values[0:11])
 
     def test_setting_data_by_name(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -914,8 +914,10 @@ class TestBasics():
             pds.DataFrame({'doubleMLT': 2. * self.testInst['mlt'].values,
                            'tripleMLT': 3. * self.testInst['mlt'].values},
                           index=self.testInst.index)
-        assert np.all(self.testInst['doubleMLT'] == 2. * self.testInst['mlt'])
-        assert np.all(self.testInst['tripleMLT'] == 3. * self.testInst['mlt'])
+        assert np.all(self.testInst['doubleMLT'].values
+                      == 2. * self.testInst['mlt'].values)
+        assert np.all(self.testInst['tripleMLT'].values
+                      == 3. * self.testInst['mlt'].values)
 
     def test_setting_data_by_name_single_element(self):
         self.testInst.load(self.ref_time.year, self.ref_doy)
@@ -1179,7 +1181,7 @@ class TestBasics():
         assert dates.is_monotonic_increasing
 
         # dates are unique
-        assert np.all(np.unique(dates) == dates.values)
+        assert len(np.unique(dates)) == len(insts)
 
         # iteration instruments are not the same as original
         for inst in insts:

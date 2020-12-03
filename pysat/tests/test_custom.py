@@ -198,10 +198,10 @@ class TestBasics():
 
         self.testInst.custom.attach(custom1, 'add')
         self.testInst.load(2009, 1)
-        assert (self.testInst.data['doubleMLT'] == 2.0
-                * self.testInst['mlt']).all()
-        assert (self.testInst.data['tripleMLT'] == 3.0
-                * self.testInst['mlt']).all()
+        assert (self.testInst.data['doubleMLT'].values
+                == 2.0 * self.testInst['mlt'].values).all()
+        assert (self.testInst.data['tripleMLT'].values
+                == 3.0 * self.testInst['mlt'].values).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 2
 
     def test_add_dataframe_w_meta(self):
@@ -221,8 +221,10 @@ class TestBasics():
         assert self.testInst.meta['doubleMLT'].long_name == 'doubleMLTlong'
         assert self.testInst.meta['tripleMLT'].units == 'hours2'
         assert self.testInst.meta['tripleMLT'].long_name == 'tripleMLTlong'
-        assert (self.testInst['doubleMLT'] == 2.0 * self.testInst['mlt']).all()
-        assert (self.testInst['tripleMLT'] == 3.0 * self.testInst['mlt']).all()
+        assert (self.testInst['doubleMLT'].values
+                == 2.0 * self.testInst['mlt'].values).all()
+        assert (self.testInst['tripleMLT'].values
+                == 3.0 * self.testInst['mlt'].values).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 2
 
     def test_add_series_w_meta(self):
