@@ -233,7 +233,7 @@ def create_datetime_index(year=None, month=None, day=None, uts=None):
                 - dt.datetime(1970, 1, 1)).total_seconds()
     # going to use routine that defaults to nanseconds for epoch
     uts_del *= 1E9
-    return pds.to_datetime(uts_del)
+    return pds.to_datetime(uts_del, utc=True)
 
 
 def set_timezone_to_utc(in_time, naive_is_utc=False):

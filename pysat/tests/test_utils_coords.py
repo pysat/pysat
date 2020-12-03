@@ -42,7 +42,7 @@ class TestLonSLT():
     def setup(self):
         """Runs after every method to clean up previous testing."""
         self.py_inst = None
-        self.inst_time = dt.datetime(2009, 1, 1)
+        self.inst_time = dt.datetime(2009, 1, 1, tzinfo=dt.datetime.utc)
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""

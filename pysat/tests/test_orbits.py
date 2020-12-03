@@ -15,7 +15,7 @@ class TestOrbitsUserInterface():
         self.in_args = ['pysat', 'testing']
         self.in_kwargs = {'clean_level': 'clean', 'update_files': True}
         self.testInst = None
-        self.stime = dt.datetime(2009, 1, 1)
+        self.stime = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
 
     def teardown(self):
         """ Tear down user interface tests
@@ -97,7 +97,7 @@ class TestSpecificUTOrbits():
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'},
                                          update_files=True)
-        self.stime = dt.datetime(2009, 1, 1)
+        self.stime = dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
         self.inc_min = 97
         self.etime = None
 
@@ -596,12 +596,18 @@ class TestGeneralOrbitsLatitudeXarray(TestGeneralOrbitsMLT):
 def filter_data(inst):
     """Remove data from instrument, simulating gaps"""
 
-    times = [[dt.datetime(2009, 1, 1, 1, 37), dt.datetime(2009, 1, 1, 3, 14)],
-             [dt.datetime(2009, 1, 1, 10), dt.datetime(2009, 1, 1, 12)],
-             [dt.datetime(2009, 1, 1, 22), dt.datetime(2009, 1, 2, 2)],
-             [dt.datetime(2009, 1, 13), dt.datetime(2009, 1, 15)],
-             [dt.datetime(2009, 1, 20, 1), dt.datetime(2009, 1, 25, 23)],
-             [dt.datetime(2009, 1, 25, 23, 30), dt.datetime(2009, 1, 26, 3)]
+    times = [[dt.datetime(2009, 1, 1, 1, 37, tzinfo=dt.timezone.utc),
+              dt.datetime(2009, 1, 1, 3, 14, tzinfo=dt.timezone.utc)],
+             [dt.datetime(2009, 1, 1, 10, tzinfo=dt.timezone.utc),
+              dt.datetime(2009, 1, 1, 12, tzinfo=dt.timezone.utc)],
+             [dt.datetime(2009, 1, 1, 22, tzinfo=dt.timezone.utc),
+              dt.datetime(2009, 1, 2, 2, tzinfo=dt.timezone.utc)],
+             [dt.datetime(2009, 1, 13, tzinfo=dt.timezone.utc),
+              dt.datetime(2009, 1, 15, tzinfo=dt.timezone.utc)],
+             [dt.datetime(2009, 1, 20, 1, tzinfo=dt.timezone.utc),
+              dt.datetime(2009, 1, 25, 23, tzinfo=dt.timezone.utc)],
+             [dt.datetime(2009, 1, 25, 23, 30, tzinfo=dt.timezone.utc),
+              dt.datetime(2009, 1, 26, 3, tzinfo=dt.timezone.utc)]
              ]
     for time in times:
         idx, = np.where((inst.index > time[1]) | (inst.index < time[0]))
@@ -650,12 +656,12 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'})
-        times = [[dt.datetime(2008, 12, 31, 4),
-                  dt.datetime(2008, 12, 31, 5, 37)],
-                 [dt.datetime(2009, 1, 1),
-                  dt.datetime(2009, 1, 1, 1, 37)]]
+        times = [[dt.datetime(2008, 12, 31, 4, tzinfo=dt.timezone.utc),
+                  dt.datetime(2008, 12, 31, 5, 37, tzinfo=dt.timezone.utc)],
+                 [dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                  dt.datetime(2009, 1, 1, 1, 37, tzinfo=dt.timezone.utc)]]
         for seconds in np.arange(38):
-            day = (dt.datetime(2009, 1, 2)
+            day = (dt.datetime(2009, 1, 2, tzinfo=dt.timezone.utc)
                    + pds.DateOffset(days=int(seconds)))
             times.append([day, day
                           + pds.DateOffset(hours=1, minutes=37,
@@ -675,12 +681,12 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
         self.testInst = pysat.Instrument('pysat', 'testing_xarray',
                                          clean_level='clean',
                                          orbit_info={'index': 'mlt'})
-        times = [[dt.datetime(2008, 12, 31, 4),
-                  dt.datetime(2008, 12, 31, 5, 37)],
-                 [dt.datetime(2009, 1, 1),
-                  dt.datetime(2009, 1, 1, 1, 37)]]
+        times = [[dt.datetime(2008, 12, 31, 4, tzinfo=dt.timezone.utc),
+                  dt.datetime(2008, 12, 31, 5, 37, tzinfo=dt.timezone.utc)],
+                 [dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc),
+                  dt.datetime(2009, 1, 1, 1, 37, tzinfo=dt.timezone.utc)]]
         for seconds in np.arange(38):
-            day = (dt.datetime(2009, 1, 2)
+            day = (dt.datetime(2009, 1, 2, tzinfo=dt.timezone.utc)
                    + pds.DateOffset(days=int(seconds)))
             times.append([day, day
                           + pds.DateOffset(hours=1, minutes=37,

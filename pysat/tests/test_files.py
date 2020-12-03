@@ -202,9 +202,12 @@ class TestBasics():
         assert len(files) == (365 + 366)
 
         # check specific dates, which are naive
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+        assert (pds.to_datetime(files.index[0], utc=True)
+                == dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[365], utc=True)
+                == dt.datetime(2008, 12, 31, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[-1], utc=True)
+                == dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc))
 
     def test_year_doy_files_no_gap_in_name_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
@@ -224,9 +227,12 @@ class TestBasics():
         assert len(files) == (365 + 366)
 
         # Check specific dates, which are naive
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+        assert (pds.to_datetime(files.index[0], utc=True)
+                == dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[365], utc=True)
+                == dt.datetime(2008, 12, 31, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[-1], utc=True)
+                == dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc))
 
     def test_year_month_day_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
@@ -247,9 +253,12 @@ class TestBasics():
         assert len(files) == (365 + 366)
 
         # check specific dates, which are naive
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+        assert (pds.to_datetime(files.index[0], utc=True)
+                == dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[365], utc=True)
+                == dt.datetime(2008, 12, 31, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[-1], utc=True)
+                == dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc))
 
     def test_year_month_day_hour_files_direct_call_to_from_os(self):
         # create a bunch of files by year and doy
@@ -272,9 +281,12 @@ class TestBasics():
         assert len(files) == (365 + 366) * 4 - 3
 
         # check specific dates, which are naive
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[1460]) == dt.datetime(2008, 12, 31)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
+        assert (pds.to_datetime(files.index[0], utc=True)
+                == dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[1460], utc=True)
+                == dt.datetime(2008, 12, 31, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[-1], utc=True)
+                == dt.datetime(2009, 12, 31, tzinfo=dt.timezone.utc))
 
     def test_year_month_day_hour_minute_files_direct_call_to_from_os(self):
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
@@ -293,10 +305,14 @@ class TestBasics():
         assert len(files) == 145
 
         # check specific dates, which are naive
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[1]) == dt.datetime(2008, 1, 1, 0, 30)
-        assert pds.to_datetime(files.index[10]) == dt.datetime(2008, 1, 1, 5, 0)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 4)
+        assert (pds.to_datetime(files.index[0], utc=True)
+                == dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[1], utc=True)
+                == dt.datetime(2008, 1, 1, 0, 30, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[10], utc=True)
+                == dt.datetime(2008, 1, 1, 5, 0, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[-1], utc=True)
+                == dt.datetime(2008, 1, 4, tzinfo=dt.timezone.utc))
 
     def test_year_month_day_hour_minute_second_files_direct_call_from_os(self):
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
@@ -314,10 +330,12 @@ class TestBasics():
         assert len(files) == 5761
 
         # Check specific dates, which are naive
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(
-            files.index[1]) == dt.datetime(2008, 1, 1, 0, 0, 30)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 3)
+        assert (pds.to_datetime(files.index[0], utc=True)
+                == dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[1], utc=True)
+                == dt.datetime(2008, 1, 1, 0, 0, 30, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[-1], utc=True)
+                == dt.datetime(2008, 1, 3, tzinfo=dt.timezone.utc))
 
     def test_year_month_files_direct_call_to_from_os(self):
         """test creation of file list with month/year using from_os
@@ -339,9 +357,12 @@ class TestBasics():
         assert len(files) == 24
 
         # Check specific dates, which are naive
-        assert pds.to_datetime(files.index[0]) == dt.datetime(2008, 1, 1)
-        assert pds.to_datetime(files.index[11]) == dt.datetime(2008, 12, 1)
-        assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 1)
+        assert (pds.to_datetime(files.index[0], utc=True)
+                == dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[11], utc=True)
+                == dt.datetime(2008, 12, 1, tzinfo=dt.timezone.utc))
+        assert (pds.to_datetime(files.index[-1], utc=True)
+                == dt.datetime(2009, 12, 1, tzinfo=dt.timezone.utc))
 
     def test_instrument_has_no_files(self):
         import pysat.instruments.pysat_testing
