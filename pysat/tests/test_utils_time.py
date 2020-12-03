@@ -148,8 +148,9 @@ class TestCreateDatetimeIndex():
         dates = pytime.create_datetime_index(year=self.year, month=self.month,
                                              day=self.day, uts=self.uts)
 
-        assert dates[0] == dt.datetime(2012, 2, 28)
-        assert dates[-1] == dt.datetime(2012, 2, 28, 0, 0, 3)
+        assert dates[0] == dt.datetime(2012, 2, 28, tzinfo=dt.timezone.utc)
+        assert dates[-1] == dt.datetime(2012, 2, 28, 0, 0, 3,
+                                        tzinfo=dt.timezone.utc)
         assert len(dates) == 4
 
     def test_create_datetime_index_wo_year(self):
@@ -163,8 +164,8 @@ class TestCreateDatetimeIndex():
 
         dates = pytime.create_datetime_index(year=self.year)
 
-        assert dates[0] == dt.datetime(2012, 1, 1)
-        assert dates[-1] == dt.datetime(2012, 1, 1)
+        assert dates[0] == dt.datetime(2012, 1, 1, tzinfo=dt.timezone.utc)
+        assert dates[-1] == dt.datetime(2012, 1, 1, tzinfo=dt.timezone.utc)
         assert len(dates) == 4
 
 

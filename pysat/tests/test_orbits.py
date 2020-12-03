@@ -172,8 +172,10 @@ class TestSpecificUTOrbits():
         """ Test orbit next call without loading data
         """
         self.testInst.orbits.next()
-        assert (self.testInst.index[0] == dt.datetime(2008, 1, 1))
-        assert (self.testInst.index[-1] == dt.datetime(2008, 1, 1, 0, 38, 59))
+        assert (self.testInst.index[0]
+                == dt.datetime(2008, 1, 1, tzinfo=dt.timezone.utc))
+        assert (self.testInst.index[-1]
+                == dt.datetime(2008, 1, 1, 0, 38, 59, tzinfo=dt.timezone.utc))
 
     def test_orbit_prev_call_no_loaded_data(self):
         """ Test orbit previous call without loading data
@@ -181,8 +183,10 @@ class TestSpecificUTOrbits():
         self.testInst.orbits.prev()
         # this isn't a full orbit
         assert (self.testInst.index[-1]
-                == dt.datetime(2010, 12, 31, 23, 59, 59))
-        assert (self.testInst.index[0] == dt.datetime(2010, 12, 31, 23, 49))
+                == dt.datetime(2010, 12, 31, 23, 59, 59,
+                               tzinfo=dt.timezone.utc))
+        assert (self.testInst.index[0] == dt.datetime(2010, 12, 31, 23, 49,
+                                                      tzinfo=dt.timezone.utc))
 
     def test_single_orbit_call_orbit_starts_0_UT_using_next(self):
         """ Test orbit next call with data
@@ -210,9 +214,10 @@ class TestSpecificUTOrbits():
         self.stime -= dt.timedelta(days=1)
         self.testInst.load(date=self.stime)
         self.testInst.orbits.next()
-        assert (self.testInst.index[0] == dt.datetime(2008, 12, 30, 23, 45))
+        assert (self.testInst.index[0]
+                == dt.datetime(2008, 12, 30, 23, 45, tzinfo=dt.timezone.utc))
         assert (self.testInst.index[-1]
-                == (dt.datetime(2008, 12, 30, 23, 45)
+                == (dt.datetime(2008, 12, 30, 23, 45, tzinfo=dt.timezone.utc)
                     + relativedelta(seconds=(self.inc_min * 60 - 1))))
 
     def test_single_orbit_call_orbit_starts_off_0_UT_using_prev(self):
@@ -220,10 +225,11 @@ class TestSpecificUTOrbits():
         self.testInst.load(date=self.stime)
         self.testInst.orbits.prev()
         assert (self.testInst.index[0]
-                == (dt.datetime(2009, 1, 1)
+                == (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
                     - relativedelta(minutes=self.inc_min)))
         assert (self.testInst.index[-1]
-                == (dt.datetime(2009, 1, 1) - relativedelta(seconds=1)))
+                == (dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc)
+                    - relativedelta(seconds=1)))
 
 
 class TestGeneralOrbitsMLT():
@@ -252,7 +258,8 @@ class TestGeneralOrbitsMLT():
         self.testInst.orbits.next()
         # a recusion issue has been observed in this area
         # checking for date to limit reintroduction potential
-        assert self.testInst.date == dt.datetime(2009, 1, 1)
+        assert (self.testInst.date
+                == dt.datetime(2009, 1, 1, tzinfo=dt.timezone.utc))
 
     def test_less_than_one_orbit_of_data_two_ways(self):
         def filter_data(inst):
@@ -274,9 +281,9 @@ class TestGeneralOrbitsMLT():
     def test_less_than_one_orbit_of_data_four_ways_two_days(self):
         # create situation where the < 1 orbit split across two days
         def filter_data(inst):
-            if inst.date == dt.datetime(2009, 1, 5):
+            if inst.date == dt.datetime(2009, 1, 5, tzinfo=dt.timezone.utc):
                 inst.data = inst[0:20]
-            elif inst.date == dt.datetime(2009, 1, 4):
+            elif inst.date == dt.datetime(2009, 1, 4, tzinfo=dt.timezone.utc):
                 inst.data = inst[-20:]
 
         self.testInst.custom.attach(filter_data, 'modify')
