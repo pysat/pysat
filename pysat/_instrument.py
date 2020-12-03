@@ -1890,7 +1890,11 @@ class Instrument(object):
         else:
             # Specify the dimension, if not otherwise specified
             if 'dim' not in kwargs:
-                kwargs['dim'] = self.index.name
+                if 'time' in self.data.indexes:
+                    kwargs['dim'] = 'time'
+                elif 'Epoch' in self.data.indexes:
+                    kwargs['dim'] = 'Epoch'
+
             concat_func = xr.concat
 
         # Assign the concatonated data to the instrument
