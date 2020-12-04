@@ -474,6 +474,15 @@ class TestInstWithFiles():
         self.testInst.files.refresh()
         assert (np.all(self.testInst.files.files.index == dates))
 
+    def test_refresh_on_unchanged_files(self):
+        """Make sure new refresh does not duplicate files"""
+        start = dt.datetime(2007, 12, 31)
+        stop = dt.datetime(2008, 1, 10)
+        dates = pysat.utils.time.create_date_range(start, stop, freq='100min')
+        assert (np.all(self.testInst.files.files.index == dates))
+        self.testInst.files.refresh()
+        assert (np.all(self.testInst.files.files.index == dates))
+
     def test_instrument_with_ignore_empty_files(self):
         """Make sure new instruments can ignore empty files"""
         self.testInst = \
