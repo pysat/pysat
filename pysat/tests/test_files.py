@@ -207,7 +207,7 @@ class TestBasics():
         # Test no files
         assert self.out.find('Date Range') > 0
 
-    def test_year_doy_files_direct_call_from_os(self):
+    def test_year_doy_files_directly_call_from_os(self):
         """Check that Files.from_os generates file list"""
         # create a bunch of files by year and doy
         start = dt.datetime(2008, 1, 1)
@@ -226,7 +226,7 @@ class TestBasics():
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
-    def test_year_doy_files_no_gap_in_name_direct_call_to_from_os(self):
+    def test_year_doy_files_no_gap_in_name_directly_call_from_os(self):
         """Files.from_os generates file list for date w/o delimiter"""
         # create a bunch of files by year and doy
         start = dt.datetime(2008, 1, 1)
@@ -245,7 +245,7 @@ class TestBasics():
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
-    def test_year_month_day_files_direct_call_to_from_os(self):
+    def test_year_month_day_files_directly_call_from_os(self):
         """Files.from_os generates file list for date w/ month"""
         # create a bunch of files by year and doy
         start = dt.datetime(2008, 1, 1)
@@ -264,7 +264,7 @@ class TestBasics():
         assert pds.to_datetime(files.index[365]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
-    def test_year_month_day_hour_files_direct_call_to_from_os(self):
+    def test_year_month_day_hour_files_directly_call_from_os(self):
         """Files.from_os generates file list for date w hours"""
         # create a bunch of files by year and doy
         start = dt.datetime(2008, 1, 1)
@@ -284,7 +284,7 @@ class TestBasics():
         assert pds.to_datetime(files.index[1460]) == dt.datetime(2008, 12, 31)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2009, 12, 31)
 
-    def test_year_month_day_hour_minute_files_direct_call_to_from_os(self):
+    def test_year_month_day_hour_minute_files_directly_call_from_os(self):
         """Files.from_os generates file list for date w/ hours and minutes"""
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
                               'stuff_{month:02d}_{hour:02d}{minute:02d}.',
@@ -305,7 +305,7 @@ class TestBasics():
         assert pds.to_datetime(files.index[10]) == dt.datetime(2008, 1, 1, 5, 0)
         assert pds.to_datetime(files.index[-1]) == dt.datetime(2008, 1, 4)
 
-    def test_year_month_day_hour_minute_second_files_direct_call_from_os(self):
+    def test_year_month_day_hms_files_directly_call_from_os(self):
         """Files.from_os generates file list for date w/ hour/min/sec"""
         root_fname = ''.join(('pysat_testing_junk_{year:04d}_gold_{day:03d}_',
                               'stuff_{month:02d}_{hour:02d}_{minute:02d}_',
