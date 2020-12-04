@@ -187,7 +187,6 @@ class TestBasics():
 
     def teardown(self):
         """Runs after every method to clean up previous testing."""
-        # remove_files(self.testInst)
         pysat.utils.set_data_dir(self.data_path, store=False)
         self.tempdir.cleanup()
         del self.testInst, self.out, self.tempdir
