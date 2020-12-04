@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-09-17
+## [3.0.0] - 2020-12-03
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -86,6 +86,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Simplified internal logic in Instrument class
   - Updated Instrument.concat_func to behave as described in the docstring
   - Moved setup metadata to setup.cfg
+  - Improve instrument tests for files
 
 ## [2.2.2] - 2020-12-31
  - New Features
