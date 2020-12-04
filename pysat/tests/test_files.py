@@ -709,8 +709,14 @@ class TestInstWithFilesNonStandard():
                                  temporary_file_list=self.temporary_file_list)
 
 
-class TestInstWithFilesNoFileListStorage(TestInstWithFiles,
-                                         TestInstWithFilesNonStandard):
+class TestInstWithFilesNoFileListStorage(TestInstWithFiles):
+    """Repeat all file tests with a temporary file list"""
+
+    temporary_file_list = True
+    version = False
+
+
+class TestInstWithFilesNoFileListStorageNonStd(TestInstWithFilesNonStandard):
     """Repeat all file tests with a temporary file list"""
 
     temporary_file_list = True
