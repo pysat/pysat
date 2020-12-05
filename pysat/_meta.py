@@ -268,7 +268,6 @@ class Meta(object):
         method from https://stackoverflow.com/a/15751135
 
         """
-        print("TEST", name)
 
         # mutable handled explicitly to avoid recursion
         if name != 'mutable':
@@ -315,6 +314,8 @@ class Meta(object):
             Input metadata to be assigned
 
         """
+
+        input_data = deepcopy(input_data)
 
         if isinstance(input_data, dict):
             # If not passed an iterable, make it one
@@ -730,7 +731,7 @@ class Meta(object):
 
         return
 
-    def _label_setter(self, new_label, current_label, attr_label, default_type,
+    def _label_setter(self, new_label, current_label, default_type,
                       use_names_default=False):
         """Generalized setter of default meta attributes
 
@@ -739,11 +740,7 @@ class Meta(object):
         new_label : str
             New label to use in the Meta object
         current_label : str
-            The current label for the hidden attribute that is to be updated
-            and stores the metadata
-        attr_label : str
-            The attribute label for the hidden attribute that is to be updated
-            and stores the metadata
+            The current label used within Meta object
         default_type : type
             Type of value to be stored
         use_names_default : bool
@@ -756,9 +753,10 @@ class Meta(object):
 
         """
 
-        if new_label not in self.attrs():
+        self_attrs = list(self.attrs())
+        if new_label not in self_attrs:
             # New label not in metadata
-            if current_label in self.attrs():
+            if current_label in self_attrs:
                 # Current label exists and has expected case
                 self.data.loc[:, new_label] = self.data.loc[:, current_label]
                 self.data = self.data.drop(current_label, axis=1)
@@ -780,20 +778,15 @@ class Meta(object):
 
             # Check higher order structures and recursively change labels
             for key in self.keys_nD():
-                # Recursion isn't working, need to update children
-                self.ho_data[key].labels.metadata = self.ho_data[key]
-                setattr(self.ho_data[key], attr_label, new_label)
-                
-                print("HI!", key, attr_label, new_label, ":", type(self.ho_data[key]), self.ho_data[key].labels, self.ho_data[key].data.columns, [type(self[key].children[kk]) for kk in self[key].children.keys()])
-
-        # Update the 'hidden' attribute value: current_label -> new_label
-        setattr(self, ''.join(('_', attr_label)), new_label)
+                # Update children
+                self.ho_data[key]._label_setter(new_label, current_label,
+                                                default_type, use_names_default)
 
         return
 
     # -----------------------------------------------------------------------
     # Define the public methods and properties
-    
+
     @property
     def data(self):
         return self._data
@@ -918,7 +911,7 @@ class Meta(object):
         other_updated = other_meta.copy()
 
         # Update the Meta labels
-        other_updated.labels = self.labels
+        other_updated.accept_default_labels(self.labels)
 
         # Return the updated Meta class object
         return other_updated
@@ -933,7 +926,18 @@ class Meta(object):
 
         """
 
+        # # update labels in metadata
+        # for key in other.labels.label_type:
+        #     new_name = getattr(other.labels, key)
+        #     old_name = getattr(self.labels, key)
+        #     if old_name != new_name:
+        #         print('old ', old_name, ' new ', new_name)
+        #         self._label_setter(new_name, old_name,
+        #                            other.labels.label_type[key],
+        #                            use_names_default=True)
+
         self.labels = other.labels
+
         return
 
     def var_case_name(self, name):
@@ -1423,20 +1427,19 @@ class MetaLabels(object):
         return
 
     def __setattr__(self, name, value):
-        print("FUN!", name)
         # Get old attribute value for reference
         if hasattr(self, name):
             old_value = getattr(self, name)
         else:
             old_value = None
-        
+
         # Use Object to avoid recursion
         super(MetaLabels, self).__setattr__(name, value)
 
         # Before setting the attribute, see if upstream changes are needed
         if old_value is not None and name not in ['label_type', 'meta']:
             if hasattr(self, 'meta') and hasattr(self.meta, 'data'):
-                self.meta._label_setter(value, getattr(self, name), name,
+                self.meta._label_setter(value, getattr(self, name),
                                         self.label_type[name],
                                         use_names_default=True)
 
