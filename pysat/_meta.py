@@ -926,15 +926,14 @@ class Meta(object):
 
         """
 
-        # # update labels in metadata
-        # for key in other.labels.label_type:
-        #     new_name = getattr(other.labels, key)
-        #     old_name = getattr(self.labels, key)
-        #     if old_name != new_name:
-        #         print('old ', old_name, ' new ', new_name)
-        #         self._label_setter(new_name, old_name,
-        #                            other.labels.label_type[key],
-        #                            use_names_default=True)
+        # update labels in metadata
+        for key in other.labels.label_type:
+            new_name = getattr(other.labels, key)
+            old_name = getattr(self.labels, key)
+            if old_name != new_name:
+                self._label_setter(new_name, old_name,
+                                   other.labels.label_type[key],
+                                   use_names_default=True)
 
         self.labels = other.labels
 
