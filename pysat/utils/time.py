@@ -1,6 +1,6 @@
 """
 pysat.utils.time - date and time operations in pysat
-=========================================
+====================================================
 
 pysat.utils.time contains a number of functions used throughout
 the pysat package, including interactions with datetime objects,

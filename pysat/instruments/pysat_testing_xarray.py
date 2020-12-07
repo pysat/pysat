@@ -7,6 +7,7 @@ import datetime as dt
 import functools
 import logging
 import numpy as np
+import warnings
 
 import xarray
 
@@ -69,7 +70,7 @@ def clean(self):
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, malformed_index=False,
-         **kwargs):
+         num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -79,8 +80,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     tag : str or NoneType
         Instrument tag (accepts '')
     inst_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+        Instrument satellite ID (accepts '')
     sim_multi_file_right : boolean
         Adjusts date range to be 12 hours in the future or twelve hours beyond
         root_date (default=False)
@@ -89,9 +89,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
         root_date (default=False)
     malformed_index : boolean
         If True, time index will be non-unique and non-monotonic.
-    kwargs : dict
-        Additional unspecified keywords supplied to pysat.Instrument upon
-        instantiation are passed here.
+    num_samples : int
+        Number of samples
 
     Returns
     -------
@@ -105,8 +104,17 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     # create an artifical satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, inst_id=inst_id,
-                                              freq='1S')
+
+    if num_samples is None:
+        if inst_id != '':
+            estr = ' '.join(('inst_id will no longer be supported',
+                             'for setting the number of samples per day.'))
+            warnings.warn(estr, DeprecationWarning)
+            num_samples = int(inst_id)
+        else:
+            num_samples = 86400
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
+                                               freq='1S')
 
     if sim_multi_file_right:
         root_date = dt.datetime(2009, 1, 1, 12)
@@ -126,7 +134,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                           coords={epoch_name: index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
-    time_delta = date - root_date
+    time_delta = dates[0] - root_date
     mlt = mm_test.generate_fake_data(time_delta.total_seconds(), uts,
                                      period=iperiod['lt'],
                                      data_range=drange['lt'])
@@ -159,7 +167,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     data['altitude'] = ((epoch_name), altitude)
 
     # fake orbit number
-    fake_delta = date - dt.datetime(2008, 1, 1)
+    fake_delta = dates[0] - dt.datetime(2008, 1, 1)
     orbit_num = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                            uts, period=iperiod['lt'],
                                            cyclic=False)

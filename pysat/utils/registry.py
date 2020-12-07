@@ -1,6 +1,6 @@
 """
 pysat.utils.registry - user module registry operations in pysat
-=========================================
+===============================================================
 
 Instantiating a pysat.Instrument object for a particular data set
 requires a module for each instrument with routines that download,

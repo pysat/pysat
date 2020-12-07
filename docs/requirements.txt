@@ -2,5 +2,6 @@ ipython
 netCDF4
 numpydoc
 pandas
+portalocker
 pytest
 xarray
