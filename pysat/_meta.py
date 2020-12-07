@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# Full license can be found in License.md
+# Full author list can be found in .zenodo.json file
+# DOI:10.5281/zenodo.1199703
+# ----------------------------------------------------------------------------
+
 from copy import deepcopy as deepcopy
 import os
 import warnings
@@ -153,6 +159,10 @@ class Meta(object):
         if self._export_nan is None:
             self._export_nan = []
 
+        for lvals in labels.values():
+            if lvals[0] not in self._export_nan and lvals[1] == float:
+                self._export_nan.append(lvals[0])
+
         # Set the labels
         self.labels = MetaLabels(metadata=self, **labels)
 
@@ -192,6 +202,7 @@ class Meta(object):
         nvar = len([kk for kk in self.keys()])
         out_str = ''.join(['Meta(metadata=', self._data.__repr__(),
                            ', labels=', self.labels.__repr__(),
+                           'export_nan=', self._export_nan.__repr__(),
                            ') -> {:d} Variables'.format(nvar)])
         return out_str
 
