@@ -29,6 +29,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Integrated Custom class directly into Instrument to support mixed use
     of Constellation/Instrument objects in code (#540)
   - Made underlying custom data structures visible (#529)
+  - Updated data_mode method name to custom_attach for the Constellation object (#540)
 - Deprecations
   - Migraged instruments to pysatMadrigal, pysatNASA, pysatSpaceWeather,
     pysatIncubator, pysatModels, pysatCDAAC, and pysatMissions
