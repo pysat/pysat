@@ -156,9 +156,6 @@ class Meta(object):
 
         # Set the NaN export list
         self._export_nan = export_nan
-        if self._export_nan is None:
-            self._export_nan = []
-
         for lvals in labels.values():
             if lvals[0] not in self._export_nan and lvals[1] == float:
                 self._export_nan.append(lvals[0])
