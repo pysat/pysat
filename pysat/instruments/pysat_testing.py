@@ -7,6 +7,7 @@ import datetime as dt
 import functools
 import logging
 import numpy as np
+import warnings
 
 import pandas as pds
 
@@ -69,15 +70,16 @@ def init(self):
     self.references = mm_test.refs
 
     # work on file index if keyword present
-    if self.kwargs['file_date_range'] is not None:
+    if self.kwargs['load']['file_date_range'] is not None:
         # set list files routine to desired date range
         # attach to the instrument object
-        fdr = self.kwargs['file_date_range']
-        self._list_rtn = functools.partial(list_files, file_date_range=fdr)
+        fdr = self.kwargs['load']['file_date_range']
+        self._list_files_rtn = functools.partial(list_files,
+                                                 file_date_range=fdr)
         self.files.refresh()
 
     # mess with file dates if kwarg option present
-    if self.kwargs['mangle_file_dates']:
+    if self.kwargs['load']['mangle_file_dates']:
         self.files.files.index = \
             self.files.files.index + pds.DateOffset(minutes=5)
     return
@@ -86,14 +88,18 @@ def init(self):
 def default(self):
     """Default customization function.
 
+    Note
+    ----
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue).
 
-    Parameters
-    ----------
-    self : pysat.Instrument
-        This object
+    """
 
+    pass
+
+
+def clean(self):
+    """Cleaning function
     """
 
     pass
@@ -101,7 +107,8 @@ def default(self):
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False):
+         malformed_index=False, mangle_file_dates=False,
+         num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -134,6 +141,8 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     mangle_file_dates : bool
         If True, the loaded file list time index is shifted by 5-minutes.
         This shift is actually performed by the init function.
+    num_samples : int
+        Number of samples per day
 
     Returns
     -------
@@ -144,10 +153,20 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
 
     """
 
-    # create an artifical satellite data set
+    # create an artificial satellite data set
     iperiod = mm_test.define_period()
     drange = mm_test.define_range()
-    uts, index, date = mm_test.generate_times(fnames, inst_id, freq='1S')
+
+    if num_samples is None:
+        if inst_id != '':
+            estr = ' '.join(('inst_id will no longer be supported',
+                             'for setting the number of samples per day.'))
+            warnings.warn(estr, DeprecationWarning)
+            num_samples = int(inst_id)
+        else:
+            num_samples = 86400
+    uts, index, dates = mm_test.generate_times(fnames, num_samples,
+                                               freq='1S')
 
     # Specify the date tag locally and determine the desired date range
     pds_offset = pds.DateOffset(hours=12)
@@ -158,11 +177,12 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     else:
         root_date = root_date or _test_dates['']['']
 
-    data = pds.DataFrame(uts, columns=['uts'])
+    # store UTS, mod 86400
+    data = pds.DataFrame(np.mod(uts, 86400.), columns=['uts'])
 
     # need to create simple orbits here. Have start of first orbit default
     # to 1 Jan 2009, 00:00 UT. 14.84 orbits per day
-    time_delta = date - root_date
+    time_delta = dates[0] - root_date
     data['mlt'] = mm_test.generate_fake_data(time_delta.total_seconds(),
                                              uts, period=iperiod['lt'],
                                              data_range=drange['lt'])
@@ -190,7 +210,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     data['altitude'] = alt0 * np.ones(data['latitude'].shape)
 
     # fake orbit number
-    fake_delta = date - (_test_dates[''][''] - pds.DateOffset(years=1))
+    fake_delta = dates[0] - (_test_dates[''][''] - pds.DateOffset(years=1))
     data['orbit_num'] = mm_test.generate_fake_data(fake_delta.total_seconds(),
                                                    uts, period=iperiod['lt'],
                                                    cyclic=False)

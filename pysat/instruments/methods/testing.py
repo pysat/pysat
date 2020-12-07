@@ -178,17 +178,15 @@ def generate_fake_data(t0, num_array, period=5820, data_range=[0.0, 24.0],
     return data
 
 
-def generate_times(fnames, inst_id, freq='1S'):
+def generate_times(fnames, num, freq='1S'):
     """Construct list of times for simulated instruments
 
     Parameters
     ----------
     fnames : list
-        List of filenames.  Currently, only the first is used.  Does not
-        support multi-file days as of yet.
-    inst_id : str or NoneType
-        Instrument satellite ID (accepts '' or a number (i.e., '10'), which
-        specifies the number of data points to include in the test instrument)
+        List of filenames.
+    num : int
+        Number of times to generate
     freq : string
         Frequency of temporal output, compatible with pandas.date_range
         [default : '1S']
@@ -203,27 +201,37 @@ def generate_times(fnames, inst_id, freq='1S'):
         The requested date reconstructed from the fake file name
     """
 
-    # TODO: Expand for multi-file days
-    # grab date from filename
-    parts = os.path.split(fnames[0])[-1].split('-')
-    yr = int(parts[0])
-    month = int(parts[1])
-    day = int(parts[2][0:2])
-    date = dt.datetime(yr, month, day)
+    if isinstance(num, str):
+        estr = ''.join(('generate_times support for input strings interpreted ',
+                        'as the number of times has been deprecated. Please ',
+                        'switch to using integers.'))
+        warnings.warn(estr, DeprecationWarning)
 
-    # Create one day of data at desired frequency
-    end_date = date + pds.DateOffset(seconds=86399)
-    index = pds.date_range(start=date, end=end_date, freq=freq)
-    # Allow numeric string to select first set of data
-    try:
-        index = index[0:int(inst_id)]
-    except ValueError:
-        # non-integer inst_id produces ValueError
-        pass
+    uts = []
+    indices = []
+    dates = []
+    for loop, fname in enumerate(fnames):
+        # grab date from filename
+        parts = os.path.split(fname)[-1].split('-')
+        yr = int(parts[0])
+        month = int(parts[1])
+        day = int(parts[2][0:2])
+        date = dt.datetime(yr, month, day)
+        dates.append(date)
 
-    uts = index.hour * 3600 + index.minute * 60 + index.second
+        # Create one day of data at desired frequency
+        end_date = date + pds.DateOffset(seconds=86399)
+        index = pds.date_range(start=date, end=end_date, freq=freq)
+        index = index[0:num]
+        indices.extend(index)
+        uts.extend(index.hour * 3600 + index.minute * 60 + index.second
+                   + 86400. * loop)
+    # combine index times together
+    index = pds.DatetimeIndex(indices)
+    # make UTS an array
+    uts = np.array(uts)
 
-    return uts, index, date
+    return uts, index, dates
 
 
 def define_period():

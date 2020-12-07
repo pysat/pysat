@@ -34,9 +34,9 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     Note
     ----
         If two files have the same date and time information in the
-        filename then the file with the higher version/revision is used.
+        filename then the file with the higher version/revision/cycle is used.
         Series returned only has one file der datetime. Version is required
-        for this filtering, revision is optional.
+        for this filtering, revision and cycle are optional.
 
     """
 
@@ -80,13 +80,15 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
         # version is required to remove duplicate datetimes
         if stored['revision'] is None:
             stored['revision'] = np.zeros(len(files))
+        if stored['cycle'] is None:
+            stored['cycle'] = np.zeros(len(files))
 
         index = create_datetime_index(year=stored['year'],
                                       month=stored['month'],
                                       day=stored['day'],
                                       uts=stored['second'])
 
-        # if version and revision are supplied
+        # if version, revision, and cycle are supplied
         # use these parameters to weed out files that have been replaced
         # with updated versions
         # first, check for duplicate index times
@@ -96,7 +98,8 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
             # keep the highest version/revision combo
             version = pds.Series(stored['version'], index=index)
             revision = pds.Series(stored['revision'], index=index)
-            revive = version * 100000. + revision
+            cycle = pds.Series(stored['cycle'], index=index)
+            revive = version * 100000. + revision + cycle * 1e-5
             frame = pds.DataFrame({'files': files, 'revive': revive,
                                    'time': index}, index=index)
             frame = frame.sort_values(by=['time', 'revive'],
@@ -121,22 +124,22 @@ def parse_fixed_width_filenames(files, format_str):
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        and 'revision'
-        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        'revision', and 'cycle'
+        Ex: 'instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
 
     Returns
     -------
-    OrderedDict
+    stored : OrderedDict
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision'
+        'revision', 'cycle'
         'files' - input list of files
 
     """
 
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
-                    'version', 'revision']
+                    'version', 'revision', 'cycle']
     stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
     if len(files) == 0:
@@ -195,15 +198,17 @@ def parse_delimited_filenames(files, format_str, delimiter):
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        and 'revision'
-        Ex: 'cnofs_cindi_ivm_500ms_{year:4d}{month:02d}{day:02d}_v01.cdf'
+        'revision', and 'cycle'
+        Ex: 'instrument_{year:4d}{month:02d}{day:02d}_v{version:02d}.cdf'
+    delimiter : string
+        Delimiter string upon which files will be split (e.g., '.')
 
     Returns
     -------
-    OrderedDict
+    stored : OrderedDict
         Information parsed from filenames
         'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        'revision'
+        'revision', 'cycle'
         'files' - input list of files
         'format_str' - formatted string from input
 
@@ -211,7 +216,7 @@ def parse_delimited_filenames(files, format_str, delimiter):
 
     # create storage for data to be parsed from filenames
     ordered_keys = ['year', 'month', 'day', 'hour', 'minute', 'second',
-                    'version', 'revision']
+                    'version', 'revision', 'cycle']
     stored = collections.OrderedDict({kk: list() for kk in ordered_keys})
 
     # exit early if there are no files
@@ -232,15 +237,16 @@ def parse_delimited_filenames(files, format_str, delimiter):
     # so apply delimiter breakdown to the string blocks as a guide
     pblock = []
     parsed_block = [snip.split(delimiter) for snip in snips]
-    for _ in parsed_block:
-        if _ != ['', '']:
-            if _[0] == '':
-                _ = _[1:]
-            if _[-1] == '':
-                _ = _[:-1]
-            pblock.extend(_)
+    for block in parsed_block:
+        if block != ['', '']:
+            if block[0] == '':
+                block = block[1:]
+            if block[-1] == '':
+                block = block[:-1]
+            pblock.extend(block)
         pblock.append('')
     parsed_block = pblock[:-1]
+
     # need to parse out dates for datetime index
     for temp in files:
         split_name = temp.split(delimiter)
@@ -262,8 +268,10 @@ def parse_delimited_filenames(files, format_str, delimiter):
             stored[key] = np.array(stored[key])
         if len(stored[key]) == 0:
             stored[key] = None
+
     # include files in output
     stored['files'] = files
+
     # include format string as convenience for later functions
     stored['format_str'] = format_str
 
@@ -280,8 +288,8 @@ def construct_searchstring_from_format(format_str, wildcard=False):
         Provides the naming pattern of the instrument files and the
         locations of date information so an ordered list may be produced.
         Supports 'year', 'month', 'day', 'hour', 'minute', 'second', 'version',
-        and 'revision'
-        Ex: 'cnofs_vefi_bfield_1sec_{year:04d}{month:02d}{day:02d}_v05.cdf'
+        'revision', and 'cycle'
+        Ex: 'instrument_{year:04d}{month:02d}{day:02d}_v{version:02d}.cdf'
     wildcard : bool
         if True, replaces the ? sequence with a * . This option may be well
         suited when dealing with delimited filenames.

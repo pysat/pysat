@@ -38,6 +38,7 @@ Main Features
 
 import logging
 import os
+from portalocker import Lock
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
@@ -46,11 +47,15 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.WARNING)
 
+# file lock timeout (seconds)
+file_timeout = 10
+
 # set version
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'version.txt')) as version_file:
-    __version__ = version_file.read().strip()
+version_filename = os.path.join(here, 'version.txt')
 
+with Lock(version_filename, 'r', file_timeout) as version_file:
+    __version__ = version_file.read().strip()
 
 # get home directory
 home_dir = os.path.expanduser('~')
@@ -67,27 +72,38 @@ if not os.path.isdir(pysat_dir):
     data_dir = ''
     if (os.environ.get('TRAVIS') == 'true'):
         data_dir = '/home/travis/build/pysatData'
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'w') as f:
-        f.write(data_dir)
+    data_path_file = os.path.join(pysat_dir, 'data_path.txt')
+    with Lock(data_path_file, 'w', file_timeout) as fout:
+        fout.write(data_dir)
+
+        # in case of network files system
+        fout.flush()
+        os.fsync(fout.fileno())
+
     print(''.join(("\nHi there!  Pysat will nominally store data in the "
                    "'pysatData' directory at the user's home directory level. "
                    "Run pysat.utils.set_data_dir to specify a different "
                    "top-level directory to store science data.")))
-    # user modules file
-    with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
-        f.write('')
+
+    modules_file = os.path.join(pysat_dir, 'user_modules.txt')
+    with Lock(modules_file, 'w', file_timeout) as fout:
+        fout.write('')
         user_modules = {}
+
+        # in case of network files system
+        fout.flush()
+        os.fsync(fout.fileno())
 
 else:
     # load up stored data path
-    with open(os.path.join(pysat_dir, 'data_path.txt'), 'r') as f:
-        data_dir = f.readline()
-
+    data_path_file = os.path.join(pysat_dir, 'data_path.txt')
+    with Lock(data_path_file, 'r', file_timeout) as fout:
+        data_dir = fout.readline()
     # load up stored user modules
     user_modules = {}
     modules_file = os.path.join(pysat_dir, 'user_modules.txt')
     if os.path.exists(modules_file):
-        with open(modules_file, 'r') as fopen:
+        with Lock(modules_file, 'r', file_timeout) as fopen:
             for line in fopen:
                 if line != '' and (line is not None):
                     # remove trailing whitespace
@@ -101,8 +117,13 @@ else:
                     user_modules[platform][name] = inst_module
     else:
         # write user modules file
-        with open(os.path.join(pysat_dir, 'user_modules.txt'), 'w') as f:
-            f.write('')
+        with Lock(modules_file, 'w', file_timeout) as fout:
+            fout.write('')
+
+            # in case of network files system
+            fout.flush()
+            os.fsync(fout.fileno())
+
 
 from pysat import utils
 from pysat._constellation import Constellation

@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
                supported_tags=None, fake_daily_files_from_monthly=False,
-               two_digit_year_break=None):
-    """Return a Pandas Series of every file for chosen satellite data.
+               two_digit_year_break=None, delimiter=None):
+    """Return a Pandas Series of every file for chosen Instrument data.
 
     This routine provides a standard interfacefor pysat instrument modules.
 
     Parameters
-    -----------
+    ----------
     tag : string or NoneType
         Denotes type of file to load.  Accepted types are <tag strings>.
         (default=None)
@@ -38,18 +38,22 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
         keys are inst_id, each containing a dict keyed by tag
         where the values file format template strings. (default=None)
     fake_daily_files_from_monthly : bool
-        Some CDAWeb instrument data files are stored by month, interfering
-        with pysat's functionality of loading by day. This flag, when true,
-        appends daily dates to monthly files internally. These dates are
-        used by load routine in this module to provide data by day.
-    two_digit_year_break : int
-        If filenames only store two digits for the year, then
-        '1900' will be added for years >= two_digit_year_break
-        and '2000' will be added for years < two_digit_year_break.
+        Some instrument data files are stored by month, interfering with daily
+        file loading assumed by pysat. If True, this flag appends daily dates
+        to monthly files internally. These dates are used by load routine in
+        this module to provide data by day. (default=False)
+    two_digit_year_break : int or NoneType
+        If filenames only store two digits for the year, then '1900' will be
+        added for years >= two_digit_year_break and '2000' will be added for
+        years < two_digit_year_break. If None, then four-digit years are
+        assumed. (default=None)
+    delimiter : string or NoneType
+        Delimiter string upon which files will be split (e.g., '.'). If None,
+        filenames will be parsed presuming a fixed width format. (default=None)
 
     Returns
-    --------
-    pysat.Files.from_os : pysat._files.Files
+    -------
+    out : pysat.Files.from_os : pysat._files.Files
         A class containing the verified available files
 
     Examples
@@ -83,7 +87,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     # Get the series of files
     out = pysat.Files.from_os(data_path=data_path, format_str=format_str,
-                              two_digit_year_break=two_digit_year_break)
+                              two_digit_year_break=two_digit_year_break,
+                              delimiter=delimiter)
 
     # If the data is monthly, pad the series
     # TODO: take file frequency as an input to allow e.g., weekly files
