@@ -1558,7 +1558,7 @@ class MetaLabels(object):
 
         # Test the input parameter
         if attr_name not in self.label_type.keys():
-            raise ValueError('uknown label attribute {:}'.format(attr_name))
+            raise ValueError('unknown label attribute {:}'.format(attr_name))
 
         # Assign the default value
         if attr_name == 'scale':
