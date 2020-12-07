@@ -1023,19 +1023,16 @@ class TestBasics():
     def test_transfer_attributes_to_instrument(self):
         """Test transfer of custom meta attributes"""
         if self.meta.mutable:
+            # set non-conflicting attribute
             self.meta.new_attribute = 'hello'
-            self.meta.date = None
             self.meta.transfer_attributes_to_instrument(self.testInst)
 
             # test transferred
             assert self.testInst.new_attribute == 'hello'
-            assert self.testInst.date is None
 
-            # ensure attributes are removed
+            # ensure transferred attributes are removed
             with pytest.raises(AttributeError):
                 self.meta.new_attribute
-            with pytest.raises(AttributeError):
-                self.meta.date
 
     def test_transfer_attributes_to_instrument_leading_(self):
         """Ensure private custom meta attributes not transferred"""
@@ -1045,7 +1042,6 @@ class TestBasics():
             self.meta.__yo_yo = 'yo yo'
 
             # include standard parameters as well
-            self.meta.date = None
             self.meta.new_attribute = 'hello'
             self.meta.transfer_attributes_to_instrument(self.testInst)
 
@@ -1057,12 +1053,10 @@ class TestBasics():
 
             # Check to make sure other values still transferred
             assert self.testInst.new_attribute == 'hello'
-            assert self.testInst.date is None
 
             # ensure private attribute still present
             assert self.meta._yo_yo == 'yo yo'
             assert self.meta.__yo_yo == 'yo yo'
-
 
     def test_transfer_attributes_to_instrument_strict_names(self):
         if self.meta.mutable:
