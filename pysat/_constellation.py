@@ -95,42 +95,47 @@ class Constellation(object):
         for instrument in self.instruments:
             instrument.bounds = (start, stop)
 
-    def data_mod(self, *args, **kwargs):
+    def custom_attach(self, *args, **kwargs):
         """
         Register a function to modify data of member Instruments.
 
-        The function is not partially applied to modify member data.
-
         When the Constellation receives a function call to register
         a function for data modification, it passes the call to each
-        instrument and registers it in the instrument's pysat.Custom queue.
+        instrument and registers it in the instrument's Custom queue.
 
-        (Wraps pysat.Custom.attach; documentation of that function is
+        (Wraps Instrument.custom_attach; documentation of that function is
         reproduced here.)
 
         Parameters
         ----------
-            function : string or function object
-                name of function or function object to be added to queue
+        function : string or function object
+            name of function or function object to be added to queue
+        kind : {'add', 'modify', 'pass}
+            - add
+                Adds data returned from function to instrument object.
+                A copy of pysat instrument object supplied to routine.
+            - modify
+                pysat instrument object supplied to routine. Any and all
+                changes to object are retained.
+            - pass
+                A copy of pysat object is passed to function. No
+                data is accepted from return.
+            (default='modify')
 
-            kind : {'add, 'modify', 'pass'}
-                - add
-                    Adds data returned from fuction to instrument object.
-                - modify
-                    pysat instrument object supplied to routine. Any and all
-                    changes to object are retained.
-                - pass
-                    A copy of pysat object is passed to function. No
-                    data is accepted from return.
-
-            at_pos : string or int
-                insert at position. (default, insert at end).
-            args
-                extra arguments
+        at_pos : string or int
+            Accepts string 'end' or a number that will be used to determine
+            the insertion order if multiple custom functions are attached
+            to an Instrument object. (default='end').
+        args : list or tuple
+            Ordered arguments following the instrument object input that are
+            required by the custom function (default=[])
+        kwargs : dict
+            Dictionary of keyword arguements required by the custom function
+            (default={})
 
         Note
         ----
-        Allowed `add` function returns:
+        Allowed `attach` function returns:
 
         - {'data' : pandas Series/DataFrame/array_like,
           'units' : string/array_like of strings,
@@ -146,7 +151,7 @@ class Constellation(object):
         """
 
         for instrument in self.instruments:
-            instrument.custom.attach(*args, **kwargs)
+            instrument.custom_attach(*args, **kwargs)
 
     def load(self, *args, **kwargs):
         """

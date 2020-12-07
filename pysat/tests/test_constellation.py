@@ -99,7 +99,7 @@ class TestConstellation:
         self.const = pysat.Constellation(**self.in_kwargs)
 
         # Add the custom function
-        self.const.data_mod(double_mlt, 'add', at_pos='end')
+        self.const.custom_attach(double_mlt, 'add', at_pos='end')
         self.const.load(2009, 1)
 
         # Test the added value
