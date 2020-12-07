@@ -1939,7 +1939,7 @@ class Instrument(object):
         """Attach a function to custom processing queue.
 
         Custom functions are applied automatically to associated
-        pysat instrument whenever instrument.load command called.
+        pysat.Instrument whenever .load() command called.
 
         Parameters
         ----------
