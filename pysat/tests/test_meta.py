@@ -19,7 +19,7 @@ class TestBasics():
         self.testInst = pysat.Instrument('pysat', 'testing',
                                          clean_level='clean')
         self.meta = self.testInst.meta
-        
+
         self.meta_labels = {'units': ('Units', str),
                             'name': ('Long_Name', str)}
         self.dval = None
@@ -237,6 +237,9 @@ class TestBasics():
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.meta['dummy_frame1'] = {'barrels': 'A'}
         self.meta['dummy_frame2'] = {'Monkeys': 'are fun'}
+        # The 'units', 'desc' and other labels used on self.testInst are
+        # applied to the input metadata to ensure everything remains
+        # consistent across the object.
         self.testInst['help'] = {'data':
                                  [frame] * len(self.testInst.data.index),
                                  'units': 'V',
@@ -249,15 +252,15 @@ class TestBasics():
         assert 'dummy_frame1' in self.testInst.meta['help']['children']
         assert 'dummy_frame2' in self.testInst.meta['help']['children']
         assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'barrels')
+            'units')
         assert self.testInst.meta['help']['children'].hasattr_case_neutral(
-            'monkeys')
+            'desc')
         assert self.testInst.meta['help']['children']['dummy_frame1',
-                                                      'barrels'] == 'A'
+                                                      'units'] == 'A'
         assert self.testInst.meta['help']['children']['dummy_frame1',
-                                                      'Monkeys'] == ''
+                                                      'desc'] == ''
         assert self.testInst.meta['help']['children']['dummy_frame2',
-                                                      'Monkeys'] == 'are fun'
+                                                      'desc'] == 'are fun'
 
     def test_inst_assign_from_meta(self):
         """Test Meta assignment form another meta object
