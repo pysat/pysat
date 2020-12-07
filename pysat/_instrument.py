@@ -3455,14 +3455,6 @@ class Instrument(object):
                     if key[0] != '_':
                         adict[key] = self.__getattribute__(key)
 
-            # Store any non-standard attributes attached to meta
-            base_attrb = dir(base_instrument.meta)
-            this_attrb = dir(self.meta)
-            for key in this_attrb:
-                if key not in base_attrb:
-                    if key[0] != '_':
-                        adict[key] = self.meta.__getattribute__(key)
-
             # Add additional metadata to conform to standards
             adict['pysat_version'] = pysat.__version__
             if 'Conventions' not in adict:
