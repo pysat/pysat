@@ -130,7 +130,6 @@ from pysat._constellation import Constellation
 from pysat._instrument import Instrument
 from pysat._meta import Meta
 from pysat._files import Files
-from pysat._custom import Custom
 from pysat._orbits import Orbits
 from pysat import instruments
 

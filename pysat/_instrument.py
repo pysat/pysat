@@ -168,6 +168,34 @@ class Instrument(object):
         cosmic.download(start, stop, user=user, password=password)
         cosmic.load(date=start)
 
+        # Nano-kernel functionality enables instrument objects that are
+        # 'set and forget'. The functions are always run whenever
+        # the instrument load routine is called so instrument objects may
+        # be passed safely to other routines and the data will always
+        # be processed appropriately.
+
+        # define custom function to modify Instrument in place
+        def custom_func(inst, opt_param1=False, opt_param2=False):
+            # perform calculations and store in new_data
+            inst['new_data'] = new_data
+            return None
+
+        inst = pysat.Instrument('pysat', 'testing')
+        inst.custom_attach(custom_func, kind='modify',
+                           kwargs={'opt_param1': True})
+
+        # define custom function that returns data to be added to Instrument
+        def custom_func2(inst, req_param, opt_param=False):
+            return ('new_data2', data_to_be_added)
+
+        inst.custom_attach(custom_func2, kind='add', args=[True],
+                           kwargs={'opt_param': False})
+
+        # custom methods are applied to data when loaded
+        inst.load(date=date)
+
+        print(inst['new_data2'])
+
     """
 
     # -----------------------------------------------------------------------
@@ -291,7 +319,11 @@ class Instrument(object):
                                fill_label=self.fill_label)
 
         # function processing class, processes data on load
-        self.custom = pysat.Custom()
+        self.custom_functions = []
+        self.custom_kind = []
+        self.custom_args = []
+        self.custom_kwargs = []
+
 
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
@@ -424,6 +456,8 @@ class Instrument(object):
                            "', clean_level='", self.clean_level,
                            "', pad={:}, orbit_info=".format(self.pad),
                            "{:}, **{:})".format(self.orbit_info, self.kwargs)])
+        # out_str = "Custom -> {:d} functions applied".format(
+        #     len(self._functions))
 
         return out_str
 
@@ -446,7 +480,19 @@ class Instrument(object):
         for routine in self.kwargs.keys():
             output_str += 'Keyword Arguments Passed to {:s}: '.format(routine)
             output_str += "{:s}\n".format(self.kwargs[routine].__str__())
-        output_str += "{:s}\n".format(self.custom.__str__())
+
+        num_funcs = len(self.custom_functions)
+        output_str += "Custom Functions: {:d} applied\n".format(num_funcs)
+        if num_funcs > 0:
+            for i, func in enumerate(self.custom_functions):
+                output_str += "    {:d}: {:}\n".format(i, func.__repr__())
+                if len(self.custom_args[i]) > 0:
+                    ostr = "     : Args={:}\n".format(self.custom_args[i])
+                    output_str += ostr
+                if len(self.custom_kwargs[i]) > 0:
+                    ostr = "     : Kwargs={:}\n".format(self.custom_kwargs[i])
+                    output_str += ostr
+        output_str += '\n'
 
         # Print out the orbit settings
         if self.orbits.orbit_index is not None:
@@ -1888,6 +1934,212 @@ class Instrument(object):
         self.data = concat_func(new_data, **kwargs)
         return
 
+    def custom_attach(self, function, kind='modify', at_pos='end', args=[],
+                      kwargs={}):
+        """Attach a function to custom processing queue.
+
+        Custom functions are applied automatically to associated
+        pysat instrument whenever instrument.load command called.
+
+        Parameters
+        ----------
+        function : string or function object
+            name of function or function object to be added to queue
+        kind : {'add', 'modify', 'pass}
+            - add
+                Adds data returned from function to instrument object.
+                A copy of pysat instrument object supplied to routine.
+            - modify
+                pysat instrument object supplied to routine. Any and all
+                changes to object are retained.
+            - pass
+                A copy of pysat object is passed to function. No
+                data is accepted from return.
+            (default='modify')
+
+        at_pos : string or int
+            Accepts string 'end' or a number that will be used to determine
+            the insertion order if multiple custom functions are attached
+            to an Instrument object. (default='end').
+        args : list or tuple
+            Ordered arguments following the instrument object input that are
+            required by the custom function (default=[])
+        kwargs : dict
+            Dictionary of keyword arguements required by the custom function
+            (default={})
+
+        Note
+        ----
+        Allowed `attach` function returns:
+
+        - {'data' : pandas Series/DataFrame/array_like,
+          'units' : string/array_like of strings,
+          'long_name' : string/array_like of strings,
+          'name' : string/array_like of strings (iff data array_like)}
+
+        - pandas DataFrame, names of columns are used
+
+        - pandas Series, .name required
+
+        - (string/list of strings, numpy array/list of arrays)
+
+        """
+
+        # Test the positioning input
+        pos_list = list(np.arange(0, len(self.custom_functions), 1))
+        pos_list.append('end')
+
+        if at_pos not in pos_list:
+            logger.warning(''.join(['unknown position specified, including ',
+                                    'function at end of current list']))
+            at_pos = 'end'
+
+        # Convert string to function object, if necessary
+        if isinstance(function, str):
+            function = eval(function)
+
+        # If the position is 'end' or greater
+        if (at_pos == 'end') | (at_pos == len(self.custom_functions)):
+            # store function object
+            self.custom_functions.append(function)
+            self.custom_args.append(args)
+            self.custom_kwargs.append(kwargs)
+            self.custom_kind.append(kind.lower())
+        else:
+            # user picked a specific location to insert
+            self.custom_functions.insert(at_pos, function)
+            self.custom_args.insert(at_pos, args)
+            self.custom_kwargs.insert(at_pos, kwargs)
+            self.custom_kind.insert(at_pos, kind)
+
+    def custom_apply_all(self):
+        """
+        Apply all of the custom functions to the satellite data object.
+
+        This method does not generally need to be invoked directly by users.
+        """
+
+        if len(self.custom_functions) > 0:
+            for func, arg, kwarg, kind in zip(self.custom_functions,
+                                              self.custom_args,
+                                              self.custom_kwargs,
+                                              self.custom_kind):
+                if not self.empty:
+                    if kind == 'add':
+                        # apply custom functions that add data to the
+                        # instrument object
+                        tempd = self.copy()
+                        newData = func(tempd, *arg, **kwarg)
+                        del tempd
+
+                        # process different types of data returned by the
+                        # function if a dict is returned, data in 'data'
+                        if isinstance(newData, dict):
+                            # if DataFrame returned, add Frame to existing
+                            # frame
+                            if isinstance(newData['data'], pds.DataFrame):
+                                self[newData['data'].columns] = newData
+                            # if a series is returned, add it as a column
+                            elif isinstance(newData['data'], pds.Series):
+                                # Look if name is provided as part of dict
+                                # returned from function first
+                                if 'name' in newData.keys():
+                                    name = newData.pop('name')
+                                    self[name] = newData
+                                # look for name attached to Series second
+                                elif newData['data'].name is not None:
+                                    self[newData['data'].name] = newData
+                                # couldn't find name information
+                                else:
+                                    raise ValueError(
+                                        ''.join(['Must assign a name to ',
+                                                 'Series or return a ',
+                                                 '"name" in dictionary.']))
+                            # xarray returned
+                            elif isinstance(newData['data'], xr.DataArray):
+                                self[newData['data'].name] = newData['data']
+
+                            # some kind of iterable was returned
+                            elif hasattr(newData['data'], '__iter__'):
+                                # look for name in returned dict
+                                if 'name' in newData.keys():
+                                    name = newData.pop('name')
+                                    self[name] = newData
+                                else:
+                                    raise ValueError(''.join(('Must include ',
+                                                              '"name" in ',
+                                                              'returned ',
+                                                              'dictionary.')))
+
+                        # bare DataFrame is returned
+                        elif isinstance(newData, pds.DataFrame):
+                            self[newData.columns] = newData
+                        # bare Series is returned, name must be attached to
+                        # Series
+                        elif isinstance(newData, pds.Series):
+                            self[newData.name] = newData
+
+                        # xarray returned
+                        elif isinstance(newData, xr.DataArray):
+                            self[newData.name] = newData
+
+                        # some kind of iterable returned,
+                        # presuming (name, data)
+                        # or ([name1,...], [data1,...])
+                        elif hasattr(newData, '__iter__'):
+                            # falling back to older behavior
+                            # unpack tuple/list that was returned
+                            newName = newData[0]
+                            newData = newData[1]
+                            if len(newData) > 0:
+                                # doesn't really ensure data, there could
+                                # be multiple empty arrays returned, [[],[]]
+                                if isinstance(newName, str):
+                                    # one item to add
+                                    self[newName] = newData
+                                else:
+                                    # multiple items
+                                    for name, data in zip(newName, newData):
+                                        if len(data) > 0:
+                                            # fixes up the incomplete check
+                                            # from before
+                                            self[name] = data
+                        else:
+                            raise ValueError(''.join(("kernel doesn't know",
+                                                      " what to do with",
+                                                      " returned data.")))
+
+                    # modifying loaded data
+                    if kind == 'modify':
+                        t = func(self, *arg, **kwarg)
+                        if t is not None:
+                            raise ValueError(''.join(('Modified functions',
+                                                      ' should not return',
+                                                      ' any information via',
+                                                      ' return. Information ',
+                                                      'may only be propagated',
+                                                      ' back by modifying ',
+                                                      'supplied pysat object.'
+                                                      )))
+
+                    # pass function (function runs, no data allowed back)
+                    if kind == 'pass':
+                        tempd = self.copy()
+                        t = func(tempd, *arg, **kwarg)
+                        del tempd
+                        if t is not None:
+                            raise ValueError(''.join(('Pass functions should',
+                                                      ' not return any ',
+                                                      'information via ',
+                                                      'return.')))
+
+    def custom_clear(self):
+        """Clear custom function list."""
+        self.custom_functions = []
+        self.custom_args = []
+        self.custom_kwargs = []
+        self.custom_kind = []
+
     def today(self):
         """Returns today's date (UTC), with no hour, minute, second, etc.
 
@@ -2732,7 +2984,7 @@ class Instrument(object):
 
         # apply custom functions via the nanokernel in self.custom
         if not self.empty:
-            self.custom._apply_all(self)
+            self.custom_apply_all()
 
         # remove the excess data padding, if any applied
         if (self.pad is not None) & (not self.empty) & (not verifyPad):
