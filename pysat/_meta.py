@@ -1358,8 +1358,9 @@ class MetaLabels(object):
 
     """
 
-    def __init__(self, metadata=None, units=('units', str), name=('long_name', str),
-                 notes=('notes', str), desc=('desc', str), plot=('plot', str),
+    def __init__(self, metadata=None, units=('units', str),
+                 name=('long_name', str), notes=('notes', str),
+                 desc=('desc', str), plot=('plot', str),
                  axis=('axis', str), scale=('scale', str),
                  min_val=('value_min', float), max_val=('value_max', float),
                  fill_val=('fill', float), **kwargs):

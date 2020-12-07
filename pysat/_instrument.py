@@ -603,7 +603,6 @@ class Instrument(object):
                     indict[epoch_name] = self.index[indict[epoch_name]]
                     self.data[key[-1]].loc[indict] = in_data
                 self.meta[key[-1]] = new
-                
                 return
             elif isinstance(key, str):
                 # assigning basic variable
