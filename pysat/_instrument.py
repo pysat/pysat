@@ -258,7 +258,7 @@ class Instrument(object):
         # assign null data for user selected data type
         self.data = self._null_data.copy()
 
-        # Create Meta instance with appropriate labels.  Meta class methos will
+        # Create Meta instance with appropriate labels.  Meta class methods will
         # use Instrument definition of MetaLabels over the Metadata declaration
         self.meta_labels = labels
         self.meta = pysat.Meta(labels=self.meta_labels)
@@ -2998,10 +2998,10 @@ class Instrument(object):
         if self._meta_translation_table is None:
             # didn't find a translation table, using the strings
             # attached to the supplied pysat.Instrument object
-            export_name_labels = [self.meta_labels['name'][0]]
-            export_units_labels = [self.meta_labels['units'][0]]
-            export_desc_labels = [self.meta_labels['desc'][0]]
-            export_notes_labels = [self.meta_labels['notes'][0]]
+            export_name_labels = [self.labels.name]
+            export_units_labels = [self.labels.units]
+            export_desc_labels = [self.labels.desc]
+            export_notes_labels = [self.labels.notes]
         else:
             # user supplied labels in translation table
             export_name_labels = self._meta_translation_table['name']
