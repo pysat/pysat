@@ -57,6 +57,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed coupling of two_digit_year_break keyword to underlying method in
     methods.general.list_files
   - Fixed additional file date range for monthly data with gaps
+  - Fixed custom Meta attributes  removal when transferred to instrument (#615)
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
