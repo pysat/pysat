@@ -85,7 +85,7 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data : pds.DataFrame
         Testing data
     meta : pysat.Meta
-        Metadataxs
+        Testing metadata
 
     """
 
@@ -186,34 +186,33 @@ def load(fnames, tag=None, inst_id=None, malformed_index=False,
     data['profiles'] = pds.Series(profiles, index=data.index)
     data['alt_profiles'] = pds.Series(alt_profiles, index=data.index)
     data['series_profiles'] = pds.Series(series_profiles, index=data.index)
-    return data, meta.copy()
+
+    # create very limited metadata
+    meta = pysat.Meta()
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
+    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    series_profile_meta = pysat.Meta()
+    series_profile_meta['series_profiles'] = {'long_name': 'series'}
+    meta['series_profiles'] = {'meta': series_profile_meta,
+                               'long_name': 'series'}
+    profile_meta = pysat.Meta()
+    profile_meta['density'] = {'long_name': 'profiles'}
+    profile_meta['dummy_str'] = {'long_name': 'profiles'}
+    profile_meta['dummy_ustr'] = {'long_name': 'profiles'}
+    meta['profiles'] = {'meta': profile_meta, 'long_name': 'profiles'}
+    alt_profile_meta = pysat.Meta()
+    alt_profile_meta['density'] = {'long_name': 'profiles'}
+    alt_profile_meta['fraction'] = {'long_name': 'profiles'}
+    meta['alt_profiles'] = {'meta': alt_profile_meta, 'long_name': 'profiles'}
+
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
 list_remote_files = functools.partial(mm_test.list_remote_files,
                                       test_dates=_test_dates)
 download = functools.partial(mm_test.download)
-
-
-# create very limited metadata
-meta = pysat.Meta()
-meta['uts'] = {'units': 's', 'long_name': 'Universal Time'}
-meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time'}
-meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time'}
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-series_profile_meta = pysat.Meta()
-series_profile_meta['series_profiles'] = {'units': '', 'long_name': 'series'}
-meta['series_profiles'] = {'meta': series_profile_meta, 'units': '',
-                           'long_name': 'series'}
-profile_meta = pysat.Meta()
-profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_str'] = {'units': '', 'long_name': 'profiles'}
-profile_meta['dummy_ustr'] = {'units': '', 'long_name': 'profiles'}
-meta['profiles'] = {'meta': profile_meta, 'units': '', 'long_name': 'profiles'}
-alt_profile_meta = pysat.Meta()
-alt_profile_meta['density'] = {'units': '', 'long_name': 'profiles'}
-alt_profile_meta['fraction'] = {'units': '', 'long_name': 'profiles'}
-meta['alt_profiles'] = {'meta': alt_profile_meta, 'units': '',
-                        'long_name': 'profiles'}
