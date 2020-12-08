@@ -52,6 +52,14 @@ class TestBasics():
         assert 'children' not in self.meta.data.columns
         assert self.dval not in self.meta.keys_nD()
 
+    def test_default_label_value_raises_error(self):
+        """ Test MetaLabels.default_values_from_attr ValueError with bad attr
+        """
+        with pytest.raises(ValueError) as verr:
+            self.meta.labels.default_values_from_attr('not_an_attr')
+
+        assert verr.match("unknown label attribute")
+
     def test_meta_repr(self):
         """ Test the Meta repr function
         """
