@@ -32,10 +32,11 @@ class Meta(object):
                   'plot': ('plot', str), 'axis': ('axis', str),
                   'scale': ('scale', str), 'min_val': ('value_min', float),
                   'max_val': ('value_max', float), 'fill_val': ('fill', float)})
-    export_nan : list
-        List of labels that should be exported even if their value is nan. By
-        default, metadata with a value of nan will be exluded from export.
-        (default=[])
+    export_nan : list or NoneType
+        List of labels that should be exported even if their value is nan or
+        None for an empty list. When used, metadata with a value of nan will
+        be exluded from export. Will always allow nan export for labels of
+        the float type (default=None)
 
     Attributes
     ----------
@@ -148,14 +149,14 @@ class Meta(object):
                          'scale': ('scale', str),
                          'min_val': ('value_min', float),
                          'max_val': ('value_max', float),
-                         'fill_val': ('fill', float)}, export_nan=[]):
+                         'fill_val': ('fill', float)}, export_nan=None):
 
         # Set mutability of Meta attributes.  This flag must be set before
         # anything else, or `__setattr__` breaks.
         self.mutable = True
 
         # Set the NaN export list
-        self._export_nan = export_nan
+        self._export_nan = [] if export_nan is None else export_nan
         for lvals in labels.values():
             if lvals[0] not in self._export_nan and lvals[1] == float:
                 self._export_nan.append(lvals[0])
@@ -924,26 +925,26 @@ class Meta(object):
         # Return the updated Meta class object
         return other_updated
 
-    def accept_default_labels(self, other):
+    def accept_default_labels(self, other_meta):
         """Applies labels for default meta labels from other onto self.
 
         Parameters
         ----------
-        other : Meta
+        other_meta : Meta
             Meta object to take default labels from
 
         """
 
-        # update labels in metadata
-        for key in other.labels.label_type:
-            new_name = getattr(other.labels, key)
+        # Update labels in metadata
+        for key in other_meta.labels.label_type:
+            new_name = getattr(other_meta.labels, key)
             old_name = getattr(self.labels, key)
             if old_name != new_name:
                 self._label_setter(new_name, old_name,
-                                   other.labels.label_type[key],
+                                   other_meta.labels.label_type[key],
                                    use_names_default=True)
 
-        self.labels = other.labels
+        self.labels = other_meta.labels
 
         return
 
