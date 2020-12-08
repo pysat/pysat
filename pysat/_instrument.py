@@ -100,31 +100,46 @@ class Instrument(object):
     fill_label : str
         label to use for fill values. Defaults to 'fill' but some
         implementations will use 'FillVal'
+    custom : list or None
+        List of dictionaries containing everything needed to attach
+        custom methods to the Instrument object via `custom_attach`.
+        [{'function': method, 'kind': str, 'args': [args],
+          'kwargs': {'keyword': val}}]
+        Methods are added in list order.
 
     Attributes
     ----------
-    data : pandas.DataFrame
-        loaded science data
-    date : pandas.datetime
-        date for loaded data
-    yr : int
-        year for loaded data
     bounds : (datetime/filename/None, datetime/filename/None)
         bounds for loading data, supply array_like for a season with gaps.
         Users may provide as a tuple or tuple of lists, but the attribute is
         stored as a tuple of lists for consistency
+    custom_functions : list
+        List of functions to be applied by instrument nano-kernel
+    custom_kind : list
+        List of strings indicating type of custom function, 'modify', 'add', or
+        pass'
+    custom_args : list
+        List of lists containing arguments to be passed to particular
+        custom function
+    custom_kwargs : list
+        List of dictionaries with keywords and values to be passed
+        to a custom function
+    data : pandas.DataFrame
+        loaded science data
+    date : pandas.datetime
+        date for loaded data
     doy : int
         day of year for loaded data
     files : pysat.Files
         interface to instrument files
+    kwargs : dictionary
+        keyword arguments passed to the standard Instrument routines
     meta : pysat.Meta
         interface to instrument metadata, similar to netCDF 1.6
     orbits : pysat.Orbits
         interface to extracting data orbit-by-orbit
-    custom : pysat.Custom
-        interface to instrument nano-kernel
-    kwargs : dictionary
-        keyword arguments passed to the standard Instrument routines
+    yr : int
+        year for loaded data
 
     Note
     ----
@@ -211,7 +226,7 @@ class Instrument(object):
                  notes_label='notes', desc_label='desc',
                  plot_label='label', axis_label='axis', scale_label='scale',
                  min_label='value_min', max_label='value_max',
-                 fill_label='fill', **kwargs):
+                 fill_label='fill', custom=None, **kwargs):
 
         # Set default tag and inst_id
         self.tag = tag.lower() if tag is not None else ''
@@ -323,6 +338,17 @@ class Instrument(object):
         self.custom_kind = []
         self.custom_args = []
         self.custom_kwargs = []
+        if custom is not None:
+            # process user input
+            req_labels = ['function', 'kind', 'args', 'kwargs']
+            for cust in custom:
+                for label in req_labels:
+                    if label not in cust:
+                        estr = ''.join(('Input dict to custom is missing ',
+                                        'a required key: ', label))
+                        raise ValueError(estr)
+                self.custom_attach(cust['function'], kind=cust['kind'],
+                                   args=cust['args'], kwargs=cust['kwargs'])
 
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
@@ -1937,14 +1963,14 @@ class Instrument(object):
                       kwargs={}):
         """Attach a function to custom processing queue.
 
-        Custom functions are applied automatically to associated
-        pysat.Instrument whenever .load() command called.
+        Custom functions are applied automatically whenever `.load()`
+        command called.
 
         Parameters
         ----------
         function : string or function object
             name of function or function object to be added to queue
-        kind : {'add', 'modify', 'pass}
+        kind : {'add', 'modify', 'pass'}
             - add
                 Adds data returned from function to instrument object.
                 A copy of pysat instrument object supplied to routine.
@@ -1964,7 +1990,7 @@ class Instrument(object):
             Ordered arguments following the instrument object input that are
             required by the custom function (default=[])
         kwargs : dict
-            Dictionary of keyword arguements required by the custom function
+            Dictionary of keyword arguments required by the custom function
             (default={})
 
         Note
