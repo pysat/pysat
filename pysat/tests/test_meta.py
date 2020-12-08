@@ -111,6 +111,25 @@ class TestBasics():
         # Test the Meta settings
         self.check_meta_settings()
 
+    def test_init_labels_w_int_default(self):
+        """ Test MetaLabels initiation with an integer label type
+        """
+        # Reinitialize the Meta
+        self.meta_labels['fill_val'] = ("fill", int)
+        self.testInst = pysat.Instrument('pysat', 'testing',
+                                         clean_level='clean',
+                                         labels=self.meta_labels)
+        self.testInst.load(*self.stime)
+        self.meta = self.testInst.meta
+        self.dval = 'int32_dummy'
+
+        # Update the testing data
+        self.default_val['fill'] = -1
+        self.default_nan.pop(self.default_nan.index('fill'))
+
+        # Test the Meta settings
+        self.check_meta_settings()
+
     def test_inst_data_assign_meta_then_data(self):
         """ Test meta assignment when data updated after metadata
         """
@@ -237,6 +256,7 @@ class TestBasics():
         self.meta = pysat.Meta(labels=self.meta_labels)
         self.meta['dummy_frame1'] = {'barrels': 'A'}
         self.meta['dummy_frame2'] = {'Monkeys': 'are fun'}
+        self.meta['dummy_frame2'] = {'bananas': 2}
         # The 'units', 'desc' and other labels used on self.testInst are
         # applied to the input metadata to ensure everything remains
         # consistent across the object.
