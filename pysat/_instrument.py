@@ -45,21 +45,24 @@ class Instrument(object):
     orbit_info : dict
         Orbit information, {'index':index, 'kind':kind, 'period':period}.
         See pysat.Orbits for more information.
-    inst_module : module, optional
-        Provide instrument module directly.
-        Takes precedence over platform/name.
-    update_files : boolean, optional
+    inst_module : module
+        Provide instrument module directly, takes precedence over platform/name
+        (default=None)
+    update_files : boolean
         If True, immediately query filesystem for instrument files and store.
-    temporary_file_list : boolean, optional
+        Otherwise, assume nothing has changed from the last time files were
+        loaded (default=False)
+    temporary_file_list : boolean
         If true, the list of Instrument files will not be written to disk.
         Prevents a race condition when running multiple pysat processes.
-    strict_time_flag : boolean, option (True)
+        (default=False)
+    strict_time_flag : boolean
         If true, pysat will check data to ensure times are unique and
-        monotonically increasing.
-    multi_file_day : boolean, optional
+        monotonically increasing. (default=True)
+    multi_file_day : boolean or NoneType
         Set to True if Instrument data files for a day are spread across
         multiple files and data for day n could be found in a file
-        with a timestamp of day n-1 or n+1.
+        with a timestamp of day n-1 or n+1.  (default=None)
     manual_org : bool
         if True, then pysat will look directly in pysat data directory
         for data files and will not use default /platform/name/tag
@@ -72,11 +75,11 @@ class Instrument(object):
         File naming structure in string format.  Variables such as year,
         month, and inst_id will be filled in as needed using python string
         formatting.  The default file format structure is supplied in the
-        instrument list_files routine.
+        instrument list_files routine. (default=None)
     ignore_empty_files : boolean
         if True, the list of files found will be checked to
         ensure the filesizes are greater than zero. Empty files are
-        removed from the stored list of files.
+        removed from the stored list of files. (default=False)
     labels : dict
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
@@ -1513,61 +1516,8 @@ class Instrument(object):
 
     @bounds.setter
     def bounds(self, value=None):
-        """Sets the self.bounds property.
+        # Set the bounds property.  See property docstring for details
 
-        Parameters
-        ----------
-        start (value[0]) : datetime object, filename, or None
-            start of iteration, if None uses first data date.
-            list-like collection also accepted. (default=None)
-        stop  (value[1]):  datetime object, filename, or None
-            stop of iteration, inclusive. If None uses last data date.
-            list-like collection also accepted. (default=None)
-        step  (value[2]): str, int, or None
-            Step size used when iterating from start to stop. Use a
-            Pandas frequency string ('3D', '1M') when setting bounds by date,
-            an integer when setting bounds by file. Defaults to a single
-            day/file (default='1D', 1).
-        width (value[3]): pandas.DateOffset, int, or None
-            Data window used when loading data within iteration. Defaults to a
-            single day/file if not assigned. (default=pds.DateOffset(days=1),
-            1)
-
-        Note
-        ----
-        Both start and stop must be the same type (date, or filename) or None.
-        Only the year, month, and day are used for date inputs.
-
-        Examples
-        --------
-        ::
-            import datetime as dt
-            import pandas as pds
-            import pysat
-
-            inst = pysat.Instrument(platform=platform, name=name, tag=tag)
-            start = dt.datetime(2009,1,1)
-            stop = dt.datetime(2009,1,31)
-            # Defaults to stepping by a single day and a data loading window
-            # of one day/file.
-            inst.bounds = (start, stop)
-
-            # Set bounds by file. Iterates a file at a time.
-            inst.bounds = ('filename1', 'filename2')
-
-            # Create a more complicated season, multiple start and stop dates.
-            start2 = dt.datetetime(2010,1,1)
-            stop2 = dt.datetime(2010,2,14)
-            inst.bounds = ([start, start2], [stop, stop2])
-
-            # Iterate via a non-standard step size of two days.
-            inst.bounds = ([start, start2], [stop, stop2], '2D')
-
-            # Load more than a single day/file at a time when iterating
-            inst.bounds = ([start, start2], [stop, stop2], '2D',
-                           pds.DateOffset(days=3))
-
-        """
         if value is None:
             # user wants defaults
             value = (None, None, None, None)
@@ -1766,9 +1716,9 @@ class Instrument(object):
         return self._date
 
     @date.setter
-    def date(self, new):
-        """Date for loaded data."""
-        self._date = self._filter_datetime_input(new)
+    def date(self, new_date):
+        # Set the date property, see property docstriing for details
+        self._date = self._filter_datetime_input(new_date)
 
     @property
     def index(self):
@@ -2064,6 +2014,7 @@ class Instrument(object):
                          'old_name2':, 'new_name2'}
             inst.rename(new_var_names)
 
+
         If using a pandas DataFrame as the underlying data object,
         to rename higher-order variables supply a modified dictionary.
         Note that this rename will be invoked individually for all
@@ -2084,6 +2035,7 @@ class Instrument(object):
             var_names = {'uts': 'pysat_uts',
                      'profiles': {'density': 'pysat_density'}}
             inst.rename(var_names)
+
 
         pysat supports differing case for variable labels across the
         data and metadata objects attached to an Instrument. Since
@@ -2114,6 +2066,7 @@ class Instrument(object):
             # load in file and check
             raw = netCDF4.Dataset('./test.nc')
             print(raw.variables['Pysat_UTS'])
+
 
         """
 

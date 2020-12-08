@@ -28,10 +28,10 @@ class Meta(object):
         Dict where keys are the label attribute names and the values are tuples
         that have the label values and value types in that order.
         (default={'units': ('units', str), 'name': ('long_name', str),
-                  'notes': ('notes', str), 'desc': ('desc', str),
-                  'plot': ('plot', str), 'axis': ('axis', str),
-                  'scale': ('scale', str), 'min_val': ('value_min', float),
-                  'max_val': ('value_max', float), 'fill_val': ('fill', float)})
+        'notes': ('notes', str), 'desc': ('desc', str),
+        'plot': ('plot', str), 'axis': ('axis', str),
+        'scale': ('scale', str), 'min_val': ('value_min', float),
+        'max_val': ('value_max', float), 'fill_val': ('fill', float)})
     export_nan : list or NoneType
         List of labels that should be exported even if their value is nan or
         None for an empty list. When used, metadata with a value of nan will
