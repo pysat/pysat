@@ -476,11 +476,29 @@ class Instrument(object):
 
     def __repr__(self):
         """ Print the basic Instrument properties"""
+
+        # create string for custom attached methods
+        cstr = '['
+        for func, kind, arg, kwarg in zip(self.custom_functions,
+                                          self.custom_kind, self.custom_args,
+                                          self.custom_kwargs):
+            tstr = "".join(("'function': {sfunc}, 'kind': '{skind}', ",
+                            "'args': {sargs}, 'kwargs': {kargs}"))
+            tstr = tstr.format(sfunc=repr(func), skind=kind, sargs=repr(arg),
+                               kargs=repr(kwarg))
+            cstr = "".join((cstr, '{', tstr, '}, '))
+        cstr += ']'
+
+        # create string for other parts Instrument instantiation
         out_str = "".join(["Instrument(platform='", self.platform, "', name='",
                            self.name, "', inst_id='", self.inst_id,
                            "', clean_level='", self.clean_level,
                            "', pad={:}, orbit_info=".format(self.pad),
-                           "{:}, **{:})".format(self.orbit_info, self.kwargs)])
+                           "{:}, ".format(self.orbit_info),
+                           "custom=", cstr,
+                           ", **{:}".format(self.orbit_info, self.kwargs),
+                           ")"])
+
         # out_str = "Custom -> {:d} functions applied".format(
         #     len(self._functions))
 
