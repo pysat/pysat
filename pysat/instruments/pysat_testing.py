@@ -107,8 +107,7 @@ def clean(self):
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
          sim_multi_file_left=False, root_date=None, file_date_range=None,
-         malformed_index=False, mangle_file_dates=False,
-         num_samples=None):
+         malformed_index=False, mangle_file_dates=False, num_samples=None):
     """ Loads the test files
 
     Parameters
@@ -250,73 +249,49 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
 
     data.index = index
     data.index.name = 'Epoch'
-    return data, meta.copy()
+
+    # Set the meta data
+    meta = pysat.Meta()
+    meta['uts'] = {'units': 's', 'long_name': 'Universal Time', 'custom': False}
+    meta['Epoch'] = {'units': 'Milliseconds since 1970-1-1',
+                     'Bin_Location': 0.5,
+                     'notes': 'UTC time at middle of geophysical measurement.',
+                     'desc': 'UTC seconds'}
+    meta['mlt'] = {'units': 'hours', 'long_name': 'Magnetic Local Time',
+                   'plot': 'MLT', 'axis': 'MLT', 'desc': 'Magnetic Local Time',
+                   'value_min': 0.0, 'value_max': 24.0,
+                   'notes': ''.join(['Magnetic Local Time is the solar local ',
+                                     'time of thefield line at the location ',
+                                     'where the field crosses the magnetic ',
+                                     'equator. In this case we just simulate ',
+                                     '0-24 with a consistent orbital period ',
+                                     'and an offset with SLT.']),
+                   'scale': 'linear'}
+    meta['slt'] = {'units': 'hours', 'long_name': 'Solar Local Time',
+                   'plot': 'Solar Local Time', 'axis': 'SLT',
+                   'desc': 'Solar Local Time', 'value_min': 0.0,
+                   'value_max': 24.0, 'scale': 'linear',
+                   'notes': ''.join(['Solar Local Time is the local time ',
+                                     '(zenith angle of sun) of the given ',
+                                     'location. Overhead noon, +/- 90 is 6, ',
+                                     '18 SLT .'])}
+    meta['orbit_num'] = {'units': '', 'long_name': 'Orbit Number',
+                         'plot': 'Orbit Number', 'axis': 'Orbit Number',
+                         'desc': 'Orbit Number', 'value_min': 0.0,
+                         'value_max': 25000.0, 'scale': 'linear',
+                         'notes': ''.join(['Number of orbits since the start ',
+                                           'of the mission. For this ',
+                                           'simulation we use the number of ',
+                                           '5820 second periods since the ',
+                                           'start, 2008-01-01.'])}
+    meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
+    meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
+    meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
+    
+    return data, meta
 
 
 list_files = functools.partial(mm_test.list_files, test_dates=_test_dates)
 list_remote_files = functools.partial(mm_test.list_remote_files,
                                       test_dates=_test_dates)
 download = functools.partial(mm_test.download)
-
-
-meta = pysat.Meta()
-meta['uts'] = {'units': 's',
-               'long_name': 'Universal Time',
-               'custom': False}
-meta['Epoch'] = {'units': 'Milliseconds since 1970-1-1',
-                 'Bin_Location': 0.5,
-                 'notes': 'UTC time at middle of geophysical measurement.',
-                 'desc': 'UTC seconds', }
-meta['mlt'] = {'units': 'hours',
-               'long_name': 'Magnetic Local Time',
-               'plot': 'MLT',
-               'axis': 'MLT',
-               'desc': 'Magnetic Local Time',
-               'value_min': 0.0,
-               'value_max': 24.0,
-               'notes': ('Magnetic Local Time is the solar local time of the '
-                         'field line at the location where the field crosses '
-                         'the magnetic equator. In this case we just simulate '
-                         '0-24 with a consistent orbital period and an offste '
-                         'with SLT.'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['slt'] = {'units': 'hours',
-               'long_name': 'Solar Local Time',
-               'plot': 'Solar Local Time',
-               'axis': 'SLT',
-               'desc': 'Solar Local Time',
-               'value_min': 0.0,
-               'value_max': 24.0,
-               'notes': ('Solar Local Time is the local time (zenith angle of '
-                         'sun) of the given location. Overhead noon, +/- 90 '
-                         'is 6, 18 SLT .'),
-               'fill': np.nan,
-               'scale': 'linear'}
-meta['orbit_num'] = {'units': '',
-                     'long_name': 'Orbit Number',
-                     'plot': 'Orbit Number',
-                     'axis': 'Orbit Number',
-                     'desc': 'Orbit Number',
-                     'value_min': 0.0,
-                     'value_max': 25000.0,
-                     'notes': ('Number of orbits since the start of the '
-                               'mission. For this simulation we use the '
-                               'number of 5820 second periods since the '
-                               'start, 2008-01-01.'),
-                     'fill': np.nan,
-                     'scale': 'linear'}
-
-meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
-meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
-meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-meta['dummy1'] = {'units': '', 'long_name': 'dummy1'}
-meta['dummy2'] = {'units': '', 'long_name': 'dummy2'}
-meta['dummy3'] = {'units': '', 'long_name': 'dummy3'}
-meta['dummy4'] = {'units': '', 'long_name': 'dummy4'}
-meta['string_dummy'] = {'units': '', 'long_name': 'string_dummy'}
-meta['unicode_dummy'] = {'units': '', 'long_name': 'unicode_dummy'}
-meta['int8_dummy'] = {'units': '', 'long_name': 'int8_dummy'}
-meta['int16_dummy'] = {'units': '', 'long_name': 'int16_dummy'}
-meta['int32_dummy'] = {'units': '', 'long_name': 'int32_dummy'}
-meta['int64_dummy'] = {'units': '', 'long_name': 'int64_dummy'}
