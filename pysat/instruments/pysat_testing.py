@@ -287,7 +287,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     meta['longitude'] = {'units': 'degrees', 'long_name': 'Longitude'}
     meta['latitude'] = {'units': 'degrees', 'long_name': 'Latitude'}
     meta['altitude'] = {'units': 'km', 'long_name': 'Altitude'}
-    
+
     return data, meta
 
 
