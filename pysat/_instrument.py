@@ -324,7 +324,6 @@ class Instrument(object):
         self.custom_args = []
         self.custom_kwargs = []
 
-
         # create arrays to store data around loaded day
         # enables padding across day breaks with minimal loads
         self._next_data = self._null_data.copy()
