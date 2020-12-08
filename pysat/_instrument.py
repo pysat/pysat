@@ -1109,7 +1109,7 @@ class Instrument(object):
 
                 # ensure units and name are named consistently in new Meta
                 # object as specified by user upon Instrument instantiation
-                mdata.accept_default_labels(self)
+                mdata.accept_default_labels(self.meta)
                 bad_datetime = False
             except pds.errors.OutOfBoundsDatetime:
                 bad_datetime = True
@@ -2639,11 +2639,16 @@ class Instrument(object):
             if not self.empty:
                 self.meta = meta
 
+                # If only some metadata included, define the remaining variables
+                for var in self.variables:
+                    case_var = meta.var_case_name(var)
+                    if case_var not in self.meta.keys() \
+                       and case_var not in self.meta.keys_nD():
+                        self.meta[case_var] = {self.labels.name: var}
+
         # check if load routine actually returns meta
         if self.meta.data.empty:
-            self.meta[self.variables] = {self.labels.name: self.variables,
-                                         self.labels.units:
-                                         [''] * len(self.variables)}
+            self.meta[self.variables] = {self.labels.name: self.variables}
 
         # if loading by file set the yr, doy, and date
         if not self._load_by_date:
