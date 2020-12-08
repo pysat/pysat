@@ -2632,11 +2632,12 @@ class Instrument(object):
                 if (self.index[-1] == last_pad) & (not want_last_pad):
                     self.data = self[:-1]
 
-        # if self.pad is False, load single day
+        # If self.pad is False, load single day
         else:
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
                                               inc=self.load_step)
             if not self.empty:
+                meta.accept_default_labels(self.meta)
                 self.meta = meta
 
                 # If only some metadata included, define the remaining variables
