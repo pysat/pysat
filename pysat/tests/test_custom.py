@@ -1,3 +1,4 @@
+import copy
 import logging
 from io import StringIO
 import numpy as np
@@ -135,6 +136,59 @@ class TestBasics():
         assert (self.testInst.data['doubleMLT'] == 2.0
                 * self.testInst['mlt']).all()
         assert len([kk for kk in self.testInst.data.keys()]) == self.ncols + 1
+
+    def test_custom_keyword_instantiation(self):
+        """Test adding custom methods at Instrument instantiation
+        """
+        def custom_add(inst, arg1, arg2, kwarg1=False, kwarg2=True):
+            d = 2.0 * inst['mlt']
+            d.name = 'doubleMLT'
+            return d
+
+        def custom_modify(inst, arg1, arg2, kwarg1=False, kwarg2=True):
+            d = 2.0 * inst['mlt']
+            d.name = 'doubleMLT'
+            inst['doubleMLT_modify'] = d
+            return
+
+        self.testInst.custom_attach(custom_add, 'add', args=[0, 1],
+                                    kwargs={'kwarg1': True, 'kwarg2': False})
+        self.testInst.custom_attach(custom_modify, 'modify', args=[5, 10],
+                                    kwargs={'kwarg1': True, 'kwarg2': True})
+
+        # create another instance of pysat.Instrument and add custom
+        # via the input keyword
+        custom = [{'function': custom_add, 'kind': 'add', 'args': [0, 1],
+                   'kwargs': {'kwarg1': True, 'kwarg2': False}},
+                  {'function': custom_modify, 'kind': 'modify', 'args': [5, 10],
+                   'kwargs': {'kwarg1': True, 'kwarg2': True}}]
+        testInst2 = pysat.Instrument('pysat', 'testing', custom=custom)
+
+        # ensure both instruments have the same custom_* attributes
+        assert self.testInst.custom_functions == testInst2.custom_functions
+        assert self.testInst.custom_kind == testInst2.custom_kind
+        assert self.testInst.custom_args == testInst2.custom_args
+        assert self.testInst.custom_kwargs == testInst2.custom_kwargs
+
+    def test_custom_keyword_instantiation_poor_format(self):
+        """Test for error when custom missing keywords at instantiation
+        """
+        req_words = ['function', 'kind', 'args', 'kwargs']
+        real_custom = [{'function': 1, 'kind': 'add', 'args': [0, 1],
+                        'kwargs': {'kwarg1': True, 'kwarg2': False}}]
+        for i, word in enumerate(req_words):
+            custom = copy.deepcopy(real_custom)
+            custom[0].pop(word)
+
+            # Ensure that any of the missing required words raises an error
+            with pytest.raises(ValueError) as err:
+                pysat.Instrument('pysat', 'testing', custom=custom)
+
+            # ensure correct error for the missing parameter (word)
+            assert str(err).find(word) >= 0
+            assert str(err).find('Input dict to custom is missing') >= 0
+
+        return
 
     def test_add_function_tuple_return_style(self):
         """Test success of add function that returns name and numpy array.
