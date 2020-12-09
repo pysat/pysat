@@ -499,9 +499,6 @@ class Instrument(object):
                            ", **{:}".format(self.kwargs),
                            ")"])
 
-        # out_str = "Custom -> {:d} functions applied".format(
-        #     len(self._functions))
-
         return out_str
 
     def __str__(self):
