@@ -1046,10 +1046,8 @@ class TestBasics():
             self.meta.transfer_attributes_to_instrument(self.testInst)
 
             # test private not transferred
-            with pytest.raises(AttributeError):
-                self.testInst._yo_yo
-            with pytest.raises(AttributeError):
-                self.testInst.__yo_yo
+            assert not hasattr(self.testInst, "_yo_yo")
+            assert not hasattr(self.testInst, "__yo_yo")
 
             # Check to make sure other values still transferred
             assert self.testInst.new_attribute == 'hello'

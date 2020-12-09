@@ -1157,7 +1157,7 @@ class Meta(object):
         for key in this_attrb:
             if key not in banned:
                 if key not in base_attrb:
-                    # don't store private attributes
+                    # Don't store any hidden attributes
                     if key[0] != '_':
                         adict[key] = getattr(self, key)
                         transfer_key.append(key)
