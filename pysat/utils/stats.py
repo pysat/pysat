@@ -1,6 +1,6 @@
 """
 pysat.utils.stats - statistical operations in pysat
-=========================================
+===================================================
 
 pysat.coords contains a number of coordinate-transformation
 functions used throughout the pysat package.

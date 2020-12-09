@@ -48,12 +48,12 @@ def bytes_to_float(chunk):
     """ Convert a chunk of bytes to a float
 
     Parameters
-    ------------
+    ----------
     chunk : string or bytes
        A chunk of bytes
 
     Returns
-    --------
+    -------
     value : float
         A 32 bit float
 
@@ -78,12 +78,12 @@ def load_general_header(fhandle):
     """ Load the general header block (block 1 for each time)
 
     Parameters
-    ------------
+    ----------
     fhandle : (file handle)
         File handle
 
     Returns
-    ----------
+    -------
     data : list
         List of data values containing: P field,
         Number of days from 01/01/1950, number of miliseconds in the day,
@@ -145,12 +145,12 @@ def load_location_parameters(fhandle):
     time)
 
     Parameters
-    ------------
+    ----------
     fhandle : (file handle)
         File handle
 
     Returns
-    ----------
+    -------
     data : list
         List of data values containing: geoc lat, geoc lon, alt, lt, geom
         lat, geom lon, mlt, inv lat, L-shell, geoc lat of conj point, geoc
@@ -234,12 +234,12 @@ def load_attitude_parameters(fhandle):
     """ Load the attitude parameter block (block 1 for each time)
 
     Parameters
-    ------------
+    ----------
     fhandle : (file handle)
         File handle
 
     Returns
-    ----------
+    -------
     data : list
         list of data values containing: matrix elements from satellite coord
         system to geographic coordinate system, matrix elements from geographic
@@ -300,14 +300,14 @@ def load_binary_file(fname, load_experiment_data):
     """ Load the binary data from a DEMETER file
 
     Parameters
-    ------------
+    ----------
     fname : string
         Filename
     load_experiment_data : function
         Function to load experiment data, taking the file handle as input
 
     Returns
-    ----------
+    -------
     data : np.array
         Data from file stored in a numpy array
     meta : dict
@@ -362,7 +362,7 @@ def set_metadata(name, meta_dict):
     metadata
 
     Parameters
-    ------------
+    ----------
     name : string
         DEMETER instrument name
     meta_dict : dict
@@ -370,7 +370,7 @@ def set_metadata(name, meta_dict):
         attributes are available in the keys 'data names' and 'data units'
 
     Returns
-    ----------
+    -------
     meta : pysat.Meta
         Meta class boject
 
