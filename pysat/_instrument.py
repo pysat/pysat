@@ -496,7 +496,7 @@ class Instrument(object):
                            "', pad={:}, orbit_info=".format(self.pad),
                            "{:}, ".format(self.orbit_info),
                            "custom=", cstr,
-                           ", **{:}".format(self.orbit_info, self.kwargs),
+                           ", **{:}".format(self.kwargs),
                            ")"])
 
         # out_str = "Custom -> {:d} functions applied".format(
