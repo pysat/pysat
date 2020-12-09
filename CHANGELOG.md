@@ -52,6 +52,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Addressed several Warnings raised by incorrect use of dependent packages
   - Deprecated use of inst_id for number of simulated samples for test
     instruments
+  - Removed writing of custom Meta attributes (deprecated) when producing netCDF4 files
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
@@ -70,6 +71,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed coupling of two_digit_year_break keyword to underlying method in
     methods.general.list_files
   - Fixed additional file date range for monthly data with gaps
+  - Fixed custom Meta attributes removal when transferred to instrument (#615)
   - Corrected iteration over Instrument within list comprehension
   - Removed unused input arguments
 - Maintenance
