@@ -466,7 +466,7 @@ class TestGeneralOrbitsNonStandardIteration():
                                          update_files=True)
         self.testInst.bounds = (self.testInst.files.files.index[0],
                                 self.testInst.files.files.index[11],
-                                '2D', pds.DateOffset(days=3))
+                                '2D', dt.timedelta(days=3))
         self.orbit_starts = []
         self.orbit_stops = []
 
@@ -487,7 +487,7 @@ class TestGeneralOrbitsNonStandardIteration():
         if bounds_type == 'by_date':
             bounds = (self.testInst.files.files.index[0],
                       self.testInst.files.files.index[11],
-                      '2D', pds.DateOffset(days=2))
+                      '2D', dt.timedelta(days=2))
         elif bounds_type == 'by_file':
             bounds = (self.testInst.files[0], self.testInst.files[11], 2, 2)
 
@@ -656,11 +656,11 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
                   dt.datetime(2009, 1, 1, 1, 37)]]
         for seconds in np.arange(38):
             day = (dt.datetime(2009, 1, 2)
-                   + pds.DateOffset(days=int(seconds)))
+                   + dt.timedelta(days=int(seconds)))
             times.append([day, day
-                          + pds.DateOffset(hours=1, minutes=37,
+                          + dt.timedelta(hours=1, minutes=37,
                                            seconds=int(seconds))
-                          - pds.DateOffset(seconds=20)])
+                          - dt.timedelta(seconds=20)])
 
         self.testInst.custom.attach(filter_data2, kwargs={'times': times})
 
@@ -681,11 +681,11 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
                   dt.datetime(2009, 1, 1, 1, 37)]]
         for seconds in np.arange(38):
             day = (dt.datetime(2009, 1, 2)
-                   + pds.DateOffset(days=int(seconds)))
+                   + dt.timedelta(days=int(seconds)))
             times.append([day, day
-                          + pds.DateOffset(hours=1, minutes=37,
+                          + dt.timedelta(hours=1, minutes=37,
                                            seconds=int(seconds))
-                          - pds.DateOffset(seconds=20)])
+                          - dt.timedelta(seconds=20)])
 
         self.testInst.custom.attach(filter_data2, kwargs={'times': times})
 

@@ -220,7 +220,7 @@ def generate_times(fnames, num, freq='1S'):
         dates.append(date)
 
         # Create one day of data at desired frequency
-        end_date = date + pds.DateOffset(seconds=86399)
+        end_date = date + dt.timedelta(seconds=86399)
         index = pds.date_range(start=date, end=end_date, freq=freq)
         index = index[0:num]
         indices.extend(index)

@@ -94,8 +94,8 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
     # TODO: take file frequency as an input to allow e.g., weekly files
     if (not out.empty) and fake_daily_files_from_monthly:
         emonth = out.index[-1]
-        out.loc[out.index[-1] + pds.DateOffset(months=1)
-                - pds.DateOffset(days=1)] = out.iloc[-1]
+        out.loc[out.index[-1] + dt.timedelta(months=1)
+                - dt.timedelta(days=1)] = out.iloc[-1]
         new_out = out.asfreq('D')
 
         for i, out_month in enumerate(out.index):

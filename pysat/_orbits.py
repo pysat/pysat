@@ -196,9 +196,9 @@ class Orbits(object):
                 raise ValueError(estr)
         else:
             # iterating by date
-            # need to check step (frequency string) against width (DateOffset)
+            # need to check step (frequency string) against width (timedelta)
             step = pds.tseries.frequencies.to_offset(self.sat._iter_step)
-            step = pds.DateOffset(seconds=step.delta.total_seconds())
+            step = dt.timedelta(seconds=step.delta.total_seconds())
             root = dt.datetime(2001, 1, 1)
             if root + step < root + self.sat._iter_width:
                 raise ValueError(estr)
@@ -574,7 +574,7 @@ class Orbits(object):
                         # check if we are close to beginning or end of day
                         date = self.sat.date
                         delta_start = self.sat.index[-1] - date
-                        delta_end = (date + pds.DateOffset(days=1)
+                        delta_end = (date + dt.timedelta(days=1)
                                      - self.sat.index[0])
 
                         if delta_start <= self.orbit_period * 1.05:
@@ -596,7 +596,7 @@ class Orbits(object):
                             self.sat.next()
                             self.prev()
                             if self.sat.index[0] > (date - delta_end
-                                                    + pds.DateOffset(days=1)):
+                                                    + dt.timedelta(days=1)):
                                 # we could go forward a day, iterate over orbit,
                                 # as above, and the data we have is the wrong
                                 # day.
@@ -709,7 +709,7 @@ class Orbits(object):
                             # combine this next day's data with previous last
                             # orbit, grab the first one
                             final_val = self.sat.index[0] \
-                                - pds.DateOffset(microseconds=1)
+                                - dt.timedelta(microseconds=1)
                             self.sat.concat_data(temp_orbit_data[:final_val],
                                                  prepend=True)
                             self._getBasicOrbit(orbit=1)
@@ -752,7 +752,7 @@ class Orbits(object):
                         # data and grab second orbit (first is old)
                         self.sat.concat_data(
                             temp_orbit_data[:self.sat.index[0]
-                                            - pds.DateOffset(microseconds=1)],
+                                            - dt.timedelta(microseconds=1)],
                             prepend=True)
 
                         # select second orbit of combined data
@@ -762,7 +762,7 @@ class Orbits(object):
                         # just grab the first orbit of loaded data
                         self._getBasicOrbit(orbit=1)
                         if self.sat._iter_type == 'date':
-                            delta = (self.sat.date + pds.DateOffset(days=1)
+                            delta = (self.sat.date + dt.timedelta(days=1)
                                      - self.sat.index[0])
 
                             if delta < self.orbit_period:
