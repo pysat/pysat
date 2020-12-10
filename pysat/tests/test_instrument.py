@@ -1202,7 +1202,7 @@ class TestBasics():
     def test_set_bounds_with_frequency_and_width(self):
         """Set date bounds with step/width>1"""
         start = self.ref_time
-        stop = self.ref_time + dt.timedelta(months=11, days=25)
+        stop = self.ref_time + pds.DateOffset(months=11, days=25)
         stop = stop.to_pydatetime()
         self.testInst.bounds = (start, stop, '10D', dt.timedelta(days=10))
         assert np.all(self.testInst._iter_list
