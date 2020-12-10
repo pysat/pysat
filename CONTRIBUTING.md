@@ -115,6 +115,8 @@ These include:
   * `import numpy as np`
   * `import pandas as pds`
   * `import xarray as xr`
+* When incrementing a timestamp, use `dt.timedelta` instead of `pds.DateOffset`
+  when possible to reduce program runtime
 * All classes should have `__repr__` and `__str__` functions
 * Docstrings use `Note` instead of `Notes`
 * Try to avoid creating a try/except statement where except passes

@@ -1084,20 +1084,38 @@ class Instrument(object):
 
         Returns
         -------
-        NoneType, datetime, or list of datetimes
+        out_date: NoneType, datetime, or list of datetimes
             NoneType input yeilds NoneType output, array-like yeilds list,
             datetime object yeilds like.  All datetime output excludes the
             sub-daily temporal increments (keeps only date information).
 
+        Note
+        ----
+        Checks for timezone information not in UTC
+
         """
 
         if date is None:
-            return date
+            out_date = None
         else:
+            # Check for timezone information and remove time of day for
+            # single datetimes and iterable containers of datetime objects
             if hasattr(date, '__iter__'):
-                return [dt.datetime(da.year, da.month, da.day) for da in date]
+                out_date = []
+                for in_date in date:
+                    if(in_date.tzinfo is not None
+                       and in_date.utcoffset() is not None):
+                        in_date = in_date.astimezone(tz=dt.timezone.utc)
+
+                    out_date.append(dt.datetime(in_date.year, in_date.month,
+                                                in_date.day))
             else:
-                return dt.datetime(date.year, date.month, date.day)
+                if date.tzinfo is not None and date.utcoffset() is not None:
+                    date = date.astimezone(tz=dt.timezone.utc)
+
+                out_date = dt.datetime(date.year, date.month, date.day)
+
+        return out_date
 
     def _load_data(self, date=None, fid=None, inc=None):
         """
@@ -1893,12 +1911,13 @@ class Instrument(object):
 
         Returns
         -------
-        datetime
-            Today's date
+        today_utc: datetime
+            Today's date in UTC
 
         """
+        today_utc = self._filter_datetime_input(dt.datetime.utcnow())
 
-        return self._filter_datetime_input(dt.datetime.today())
+        return today_utc
 
     def tomorrow(self):
         """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -1906,11 +1925,11 @@ class Instrument(object):
         Returns
         -------
         datetime
-            Tomorrow's date
+            Tomorrow's date in UTC
 
         """
 
-        return self.today() + pds.DateOffset(days=1)
+        return self.today() + dt.timedelta(days=1)
 
     def yesterday(self):
         """Returns yesterday's date (UTC), with no hour, minute, second, etc.
@@ -1918,11 +1937,11 @@ class Instrument(object):
         Returns
         -------
         datetime
-            Yesterday's date
+            Yesterday's date in UTC
 
         """
 
-        return self.today() - pds.DateOffset(days=1)
+        return self.today() - dt.timedelta(days=1)
 
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
@@ -2364,7 +2383,7 @@ class Instrument(object):
             Used when loading a range of filenames from `fname` to `stop_fname`,
             inclusive. (default=None)
         verifyPad : bool
-            if True, padding data not removed for debugging. Padding
+            If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
 
         Raises
