@@ -734,7 +734,7 @@ class TestBasics():
         """Test string output with data padding """
         self.testInst.pad = dt.timedelta(minutes=5)
         self.out = self.testInst.__str__()
-        assert self.out.find('timedelta: minutes=5') > 0
+        assert self.out.find('Data Padding: 0:05:00') > 0
 
     def test_str_w_custom_func(self):
         """Test string output with custom function """
