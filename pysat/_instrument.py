@@ -1893,12 +1893,13 @@ class Instrument(object):
 
         Returns
         -------
-        datetime
-            Today's date
+        today_utc: datetime
+            Today's date in UTC
 
         """
+        today_utc = self._filter_datetime_input(dt.datetime.utcnow())
 
-        return self._filter_datetime_input(dt.datetime.today())
+        return today_utc
 
     def tomorrow(self):
         """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -1906,11 +1907,11 @@ class Instrument(object):
         Returns
         -------
         datetime
-            Tomorrow's date
+            Tomorrow's date in UTC
 
         """
 
-        return self.today() + pds.DateOffset(days=1)
+        return self.today() + dt.timedelta(days=1)
 
     def yesterday(self):
         """Returns yesterday's date (UTC), with no hour, minute, second, etc.
@@ -1918,11 +1919,11 @@ class Instrument(object):
         Returns
         -------
         datetime
-            Yesterday's date
+            Yesterday's date in UTC
 
         """
 
-        return self.today() - pds.DateOffset(days=1)
+        return self.today() - dt.timedelta(days=1)
 
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
@@ -2364,7 +2365,7 @@ class Instrument(object):
             Used when loading a range of filenames from `fname` to `stop_fname`,
             inclusive. (default=None)
         verifyPad : bool
-            if True, padding data not removed for debugging. Padding
+            If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
 
         Raises
