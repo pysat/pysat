@@ -2818,7 +2818,7 @@ class TestDataPadding():
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert (self.testInst.index[0] == self.testInst.date)
         assert (self.testInst.index[-1] == self.testInst.date
-                + dt.timedelta(hour=23, minutes=59, seconds=59))
+                + dt.timedelta(hours=23, minutes=59, seconds=59))
 
 
 class TestDataPaddingXarray(TestDataPadding):

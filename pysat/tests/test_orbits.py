@@ -659,7 +659,7 @@ class TestOrbitsGappyData2(TestGeneralOrbitsMLT):
                    + dt.timedelta(days=int(seconds)))
             times.append([day, day
                           + dt.timedelta(hours=1, minutes=37,
-                                           seconds=int(seconds))
+                                         seconds=int(seconds))
                           - dt.timedelta(seconds=20)])
 
         self.testInst.custom.attach(filter_data2, kwargs={'times': times})
@@ -684,7 +684,7 @@ class TestOrbitsGappyData2Xarray(TestGeneralOrbitsMLT):
                    + dt.timedelta(days=int(seconds)))
             times.append([day, day
                           + dt.timedelta(hours=1, minutes=37,
-                                           seconds=int(seconds))
+                                         seconds=int(seconds))
                           - dt.timedelta(seconds=20)])
 
         self.testInst.custom.attach(filter_data2, kwargs={'times': times})
