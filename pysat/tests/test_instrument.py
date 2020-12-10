@@ -568,7 +568,7 @@ class TestBasics():
     @pytest.mark.parametrize("in_time, islist",
                              [(dt.datetime.utcnow(), False),
                               (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
-                                 dt.timedelta(seconds=14400))), False),
+                                  dt.timedelta(seconds=14400))), False),
                               ([dt.datetime(2010, 1, 1, 12, i,
                                             tzinfo=dt.timezone(
                                                 dt.timedelta(seconds=14400)))
