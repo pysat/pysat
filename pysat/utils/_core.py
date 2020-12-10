@@ -515,7 +515,7 @@ def fmt_output_in_cols(out_strs, ncols=3, max_num=6, lpad=None):
     return output
 
 
-def generate_instrument_list(inst_loc):
+def generate_instrument_list(inst_loc, user_info=None):
     """Iterate through and classify instruments in a given subpackage.
 
 
@@ -524,6 +524,13 @@ def generate_instrument_list(inst_loc):
     inst_loc : python subpackage
         The location of the instrument subpackage to test,
         e.g., 'pysat.instruments'
+    user_info : dict or NoneType
+        Nested dictionary with user and password info for instrument module
+        name.  If None, no user or password is assumed.
+        (default=None)
+        EX: user_info = {'supermag_magnetometer': {'user': 'rstoneback',
+                                                   'password': 'None'}}
+
 
     Note
     ----
@@ -564,6 +571,9 @@ def generate_instrument_list(inst_loc):
                 for tag in info[inst_id].keys():
                     inst_dict = {'inst_module': module, 'tag': tag,
                                  'inst_id': inst_id}
+                    # Add username and password info if needed
+                    if user_info and inst_module in user_info:
+                        inst_dict['user_info'] = user_info[inst_module]
                     # Initialize instrument so that pysat can generate skip
                     # flags where appropriate
                     inst = pysat.Instrument(inst_module=module,
