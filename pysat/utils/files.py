@@ -35,7 +35,7 @@ def process_parsed_filenames(stored, two_digit_year_break=None):
     ----
         If two files have the same date and time information in the
         filename then the file with the higher version/revision/cycle is used.
-        Series returned only has one file der datetime. Version is required
+        Series returned only has one file per datetime. Version is required
         for this filtering, revision and cycle are optional.
 
     """
