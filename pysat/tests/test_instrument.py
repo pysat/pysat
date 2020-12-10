@@ -565,23 +565,32 @@ class TestBasics():
         assert self.out - pds.DateOffset(days=1) == self.testInst.yesterday()
         assert self.out + pds.DateOffset(days=1) == self.testInst.tomorrow()
 
-    def test_filter_datetime(self):
-        """ Test the removal of time of day information using a filter
+    @pytest.mark.parametrize("in_time, islist",
+                             [(dt.datetime.utcnow(), False),
+                              (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
+                                 dt.timedelta(seconds=14400))), False),
+                              ([dt.datetime(2010, 1, 1, 12, i,
+                                            tzinfo=dt.timezone(
+                                                dt.timedelta(seconds=14400)))
+                                for i in range(3)], True)])
+    def test_filter_datetime(self, in_time, islist):
+        """ Test the range of allowed inputs for the Instrument datetime filter
         """
-        self.ref_time = dt.datetime.utcnow()
-        self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
-                               self.ref_time.day)
-        assert self.out == self.testInst._filter_datetime_input(self.ref_time)
+        # Because the input datetime is the middle of the day and the offset
+        # is four hours, the reference date and input date are the same
+        if islist:
+            self.ref_time = [dt.datetime(tt.year, tt.month, tt.day)
+                             for tt in in_time]
+            self.out = self.testInst._filter_datetime_input(in_time)
+        else:
+            self.ref_time = [dt.datetime(in_time.year, in_time.month,
+                                         in_time.day)]
+            self.out = [self.testInst._filter_datetime_input(in_time)]
 
-    def test_filter_datetime_aware_to_naive(self):
-        """ Test the transformation of aware to naive UTC by datetime filter
-        """
-        self.ref_time = dt.datetime(2010, 1, 1, tzinfo=dt.timezone.utc)
-        self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
-                               self.ref_time.day)
-        ftime = self.testInst._filter_datetime_input(self.ref_time)
-        assert self.out == ftime
-        assert ftime.tzinfo is None or ftime.utcoffset() is None
+        # Test for the date values and timezone awareness status
+        for i, tt in enumerate(self.out):
+            assert self.out[i] == self.ref_time[i]
+            assert self.out[i].tzinfo is None or self.out[i].utcoffset() is None
 
     def test_filtered_date_attribute(self):
         """ Test use of filter during date assignment
