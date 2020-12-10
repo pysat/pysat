@@ -556,6 +556,8 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_today_yesterday_and_tomorrow(self):
+        """ Test the correct instantiation of yesterday/today/tomorrow dates
+        """
         self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
@@ -564,12 +566,26 @@ class TestBasics():
         assert self.out + pds.DateOffset(days=1) == self.testInst.tomorrow()
 
     def test_filter_datetime(self):
+        """ Test the removal of time of day information using a filter
+        """
         self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         assert self.out == self.testInst._filter_datetime_input(self.ref_time)
 
+    def test_filter_datetime_aware_to_naive(self):
+        """ Test the transformation of aware to naive UTC by datetime filter
+        """
+        self.ref_time = dt.datetime(2010, 1, 1, tzinfo=dt.timezone.utc)
+        self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
+                               self.ref_time.day)
+        ftime = self.testInst._filter_datetime_input(self.ref_time)
+        assert self.out == ftime
+        assert ftime.tzinfo is None or ftime.utcoffset() is None
+
     def test_filtered_date_attribute(self):
+        """ Test use of filter during date assignment
+        """
         self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
@@ -1875,7 +1891,7 @@ class TestBasics():
         out = pds.date_range(start_date, stop_date, freq='2D').tolist()
 
         # Convert filenames in list to a date
-        for item in self.testInst._iter_list:
+        for i, item in enumerate(self.testInst._iter_list):
             snip = item.split('.')[0]
             ref_snip = out[i].strftime('%Y-%m-%d')
             assert snip == ref_snip
