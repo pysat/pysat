@@ -14,16 +14,19 @@ from pysat.tests.instrument_test_class import InstTestClass
 
 saved_path = pysat.data_dir
 
+# Optional code to pass through user and password info to test instruments
 # dict, keyed by pysat instrument, with a list of usernames and passwords
-user_info = {'supermag_magnetometer': {'user': 'rstoneback',
-                                       'password': 'None'}}
+# user_info = {'platform_name': {'user': 'rstoneback',
+#                                'password': 'None'}}
 
 # Developers for instrument libraries should update the following line to
 # point to their own subpackage location
 # e.g.,
 # instruments = generate_instrument_list(inst_loc=mypackage.inst)
-instruments = generate_instrument_list(inst_loc=pysat.instruments,
-                                       user_info=user_info)
+instruments = generate_instrument_list(inst_loc=pysat.instruments)
+# If user and password info supplied, use the following instead
+# instruments = generate_instrument_list(inst_loc=mypackage.inst,
+#                                        user_info=user_info)
 
 # The following lines apply the custom instrument lists to each type of test
 method_list = [func for func in dir(InstTestClass)
