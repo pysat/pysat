@@ -734,7 +734,7 @@ class TestBasics():
         """Test string output with data padding """
         self.testInst.pad = dt.timedelta(minutes=5)
         self.out = self.testInst.__str__()
-        assert self.out.find('DateOffset: minutes=5') > 0
+        assert self.out.find('timedelta: minutes=5') > 0
 
     def test_str_w_custom_func(self):
         """Test string output with custom function """
@@ -1182,7 +1182,6 @@ class TestBasics():
         """Test setting bounds with non-default step"""
         start = self.ref_time
         stop = self.ref_time + dt.timedelta(days=14)
-        stop = stop.to_pydatetime()
         self.testInst.bounds = (start, stop, 'M')
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='M').tolist())
@@ -1191,7 +1190,6 @@ class TestBasics():
         """Test iterating bounds with non-default step"""
         start = self.ref_time
         stop = self.ref_time + dt.timedelta(days=15)
-        stop = stop.to_pydatetime()
         self.testInst.bounds = (start, stop, '2D')
         dates = []
         for inst in self.testInst:
