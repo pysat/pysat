@@ -520,14 +520,17 @@ class TestBasics():
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download_updated_files()
-        # Perform a local search
-        assert "files locally" in caplog.text
-        # New files are found
+
+        # Test the logging output for the following conditions:
+        # - perform a local search,
+        # - new files are found,
+        # - download new files, and
+        # - update local file list.
+        assert "local files" in caplog.text
         assert "that are new or updated" in caplog.text
-        # download new files
         assert "Downloading data to" in caplog.text
-        # Update local file list
         assert "Updating pysat file list" in caplog.text
+
         if non_default:
             assert "Updating instrument object bounds " not in caplog.text
         else:
@@ -553,7 +556,7 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_today_yesterday_and_tomorrow(self):
-        self.ref_time = dt.datetime.now()
+        self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         assert self.out == self.testInst.today()
@@ -561,13 +564,13 @@ class TestBasics():
         assert self.out + pds.DateOffset(days=1) == self.testInst.tomorrow()
 
     def test_filter_datetime(self):
-        self.ref_time = dt.datetime.now()
+        self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         assert self.out == self.testInst._filter_datetime_input(self.ref_time)
 
     def test_filtered_date_attribute(self):
-        self.ref_time = dt.datetime.now()
+        self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         self.testInst.date = self.ref_time
@@ -1870,12 +1873,12 @@ class TestBasics():
         stop_date = dt.datetime(2009, 1, 3)
         self.testInst.bounds = (start, stop, 2)
         out = pds.date_range(start_date, stop_date, freq='2D').tolist()
-        # convert filenames in list to a date
-        date_list = []
+
+        # Convert filenames in list to a date
         for item in self.testInst._iter_list:
             snip = item.split('.')[0]
-            date_list.append(dt.datetime.strptime(snip, '%Y-%m-%d'))
-        assert np.all(date_list == out)
+            ref_snip = out[i].strftime('%Y-%m-%d')
+            assert snip == ref_snip
 
     def test_iterate_bounds_fname_with_frequency(self):
         """Test iterate over bounds using filenames and non-default step"""
