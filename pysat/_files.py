@@ -293,14 +293,14 @@ class Files(object):
         # if not, do nothing
         stored_files = self._load()
         if len(stored_files) != len(self.files):
-            # # of items is different, things are new
+            # The number of items is different, things are new
             new_flag = True
         elif len(stored_files) == len(self.files):
-            # # of items equal, check specifically for equality
+            # The number of items is the same, check specifically for equality
             if stored_files.eq(self.files).all():
                 new_flag = False
             else:
-                # not equal, there are new files
+                # Stored and new data are not equal, there are new files
                 new_flag = True
 
         if new_flag:
@@ -380,7 +380,7 @@ class Files(object):
         if not info.empty:
             if self.ignore_empty_files:
                 self._filter_empty_files()
-            logger.info('Found {ll:d} files locally.'.format(ll=len(info)))
+            logger.info('Found {:d} local files.'.format(len(info)))
         else:
             estr = "Unable to find any files that match the supplied template."
             estr += " If you have the necessary files please check pysat "
