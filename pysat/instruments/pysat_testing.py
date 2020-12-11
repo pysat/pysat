@@ -214,18 +214,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.0).astype(int)
-    if tag == 'ascend':
-        data['dummy1'] = [i for i in range(len(data['mlt']))]
-    elif tag == 'descend':
-        data['dummy1'] = [-i for i in range(len(data['mlt']))]
-    elif tag == 'plus10':
-        data['dummy1'] = [i + 10 for i in range(len(data['mlt']))]
-    elif tag == 'fives':
-        data['dummy1'] = [5 for i in range(len(data['mlt']))]
-    elif tag == 'mlt_offset':
-        data['dummy1'] = mlt_int + 5
-    else:
-        data['dummy1'] = mlt_int
+    data['dummy1'] = mlt_int
     data['dummy2'] = long_int
     data['dummy3'] = mlt_int + long_int * 1000.0
     data['dummy4'] = uts
