@@ -141,8 +141,10 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
 
     if tag == 'no_download':
         warnings.warn('This simulates an instrument without download support')
+    # Check that user name and password are passed through the unit tests
     if tag == 'user_password':
         if (not user) and (not password):
+            # Note that this line will be uncovered if test succeeds
             raise ValueError(' '.join(('Instrument is not passing user and',
                                        'password to test instruments')))
 
