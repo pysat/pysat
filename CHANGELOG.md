@@ -52,7 +52,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Addressed several Warnings raised by incorrect use of dependent packages
   - Deprecated use of inst_id for number of simulated samples for test
     instruments
-  - Removed writing of custom Meta attributes (deprecated) when producing netCDF4 files
+  - Removed writing of custom Meta attributes (deprecated) when producing
+    netCDF4 files
+  - Removed unneeded description.txt file, using README instead
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
