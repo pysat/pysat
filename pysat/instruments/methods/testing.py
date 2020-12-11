@@ -145,7 +145,7 @@ def download(date_array, tag, inst_id, data_path=None, user=None,
     if tag == 'user_password':
         if (not user) and (not password):
             # Note that this line will be uncovered if test succeeds
-            raise ValueError(' '.join(('Instrument is not passing user and',
+            raise ValueError(' '.join(('Tests are not passing user and',
                                        'password to test instruments')))
 
     return
