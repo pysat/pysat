@@ -23,21 +23,17 @@ name = 'testing'
 # dictionary of data 'tags' and corresponding description
 # tags are used to choose the behaviour of dummy1
 tags = {'': 'Regular testing data set',
-        'ascend': 'Ascending Integers from 0 testing data set',
-        'descend': 'Descending Integers from 0 testing data set',
-        'plus10': 'Ascending Integers from 10 testing data set',
-        'fives': 'All 5s testing data set',
-        'mlt_offset': 'dummy1 is offset by five from regular testing set',
         'no_download': 'simulate an instrument without download support',
-        'non_strict': 'simulate an instrument without strict_time_flag'}
+        'non_strict': 'simulate an instrument without strict_time_flag',
+        'user_password': 'simulates an instrument that requires a password'}
 
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in inst_id to change the number of points per day
-inst_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
-                 'no_download']}
+inst_ids = {'': ['', 'no_download', 'non_strict', 'user_password']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'no_download': dt.datetime(2009, 1, 1),
-                    'non_strict': dt.datetime(2009, 1, 1)}}
+                    'non_strict': dt.datetime(2009, 1, 1),
+                    'user_password': dt.datetime(2009, 1, 1)}}
 _test_download = {'': {'no_download': False}}
 
 
