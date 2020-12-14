@@ -411,10 +411,11 @@ in-place as needed; equivalent to a 'modify' custom routine.
 keywords are not supported within the init module method signature, though
 custom keyword support for instruments is available via inst.kwargs.
 
-**default**
+**preprocess**
 
 
-First custom function applied, once per instrument load.
+First custom function applied, once per instrument load.  Designed for standard
+instrument preprocessing.
 
 .. code:: python
 
