@@ -2690,6 +2690,7 @@ class TestDataPadding():
         del self.testInst, self.ref_time, self.ref_doy
 
     def test_data_padding(self):
+        """Ensure that pad works at the instrument level"""
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         assert (self.testInst.index[0]
                 == self.testInst.date - dt.timedelta(minutes=5))
