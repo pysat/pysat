@@ -55,6 +55,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed writing of custom Meta attributes (deprecated) when producing
     netCDF4 files
   - Removed unneeded description.txt file, using README instead
+  - Changed name of Instrument method `default` to `preprocess`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
