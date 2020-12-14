@@ -2697,10 +2697,13 @@ class TestDataPadding():
                 + dt.timedelta(hours=23, minutes=59, seconds=59)
                 + dt.timedelta(minutes=5))
 
-    def test_data_padding_offset_instantiation(self):
+    @pytest.mark.parametrize('pad', [dt.timedelta(minutes=5),
+                                     pds.DateOffset(minutes=5)])
+    def test_data_padding_offset_instantiation(self, pad):
+        """Ensure pad can be used as either datetime or pandas"""
         testInst = pysat.Instrument(platform='pysat', name='testing',
                                     clean_level='clean',
-                                    pad=dt.timedelta(minutes=5),
+                                    pad=pad,
                                     update_files=True)
         testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         assert (testInst.index[0] == testInst.date - dt.timedelta(minutes=5))
