@@ -318,8 +318,8 @@ class Instrument(object):
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
         saved_keys = []
-        partial_func = ['list_files', 'download', 'default', 'clean']
-        for fkey in ['list_files', 'load', 'default', 'download',
+        partial_func = ['list_files', 'download', 'preprocess', 'clean']
+        for fkey in ['list_files', 'load', 'preprocess', 'download',
                      'list_remote_files', 'clean']:
             func_name = _kwargs_keys_to_func_name(fkey)
             func = getattr(self, func_name)
@@ -389,10 +389,10 @@ class Instrument(object):
         # initialize orbit support
         if orbit_info is None:
             if self.orbit_info is None:
-                # if default info not provided, set None as default
+                # If default info not provided, set None as default
                 orbit_info = {'index': None, 'kind': None, 'period': None}
             else:
-                # default provided by instrument module
+                # Default provided by instrument module
                 orbit_info = self.orbit_info
         self.orbits = pysat.Orbits(self, **orbit_info)
         self.orbit_info = orbit_info
@@ -890,7 +890,7 @@ class Instrument(object):
                 return pds.Index([])
 
     def _pass_method(*args, **kwargs):
-        """ Default method for updateable Instrument methods
+        """ Default method for updatable Instrument methods
         """
         pass
 
@@ -917,7 +917,7 @@ class Instrument(object):
         Note
         ----
         methods
-            init, default, and clean
+            init, preprocess, and clean
         functions
             load, list_files, download, and list_remote_files
         attributes
@@ -929,7 +929,7 @@ class Instrument(object):
         """
         # Declare the standard Instrument methods and attributes
         inst_methods = {'required': ['init', 'clean'],
-                        'optional': ['default']}
+                        'optional': ['preprocess']}
         inst_funcs = {'required': ['load', 'list_files', 'download'],
                       'optional': ['list_remote_files']}
         inst_attrs = {"directory_format": None, "file_format": None,
@@ -938,21 +938,21 @@ class Instrument(object):
         test_attrs = {'_test_download': True, '_test_download_travis': True,
                       '_password_req': False}
 
-        # set method defaults
+        # Set method defaults
         for mname in [mm for val in inst_methods.values() for mm in val]:
             local_name = _kwargs_keys_to_func_name(mname)
             setattr(self, local_name, self._pass_method)
 
-        # set function defaults
+        # Set function defaults
         for mname in [mm for val in inst_funcs.values() for mm in val]:
             local_name = _kwargs_keys_to_func_name(mname)
             setattr(self, local_name, _pass_func)
 
-        # set attribute defaults
+        # Set attribute defaults
         for iattr in inst_attrs.keys():
             setattr(self, iattr, inst_attrs[iattr])
 
-        # set test defaults
+        # Set test defaults
         for iattr in test_attrs.keys():
             setattr(self, iattr, test_attrs[iattr])
 
@@ -991,10 +991,10 @@ class Instrument(object):
                     logger.error(estr)
                     raise ImportError(ierr)
         elif inst_module is not None:
-            # user supplied an object with relevant instrument routines
+            # User supplied an object with relevant instrument routines
             inst = inst_module
         else:
-            # no module or name info, default pass functions assigned
+            # No module or name info, default pass functions assigned
             return
 
         # Assign the Instrument methods
@@ -1637,7 +1637,7 @@ class Instrument(object):
 
         """
         if value is None:
-            # user wants defaults
+            # User wants defaults
             value = (None, None, None, None)
 
         if len(value) < 2:
@@ -1659,13 +1659,13 @@ class Instrument(object):
         else:
             raise ValueError('Too many input arguments.')
 
-        # pull out start and stop times now that other optional items have
+        # Pull out start and stop times now that other optional items have
         # been checked out.
         start = value[0]
         stop = value[1]
 
         if (start is None) and (stop is None):
-            # set default using first and last file date
+            # Set default using first and last file date
             self._iter_start = [self.files.start_date]
             self._iter_stop = [self.files.stop_date]
             self._iter_type = 'date'
@@ -1729,17 +1729,17 @@ class Instrument(object):
                     starts = [self.files[0]]
                 if stops[0] is None:
                     stops = [self.files[-1]]
-                # default step size
+                # Default step size
                 if self._iter_step is None:
                     self._iter_step = 1
-                # default window size
+                # Default window size
                 if self._iter_width is None:
                     self._iter_width = 1
 
                 self._iter_list = []
                 for istart, istop in zip(starts, stops):
-                    # ensure istart before istop
-                    # Get index of start/stop file from main file list
+                    # Ensure istart begins before istop. Get the index of
+                    # the file start/stop times from main file list.
                     start_idx = self.files.get_index(istart)
                     stop_idx = self.files.get_index(istop)
                     if stop_idx < start_idx:
@@ -1763,29 +1763,29 @@ class Instrument(object):
 
             elif isinstance(starts[0], dt.datetime) or isinstance(stops[0],
                                                                   dt.datetime):
-                # one of the inputs is a date
+                # One of the inputs is a date
                 self._iter_type = 'date'
 
                 if starts[0] is None:
-                    # start and stop dates on self.files already filtered
+                    # Start and stop dates on self.files already filtered
                     # to include only year, month, and day
                     starts = [self.files.start_date]
                 if stops[0] is None:
                     stops = [self.files.stop_date]
-                # default step size
+                # Default step size
                 if self._iter_step is None:
                     self._iter_step = '1D'
-                # default window size
+                # Default window size
                 if self._iter_width is None:
                     self._iter_width = pds.DateOffset(days=1)
 
-                # create list-like of dates for iteration
+                # Create list-like of dates for iteration
                 starts = self._filter_datetime_input(starts)
                 stops = self._filter_datetime_input(stops)
                 freq = self._iter_step
                 width = self._iter_width
 
-                # ensure inputs are in reasonable date order
+                # Ensure inputs are in reasonable date order
                 for start, stop in zip(starts, stops):
                     if start > stop:
                         estr = ' '.join(('Bounds must be set in increasing',
@@ -2476,33 +2476,34 @@ class Instrument(object):
             curr = self.date
 
         elif date is not None:
-            # verify arguments make sense, in context
+            # Verify arguments make sense, in context
             _check_load_arguments_none(fname, stop_fname, yr, doy, end_yr,
                                        end_doy, raise_error=True)
-            # ensure date portion from user is only year, month, day
+
+            # Ensure date portion from user is only year, month, day
             self._set_load_parameters(date=date, fid=None)
             date = self._filter_datetime_input(date)
 
-            # increment
+            # Increment after determining the desird step size
             if end_date is not None:
-                # support loading a range of dates
+                # Support loading a range of dates
                 self.load_step = end_date - date
             else:
-                # defaults to single day load
+                # Defaults to single day load
                 self.load_step = pds.DateOffset(days=1)
             curr = date
 
         elif fname is not None:
-            # verify arguments make sense, in context
+            # Verify arguments make sense, in context
             _check_load_arguments_none(yr, doy, end_yr, end_doy, date, end_date,
                                        raise_error=True)
-            # date will have to be set later by looking at the data
+            # Date will have to be set later by looking at the data
             self._set_load_parameters(date=None,
                                       fid=self.files.get_index(fname))
 
-            # check for loading by file range
+            # Check for loading by file range
             if stop_fname is not None:
-                # get index for both files so the delta may be computed
+                # Get index for both files so the delta may be computed
                 idx1 = self.files.get_index(fname)
                 idx2 = self.files.get_index(stop_fname)
                 diff = idx2 - idx1
@@ -2740,20 +2741,20 @@ class Instrument(object):
             else:
                 warnings.warn(message, stacklevel=2)
 
-        # apply default instrument routine, if data present
+        # Apply the instrument preprocess routine, if data present
         if not self.empty:
             # Does not require self as input, as it is a partial func
-            self._default_rtn()
+            self._preprocess_rtn()
 
-        # clean data, if data is present and cleaning requested
+        # Clean data, if data is present and cleaning requested
         if (not self.empty) & (self.clean_level != 'none'):
             self._clean_rtn()
 
-        # apply custom functions via the nanokernel in self.custom
+        # Apply custom functions via the nanokernel in self.custom
         if not self.empty:
             self.custom._apply_all(self)
 
-        # remove the excess data padding, if any applied
+        # Remove the excess data padding, if any applied
         if (self.pad is not None) & (not self.empty) & (not verifyPad):
             self.data = self[first_time: last_time]
             if not self.empty:
@@ -2999,19 +3000,19 @@ class Instrument(object):
             Flag for engaging zlib compression (True - compression on)
         complevel : int
             an integer between 1 and 9 describing the level of compression
-            desired (default 4). Ignored if zlib=False
+            desired. Ignored if zlib=False. (defaul=4)
         shuffle : bool
-            the HDF5 shuffle filter will be applied before compressing the data
-            (default True). This significantly improves compression. Default is
-            True. Ignored if zlib=False.
-        preserve_meta_case : bool (False)
+            The HDF5 shuffle filter will be applied before compressing the data.
+            This significantly improves compression. Ignored if zlib=False.
+            (default=True)
+        preserve_meta_case : bool
             if True, then the variable strings within the MetaData object, which
             preserves case, are used to name variables in the written netCDF
             file.
             If False, then the variable strings used to access data from the
             Instrument object are used instead. By default, the variable strings
             on both the data and metadata side are the same, though this
-            relationship may be altered by a user.
+            relationship may be altered by a user. (default=False)
         export_nan : list or None
              By default, the metadata variables where a value of NaN is allowed
              and written to the netCDF4 file is maintained by the Meta object
@@ -3019,7 +3020,7 @@ class Instrument(object):
              will override the settings provided by Meta, and all parameters
              included will be written to the file. If not listed
              and a value is NaN then that attribute simply won't be included in
-             the netCDF4 file.
+             the netCDF4 file. (default=None)
         unlimited_time : bool
              If True, then the main epoch dimension will be set to 'unlimited'
              within the netCDF4 file. (default=True)
