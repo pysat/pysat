@@ -18,8 +18,8 @@ saved_path = pysat.data_dir
 # dict, keyed by pysat instrument, with a list of usernames and passwords
 # user_info = {'platform_name': {'user': 'pysat_user',
 #                                'password': 'None'}}
-user_info = {'pysat_testing': {'user': 'pysat_user',
-                               'password': 'pysat_for_me'}}
+user_info = {'pysat_testing': {'user': 'pysat_testing',
+                               'password': 'pysat.developers@gmail.com'}}
 
 # Developers for instrument libraries should update the following line to
 # point to their own subpackage location
