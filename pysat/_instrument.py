@@ -307,13 +307,14 @@ class Instrument(object):
             self.multi_file_day = multi_file_day
 
         # Initialize the padding
-        if isinstance(pad, dt.timedelta) or pad is None:
+        if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
             self.pad = pad
         elif isinstance(pad, dict):
-            self.pad = dt.timedelta(**pad)
+            self.pad = pds.DateOffset(**pad)
         else:
-            raise ValueError(''.join(['pad must be a dict, NoneType, or ',
-                                      'pandas.DateOffset instance.']))
+            raise ValueError(' '.join(['pad must be a dict, NoneType,',
+                                       'datetime.timedelta, or',
+                                       'pandas.DateOffset instance.']))
 
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
