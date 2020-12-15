@@ -3000,7 +3000,7 @@ class Instrument(object):
             Flag for engaging zlib compression (True - compression on)
         complevel : int
             an integer between 1 and 9 describing the level of compression
-            desired. Ignored if zlib=False. (defaul=4)
+            desired. Ignored if zlib=False. (default=4)
         shuffle : bool
             The HDF5 shuffle filter will be applied before compressing the data.
             This significantly improves compression. Ignored if zlib=False.
