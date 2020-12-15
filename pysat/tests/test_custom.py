@@ -149,13 +149,16 @@ class TestBasics():
                                     kwargs={'kwarg1': True, 'kwarg2': False})
         self.testInst.custom_attach(custom_modify, 'modify', args=[5, 10],
                                     kwargs={'kwarg1': True, 'kwarg2': True})
+        self.testInst.custom_attach(custom_modify, 'modify')
 
         # create another instance of pysat.Instrument and add custom
         # via the input keyword
         custom = [{'function': custom_add, 'kind': 'add', 'args': [0, 1],
                    'kwargs': {'kwarg1': True, 'kwarg2': False}},
                   {'function': custom_modify, 'kind': 'modify', 'args': [5, 10],
-                   'kwargs': {'kwarg1': True, 'kwarg2': True}}]
+                   'kwargs': {'kwarg1': True, 'kwarg2': True}},
+                  {'function': custom_modify, 'kind': 'modify'}
+                  ]
         testInst2 = pysat.Instrument('pysat', 'testing', custom=custom)
 
         # ensure both instruments have the same custom_* attributes
