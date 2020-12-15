@@ -51,12 +51,6 @@ class TestBasics():
         """
         del self.testInst, self.ncols, self.out
 
-    # def test_basic_repr(self):
-    #     """The repr output will match the str output"""
-    #     self.out = self.testInst.__repr__()
-    #     assert isinstance(self.out, str)
-    #     assert self.out.find("functions applied") > 0
-
     def test_basic_str(self):
         """Check for lines from each decision point in str"""
         self.out = self.testInst.__str__()
