@@ -105,7 +105,7 @@ class Instrument(object):
         custom methods to the Instrument object via `custom_attach`.
         [{'function': method, 'kind': str, 'args': [args],
           'kwargs': {'keyword': val}}]
-        Methods are added in list order.
+        Methods are added and executed in list order.
 
     Attributes
     ----------
@@ -1990,7 +1990,9 @@ class Instrument(object):
         ----------
         function : string or function object
             name of function or function object to be added to queue
-        kind : {'add', 'modify', 'pass'}
+        kind : str
+            Specifies the type of interaction between the custom function and the
+            Instrument data.  Accepts one of 'add', 'modify', or 'pass'.
             - add
                 Adds data returned from function to instrument object.
                 A copy of pysat.Instrument object supplied to routine.

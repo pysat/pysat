@@ -100,12 +100,12 @@ to automatically apply the method upon ever load.
 
 .. code:: python
 
-   ivm.custom_attach(custom_func_modify, 'modify', optional_param2=True)
+   ivm.custom_attach(custom_func_modify, 'modify', kwargs={'optional_param2': True})
    ivm.load(2009, 1)
    print(ivm['double_mlt'])
-   ivm.custom_attach(custom_func_add, 'add', optional_param2=True)
+   ivm.custom_attach(custom_func_add, 'add', kwargs={'optional_param2': True})
    # can also set via a string name for method
-   ivm.custom_attach('custom_func_add', 'add', optional_param2=False)
+   ivm.custom_attach('custom_func_add', 'add', kwargs={'optional_param2': False})
    # set bounds limiting the file/date range the Instrument will iterate over
    ivm.bounds = (start, stop)
    # perform analysis. Whatever modifications are enabled by the custom
