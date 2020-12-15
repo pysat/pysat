@@ -80,7 +80,13 @@ class Constellation(object):
 
         return output_str
 
-    def set_bounds(self, start, stop):
+    @property
+    def bounds(self):
+        return self.instruments[0].bounds
+
+    @bounds.setter
+    def bounds(self, value=None):
+
         """ Sets boundaries for all instruments in constellation
 
         Parameters
@@ -93,7 +99,7 @@ class Constellation(object):
         """
 
         for instrument in self.instruments:
-            instrument.bounds = (start, stop)
+            instrument.bounds = value
 
     def custom_attach(self, *args, **kwargs):
         """
