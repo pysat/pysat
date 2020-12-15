@@ -2590,7 +2590,6 @@ class Instrument(object):
             self.data, meta = self._load_data(date=self.date, fid=self._fid,
                                               inc=self.load_step)
             if not self.empty:
-                meta.accept_default_labels(self.meta)
                 self.meta = meta
 
                 # If only some metadata included, define the remaining variables
