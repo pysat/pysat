@@ -2001,7 +2001,6 @@ class Instrument(object):
                 A copy of pysat object is passed to function. No
                 data is accepted from return.
             (default='modify')
-
         at_pos : string or int
             Accepts string 'end' or a number that will be used to determine
             the insertion order if multiple custom functions are attached
@@ -2015,7 +2014,7 @@ class Instrument(object):
 
         Note
         ----
-        Allowed `attach` function returns:
+        Allowed `custom_attach` function returns if `kind` is 'add':
 
         - {'data' : pandas Series/DataFrame/array_like,
           'units' : string/array_like of strings,
@@ -2025,6 +2024,8 @@ class Instrument(object):
         - pandas DataFrame, names of columns are used
 
         - pandas Series, .name required
+
+        - xarray DataArray, .name required
 
         - (string/list of strings, numpy array/list of arrays)
 
@@ -2124,7 +2125,7 @@ class Instrument(object):
                         elif isinstance(newData, pds.Series):
                             self[newData.name] = newData
 
-                        # xarray returned
+                        # xarray.DataArray returned
                         elif isinstance(newData, xr.DataArray):
                             self[newData.name] = newData
 
@@ -2167,7 +2168,9 @@ class Instrument(object):
                                                       'supplied pysat object.'
                                                       )))
 
-                    # pass function (function runs, no data allowed back)
+                    # pass function (function runs on a copy of Instrument,
+                    # no modifications to Instrument are retained,
+                    # no data allowed back)
                     if kind == 'pass':
                         tempd = self.copy()
                         temp_out = func(tempd, *arg, **kwarg)
