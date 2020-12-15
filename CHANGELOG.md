@@ -55,6 +55,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Removed writing of custom Meta attributes (deprecated) when producing
     netCDF4 files
   - Removed unneeded description.txt file, using README instead
+  - Changed `pysat.instruments.methods.general.list_files` kwarg
+    `fake_monthly_files_from_daily` to `file_cadance`
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
