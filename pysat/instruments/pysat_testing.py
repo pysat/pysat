@@ -81,24 +81,24 @@ def init(self):
     return
 
 
-def default(self):
-    """Default customization function.
-
-    Note
-    ----
-    This routine is automatically applied to the Instrument object
-    on every load by the pysat nanokernel (first in queue).
-
-    """
-
-    pass
-
-
 def clean(self):
     """Cleaning function
     """
 
-    pass
+    return
+
+
+# Optional method
+def preprocess(self):
+    """Customization method that performs standard preprocessing.
+
+    This routine is automatically applied to the Instrument object
+    on every load by the pysat nanokernel (first in queue). Object
+    modified in place.
+
+    """
+
+    return
 
 
 def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,

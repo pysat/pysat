@@ -167,8 +167,8 @@ def clean(self):
 
 
 # Optional method
-def default(self):
-    """Default customization method.
+def preprocess(self):
+    """Customization method that performs standard preprocessing.
 
     This routine is automatically applied to the Instrument object
     on every load by the pysat nanokernel (first in queue). Object
