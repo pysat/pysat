@@ -1717,7 +1717,7 @@ class Instrument(object):
 
     @date.setter
     def date(self, new_date):
-        # Set the date property, see property docstriing for details
+        # Set the date property, see property docstring for details
         self._date = self._filter_datetime_input(new_date)
 
     @property
