@@ -117,7 +117,7 @@ class Instrument(object):
         List of functions to be applied by instrument nano-kernel
     custom_kind : list
         List of strings indicating type of custom function, 'modify', 'add', or
-        pass'
+        'pass'
     custom_args : list
         List of lists containing arguments to be passed to particular
         custom function
@@ -143,7 +143,7 @@ class Instrument(object):
 
     Note
     ----
-    Pysat attempts to load the module platform_name.py located in
+    pysat attempts to load the module platform_name.py located in
     the pysat/instruments directory. This module provides the underlying
     functionality to download, load, and clean instrument data.
     Alternatively, the module may be supplied directly
@@ -2170,13 +2170,13 @@ class Instrument(object):
                     # pass function (function runs, no data allowed back)
                     if kind == 'pass':
                         tempd = self.copy()
-                        t = func(tempd, *arg, **kwarg)
+                        temp_out = func(tempd, *arg, **kwarg)
                         del tempd
-                        if t is not None:
+                        if temp_out is not None:
                             raise ValueError(''.join(('Pass functions should',
-                                                      ' not return any ',
-                                                      'information via ',
-                                                      'return.')))
+                                                      ' not return any',
+                                                      ' information via',
+                                                      ' return.')))
 
     def custom_clear(self):
         """Clear custom function list."""
