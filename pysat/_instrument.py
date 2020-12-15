@@ -2129,6 +2129,10 @@ class Instrument(object):
                         elif isinstance(newData, xr.DataArray):
                             self[newData.name] = newData
 
+                        # xarray.DataSet returned
+                        elif isinstance(newData, xr.Dataset):
+                            self.data = xr.merge([self.data, newData])
+
                         # some kind of iterable returned,
                         # presuming (name, data)
                         # or ([name1,...], [data1,...])
