@@ -77,7 +77,7 @@ def init(self):
     # mess with file dates if kwarg option present
     if self.kwargs['load']['mangle_file_dates']:
         self.files.files.index = \
-            self.files.files.index + pds.DateOffset(minutes=5)
+            self.files.files.index + dt.timedelta(minutes=5)
     return
 
 
@@ -165,7 +165,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                                                freq='1S')
 
     # Specify the date tag locally and determine the desired date range
-    pds_offset = pds.DateOffset(hours=12)
+    pds_offset = dt.timedelta(hours=12)
     if sim_multi_file_right:
         root_date = root_date or _test_dates[''][''] + pds_offset
     elif sim_multi_file_left:

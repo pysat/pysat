@@ -307,13 +307,14 @@ class Instrument(object):
             self.multi_file_day = multi_file_day
 
         # Initialize the padding
-        if isinstance(pad, pds.DateOffset) or pad is None:
+        if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
             self.pad = pad
         elif isinstance(pad, dict):
             self.pad = pds.DateOffset(**pad)
         else:
-            raise ValueError(''.join(['pad must be a dict, NoneType, or ',
-                                      'pandas.DateOffset instance.']))
+            raise ValueError(' '.join(['pad must be a dict, NoneType,',
+                                       'datetime.timedelta, or',
+                                       'pandas.DateOffset instance.']))
 
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
@@ -408,7 +409,7 @@ class Instrument(object):
         self._export_meta_post_processing = None
 
         # start with a daily increment for loading
-        self.load_step = pds.DateOffset(days=1)
+        self.load_step = dt.timedelta(days=1)
 
         # Run instrument init function, a basic pass function is used if the
         # user doesn't supply the init function
@@ -1127,7 +1128,7 @@ class Instrument(object):
             file date (default=None)
         fid : int or NoneType
             filename index value (default=None)
-        inc : pds.DateOffset or int
+        inc : dt.timedelta or int
             Increment of files or dates to load, starting from the
             root date or fid (default=None)
 
@@ -1534,7 +1535,7 @@ class Instrument(object):
             day/file (default='1D', 1).
         width : pandas.DateOffset, int, or None
             Data window used when loading data within iteration. Defaults to a
-            single day/file if not assigned. (default=pds.DateOffset(days=1),
+            single day/file if not assigned. (default=dt.timedelta(days=1),
             1)
 
         Note
@@ -1572,7 +1573,7 @@ class Instrument(object):
 
             # Load more than a single day/file at a time when iterating
             inst.bounds = ([start, start2], [stop, stop2], '2D',
-                           pds.DateOffset(days=3))
+                           dt.timedelta(days=3))
 
         """
 
@@ -1598,7 +1599,7 @@ class Instrument(object):
             day/file (default='1D', 1).
         width (value[3]): pandas.DateOffset, int, or None
             Data window used when loading data within iteration. Defaults to a
-            single day/file if not assigned. (default=pds.DateOffset(days=1),
+            single day/file if not assigned. (default=dt.timedelta(days=1),
             1)
 
         Note
@@ -1633,7 +1634,7 @@ class Instrument(object):
 
             # Load more than a single day/file at a time when iterating
             inst.bounds = ([start, start2], [stop, stop2], '2D',
-                           pds.DateOffset(days=3))
+                           dt.timedelta(days=3))
 
         """
         if value is None:
@@ -1672,10 +1673,10 @@ class Instrument(object):
             if self._iter_step is None:
                 self._iter_step = '1D'
             if self._iter_width is None:
-                self._iter_width = pds.DateOffset(days=1)
+                self._iter_width = dt.timedelta(days=1)
             if self._iter_start[0] is not None:
                 # There are files. Use those dates.
-                ustops = [stop - self._iter_width + pds.DateOffset(days=1)
+                ustops = [stop - self._iter_width + dt.timedelta(days=1)
                           for stop in self._iter_stop]
                 ufreq = self._iter_step
                 self._iter_list = utils.time.create_date_range(self._iter_start,
@@ -1777,7 +1778,7 @@ class Instrument(object):
                     self._iter_step = '1D'
                 # default window size
                 if self._iter_width is None:
-                    self._iter_width = pds.DateOffset(days=1)
+                    self._iter_width = dt.timedelta(days=1)
 
                 # create list-like of dates for iteration
                 starts = self._filter_datetime_input(starts)
@@ -1796,7 +1797,7 @@ class Instrument(object):
                         raise ValueError(estr)
 
                 # account for width of load. Don't extend past bound.
-                ustops = [stop - width + pds.DateOffset(days=1)
+                ustops = [stop - width + dt.timedelta(days=1)
                           for stop in stops]
                 self._iter_list = utils.time.create_date_range(starts,
                                                                ustops,
@@ -2471,7 +2472,7 @@ class Instrument(object):
                 raise ValueError(estr)
             else:
                 # increment end by a day if none supplied
-                self.load_step = pds.DateOffset(days=1)
+                self.load_step = dt.timedelta(days=1)
 
             curr = self.date
 
@@ -2489,7 +2490,7 @@ class Instrument(object):
                 self.load_step = end_date - date
             else:
                 # defaults to single day load
-                self.load_step = pds.DateOffset(days=1)
+                self.load_step = dt.timedelta(days=1)
             curr = date
 
         elif fname is not None:
@@ -2531,7 +2532,7 @@ class Instrument(object):
                 raise ValueError(estr)
 
             date = self.files.files.index[0]
-            end_date = self.files.files.index[-1] + pds.DateOffset(days=1)
+            end_date = self.files.files.index[-1] + dt.timedelta(days=1)
 
             self._set_load_parameters(date=date, fid=None)
             curr = date
@@ -2544,7 +2545,7 @@ class Instrument(object):
 
         # if pad  or multi_file_day is true, need to have a three day/file load
         loop_pad = self.pad if self.pad is not None \
-            else pds.DateOffset(seconds=0)
+            else dt.timedelta(seconds=0)
 
         # check for constiency between loading range and data padding, if any
         if self.pad is not None:
