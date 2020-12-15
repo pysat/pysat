@@ -1993,13 +1993,14 @@ class Instrument(object):
         kind : {'add', 'modify', 'pass'}
             - add
                 Adds data returned from function to instrument object.
-                A copy of pysat instrument object supplied to routine.
+                A copy of pysat.Instrument object supplied to routine.
             - modify
-                pysat instrument object supplied to routine. Any and all
+                pysat.Instrument object supplied to routine. Any and all
                 changes to object are retained.
             - pass
-                A copy of pysat object is passed to function. No
-                data is accepted from return.
+                A copy of pysat.Instrument object is passed to function
+                thus no modifications are retained. No data is accepted
+                from return.
             (default='modify')
         at_pos : string or int
             Accepts string 'end' or a number that will be used to determine
