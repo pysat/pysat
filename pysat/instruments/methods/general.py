@@ -10,7 +10,40 @@ import pandas as pds
 import pysat
 
 
-logger = logging.getLogger(__name__)
+logger = pysat.logger
+
+
+def is_daily_file_cadance(file_cadance):
+    """ Evaluate file cadance to see if it is daily or greater than daily
+
+    Parameters
+    ----------
+    file_cadance : dt.timedelta or pds.DateOffset
+        pysat assumes a daily file cadance, but some instrument data file
+        contain longer periods of time.  This parameter allows the specification
+        of regular file cadances greater than or equal to a day (e.g., weekly,
+        monthly, or yearly). (default=dt.timedelta(days=1))
+
+    Returns
+    -------
+    is_daily : bool
+        True if the cadance is daily or less, False if the cadance is greater
+        than daily
+
+    """
+    is_daily = True
+
+    if hasattr(file_cadance, 'days'):
+        if file_cadance.days > 1:
+            is_daily = False
+    else:
+        if not (hasattr(file_cadance, 'microseconds') or
+                hasattr(file_cadance, 'seconds') or
+                hasattr(file_cadance, 'minutes') or
+                hasattr(file_cadance, 'hours')):
+            is_daily = False
+
+    return is_daily
 
 
 def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
@@ -92,7 +125,7 @@ def list_files(tag=None, inst_id=None, data_path=None, format_str=None,
 
     # If the data is not daily, pad the series.  Both pds.DateOffset and
     # dt.timedelta contain the 'days' attribute, so evaluate using that
-    if (not out.empty) and file_cadance.days > 1:
+    if not out.empty and not is_daily_file_cadance(file_cadance):
         emonth = out.index[-1]
         out.loc[out.index[-1] + file_cadance
                 - dt.timedelta(days=1)] = out.iloc[-1]
