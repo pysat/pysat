@@ -23,21 +23,17 @@ name = 'testing'
 # dictionary of data 'tags' and corresponding description
 # tags are used to choose the behaviour of dummy1
 tags = {'': 'Regular testing data set',
-        'ascend': 'Ascending Integers from 0 testing data set',
-        'descend': 'Descending Integers from 0 testing data set',
-        'plus10': 'Ascending Integers from 10 testing data set',
-        'fives': 'All 5s testing data set',
-        'mlt_offset': 'dummy1 is offset by five from regular testing set',
         'no_download': 'simulate an instrument without download support',
-        'non_strict': 'simulate an instrument without strict_time_flag'}
+        'non_strict': 'simulate an instrument without strict_time_flag',
+        'user_password': 'simulates an instrument that requires a password'}
 
 # dictionary of satellite IDs, list of corresponding tags
 # a numeric string can be used in inst_id to change the number of points per day
-inst_ids = {'': ['', 'ascend', 'descend', 'plus10', 'fives', 'mlt_offset',
-                 'no_download']}
+inst_ids = {'': ['', 'no_download', 'non_strict', 'user_password']}
 _test_dates = {'': {'': dt.datetime(2009, 1, 1),
                     'no_download': dt.datetime(2009, 1, 1),
-                    'non_strict': dt.datetime(2009, 1, 1)}}
+                    'non_strict': dt.datetime(2009, 1, 1),
+                    'user_password': dt.datetime(2009, 1, 1)}}
 _test_download = {'': {'no_download': False}}
 
 
@@ -81,7 +77,7 @@ def init(self):
     # mess with file dates if kwarg option present
     if self.kwargs['load']['mangle_file_dates']:
         self.files.files.index = \
-            self.files.files.index + pds.DateOffset(minutes=5)
+            self.files.files.index + dt.timedelta(minutes=5)
     return
 
 
@@ -168,7 +164,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
                                                freq='1S')
 
     # Specify the date tag locally and determine the desired date range
-    pds_offset = pds.DateOffset(hours=12)
+    pds_offset = dt.timedelta(hours=12)
     if sim_multi_file_right:
         root_date = root_date or _test_dates[''][''] + pds_offset
     elif sim_multi_file_left:
@@ -217,18 +213,7 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
     # create some fake data to support testing of averaging routines
     mlt_int = data['mlt'].astype(int)
     long_int = (data['longitude'] / 15.0).astype(int)
-    if tag == 'ascend':
-        data['dummy1'] = [i for i in range(len(data['mlt']))]
-    elif tag == 'descend':
-        data['dummy1'] = [-i for i in range(len(data['mlt']))]
-    elif tag == 'plus10':
-        data['dummy1'] = [i + 10 for i in range(len(data['mlt']))]
-    elif tag == 'fives':
-        data['dummy1'] = [5 for i in range(len(data['mlt']))]
-    elif tag == 'mlt_offset':
-        data['dummy1'] = mlt_int + 5
-    else:
-        data['dummy1'] = mlt_int
+    data['dummy1'] = mlt_int
     data['dummy2'] = long_int
     data['dummy3'] = mlt_int + long_int * 1000.0
     data['dummy4'] = uts

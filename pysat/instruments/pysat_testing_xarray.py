@@ -9,7 +9,7 @@ import logging
 import numpy as np
 import warnings
 
-import xarray
+import xarray as xr
 
 import pysat
 from pysat.instruments.methods import testing as mm_test
@@ -125,13 +125,15 @@ def load(fnames, tag=None, inst_id=None, sim_multi_file_right=False,
 
     if malformed_index:
         index = index.tolist()
-        # nonmonotonic
+
+        # Create a nonmonotonic index
         index[0:3], index[3:6] = index[3:6], index[0:3]
-        # non unique
+
+        # Create a non-unique index
         index[6:9] = [index[6]] * 3
 
-    data = xarray.Dataset({'uts': ((epoch_name), index)},
-                          coords={epoch_name: index})
+    data = xr.Dataset({'uts': ((epoch_name), index)},
+                      coords={epoch_name: index})
     # need to create simple orbits here. Have start of first orbit
     # at 2009,1, 0 UT. 14.84 orbits per day
     time_delta = dates[0] - root_date

@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.0.0] - 2020-12-03
+## [3.0.0] - 2020-12-10
 - New Features
   - Added registry module for registering custom external instruments
   - Added Meta.mutable flag to control attribute mutability
@@ -52,6 +52,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Addressed several Warnings raised by incorrect use of dependent packages
   - Deprecated use of inst_id for number of simulated samples for test
     instruments
+  - Removed writing of custom Meta attributes (deprecated) when producing
+    netCDF4 files
+  - Removed unneeded description.txt file, using README instead
 - Documentation
   - Added info on how to register new instruments
   - Fixed description of tag and inst_id behaviour in testing instruments
@@ -70,8 +73,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Fixed coupling of two_digit_year_break keyword to underlying method in
     methods.general.list_files
   - Fixed additional file date range for monthly data with gaps
+  - Fixed custom Meta attributes removal when transferred to instrument (#615)
   - Corrected iteration over Instrument within list comprehension
   - Removed unused input arguments
+  - Corrects Instrument today, yesterday, and tomorrow methods by implementing
+    datetime.datetime.utcnow
 - Maintenance
   - nose dependency removed from unit tests
   - Specify dtype for empty pandas.Series for forward compatibility
@@ -87,6 +93,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   - Updated Instrument.concat_func to behave as described in the docstring
   - Moved setup metadata to setup.cfg
   - Improve instrument tests for files
+  - Use dt.timedelta instead of pds.DateOffSet where possible
 
 ## [2.2.2] - 2020-12-31
  - New Features

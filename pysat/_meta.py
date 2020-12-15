@@ -1160,9 +1160,9 @@ class Meta(object):
         ----------
         inst : pysat.Instrument
             Instrument object to transfer attributes to
-        strict_names : boolean (False)
+        strict_names : bool
             If True, produces an error if the Instrument object already
-            has an attribute with the same name to be copied.
+            has an attribute with the same name to be copied (default=False).
 
         Note
         ----
@@ -1177,6 +1177,8 @@ class Meta(object):
 
         # Save the base Instrument attributes
         banned = inst._base_attr
+        # current attributes
+        inst_attr = dir(inst)
 
         # Get base attribute set, and attributes attached to instance
         base_attrb = self._base_attr
@@ -1188,10 +1190,12 @@ class Meta(object):
         for key in this_attrb:
             if key not in banned:
                 if key not in base_attrb:
-                    # don't store _ leading attributes
+                    # Don't store any hidden attributes
                     if key[0] != '_':
-                        adict[key] = self.__getattribute__(key)
+                        adict[key] = getattr(self, key)
                         transfer_key.append(key)
+                        # remove key from meta
+                        delattr(self, key)
 
         # Store any non-standard attributes in Instrument get list of
         # instrument objects attributes first to check if a duplicate
@@ -1199,9 +1203,12 @@ class Meta(object):
         inst_attr = dir(inst)
 
         for key in transfer_key:
-            if key not in banned:
-                if key not in inst_attr:
-                    inst.__setattr__(key, adict[key])
+            # Note, keys in transfer_key already checked against banned
+            if key not in inst_attr:
+                setattr(inst, key, adict[key])
+            else:
+                if not strict_names:
+                    setattr(inst, key, adict[key])
                 else:
                     if not strict_names:
                         # Use naming convention: new_name = 'pysat_attr_' + key

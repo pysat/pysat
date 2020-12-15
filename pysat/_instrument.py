@@ -284,13 +284,14 @@ class Instrument(object):
             self.multi_file_day = multi_file_day
 
         # Initialize the padding
-        if isinstance(pad, pds.DateOffset) or pad is None:
+        if isinstance(pad, (dt.timedelta, pds.DateOffset)) or pad is None:
             self.pad = pad
         elif isinstance(pad, dict):
             self.pad = pds.DateOffset(**pad)
         else:
-            raise ValueError(''.join(['pad must be a dict, NoneType, or ',
-                                      'pandas.DateOffset instance.']))
+            raise ValueError(' '.join(['pad must be a dict, NoneType,',
+                                       'datetime.timedelta, or',
+                                       'pandas.DateOffset instance.']))
 
         # Store kwargs, passed to standard routines first
         self.kwargs = {}
@@ -385,7 +386,7 @@ class Instrument(object):
         self._export_meta_post_processing = None
 
         # start with a daily increment for loading
-        self.load_step = pds.DateOffset(days=1)
+        self.load_step = dt.timedelta(days=1)
 
         # Run instrument init function, a basic pass function is used if the
         # user doesn't supply the init function
@@ -1052,20 +1053,38 @@ class Instrument(object):
 
         Returns
         -------
-        NoneType, datetime, or list of datetimes
+        out_date: NoneType, datetime, or list of datetimes
             NoneType input yeilds NoneType output, array-like yeilds list,
             datetime object yeilds like.  All datetime output excludes the
             sub-daily temporal increments (keeps only date information).
 
+        Note
+        ----
+        Checks for timezone information not in UTC
+
         """
 
         if date is None:
-            return date
+            out_date = None
         else:
+            # Check for timezone information and remove time of day for
+            # single datetimes and iterable containers of datetime objects
             if hasattr(date, '__iter__'):
-                return [dt.datetime(da.year, da.month, da.day) for da in date]
+                out_date = []
+                for in_date in date:
+                    if(in_date.tzinfo is not None
+                       and in_date.utcoffset() is not None):
+                        in_date = in_date.astimezone(tz=dt.timezone.utc)
+
+                    out_date.append(dt.datetime(in_date.year, in_date.month,
+                                                in_date.day))
             else:
-                return dt.datetime(date.year, date.month, date.day)
+                if date.tzinfo is not None and date.utcoffset() is not None:
+                    date = date.astimezone(tz=dt.timezone.utc)
+
+                out_date = dt.datetime(date.year, date.month, date.day)
+
+        return out_date
 
     def _load_data(self, date=None, fid=None, inc=None):
         """
@@ -1077,7 +1096,7 @@ class Instrument(object):
             file date (default=None)
         fid : int or NoneType
             filename index value (default=None)
-        inc : pds.DateOffset or int
+        inc : dt.timedelta or int
             Increment of files or dates to load, starting from the
             root date or fid (default=None)
 
@@ -1469,7 +1488,7 @@ class Instrument(object):
             day/file (default='1D', 1).
         width : pandas.DateOffset, int, or None
             Data window used when loading data within iteration. Defaults to a
-            single day/file if not assigned. (default=pds.DateOffset(days=1),
+            single day/file if not assigned. (default=dt.timedelta(days=1),
             1)
 
         Note
@@ -1507,7 +1526,7 @@ class Instrument(object):
 
             # Load more than a single day/file at a time when iterating
             inst.bounds = ([start, start2], [stop, stop2], '2D',
-                           pds.DateOffset(days=3))
+                           dt.timedelta(days=3))
 
         """
 
@@ -1554,10 +1573,10 @@ class Instrument(object):
             if self._iter_step is None:
                 self._iter_step = '1D'
             if self._iter_width is None:
-                self._iter_width = pds.DateOffset(days=1)
+                self._iter_width = dt.timedelta(days=1)
             if self._iter_start[0] is not None:
                 # There are files. Use those dates.
-                ustops = [stop - self._iter_width + pds.DateOffset(days=1)
+                ustops = [stop - self._iter_width + dt.timedelta(days=1)
                           for stop in self._iter_stop]
                 ufreq = self._iter_step
                 self._iter_list = utils.time.create_date_range(self._iter_start,
@@ -1659,7 +1678,7 @@ class Instrument(object):
                     self._iter_step = '1D'
                 # default window size
                 if self._iter_width is None:
-                    self._iter_width = pds.DateOffset(days=1)
+                    self._iter_width = dt.timedelta(days=1)
 
                 # create list-like of dates for iteration
                 starts = self._filter_datetime_input(starts)
@@ -1678,7 +1697,7 @@ class Instrument(object):
                         raise ValueError(estr)
 
                 # account for width of load. Don't extend past bound.
-                ustops = [stop - width + pds.DateOffset(days=1)
+                ustops = [stop - width + dt.timedelta(days=1)
                           for stop in stops]
                 self._iter_list = utils.time.create_date_range(starts,
                                                                ustops,
@@ -1793,12 +1812,13 @@ class Instrument(object):
 
         Returns
         -------
-        datetime
-            Today's date
+        today_utc: datetime
+            Today's date in UTC
 
         """
+        today_utc = self._filter_datetime_input(dt.datetime.utcnow())
 
-        return self._filter_datetime_input(dt.datetime.today())
+        return today_utc
 
     def tomorrow(self):
         """Returns tomorrow's date (UTC), with no hour, minute, second, etc.
@@ -1806,11 +1826,11 @@ class Instrument(object):
         Returns
         -------
         datetime
-            Tomorrow's date
+            Tomorrow's date in UTC
 
         """
 
-        return self.today() + pds.DateOffset(days=1)
+        return self.today() + dt.timedelta(days=1)
 
     def yesterday(self):
         """Returns yesterday's date (UTC), with no hour, minute, second, etc.
@@ -1818,11 +1838,11 @@ class Instrument(object):
         Returns
         -------
         datetime
-            Yesterday's date
+            Yesterday's date in UTC
 
         """
 
-        return self.today() - pds.DateOffset(days=1)
+        return self.today() - dt.timedelta(days=1)
 
     def next(self, verifyPad=False):
         """Manually iterate through the data loaded in Instrument object.
@@ -2267,7 +2287,7 @@ class Instrument(object):
             Used when loading a range of filenames from `fname` to `stop_fname`,
             inclusive. (default=None)
         verifyPad : bool
-            if True, padding data not removed for debugging. Padding
+            If True, padding data not removed for debugging. Padding
             parameters are provided at Instrument instantiation. (default=False)
 
         Raises
@@ -2355,7 +2375,7 @@ class Instrument(object):
                 raise ValueError(estr)
             else:
                 # increment end by a day if none supplied
-                self.load_step = pds.DateOffset(days=1)
+                self.load_step = dt.timedelta(days=1)
 
             curr = self.date
 
@@ -2373,7 +2393,7 @@ class Instrument(object):
                 self.load_step = end_date - date
             else:
                 # defaults to single day load
-                self.load_step = pds.DateOffset(days=1)
+                self.load_step = dt.timedelta(days=1)
             curr = date
 
         elif fname is not None:
@@ -2415,7 +2435,7 @@ class Instrument(object):
                 raise ValueError(estr)
 
             date = self.files.files.index[0]
-            end_date = self.files.files.index[-1] + pds.DateOffset(days=1)
+            end_date = self.files.files.index[-1] + dt.timedelta(days=1)
 
             self._set_load_parameters(date=date, fid=None)
             curr = date
@@ -2428,7 +2448,7 @@ class Instrument(object):
 
         # if pad  or multi_file_day is true, need to have a three day/file load
         loop_pad = self.pad if self.pad is not None \
-            else pds.DateOffset(seconds=0)
+            else dt.timedelta(seconds=0)
 
         # check for constiency between loading range and data padding, if any
         if self.pad is not None:
@@ -3362,14 +3382,6 @@ class Instrument(object):
                 if key not in base_attrb:
                     if key[0] != '_':
                         adict[key] = self.__getattribute__(key)
-
-            # Store any non-standard attributes attached to meta
-            base_attrb = dir(base_instrument.meta)
-            this_attrb = dir(self.meta)
-            for key in this_attrb:
-                if key not in base_attrb:
-                    if key[0] != '_':
-                        adict[key] = self.meta.__getattribute__(key)
 
             # Add additional metadata to conform to standards
             adict['pysat_version'] = pysat.__version__

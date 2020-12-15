@@ -99,11 +99,11 @@ class TestBasics():
         if isinstance(step, int):
             step = str(step) + 'D'
         if isinstance(width, int):
-            width = pds.DateOffset(days=width)
+            width = dt.timedelta(days=width)
 
         out = []
         for start, stop in zip(starts, stops):
-            tdate = stop - width + pds.DateOffset(days=1)
+            tdate = stop - width + dt.timedelta(days=1)
             out.extend(pds.date_range(start, tdate, freq=step).tolist())
         if reverse:
             out = out[::-1]
@@ -142,8 +142,8 @@ class TestBasics():
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
-        assert (self.out >= self.ref_time + pds.DateOffset(days=1))
-        assert (self.out <= self.ref_time + pds.DateOffset(days=2))
+        assert (self.out >= self.ref_time + dt.timedelta(days=1))
+        assert (self.out <= self.ref_time + dt.timedelta(days=2))
 
     def test_basic_instrument_bad_keyword(self):
         """Checks for error when instantiating with bad load_rtn keywords"""
@@ -223,7 +223,7 @@ class TestBasics():
         assert (self.testInst.index[0] == self.testInst.files.start_date)
         assert (self.testInst.index[-1] >= self.testInst.files.stop_date)
         assert (self.testInst.index[-1] <= self.testInst.files.stop_date
-                + pds.DateOffset(days=1))
+                + dt.timedelta(days=1))
         return
 
     def test_basic_instrument_load_by_file_and_multifile(self):
@@ -266,15 +266,15 @@ class TestBasics():
 
     def test_basic_instrument_load_by_dates(self):
         """Test date range loading, date and end_date"""
-        end_date = self.ref_time + pds.DateOffset(days=2)
+        end_date = self.ref_time + dt.timedelta(days=2)
         self.testInst.load(date=self.ref_time, end_date=end_date)
         self.out = self.testInst.index[0]
         assert (self.out == self.ref_time)
         self.out = dt.datetime(self.out.year, self.out.month, self.out.day)
         assert (self.out == self.testInst.date)
         self.out = self.testInst.index[-1]
-        assert (self.out >= self.ref_time + pds.DateOffset(days=1))
-        assert (self.out <= self.ref_time + pds.DateOffset(days=2))
+        assert (self.out >= self.ref_time + dt.timedelta(days=1))
+        assert (self.out <= self.ref_time + dt.timedelta(days=2))
 
     def test_basic_instrument_load_by_date_with_extra_time(self):
         """Ensure .load(date=date) only uses year, month, day portion of date"""
@@ -354,9 +354,9 @@ class TestBasics():
         """
         self.testInst.load(date=self.ref_time)
         # set new bounds that doesn't include this date
-        self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
-                                self.ref_time + pds.DateOffset(days=10),
-                                '2D', pds.DateOffset(days=1))
+        self.testInst.bounds = (self.ref_time + dt.timedelta(days=1),
+                                self.ref_time + dt.timedelta(days=10),
+                                '2D', dt.timedelta(days=1))
 
         with pytest.raises(StopIteration) as err:
             self.testInst.next()
@@ -371,9 +371,9 @@ class TestBasics():
         self.ref_time = dt.datetime(2008, 1, 2)
         self.testInst.load(date=self.ref_time)
         # set new bounds that doesn't include this date
-        self.testInst.bounds = (self.ref_time + pds.DateOffset(days=1),
-                                self.ref_time + pds.DateOffset(days=10),
-                                '2D', pds.DateOffset(days=1))
+        self.testInst.bounds = (self.ref_time + dt.timedelta(days=1),
+                                self.ref_time + dt.timedelta(days=10),
+                                '2D', dt.timedelta(days=1))
         with pytest.raises(StopIteration) as err:
             self.testInst.prev()
         estr = 'Unable to find loaded date '
@@ -384,7 +384,7 @@ class TestBasics():
     def test_next_load_empty_iteration(self):
         """Ensure empty iteration list handled ok via .next"""
         self.testInst.bounds = (None, None, '10000D',
-                                pds.DateOffset(days=10000))
+                                dt.timedelta(days=10000))
         with pytest.raises(StopIteration) as err:
             self.testInst.next()
         estr = 'File list is empty. '
@@ -395,7 +395,7 @@ class TestBasics():
     def test_prev_load_empty_iteration(self):
         """Ensure empty iteration list handled ok via .prev"""
         self.testInst.bounds = (None, None, '10000D',
-                                pds.DateOffset(days=10000))
+                                dt.timedelta(days=10000))
         with pytest.raises(StopIteration) as err:
             self.testInst.prev()
         estr = 'File list is empty. '
@@ -442,17 +442,17 @@ class TestBasics():
     def test_filenames_load(self):
         """Test if files are loadable by filenames, relative to
         top_data_dir/platform/name/tag"""
-        stop_fname = self.ref_time + pds.DateOffset(days=1)
+        stop_fname = self.ref_time + dt.timedelta(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         self.testInst.load(fname=self.ref_time.strftime('%Y-%m-%d.nofile'),
                            stop_fname=stop_fname)
         assert self.testInst.index[0] == self.ref_time
-        assert self.testInst.index[-1] >= self.ref_time + pds.DateOffset(days=1)
-        assert self.testInst.index[-1] <= self.ref_time + pds.DateOffset(days=2)
+        assert self.testInst.index[-1] >= self.ref_time + dt.timedelta(days=1)
+        assert self.testInst.index[-1] <= self.ref_time + dt.timedelta(days=2)
 
     def test_filenames_load_out_of_order(self):
         """Test error raised if fnames out of temporal order"""
-        stop_fname = self.ref_time + pds.DateOffset(days=1)
+        stop_fname = self.ref_time + dt.timedelta(days=1)
         stop_fname = stop_fname.strftime('%Y-%m-%d.nofile')
         with pytest.raises(ValueError) as err:
             check_fname = self.ref_time.strftime('%Y-%m-%d.nofile')
@@ -520,14 +520,17 @@ class TestBasics():
 
         with caplog.at_level(logging.INFO, logger='pysat'):
             self.testInst.download_updated_files()
-        # Perform a local search
-        assert "files locally" in caplog.text
-        # New files are found
+
+        # Test the logging output for the following conditions:
+        # - perform a local search,
+        # - new files are found,
+        # - download new files, and
+        # - update local file list.
+        assert "local files" in caplog.text
         assert "that are new or updated" in caplog.text
-        # download new files
         assert "Downloading data to" in caplog.text
-        # Update local file list
         assert "Updating pysat file list" in caplog.text
+
         if non_default:
             assert "Updating instrument object bounds " not in caplog.text
         else:
@@ -553,21 +556,46 @@ class TestBasics():
     #
     # -------------------------------------------------------------------------
     def test_today_yesterday_and_tomorrow(self):
-        self.ref_time = dt.datetime.now()
+        """ Test the correct instantiation of yesterday/today/tomorrow dates
+        """
+        self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         assert self.out == self.testInst.today()
-        assert self.out - pds.DateOffset(days=1) == self.testInst.yesterday()
-        assert self.out + pds.DateOffset(days=1) == self.testInst.tomorrow()
+        assert self.out - dt.timedelta(days=1) == self.testInst.yesterday()
+        assert self.out + dt.timedelta(days=1) == self.testInst.tomorrow()
 
-    def test_filter_datetime(self):
-        self.ref_time = dt.datetime.now()
-        self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
-                               self.ref_time.day)
-        assert self.out == self.testInst._filter_datetime_input(self.ref_time)
+    @pytest.mark.parametrize("in_time, islist",
+                             [(dt.datetime.utcnow(), False),
+                              (dt.datetime(2010, 1, 1, 12, tzinfo=dt.timezone(
+                                  dt.timedelta(seconds=14400))), False),
+                              ([dt.datetime(2010, 1, 1, 12, i,
+                                            tzinfo=dt.timezone(
+                                                dt.timedelta(seconds=14400)))
+                                for i in range(3)], True)])
+    def test_filter_datetime(self, in_time, islist):
+        """ Test the range of allowed inputs for the Instrument datetime filter
+        """
+        # Because the input datetime is the middle of the day and the offset
+        # is four hours, the reference date and input date are the same
+        if islist:
+            self.ref_time = [dt.datetime(tt.year, tt.month, tt.day)
+                             for tt in in_time]
+            self.out = self.testInst._filter_datetime_input(in_time)
+        else:
+            self.ref_time = [dt.datetime(in_time.year, in_time.month,
+                                         in_time.day)]
+            self.out = [self.testInst._filter_datetime_input(in_time)]
+
+        # Test for the date values and timezone awareness status
+        for i, tt in enumerate(self.out):
+            assert self.out[i] == self.ref_time[i]
+            assert self.out[i].tzinfo is None or self.out[i].utcoffset() is None
 
     def test_filtered_date_attribute(self):
-        self.ref_time = dt.datetime.now()
+        """ Test use of filter during date assignment
+        """
+        self.ref_time = dt.datetime.utcnow()
         self.out = dt.datetime(self.ref_time.year, self.ref_time.month,
                                self.ref_time.day)
         self.testInst.date = self.ref_time
@@ -740,9 +768,9 @@ class TestBasics():
 
     def test_str_w_padding(self):
         """Test string output with data padding """
-        self.testInst.pad = pds.DateOffset(minutes=5)
+        self.testInst.pad = dt.timedelta(minutes=5)
         self.out = self.testInst.__str__()
-        assert self.out.find('DateOffset: minutes=5') > 0
+        assert self.out.find('Data Padding: 0:05:00') > 0
 
     def test_str_w_custom_func(self):
         """Test string output with custom function """
@@ -874,7 +902,7 @@ class TestBasics():
         self.testInst.load(self.ref_time.year, self.ref_doy)
         time_step = (self.testInst.index[1]
                      - self.testInst.index[0]).value / 1.E9
-        offset = pds.DateOffset(seconds=(10 * time_step))
+        offset = dt.timedelta(seconds=(10 * time_step))
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
         stop = start + offset
         assert np.all(self.testInst[start:stop, 'uts']
@@ -985,7 +1013,7 @@ class TestBasics():
         self.testInst['doubleMLT'] = 2. * self.testInst['mlt']
         time_step = (self.testInst.index[1]
                      - self.testInst.index[0]).value / 1.E9
-        offset = pds.DateOffset(seconds=(10 * time_step))
+        offset = dt.timedelta(seconds=(10 * time_step))
         start = dt.datetime(2009, 1, 1, 0, 0, 0)
         stop = start + offset
         self.testInst[start:stop, 'doubleMLT'] = 0
@@ -1189,8 +1217,7 @@ class TestBasics():
     def test_set_bounds_with_frequency(self):
         """Test setting bounds with non-default step"""
         start = self.ref_time
-        stop = self.ref_time + pds.DateOffset(days=14)
-        stop = stop.to_pydatetime()
+        stop = self.ref_time + dt.timedelta(days=14)
         self.testInst.bounds = (start, stop, 'M')
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='M').tolist())
@@ -1198,8 +1225,7 @@ class TestBasics():
     def test_iterate_bounds_with_frequency(self):
         """Test iterating bounds with non-default step"""
         start = self.ref_time
-        stop = self.ref_time + pds.DateOffset(days=15)
-        stop = stop.to_pydatetime()
+        stop = self.ref_time + dt.timedelta(days=15)
         self.testInst.bounds = (start, stop, '2D')
         dates = []
         for inst in self.testInst:
@@ -1212,7 +1238,7 @@ class TestBasics():
         start = self.ref_time
         stop = self.ref_time + pds.DateOffset(months=11, days=25)
         stop = stop.to_pydatetime()
-        self.testInst.bounds = (start, stop, '10D', pds.DateOffset(days=10))
+        self.testInst.bounds = (start, stop, '10D', dt.timedelta(days=10))
         assert np.all(self.testInst._iter_list
                       == pds.date_range(start, stop, freq='10D').tolist())
 
@@ -1228,9 +1254,9 @@ class TestBasics():
                 # check loaded range is correct
                 assert trange[0] == out['expected_times'][i]
                 check = out['expected_times'][i] + out['width']
-                check -= pds.DateOffset(days=1)
+                check -= dt.timedelta(days=1)
                 assert trange[1] > check
-                check = out['stops'][b_range] + pds.DateOffset(days=1)
+                check = out['stops'][b_range] + dt.timedelta(days=1)
                 assert trange[1] < check
         else:
             # verify range of loaded data when going backwards
@@ -1243,17 +1269,17 @@ class TestBasics():
                 assert trange[0] == out['expected_times'][i]
                 # check end against expectations
                 check = out['expected_times'][i] + out['width']
-                check -= pds.DateOffset(days=1)
+                check -= dt.timedelta(days=1)
                 assert trange[1] > check
-                check = out['stops'][b_range] + pds.DateOffset(days=1)
+                check = out['stops'][b_range] + dt.timedelta(days=1)
                 assert trange[1] < check
                 if i == 0:
                     # check first load is before end of bounds
                     check = out['stops'][b_range] - out['width']
-                    check += pds.DateOffset(days=1)
+                    check += dt.timedelta(days=1)
                     assert trange[0] == check
                     assert trange[1] > out['stops'][b_range]
-                    check = out['stops'][b_range] + pds.DateOffset(days=1)
+                    check = out['stops'][b_range] + dt.timedelta(days=1)
                     assert trange[1] < check
                 elif i == len(out['observed_times']) - 1:
                     # last load at start of bounds
@@ -1275,7 +1301,7 @@ class TestBasics():
                 # check loaded range is correct
                 assert trange[0] == out['expected_times'][i]
                 check = out['expected_times'][i] + out['width']
-                check -= pds.DateOffset(days=1)
+                check -= dt.timedelta(days=1)
                 assert trange[1] > check
                 assert trange[1] < out['stops'][b_range]
 
@@ -1290,14 +1316,14 @@ class TestBasics():
                 assert trange[0] == out['expected_times'][i]
                 # check end against expectations
                 check = out['expected_times'][i] + out['width']
-                check -= pds.DateOffset(days=1)
+                check -= dt.timedelta(days=1)
                 assert trange[1] > check
-                check = out['stops'][b_range] + pds.DateOffset(days=1)
+                check = out['stops'][b_range] + dt.timedelta(days=1)
                 assert trange[1] < check
                 if i == 0:
                     # check first load is before end of bounds
                     check = out['stops'][b_range] - out['width']
-                    check += pds.DateOffset(days=1)
+                    check += dt.timedelta(days=1)
                     assert trange[0] < check
                     assert trange[1] < out['stops'][b_range]
                 elif i == len(out['observed_times']) - 1:
@@ -1310,16 +1336,16 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 3), '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 4), '2D',
-                                         pds.DateOffset(days=3)),
+                                         dt.timedelta(days=3)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 5), '3D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 17), '5D',
-                                         pds.DateOffset(days=1))
+                                         dt.timedelta(days=1))
                                         ])
     def test_iterate_bounds_with_frequency_and_width(self, values):
         """Iterate via date with mixed step/width, excludes stop date"""
@@ -1331,22 +1357,22 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 4), '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 4), '3D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 4), '1D',
-                                         pds.DateOffset(days=4)),
+                                         dt.timedelta(days=4)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 5), '4D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 5), '2D',
-                                         pds.DateOffset(days=3)),
+                                         dt.timedelta(days=3)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 5), '3D',
-                                         pds.DateOffset(days=2))])
+                                         dt.timedelta(days=2))])
     def test_iterate_bounds_with_frequency_and_width_incl(self, values):
         """Iterate via date with mixed step/width, includes stop date"""
         out = self.support_iter_evaluations(values, for_loop=True)
@@ -1357,16 +1383,16 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 10), '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 9), '4D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 11), '1D',
-                                         pds.DateOffset(days=3)),
+                                         dt.timedelta(days=3)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 11), '1D',
-                                         pds.DateOffset(days=11)),
+                                         dt.timedelta(days=11)),
                                         ])
     def test_next_date_with_frequency_and_width_incl(self, values):
         """Test .next() via date step/width>1, includes stop date"""
@@ -1378,19 +1404,19 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 11), '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 12), '2D',
-                                         pds.DateOffset(days=3)),
+                                         dt.timedelta(days=3)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 13), '3D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 3), '4D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 12), '2D',
-                                         pds.DateOffset(days=1))])
+                                         dt.timedelta(days=1))])
     def test_next_date_with_frequency_and_width(self, values):
         """Test .next() via date step/width>1, excludes stop date"""
         out = self.support_iter_evaluations(values)
@@ -1404,19 +1430,19 @@ class TestBasics():
                                          (dt.datetime(2009, 1, 4),
                                           dt.datetime(2009, 1, 13)),
                                          '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
                                          '3D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
                                          '2D',
-                                         pds.DateOffset(days=4))
+                                         dt.timedelta(days=4))
                                         ])
     def test_next_date_season_frequency_and_width_incl(self, values):
         """Test .next() via date season step/width>1, includes stop date"""
@@ -1431,19 +1457,19 @@ class TestBasics():
                                          (dt.datetime(2009, 1, 3),
                                           dt.datetime(2009, 1, 12)),
                                          '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
                                          '3D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
                                          '2D',
-                                         pds.DateOffset(days=4))
+                                         dt.timedelta(days=4))
                                         ])
     def test_next_date_season_frequency_and_width(self, values):
         """Test .next() via date season step/width>1, excludes stop date"""
@@ -1455,16 +1481,16 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 10), '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 9), '4D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 11), '1D',
-                                         pds.DateOffset(days=3)),
+                                         dt.timedelta(days=3)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 11), '1D',
-                                         pds.DateOffset(days=11)),
+                                         dt.timedelta(days=11)),
                                         ])
     def test_prev_date_with_frequency_and_width_incl(self, values):
         """Test .prev() via date step/width>1, includes stop date"""
@@ -1476,19 +1502,19 @@ class TestBasics():
 
     @pytest.mark.parametrize("values", [(dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 11), '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 12), '2D',
-                                         pds.DateOffset(days=3)),
+                                         dt.timedelta(days=3)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 13), '3D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 3), '4D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         (dt.datetime(2009, 1, 1),
                                          dt.datetime(2009, 1, 12), '2D',
-                                         pds.DateOffset(days=1))])
+                                         dt.timedelta(days=1))])
     def test_prev_date_with_frequency_and_width(self, values):
         """Test .prev() via date step/width>1, excludes stop date"""
         out = self.support_iter_evaluations(values, reverse=True)
@@ -1502,19 +1528,19 @@ class TestBasics():
                                          (dt.datetime(2009, 1, 4),
                                           dt.datetime(2009, 1, 13)),
                                          '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
                                          '3D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
                                          '2D',
-                                         pds.DateOffset(days=4))
+                                         dt.timedelta(days=4))
                                         ])
     def test_prev_date_season_frequency_and_width_incl(self, values):
         """Test .prev() via date season step/width>1, includes stop date"""
@@ -1529,19 +1555,19 @@ class TestBasics():
                                          (dt.datetime(2009, 1, 3),
                                           dt.datetime(2009, 1, 12)),
                                          '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
                                          '3D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
                                          '2D',
-                                         pds.DateOffset(days=4))
+                                         dt.timedelta(days=4))
                                         ])
     def test_prev_date_season_frequency_and_width(self, values):
         """Test .prev() via date season step/width>1, excludes stop date"""
@@ -1590,7 +1616,7 @@ class TestBasics():
         """Ensure error if too many inputs to inst.bounds"""
         start = dt.datetime(2009, 1, 1)
         stop = dt.datetime(2009, 1, 1)
-        width = pds.DateOffset(days=1)
+        width = dt.timedelta(days=1)
         with pytest.raises(ValueError) as err:
             self.testInst.bounds = [start, stop, '1D', width, False]
         estr = 'Too many input arguments.'
@@ -1705,19 +1731,19 @@ class TestBasics():
                                          (dt.datetime(2009, 1, 3),
                                           dt.datetime(2009, 1, 12)),
                                          '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
                                          '3D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
                                          '2D',
-                                         pds.DateOffset(days=4))
+                                         dt.timedelta(days=4))
                                         ])
     def test_iterate_over_bounds_set_by_date_season_step_width(self, values):
         """Iterate over season, step/width > 1, excludes stop bounds"""
@@ -1733,19 +1759,19 @@ class TestBasics():
                                          (dt.datetime(2009, 1, 4),
                                           dt.datetime(2009, 1, 13)),
                                          '2D',
-                                         pds.DateOffset(days=2)),
+                                         dt.timedelta(days=2)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 7),
                                           dt.datetime(2009, 1, 16)),
                                          '3D',
-                                         pds.DateOffset(days=1)),
+                                         dt.timedelta(days=1)),
                                         ((dt.datetime(2009, 1, 1),
                                           dt.datetime(2009, 1, 10)),
                                          (dt.datetime(2009, 1, 6),
                                           dt.datetime(2009, 1, 15)),
                                          '2D',
-                                         pds.DateOffset(days=4))
+                                         dt.timedelta(days=4))
                                         ])
     def test_iterate_bounds_set_by_date_season_step_width_incl(self, values):
         """Iterate over season, step/width > 1, includes stop bounds"""
@@ -1878,12 +1904,12 @@ class TestBasics():
         stop_date = dt.datetime(2009, 1, 3)
         self.testInst.bounds = (start, stop, 2)
         out = pds.date_range(start_date, stop_date, freq='2D').tolist()
-        # convert filenames in list to a date
-        date_list = []
-        for item in self.testInst._iter_list:
+
+        # Convert filenames in list to a date
+        for i, item in enumerate(self.testInst._iter_list):
             snip = item.split('.')[0]
-            date_list.append(dt.datetime.strptime(snip, '%Y-%m-%d'))
-        assert np.all(date_list == out)
+            ref_snip = out[i].strftime('%Y-%m-%d')
+            assert snip == ref_snip
 
     def test_iterate_bounds_fname_with_frequency(self):
         """Test iterate over bounds using filenames and non-default step"""
@@ -1906,7 +1932,7 @@ class TestBasics():
         stop = '2009-01-03.nofile'
         stop_date = dt.datetime(2009, 1, 3)
         self.testInst.bounds = (start, stop, 2, 2)
-        out = pds.date_range(start_date, stop_date - pds.DateOffset(days=1),
+        out = pds.date_range(start_date, stop_date - dt.timedelta(days=1),
                              freq='2D').tolist()
         # convert filenames in list to a date
         date_list = []
@@ -2485,7 +2511,7 @@ class TestDataPaddingbyFile():
         """Test data padding loading by filename"""
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[1])
-        self.delta = pds.DateOffset(minutes=5)
+        self.delta = dt.timedelta(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
@@ -2494,7 +2520,7 @@ class TestDataPaddingbyFile():
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[2])
-        self.delta = pds.DateOffset(minutes=5)
+        self.delta = dt.timedelta(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
@@ -2505,7 +2531,7 @@ class TestDataPaddingbyFile():
         self.testInst.next()
         self.testInst.next(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[3])
-        self.delta = pds.DateOffset(minutes=5)
+        self.delta = dt.timedelta(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
@@ -2514,7 +2540,7 @@ class TestDataPaddingbyFile():
         self.testInst.load(fname=self.testInst.files[2], verifyPad=True)
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[1])
-        self.delta = pds.DateOffset(minutes=5)
+        self.delta = dt.timedelta(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
@@ -2525,7 +2551,7 @@ class TestDataPaddingbyFile():
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[8])
-        self.delta = pds.DateOffset(minutes=5)
+        self.delta = dt.timedelta(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
@@ -2534,7 +2560,7 @@ class TestDataPaddingbyFile():
         self.testInst.load(fname=self.testInst.files[1], verifyPad=True)
         self.testInst.load(fname=self.testInst.files[10], verifyPad=True)
         self.rawInst.load(fname=self.testInst.files[10])
-        self.delta = pds.DateOffset(minutes=5)
+        self.delta = dt.timedelta(minutes=5)
         assert (self.testInst.index[0] == self.rawInst.index[0] - self.delta)
         assert (self.testInst.index[-1] == self.rawInst.index[-1] + self.delta)
 
@@ -2672,23 +2698,28 @@ class TestDataPadding():
         del self.testInst, self.ref_time, self.ref_doy
 
     def test_data_padding(self):
+        """Ensure that pad works at the instrument level"""
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         assert (self.testInst.index[0]
-                == self.testInst.date - pds.DateOffset(minutes=5))
+                == self.testInst.date - dt.timedelta(minutes=5))
         assert (self.testInst.index[-1] == self.testInst.date
-                + pds.DateOffset(hours=23, minutes=59, seconds=59)
-                + pds.DateOffset(minutes=5))
+                + dt.timedelta(hours=23, minutes=59, seconds=59)
+                + dt.timedelta(minutes=5))
 
-    def test_data_padding_offset_instantiation(self):
+    @pytest.mark.parametrize('pad', [dt.timedelta(minutes=5),
+                                     pds.DateOffset(minutes=5),
+                                     {'minutes': 5}])
+    def test_data_padding_offset_instantiation(self, pad):
+        """Ensure pad can be used as datetime, pandas, or dict"""
         testInst = pysat.Instrument(platform='pysat', name='testing',
                                     clean_level='clean',
-                                    pad=pds.DateOffset(minutes=5),
+                                    pad=pad,
                                     update_files=True)
         testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
-        assert (testInst.index[0] == testInst.date - pds.DateOffset(minutes=5))
+        assert (testInst.index[0] == testInst.date - dt.timedelta(minutes=5))
         assert (testInst.index[-1] == testInst.date
-                + pds.DateOffset(hours=23, minutes=59, seconds=59)
-                + pds.DateOffset(minutes=5))
+                + dt.timedelta(hours=23, minutes=59, seconds=59)
+                + dt.timedelta(minutes=5))
 
     def test_data_padding_bad_instantiation(self):
         """Ensure error when padding input type incorrect"""
@@ -2697,7 +2728,8 @@ class TestDataPadding():
                              clean_level='clean',
                              pad=2,
                              update_files=True)
-        estr = 'pad must be a dict, NoneType, or pandas.DateOffset instance.'
+        estr = ' '.join(('pad must be a dict, NoneType, datetime.timedelta,',
+                         'or pandas.DateOffset instance.'))
         assert str(err).find(estr) >= 0
 
     def test_data_padding_bad_load(self):
@@ -2727,12 +2759,12 @@ class TestDataPadding():
         self.testInst.load(yr, doy, verifyPad=True)
         assert self.testInst.index[0] == self.testInst.date
         assert self.testInst.index[-1] > self.testInst.date \
-               + pds.DateOffset(days=1)
+               + dt.timedelta(days=1)
 
         self.testInst.load(yr, doy)
         assert self.testInst.index[0] == self.testInst.date
         assert self.testInst.index[-1] < self.testInst.date \
-               + pds.DateOffset(days=1)
+               + dt.timedelta(days=1)
 
     def test_yrdoy_data_padding_missing_later_days(self):
         """Test padding feature operates when there are missing later days"""
@@ -2740,12 +2772,12 @@ class TestDataPadding():
         self.testInst.load(yr, doy, verifyPad=True)
         assert self.testInst.index[0] < self.testInst.date
         assert self.testInst.index[-1] < self.testInst.date \
-               + pds.DateOffset(days=1)
+               + dt.timedelta(days=1)
 
         self.testInst.load(yr, doy)
         assert self.testInst.index[0] == self.testInst.date
         assert self.testInst.index[-1] < self.testInst.date \
-               + pds.DateOffset(days=1)
+               + dt.timedelta(days=1)
 
     def test_yrdoy_data_padding_missing_earlier_and_later_days(self):
         """Test padding feature operates when missing earlier/later days"""
@@ -2755,16 +2787,16 @@ class TestDataPadding():
         self.testInst.load(yr, doy, verifyPad=True)
         assert self.testInst.index[0] == self.testInst.date
         assert self.testInst.index[-1] < self.testInst.date \
-               + pds.DateOffset(days=1)
+               + dt.timedelta(days=1)
 
     def test_data_padding_next(self):
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         self.testInst.next(verifyPad=True)
         assert (self.testInst.index[0] == self.testInst.date
-                - pds.DateOffset(minutes=5))
+                - dt.timedelta(minutes=5))
         assert (self.testInst.index[-1] == self.testInst.date
-                + pds.DateOffset(hours=23, minutes=59, seconds=59)
-                + pds.DateOffset(minutes=5))
+                + dt.timedelta(hours=23, minutes=59, seconds=59)
+                + dt.timedelta(minutes=5))
 
     def test_data_padding_multi_next(self):
         """This also tests that _prev_data and _next_data cacheing"""
@@ -2772,19 +2804,19 @@ class TestDataPadding():
         self.testInst.next()
         self.testInst.next(verifyPad=True)
         assert (self.testInst.index[0] == self.testInst.date
-                - pds.DateOffset(minutes=5))
+                - dt.timedelta(minutes=5))
         assert (self.testInst.index[-1] == self.testInst.date
-                + pds.DateOffset(hours=23, minutes=59, seconds=59)
-                + pds.DateOffset(minutes=5))
+                + dt.timedelta(hours=23, minutes=59, seconds=59)
+                + dt.timedelta(minutes=5))
 
     def test_data_padding_prev(self):
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         self.testInst.prev(verifyPad=True)
         assert (self.testInst.index[0] == self.testInst.date
-                - pds.DateOffset(minutes=5))
+                - dt.timedelta(minutes=5))
         assert (self.testInst.index[-1] == self.testInst.date
-                + pds.DateOffset(hours=23, minutes=59, seconds=59)
-                + pds.DateOffset(minutes=5))
+                + dt.timedelta(hours=23, minutes=59, seconds=59)
+                + dt.timedelta(minutes=5))
 
     def test_data_padding_multi_prev(self):
         """This also tests that _prev_data and _next_data cacheing"""
@@ -2793,21 +2825,21 @@ class TestDataPadding():
         self.testInst.prev()
         self.testInst.prev(verifyPad=True)
         assert (self.testInst.index[0] == self.testInst.date
-                - pds.DateOffset(minutes=5))
+                - dt.timedelta(minutes=5))
         assert (self.testInst.index[-1] == self.testInst.date
-                + pds.DateOffset(hours=23, minutes=59, seconds=59)
-                + pds.DateOffset(minutes=5))
+                + dt.timedelta(hours=23, minutes=59, seconds=59)
+                + dt.timedelta(minutes=5))
 
     def test_data_padding_jump(self):
         self.testInst.load(self.ref_time.year, self.ref_doy, verifyPad=True)
         self.testInst.load(self.ref_time.year, self.ref_doy + 10,
                            verifyPad=True)
         assert (self.testInst.index[0]
-                == self.testInst.date - pds.DateOffset(minutes=5))
+                == self.testInst.date - dt.timedelta(minutes=5))
         assert (self.testInst.index[-1]
                 == self.testInst.date
-                + pds.DateOffset(hours=23, minutes=59, seconds=59)
-                + pds.DateOffset(minutes=5))
+                + dt.timedelta(hours=23, minutes=59, seconds=59)
+                + dt.timedelta(minutes=5))
 
     def test_data_padding_uniqueness(self):
         self.ref_doy = 1
@@ -2826,7 +2858,7 @@ class TestDataPadding():
         self.testInst.load(self.ref_time.year, self.ref_doy)
         assert (self.testInst.index[0] == self.testInst.date)
         assert (self.testInst.index[-1] == self.testInst.date
-                + pds.DateOffset(hour=23, minutes=59, seconds=59))
+                + dt.timedelta(hours=23, minutes=59, seconds=59))
 
 
 class TestDataPaddingXarray(TestDataPadding):
