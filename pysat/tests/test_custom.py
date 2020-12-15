@@ -170,7 +170,7 @@ class TestBasics():
     def test_custom_keyword_instantiation_poor_format(self):
         """Test for error when custom missing keywords at instantiation
         """
-        req_words = ['function', 'kind', 'args', 'kwargs']
+        req_words = ['function', 'kind']
         real_custom = [{'function': 1, 'kind': 'add', 'args': [0, 1],
                         'kwargs': {'kwarg1': True, 'kwarg2': False}}]
         for i, word in enumerate(req_words):
