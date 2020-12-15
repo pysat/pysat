@@ -340,13 +340,18 @@ class Instrument(object):
         self.custom_kwargs = []
         if custom is not None:
             # process user input
-            req_labels = ['function', 'kind', 'args', 'kwargs']
+            req_keys = ['function', 'kind']
+            # optional inputs with default values
+            opt_keys = [('args', []), ('kwargs', {})]
             for cust in custom:
-                for label in req_labels:
+                for label in req_keys:
                     if label not in cust:
                         estr = ''.join(('Input dict to custom is missing ',
                                         'a required key: ', label))
                         raise ValueError(estr)
+                for label, def_type in zip(opt_keys):
+                    if label not in cust:
+                        cust[label] = def_type
                 self.custom_attach(cust['function'], kind=cust['kind'],
                                    args=cust['args'], kwargs=cust['kwargs'])
 
