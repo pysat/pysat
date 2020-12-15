@@ -32,7 +32,9 @@ def initialize_test_inst_and_date(inst_dict):
 
     test_inst = pysat.Instrument(inst_module=inst_dict['inst_module'],
                                  tag=inst_dict['tag'],
-                                 inst_id=inst_dict['inst_id'])
+                                 inst_id=inst_dict['inst_id'],
+                                 temporary_file_list=True,
+                                 update_files=True)
     test_dates = inst_dict['inst_module']._test_dates
     date = test_dates[inst_dict['inst_id']][inst_dict['tag']]
     return test_inst, date
