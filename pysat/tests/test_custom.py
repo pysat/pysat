@@ -1,5 +1,6 @@
-import logging
+import datetime as dt
 from io import StringIO
+import logging
 import numpy as np
 import pandas as pds
 import pytest
@@ -112,7 +113,7 @@ class TestBasics():
             pytest.skip('pandas specific test for time index')
 
         def custom1(inst):
-            new_index = inst.index + pds.DateOffset(milliseconds=500)
+            new_index = inst.index + dt.timedelta(milliseconds=500)
             d = pds.Series(2.0 * inst['mlt'], index=new_index)
             d.name = 'doubleMLT'
             return d

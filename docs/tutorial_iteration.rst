@@ -204,7 +204,7 @@ set via the bounds attribute.
    # set a season with an expanded load range and increased step size
    # sets a data width of 2 days via the pandas DateOffset
    # sets a data step size of 2 days via the pandas frequency string, '2D'
-   vefi.bounds = (starts, stops, '2D', pds.DateOffset(days=2))
+   vefi.bounds = (starts, stops, '2D', dt.timedelta(days=2))
 
    # similarly, iteration over files is supported
    # file width is 2 files
