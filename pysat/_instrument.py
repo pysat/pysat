@@ -349,7 +349,7 @@ class Instrument(object):
                         estr = ''.join(('Input dict to custom is missing ',
                                         'a required key: ', label))
                         raise ValueError(estr)
-                for label, def_type in zip(opt_keys):
+                for label, def_type in opt_keys:
                     if label not in cust:
                         cust[label] = def_type
                 self.custom_attach(cust['function'], kind=cust['kind'],
