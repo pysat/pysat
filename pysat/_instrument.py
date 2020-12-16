@@ -2613,11 +2613,18 @@ class Instrument(object):
                 self.meta = meta
 
                 # If only some metadata included, define the remaining variables
+                warn_default = False
                 for var in self.variables:
-                    case_var = meta.var_case_name(var)
-                    if case_var not in self.meta.keys() \
-                       and case_var not in self.meta.keys_nD():
-                        self.meta[case_var] = {self.labels.name: var}
+                    if var not in self.meta:
+                        default_warn = "".join(["Metadata set to defaults, as",
+                                                " they were missing in the ",
+                                                "Instrument"])
+                        warn_default = True
+                        self.meta[case_var] = {self.labels.name: var,
+                                               self.labels.notes: default_warn}
+
+                if warn_default:
+                    warnings.warn(default_warn, stacklevel=2)
 
         # check if load routine actually returns meta
         if self.meta.data.empty:
