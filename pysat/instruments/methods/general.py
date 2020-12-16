@@ -36,10 +36,10 @@ def is_daily_file_cadance(file_cadance):
         if file_cadance.days > 1:
             is_daily = False
     else:
-        if not (hasattr(file_cadance, 'microseconds') or
-                hasattr(file_cadance, 'seconds') or
-                hasattr(file_cadance, 'minutes') or
-                hasattr(file_cadance, 'hours')):
+        if not (hasattr(file_cadance, 'microseconds')
+                or hasattr(file_cadance, 'seconds')
+                or hasattr(file_cadance, 'minutes')
+                or hasattr(file_cadance, 'hours')):
             is_daily = False
 
     return is_daily
