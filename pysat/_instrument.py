@@ -2108,6 +2108,10 @@ class Instrument(object):
                             elif isinstance(newData['data'], xr.DataArray):
                                 self[newData['data'].name] = newData['data']
 
+                            # xarray.Dataset returned
+                            elif isinstance(newData['data'], xr.Dataset):
+                                self.data = xr.merge([self.data, newData])
+
                             # some kind of iterable was returned
                             elif hasattr(newData['data'], '__iter__'):
                                 # look for name in returned dict
@@ -2132,7 +2136,7 @@ class Instrument(object):
                         elif isinstance(newData, xr.DataArray):
                             self[newData.name] = newData
 
-                        # xarray.DataSet returned
+                        # xarray.Dataset returned
                         elif isinstance(newData, xr.Dataset):
                             self.data = xr.merge([self.data, newData])
 

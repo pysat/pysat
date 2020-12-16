@@ -335,6 +335,9 @@ class TestBasics():
         with pytest.raises(ValueError):
             self.testInst.load(2009, 1)
 
+    # def test_add_xarray_series(self):
+    #     """Test add function success with xarray"""
+    #
     def test_add_numpy_array_w_meta_name_in_dict(self):
         """Test add function success with array and MetaData
         """
@@ -500,4 +503,4 @@ class ConstellationTestBasics(TestBasics):
     def add(self, function, kind='add', at_pos='end', args=[], kwargs={}):
         """ Add a function to the object's custom queue
         """
-        self.testConst.data_mod(function, kind, at_pos, args, kwargs)
+        self.testConst.custom_attach(function, kind, at_pos, args, kwargs)
