@@ -163,3 +163,25 @@ Note the same result is obtained. The DMSP instrument object and analysis are
 performed at the same level, so there is no strict gain by using the pysat
 nano-kernel in this simple demonstration. However, we can  use the nano-kernel
 to translate this daily mean into an versatile instrument independent function.
+
+**Attaching Custom Function at Instantiation**
+
+Custom methods may also be attached to an Instrument object directly
+at instantiation via the `custom` keyword.
+
+.. code:: python
+
+   # create dictionary for each custom methods and associated inputs
+   custom_func_1 = {'function': custom_func_modify, 'kind': 'modify',
+                    'kwargs': {'optional_param2': True}}
+   custom_func_2 = {'function': custom_func_add, 'kind': 'add',
+                    'kwargs': {'optional_param2': True}}
+   custom_func_3 = {'function': custom_func_add, 'kind': 'add',
+                    'kwargs': {'optional_param2': False}}
+
+   # Combine all dicts into a list in order of application and execution.
+   custom = [custom_func_1, custom_func_2, custom_func_3]
+
+   # Instantiate pysat.Instrument
+   inst = pysat.Instrument(platform, name, inst_id=inst_id, tag=tag,
+                           custom=custom)
